@@ -23,13 +23,13 @@ describe('STX:', function() {
   });
 
 
-  it('should check valid addresses', co(function *() {
+  it('should check valid addresses', (function() {
     const badAddresses = [
       '',
       null,
       'abc',
       'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY'
+      'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
     ];
     const goodAddresses = [
       'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
@@ -42,31 +42,22 @@ describe('STX:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
-
-  describe('Keypairs:', () => {
-    // TODO: is this necessary?
-    let basecoin;
-
-    before(function() {
-      bitgo = new TestBitGo({ env: 'mock' });
-      bitgo.initializeTestVars();
-      basecoin = bitgo.coin('tstx');
-    });
-
-    it('should generate a keypair from random seed', function() {
-      const keyPair = basecoin.generateKeyPair();
-      keyPair.should.have.property('xpub');
-      keyPair.should.have.property('xprv');
-      basecoin.isValidPub(keyPair.pub).should.equal(true);
-    });
-
-    it('should generate a keypair from a seed', function() {
-      const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
-      const seed = Buffer.from(seedText, 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
-      keyPair.xpub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
-      keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
-    });
+  // describe('Keypairs:', () => {
+  it('should generate a keypair from random seed', function() {
+    console.log(basecoin);
+    const keyPair = basecoin.generateKeyPair();
+    console.log(keyPair);
+    keyPair.should.have.property('xpub');
+    keyPair.should.have.property('xprv');
+    basecoin.isValidPub(keyPair.pub).should.equal(true);
   });
 
+  it('should generate a keypair from a seed', function() {
+    const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
+    const seed = Buffer.from(seedText, 'hex');
+    const keyPair = basecoin.generateKeyPair(seed);
+    keyPair.xpub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
+    keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+  });
+  // });
 });
