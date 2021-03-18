@@ -42,8 +42,8 @@ describe('STX:', function() {
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
-      keyPair.should.have.property('pub');
-      keyPair.should.have.property('prv');
+      keyPair.should.have.property('xpub');
+      keyPair.should.have.property('xprv');
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
@@ -51,8 +51,8 @@ describe('STX:', function() {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
-      keyPair.pub.should.equal('040706358b2bf2917d7be11a692681d9e7266e431b2dc124cb15ba6d98501ecab091e6e25ce84278c56e1e264b69df67b3f37e2a7ffe41f3f56a07fb393095d5b1');
-      keyPair.prv.should.equal('1f3cd7a858a11eef3e3f591cb5532241ce12c26b588197c88ebb42c6b6cbb5ba');
+      keyPair.xpub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
+      keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
     });
   });
 });
