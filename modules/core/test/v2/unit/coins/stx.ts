@@ -11,7 +11,7 @@ describe('STX:', function() {
   before(function() {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('stx');
+    basecoin = bitgo.coin('tstx');
   });
 
   it('should instantiate the coin', function() {
@@ -42,6 +42,7 @@ describe('STX:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
+  /*
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
@@ -58,4 +59,5 @@ describe('STX:', function() {
       keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
     });
   });
+  */
 });
