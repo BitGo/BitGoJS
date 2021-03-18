@@ -47,7 +47,6 @@ describe('STX:', function() {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
-      basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
     it('should generate a keypair from a seed', function() {
