@@ -202,7 +202,7 @@ export class Hbar extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
       // reconstitute keys and sign
-      return new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg);
+      return Buffer.from(new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg)).toString('hex');
     })
       .call(this)
       .asCallback(callback);
