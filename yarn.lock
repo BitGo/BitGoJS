@@ -349,6 +349,12 @@
   dependencies:
     buffer "^5.4.3"
 
+"@bitgo/statics@^6.3.0-rc.2":
+  version "6.3.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-6.3.0-rc.2.tgz#3deed18806e9fae5b1c83c84f503e95d8a5a7c52"
+  integrity sha512-17kOSDKw5tys/Ti2EN1DNcqKBji4HUPg3mCV904KHUM/rWVckFmYx/Iso4zFekCbM60UbA4dVum3DuFBG9h23A==
+
+>>>>>>> 9671775f... build(core): update deps to account-lib@2.8.0-rc.3 and statics@6.3.0-rc.2
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
