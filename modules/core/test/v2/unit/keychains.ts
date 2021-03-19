@@ -62,9 +62,9 @@ describe('V2 Keychains', function v2keychains() {
 
     const seed = Buffer.from('this is some random seed we will use', 'utf-8');
 
-    it('should create the same key with the same seed', function() {
-      cryptoSecpCoins.forEach(function(coinName) {
-        const currentCoin = bitgo.coin(coinName.name);
+    cryptoSecpCoins.forEach((coin) => {
+      it(`should create the same ${coin.name} key with the same seed`, function() {
+        const currentCoin = bitgo.coin(coin.name);
         const keyPair = currentCoin.generateKeyPair(seed);
 
         should.exist(keyPair.pub);
