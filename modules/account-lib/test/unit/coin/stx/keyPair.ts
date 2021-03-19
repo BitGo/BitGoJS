@@ -32,6 +32,21 @@ describe('Stx KeyPair', function() {
       should.equal(keyPair.getKeys(false).pub, testData.pubKey2);
       should.equal(keyPair.getKeys(true).pub, testData.pubKey2Compressed);
     });
+
+    it('from an extended private key', () => {
+      const keyPair = new Stx.KeyPair({ prv: testData.xprv1 });
+      should.equal(keyPair.getExtendedKeys().xpub, testData.xpub1);
+      should.equal(keyPair.getKeys(false).prv!, testData.xprv1Protocol);
+      should.equal(keyPair.getKeys(false).pub.length, 130);
+    });
+
+    it('from an extended public key', () => {
+      const keyPair = new Stx.KeyPair({ pub: testData.xpub1 });
+      should.equal(keyPair.getExtendedKeys().xpub, testData.xpub1);
+      should.equal(keyPair.getKeys(false).pub, testData.xpub1Protocol);
+      should.equal(keyPair.getKeys(true).pub, testData.xpub1ProtocolCompressed);
+      should.equal(keyPair.getKeys(false).pub.length, 130);
+    });
   });
 
   describe('should fail to create a KeyPair', function() {
