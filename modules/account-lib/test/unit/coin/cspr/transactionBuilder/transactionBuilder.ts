@@ -15,7 +15,7 @@ describe('Casper Transaction Builder', () => {
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
     txBuilder.transferId(255);
-    txBuilder.amount('10');
+    txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     return txBuilder;
   };
 

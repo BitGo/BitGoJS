@@ -49,7 +49,7 @@ describe('Cspr Transaction', () => {
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
-    txBuilder.amount('10');
+    txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     txBuilder.transferId(255);
     return (await txBuilder.build()) as Transaction;
   };

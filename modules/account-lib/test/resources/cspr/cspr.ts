@@ -61,6 +61,8 @@ export const ROOT_ACCOUNT = {
     'xprv9s21ZrQH143K4aRhQra93oQo3yWqBPEcmN39jus3frjhAt8DNQyJ7mg2GtVN1z2d8dvUhEAy8N1QsP17DLoEmWiYDeqqBVT7LWDWmZee3VT',
 };
 
+export const MIN_MOTES_AMOUNT = '2500000000';
+
 export const GAS_LIMIT = '123';
 
 export const FEE = { gasLimit: '10000000', gasPrice: '10' };
