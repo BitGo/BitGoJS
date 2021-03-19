@@ -3,6 +3,7 @@ import { ECPair, HDNode } from '@bitgo/utxo-lib';
 import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
+import { isValidXprv, isValidXpub } from '../../utils/crypto';
 import { isValidPrivateKey, isValidPublicKey } from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 64;
@@ -18,8 +19,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
       this.hdNode = HDNode.fromSeedBuffer(seed);
+      this.hdNode.keyPair.compressed = false;
     } else if (isSeed(source)) {
       this.hdNode = HDNode.fromSeedBuffer(source.seed);
+      this.hdNode.keyPair.compressed = false;
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -34,10 +37,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   }
 
   /**
-   * Build an ECPair from a private key.
+   * Build a keypair from a protocol private key or extended private key.
    *
-   * The private key is either 32 or 33 bytes long (64 or 66 characters hex).
-   * If it is 32 bytes long, set the keypair's "compressed" field to false.
+   * The protocol private key is either 32 or 33 bytes long (64 or 66
+   * characters hex).  If it is 32 bytes long, set the keypair's "compressed"
+   * field to false to later generate uncompressed public keys (the default).
    * A 33 byte key has 0x01 as the last byte.
    *
    * @param {string} prv A raw private key
@@ -47,17 +51,22 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       throw new Error('Unsupported private key');
     }
 
-    const compressed = prv.length === 66;
-    this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(0, 64), 'hex'));
-    this.keyPair.compressed = compressed;
+    if (isValidXprv(prv)) {
+      this.hdNode = HDNode.fromBase58(prv);
+      this.hdNode.keyPair.compressed = false;
+    } else {
+      this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(0, 64), 'hex'));
+      this.keyPair.compressed = prv.length === 66;
+    }
   }
 
   /**
-   * Build an ECPair from a public key.
+   * Build an ECPair from a protocol public key or extended public key.
    *
-   * The public key is either 32 bytes or 64 bytes long, with a one-byte prefix
-   * (a total of 66 or 130 characters in hex).  If the prefix is 0x02 or 0x03, it is a
-   * compressed public key.  A prefix of 0x04 denotes an uncompressed public key.
+   * The protocol public key is either 32 bytes or 64 bytes long, with a
+   * one-byte prefix (a total of 66 or 130 characters in hex).  If the
+   * prefix is 0x02 or 0x03, it is a compressed public key.  A prefix of 0x04
+   * denotes an uncompressed public key.
    *
    * @param {string} pub A raw public key
    */
@@ -66,7 +75,13 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       throw new Error('Unsupported public key');
     }
 
-    this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
+    if (isValidXpub(pub)) {
+      this.hdNode = HDNode.fromBase58(pub);
+      this.hdNode.keyPair.compressed = false;
+    } else {
+      this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
+      this.keyPair.compressed = pub.length === 66;
+    }
   }
 
   /**
@@ -76,10 +91,33 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {DefaultKeys} The keys in the protocol default key format
    */
   getKeys(compressed = false): DefaultKeys {
-    return {
-      pub: this.keyPair.Q.getEncoded(compressed).toString('hex'),
-      prv: this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined,
-    };
+    let prv;
+
+    if (this.hdNode) {
+      const { xpub, xprv } = this.getExtendedKeys();
+      prv = xprv
+        ? HDNode.fromBase58(xprv)
+            .keyPair.getPrivateKeyBuffer()
+            .toString('hex')
+        : undefined;
+      prv = prv && compressed ? prv + '01' : prv;
+
+      const kp = HDNode.fromBase58(xpub);
+      kp.keyPair.compressed = compressed;
+
+      return {
+        pub: kp.getPublicKeyBuffer().toString('hex'),
+        prv: prv,
+      };
+    } else {
+      prv = this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined;
+      prv = prv && compressed ? prv + '01' : prv;
+
+      return {
+        pub: this.keyPair.Q.getEncoded(compressed).toString('hex'),
+        prv: prv,
+      };
+    }
   }
 
   /**
