@@ -4,6 +4,7 @@ import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr
 import * as testData from '../../../../resources/cspr/cspr';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
+import { verifySignature } from '../../../../../src/coin/cspr/utils';
 
 describe('CSPR Wallet initialization', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -37,6 +38,7 @@ describe('CSPR Wallet initialization', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.deepEqual(tx.signature.length, 1);
+      should.doesNotThrow(() => verifySignature(tx.signature[0], txJson.hash, testData.ROOT_ACCOUNT.publicKey));
       should.equal(txJson.from.toUpperCase(), testData.ROOT_ACCOUNT.publicKey);
       tx.type.should.equal(TransactionType.WalletInitialization);
     });
@@ -47,6 +49,7 @@ describe('CSPR Wallet initialization', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.deepEqual(tx.signature.length, 1);
+      should.doesNotThrow(() => verifySignature(tx.signature[0], txJson.hash, testData.ROOT_ACCOUNT.publicKey));
       should.equal(txJson.from.toUpperCase(), testData.ROOT_ACCOUNT.publicKey);
       tx.type.should.equal(TransactionType.WalletInitialization);
     });
