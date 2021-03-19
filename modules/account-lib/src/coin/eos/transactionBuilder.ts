@@ -6,10 +6,30 @@ import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { promises } from 'dns';
 import { Key } from './iface';
-// import * as EosJs from 'eosjs';
 import { Buffer } from 'buffer';
 
 import eosjs = require('eosjs');
+
+const ecc = require('eosjs-ecc');
+
+
+// necessary config setup to push recreated transaction to get back tx id
+const request = require('request-json');
+const httpEndpoint = 'http://159.69.74.183:2888';
+
+const client = request.createClient(httpEndpoint);
+
+const config = {
+    chainId: "2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840", // 32 byte (64 char) hex string
+    keyProvider: ['5KUZyFK1Sz35w4k9ZMEsvQNwfupPYj74o52Z36cumcZ93Wz7Epp'], // WIF string or array of keys..
+    httpEndpoint: httpEndpoint,
+    expireInSeconds: 60,
+    broadcast: true,
+    verbose: false, // API activity
+    sign: true
+};
+
+const eos = eosjs(config);
 
 export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -41,20 +61,75 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
 
   protected async buildImplementation(): Promise<Transaction> {
-    // const eosClient = new EosJs({ });
 
     // If the from() method was called, use the serialized transaction as a base
     if (this._serializedTransaction) {
-      console.log('SERIALIZED', this._serializedTransaction)
+      // console.log('SERIALIZED', this._serializedTransaction)
 
-        const eosClient = new eosjs({ });
-        const eosTxStruct = eosClient.fc.structs.transaction;
-        const serializedBuffer = Buffer.from(this._serializedTransaction, 'hex');
-        const finalTransaction =  eosjs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedBuffer);
-        console.log('FINAL', finalTransaction)
-        // const txid = finalTransaction.transaction.transaction_id;
-        // console.log('ID', txid)
-        return finalTransaction;
+      // parse packed transaction
+      const parsedTrx = JSON.parse(this._serializedTransaction)
+      // console.log('PACKED', parsedTrx)
+
+      // grab signature
+      const signature = parsedTrx.signatures;
+      // console.log('SIGNATURE', signature)
+
+      // add signature to config
+      config.keyProvider = [signature];
+      // console.log('config', config)
+
+      //deserialized transaction to get unpack hex
+      const eosClient = new eosjs({ });
+      const eosTxStruct = eosClient.fc.structs.transaction;
+      const serializedBuffer = Buffer.from(parsedTrx.packed_trx, 'hex');
+      const finalTransaction =  eosjs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedBuffer);
+
+      // set variables for recreating transaction from deserialized data so we can get the tx.id 
+      const trxActor = finalTransaction.actions[0].authorization[0].actor;
+      const trxPermission = finalTransaction.actions[0].authorization[0].permission 
+      const trxNewAccountData = finalTransaction.actions[0].data;
+      const trxActionData = finalTransaction.actions[1].data;
+      const firstAction = finalTransaction.actions[0].name;
+      const secondAction = finalTransaction.actions[1].name;
+      const contextFreeActionName = finalTransaction.context_free_actions[0].name;
+      const contextFreeActionData = finalTransaction.context_free_actions[0].data;
+
+      
+      // recreate transaction from deserialized data
+      let newTrx = {
+        actions: [{
+          account: 'eosio',
+          name: firstAction,
+          authorization: [{
+            actor: trxActor,
+            permission: trxPermission,
+          }],
+          data: trxNewAccountData
+        },
+        {
+          account: 'eosio',
+          name: secondAction,
+          authorization: [{
+            actor: trxActor,
+            permission: trxPermission,
+          }],
+          data: trxActionData 
+        }],
+        context_free_actions: [{
+            account: 'eosio.null',
+            name: contextFreeActionName,
+            authorization: [],
+            data: contextFreeActionData,
+        }],
+    }
+
+      const trxWithId = await eos.transaction(newTrx, { sign: false, broadcast: false });
+      console.log('ID', trxWithId)
+
+      const txId = trxWithId.transaction_id;
+      console.log('ID', txId)
+
+      
 
     } else {
 
@@ -65,13 +140,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected signImplementation(key: Key): Transaction {
-    // const signer = new KeyPair({ prv: key.key });
-    // // Currently public key revelation is the only type of account update tx supported in Tezos
-    // if (this._type === TransactionType.AccountUpdate && !this._publicKeyToReveal) {
-    //   throw new SigningError('Cannot sign a public key revelation transaction without public key');
-    // }
+
     return new Transaction(this._coinConfig);
   }
+
   // region Getters and Setters
   /** @inheritdoc */
   protected get transaction(): Transaction {
@@ -95,18 +167,19 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    if (typeof rawTransaction !== 'string' || /^[0-9a-fA-F]+$/.test(rawTransaction) === false) {
-      throw new InvalidTransactionError('Transaction is not a hex string');
-    } 
+
+    // removed to test initialization tx that also had signatures and was in string format
+
+    // if (typeof rawTransaction !== 'string' || /^[0-9a-fA-F]+$/.test(rawTransaction) === false) {
+    //   throw new InvalidTransactionError('Transaction is not a hex string');
+    // } 
   }
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    //MAYBE NEED THIS
-    // if(!Transaction) {
-    //   throw new NotImplementedError('validateTransaction not implemented'); // CHANGE
-    // }
+
     // TODO: validate all required fields are present in the builder before buildImplementation
+    // copied from Tezos, may need to check whether other items need to be validated
     switch (this._type) {
       case TransactionType.WalletInitialization:
         break;
@@ -121,7 +194,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       default:
         throw new BuildTransactionError('Transaction type not supported');
     }
-
   }
 
   /** @inheritdoc */
