@@ -322,17 +322,6 @@ class StellarTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.XLM;
   explorerUrl = 'https://stellar.expert/explorer/testnet/tx/';
 }
-
-class Stx extends Mainnet implements AccountNetwork {
-  family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/';
-}
-
-class StxTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/?chain=testnet';
-}
-
 class SUSD extends Mainnet implements AccountNetwork {
   family = CoinFamily.SUSD;
   explorerUrl = undefined;
@@ -413,7 +402,6 @@ export const Networks = {
     ofc: Object.freeze(new Ofc()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
-    stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
@@ -439,7 +427,6 @@ export const Networks = {
     ofc: Object.freeze(new OfcTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
-    stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
