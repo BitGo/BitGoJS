@@ -33,7 +33,6 @@ export enum CoinFamily {
   OFC = 'ofc',
   RMG = 'rmg',
   RBTC = 'rbtc',
-  STX = 'stx',
   SUSD = 'susd',
   TRX = 'trx',
   XLM = 'xlm',
@@ -151,7 +150,6 @@ export enum UnderlyingAsset {
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
   RBTC = 'rbtc', // RSK main coin
-  STX = 'stx',
   TRX = 'trx',
   XRP = 'xrp',
   XLM = 'xlm',

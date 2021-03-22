@@ -43,7 +43,7 @@ export interface ExplainTransactionOptions {
   halfSigned?: {
     txHex: string;
   };
-  fee: TransactionFee;
+  feeInfo: TransactionFee;
 }
 
 interface SupplementGenerateWalletOptions {
@@ -240,7 +240,7 @@ export class Cspr extends BaseCoin {
     const self = this;
     return co<TransactionExplanation>(function*() {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.fee) {
+      if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');
       }
       const txBuilder = accountLib.getBuilder(self.getChain()).from(txHex);
@@ -279,7 +279,7 @@ export class Cspr extends BaseCoin {
         changeOutputs: [], // account based does not use change outputs
         changeAmount: '0', // account base does not make change
         transferId,
-        fee: params.fee,
+        fee: params.feeInfo,
       };
     })
       .call(this)
