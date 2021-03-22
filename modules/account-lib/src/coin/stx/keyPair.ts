@@ -120,6 +120,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
   }
 
+  getCompressed(): boolean {
+    return this.keyPair.compressed
+  }
+
   /**
    * Get a public address of an uncompressed public key.
    *

@@ -12,8 +12,6 @@ describe('Stx Transfer Builder', () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ fee: '180' });
     txBuilder.nonce(0);
-    txBuilder.source({ address: testData.TX_SENDER.address });
-    // txBuilder.senderPubKey([testData.TX_SENDER.pub])
     txBuilder.to(testData.TX_RECIEVER.address);
     txBuilder.amount('1000');
     return txBuilder;

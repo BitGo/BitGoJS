@@ -4,7 +4,7 @@ import { KeyPair } from '.';
 export interface TxData {
   id: string;
   from: string;
-  fee: number;
+  fee: string;
   payload: StacksTransactionPayload;
 }
 export interface SignatureData {

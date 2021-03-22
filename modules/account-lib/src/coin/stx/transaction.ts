@@ -15,7 +15,7 @@ import {
   TransactionAuthField
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SigningError } from '../baseCoin/errors';
+import { SigningError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, TxData } from './iface';
@@ -40,7 +40,7 @@ export class Transaction extends BaseTransaction {
     const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
     const signer = new TransactionSigner(this._stxTransaction);
     for (const kp of keyPairs) {
-      const keys = kp.getKeys(true);
+      const keys = kp.getKeys(kp.getCompressed());
       if (!keys.prv) {
         throw new SigningError('Missing private key');
       }
@@ -50,7 +50,7 @@ export class Transaction extends BaseTransaction {
   }
 
   async appendOrigin(keyPair: KeyPair): Promise<void> {
-    const keys = keyPair.getKeys(true);
+    const keys = keyPair.getKeys(keyPair.getCompressed());
     if (!keys.pub) {
       throw new SigningError('Missing public key');
     }
@@ -93,7 +93,7 @@ export class Transaction extends BaseTransaction {
   toJson() {
     const result: TxData = {
       id: this._stxTransaction.txid(),
-      fee: new BigNumber(this._stxTransaction.auth.getFee().toString()).toNumber(),
+      fee: this._stxTransaction.auth.getFee().toString(10),
       from: getTxSenderAddress(this._stxTransaction),
       payload: { payloadType: this._stxTransaction.payload.payloadType },
     };
@@ -130,7 +130,11 @@ export class Transaction extends BaseTransaction {
    */
   fromRawTransaction(rawTransaction: string) {
     const raw = removeHexPrefix(rawTransaction);
-    this._stxTransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(raw, 'hex')));
+    try {
+      this._stxTransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(raw, 'hex')));
+    } catch (e) {
+      throw new ParseTransactionError('Error parsing the raw transaction');
+    }
     this.loadInputsAndOutputs();
   }
 
@@ -145,8 +149,7 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Load the input and output data on this transaction using the transaction json
-   * if there are outputs. For transactions without outputs (e.g. wallet initializations),
-   * this function will not do anything
+   * if there are outputs.
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();

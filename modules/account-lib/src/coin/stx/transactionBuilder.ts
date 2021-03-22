@@ -27,7 +27,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   protected _fee: BaseFee;
   protected _nonce: number;
-  protected _source: BaseAddress;
   protected _memo: string;
   protected _numberSignatures: number;
   protected _multiSignerKeyPairs: KeyPair[];
@@ -38,7 +37,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     super(_coinConfig);
     this._multiSignerKeyPairs = [];
     this._signatures = [];
-    this._numberSignatures = 1;
+    this._numberSignatures = 0;
     this._network = new StacksTestnet();
     this.transaction = new Transaction(_coinConfig);
   }
@@ -52,31 +51,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = tx;
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
-    this.source({ address: txData.from });
     if (txData.payload.memo) {
       this.memo(txData.payload.memo);
     }
     // check if it is signed or unsigned tx
-    if (isSingleSig(tx.stxTransaction.auth.spendingCondition!)) {
-      if (tx.stxTransaction.auth.spendingCondition.signature.data === emptyMessageSignature().data) {
-        // unsigned transaction
-      } else {
-        const sigHashPreSign = makeSigHashPreSign(
-          tx.stxTransaction.verifyBegin(),
-          tx.stxTransaction.auth.authType!,
-          new BigNum(this._fee.fee),
-          new BigNum(this._nonce),
-        );
-        this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
-        const signer = new KeyPair({ pub: publicKeyFromSignature(sigHashPreSign, this._signatures[0]) });
-        this._multiSignerKeyPairs.push(signer);
-      }
+    if (isSingleSig(tx.stxTransaction.auth.spendingCondition!) && tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
+      const sigHashPreSign = makeSigHashPreSign(
+        tx.stxTransaction.verifyBegin(),
+        tx.stxTransaction.auth.authType!,
+        new BigNum(this._fee.fee),
+        new BigNum(this._nonce),
+      );
+      this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
+      const signer = new KeyPair({ pub: publicKeyFromSignature(sigHashPreSign, this._signatures[0]) });
+      this._multiSignerKeyPairs.push(signer);
     }
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
+    this.validateRawTransaction(rawTransaction)
     const stackstransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(rawTransaction)));
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
@@ -114,6 +109,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
     this._multiSignerKeyPairs.push(signer);
+    this._numberSignatures = this._multiSignerKeyPairs.length > 1 ? this._multiSignerKeyPairs.length - 1 : this._multiSignerKeyPairs.length;
     return this.transaction;
   }
 
@@ -185,18 +181,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * Set the transaction source
-   *
-   * @param {BaseAddress} address The source account
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  source(address: BaseAddress): this {
-    this.validateAddress(address);
-    this._source = address;
-    return this;
-  }
-
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
@@ -228,7 +212,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
     this.validateFee();
-    this.validateSource();
   }
 
   /** @inheritdoc */
@@ -255,13 +238,4 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /**
-   * Validates that the source field is defined
-   */
-  private validateSource(): void {
-    if (this._source === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing source');
-    }
-    this.validateAddress(this._source);
-  }
 }

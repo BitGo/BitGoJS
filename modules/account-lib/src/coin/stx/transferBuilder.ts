@@ -56,26 +56,15 @@ export class TransferBuilder extends TransactionBuilder {
     if (this._multiSignerKeyPairs.length === 1) {
       return {
         ...defaultOpts,
-        publicKey: this._multiSignerKeyPairs[0].getKeys(true).pub,
+        publicKey: this._multiSignerKeyPairs[0].getKeys(this._multiSignerKeyPairs[0].getCompressed()).pub,
       };
     } else {
       return {
         ...defaultOpts,
-        publicKeys: this._multiSignerKeyPairs.map(i => i.getKeys(true).pub),
+        publicKeys: this._multiSignerKeyPairs.map(k => k.getKeys(k.getCompressed()).pub),
         numSignatures: this._numberSignatures,
       };
     }
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
-    const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction))),
-    );
-    tx.stxTransaction = stackstransaction;
-    this.initBuilder(tx);
-    return this.transaction;
   }
 
   //region Transfer fields
