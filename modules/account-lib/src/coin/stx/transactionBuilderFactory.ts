@@ -1,9 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BufferReader, deserializeTransaction, PayloadType } from '@stacks/transactions';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { ParseTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { ParseTransactionError, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
-import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 
@@ -40,8 +39,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+  getWalletInitializationBuilder(tx?: Transaction) {
+    throw new NotImplementedError('method not implemented');
   }
 
   /** @inheritdoc */
