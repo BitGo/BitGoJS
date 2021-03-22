@@ -81,7 +81,7 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Set the amount to be transferred
    *
-   * @param {string} amount amount to transfer
+   * @param {string} amount amount to transfer in motes (1 Cspr equals 1,000,000,000 motes)
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   amount(amount: string): this {

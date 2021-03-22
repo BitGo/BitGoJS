@@ -12,6 +12,7 @@ import { SignResponse } from './ifaces';
 import { KeyPair } from '.';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
+const MIN_MOTES_AMOUNT = new BigNumber(2500000000);
 
 /**
  * Returns the account hash from a public key
@@ -65,7 +66,7 @@ export function isValidAmount(amount: string): boolean {
   const bigNumberAmount = new BigNumber(amount);
   return (
     bigNumberAmount.isInteger() &&
-    bigNumberAmount.isGreaterThanOrEqualTo(0) &&
+    bigNumberAmount.isGreaterThanOrEqualTo(MIN_MOTES_AMOUNT) &&
     bigNumberAmount.isLessThan(MAX_MOTES_AMOUNT)
   );
 }
