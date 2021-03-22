@@ -248,6 +248,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       if (_sourceKeyPair.getKeys().prv === key.key.toUpperCase()) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
+      // Try to get extended keys in order to validate them
+      let xprv;
+      try {
+        xprv = _sourceKeyPair.getExtendedKeys().xprv;
+      } catch (err) {
+        return;
+      }
+      if (xprv && xprv.toUpperCase() === key.key.toUpperCase()) {
+        throw new SigningError('Repeated sign: ' + key.key);
+      }
     });
   }
 

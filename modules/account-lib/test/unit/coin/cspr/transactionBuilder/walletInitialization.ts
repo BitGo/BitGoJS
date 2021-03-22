@@ -14,6 +14,12 @@ describe('CSPR Wallet initialization', () => {
     return txBuilder;
   };
 
+  const initSignedTxBuilderWithExtendedKey = () => {
+    const txBuilder = initUnsignedTxBuilder();
+    txBuilder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+    return txBuilder;
+  };
+
   const initUnsignedTxBuilder = () => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
@@ -27,6 +33,16 @@ describe('CSPR Wallet initialization', () => {
   describe('should build ', () => {
     it('an init transaction', async () => {
       const txBuilder = initSignedTxBuilder();
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.fee, testData.FEE);
+      should.deepEqual(tx.signature.length, 1);
+      should.equal(txJson.from.toUpperCase(), testData.ROOT_ACCOUNT.publicKey);
+      tx.type.should.equal(TransactionType.WalletInitialization);
+    });
+
+    it('an init transaction using extended key to sign', async () => {
+      const txBuilder = initSignedTxBuilderWithExtendedKey();
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
@@ -287,9 +303,206 @@ describe('CSPR Wallet initialization', () => {
         );
       });
 
+      it('a signed transfer transaction with extended key from serialized', async () => {
+        const builder = initUnsignedTxBuilder();
+        builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        const builder2 = factory.getWalletInitializationBuilder();
+        builder2.from(tx.toBroadcastFormat());
+        const tx2 = (await builder2.build()) as Transaction;
+        const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+        should.deepEqual(
+          tx2.casperTx.approvals,
+          tx.casperTx.approvals,
+          'from implementation from factory should get approvals correctly',
+        );
+      });
+
       it('an offline multisig transfer transaction', async () => {
         const builder = initUnsignedTxBuilder();
         builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        const builder2 = factory.getWalletInitializationBuilder();
+        builder2.from(tx.toBroadcastFormat());
+        const tx2 = (await builder2.build()) as Transaction;
+        const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+        should.deepEqual(
+          tx2.casperTx.approvals,
+          tx.casperTx.approvals,
+          'from implementation from factory should get approvals correctly',
+        );
+      });
+
+      it('an offline multisig transfer transaction using extended keys', async () => {
+        const builder = initUnsignedTxBuilder();
+        builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+        builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        const builder2 = factory.getWalletInitializationBuilder();
+        builder2.from(tx.toBroadcastFormat());
+        const tx2 = (await builder2.build()) as Transaction;
+        const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
+        should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+        should.deepEqual(
+          tx2.casperTx.approvals,
+          tx.casperTx.approvals,
+          'from implementation from factory should get approvals correctly',
+        );
+      });
+
+      it('an offline multisig transfer transaction using one extended key', async () => {
+        const builder = initUnsignedTxBuilder();
+        builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
@@ -358,6 +571,20 @@ describe('CSPR Wallet initialization', () => {
   describe('txJson validation', () => {
     it('contains all required fields for Wallet Initialization', async () => {
       const txBuilder = initSignedTxBuilder();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.fee, testData.FEE);
+      should.equal(txJson.deployType, 'WalletInitialization');
+      should.equal(txJson.from.toUpperCase(), testData.ROOT_ACCOUNT.publicKey);
+      should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
+
+      should.equal(txJson.owner1!.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.owner2!.toUpperCase(), testData.ACCOUNT_2.publicKey);
+      should.equal(txJson.owner3!.toUpperCase(), testData.ACCOUNT_3.publicKey);
+    });
+
+    it('contains all required fields for Wallet Initialization using extended key to sign', async () => {
+      const txBuilder = initSignedTxBuilderWithExtendedKey();
       const tx = (await txBuilder.build()) as Transaction;
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
