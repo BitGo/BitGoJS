@@ -3,6 +3,7 @@ import * as accountLib from '@bitgo/account-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
+import { randomBytes } from 'crypto';
 
 describe('Hedera Hashgraph:', function() {
   let bitgo;
@@ -19,7 +20,7 @@ describe('Hedera Hashgraph:', function() {
     basecoin.should.be.an.instanceof(Hbar);
   });
 
-  it('should check valid addresses', async function () {
+  it('should check valid addresses', async function() {
     const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd'];
     const goodAddresses = ['0', '0.0.0', '0.0.41098', '0.0.0?memoId=84', '0.0.41098',
       '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1', '0.0.41098?memoId=',
@@ -29,7 +30,7 @@ describe('Hedera Hashgraph:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   });
 
-  it('should get memoId and address', async function () {
+  it('should get memoId and address', async function() {
     const addr = '0.0.41098?memoId=23233';
     const details = basecoin.getAddressDetails(addr);
 
@@ -37,7 +38,7 @@ describe('Hedera Hashgraph:', function() {
     details.memoId.should.equal('23233');
   });
 
-  it('should get memoId and address when memoId=null', async function () {
+  it('should get memoId and address when memoId=null', async function() {
     const addr = '0.0.41098?memoId=';
     const details = basecoin.getAddressDetails(addr);
 
@@ -45,7 +46,7 @@ describe('Hedera Hashgraph:', function() {
     details.memoId.should.equal('');
   });
 
-  it('should build without a memoId if its missing for an address', async function () {
+  it('should build without a memoId if its missing for an address', async function() {
     const address = '0.0.41098';
     let memoId: string | undefined = undefined;
     let norm = basecoin.normalizeAddress({ address, memoId });
@@ -98,6 +99,21 @@ describe('Hedera Hashgraph:', function() {
     });
   });
 
+  describe('Sign Message', () => {
+    it('should be performed', async () => {
+      const keyPair = new accountLib.Hbar.KeyPair();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
+      keyPair.verifySignature(messageToSign, Uint8Array.from(Buffer.from(signature, 'hex'))).should.equals(true);
+    });
+
+    it('should fail with missing private key', async () => {
+      const keyPair = new accountLib.Hbar.KeyPair({ pub: '302a300506032b6570032100d8fd745361df270776a3ab1b55d5590ec00a26ab45eea37197dc9894a81fcb82' }).getKeys();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      await basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
+    });
+  });
+
   describe('Sign transaction:', () => {
     /**
      * Build an unsigned account-lib multi-signature send transaction
@@ -106,10 +122,10 @@ describe('Hedera Hashgraph:', function() {
      * @param amount The amount to send to the recipient
      */
     const buildUnsignedTransaction = async function({
-                                                      destination,
-                                                      source,
-                                                      amount = '100000',
-                                                    }) {
+      destination,
+      source,
+      amount = '100000',
+    }) {
 
       const factory = accountLib.register('thbar', accountLib.Hbar.TransactionBuilderFactory);
       const txBuilder = factory.getTransferBuilder();
