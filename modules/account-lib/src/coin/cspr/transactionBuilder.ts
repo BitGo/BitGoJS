@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
 import { Deploy, ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
-import { parseInt } from 'lodash';
+import _ from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import {
@@ -13,10 +13,15 @@ import {
 } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
-import { isValidAddress } from './utils';
+import {
+  Fee,
+  CasperModuleBytesTransaction,
+  CasperTransferTransaction,
+  CasperDelegateTransaction,
+  SignatureData,
+} from './ifaces';
+import { isValidAddress, removeAlgoPrefixFromHexValue } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
-import * as _ from "lodash";
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -24,7 +29,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _source: BaseAddress;
   protected _fee: Fee;
   private _transaction: Transaction;
-  protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
+  protected _session: CasperTransferTransaction | CasperModuleBytesTransaction | CasperDelegateTransaction;
   protected _expiration: number;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
@@ -43,7 +48,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const session = this.getSession();
 
     // @ts-ignore Added because standardPayment expect an external library BigNumber implementation.
-    const payment = DeployUtil.standardPayment(parseInt(this._fee.gasLimit));
+    const payment = DeployUtil.standardPayment(_.parseInt(this._fee.gasLimit));
 
     let cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);
 
@@ -281,7 +286,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {DeployUtil.DeployParams}
    */
   private getDeployParams(): DeployUtil.DeployParams {
-    const gasPrice = this._fee.gasPrice ? parseInt(this._fee.gasPrice) : undefined;
+    const gasPrice = this._fee.gasPrice ? _.parseInt(this._fee.gasPrice) : undefined;
     return new DeployUtil.DeployParams(
       PublicKey.fromHex(SECP256K1_PREFIX + this._source.address),
       CHAIN_NAME,
@@ -307,6 +312,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         );
         break;
       case TransactionType.WalletInitialization:
+      case TransactionType.StakingLock:
+      case TransactionType.StakingUnlock:
         const moduleBytesSession = this._session as CasperModuleBytesTransaction;
         session = ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
         break;
@@ -323,10 +330,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @private
    */
   private isTransactionSignedByPub(pub: string): boolean {
-    return _.findIndex(this.transaction.casperTx.approvals, approval => {
-      const approvalSigner = approval.signer.slice(2).toUpperCase();
-      return approvalSigner === pub;
-    }) !== -1;
+    return (
+      _.findIndex(this.transaction.casperTx.approvals, approval => {
+        const approvalSigner = removeAlgoPrefixFromHexValue(approval.signer).toUpperCase();
+        return approvalSigner === pub;
+      }) !== -1
+    );
   }
 
   /**
