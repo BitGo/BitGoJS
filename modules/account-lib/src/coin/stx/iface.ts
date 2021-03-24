@@ -5,6 +5,7 @@ export interface TxData {
   id: string;
   from: string;
   fee: string;
+  nonce: number;
   payload: StacksTransactionPayload;
 }
 export interface SignatureData {

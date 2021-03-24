@@ -28,6 +28,7 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
       should.deepEqual(txJson.payload.amount, '1000');
       should.deepEqual(txJson.from, testData.TX_SENDER.address);
+      should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION);
       tx.type.should.equal(TransactionType.Send);
@@ -50,6 +51,7 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(txJson.payload.amount, '1000');
       should.deepEqual(txJson.payload.memo, 'This is an example');
       should.deepEqual(txJson.from, testData.TX_SENDER.address);
+      should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
     });
 

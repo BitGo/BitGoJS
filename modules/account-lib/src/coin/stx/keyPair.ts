@@ -121,7 +121,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   }
 
   getCompressed(): boolean {
-    return this.keyPair.compressed
+    return this.keyPair.compressed;
   }
 
   /**

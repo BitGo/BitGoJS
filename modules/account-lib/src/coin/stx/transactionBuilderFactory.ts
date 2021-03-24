@@ -5,6 +5,7 @@ import { ParseTransactionError, InvalidTransactionError, NotImplementedError } f
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { removeHexPrefix } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -66,6 +67,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   validateRawTransaction(rawTransaction: any): void {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    try {
+      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
+    } catch (e) {
+      throw new ParseTransactionError('Error deserializing raw transaction');
     }
   }
 }

@@ -2,8 +2,6 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNum from 'bn.js';
 import {
   makeUnsignedSTXTokenTransfer,
-  BufferReader,
-  deserializeTransaction,
   UnsignedTokenTransferOptions,
   TokenTransferOptions,
   UnsignedMultiSigTokenTransferOptions,
@@ -12,7 +10,7 @@ import { TransactionType } from '../baseCoin';
 import { InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { isValidAddress, isValidAmount, removeHexPrefix } from './utils';
+import { isValidAddress, isValidAmount } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _options: UnsignedTokenTransferOptions | UnsignedMultiSigTokenTransferOptions;

@@ -4,7 +4,7 @@ import * as testData from '../../../resources/stx/stx';
 import { Stx } from '../../../../src';
 import { TransactionVersion } from '@stacks/transactions';
 
-describe('Stx KeyPair', function () {
+describe('Stx KeyPair', function() {
   const defaultSeed = { seed: Buffer.alloc(64) };
 
   describe('should create a valid KeyPair', () => {
@@ -49,7 +49,7 @@ describe('Stx KeyPair', function () {
     });
   });
 
-  describe('should fail to create a KeyPair', function () {
+  describe('should fail to create a KeyPair', function() {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
       should.throws(() => new Stx.KeyPair(seed));
@@ -70,7 +70,7 @@ describe('Stx KeyPair', function () {
     });
   });
 
-  describe('getAddress', function () {
+  describe('getAddress', function() {
     it('should get an address', () => {
       const keyPair = new Stx.KeyPair(defaultSeed);
       const address = keyPair.getAddress();
@@ -78,7 +78,7 @@ describe('Stx KeyPair', function () {
     });
   });
 
-  describe('getSTXAddress', function () {
+  describe('getSTXAddress', function() {
     it('should get an uncompressed stacks address for the mainnet', () => {
       const keyPair = new Stx.KeyPair(defaultSeed);
       const address = keyPair.getSTXAddress();
@@ -104,7 +104,7 @@ describe('Stx KeyPair', function () {
     });
   });
 
-  describe('getKeys', function () {
+  describe('getKeys', function() {
     it('should get private and public keys in the protocol default format', () => {
       const keyPair = new Stx.KeyPair(defaultSeed);
       const { prv, pub } = keyPair.getKeys();

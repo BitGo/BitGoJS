@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import {
   BufferReader,
   PayloadType,
@@ -9,13 +8,11 @@ import {
   addressToString,
   StacksMessageType,
   createStacksPublicKey,
-  SingleSigSpendingCondition,
   isSingleSig,
-  StacksPublicKey,
-  TransactionAuthField
+  TransactionAuthField,
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SigningError, ParseTransactionError } from '../baseCoin/errors';
+import { SigningError, ParseTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, TxData } from './iface';
@@ -67,14 +64,14 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-  * Get the signatures associated with this transaction.
-  */
+   * Get the signatures associated with this transaction.
+   */
   get signature(): string[] {
     if (this._stxTransaction && this._stxTransaction.auth.spendingCondition) {
       if (isSingleSig(this._stxTransaction.auth.spendingCondition)) {
-        return [this._stxTransaction.auth.spendingCondition.signature.data]
+        return [this._stxTransaction.auth.spendingCondition.signature.data];
       } else {
-        return this._stxTransaction.auth.spendingCondition.fields.map(this.getSignatureFromField)
+        return this._stxTransaction.auth.spendingCondition.fields.map(this.getSignatureFromField);
       }
     }
     return [];
@@ -83,9 +80,9 @@ export class Transaction extends BaseTransaction {
   private getSignatureFromField(field: TransactionAuthField): string {
     switch (field.contents.type) {
       case StacksMessageType.PublicKey:
-        return field.contents.data.toString('hex')
+        return field.contents.data.toString('hex');
       case StacksMessageType.MessageSignature:
-        return field.contents.data
+        return field.contents.data;
     }
   }
 
@@ -95,6 +92,7 @@ export class Transaction extends BaseTransaction {
       id: this._stxTransaction.txid(),
       fee: this._stxTransaction.auth.getFee().toString(10),
       from: getTxSenderAddress(this._stxTransaction),
+      nonce: this.getNonce(),
       payload: { payloadType: this._stxTransaction.payload.payloadType },
     };
 
@@ -122,11 +120,18 @@ export class Transaction extends BaseTransaction {
     this._stxTransaction = t;
   }
 
+  private getNonce(): number {
+    if (this._stxTransaction.auth.spendingCondition) {
+      return this._stxTransaction.auth.spendingCondition.nonce.toNumber();
+    } else {
+      throw new InvalidTransactionError('spending condition is null');
+    }
+  }
+
   /**
    * Sets this transaction payload
    *
    * @param rawTransaction
-   * @param {Payload} payload transaction payload
    */
   fromRawTransaction(rawTransaction: string) {
     const raw = removeHexPrefix(rawTransaction);

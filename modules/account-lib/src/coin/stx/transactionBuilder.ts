@@ -54,8 +54,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (txData.payload.memo) {
       this.memo(txData.payload.memo);
     }
+    this.nonce(txData.nonce);
     // check if it is signed or unsigned tx
-    if (isSingleSig(tx.stxTransaction.auth.spendingCondition!) && tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
+    if (
+      isSingleSig(tx.stxTransaction.auth.spendingCondition!) &&
+      tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data
+    ) {
       const sigHashPreSign = makeSigHashPreSign(
         tx.stxTransaction.verifyBegin(),
         tx.stxTransaction.auth.authType!,
@@ -71,7 +75,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    this.validateRawTransaction(rawTransaction)
+    this.validateRawTransaction(rawTransaction);
     const stackstransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(rawTransaction)));
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
@@ -109,7 +113,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
     this._multiSignerKeyPairs.push(signer);
-    this._numberSignatures = this._multiSignerKeyPairs.length > 1 ? this._multiSignerKeyPairs.length - 1 : this._multiSignerKeyPairs.length;
+    this._numberSignatures =
+      this._multiSignerKeyPairs.length > 1 ? this._multiSignerKeyPairs.length - 1 : this._multiSignerKeyPairs.length;
     return this.transaction;
   }
 
@@ -212,6 +217,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
     this.validateFee();
+    this.validateNonce();
   }
 
   /** @inheritdoc */
@@ -228,14 +234,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._fee === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing fee');
     }
-    if (!this._fee.fee) {
-      throw new BuildTransactionError('Invalid transaction: missing gas limit');
-    }
     try {
       this.validateValue(new BigNumber(this._fee.fee));
     } catch (e) {
-      throw new BuildTransactionError('Invalid gas limit');
+      throw new BuildTransactionError('Invalid fee');
     }
   }
 
+  /**
+   * Validates that nonce is defined
+   */
+  private validateNonce(): void {
+    if (this._nonce === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing nonce');
+    }
+    try {
+      this.validateValue(new BigNumber(this._nonce));
+    } catch (e) {
+      throw new BuildTransactionError('Invalid nonce');
+    }
+  }
 }
