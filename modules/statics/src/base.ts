@@ -184,6 +184,7 @@ export enum UnderlyingAsset {
   AST = 'ast',
   AUDIO = 'audio',
   AUDX = 'audx',
+  AUST = 'aust',
   AXPR = 'axpr',
   AXS = 'axs',
   BAL = 'bal',
