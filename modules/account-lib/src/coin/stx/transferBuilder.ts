@@ -2,12 +2,13 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNum from 'bn.js';
 import {
   makeUnsignedSTXTokenTransfer,
+  PayloadType,
   UnsignedTokenTransferOptions,
   TokenTransferOptions,
   UnsignedMultiSigTokenTransferOptions,
 } from '@stacks/transactions';
 import { TransactionType } from '../baseCoin';
-import { InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAddress, isValidAmount } from './utils';
@@ -26,9 +27,13 @@ export class TransferBuilder extends TransactionBuilder {
     if (txData.payload === undefined) {
       throw new InvalidTransactionError('payload must not be undefined');
     }
-    this.to(txData.payload.to!);
-    this.amount(txData.payload.amount!);
-    super.initBuilder(tx);
+    if (txData.payload.payloadType == PayloadType.TokenTransfer) {
+      this.to(txData.payload.to!);
+      this.amount(txData.payload.amount!);
+      super.initBuilder(tx);
+    } else {
+      throw new BuildTransactionError('Transaction should be transfer');
+    }
   }
 
   /** @inheritdoc */

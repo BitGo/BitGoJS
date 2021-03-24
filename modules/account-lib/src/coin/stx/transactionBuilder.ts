@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BufferReader,
   deserializeTransaction,
@@ -51,9 +51,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = tx;
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
-    if (txData.payload.memo) {
-      this.memo(txData.payload.memo);
-    }
     this.nonce(txData.nonce);
     // check if it is signed or unsigned tx
     if (
@@ -251,7 +248,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     try {
       this.validateValue(new BigNumber(this._nonce));
     } catch (e) {
-      throw new BuildTransactionError('Invalid nonce');
+      throw new BuildTransactionError(`Invalid nonce ${this._nonce}`);
     }
   }
 }

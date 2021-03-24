@@ -7,28 +7,20 @@ import { KeyPair } from '../../../../src/coin/stx/keyPair';
 describe('Stx Transaction', () => {
   const coin = coins.get('stx');
 
-  function getTransaction(): Transaction {
-    return new Transaction(coin);
-  }
-
   it('should throw empty transaction', () => {
-    const tx = getTransaction();
-    should.throws(() => {
-      tx.toJson();
-    });
-    should.throws(() => {
-      tx.toBroadcastFormat();
-    });
+    const tx = new Transaction(coin);
+    should.throws(() => tx.toJson(), 'Empty transaction');
+    should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
   });
 
   describe('should sign if transaction is', () => {
-    it('invalid', function() {
-      const tx = getTransaction();
+    it('invalid', function () {
+      const tx = new Transaction(coin);
       return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
     });
 
     it('valid', async () => {
-      const tx = getTransaction();
+      const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
       const keypair = new KeyPair({ prv: testData.TX_SENDER.prv });
       await tx.sign(keypair).should.be.fulfilled();
@@ -37,9 +29,9 @@ describe('Stx Transaction', () => {
     });
   });
 
-  describe('should return encoded tx', function() {
-    it('valid sign', async function() {
-      const tx = getTransaction();
+  describe('should return encoded tx', function () {
+    it('valid sign', async function () {
+      const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
       const keypair = new KeyPair({ prv: testData.TX_SENDER.prv });
       await tx.sign(keypair);

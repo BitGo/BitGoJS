@@ -6,6 +6,7 @@ import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { removeHexPrefix } from './utils';
+import { ContractBuilder } from './contractBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -20,7 +21,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (tx.stxTransaction.payload.payloadType) {
         case PayloadType.TokenTransfer:
           return this.getTransferBuilder(tx);
-        // TODO: Add case of contract_call
+        case PayloadType.ContractCall:
+          return this.getContractBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -47,6 +49,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  getContractBuilder(tx?: Transaction): ContractBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new ContractBuilder(this._coinConfig));
   }
 
   /**
