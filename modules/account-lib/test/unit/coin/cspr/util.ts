@@ -1,5 +1,7 @@
 import * as should from 'should';
 import * as Utils from '../../../../src/coin/cspr/utils';
+import { KeyPair } from '../../../../src/coin/cspr';
+import { randomBytes } from 'crypto';
 
 describe('CSPR util library', function() {
   describe('validation', function() {
@@ -79,6 +81,32 @@ describe('CSPR util library', function() {
       for (const address of validAddresses) {
         Utils.isValidAddress(address).should.be.true();
       }
+    });
+
+    it('should fail to verify invalid message signature', function() {
+      const invalidSignature = '01d2e4736b8ff27a1d23be876950afb6991dad455ae351efcd036f95a1f7fe5a';
+      const data = '';
+      const publicKey = '018267d68f8d249b1430551ecc7b4c176d66f2ba2bf98d5547e7c3accc99375e53';
+
+      should.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
+    });
+
+    it('should fail to verify invalid tx signature', function() {
+      const invalidSignature =
+        '0201d2e4736b8ff27a1d23be876950afb6991dad455ae351efcd036f95a1f7fe5a01d2e4736b8ff27a1d23be876950afb6991dad455ae351efcd036f95a1f7fe5a';
+      const data = '';
+      const publicKey = '018267d68f8d249b1430551ecc7b4c176d66f2ba2bf98d5547e7c3accc99375e53';
+
+      should.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
+    });
+
+    it('should verify valid message signature', function() {
+      const keyPair = new KeyPair();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      const { signature } = Utils.signMessage(keyPair, messageToSign);
+      should.doesNotThrow(() =>
+        Utils.verifySignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub),
+      );
     });
   });
 });

@@ -12,6 +12,7 @@ import {
   getTransferDestinationAddress,
   getTransferId,
   isValidTransactionSignature,
+  verifySignature,
 } from '../../../../src/coin/cspr/utils';
 
 describe('Cspr Transaction', () => {
@@ -98,6 +99,13 @@ describe('Cspr Transaction', () => {
         ),
         true,
       );
+      should.doesNotThrow(() =>
+        verifySignature(
+          tx.casperTx.approvals[0].signature,
+          tx.casperTx.hash,
+          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+        ),
+      );
     });
 
     it('valid using extended key', async () => {
@@ -120,6 +128,13 @@ describe('Cspr Transaction', () => {
         ),
         true,
       );
+      should.doesNotThrow(() =>
+        verifySignature(
+          tx.casperTx.approvals[0].signature,
+          tx.casperTx.hash,
+          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+        ),
+      );
     });
 
     it('multiple valid', async () => {
@@ -139,6 +154,9 @@ describe('Cspr Transaction', () => {
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
       );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
 
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
@@ -156,6 +174,12 @@ describe('Cspr Transaction', () => {
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
         true,
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
       );
     });
 
@@ -176,6 +200,9 @@ describe('Cspr Transaction', () => {
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
       );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
 
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
@@ -193,6 +220,12 @@ describe('Cspr Transaction', () => {
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
         true,
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
       );
     });
 
@@ -213,6 +246,9 @@ describe('Cspr Transaction', () => {
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
       );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
 
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
@@ -230,6 +266,12 @@ describe('Cspr Transaction', () => {
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
         true,
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+      );
+      should.doesNotThrow(() =>
+        verifySignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
       );
     });
   });
