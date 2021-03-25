@@ -10,6 +10,7 @@ import {
   validateStacksAddress,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
+import { isValidXpub, isValidXprv } from '../../utils/crypto';
 
 /**
  * Encodes a buffer as a "0x" prefixed lower-case hex string.
@@ -106,7 +107,8 @@ export function isValidTransactionId(txId: string): boolean {
 }
 
 /**
- * Returns whether or not the string is a valid protocol public key
+ * Returns whether or not the string is a valid protocol public key or
+ * extended public key.
  *
  * The key format is documented at
  * https://github.com/stacksgov/sips/blob/main/sips/sip-005/sip-005-blocks-and-transactions.md#transaction-authorization
@@ -115,6 +117,8 @@ export function isValidTransactionId(txId: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidPublicKey(pub: string): boolean {
+  if (isValidXpub(pub)) return true;
+
   if (pub.length !== 66 && pub.length !== 130) return false;
 
   const firstByte = pub.slice(0, 2);
@@ -139,16 +143,19 @@ export function isValidPublicKey(pub: string): boolean {
 }
 
 /**
- * Returns whether or not the string is a valid protocol private key
+ * Returns whether or not the string is a valid protocol private key, or extended
+ * private key.
  *
- * The key format is described in the @stacks/transactions npm package, in the
+ * The protocol key format is described in the @stacks/transactions npm package, in the
  * createStacksPrivateKey function:
  * https://github.com/blockstack/stacks.js/blob/master/packages/transactions/src/keys.ts#L125
  *
- * @param {string} prv - the  private key to be validated
+ * @param {string} prv - the private key (or extended private key) to be validated
  * @returns {boolean} - the validation result
  */
 export function isValidPrivateKey(prv: string): boolean {
+  if (isValidXprv(prv)) return true;
+
   if (prv.length !== 64 && prv.length !== 66) return false;
 
   if (prv.length === 66 && prv.slice(64) !== '01') return false;
