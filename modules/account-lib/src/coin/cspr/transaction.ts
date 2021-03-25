@@ -39,7 +39,7 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async sign(keyPair: KeyPair): Promise<void> {
+  sign(keyPair: KeyPair): void {
     const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new SigningError('Missing private key');
@@ -155,8 +155,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Decode previous signatures from the inner transaction
-   * and save them into the base transaction signature list.
+   * Retrieve signatures from the deploy instance and load them into the signatures list
    */
   loadPreviousSignatures(): void {
     if (this._deploy.approvals && this._deploy.approvals.length > 0) {
