@@ -31,8 +31,8 @@ const MIN_MOTES_AMOUNT = new BigNumber(2500000000);
  * @returns {Uint8Array} account hash as Uint8Array
  */
 export function getAccountHash(keys: DefaultKeys): Uint8Array {
-  const publicKey = Buffer.from(keys.pub); // first two characters identify a public key
-  const privateKey = keys.prv ? Buffer.from(keys.prv) : undefined;
+  const publicKey = Buffer.from(keys.pub, 'hex'); // first two characters identify a public key
+  const privateKey = keys.prv ? Buffer.from(keys.prv, 'hex') : undefined;
   return new Keys.Secp256K1(publicKey, privateKey!).accountHash();
 }
 
