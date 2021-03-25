@@ -250,7 +250,7 @@ export class Transaction extends BaseTransaction {
       delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
       delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));
 
-      txJson.deploy.session.moduleBytes.args.forEach(arg => {
+      txJson.deploy.session.ModuleBytes.args.forEach(arg => {
         if (delegateValues.has(arg[argName])) {
           arg[argValue]['parsed'] = delegateValues.get(arg[argName]);
         }
