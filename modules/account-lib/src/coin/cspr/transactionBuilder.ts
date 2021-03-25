@@ -63,7 +63,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this.transaction.casperTx = cTransaction;
 
-    await this.processSigning();
+    this.processSigning();
 
     return this.transaction;
   }
@@ -342,11 +342,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Add signatures to the transaction
    * @private
    */
-  private async processSigning(): Promise<void> {
+  private processSigning(): void {
     for (const keyPair of this._multiSignerKeyPairs) {
       // Add signature if it's not already in the deploy
       if (!this.isTransactionSignedByPub(keyPair.getKeys().pub)) {
-        await this.transaction.sign(keyPair);
+        this.transaction.sign(keyPair);
       }
     }
     for (const { signature, keyPair } of this._signatures) {

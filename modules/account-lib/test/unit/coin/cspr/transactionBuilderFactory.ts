@@ -243,7 +243,7 @@ describe('should build ', () => {
 
   describe('should reject signing ', () => {
     const factory = register('tcspr', TransactionBuilderFactory);
-    it('a transaction with modified signer', async () => {
+    it('a wallet init transaction with modified signer', async () => {
       const builder = initTxWalletInitBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       const tx = (await builder.build()) as Transaction;
@@ -254,10 +254,14 @@ describe('should build ', () => {
 
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
-      await tx2.sign(new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey })).should.be.rejected();
+      const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
+      should.throws(
+        () => tx2.sign(keypair),
+        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+      );
     });
 
-    it('a transaction with modified signer using extended key', async () => {
+    it('a wallet init transaction with modified signer using extended key', async () => {
       const builder = initTxWalletInitBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       const tx = (await builder.build()) as Transaction;
@@ -268,10 +272,14 @@ describe('should build ', () => {
 
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
-      await tx2.sign(new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey })).should.be.rejected();
+      const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
+      should.throws(
+        () => tx2.sign(keypair),
+        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+      );
     });
 
-    it('a transaction with modified signer', async () => {
+    it('a transfer transaction with modified signer', async () => {
       const builder = initTransferTxBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       const tx = (await builder.build()) as Transaction;
@@ -282,10 +290,14 @@ describe('should build ', () => {
 
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
-      await tx2.sign(new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey })).should.be.rejected();
+      const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
+      should.throws(
+        () => tx2.sign(keypair),
+        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+      );
     });
 
-    it('a transaction with modified signer with extended key', async () => {
+    it('a transfer transaction with modified signer with extended key', async () => {
       const builder = initTransferTxBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       const tx = (await builder.build()) as Transaction;
@@ -296,7 +308,11 @@ describe('should build ', () => {
 
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
-      await tx2.sign(new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey })).should.be.rejected();
+      const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
+      should.throws(
+        () => tx2.sign(keypair),
+        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+      );
     });
 
     it('a transaction with invalid session data', async () => {
