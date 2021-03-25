@@ -2,7 +2,7 @@ import { KeyPair } from '../../../src/coin/cspr';
 
 export const ACCOUNT_FROM_SEED = {
   seed: 'cd1eac3bc52716f3177bc7f9c5d7de10b98c74c6c1ace2c874e0e09f47469023',
-  accountHash: 'f068b89fbd03587a1bedb79ead98d1c8f4c2f3181a6eddbc10ae98d0dd874e94',
+  accountHash: '8fab79a1825a60c4287bafd1e8498954c2a93b49a8abd44698a60c3be7005932',
   xPublicKey:
     'xpub661MyMwAqRbcEzDE55AJUGhMKJJ2nw1hnF1fBoaw2T47DQsJzhLXbygpggTXpkWPVENnzPYbgLRVPtmwjQQAiY9AbHX5Ys4KpLRuFtVNFtC',
   xPrivateKey:
