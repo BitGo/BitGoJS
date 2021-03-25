@@ -3,7 +3,7 @@ import * as should from 'should';
 import * as testData from '../../../../resources/cspr/cspr';
 import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
-import { Transaction } from "../../../../../src/coin/cspr/transaction";
+import { Transaction } from '../../../../../src/coin/cspr/transaction';
 import { removeAlgoPrefixFromHexValue } from '../../../../../src/coin/cspr/utils';
 
 describe('Casper Transaction Builder', () => {
@@ -15,7 +15,7 @@ describe('Casper Transaction Builder', () => {
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
     txBuilder.transferId(255);
-    txBuilder.amount('10');
+    txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     return txBuilder;
   };
 
@@ -71,6 +71,28 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
+    it('a valid raw transfer transaction both accounts using extended keys', async () => {
+      const builder = initTransferBuilder();
+      builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+      builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateRawTransaction(JSON.stringify(txJson));
+      });
+    });
+
+    it('a valid raw transfer transaction one account using extended key', async () => {
+      const builder = initTransferBuilder();
+      builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+      builder.sign({ key: testData.ACCOUNT_2.privateKey });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateRawTransaction(JSON.stringify(txJson));
+      });
+    });
+
     it('a valid raw wallet init transaction', async () => {
       const builder = initWalletBuilder();
       const tx = await builder.build();
@@ -96,6 +118,27 @@ describe('Casper Transaction Builder', () => {
       const tx = (await builder.build()) as Transaction;
       should.exists(tx.casperTx.approvals[0].signer);
       should.exists(tx.casperTx.approvals[0].signature);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
+
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateRawTransaction(JSON.stringify(txJson));
+      });
+    });
+
+    it('should sign a transaction using extended key', async function() {
+      const builder = initWalletBuilder();
+      builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+      const tx = (await builder.build()) as Transaction;
+      should.exists(tx.casperTx.approvals[0].signer);
+      should.exists(tx.casperTx.approvals[0].signature);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
@@ -108,14 +151,41 @@ describe('Casper Transaction Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
+    });
+
+    it('should process signing only once per signer with extended key', async function() {
+      const builder = initWalletBuilder();
+      builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+      let tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
+
+      tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
     });
 
     it('should add a signature to a transaction', async function() {
       const builder = initWalletBuilder();
-      const sig = '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
+      const sig =
+        '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
       const pub = '03dca7d5d68fba12a604e992a47504d10e6795cdc6db438abb741788c71c4b7428';
       const signingKeyPair = new KeyPair({ pub });
       builder.signature(sig, signingKeyPair);
@@ -132,9 +202,31 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
+    it('should add a signature to a transaction using extended key', async function() {
+      const builder = initWalletBuilder();
+      const sig =
+        '0220ade206fc0e7bf19c672aae122e037a7c0ad6c82fb65126735e61f370923f2706114647f9ea1e405fdbf9915c7eaf4325a5ddf9faf24935b20333526cf3b44d';
+      const xPub =
+        'xpub661MyMwAqRbcH4WAWt79QwMXc1MKaqxU8axkYJGfECGg3gTMuxHYfZzW8AyrRJwFrGZxdA1CgYtXtjVToMyUyfzQrjBayP47pbdWuhdrbYz';
+      const signingKeyPair = new KeyPair({ pub: xPub });
+      builder.signature(sig, signingKeyPair);
+      const tx = (await builder.build()) as Transaction;
+      const signer = tx.casperTx.approvals[0].signer;
+      const signature = tx.casperTx.approvals[0].signature;
+
+      removeAlgoPrefixFromHexValue(signer.toUpperCase()).should.equal(signingKeyPair.getKeys().pub);
+      removeAlgoPrefixFromHexValue(signature).should.equal(_.toLower(sig));
+
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateRawTransaction(JSON.stringify(txJson));
+      });
+    });
+
     it('should process signing only once per signature added', async function() {
       const builder = initWalletBuilder();
-      const sig = '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
+      const sig =
+        '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
       const pub = '03dca7d5d68fba12a604e992a47504d10e6795cdc6db438abb741788c71c4b7428';
       const signingKeyPair = new KeyPair({ pub });
       builder.signature(sig, signingKeyPair);
@@ -143,6 +235,29 @@ describe('Casper Transaction Builder', () => {
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
+    });
+
+    it('should process signing only once per signature added using extended key', async function() {
+      const builder = initWalletBuilder();
+      const sig =
+        '0220ade206fc0e7bf19c672aae122e037a7c0ad6c82fb65126735e61f370923f2706114647f9ea1e405fdbf9915c7eaf4325a5ddf9faf24935b20333526cf3b44d';
+      const xPub =
+        'xpub661MyMwAqRbcH4WAWt79QwMXc1MKaqxU8axkYJGfECGg3gTMuxHYfZzW8AyrRJwFrGZxdA1CgYtXtjVToMyUyfzQrjBayP47pbdWuhdrbYz';
+      const signingKeyPair = new KeyPair({ pub: xPub });
+      builder.signature(sig, signingKeyPair);
+      let tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
+
+      tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
+      );
     });
   });
 });

@@ -166,6 +166,7 @@ export const coins = CoinMap.fromCoins([
   erc20('ast', 'AirSwap', 4, '0x27054b13b1b798b345b591a4d22e6562d47ea75a', UnderlyingAsset.AST),
   erc20('audio', 'Audio', 18, '0x18aaa7115705e8be94bffebde57af9bfc265b998', UnderlyingAsset.AUDIO),
   erc20('audx', 'eToro Australian Dollar', 18, '0xdf1e9e1a218cff9888faef311d6fbb472e4175ce', UnderlyingAsset.AUDX),
+  erc20('aust', 'Wrapped Anchor UST Token', 18, '0xa8de3e3c934e2a1bb08b010104ccabbd4d6293ab', UnderlyingAsset.AUST),
   erc20('axpr', 'aXpire', 18, '0xc39e626a04c5971d770e319760d7926502975e47', UnderlyingAsset.AXPR),
   erc20('axs', 'Axie Infinity Shards', 18, '0xf5d669627376ebd411e34b98f19c868c8aba5ada', UnderlyingAsset.AXS),
   erc20('bal', 'Balancer', 18, '0xba100000625a3754423978a60c9317c58a424e3d', UnderlyingAsset.BAL),

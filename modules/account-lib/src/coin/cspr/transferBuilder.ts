@@ -7,7 +7,7 @@ import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { SECP256K1_PREFIX, TRANSACTION_TYPE, TRANSFER_TO_ADDRESS } from './constants';
 import {
-  isValidAmount,
+  isValidTransferAmount,
   isValidTransferId,
   isValidAddress,
   getTransferDestinationAddress,
@@ -81,11 +81,11 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Set the amount to be transferred
    *
-   * @param {string} amount amount to transfer
+   * @param {string} amount amount to transfer in motes (1 Cspr equals 1,000,000,000 motes)
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   amount(amount: string): this {
-    if (!isValidAmount(amount)) {
+    if (!isValidTransferAmount(amount)) {
       throw new InvalidParameterValueError('Invalid amount');
     }
     this._amount = amount;
@@ -119,7 +119,7 @@ export class TransferBuilder extends TransactionBuilder {
     if (!this._amount) {
       throw new BuildTransactionError('Invalid transaction: missing amount');
     }
-    if (!isValidAmount(this._amount)) {
+    if (!isValidTransferAmount(this._amount)) {
       throw new InvalidParameterValueError('Invalid amount');
     }
     super.validateMandatoryFields();
