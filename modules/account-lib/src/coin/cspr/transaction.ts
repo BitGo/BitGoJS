@@ -101,18 +101,20 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): CasperTransaction {
     const deployPayment = this._deploy.payment.asModuleBytes()!.getArgByName('amount');
-    const owner1Index = 0;
-    const owner2Index = 1;
-    const owner3Index = 2;
-
     if (!deployPayment) {
       throw new InvalidTransactionError('Undefined fee');
     }
 
+    const owner1Index = 0;
+    const owner2Index = 1;
+    const owner3Index = 2;
+    const sourcePublicKey = Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex');
+    const sourceAddress = new KeyPair({ pub: sourcePublicKey }).getAddress();
+
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
       fee: { gasLimit: deployPayment.asBigNumber().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
-      from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
+      from: sourceAddress,
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
       expiration: this._deploy.header.ttl,
       deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),

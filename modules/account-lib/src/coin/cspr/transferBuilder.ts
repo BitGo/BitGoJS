@@ -5,14 +5,14 @@ import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { SECP256K1_PREFIX, TRANSACTION_TYPE, TRANSFER_TO_ADDRESS } from './constants';
+import { TRANSACTION_TYPE, TRANSFER_TO_ADDRESS } from './constants';
 import {
   isValidTransferAmount,
   isValidTransferId,
-  isValidAddress,
   getTransferDestinationAddress,
   getTransferAmount,
   getTransferId,
+  isValidSecp256k1Address,
 } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -35,7 +35,7 @@ export class TransferBuilder extends TransactionBuilder {
     }
     this._session = {
       amount: this._amount,
-      target: PublicKey.fromHex(SECP256K1_PREFIX + this._toAddress),
+      target: PublicKey.fromHex(this._toAddress),
       id: this._transferId,
       extraArguments: extraArguments,
     };
@@ -71,7 +71,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   to(address: string): this {
-    if (!isValidAddress(address)) {
+    if (!isValidSecp256k1Address(address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
     this._toAddress = address;
@@ -113,7 +113,7 @@ export class TransferBuilder extends TransactionBuilder {
     if (!this._toAddress) {
       throw new BuildTransactionError('Invalid transaction: missing to');
     }
-    if (!isValidAddress(this._toAddress)) {
+    if (!isValidSecp256k1Address(this._toAddress)) {
       throw new InvalidParameterValueError('Invalid to address');
     }
     if (!this._amount) {

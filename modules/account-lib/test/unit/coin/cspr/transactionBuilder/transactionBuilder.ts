@@ -8,12 +8,16 @@ import { removeAlgoPrefixFromHexValue } from '../../../../../src/coin/cspr/utils
 
 describe('Casper Transaction Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
+  const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
+  const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
+  const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
+  const sourceAddress = new KeyPair({ pub: testData.ROOT_ACCOUNT.publicKey }).getAddress();
 
   const initTransferBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
-    txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.source({ address: owner1Address });
+    txBuilder.to(owner2Address);
     txBuilder.transferId(255);
     txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     return txBuilder;
@@ -22,10 +26,10 @@ describe('Casper Transaction Builder', () => {
   const initWalletBuilder = () => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
-    txBuilder.owner(testData.ACCOUNT_1.publicKey);
-    txBuilder.owner(testData.ACCOUNT_2.publicKey);
-    txBuilder.owner(testData.ACCOUNT_3.publicKey);
-    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.owner(owner1Address);
+    txBuilder.owner(owner2Address);
+    txBuilder.owner(owner3Address);
+    txBuilder.source({ address: sourceAddress });
     return txBuilder;
   };
 
@@ -118,10 +122,7 @@ describe('Casper Transaction Builder', () => {
       const tx = (await builder.build()) as Transaction;
       should.exists(tx.casperTx.approvals[0].signer);
       should.exists(tx.casperTx.approvals[0].signature);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
@@ -135,10 +136,7 @@ describe('Casper Transaction Builder', () => {
       const tx = (await builder.build()) as Transaction;
       should.exists(tx.casperTx.approvals[0].signer);
       should.exists(tx.casperTx.approvals[0].signature);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
@@ -151,17 +149,11 @@ describe('Casper Transaction Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
     });
 
     it('should process signing only once per signer with extended key', async function() {
@@ -169,17 +161,11 @@ describe('Casper Transaction Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
     });
 
     it('should add a signature to a transaction', async function() {
@@ -247,17 +233,11 @@ describe('Casper Transaction Builder', () => {
       builder.signature(sig, signingKeyPair);
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ROOT_ACCOUNT.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
     });
   });
 });

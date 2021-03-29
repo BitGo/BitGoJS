@@ -3,6 +3,7 @@ import { HDNode } from '@bitgo/utxo-lib';
 import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { getAccountHash } from './utils';
+import { SECP256K1_PREFIX } from './constants';
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
@@ -69,7 +70,6 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /** @inheritdoc */
   getAddress(): string {
     const keys = this.getKeys();
-    const accountHashByArray = getAccountHash(keys);
-    return Buffer.from(accountHashByArray).toString('hex');
+    return SECP256K1_PREFIX + keys.pub;
   }
 }
