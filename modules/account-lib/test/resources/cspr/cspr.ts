@@ -2,7 +2,7 @@ import { KeyPair } from '../../../src/coin/cspr';
 
 export const ACCOUNT_FROM_SEED = {
   seed: 'cd1eac3bc52716f3177bc7f9c5d7de10b98c74c6c1ace2c874e0e09f47469023',
-  accountHash: 'f068b89fbd03587a1bedb79ead98d1c8f4c2f3181a6eddbc10ae98d0dd874e94',
+  accountHash: '8fab79a1825a60c4287bafd1e8498954c2a93b49a8abd44698a60c3be7005932',
   xPublicKey:
     'xpub661MyMwAqRbcEzDE55AJUGhMKJJ2nw1hnF1fBoaw2T47DQsJzhLXbygpggTXpkWPVENnzPYbgLRVPtmwjQQAiY9AbHX5Ys4KpLRuFtVNFtC',
   xPrivateKey:
@@ -95,13 +95,13 @@ export const ERROR_MISSING_PRIVATE_KEY = 'Missing private key';
 
 export const INVALID_RAW_TRANSACTION = 'This is an invalid raw transaction';
 
-export const VALID_ADDRESS = '025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B';
+export const VALID_ADDRESS = '02025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B';
 
-export const INVALID_ADDRESS = '608e43c3gg3f44200ec59Y7ZXC461d3e5aa4e823c595848a5d280f831ce8de302';
+export const INVALID_ADDRESS = '02608e43c3gg3f44200ec59Y7ZXC461d3e5aa4e823c595848a5d280f831ce8de302';
 
 export const INVALID_ADDRESS_EMPTY = '';
 
-export const INVALID_ADDRESS_EMPTY_W_SPACES = '   ';
+export const INVALID_ADDRESS_EMPTY_W_SPACES = '                                                                    ';
 
 export const INVALID_KEYPAIR_PRV = new KeyPair({
   prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
@@ -147,3 +147,5 @@ export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the 
 export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Transfer does not have a destination address defined';
 
 export const ERROR_INVALID_TRANSFER_ID_ON_FROM = 'Transfer does not have an id defined';
+
+export const ERROR_ALREADY_SIGNED_WITH_INVALID_KEY = 'Invalid deploy. Already signed with an invalid key';

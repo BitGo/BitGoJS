@@ -23,6 +23,17 @@ export const pubKey2 =
 export const pubKey2Compressed = '0321d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a';
 export const address2 = 'SPS4HSXAD1WSD3943WZ52MPSY9WPK56SDG54HTAR';
 
+// extended private/public keys
+// STX does not use them
+export const xprv1 =
+  'xprv9s21ZrQH143K34bdhCWMuiuHfdjQB21gu95NwpeGEEfGMWs7tA5s3PMBBPeJmXn5DQ3vv8Hp8kq1KrsaJJnczW3BMztL2VGTnxVPgVjgq1H';
+export const xpub1 =
+  'xpub661MyMwAqRbcFYg6oE3NGrr2DfZtaUjYGMzykD3snaCFEKCGRhQ7bBff2g3CYvyYPQMGSwSe1DH8GXvP6uB3iiWsPGGMbXVZGkrk1UxQVk6';
+export const xprv1Protocol = '73ea19aea25e87c4ee8eaee21417442ac9eb6898f4538ade8f2091d1d2c5946d';
+export const xpub1Protocol =
+  '042794bc43d75db0e8589987818754aa2f820a350a5742efaf0d50518fcbc6a80c597aa51aa8e755fd10b753f7e36410849171a99d8533f6ea84a0c4dfbe6e2419';
+export const xpub1ProtocolCompressed = '032794bc43d75db0e8589987818754aa2f820a350a5742efaf0d50518fcbc6a80c';
+
 export const ACCOUNT_1 = {
   prv: secretKey1,
   pub: pubKey1,

@@ -7,7 +7,6 @@ const xPubKey = testData.ACCOUNT_FROM_SEED.xPublicKey;
 const xPrvKey = testData.ACCOUNT_FROM_SEED.xPrivateKey;
 const pubKey = testData.ACCOUNT_FROM_SEED.publicKey;
 const prvKey = testData.ACCOUNT_FROM_SEED.privateKey;
-const accountHash = testData.ACCOUNT_FROM_SEED.accountHash;
 const accountSeed = testData.ACCOUNT_FROM_SEED.seed;
 
 describe('Casper Key Pair', () => {
@@ -76,27 +75,27 @@ describe('Casper Key Pair', () => {
   describe('should get address ', () => {
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prvKey });
-      should.equal(keyPair.getAddress(), accountHash);
+      should.equal(keyPair.getAddress(), '02' + keyPair.getKeys().pub);
     });
 
     it('from a public key', () => {
       const keyPair = new KeyPair({ pub: pubKey });
-      should.equal(keyPair.getAddress(), accountHash);
+      should.equal(keyPair.getAddress(), '02' + keyPair.getKeys().pub);
     });
 
     it('should get an address from xpub', () => {
       const keyPair = new KeyPair({ pub: xPubKey });
-      should.equal(keyPair.getAddress(), accountHash);
+      should.equal(keyPair.getAddress(), '02' + keyPair.getKeys().pub);
     });
 
     it('should get an address from prv', () => {
       const keyPair = new KeyPair({ prv: xPrvKey });
-      should.equal(keyPair.getAddress(), accountHash);
+      should.equal(keyPair.getAddress(), '02' + keyPair.getKeys().pub);
     });
 
     it('from a seed', () => {
       const keyPair = new KeyPair({ seed: Buffer.from(accountSeed) });
-      should.equal(keyPair.getAddress(), accountHash);
+      should.equal(keyPair.getAddress(), '02' + keyPair.getKeys().pub);
     });
   });
 

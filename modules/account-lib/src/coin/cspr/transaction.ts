@@ -39,7 +39,7 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async sign(keyPair: KeyPair): Promise<void> {
+  sign(keyPair: KeyPair): void {
     const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new SigningError('Missing private key');
@@ -101,18 +101,20 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): CasperTransaction {
     const deployPayment = this._deploy.payment.asModuleBytes()!.getArgByName('amount');
-    const owner1Index = 0;
-    const owner2Index = 1;
-    const owner3Index = 2;
-
     if (!deployPayment) {
       throw new InvalidTransactionError('Undefined fee');
     }
 
+    const owner1Index = 0;
+    const owner2Index = 1;
+    const owner3Index = 2;
+    const sourcePublicKey = Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex');
+    const sourceAddress = new KeyPair({ pub: sourcePublicKey }).getAddress();
+
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
       fee: { gasLimit: deployPayment.asBigNumber().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
-      from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
+      from: sourceAddress,
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
       expiration: this._deploy.header.ttl,
       deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
@@ -155,8 +157,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Decode previous signatures from the inner transaction
-   * and save them into the base transaction signature list.
+   * Retrieve signatures from the deploy instance and load them into the signatures list
    */
   loadPreviousSignatures(): void {
     if (this._deploy.approvals && this._deploy.approvals.length > 0) {
@@ -250,7 +251,7 @@ export class Transaction extends BaseTransaction {
       delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
       delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));
 
-      txJson.deploy.session.moduleBytes.args.forEach(arg => {
+      txJson.deploy.session.ModuleBytes.args.forEach(arg => {
         if (delegateValues.has(arg[argName])) {
           arg[argValue]['parsed'] = delegateValues.get(arg[argName]);
         }

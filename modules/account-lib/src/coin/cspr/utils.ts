@@ -6,7 +6,7 @@ import * as hex from '@stablelib/hex';
 import { ecdsaSign, ecdsaVerify } from 'secp256k1';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { DefaultKeys } from '../baseCoin/iface';
-import { TransactionType } from '../baseCoin';
+import { Ed25519KeyPair, TransactionType } from '../baseCoin';
 import * as Crypto from './../../utils/crypto';
 import {
   SECP256K1_PREFIX,
@@ -17,6 +17,7 @@ import {
   WALLET_INITIALIZATION_CONTRACT_ACTION,
   DELEGATE_CONTRACT_ACTION,
   UNDELEGATE_CONTRACT_ACTION,
+  ED25519_PREFIX,
 } from './constants';
 import { SignResponse } from './ifaces';
 import { KeyPair } from '.';
@@ -31,8 +32,8 @@ const MIN_MOTES_AMOUNT = new BigNumber(2500000000);
  * @returns {Uint8Array} account hash as Uint8Array
  */
 export function getAccountHash(keys: DefaultKeys): Uint8Array {
-  const publicKey = Buffer.from(keys.pub); // first two characters identify a public key
-  const privateKey = keys.prv ? Buffer.from(keys.prv) : undefined;
+  const publicKey = Buffer.from(keys.pub, 'hex'); // first two characters identify a public key
+  const privateKey = keys.prv ? Buffer.from(keys.prv, 'hex') : undefined;
   return new Keys.Secp256K1(publicKey, privateKey!).accountHash();
 }
 
@@ -57,23 +58,31 @@ export function isValidPublicKey(pub: string): boolean {
 }
 
 /**
- * validate address
+ * validate address.
  *
- * @param {string} address public key
- * @returns {boolean} true if address is a valid public key
+ * @param {string} address composed of a prefix and a Secp256k1 or Ed25519 public key
+ * @returns {boolean} true if address is a valid address
  */
 export function isValidAddress(address: string): boolean {
-  return Crypto.isValidPub(address);
+  return isValidSecp256k1Address(address) || isValidEd25519Address(address);
 }
 
 /**
  * validate ed25519 address
- *
- * @param {string} address ed25519 public key
- * @returns {boolean} true if address is a valid public key
+ * @param {string} address hex string composed of a prefix and an ed25519 public key
+ * @returns {boolean} true if address is valid
  */
 export function isValidEd25519Address(address: string): boolean {
-  return Crypto.isValidEd25519PublicKey(address);
+  return address.startsWith(ED25519_PREFIX) && Crypto.isValidEd25519PublicKey(address.slice(ED25519_PREFIX.length));
+}
+
+/**
+ * validate secp256k1 address
+ * @param {string} address hex string composed of a prefix and an secp256k1 public key
+ * @returns {boolean} true if address is valid
+ */
+export function isValidSecp256k1Address(address: string): boolean {
+  return address.startsWith(SECP256K1_PREFIX) && Crypto.isValidPub(address.slice(SECP256K1_PREFIX.length));
 }
 
 /**
