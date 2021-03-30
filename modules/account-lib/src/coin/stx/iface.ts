@@ -16,8 +16,8 @@ export interface SignatureData {
 export interface StacksTransactionPayload {
   readonly payloadType: PayloadType.TokenTransfer;
   memo?: string;
-  to?: string;
-  amount?: string;
+  to: string;
+  amount: string;
 }
 
 export interface StacksContractPayload {

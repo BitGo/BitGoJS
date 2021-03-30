@@ -27,9 +27,9 @@ export class TransferBuilder extends TransactionBuilder {
     if (txData.payload === undefined) {
       throw new InvalidTransactionError('payload must not be undefined');
     }
-    if (txData.payload.payloadType == PayloadType.TokenTransfer) {
-      this.to(txData.payload.to!);
-      this.amount(txData.payload.amount!);
+    if (txData.payload.payloadType === PayloadType.TokenTransfer) {
+      this.to(txData.payload.to);
+      this.amount(txData.payload.amount);
       super.initBuilder(tx);
     } else {
       throw new BuildTransactionError('Transaction should be transfer');

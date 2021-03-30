@@ -8,10 +8,22 @@ import {
   addressHashModeToVersion,
   addressToString,
   validateStacksAddress,
+  deserializeTransaction,
+  BufferReader,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
+import { StacksNetwork } from '@stacks/network';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
+import { InvalidContractAddressError } from '@bitgo/statics';
+import { InvalidParameterValueError } from '../baseCoin/errors';
 
+const ContractFunctionNames = [
+  'stack-stx',
+  'delegate-stx',
+  'delegate-stack-stx',
+  'stack-aggregation-commit',
+  'revoke-delegate-stx',
+];
 /**
  * Encodes a buffer as a "0x" prefixed lower-case hex string.
  *
@@ -33,9 +45,12 @@ export function removeHexPrefix(hex: string): string {
 }
 
 /**
- * @param publicKeyHash
- * @param hashMode
- * @param transactionVersion
+ * Get stacks address from public key hash
+ *
+ * @param {Buffer} publicKeyHash - hash of public key
+ * @param {AddressHashMode} hashMode - hash mode
+ * @param {TransactionVersion} transactionVersion - tx version
+ * @returns {string} stacks address
  */
 function getAddressFromPublicKeyHash(
   publicKeyHash: Buffer,
@@ -171,4 +186,53 @@ export function isValidPrivateKey(prv: string): boolean {
  */
 function allHexChars(maybe: string): boolean {
   return maybe.match(/^[0-9a-f]+$/i) !== null;
+}
+
+/**
+ * Checks if raw transaction can be deserialized
+ *
+ * @param {unknown} rawTransaction - transaction in raw hex format
+ * @returns {boolean} - the validation result
+ */
+export function isValidRawTransaction(rawTransaction: unknown): boolean {
+  try {
+    if (typeof rawTransaction === 'string') {
+      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
+    } else {
+      return false;
+    }
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Checks for valid contract address
+ *
+ * @param {string} addr - contract deployer address
+ * @param {StacksNetwork} network - network object
+ * @returns {boolean} - the validation result
+ */
+export function isValidContractAddress(addr: string, network: StacksNetwork): boolean {
+  if (network.isMainnet()) {
+    return addr === 'SP000000000000000000002Q6VF78';
+  } else if (network.version === TransactionVersion.Testnet) {
+    return true;
+  }
+  throw new InvalidParameterValueError('Network should be either Mainnet or Testnet');
+}
+
+/**
+ * Check if the name is one of valid contract names
+ *
+ * @param {string} name - function name
+ * @returns {boolean} - validation result
+ */
+export function isValidContractFunctionName(name: string): boolean {
+  if (ContractFunctionNames.includes(name)) {
+    return true;
+  } else {
+    return false;
+  }
 }
