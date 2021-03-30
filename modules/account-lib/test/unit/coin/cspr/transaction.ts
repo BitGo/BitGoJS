@@ -18,6 +18,10 @@ import {
 describe('Cspr Transaction', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
   const coin = coins.get('tcspr');
+  const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
+  const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
+  const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
+  const sourceAddress = new KeyPair({ pub: testData.ROOT_ACCOUNT.publicKey }).getAddress();
 
   const getTransaction = (): Transaction => {
     return new Transaction(coin);
@@ -26,10 +30,10 @@ describe('Cspr Transaction', () => {
   const getWalletInitTransaction = async (): Promise<Transaction> => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
-    txBuilder.owner(testData.ACCOUNT_1.publicKey);
-    txBuilder.owner(testData.ACCOUNT_2.publicKey);
-    txBuilder.owner(testData.ACCOUNT_3.publicKey);
-    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.owner(owner1Address);
+    txBuilder.owner(owner2Address);
+    txBuilder.owner(owner3Address);
+    txBuilder.source({ address: sourceAddress });
     txBuilder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
     return (await txBuilder.build()) as Transaction;
   };
@@ -37,10 +41,10 @@ describe('Cspr Transaction', () => {
   const getWalletInitTransactionUsignExtendedKey = async (): Promise<Transaction> => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
-    txBuilder.owner(testData.ACCOUNT_1.publicKey);
-    txBuilder.owner(testData.ACCOUNT_2.publicKey);
-    txBuilder.owner(testData.ACCOUNT_3.publicKey);
-    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.owner(owner1Address);
+    txBuilder.owner(owner2Address);
+    txBuilder.owner(owner3Address);
+    txBuilder.source({ address: sourceAddress });
     txBuilder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
     return (await txBuilder.build()) as Transaction;
   };
@@ -48,8 +52,8 @@ describe('Cspr Transaction', () => {
   const getTransferTransaction = async (): Promise<Transaction> => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
-    txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.source({ address: sourceAddress });
+    txBuilder.to(owner2Address);
     txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     txBuilder.transferId(255);
     return (await txBuilder.build()) as Transaction;

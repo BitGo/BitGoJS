@@ -6,7 +6,8 @@ import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Owner, WalletInitContractArgs } from './ifaces';
 import { casperContractHexCode } from './utils';
-import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE, WALLET_INITIALIZATION_CONTRACT_ACTION } from './constants';
+import { OWNER_PREFIX, TRANSACTION_TYPE, WALLET_INITIALIZATION_CONTRACT_ACTION } from './constants';
+import { KeyPair } from './keyPair';
 
 const DEFAULT_OWNER_WEIGHT = 1;
 export class WalletInitializationBuilder extends TransactionBuilder {
@@ -26,10 +27,9 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
     extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.WalletInitialization]));
     for (let index = 0; index < this._owners.length; index++) {
-      extraArguments.set(
-        OWNER_PREFIX + index,
-        CLValue.string(Buffer.from(this._owners[index].address.rawPublicKey).toString('hex')),
-      );
+      const ownerPublicKey = Buffer.from(this._owners[index].address.rawPublicKey).toString('hex');
+      const ownerAddress = new KeyPair({ pub: ownerPublicKey }).getAddress();
+      extraArguments.set(OWNER_PREFIX + index, CLValue.string(ownerAddress));
     }
 
     this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args), extraArguments: extraArguments };
@@ -46,9 +46,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     const weights = this._owners.map(owner => CLTypedAndToBytesHelper.u8(owner.weight));
 
     // set source address weight to zero to disable the master private key from signing.
-    accounts.push(
-      CLTypedAndToBytesHelper.bytes(PublicKey.fromHex(SECP256K1_PREFIX + this._source.address).toAccountHash()),
-    );
+    accounts.push(CLTypedAndToBytesHelper.bytes(PublicKey.fromHex(this._source.address).toAccountHash()));
     weights.push(CLTypedAndToBytesHelper.u8(0));
 
     return {
@@ -87,15 +85,17 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     this.validateAddress({ address: address });
     for (const _owner of this._owners) {
       if (
-        Buffer.from(_owner.address.rawPublicKey)
-          .toString('hex')
-          .toUpperCase() === address.toUpperCase()
+        address.substr(0, 2) +
+          Buffer.from(_owner.address.rawPublicKey)
+            .toString('hex')
+            .toUpperCase() ===
+        address.toUpperCase()
       ) {
         throw new BuildTransactionError('Duplicated owner: ' + address);
       }
     }
 
-    this._owners.push({ address: PublicKey.fromHex(SECP256K1_PREFIX + address), weight: DEFAULT_OWNER_WEIGHT });
+    this._owners.push({ address: PublicKey.fromHex(address), weight: DEFAULT_OWNER_WEIGHT });
     return this;
   }
   // endregion

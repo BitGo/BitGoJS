@@ -7,7 +7,6 @@ import { TransactionType, StakingOperationTypes } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import {
-  SECP256K1_PREFIX,
   TRANSACTION_TYPE,
   DELEGATE_VALIDATOR,
   DELEGATE_FROM_ADDRESS,
@@ -84,7 +83,7 @@ export class DelegateBuilder extends TransactionBuilder {
    * @returns {DelegateUndelegateContractArgs} contracts args to create a session
    */
   private buildDelegateParameters(): DelegateUndelegateContractArgs {
-    const delegator = PublicKey.fromHex(SECP256K1_PREFIX + this._source.address);
+    const delegator = PublicKey.fromHex(this._source.address);
     const validator = PublicKey.fromHex(this._validator);
 
     return {
@@ -103,11 +102,7 @@ export class DelegateBuilder extends TransactionBuilder {
    * @returns {DelegateBuilder} the builder with the new parameter set
    */
   validator(address: string): this {
-    const addressWithoutPrefix = address.slice(2);
-    if (
-      (address.startsWith(SECP256K1_PREFIX) && !isValidAddress(addressWithoutPrefix)) ||
-      !isValidEd25519Address(addressWithoutPrefix)
-    ) {
+    if (!isValidAddress(address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
     this._validator = address;

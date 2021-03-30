@@ -5,22 +5,26 @@ import * as testData from '../../../resources/cspr/cspr';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
 
 const factory = register('tcspr', TransactionBuilderFactory);
+const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
+const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
+const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
+const sourceAddress = new KeyPair({ pub: testData.ROOT_ACCOUNT.publicKey }).getAddress();
 
 const initTxWalletInitBuilder = () => {
   const txBuilder = factory.getWalletInitializationBuilder();
   txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-  txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
-  txBuilder.owner(testData.ACCOUNT_1.publicKey);
-  txBuilder.owner(testData.ACCOUNT_2.publicKey);
-  txBuilder.owner(testData.ACCOUNT_3.publicKey);
+  txBuilder.owner(owner1Address);
+  txBuilder.owner(owner2Address);
+  txBuilder.owner(owner3Address);
+  txBuilder.source({ address: sourceAddress });
   return txBuilder;
 };
 
 const initTransferTxBuilder = () => {
   const txBuilder = factory.getTransferBuilder();
   txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-  txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
-  txBuilder.to(testData.ACCOUNT_2.publicKey);
+  txBuilder.source({ address: owner1Address });
+  txBuilder.to(owner2Address);
   txBuilder.amount(testData.MIN_MOTES_AMOUNT);
   txBuilder.transferId(255);
   return txBuilder;
