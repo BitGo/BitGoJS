@@ -48,3 +48,5 @@ export { Xrp } from './xrp';
 export { Zec } from './zec';
 export { Cspr } from './cspr';
 export { Tcspr } from './tcspr';
+export { Stx } from './stx';
+export { Tstx } from './tstx';

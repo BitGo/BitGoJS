@@ -50,7 +50,7 @@ describe('V2 Keychains', function v2keychains() {
   describe('Key generation enforcement for SECP256K1', function() {
     // iterate over non-fiat crypto secp coins
     const coinFamilyValues = Object.keys(CoinFamily).map(n => n.toLowerCase());
-    // TODO To change when method is implemented for this coin Ticket BGA-948  
+    // TODO To change when method is implemented for this coin Ticket BGA-948
     const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === KeyCurve.Secp256k1
       && n.kind === CoinKind.CRYPTO
       && n.asset !== UnderlyingAsset.USD
