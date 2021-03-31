@@ -83,22 +83,21 @@ describe('Casper', function() {
     }));
   });
 
-  // TODO(STLX-2378): This tests will be re-enabled as part of the refactor required due to STLX-2363.
-  xdescribe('Sign Transaction', () => {
+  describe('Sign Transaction', () => {
     const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
-    const extendedSourceKeyPair = sourceKeyPairObject.getExtendedKeys();
     const sourceKeyPair = sourceKeyPairObject.getKeys();
-
-    const targetKeyPair = new CsprAccountLib.KeyPair().getKeys();
+    const targetKeyPairObject = new CsprAccountLib.KeyPair();
+    const extendedSourceKeyPair = sourceKeyPairObject.getExtendedKeys();
 
     it('should be performed', async () => {
-      const bitgoKeyPair = new CsprAccountLib.KeyPair().getKeys();
+      const bitgoKeyPairObject = new CsprAccountLib.KeyPair();
+      const bitgoKeyPair = bitgoKeyPairObject.getKeys();
       const builder = factory.getTransferBuilder();
       builder
         .fee({ gasLimit: '10000', gasPrice: '10' })
-        .source({ address: sourceKeyPair.pub })
-        .to(targetKeyPair.pub)
+        .source({ address: sourceKeyPairObject.getAddress() })
+        .to(targetKeyPairObject.getAddress())
         .amount('2500000000')
         .transferId(123);
 
@@ -117,7 +116,7 @@ describe('Casper', function() {
 
       const halfSignedTxJson = JSON.parse(signedTransaction.halfSigned.txJson);
       halfSignedTxJson.deploy.approvals.length.should.equals(1);
-      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals('02' + sourceKeyPair.pub.toUpperCase());
+      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
       CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTxJson.deploy.approvals[0].signature, halfSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
 
       params.txPrebuild.txJson = signedTransaction.halfSigned.txJson;
@@ -128,8 +127,8 @@ describe('Casper', function() {
 
       const twiceSignedTxJson = JSON.parse(signedTransaction.txJson);
       twiceSignedTxJson.deploy.approvals.length.should.equals(2);
-      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals('02' + sourceKeyPair.pub.toUpperCase());
-      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals('02' + bitgoKeyPair.pub.toUpperCase());
+      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
       CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[0].signature, twiceSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
       CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[1].signature, twiceSignedTxJson.deploy.hash, bitgoKeyPair.pub).should.equals(true);
@@ -143,8 +142,8 @@ describe('Casper', function() {
       const builder = factory.getTransferBuilder();
       builder
         .fee({ gasLimit: '10000', gasPrice: '10' })
-        .source({ address: sourceKeyPair.pub })
-        .to(targetKeyPair.pub)
+        .source({ address: sourceKeyPairObject.getAddress() })
+        .to(targetKeyPairObject.getAddress())
         .amount('2500000000')
         .transferId(123);
 
@@ -163,7 +162,7 @@ describe('Casper', function() {
 
       const halfSignedTxJson = JSON.parse(signedTransaction.halfSigned.txJson);
       halfSignedTxJson.deploy.approvals.length.should.equals(1);
-      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals('02' + sourceKeyPair.pub.toUpperCase());
+      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
       CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTxJson.deploy.approvals[0].signature, halfSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
 
       params.txPrebuild.txJson = signedTransaction.halfSigned.txJson;
@@ -174,22 +173,22 @@ describe('Casper', function() {
 
       const twiceSignedTxJson = JSON.parse(signedTransaction.txJson);
       twiceSignedTxJson.deploy.approvals.length.should.equals(2);
-      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals('02' + sourceKeyPair.pub.toUpperCase());
-      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals('02' + bitgoKeyPair.pub.toUpperCase());
+      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
       CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[0].signature, twiceSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
       CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[1].signature, twiceSignedTxJson.deploy.hash, bitgoKeyPair.pub).should.equals(true);
     });
 
     it('should be rejected if invalid key', async () => {
-      const sourceKeyPair = new CsprAccountLib.KeyPair().getKeys();
-      const targetKeyPair = new CsprAccountLib.KeyPair().getKeys();
+      const sourceKeyPairObject = new CsprAccountLib.KeyPair();
+      const targetKeyPairObject = new CsprAccountLib.KeyPair();
       const invalidPrivateKey = 'AAAAA';
       const builder = factory.getTransferBuilder();
       builder
         .fee({ gasLimit: '10000', gasPrice: '10' })
-        .source({ address: sourceKeyPair.pub })
-        .to(targetKeyPair.pub)
+        .source({ address: sourceKeyPairObject.getAddress() })
+        .to(targetKeyPairObject.getAddress())
         .amount('2500000000')
         .transferId(123);
 
@@ -235,12 +234,11 @@ describe('Casper', function() {
     });
   });
 
-  // TODO(STLX-2378): This tests will be re-enabled as part of the refactor required due to STLX-2363.
-  xdescribe('Explain Transaction', () => {
+  describe('Explain Transaction', () => {
     const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
     const sourceKeyPair = sourceKeyPairObject.getKeys();
-    const targetKeyPair = new CsprAccountLib.KeyPair().getKeys();
+    const targetKeyPairObject = new CsprAccountLib.KeyPair();
     let txBuilder;
     const transferAmount = '2500000000';
     const transferId = 123;
@@ -249,8 +247,8 @@ describe('Casper', function() {
       txBuilder = factory.getTransferBuilder();
       txBuilder
         .fee({ gasLimit: '10000', gasPrice: '10' })
-        .source({ address: sourceKeyPair.pub })
-        .to(targetKeyPair.pub)
+        .source({ address: sourceKeyPairObject.getAddress() })
+        .to(targetKeyPairObject.getAddress())
         .amount(transferAmount)
         .transferId(transferId);
     });
@@ -290,7 +288,7 @@ describe('Casper', function() {
       explainedTx.outputs.length.should.equal(1);
       explainedTx.outputs.forEach(output => {
         output.amount.should.equal(transferAmount);
-        output.address.should.equal(targetKeyPair.pub);
+        output.address.should.equal(targetKeyPairObject.getAddress());
         output.coin.should.equal(basecoin.getChain());
       });
       explainedTx.outputAmount.should.equal(transferAmount);
@@ -299,18 +297,18 @@ describe('Casper', function() {
 
     it('should explain a signed transaction', async () => {
       const builtTxInfo = {
-        txHex: '{"deploy":{"hash":"1f5683fa490f717318363995e4fc1956fbcba219ac356a261a5caa5886ce66c2","header":{"account":"0202865365d0c37d4bcdb47fd06a1d1a5f933725e2820def5cb24d33b1004326fcec","timestamp":"2021-03-19T18:03:09.082Z","ttl":"86400000ms","gas_price":1,"body_hash":"c7d70b14f4c56e1698a4540bcbc93ae8d5039bf26b69bccb74c86ed302fc66be","dependencies":[],"chain_name":"delta-10"},"payment":{"ModuleBytes":{"module_bytes":"","args":[["amount",{"cl_type":"U512","bytes":"02f82a","parsed":"null"}]]}},"session":{"Transfer":{"args":[["amount",{"cl_type":"U512","bytes":"0400f90295","parsed":"2500000000"}],["target",{"cl_type":{"ByteArray":32},"bytes":"7ed4abba796fb70a335970ed1be187a7e8bbc107523df4b1f274a9591189b273","parsed":"null"}],["id",{"cl_type":{"Option":"U64"},"bytes":"01d204000000000000","parsed":"1234"}],["deploy_type",{"cl_type":"String","bytes":"0400000053656e64","parsed":"Send"}],["to_address",{"cl_type":"String","bytes":"42000000303341443039464441413333384345414232364639374546363038444244303133324646374242353730303835393936423631463730313438343037303146374633","parsed":"03AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3"}]]}},"approvals":[]}}',
+        txHex: '{"deploy":{"hash":"1f5683fa490f717318363995e4fc1956fbcba219ac356a261a5caa5886ce66c2","header":{"account":"0202865365d0c37d4bcdb47fd06a1d1a5f933725e2820def5cb24d33b1004326fcec","timestamp":"2021-03-19T18:03:09.082Z","ttl":"86400000ms","gas_price":1,"body_hash":"c7d70b14f4c56e1698a4540bcbc93ae8d5039bf26b69bccb74c86ed302fc66be","dependencies":[],"chain_name":"delta-10"},"payment":{"ModuleBytes":{"module_bytes":"","args":[["amount",{"cl_type":"U512","bytes":"02f82a","parsed":"null"}]]}},"session":{"Transfer":{"args":[["amount",{"cl_type":"U512","bytes":"0400f90295","parsed":"2500000000"}],["target",{"cl_type":{"ByteArray":32},"bytes":"7ed4abba796fb70a335970ed1be187a7e8bbc107523df4b1f274a9591189b273","parsed":"null"}],["id",{"cl_type":{"Option":"U64"},"bytes":"01d204000000000000","parsed":"1234"}],["deploy_type",{"cl_type":"String","bytes":"0400000053656e64","parsed":"Send"}],["to_address",{"cl_type":"String","bytes":"440000003032303341443039464441413333384345414232364639374546363038444244303133324646374242353730303835393936423631463730313438343037303146374633","parsed":"0203AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3"}]]}},"approvals":[]}}',
         txInfo: {
           hash: '1f5683fa490f717318363995e4fc1956fbcba219ac356a261a5caa5886ce66c2',
           fee: {
             gasLimit: '11000',
             gasPrice: '1',
           },
-          from: '02865365d0c37d4bcdb47fd06a1d1a5f933725e2820def5cb24d33b1004326fcec',
+          from: '0202865365d0c37d4bcdb47fd06a1d1a5f933725e2820def5cb24d33b1004326fcec',
           startTime: '2021-03-19T18:03:09.082Z',
           expiration: 86400000,
           deployType: 'Send',
-          to: '03AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3',
+          to: '0203AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3',
           amount: '2500000000',
           transferId: 1234,
         },
@@ -320,7 +318,7 @@ describe('Casper', function() {
         },
         recipients: [
           {
-            address: '03AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3',
+            address: '0203AD09FDAA338CEAB26F97EF608DBD0132FF7BB570085996B61F7014840701F7F3',
             amount: '2500000000',
           },
         ],
