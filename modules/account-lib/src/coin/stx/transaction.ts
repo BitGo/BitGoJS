@@ -29,7 +29,6 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
-    // TODO: implement this validation method
     return true;
   }
 

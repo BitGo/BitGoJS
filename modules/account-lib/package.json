@@ -33,7 +33,7 @@
   "license": "ISC",
   "dependencies": {
     "@bitgo/bls": "^0.1.0",
-    "@bitgo/statics": "^6.4.1-rc.0",
+    "@bitgo/statics": "^6.4.0",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.11",
     "@hashgraph/sdk": "1.4.6",

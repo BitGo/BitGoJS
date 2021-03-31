@@ -20,7 +20,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (tx.stxTransaction.payload.payloadType) {
         case PayloadType.TokenTransfer:
           return this.getTransferBuilder(tx);
-        // TODO: add case of wallet
+        // TODO: Add case of contract_call
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
