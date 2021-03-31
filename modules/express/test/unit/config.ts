@@ -2,7 +2,7 @@
 /// <reference types="mocha" />
 // eslint-disable-next-line
 /// <reference types="node" />
-import 'should';
+import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { config, DefaultConfig } from '../../src/config';
@@ -152,5 +152,14 @@ describe('Config:', () => {
         consoleStub.calledOnceWithExactly(sinon.match(/deprecated environment variable/)).should.be.true();
       }
     }
+  });
+
+  it('should set omitted boolean command line args to null and not false', () => {
+    const argvStub = sinon.stub(process, 'argv').value([process.argv[0]]);
+    const parsed = args.args();
+    should.not.exist(parsed.disablessl);
+    should.not.exist(parsed.disableenvcheck);
+    should.not.exist(parsed.disableproxy);
+    argvStub.restore();
   });
 });
