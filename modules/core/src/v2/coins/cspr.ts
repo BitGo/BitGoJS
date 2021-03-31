@@ -144,7 +144,11 @@ export class Cspr extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    try {
+      return accountLib.Cspr.Utils.isValidAddress(address);
+    } catch (error) {
+      return false;
+    }
   }
 
   /**
