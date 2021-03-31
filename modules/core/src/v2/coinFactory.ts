@@ -22,6 +22,7 @@ import {
   Ofc,
   Rbtc,
   Rmg,
+  Stx,
   Susd,
   Talgo,
   Tbch,
@@ -39,8 +40,9 @@ import {
   Tltc,
   Trbtc,
   Trmg,
-  Tsusd,
   Trx,
+  Tstx,
+  Tsusd,
   Ttrx,
   Xtz,
   Txtz,
@@ -164,6 +166,8 @@ GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcspr', Tcspr.createInstance);
+GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tstx', Tstx.createInstance);
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);

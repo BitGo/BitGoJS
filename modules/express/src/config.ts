@@ -76,7 +76,9 @@ export const DefaultConfig: Config = {
   logFile: '',
   disableSSL: false,
   disableProxy: false,
-  disableEnvCheck: false,
+  // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
+  // This will require a major version bump, since this is a breaking change to default behavior.
+  disableEnvCheck: true,
   timeout: 305 * 1000,
 };
 

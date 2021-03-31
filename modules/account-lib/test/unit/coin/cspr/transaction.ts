@@ -18,6 +18,10 @@ import {
 describe('Cspr Transaction', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
   const coin = coins.get('tcspr');
+  const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
+  const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
+  const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
+  const sourceAddress = new KeyPair({ pub: testData.ROOT_ACCOUNT.publicKey }).getAddress();
 
   const getTransaction = (): Transaction => {
     return new Transaction(coin);
@@ -26,10 +30,10 @@ describe('Cspr Transaction', () => {
   const getWalletInitTransaction = async (): Promise<Transaction> => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
-    txBuilder.owner(testData.ACCOUNT_1.publicKey);
-    txBuilder.owner(testData.ACCOUNT_2.publicKey);
-    txBuilder.owner(testData.ACCOUNT_3.publicKey);
-    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.owner(owner1Address);
+    txBuilder.owner(owner2Address);
+    txBuilder.owner(owner3Address);
+    txBuilder.source({ address: sourceAddress });
     txBuilder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
     return (await txBuilder.build()) as Transaction;
   };
@@ -37,10 +41,10 @@ describe('Cspr Transaction', () => {
   const getWalletInitTransactionUsignExtendedKey = async (): Promise<Transaction> => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.fee(testData.FEE);
-    txBuilder.owner(testData.ACCOUNT_1.publicKey);
-    txBuilder.owner(testData.ACCOUNT_2.publicKey);
-    txBuilder.owner(testData.ACCOUNT_3.publicKey);
-    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.owner(owner1Address);
+    txBuilder.owner(owner2Address);
+    txBuilder.owner(owner3Address);
+    txBuilder.source({ address: sourceAddress });
     txBuilder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
     return (await txBuilder.build()) as Transaction;
   };
@@ -48,8 +52,8 @@ describe('Cspr Transaction', () => {
   const getTransferTransaction = async (): Promise<Transaction> => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
-    txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.source({ address: sourceAddress });
+    txBuilder.to(owner2Address);
     txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     txBuilder.transferId(255);
     return (await txBuilder.build()) as Transaction;
@@ -86,7 +90,7 @@ describe('Cspr Transaction', () => {
         tx.casperTx = transferDeploy;
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
-      await tx.sign(keypair).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -115,7 +119,7 @@ describe('Cspr Transaction', () => {
         tx.casperTx = transferDeploy;
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
-      await tx.sign(keypair).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -145,7 +149,7 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.privateKey });
-      await tx.sign(keypair).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -158,7 +162,7 @@ describe('Cspr Transaction', () => {
         verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
       );
 
-      await tx.sign(keypair2).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair2));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -191,7 +195,7 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.xPrivateKey });
-      await tx.sign(keypair).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -204,7 +208,7 @@ describe('Cspr Transaction', () => {
         verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
       );
 
-      await tx.sign(keypair2).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair2));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -237,7 +241,7 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.privateKey });
-      await tx.sign(keypair).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -250,7 +254,7 @@ describe('Cspr Transaction', () => {
         verifySignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
       );
 
-      await tx.sign(keypair2).should.be.fulfilled();
+      should.doesNotThrow(() => tx.sign(keypair2));
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
@@ -279,19 +283,25 @@ describe('Cspr Transaction', () => {
   describe('should reject sign if transaction signer is', () => {
     it('invalid private key', function() {
       const tx = getTransaction();
-      return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
+      should.throws(() => tx.sign(testData.INVALID_KEYPAIR_PRV));
     });
 
     it('public key', function() {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
-      return tx.sign(keypair).should.be.rejected();
+      should.throws(
+        () => tx.sign(keypair),
+        e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      );
     });
 
     it('public extended key', function() {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.xPublicKey });
-      return tx.sign(keypair).should.be.rejected();
+      should.throws(
+        () => tx.sign(keypair),
+        e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      );
     });
   });
 

@@ -83,7 +83,8 @@ describe('Casper', function() {
     }));
   });
 
-  describe('Sign Transaction', () => {
+  // TODO(STLX-2378): This tests will be re-enabled as part of the refactor required due to STLX-2363.
+  xdescribe('Sign Transaction', () => {
     const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
     const extendedSourceKeyPair = sourceKeyPairObject.getExtendedKeys();
@@ -234,7 +235,8 @@ describe('Casper', function() {
     });
   });
 
-  describe('Explain Transaction', () => {
+  // TODO(STLX-2378): This tests will be re-enabled as part of the refactor required due to STLX-2363.
+  xdescribe('Explain Transaction', () => {
     const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
     const sourceKeyPair = sourceKeyPairObject.getKeys();

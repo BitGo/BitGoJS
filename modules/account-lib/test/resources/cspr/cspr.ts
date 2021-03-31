@@ -95,13 +95,13 @@ export const ERROR_MISSING_PRIVATE_KEY = 'Missing private key';
 
 export const INVALID_RAW_TRANSACTION = 'This is an invalid raw transaction';
 
-export const VALID_ADDRESS = '025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B';
+export const VALID_ADDRESS = '02025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B';
 
-export const INVALID_ADDRESS = '608e43c3gg3f44200ec59Y7ZXC461d3e5aa4e823c595848a5d280f831ce8de302';
+export const INVALID_ADDRESS = '02608e43c3gg3f44200ec59Y7ZXC461d3e5aa4e823c595848a5d280f831ce8de302';
 
 export const INVALID_ADDRESS_EMPTY = '';
 
-export const INVALID_ADDRESS_EMPTY_W_SPACES = '   ';
+export const INVALID_ADDRESS_EMPTY_W_SPACES = '                                                                    ';
 
 export const INVALID_KEYPAIR_PRV = new KeyPair({
   prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
@@ -147,3 +147,5 @@ export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the 
 export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Transfer does not have a destination address defined';
 
 export const ERROR_INVALID_TRANSFER_ID_ON_FROM = 'Transfer does not have an id defined';
+
+export const ERROR_ALREADY_SIGNED_WITH_INVALID_KEY = 'Invalid deploy. Already signed with an invalid key';

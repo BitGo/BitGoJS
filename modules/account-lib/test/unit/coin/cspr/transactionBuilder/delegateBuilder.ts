@@ -9,6 +9,7 @@ import { DelegateBuilder } from '../../../../../src/coin/cspr/delegateBuilder';
 describe('CSPR Delegate Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
   const sender = testData.ACCOUNT_1;
+  const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
   const validator = DELEGATE_VALIDATOR_ACCOUNT;
 
   const initDelegateTxBuilder = () => {
@@ -22,7 +23,7 @@ describe('CSPR Delegate Builder', () => {
   };
 
   const addSourceToBuilder = (builder: DelegateBuilder, source) => {
-    builder.source({ address: source.publicKey });
+    builder.source({ address: new KeyPair({ pub: source.publicKey }).getAddress() });
     return builder;
   };
 
@@ -54,7 +55,7 @@ describe('CSPR Delegate Builder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.deepEqual(tx.signature.length, 2);
-      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.from.toUpperCase(), owner1Address);
       tx.type.should.equal(TransactionType.StakingLock);
     });
 
@@ -67,7 +68,7 @@ describe('CSPR Delegate Builder', () => {
       );
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.from.toUpperCase(), owner1Address);
       should.deepEqual(tx.signature.length, 2);
       tx.type.should.equal(TransactionType.StakingLock);
     });
@@ -85,7 +86,7 @@ describe('CSPR Delegate Builder', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.from.toUpperCase(), owner1Address);
       should.deepEqual(tx.signature.length, 1);
       tx.type.should.equal(TransactionType.StakingLock);
     });
@@ -124,7 +125,7 @@ describe('CSPR Delegate Builder', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.from.toUpperCase(), owner1Address);
       tx.type.should.equal(TransactionType.StakingLock);
       should.equal(txJson.validator.toUpperCase(), DELEGATE_VALIDATOR_ACCOUNT.toUpperCase());
     });

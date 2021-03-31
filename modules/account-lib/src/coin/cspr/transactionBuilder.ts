@@ -20,8 +20,8 @@ import {
   CasperDelegateTransaction,
   SignatureData,
 } from './ifaces';
-import { isValidAddress, removeAlgoPrefixFromHexValue } from './utils';
-import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
+import { isValidSecp256k1Address, removeAlgoPrefixFromHexValue } from './utils';
+import { CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -63,7 +63,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this.transaction.casperTx = cTransaction;
 
-    await this.processSigning();
+    this.processSigning();
 
     return this.transaction;
   }
@@ -172,7 +172,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress): void {
-    if (!isValidAddress(address.address)) {
+    if (!isValidSecp256k1Address(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
@@ -288,7 +288,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private getDeployParams(): DeployUtil.DeployParams {
     const gasPrice = this._fee.gasPrice ? _.parseInt(this._fee.gasPrice) : undefined;
     return new DeployUtil.DeployParams(
-      PublicKey.fromHex(SECP256K1_PREFIX + this._source.address),
+      PublicKey.fromHex(this._source.address),
       CHAIN_NAME,
       gasPrice,
       this._expiration || TRANSACTION_EXPIRATION,
@@ -342,11 +342,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Add signatures to the transaction
    * @private
    */
-  private async processSigning(): Promise<void> {
+  private processSigning(): void {
     for (const keyPair of this._multiSignerKeyPairs) {
       // Add signature if it's not already in the deploy
       if (!this.isTransactionSignedByPub(keyPair.getKeys().pub)) {
-        await this.transaction.sign(keyPair);
+        this.transaction.sign(keyPair);
       }
     }
     for (const { signature, keyPair } of this._signatures) {

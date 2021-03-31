@@ -59,18 +59,20 @@ parser.addArgument(['-l', '--logfile'], {
 });
 
 parser.addArgument(['--disablessl'], {
-  action: 'storeTrue',
+  action: 'storeConst',
+  constant: true,
   help: 'Allow running against production in non-SSL mode (at your own risk!)',
 });
 
 parser.addArgument(['--disableproxy'], {
-  action: 'storeTrue',
+  action: 'storeConst',
+  constant: true,
   help: 'disable the proxy, not routing any non-express routes',
 });
 
 parser.addArgument(['--disableenvcheck'], {
-  action: 'storeTrue',
-  defaultValue: true, // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
+  action: 'storeConst',
+  constant: true,
   help: 'disable checking for proper NODE_ENV when running in prod environment',
 });
 
