@@ -77,6 +77,8 @@ export const coins = CoinMap.fromCoins([
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
+  account('stx', 'Blockstack', Networks.main.stx, 6, UnderlyingAsset.STX),
+  account('tstx', 'Testnet Blockstack', Networks.test.stx, 6, UnderlyingAsset.STX),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
