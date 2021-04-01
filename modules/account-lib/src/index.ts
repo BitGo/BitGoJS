@@ -60,6 +60,8 @@ const coinBuilderMap = {
   tcspr: Cspr.TransactionBuilderFactory,
   xrp: Xrp.TransactionBuilderFactory,
   txrp: Xrp.TransactionBuilderFactory,
+  stx: Stx.TransactionBuilderFactory,
+  tstx: Stx.TransactionBuilderFactory,
 };
 
 /**
