@@ -96,10 +96,34 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
 }
 
 /**
+ * ERC20 token addresses are Base58 formatted on some blockchains.
+ */
+export class Base58ContractAddressDefinedToken extends AccountCoinToken {
+  public contractAddress: ContractAddress;
+
+  constructor(options: Erc20ConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    if (!/^[1-9A-HJ-NP-Za-km-z]{34}$/.test(options.contractAddress)) {
+      throw new InvalidContractAddressError(options.name, options.contractAddress);
+    }
+
+    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+  }
+}
+
+/**
  * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
  * contract address property which identifies the smart contract which defines the token.
  */
 export class Erc20Coin extends ContractAddressDefinedToken {}
+
+/**
+ * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
+ */
+export class TronErc20Coin extends Base58ContractAddressDefinedToken {}
 
 /**
  * Some blockchains have native coins which also support the ERC20 interface such as CELO.
@@ -454,6 +478,76 @@ export function tstellarToken(
   network: AccountNetwork = Networks.test.stellar
 ) {
   return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for tron token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to TRON main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tronToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.trx,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new TronErc20Coin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet tron token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet TRON network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function ttronToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.trx
+) {
+  return tronToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

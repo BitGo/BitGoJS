@@ -9,6 +9,8 @@ import {
   tceloToken,
   terc20,
   tstellarToken,
+  tronToken,
+  ttronToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -594,6 +596,8 @@ export const coins = CoinMap.fromCoins([
     '',
     'WXT'
   ),
+  tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65', UnderlyingAsset.WBTC),
+  tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
   terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
@@ -626,4 +630,6 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
+  ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TUDHdFQP9rBryf2Q1eeg1xL7pHUiBjrghb', UnderlyingAsset.WBTC),
+  ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TMy398K9n1BJKcfMQ1gKB66Xx1H4MnrVeq', UnderlyingAsset.WETH),
 ]);
