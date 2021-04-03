@@ -1,4 +1,4 @@
-import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
+import { PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, DefaultKeys } from '../baseCoin/iface';
 import { InvalidKey, NotSupported } from '../baseCoin/errors';
@@ -25,11 +25,11 @@ export class KeyPair extends Ed25519KeyPair {
    */
   getKeys(raw = false): DefaultKeys {
     const result: DefaultKeys = {
-      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(raw),
+      pub: PublicKey.fromString(this.keyPair.pub).toString(),
     };
 
     if (this.keyPair.prv) {
-      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString(raw);
+      result.prv = PrivateKey.fromString(this.keyPair.prv).toString();
     }
     return result;
   }
@@ -42,7 +42,7 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
     try {
-      const hederaPub = Ed25519PublicKey.fromString(pub.toLowerCase()).toString();
+      const hederaPub = PublicKey.fromString(pub.toLowerCase()).toString();
       const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPub);
       return { pub: ed25519Pub };
     } catch (e) {
@@ -53,7 +53,7 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
     try {
-      const hederaPrv = Ed25519PrivateKey.fromString(prv);
+      const hederaPrv = PrivateKey.fromString(prv);
       const ed25519Prv = removePrefix(PRIVATE_KEY_PREFIX, hederaPrv.toString());
       const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPrv.publicKey.toString());
       return {

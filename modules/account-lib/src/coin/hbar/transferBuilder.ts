@@ -37,9 +37,9 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   private buildAccountData(address: string): proto.AccountID {
-    const accountData = new AccountId(address);
+    const accountData = AccountId.fromString(address);
     return new proto.AccountID({
-      accountNum: accountData.account,
+      accountNum: accountData.num,
       realmNum: accountData.realm,
       shardNum: accountData.shard,
     });
