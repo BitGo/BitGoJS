@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { TransactionId, AccountId, Ed25519PublicKey, Ed25519PrivateKey } from '@hashgraph/sdk';
+import { TransactionId, AccountId, PublicKey, PrivateKey } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -21,7 +21,7 @@ export function isValidAddress(address: string): boolean {
   }
   try {
     const acc = AccountId.fromString(address);
-    return !_.isNaN(acc.account);
+    return !_.isNaN(acc.num);
   } catch (e) {
     return false;
   }
@@ -39,7 +39,7 @@ export function isValidTransactionId(txId: string): boolean {
   }
   try {
     const tx = TransactionId.fromString(txId);
-    return !_.isNaN(tx.accountId.account);
+    return !_.isNaN(tx.accountId.num);
   } catch (e) {
     return false;
   }
@@ -56,7 +56,7 @@ export function isValidPublicKey(key: string): boolean {
     return false;
   }
   try {
-    const pubKey = Ed25519PublicKey.fromString(key.toLowerCase());
+    const pubKey = PublicKey.fromString(key.toLowerCase());
     return !_.isNaN(pubKey.toString());
   } catch (e) {
     return false;
@@ -200,8 +200,8 @@ export function isValidMemo(memo: string): boolean {
  *
  * @param prv
  */
-export function createRawKey(prv: string): Ed25519PrivateKey {
-  return Ed25519PrivateKey.fromString(prv);
+export function createRawKey(prv: string): PrivateKey {
+  return PrivateKey.fromString(prv);
 }
 
 /**
@@ -211,10 +211,10 @@ export function createRawKey(prv: string): Ed25519PrivateKey {
  * @param prv
  */
 export function convertFromStellarPub(stellarPub: string): string {
-  if (!stellar.StrKey.isValidEd25519PublicKey(stellarPub)) {
+  if (!stellar.StrKey.isValidPublicKey(stellarPub)) {
     throw new Error('Not a valid stellar pub.');
   }
 
-  const rawKey: Buffer = stellar.StrKey.decodeEd25519PublicKey(stellarPub);
+  const rawKey: Buffer = stellar.StrKey.decodePublicKey(stellarPub);
   return rawKey.toString('hex');
 }
