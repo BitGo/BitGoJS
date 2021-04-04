@@ -1,4 +1,4 @@
-import should from 'should';
+import * as should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';

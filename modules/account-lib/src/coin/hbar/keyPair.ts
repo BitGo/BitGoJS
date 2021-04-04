@@ -24,12 +24,14 @@ export class KeyPair extends Ed25519KeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys(raw = false): DefaultKeys {
+    const pub = PublicKey.fromString(this.keyPair.pub).toString();
     const result: DefaultKeys = {
-      pub: PublicKey.fromString(this.keyPair.pub).toString(),
+      pub: raw ? pub.slice(PUBLIC_KEY_PREFIX.length) : pub,
     };
 
     if (this.keyPair.prv) {
-      result.prv = PrivateKey.fromString(this.keyPair.prv).toString();
+      const prv = PrivateKey.fromString(this.keyPair.prv).toString();
+      result.prv = raw ? prv.slice(PRIVATE_KEY_PREFIX.length) : prv;
     }
     return result;
   }
@@ -53,6 +55,9 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
     try {
+      if (prv.length % 2 !== 0) {
+        throw new InvalidKey('Invalid private key length. Must be a hex and multiple of 2');
+      }
       const hederaPrv = PrivateKey.fromString(prv);
       const ed25519Prv = removePrefix(PRIVATE_KEY_PREFIX, hederaPrv.toString());
       const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPrv.publicKey.toString());
