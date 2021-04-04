@@ -211,10 +211,10 @@ export function createRawKey(prv: string): PrivateKey {
  * @param prv
  */
 export function convertFromStellarPub(stellarPub: string): string {
-  if (!stellar.StrKey.isValidPublicKey(stellarPub)) {
+  if (!stellar.StrKey.isValidEd25519PublicKey(stellarPub)) {
     throw new Error('Not a valid stellar pub.');
   }
 
-  const rawKey: Buffer = stellar.StrKey.decodePublicKey(stellarPub);
+  const rawKey: Buffer = stellar.StrKey.decodeEd25519PublicKey(stellarPub);
   return rawKey.toString('hex');
 }
