@@ -53,6 +53,7 @@
     "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15",
+    "long": "^4.0.0",
     "protobufjs": "^6.8.9",
     "secp256k1": "4.0.2",
     "stellar-sdk": "^0.11.0",

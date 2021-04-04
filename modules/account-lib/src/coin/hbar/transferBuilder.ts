@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import Long from 'long';
+import * as Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
