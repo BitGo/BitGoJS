@@ -1,4 +1,4 @@
-import should from 'should';
+import * as should from 'should';
 import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
