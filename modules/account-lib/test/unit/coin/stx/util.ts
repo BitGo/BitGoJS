@@ -126,4 +126,19 @@ describe('Stx util library', function() {
       }
     });
   });
+
+  describe('transaction memo', function() {
+    it('check for valid memo strings', function() {
+      const memoStrings = ['', 'This is a test.', 'Okay', '!!This is thirty four bytes long!!'];
+      for (const memo of memoStrings) {
+        Utils.isValidMemo(memo).should.be.true();
+      }
+    });
+    it('check for valid memo strings', function() {
+      const memoStrings = ['ꜟꜟThis is thirty four chars long!!', 'It was the best of times, it was the worst of times'];
+      for (const memo of memoStrings) {
+        Utils.isValidMemo(memo).should.be.false();
+      }
+    });
+  });
 });
