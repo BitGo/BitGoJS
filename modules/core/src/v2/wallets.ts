@@ -392,6 +392,7 @@ export class Wallets {
             });
             derivationPath = derivation.derivationPath;
             userKeychain.pub = derivation.key;
+            userKeychain.derivedFromParentWithSeed = params.coldDerivationSeed;
           }
         } else {
           if (!canEncrypt) {

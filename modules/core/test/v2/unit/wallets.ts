@@ -261,6 +261,42 @@ describe('V2 Wallets:', function() {
 
       yield wallets.generateWallet(params);
     }));
+
+    it('should send the cold derivation seed for a user key', async () => {
+      const params = {
+        label: 'my-cold-wallet',
+        passphrase: 'test123',
+        userKey: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        coldDerivationSeed: '123',
+      };
+
+      // bitgo key
+      const bitgoKeyNock = nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200);
+
+      // user key
+      const userKeyNock = nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({
+          derivedFromParentWithSeed: params.coldDerivationSeed,
+        }))
+        .reply(200);
+
+      // backup key
+      const backupKeyNock = nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
+        .reply(200);
+
+      // wallet
+      const walletNock = nock(bgUrl)
+        .post('/api/v2/tbtc/wallet')
+        .reply(200);
+
+      await wallets.generateWallet(params);
+      for (const scope of [bitgoKeyNock, userKeyNock, backupKeyNock, walletNock]) {
+        scope.done();
+      }
+    });
   });
 
   describe('Sharing', () => {
