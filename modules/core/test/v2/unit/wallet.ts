@@ -189,6 +189,16 @@ describe('V2 Wallet:', function() {
     });
   });
 
+  describe('Get User Prv', () => {
+    it('should use the cold derivation seed to derive the proper user private key', async () => {
+      const userKeychain = {
+        prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
+        coldDerivationSeed: '123',
+      };
+      wallet.getUserPrv(userKeychain).should.eql('xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx');
+    });
+  });
+
   describe('Transaction Signature Verification', function() {
     let wallet;
     let basecoin;
