@@ -10,12 +10,14 @@ import {
   createStacksPublicKey,
   isSingleSig,
   TransactionAuthField,
+  cvToString,
+  getCVTypeString,
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SigningError, ParseTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { SigningError, ParseTransactionError, InvalidTransactionError, NotSupported } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { SignatureData, TxData } from './iface';
+import { BaseTransaction, Error, TransactionType } from '../baseCoin';
+import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
 import { getTxSenderAddress, bufferToHexPrefixString, removeHexPrefix } from './utils';
 import { KeyPair } from './keyPair';
 
@@ -87,27 +89,57 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson() {
+    if (!this._stxTransaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
     const result: TxData = {
       id: this._stxTransaction.txid(),
       fee: this._stxTransaction.auth.getFee().toString(10),
       from: getTxSenderAddress(this._stxTransaction),
       nonce: this.getNonce(),
-      payload: { payloadType: this._stxTransaction.payload.payloadType },
+      payload: this.getPayloadData(),
     };
-
-    if (this._stxTransaction.payload.payloadType === PayloadType.TokenTransfer) {
-      const payload = this._stxTransaction.payload;
-      result.payload.memo = payload.memo.content;
-      result.payload.to = addressToString({
-        type: StacksMessageType.Address,
-        version: payload.recipient.address.version,
-        hash160: payload.recipient.address.hash160.toString(),
-      });
-      result.payload.amount = payload.amount.toString();
-    }
     return result;
   }
+
+  private getPayloadData(): StacksTransactionPayload | StacksContractPayload {
+    if (this._stxTransaction.payload.payloadType === PayloadType.TokenTransfer) {
+      const payload = this._stxTransaction.payload;
+      const txPayload: StacksTransactionPayload = {
+        payloadType: PayloadType.TokenTransfer,
+        memo: payload.memo.content,
+        to: addressToString({
+          type: StacksMessageType.Address,
+          version: payload.recipient.address.version,
+          hash160: payload.recipient.address.hash160.toString(),
+        }),
+        amount: payload.amount.toString(),
+      };
+      return txPayload;
+    } else if (this._stxTransaction.payload.payloadType === PayloadType.ContractCall) {
+      const payload = this._stxTransaction.payload;
+      const contractPayload: StacksContractPayload = {
+        payloadType: PayloadType.ContractCall,
+        contractAddress: addressToString(payload.contractAddress),
+        contractName: payload.contractName.content,
+        functionName: payload.functionName.content,
+        functionArgs: payload.functionArgs.map(arg => {
+          return {
+            type: getCVTypeString(arg),
+            value: cvToString(arg),
+          };
+        }),
+      };
+      return contractPayload;
+    } else {
+      throw new NotSupported('payload type not supported');
+    }
+  }
+
   toBroadcastFormat(): string {
+    if (!this._stxTransaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
     return bufferToHexPrefixString(this._stxTransaction.serialize());
   }
 
@@ -157,22 +189,24 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
-    if (txJson.payload.to && txJson.payload.amount) {
-      this._outputs = [
-        {
-          address: txJson.payload.to,
-          value: txJson.payload.amount,
-          coin: this._coinConfig.name,
-        },
-      ];
+    if (txJson.payload.payloadType === PayloadType.TokenTransfer) {
+      if (txJson.payload.to && txJson.payload.amount) {
+        this._outputs = [
+          {
+            address: txJson.payload.to,
+            value: txJson.payload.amount,
+            coin: this._coinConfig.name,
+          },
+        ];
 
-      this._inputs = [
-        {
-          address: txJson.from,
-          value: txJson.payload.amount,
-          coin: this._coinConfig.name,
-        },
-      ];
+        this._inputs = [
+          {
+            address: txJson.from,
+            value: txJson.payload.amount,
+            coin: this._coinConfig.name,
+          },
+        ];
+      }
     }
   }
 }

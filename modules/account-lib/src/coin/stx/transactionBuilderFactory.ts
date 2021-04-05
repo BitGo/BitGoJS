@@ -5,7 +5,8 @@ import { ParseTransactionError, InvalidTransactionError, NotImplementedError } f
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { removeHexPrefix } from './utils';
+import { ContractBuilder } from './contractBuilder';
+import { Utils } from '.';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -20,7 +21,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (tx.stxTransaction.payload.payloadType) {
         case PayloadType.TokenTransfer:
           return this.getTransferBuilder(tx);
-        // TODO: Add case of contract_call
+        case PayloadType.ContractCall:
+          return this.getContractBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -46,7 +48,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+    return TransactionBuilderFactory.initializeBuilder(new TransferBuilder(this._coinConfig), tx);
+  }
+
+  getContractBuilder(tx?: Transaction): ContractBuilder {
+    return TransactionBuilderFactory.initializeBuilder(new ContractBuilder(this._coinConfig), tx);
   }
 
   /**
@@ -56,7 +62,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+  private static initializeBuilder<T extends TransactionBuilder>(builder: T, tx: Transaction | undefined): T {
     if (tx) {
       builder.initBuilder(tx);
     }
@@ -64,14 +70,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: any): void {
+  validateRawTransaction(rawTransaction: unknown): void {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    try {
-      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
-    } catch (e) {
-      throw new ParseTransactionError('Error deserializing raw transaction');
+    if (!Utils.isValidRawTransaction(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
     }
   }
 }
