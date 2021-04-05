@@ -21,7 +21,7 @@ import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
-import { isValidAddress, removeHexPrefix } from './utils';
+import { isValidAddress, removeHexPrefix, isValidMemo } from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -167,6 +167,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   memo(memo: string): this {
+    if (!isValidMemo(memo)) {
+      throw new BuildTransactionError('Memo is too long');
+    }
     this._memo = memo;
     return this;
   }

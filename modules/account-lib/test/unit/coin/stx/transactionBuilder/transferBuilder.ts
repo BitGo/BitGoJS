@@ -145,6 +145,14 @@ describe('Stx Transfer Builder', () => {
           e => e.message === 'Invalid amount',
         );
       });
+
+      it('a transfer transaction with an invalid memo', async () => {
+        const txBuilder = factory.getTransferBuilder();
+        should.throws(
+          () => txBuilder.memo('This is a memo that is too long for a transaction'),
+          e => e.message === 'Memo is too long',
+        );
+      });
     });
   });
 });
