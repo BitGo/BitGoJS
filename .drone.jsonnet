@@ -15,25 +15,27 @@ local BuildInfo(version) = {
   ],
 };
 
-local Install(version) = {
+local Install(version, allow_failure=false) = {
   name: "install",
   image: "node:" + version,
+  [if allow_failure then "failure"]: "ignore",
   commands: [
     "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true",
-    "yarn install" + (if (version == "6" || version == "8") then " --ignore-engines" else ""),
+    "yarn install",
   ],
 };
 
-local Command(command, version="lts") = {
+local Command(command, version="lts", allow_failure=false) = {
   name: command,
   image: "node:" + version,
+  [if allow_failure then "failure"]: "ignore",
   commands: [
     "yarn run " + command,
   ],
 };
 
-local CommandWithSecrets(command, version) =
-  Command(command, version) + {
+local CommandWithSecrets(command, version, allow_failure=false) =
+  Command(command, version, allow_failure) + {
   environment: {
     BITGOJS_TEST_PASSWORD: { from_secret: "password" },
   },
@@ -102,9 +104,10 @@ local UploadDocs(version) = {
   }
 };
 
-local UploadArtifacts(version, tag="untagged", only_changed=false) = {
+local UploadArtifacts(version, tag="untagged", only_changed=false, allow_failure=false) = {
   name: "upload artifacts",
   image: "bitgosdk/upload-tools:latest",
+  [if allow_failure then "failure"]: "ignore",
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
     CODECOV_FLAG: tag,
@@ -121,14 +124,14 @@ local UploadArtifacts(version, tag="untagged", only_changed=false) = {
   }
 };
 
-local UnitTest(version) = {
+local UnitTest(version, allow_failure=false) = {
   kind: "pipeline",
   name: "unit tests (node:" + version + ")",
   steps: [
     BuildInfo(version),
-    Install(version),
-    CommandWithSecrets("unit-test-changed", version),
-    UploadArtifacts(version, "unit", true),
+    Install(version, allow_failure),
+    CommandWithSecrets("unit-test-changed", version, allow_failure),
+    UploadArtifacts(version, "unit", true, allow_failure),
   ],
 };
 
@@ -227,6 +230,7 @@ local CheckPreconditions(version) = {
 };
 
 local UnitVersions = ["10"];
+local OptionalUnitVersions = ["12", "14", "15"];
 local IntegrationVersions = ["10"];
 
 [
@@ -235,6 +239,9 @@ local IntegrationVersions = ["10"];
 ] + [
   UnitTest(version)
   for version in UnitVersions
+] + [
+  UnitTest(version, true)
+  for version in OptionalUnitVersions
 # BG-23925 - reenable integration tests when testnet is stable
 # ] + [
 #  IncludeBranches(IntegrationTest(version))
