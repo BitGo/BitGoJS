@@ -159,6 +159,7 @@ steps:
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
+  failure: ignore
 
 - name: unit-test-changed
   image: node:12
@@ -167,6 +168,7 @@ steps:
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  failure: ignore
 
 - name: upload artifacts
   image: bitgosdk/upload-tools:latest
@@ -182,6 +184,7 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  failure: ignore
   when:
     status:
     - success
@@ -209,6 +212,7 @@ steps:
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
+  failure: ignore
 
 - name: unit-test-changed
   image: node:14
@@ -217,6 +221,7 @@ steps:
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  failure: ignore
 
 - name: upload artifacts
   image: bitgosdk/upload-tools:latest
@@ -232,6 +237,7 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  failure: ignore
   when:
     status:
     - success
@@ -259,6 +265,7 @@ steps:
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
+  failure: ignore
 
 - name: unit-test-changed
   image: node:15
@@ -267,6 +274,7 @@ steps:
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  failure: ignore
 
 - name: upload artifacts
   image: bitgosdk/upload-tools:latest
@@ -282,6 +290,7 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  failure: ignore
   when:
     status:
     - success
@@ -347,6 +356,6 @@ trigger:
 
 ---
 kind: signature
-hmac: 627b9b4069cb241c084037dfb0284fbe47d42dd52d2c0053d99a948fdd892abe
+hmac: 4af11df3fb7d9b47a79b7224b77be21e6c8e42118d6cab12f3522d9a76603a79
 
 ...
