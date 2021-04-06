@@ -107,6 +107,8 @@ export class Transaction extends BaseTransaction {
       const payload = this._stxTransaction.payload;
       const txPayload: StacksTransactionPayload = {
         payloadType: PayloadType.TokenTransfer,
+        // result.payload.memo will be padded with \u0000 up to
+        // MEMO_MAX_LENGTH_BYTES as defined in @stacks/transactions
         memo: payload.memo.content,
         to: addressToString({
           type: StacksMessageType.Address,

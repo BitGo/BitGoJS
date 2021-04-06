@@ -10,6 +10,8 @@ import {
   validateStacksAddress,
   deserializeTransaction,
   BufferReader,
+  createMemoString,
+  MEMO_MAX_LENGTH_BYTES,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
@@ -204,6 +206,23 @@ export function isValidRawTransaction(rawTransaction: unknown): boolean {
   } catch (e) {
     return false;
   }
+
+  return true;
+}
+
+/**
+ * Returns whether or not the memo string is valid
+ *
+ * @param {string} memo - the string to be validated
+ * @returns {boolean} - the validation result
+ */
+export function isValidMemo(memo: string): boolean {
+  try {
+    createMemoString(memo);
+  } catch (e) {
+    return false;
+  }
+
   return true;
 }
 
@@ -230,9 +249,17 @@ export function isValidContractAddress(addr: string, network: StacksNetwork): bo
  * @returns {boolean} - validation result
  */
 export function isValidContractFunctionName(name: string): boolean {
-  if (ContractFunctionNames.includes(name)) {
-    return true;
-  } else {
-    return false;
-  }
+  return ContractFunctionNames.includes(name);
+}
+
+/**
+ * Pads a memo string with nulls to fill up the length
+ *
+ * Useful when comparing a memo in a transaction against a string.
+ *
+ * @param {string} memo - the string to be validated
+ * @returns {boolean} - the validation result
+ */
+export function padMemo(memo: string): string {
+  return memo.padEnd(MEMO_MAX_LENGTH_BYTES, '\u0000');
 }
