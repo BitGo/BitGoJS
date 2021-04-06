@@ -1,3 +1,4 @@
+export { AddressVersion, AddressHashMode } from '@stacks/transactions';
 import * as Utils from './utils';
 
 export { KeyPair } from './keyPair';

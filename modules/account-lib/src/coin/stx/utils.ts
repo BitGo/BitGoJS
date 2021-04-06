@@ -12,11 +12,13 @@ import {
   BufferReader,
   createMemoString,
   MEMO_MAX_LENGTH_BYTES,
+  AddressVersion,
+  addressFromPublicKeys,
+  createStacksPublicKey,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
-import { InvalidContractAddressError } from '@bitgo/statics';
 import { InvalidParameterValueError } from '../baseCoin/errors';
 
 const ContractFunctionNames = [
@@ -262,4 +264,30 @@ export function isValidContractFunctionName(name: string): boolean {
  */
 export function padMemo(memo: string): string {
   return memo.padEnd(MEMO_MAX_LENGTH_BYTES, '\u0000');
+}
+
+/**
+ * Generate a multisig address from multiple STX public keys
+ *
+ * @param {string[]} pubKeys - list of public keys as strings
+ * @param {AddressVersion} addressVersion - MainnetMultiSig, TestnetMultiSig
+ * @param {AddressHashMode} addressHashMode - SerializeP2SH
+ * @returns {address: string, hash160: string} - a multisig address
+ */
+export function getSTXAddressFromPubKeys(
+  pubKeys: string[],
+  addressVersion: AddressVersion = AddressVersion.MainnetMultiSig,
+  addressHashMode: AddressHashMode = AddressHashMode.SerializeP2SH,
+): { address: string; hash160: string } {
+  if (pubKeys.length === 0) {
+    throw new Error('Invalid number of public keys');
+  }
+  if (!pubKeys.every(isValidPublicKey)) {
+    throw new Error('Invalid public keys');
+  }
+
+  const stxPubKeys = pubKeys.map(createStacksPublicKey);
+  const address = addressFromPublicKeys(addressVersion, addressHashMode, stxPubKeys.length, stxPubKeys);
+
+  return { address: addressToString(address), hash160: address.hash160 };
 }
