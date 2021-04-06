@@ -189,6 +189,39 @@ describe('V2 Wallet:', function() {
     });
   });
 
+  describe('Get User Prv', () => {
+    const prv = 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
+    const derivedPrv = 'xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx';
+    it('should use the cold derivation seed to derive the proper user private key', async () => {
+      const userPrvOptions = {
+        prv,
+        coldDerivationSeed: '123',
+      };
+      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+    });
+
+    it('should use the user keychain derivedFromParentWithSeed as the cold derivation seed if none is provided', async () => {
+      const userPrvOptions = {
+        prv,
+        keychain: {
+          derivedFromParentWithSeed: '123',
+        },
+      };
+      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+    });
+
+    it('should prefer the explicit cold derivation seed to the user keychain derivedFromParentWithSeed', async () => {
+      const userPrvOptions = {
+        prv,
+        coldDerivationSeed: '123',
+        keychain: {
+          derivedFromParentWithSeed: '456',
+        },
+      };
+      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+    });
+  });
+
   describe('Transaction Signature Verification', function() {
     let wallet;
     let basecoin;

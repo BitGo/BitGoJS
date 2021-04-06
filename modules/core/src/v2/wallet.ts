@@ -1729,6 +1729,17 @@ export class Wallet {
     if (userPrv && typeof userPrv !== 'string') {
       throw new Error('prv must be a string');
     }
+
+    // use the `derivedFromParentWithSeed` property from the user keychain as the `coldDerivationSeed`
+    // if no other `coldDerivationSeed` was explicitly provided
+    if (
+      params.coldDerivationSeed === undefined &&
+      params.keychain !== undefined &&
+      params.keychain.derivedFromParentWithSeed !== undefined
+    ) {
+      params.coldDerivationSeed = params.keychain.derivedFromParentWithSeed;
+    }
+
     if (userPrv && params.coldDerivationSeed) {
       // the derivation only makes sense when a key already exists
       const derivation = this.baseCoin.deriveKeyWithSeed({ key: userPrv, seed: params.coldDerivationSeed });
@@ -1796,7 +1807,7 @@ export class Wallet {
         });
       } catch (e) {
         console.error('transaction prebuild failed local validation:', e.message);
-        console.error('transaction params:', _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']));
+        console.error('transaction params:', _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet']));
         console.error('transaction prebuild:', txPrebuild);
         console.trace(e);
         throw e;
