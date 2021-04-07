@@ -53,20 +53,21 @@ export class TransferBuilder extends TransactionBuilder {
       fee: new BigNum(this._fee.fee),
       nonce: new BigNum(this._nonce),
     };
-    if (this._multiSignerKeyPairs.length === 0) {
-      throw new InvalidParameterValueError('supply at least 1 public key');
-    }
-    if (this._multiSignerKeyPairs.length === 1) {
-      return {
-        ...defaultOpts,
-        publicKey: this._multiSignerKeyPairs[0].getKeys(this._multiSignerKeyPairs[0].getCompressed()).pub,
-      };
+    if (this._fromPubKeys.length > 0) {
+      if (this._fromPubKeys.length === 1) {
+        return {
+          ...defaultOpts,
+          publicKey: this._fromPubKeys[0],
+        };
+      } else {
+        return {
+          ...defaultOpts,
+          publicKeys: this._fromPubKeys,
+          numSignatures: this._numberSignatures,
+        };
+      }
     } else {
-      return {
-        ...defaultOpts,
-        publicKeys: this._multiSignerKeyPairs.map(k => k.getKeys(k.getCompressed()).pub),
-        numSignatures: this._numberSignatures,
-      };
+      throw new InvalidParameterValueError('supply at least 1 public key');
     }
   }
 

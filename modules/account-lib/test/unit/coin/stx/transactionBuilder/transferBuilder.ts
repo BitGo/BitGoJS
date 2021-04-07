@@ -20,6 +20,7 @@ describe('Stx Transfer Builder', () => {
   describe('should build ', () => {
     it('a signed transfer transaction', async () => {
       const builder = initTxBuilder();
+      builder.fromPubKey(testData.TX_SENDER.pub);
       builder.sign({ key: testData.TX_SENDER.prv });
       const tx = await builder.build();
 
@@ -43,6 +44,7 @@ describe('Stx Transfer Builder', () => {
 
     it('a transfer transaction with memo', async () => {
       const builder = initTxBuilder();
+      builder.fromPubKey(testData.TX_SENDER.pub);
       builder.memo('This is an example');
       builder.sign({ key: testData.TX_SENDER.prv })
       const tx = await builder.build();
@@ -86,6 +88,7 @@ describe('Stx Transfer Builder', () => {
     it('a transfer transaction with amount 0', async () => {
       const builder = initTxBuilder();
       builder.amount('0');
+      builder.fromPubKey(testData.TX_SENDER.pub);
       builder.sign({ key: testData.TX_SENDER.prv });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -111,7 +114,6 @@ describe('Stx Transfer Builder', () => {
         tx.type.should.equal(TransactionType.Send);
       });
     });
-
 
     describe('should fail', () => {
       it('a transfer transaction with an invalid key', () => {

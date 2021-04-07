@@ -16,12 +16,13 @@ import {
   ParseTransactionError,
   SigningError,
   InvalidTransactionError,
+  InvalidParameterValueError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
-import { isValidAddress, removeHexPrefix, isValidMemo } from './utils';
+import { isValidAddress, removeHexPrefix, isValidMemo, isValidPublicKey } from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -32,10 +33,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
   protected _network: StacksNetwork;
+  protected _fromPubKeys: string[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._multiSignerKeyPairs = [];
+    this._fromPubKeys = [];
     this._signatures = [];
     this._numberSignatures = 0;
     this._network = new StacksTestnet();
@@ -64,8 +67,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         new BigNum(this._nonce),
       );
       this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
-      const signer = new KeyPair({ pub: publicKeyFromSignature(sigHashPreSign, this._signatures[0]) });
-      this._multiSignerKeyPairs.push(signer);
+      this._fromPubKeys = [publicKeyFromSignature(sigHashPreSign, this._signatures[0])];
     }
   }
 
@@ -110,6 +112,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
     this._multiSignerKeyPairs.push(signer);
+    const publicKey = signer.getKeys(signer.getCompressed()).pub;
+    if (!this._fromPubKeys.includes(publicKey)) {
+      this._fromPubKeys.push(publicKey);
+    }
     this._numberSignatures =
       this._multiSignerKeyPairs.length > 1 ? this._multiSignerKeyPairs.length - 1 : this._multiSignerKeyPairs.length;
     return this.transaction;
@@ -157,6 +163,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   nonce(n: number): this {
     this._nonce = n;
+    return this;
+  }
+
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    pubKeys.forEach(key => {
+      if (isValidPublicKey(key)) {
+        this._fromPubKeys.push(key);
+      } else {
+        throw new InvalidParameterValueError('Invalid public key');
+      }
+    });
     return this;
   }
 
