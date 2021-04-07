@@ -211,7 +211,10 @@ export class Transaction extends BaseTransaction {
     if (!this._txBody.nodeAccountID) {
       throw new Error('Missing transaction node id');
     }
-    return this.getHashOf(this._hederaTx);
+    const _signedTx = new proto.SignedTransaction();
+    _signedTx.sigMap = this._hederaTx.sigMap;
+    _signedTx.bodyBytes = this._hederaTx.bodyBytes;
+    return this.getHashOf(_signedTx);
   }
 
   /**
