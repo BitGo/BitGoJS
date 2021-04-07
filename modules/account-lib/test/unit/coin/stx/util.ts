@@ -1,4 +1,5 @@
 import should from 'should';
+import { AddressVersion } from '@stacks/transactions';
 import * as testData from '../../../resources/stx/stx';
 import * as Utils from '../../../../src/coin/stx/utils';
 
@@ -29,6 +30,71 @@ describe('Stx util library', function() {
         should.doesNotThrow(() => Utils.isValidAddress(address));
         Utils.isValidAddress(address).should.be.false();
       }
+    });
+
+    it('should generate multisig addresses from compressed public keys', function() {
+      const pubKeys = [
+        '0263e1f2f322fb74224e210f9d616fce14d10fa89520dcde3d6d02514cdb16846a',
+        '02d5de9e1b9c13fc7b67446ebcff4fbb9aa6b1933f907e9aabf32f48d6e0a5064d',
+        '0296c4b8353c4a938173f80706df480cf6f85523b428d59ee81d9effcf61e5eae8',
+      ];
+
+      const address = Utils.getSTXAddressFromPubKeys(pubKeys);
+
+      address.address.should.equal('SM30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCP094ZQX');
+      address.hash160.should.equal('c15661b360983b97173e1c6f4cca2941295bf265');
+
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
+        'SN30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCMHHRC3D',
+      );
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
+        'SM30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCP094ZQX',
+      );
+    });
+
+    it('should generate multisig addresses from uncompressed public keys', function() {
+      const pubKeys = [
+        '049742b908579ffd225d5e1d9486471f19a101dd04b7a81d11da882e7ac7f3e042989c311524a3335e15dec9338a07bd21b6e4444b6b7744d314cc926a1f0383db',
+        '0464097ccbc22905ec6f678c846346294033e11a216d133abf6af252294695b3538d65f65b188b6e72e1890e7738f9e221944e618dea1178ef749717b35492de6a',
+        '042c608408352ab41477ad9dd1cabca9e712de2dff3c5c8bfa4b5f7f1a0f74a32402a826d2ce5f3a6b01c16aeebdd304e235791958bbf97a08b5d4e9dd4db399b7',
+      ];
+
+      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM2G611SJ5X59SMZTB6APDAFMN8JM2CDNSA0CVBHH');
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
+        'SN2G611SJ5X59SMZTB6APDAFMN8JM2CDNSBHW10HX',
+      );
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
+        'SM2G611SJ5X59SMZTB6APDAFMN8JM2CDNSA0CVBHH',
+      );
+    });
+
+    it('should generate multisig addresses from compressed and uncompressed public keys', function() {
+      const pubKeys = [
+        '04d6f0f7d97a72979596a17fa2946eaeff3703250a62640271eea59477f5b19f39ad01ce2a53025eba365a4f40dd085234194d1d06aefec2a9d4439be0f3c2df34',
+        '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0',
+        '034c80f991410082824aee4ca48147082997d44e800da9877e694f9cb64b3cb64a',
+      ];
+
+      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVJEVCSST');
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
+        'SN3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVH2K9ZYJ',
+      );
+      Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
+        'SM3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVJEVCSST',
+      );
+    });
+
+    it('should not generate multisig addresses from invalid input', function() {
+      should.throws(() => Utils.getSTXAddressFromPubKeys([]), 'Invalid number of public keys');
+      should.throws(() => Utils.getSTXAddressFromPubKeys(['badkey', 'badkey2']), 'Invalid public key');
+      should.throws(
+        () =>
+          Utils.getSTXAddressFromPubKeys([
+            '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0',
+            'badkey',
+          ]),
+        'Invalid public key',
+      );
     });
   });
 
