@@ -174,7 +174,7 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with an invalid key', () => {
       const builder = initTxBuilder();
       should.throws(
-        () => builder.sign({ key: 'invalidKey' }),
+        () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
         e => e.message === 'Invalid private key',
       );
     });
