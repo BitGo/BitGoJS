@@ -54,7 +54,7 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    if (prv.length % 2 !== 0 && /^([a-f0-9]{2})+$/i.test(prv)) {
+    if (!/^([a-f0-9]{2})+$/i.test(prv)) {
       throw new InvalidKey('Invalid private key length. Must be a hex and multiple of 2');
     }
     try {

@@ -69,6 +69,8 @@ export const THREE_TIMES_SIGNED_TRANSACTION =
 
 export const ENCODED_TRANSACTION = 'not defined';
 
+export const errorMessageOddLengthOrNonHexPrivateKey = 'Invalid private key length. Must be a hex and multiple of 2';
+
 export const errorMessageInvalidPrivateKey = 'Invalid private key';
 
 export const errorMessageInvalidPublicKey = 'Invalid public key:';
