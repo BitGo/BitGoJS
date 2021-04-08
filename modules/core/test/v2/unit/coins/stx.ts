@@ -1,8 +1,9 @@
-import * as Promise from 'bluebird';
+import * as PromiseB from 'bluebird';
 import { Stx, Tstx } from '../../../../src/v2/coins/';
 
-const co = Promise.coroutine;
+const co = PromiseB.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
+import * as testData from '../../fixtures/coins/stx';
 
 describe('STX:', function() {
   let bitgo;
@@ -41,6 +42,37 @@ describe('STX:', function() {
     badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
+
+
+  it('should explain a transfer transaction', async function() {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainTransfer,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.txExplainedTransfer.id);
+    explain.outputAmount.should.equal(testData.txExplainedTransfer.outputAmount);
+    explain.outputs[0].amount.should.equal(testData.txExplainedTransfer.outputAmount);
+    explain.outputs[0].address.should.equal(testData.txExplainedTransfer.recipient);
+    explain.outputs[0].memo.should.equal(testData.txExplainedTransfer.memo);
+    explain.fee.should.equal(testData.txExplainedTransfer.fee);
+    explain.changeAmount.should.equal('0');
+  });
+
+
+  it('should explain a contract call transaction', async function() {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainContract,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.txExplainedContract.id);
+    explain.fee.should.equal(testData.txExplainedContract.fee);
+    explain.contractAddress.should.equal(testData.txExplainedContract.contractAddress);
+    explain.contractName.should.equal(testData.txExplainedContract.contractName);
+    explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
+    explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
+    explain.contractFunctionArgs[0].value.should.equal(testData.txExplainedContract.functionArgs[0].value);
+  });
+
 
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
