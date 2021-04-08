@@ -1,8 +1,7 @@
-import should from 'should';
-import { register } from '../../../../../src/index';
+import * as should from 'should';
+import { register } from '../../../../../src';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
-import { Transaction } from '../../../../../src/coin/hbar/transaction';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 
 describe('HBAR Transfer Builder', () => {
@@ -142,10 +141,11 @@ describe('HBAR Transfer Builder', () => {
       });
 
       it('a signed transfer transaction from serilaized', async () => {
-        const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
+        const txBuilder = factory.from(testData.SIGNED_MAINNET_TRANSFER_TRANSACTION);
         const tx = await txBuilder.build();
-        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_MAINNET_TRANSFER_TRANSACTION);
         tx.type.should.equal(TransactionType.Send);
+        tx.toJson().hash.should.equal(testData.SIGNED_MAINNET_TRANSFER_TRANSACTION_ID);
       });
 
       it('an offline multisig transfer transaction', async () => {
@@ -174,7 +174,7 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with an invalid key', () => {
       const builder = initTxBuilder();
       should.throws(
-        () => builder.sign({ key: 'invalidKey' }),
+        () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
         e => e.message === 'Invalid private key',
       );
     });
