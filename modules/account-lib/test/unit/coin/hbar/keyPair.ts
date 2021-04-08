@@ -1,4 +1,4 @@
-import should from 'should';
+import * as should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
@@ -93,8 +93,10 @@ describe('Hedera Key Pair', () => {
 
     it('from an invalid private key', () => {
       const shorterPrv = { prv: '82A34E' };
-      const longerPrv = { prv: prv + '1' };
-      const prvWithPrefix = { prv: testData.ed25519PrivKeyPrefix + prv + '1' };
+      const longerPrv = { prv: prv + '12' };
+      const prvWithPrefix = { prv: testData.ed25519PrivKeyPrefix + prv + '12' };
+      const prvWithOddNumber = { prv: testData.ed25519PrivKeyPrefix + prv + '1' };
+      const prvWithNonHex = { prv: testData.ed25519PrivKeyPrefix + prv + 'GG' };
       should.throws(
         () => new KeyPair(shorterPrv),
         e => e.message === testData.errorMessageInvalidPrivateKey,
@@ -110,6 +112,14 @@ describe('Hedera Key Pair', () => {
       should.throws(
         () => new KeyPair({ prv: prv + pub }),
         e => e.message === testData.errorMessageInvalidPrivateKey,
+      );
+      should.throws(
+        () => new KeyPair(prvWithOddNumber),
+        e => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
+      );
+      should.throws(
+        () => new KeyPair(prvWithNonHex),
+        e => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
       );
     });
   });

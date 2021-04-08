@@ -124,6 +124,10 @@ export enum CoinFeature {
    * Are fees for transactions of this coin paid for by the Enterprise (eg, Enterprise gas tank)?
    */
   ENTERPRISE_PAYS_FEES = 'enterprise-pays-fees',
+  /*
+   * This coin requires that accounts keep a minimum balance as reserve
+   */
+  REQUIRES_RESERVE = 'requires-reserve',
 }
 
 /**

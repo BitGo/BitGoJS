@@ -22,6 +22,7 @@ const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
+const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -41,8 +42,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
-  account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR),
-  account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR),
+  account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
+  account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),

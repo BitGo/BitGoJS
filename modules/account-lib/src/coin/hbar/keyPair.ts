@@ -1,4 +1,4 @@
-import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
+import { PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, DefaultKeys } from '../baseCoin/iface';
 import { InvalidKey, NotSupported } from '../baseCoin/errors';
@@ -24,12 +24,14 @@ export class KeyPair extends Ed25519KeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys(raw = false): DefaultKeys {
+    const pub = PublicKey.fromString(this.keyPair.pub).toString();
     const result: DefaultKeys = {
-      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(raw),
+      pub: raw ? pub.slice(PUBLIC_KEY_PREFIX.length) : pub,
     };
 
     if (this.keyPair.prv) {
-      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString(raw);
+      const prv = PrivateKey.fromString(this.keyPair.prv).toString();
+      result.prv = raw ? prv.slice(PRIVATE_KEY_PREFIX.length) : prv;
     }
     return result;
   }
@@ -42,7 +44,7 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
     try {
-      const hederaPub = Ed25519PublicKey.fromString(pub.toLowerCase()).toString();
+      const hederaPub = PublicKey.fromString(pub.toLowerCase()).toString();
       const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPub);
       return { pub: ed25519Pub };
     } catch (e) {
@@ -52,8 +54,11 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
+    if (!/^([a-f0-9]{2})+$/i.test(prv)) {
+      throw new InvalidKey('Invalid private key length. Must be a hex and multiple of 2');
+    }
     try {
-      const hederaPrv = Ed25519PrivateKey.fromString(prv);
+      const hederaPrv = PrivateKey.fromString(prv);
       const ed25519Prv = removePrefix(PRIVATE_KEY_PREFIX, hederaPrv.toString());
       const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPrv.publicKey.toString());
       return {

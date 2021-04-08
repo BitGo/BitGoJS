@@ -3,7 +3,7 @@ import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
-import Long from 'long';
+import * as Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
@@ -38,8 +38,9 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Add a signature to this transaction
-   * @param signature The signature to add, in string hex format
-   * @param key The key of the key that created the signature
+   *
+   * @param {string} signature The signature to add, in string hex format
+   * @param {KeyPair} key The key of the key that created the signature
    */
   addSignature(signature: string, key: KeyPair): void {
     const sigPair = new proto.SignaturePair();
@@ -51,7 +52,6 @@ export class Transaction extends BaseTransaction {
     this._hederaTx.sigMap = sigMap;
     this._signatures.push(signature);
   }
-
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
@@ -153,17 +153,21 @@ export class Transaction extends BaseTransaction {
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
     if (txJson.to && txJson.amount) {
-      this._outputs = [{
-        address: txJson.to,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
+      this._outputs = [
+        {
+          address: txJson.to,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
 
-      this._inputs = [{
-        address: txJson.from,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
+      this._inputs = [
+        {
+          address: txJson.from,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
     }
   }
 
@@ -207,13 +211,16 @@ export class Transaction extends BaseTransaction {
     if (!this._txBody.nodeAccountID) {
       throw new Error('Missing transaction node id');
     }
-    return this.getHashOf(this._hederaTx);
+    const _signedTx = new proto.SignedTransaction();
+    _signedTx.sigMap = this._hederaTx.sigMap;
+    _signedTx.bodyBytes = this._hederaTx.bodyBytes;
+    return this.getHashOf(_signedTx);
   }
 
   /**
    * Encode an object using the given encoder class
    *
-   * @param obj - the object to be encoded, it must be an proto namespace object
+   * @param {proto} obj - the object to be encoded, it must be an proto namespace object
    * @param encoder - Object encoder
    * @returns {Uint8Array} - encoded object byte array
    */
@@ -237,7 +244,7 @@ export class Transaction extends BaseTransaction {
   /**
    * Returns a hash of the given proto object.
    *
-   * @param obj - The object to be hashed, it must be an proto namespace object
+   * @param {proto} obj - The object to be hashed, it must be an proto namespace object
    * @returns {string} - the resulting hash string
    */
   private getHashOf<T>(obj: T): string {
