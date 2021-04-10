@@ -106,7 +106,7 @@ describe('Casper', function() {
 
       const params = {
         txPrebuild: {
-          txJson: tx.toBroadcastFormat(),
+          txHex: tx.toBroadcastFormat(),
         },
         prv: sourceKeyPair.prv,
       };
@@ -114,24 +114,24 @@ describe('Casper', function() {
       let signedTransaction = await basecoin.signTransaction(params, () => {});
       signedTransaction.should.have.property('halfSigned');
 
-      const halfSignedTxJson = JSON.parse(signedTransaction.halfSigned.txJson);
-      halfSignedTxJson.deploy.approvals.length.should.equals(1);
-      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTxJson.deploy.approvals[0].signature, halfSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
+      halfSignedTx.deploy.approvals.length.should.equals(1);
+      halfSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTx.deploy.approvals[0].signature, halfSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
 
-      params.txPrebuild.txJson = signedTransaction.halfSigned.txJson;
+      params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = bitgoKeyPair.prv;
       signedTransaction = await basecoin.signTransaction(params, () => {});
       signedTransaction.should.not.have.property('halfSigned');
-      signedTransaction.should.have.property('txJson');
+      signedTransaction.should.have.property('txHex');
 
-      const twiceSignedTxJson = JSON.parse(signedTransaction.txJson);
-      twiceSignedTxJson.deploy.approvals.length.should.equals(2);
-      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
+      const twiceSignedTx = JSON.parse(signedTransaction.txHex);
+      twiceSignedTx.deploy.approvals.length.should.equals(2);
+      twiceSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTx.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[0].signature, twiceSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[1].signature, twiceSignedTxJson.deploy.hash, bitgoKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTx.deploy.approvals[0].signature, twiceSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTx.deploy.approvals[1].signature, twiceSignedTx.deploy.hash, bitgoKeyPair.pub).should.equals(true);
     });
 
     it('should be performed with extended keys', async () => {
@@ -152,7 +152,7 @@ describe('Casper', function() {
 
       const params = {
         txPrebuild: {
-          txJson: tx.toBroadcastFormat(),
+          txHex: tx.toBroadcastFormat(),
         },
         prv: extendedSourceKeyPair.xprv,
       };
@@ -160,24 +160,24 @@ describe('Casper', function() {
       let signedTransaction = await basecoin.signTransaction(params, () => {});
       signedTransaction.should.have.property('halfSigned');
 
-      const halfSignedTxJson = JSON.parse(signedTransaction.halfSigned.txJson);
-      halfSignedTxJson.deploy.approvals.length.should.equals(1);
-      halfSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTxJson.deploy.approvals[0].signature, halfSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
+      halfSignedTx.deploy.approvals.length.should.equals(1);
+      halfSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTx.deploy.approvals[0].signature, halfSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
 
-      params.txPrebuild.txJson = signedTransaction.halfSigned.txJson;
+      params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = extendedBitgoKeyPair.xprv;
       signedTransaction = await basecoin.signTransaction(params, () => {});
       signedTransaction.should.not.have.property('halfSigned');
-      signedTransaction.should.have.property('txJson');
+      signedTransaction.should.have.property('txHex');
 
-      const twiceSignedTxJson = JSON.parse(signedTransaction.txJson);
-      twiceSignedTxJson.deploy.approvals.length.should.equals(2);
-      twiceSignedTxJson.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      twiceSignedTxJson.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
+      const twiceSignedTxHex = JSON.parse(signedTransaction.txHex);
+      twiceSignedTxHex.deploy.approvals.length.should.equals(2);
+      twiceSignedTxHex.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTxHex.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[0].signature, twiceSignedTxJson.deploy.hash, sourceKeyPair.pub).should.equals(true);
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxJson.deploy.approvals[1].signature, twiceSignedTxJson.deploy.hash, bitgoKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxHex.deploy.approvals[0].signature, twiceSignedTxHex.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxHex.deploy.approvals[1].signature, twiceSignedTxHex.deploy.hash, bitgoKeyPair.pub).should.equals(true);
     });
 
     it('should be rejected if invalid key', async () => {
@@ -197,7 +197,7 @@ describe('Casper', function() {
 
       const params = {
         txPrebuild: {
-          txJson: tx.toBroadcastFormat(),
+          txHex: tx.toBroadcastFormat(),
         },
         prv: invalidPrivateKey,
       };
@@ -257,7 +257,7 @@ describe('Casper', function() {
       const tx = (await txBuilder.build()) as Transaction;
       const signTxparams = {
         txPrebuild: {
-          txJson: tx.toBroadcastFormat(),
+          txHex: tx.toBroadcastFormat(),
         },
         prv: sourceKeyPair.prv,
       };
@@ -269,7 +269,7 @@ describe('Casper', function() {
       };
       const explainTxParams: ExplainTransactionOptions = {
         halfSigned: {
-          txHex: halfSigned.txJson,
+          txHex: halfSigned.txHex,
         },
         feeInfo,
       };
