@@ -3528,18 +3528,6 @@ bl@4.0.3, bl@^1.0.0:
   dependencies:
     nanoassert "^1.0.0"
 
-blake2b@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/blake2b/-/blake2b-1.2.0.tgz#ca75acfe31a1f70bc28f9fdd9b60b21731e09f38"
-  integrity sha1-ynWs/jGh9wvCj5/dm2CyFzHgnzg=
-
-"blake2b@git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac":
-  version "2.1.3"
-  resolved "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
-  dependencies:
-    blake2b-wasm "https://github.com/BitGo/blake2b-wasm#193cdb71656c1a6c7f89b05d0327bb9b758d071b"
-    nanoassert "^1.0.0"
-
 "blake2b@https://github.com/BitGo/blake2b#6268e6dd678661e0acc4359e9171b97eb1ebf8ac":
   version "2.1.3"
   resolved "https://github.com/BitGo/blake2b#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
