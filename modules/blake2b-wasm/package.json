@@ -1,0 +1,31 @@
+{
+  "name": "blake2b-wasm",
+  "version": "2.1.0",
+  "description": "Blake2b implemented in WASM",
+  "main": "index.js",
+  "dependencies": {
+    "nanoassert": "^1.0.0"
+  },
+  "devDependencies": {
+    "blake2b": "^1.2.0",
+    "browserify": "^14.4.0",
+    "tape": "^4.6.3",
+    "wat2js": "^1.1.1",
+    "wat2wasm": "^1.0.2"
+  },
+  "scripts": {
+    "compile": "wat2js blake2b.wat -o blake2b.js",
+    "demo": "browserify example.js > bundle.js",
+    "test": "tape test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/blake2b-wasm.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/blake2b-wasm/issues"
+  },
+  "homepage": "https://github.com/mafintosh/blake2b-wasm"
+}
