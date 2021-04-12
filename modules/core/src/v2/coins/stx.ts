@@ -12,6 +12,8 @@ import {
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  SignTransactionOptions,
+  TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
@@ -41,6 +43,15 @@ export interface ExplainTransactionOptions {
     txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
   };
   feeInfo: TransactionFee;
+}
+
+export interface StxSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  source: string;
 }
 
 export class Stx extends BaseCoin {
@@ -138,9 +149,37 @@ export class Stx extends BaseCoin {
     }
   }
 
-  signTransaction(params: any): Bluebird<SignedTransaction> {
-    throw new Error('Method not implemented.');
+  /**
+   * Signs stacks transaction
+   * @param params
+   * @param callback
+   */
+  signTransaction(
+    params: StxSignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+
+    return co<SignedTransaction>(function*() {
+      const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
+      const txBuilder = factory.from(params.txPrebuild.txHex);
+      txBuilder.sign({ key: params.prv });
+
+      const transaction: any = yield txBuilder.build();
+
+      if (!transaction) {
+        throw new Error('Invalid message passed to signMessage');
+      }
+
+      const response = {
+        txHex: transaction.toBroadcastFormat(),
+      };
+      return response;
+    })
+      .call(this)
+      .asCallback(callback);
   }
+
   parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
     throw new Error('Method not implemented.');
   }
