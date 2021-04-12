@@ -1,5 +1,5 @@
 {
-  "name": "blake2b-wasm",
+  "name": "@bitgo/blake2b-wasm",
   "version": "2.1.0",
   "description": "Blake2b implemented in WASM",
   "main": "index.js",

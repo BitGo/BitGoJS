@@ -3,7 +3,7 @@
 Blake2b implemented in WASM
 
 ```
-npm install blake2b-wasm
+npm install @bitgo/blake2b-wasm
 ```
 
 Works in browsers that support WASM and Node.js 8+.
@@ -11,7 +11,7 @@ Works in browsers that support WASM and Node.js 8+.
 ## Usage
 
 ``` js
-var blake2b = require('blake2b-wasm')
+var blake2b = require('@bitgo/blake2b-wasm')
 
 if (!blake2b.SUPPORTED) {
   console.log('WebAssembly not supported by your runtime')
