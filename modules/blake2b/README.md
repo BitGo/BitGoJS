@@ -1,4 +1,4 @@
-# `blake2b`
+# `@bitgo/blake2b`
 
 [![Build Status](https://travis-ci.org/emilbayes/blake2b.svg?branch=master)](https://travis-ci.org/emilbayes/blake2b)
 
@@ -18,7 +18,7 @@ implementation from C to Javascript.
 ## Usage
 
 ```js
-var blake2b = require('blake2b')
+var blake2b = require('@bitgo/blake2b')
 
 var output = new Uint8Array(64)
 var input = Buffer.from('hello world')
@@ -75,7 +75,7 @@ to have the hash return a new Uint8Array with the hash.
 ## Install
 
 ```sh
-npm install blake2b
+npm install @bitgo/blake2b
 ```
 
 ## Test vectors
