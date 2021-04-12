@@ -63,20 +63,19 @@ export class ContractBuilder extends TransactionBuilder {
       fee: new BigNum(this._fee.fee),
       nonce: new BigNum(this._nonce),
     };
-    if (this._multiSignerKeyPairs.length === 0) {
-      throw new InvalidParameterValueError('supply at least 1 public key');
-    }
-    if (this._multiSignerKeyPairs.length === 1) {
+    if (this._fromPubKeys.length === 1) {
       return {
         ...defaultOpts,
-        publicKey: this._multiSignerKeyPairs[0].getKeys(this._multiSignerKeyPairs[0].getCompressed()).pub,
+        publicKey: this._fromPubKeys[0],
       };
-    } else {
+    } else if (this._fromPubKeys.length > 1) {
       return {
         ...defaultOpts,
-        publicKeys: this._multiSignerKeyPairs.map(k => k.getKeys(k.getCompressed()).pub),
+        publicKeys: this._fromPubKeys,
         numSignatures: this._numberSignatures,
       };
+    } else {
+      throw new InvalidParameterValueError('supply at least 1 public key');
     }
   }
 
@@ -133,7 +132,11 @@ export class ContractBuilder extends TransactionBuilder {
   }
 
   functionArgs(args: ClarityValueJson[]): this {
-    this._functionArgs = args.map(arg => parseToCV(arg.value, arg.type as ClarityAbiType));
+    this._functionArgs = args.map(arg => {
+      let type = arg.type === 'int' ? 'int128' : arg.type;
+      type = type === 'uint' ? 'uint128' : type;
+      return parseToCV(arg.value, type as ClarityAbiType);
+    });
     return this;
   }
 }

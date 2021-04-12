@@ -35,7 +35,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   private parseTransaction(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(rawTransaction.substring(2), 'hex')),
+      BufferReader.fromBuffer(Buffer.from(Utils.removeHexPrefix(rawTransaction), 'hex')),
     );
     tx.stxTransaction = stackstransaction;
     return tx;

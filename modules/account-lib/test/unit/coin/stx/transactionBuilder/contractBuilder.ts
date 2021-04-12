@@ -35,6 +35,19 @@ describe('Stx Contract call Builder', () => {
       tx.type.should.equal(TransactionType.ContractCall);
     });
 
+    it('a signed serialized contract call transaction', async () => {
+      const builder = factory.from(testData.SIGNED_CONTRACT_CALL);
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+      should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+      should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+      should.deepEqual(txJson.nonce, 0);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
+      tx.type.should.equal(TransactionType.ContractCall);
+    });
+
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
       builder.network(new StacksTestnet());

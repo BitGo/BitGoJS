@@ -30,6 +30,9 @@ export class TransferBuilder extends TransactionBuilder {
     if (txData.payload.payloadType === PayloadType.TokenTransfer) {
       this.to(txData.payload.to);
       this.amount(txData.payload.amount);
+      if (txData.payload.memo) {
+        this.memo(txData.payload.memo);
+      }
       super.initBuilder(tx);
     } else {
       throw new BuildTransactionError('Transaction should be transfer');
