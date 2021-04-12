@@ -75,7 +75,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
-    const stackstransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(rawTransaction)));
+    const stackstransaction = deserializeTransaction(
+      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')),
+    );
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
     return this.transaction;
