@@ -8,13 +8,10 @@
     "nanoassert": "^2.0.0"
   },
   "devDependencies": {
-    "browserify": "^14.4.0",
-    "coverify": "^1.4.1",
     "tape": "^4.6.3"
   },
   "scripts": {
-    "test": "tape test.js",
-    "cov": "browserify -t coverify test.js | node | coverify"
+    "unit-test": "tape test.js"
   },
   "repository": {
     "type": "git",
