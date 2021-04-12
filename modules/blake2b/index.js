@@ -1,5 +1,5 @@
 var assert = require('nanoassert')
-var b2wasm = require('blake2b-wasm')
+var b2wasm = require('@bitgo/blake2b-wasm')
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
