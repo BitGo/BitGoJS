@@ -9,7 +9,7 @@ var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
-var blake2b = require('blake2b')
+var blake2b = require('@bitgo/blake2b')
 
 var zcashVersion = require('./forks/zcash/version')
 
