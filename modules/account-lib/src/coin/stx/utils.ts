@@ -15,11 +15,16 @@ import {
   AddressVersion,
   addressFromPublicKeys,
   createStacksPublicKey,
+  signWithKey,
+  createStacksPrivateKey,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
-import { InvalidParameterValueError } from '../baseCoin/errors';
+import { InvalidParameterValueError, SigningError } from '../baseCoin/errors';
+import { SignResponse } from './iface';
+import { KeyPair } from '.';
+
 
 const ContractFunctionNames = [
   'stack-stx',
@@ -290,4 +295,19 @@ export function getSTXAddressFromPubKeys(
   const address = addressFromPublicKeys(addressVersion, addressHashMode, stxPubKeys.length, stxPubKeys);
 
   return { address: addressToString(address), hash160: address.hash160 };
+}
+
+/**
+ * signs a string message
+ * @param keyPair
+ * @param data  - message to be signed
+ * @returns signed message string
+ */
+export function signMessage(keyPair: KeyPair, data: string): string {
+  const prv = keyPair.getKeys().prv;
+  if (prv) {
+    return signWithKey(createStacksPrivateKey(prv), data).data;
+  } else {
+    throw new SigningError('Missing private key');
+  }
 }

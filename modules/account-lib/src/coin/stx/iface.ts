@@ -32,3 +32,8 @@ export interface ClarityValueJson {
   type: string;
   value: string
 }
+
+export interface SignResponse {
+  signature: string;
+  recid: number;
+}
