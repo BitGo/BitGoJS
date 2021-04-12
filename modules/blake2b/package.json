@@ -1,0 +1,30 @@
+{
+  "name": "blake2b",
+  "version": "2.1.3",
+  "description": "Blake2b (64-bit version) in pure Javascript",
+  "main": "index.js",
+  "dependencies": {
+    "blake2b-wasm": "https://github.com/BitGo/blake2b-wasm#193cdb71656c1a6c7f89b05d0327bb9b758d071b",
+    "nanoassert": "^2.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "coverify": "^1.4.1",
+    "tape": "^4.6.3"
+  },
+  "scripts": {
+    "test": "tape test.js",
+    "cov": "browserify -t coverify test.js | node | coverify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emilbayes/blake2b.git"
+  },
+  "keywords": [],
+  "author": "Emil Bay <github@tixz.dk>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emilbayes/blake2b/issues"
+  },
+  "homepage": "https://github.com/emilbayes/blake2b#readme"
+}
