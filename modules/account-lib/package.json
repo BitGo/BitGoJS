@@ -32,6 +32,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bitgo/blake2b": "^3.0.0-rc.1",
     "@bitgo/bls": "^0.1.0",
     "@bitgo/statics": "^6.5.0",
     "@bitgo/utxo-lib": "^1.7.1",
@@ -44,7 +45,6 @@
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",
     "bignumber.js": "^9.0.0",
-    "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.29",
     "elliptic": "^6.5.2",
