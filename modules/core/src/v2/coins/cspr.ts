@@ -30,7 +30,7 @@ interface SignTransactionOptions extends BaseSignTransactionOptions {
 }
 
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txJson: string;
+  txHex: string;
 }
 
 export interface TransactionFee {
@@ -166,7 +166,7 @@ export class Cspr extends BaseCoin {
   ): Bluebird<SignedTransaction> {
     const self = this;
     return co<SignedTransaction>(function*() {
-      const txBuilder = accountLib.getBuilder(self.getChain()).from(params.txPrebuild.txJson);
+      const txBuilder = accountLib.getBuilder(self.getChain()).from(params.txPrebuild.txHex);
       const key = params.prv;
       txBuilder.sign({ key });
 
@@ -175,7 +175,7 @@ export class Cspr extends BaseCoin {
         throw new InvalidTransactionError('Error while trying to build transaction');
       }
       const response = {
-        txJson: transaction.toBroadcastFormat(),
+        txHex: transaction.toBroadcastFormat(),
       };
       return transaction.signature.length >= 2 ? response : { halfSigned: response };
     })
