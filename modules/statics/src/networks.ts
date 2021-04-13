@@ -42,6 +42,11 @@ export interface AccountNetwork extends BaseNetwork {
   readonly accountExplorerUrl?: string;
 }
 
+export interface EthereumNetwork extends AccountNetwork {
+  // unique chain id used for replay-protecting transactions
+  readonly chainId: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
@@ -182,16 +187,18 @@ class DashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.DASH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
-class Celo extends Mainnet implements AccountNetwork {
+class Celo extends Mainnet implements EthereumNetwork {
   family = CoinFamily.CELO;
   explorerUrl = 'https://explorer.celo.org/tx/';
   accountExplorerUrl = 'https://explorer.celo.org/address/';
+  chainId = 42220;
 }
 
-class CeloTestnet extends Testnet implements AccountNetwork {
+class CeloTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.CELO;
   explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
+  chainId = 44787;
 }
 
 //TODO update explorerUrl STLX-1657
@@ -208,10 +215,12 @@ class CasperTestnet extends Testnet implements AccountNetwork {
   accountExplorerUrl = '';
 }
 
-class Ethereum extends Mainnet implements AccountNetwork {
+class Ethereum extends Mainnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
   accountExplorerUrl = 'https://etherscan.io/address/';
+  // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
+  chainId = 1;
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -226,28 +235,36 @@ class Pyrmont extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://beaconscan.com/pyrmont/address';
 }
 
-class Kovan extends Testnet implements AccountNetwork {
+class Kovan extends Testnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://kovan.etherscan.io/tx/';
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
+  // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
+  chainId = 42;
 }
 
-class Goerli extends Testnet implements AccountNetwork {
+class Goerli extends Testnet implements EthereumNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://goerli.etherscan.io/tx/';
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
+  // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
+  chainId = 5;
 }
 
-class EthereumClassic extends Mainnet implements AccountNetwork {
+class EthereumClassic extends Mainnet implements EthereumNetwork {
   family = CoinFamily.ETC;
   explorerUrl = 'https://blockscout.com/etc/mainnet/tx/';
   accountExplorerUrl = 'https://blockscout.com/etc/mainnet/address/';
+  // from  https://chainid.network/chains/
+  chainId = 61;
 }
 
-class EthereumClassicTestnet extends Testnet implements AccountNetwork {
+class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.ETC;
   explorerUrl = 'https://blockscout.com/etc/mordor/tx/';
   accountExplorerUrl = 'https://blockscout.com/etc/mordor/address/';
+  // from  https://chainid.network/chains/
+  chainId = 63;
 }
 
 class Eos extends Mainnet implements AccountNetwork {
@@ -301,16 +318,18 @@ class OfcTestnet extends Testnet implements OfcNetwork {
   explorerUrl = undefined;
 }
 
-class Rbtc extends Mainnet implements AccountNetwork {
+class Rbtc extends Mainnet implements EthereumNetwork {
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.rsk.co/address/';
+  chainId = 30;
 }
 
-class RbtcTestnet extends Testnet implements AccountNetwork {
+class RbtcTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.testnet.rsk.co/address/';
+  chainId = 31;
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
