@@ -1,3 +1,4 @@
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import EthereumCommon from 'ethereumjs-common';
 
 /**
@@ -7,8 +8,8 @@ export const testnetCommon = EthereumCommon.forCustomChain(
   'kovan',
   {
     name: 'testnet',
-    networkId: 42,
-    chainId: 42,
+    networkId: (coins.get('teth').network as EthereumNetwork).chainId,
+    chainId: (coins.get('teth').network as EthereumNetwork).chainId,
   },
   'petersburg',
 );
@@ -20,8 +21,8 @@ export const mainnetCommon = EthereumCommon.forCustomChain(
   'mainnet',
   {
     name: 'mainnet',
-    networkId: 1,
-    chainId: 1,
+    networkId: (coins.get('eth').network as EthereumNetwork).chainId,
+    chainId: (coins.get('eth').network as EthereumNetwork).chainId,
   },
   'petersburg',
 );

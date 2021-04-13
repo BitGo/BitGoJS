@@ -57,10 +57,6 @@ describe('Eth Transaction builder flush native coins', function() {
         contractAddress: '0x8f977e912ef500548a0c3be6ddde9899f1199b81',
       });
 
-      console.log('DEBUG tx type')
-      console.log(tx.type)
-      console.log(TransactionType.FlushCoins)
-      console.log(TransactionType)
       tx.type.should.equal(TransactionType.FlushCoins);
       const txJson = tx.toJson();
       txJson.gasLimit.should.equal('1000');
