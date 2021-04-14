@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
-import { Deploy, ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import _ from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
@@ -72,7 +71,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     const jsonTransaction = JSON.parse(rawTransaction);
-    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as Deploy;
+    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as DeployUtil.Deploy;
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -304,7 +303,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     switch (this.transaction.type) {
       case TransactionType.Send:
         const transferSession = this._session as CasperTransferTransaction;
-        session = ExecutableDeployItem.newTransfer(
+        session = DeployUtil.ExecutableDeployItem.newTransfer(
           transferSession.amount,
           transferSession.target,
           undefined,
@@ -315,7 +314,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
         const moduleBytesSession = this._session as CasperModuleBytesTransaction;
-        session = ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
+        session = DeployUtil.ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
         break;
       default:
         throw new BuildTransactionError('Transaction Type error');
