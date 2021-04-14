@@ -1,6 +1,6 @@
 import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
-import { AccountNetwork, Networks } from './networks';
+import { AccountNetwork, EthereumNetwork, Networks } from './networks';
 
 export interface AccountConstructorOptions {
   fullName: string;
@@ -248,7 +248,7 @@ export function erc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.ethereum,
+  network: EthereumNetwork = Networks.main.ethereum,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -290,7 +290,7 @@ export function terc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.kovan
+  network: EthereumNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
@@ -312,7 +312,7 @@ export function terc20(
 export function erc20CompatibleAccountCoin(
   name: string,
   fullName: string,
-  network: AccountNetwork,
+  network: EthereumNetwork,
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
@@ -361,7 +361,7 @@ export function celoToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.celo,
+  network: EthereumNetwork = Networks.main.celo,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -403,7 +403,7 @@ export function tceloToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.celo
+  network: EthereumNetwork = Networks.test.celo
 ) {
   return celoToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
