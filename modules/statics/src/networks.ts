@@ -369,7 +369,7 @@ class Trx extends Mainnet implements AccountNetwork {
 
 class TrxTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.TRX;
-  explorerUrl = 'https://nile.tronscan.org/#/transaction/';
+  explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
