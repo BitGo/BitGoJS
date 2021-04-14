@@ -1,7 +1,6 @@
 import { createHash } from 'crypto';
 import BigNumber from 'bignumber.js';
-import { Keys, PublicKey } from 'casper-client-sdk';
-import { ExecutableDeployItem, ModuleBytes } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { Keys, PublicKey, DeployUtil } from 'casper-client-sdk';
 import * as hex from '@stablelib/hex';
 import { ecdsaSign, ecdsaVerify } from 'secp256k1';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
@@ -130,10 +129,10 @@ export function isValidTransferId(id: number): boolean {
  * Get amount argument from deploy session
  * Used for transfers, delegate and undelegate transactions
  *
- * @param {ExecutableDeployItem} transferTx transfer session
+ * @param {DeployUtil.ExecutableDeployItem} transferTx transfer session
  * @returns {string} the transfer amount
  */
-function getAmountArgValue(transferTx: ExecutableDeployItem): string {
+function getAmountArgValue(transferTx: DeployUtil.ExecutableDeployItem): string {
   const amount = transferTx.getArgByName('amount');
 
   if (!amount || !amount.isBigNumber()) {
@@ -146,10 +145,10 @@ function getAmountArgValue(transferTx: ExecutableDeployItem): string {
 /**
  * Get destination address from deploy transfer session
  *
- * @param {ExecutableDeployItem} transferTx transfer session
+ * @param {DeployUtil.ExecutableDeployItem} transferTx transfer session
  * @returns {string} the hex destination address of the transfer
  */
-export function getTransferDestinationAddress(transferTx: ExecutableDeployItem): string {
+export function getTransferDestinationAddress(transferTx: DeployUtil.ExecutableDeployItem): string {
   const toAddress = transferTx.getArgByName(TRANSFER_TO_ADDRESS);
 
   if (!toAddress || !toAddress.isString()) {
@@ -162,20 +161,20 @@ export function getTransferDestinationAddress(transferTx: ExecutableDeployItem):
 /**
  * Get transfer amount from deploy transfer session
  *
- * @param {ExecutableDeployItem} transferTx transfer session
+ * @param {DeployUtil.ExecutableDeployItem} transferTx transfer session
  * @returns {string} the transfer amount
  */
-export function getTransferAmount(transferTx: ExecutableDeployItem): string {
+export function getTransferAmount(transferTx: DeployUtil.ExecutableDeployItem): string {
   return getAmountArgValue(transferTx);
 }
 
 /**
  * Get transfer id from deploy transfer session
  *
- * @param {ExecutableDeployItem} transferTx transfer session
+ * @param {DeployUtil.ExecutableDeployItem} transferTx transfer session
  * @returns {number | undefined} the transferId if exists or undefined
  */
-export function getTransferId(transferTx: ExecutableDeployItem): number | undefined {
+export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): number | undefined {
   const transferId = transferTx.getArgByName('id');
 
   if (!transferId || !transferId.isOption()) {
@@ -194,10 +193,10 @@ export function getTransferId(transferTx: ExecutableDeployItem): number | undefi
 /**
  * Get delegator address from deploy delegate or undelegate session
  *
- * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @param {DeployUtil.ExecutableDeployItem} delegateTx delegate or undelegate session
  * @returns {string} the hex destination address of the delegate / undelegate
  */
-export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
+export function getDelegatorAddress(delegateTx: DeployUtil.ExecutableDeployItem): string {
   const delegatorAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
 
   if (!delegatorAddress || !delegatorAddress.isString()) {
@@ -210,10 +209,10 @@ export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
 /**
  * Get validator address from deploy delegate or undelegate session
  *
- * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @param {DeployUtil.ExecutableDeployItem} delegateTx delegate or undelegate session
  * @returns {string} the hex destination address of the delegate / undelegate
  */
-export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
+export function getValidatorAddress(delegateTx: DeployUtil.ExecutableDeployItem): string {
   const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
 
   if (!validatorAddress || !validatorAddress.isPublicKey()) {
@@ -226,20 +225,20 @@ export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
 /**
  * Get amount from deploy delegate or undelegate session
  *
- * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @param {DeployUtil.ExecutableDeployItem} delegateTx delegate or undelegate session
  * @returns {string} the delegate / undelegate amount
  */
-export function getDelegateAmount(delegateTx: ExecutableDeployItem): string {
+export function getDelegateAmount(delegateTx: DeployUtil.ExecutableDeployItem): string {
   return getAmountArgValue(delegateTx);
 }
 
 /**
  * Get the transaction type from an ExecutableDeployItem session
  *
- * @param {ExecutableDeployItem} session - The session to be analyzed
+ * @param {DeployUtil.ExecutableDeployItem} session - The session to be analyzed
  * @returns {TransactionType | undefined} - the transaction type or undefined if not a valid type
  */
-export function getDeployType(session: ExecutableDeployItem): TransactionType | undefined {
+export function getDeployType(session: DeployUtil.ExecutableDeployItem): TransactionType | undefined {
   if (session.isTransfer()) {
     return TransactionType.Send;
   }
@@ -261,10 +260,10 @@ export function getDeployType(session: ExecutableDeployItem): TransactionType | 
  * Check if a ModuleBytes session instance is related to the Casper Contract
  * used for Wallet Initialization, Delegate and Undelegate
  *
- * @param {ModuleBytes} session - The session to be analyzed
+ * @param {DeployUtil.ModuleBytes} session - The session to be analyzed
  * @returns {boolean} - true if session data is a Casper Contract
  */
-function isCasperContract(session?: ModuleBytes): boolean {
+function isCasperContract(session?: DeployUtil.ModuleBytes): boolean {
   if (!session) {
     return false;
   }

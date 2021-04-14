@@ -1,7 +1,6 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { CLValue, DeployUtil, PublicKey } from 'casper-client-sdk';
-import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
 import * as testData from '../../../resources/cspr/cspr';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr';
@@ -65,7 +64,7 @@ describe('Cspr Transaction', () => {
     const sourcePublicKey = PublicKey.fromHex(testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
     const deployParams = new DeployUtil.DeployParams(sourcePublicKey, CHAIN_NAME, gasPrice);
 
-    const session = ExecutableDeployItem.newTransfer(1, sourcePublicKey, undefined, 123);
+    const session = DeployUtil.ExecutableDeployItem.newTransfer(1, sourcePublicKey, undefined, 123);
 
     const payment = DeployUtil.standardPayment(parseInt(testData.FEE.gasLimit));
 
