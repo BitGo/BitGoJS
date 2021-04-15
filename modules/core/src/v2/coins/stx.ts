@@ -218,7 +218,7 @@ export class Stx extends BaseCoin {
           },
         ];
 
-        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
         const explanationResult: StxTransactionExplanation = {
           displayOrder,
           id: txJson.id,
