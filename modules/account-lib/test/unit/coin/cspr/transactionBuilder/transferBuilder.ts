@@ -30,10 +30,10 @@ describe('Casper Transfer Builder', () => {
 
         should.exist(tx.casperTx.approvals, 'There are no approvals');
         should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
-        should.deepEqual(tx.casperTx.approvals[0].signer.toUpperCase(), owner1Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
         should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
@@ -44,7 +44,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount was not as expected');
       });
 
@@ -56,10 +56,10 @@ describe('Casper Transfer Builder', () => {
 
         should.exist(tx.casperTx.approvals, 'There are no approvals');
         should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
-        should.deepEqual(tx.casperTx.approvals[0].signer.toUpperCase(), owner1Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
         should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
@@ -70,7 +70,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount was not as expected');
       });
 
@@ -83,11 +83,11 @@ describe('Casper Transfer Builder', () => {
 
         should.exist(tx.casperTx.approvals, 'There are no approvals');
         should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
-        should.deepEqual(tx.casperTx.approvals[0].signer.toUpperCase(), owner1Address, 'Error in the signature');
-        should.deepEqual(tx.casperTx.approvals[1].signer.toUpperCase(), owner2Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[1].signer, owner2Address, 'Error in the signature');
         should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
 
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
         should.equal(
@@ -99,7 +99,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -112,11 +112,11 @@ describe('Casper Transfer Builder', () => {
 
         should.exist(tx.casperTx.approvals, 'There are no approvals');
         should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
-        should.deepEqual(tx.casperTx.approvals[0].signer.toUpperCase(), owner1Address, 'Error in the signature');
-        should.deepEqual(tx.casperTx.approvals[1].signer.toUpperCase(), owner2Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[1].signer, owner2Address, 'Error in the signature');
         should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
 
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
         should.equal(
@@ -128,7 +128,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -141,11 +141,11 @@ describe('Casper Transfer Builder', () => {
 
         should.exist(tx.casperTx.approvals, 'There are no approvals');
         should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
-        should.deepEqual(tx.casperTx.approvals[0].signer.toUpperCase(), owner1Address, 'Error in the signature');
-        should.deepEqual(tx.casperTx.approvals[1].signer.toUpperCase(), owner2Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
+        should.deepEqual(tx.casperTx.approvals[1].signer, owner2Address, 'Error in the signature');
         should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
 
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
         should.equal(
@@ -157,7 +157,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -169,7 +169,7 @@ describe('Casper Transfer Builder', () => {
         should.deepEqual(tx.casperTx.approvals.length, 0, 'Error in the number of signatures');
         should.exist(tx.casperTx.hash), 'There is no hash';
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from.toUpperCase(), owner1Address, 'The recipient does not match');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
 
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
@@ -182,7 +182,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
     });
@@ -195,13 +195,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -225,13 +219,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -259,13 +247,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -289,13 +271,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -328,13 +304,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -358,13 +328,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -398,13 +362,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -428,13 +386,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -468,13 +420,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -498,13 +444,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -538,13 +478,7 @@ describe('Casper Transfer Builder', () => {
           const txJson = tx.toJson();
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx.casperTx.session
               .getArgByName('id')!
@@ -568,13 +502,7 @@ describe('Casper Transfer Builder', () => {
           const tx2Json = tx2.toJson();
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('to_address')!
-              .asString()
-              .toUpperCase(),
-            owner2Address,
-          );
+          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
           should.equal(
             tx2.casperTx.session
               .getArgByName('id')!
@@ -784,11 +712,11 @@ describe('Casper Transfer Builder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.equal(txJson.deployType, 'Send');
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
       should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT);
-      should.equal(txJson.to!.toUpperCase(), owner2Address);
+      should.equal(txJson.to!, owner2Address);
       should.equal(txJson.transferId, 255);
     });
 
@@ -801,11 +729,11 @@ describe('Casper Transfer Builder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.equal(txJson.deployType, 'Send');
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
       should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT);
-      should.equal(txJson.to!.toUpperCase(), owner2Address);
+      should.equal(txJson.to!, owner2Address);
       should.equal(txJson.transferId, 255);
     });
   });

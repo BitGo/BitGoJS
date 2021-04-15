@@ -249,7 +249,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private checkDuplicatedKeys(key: BaseKey) {
     this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
-      if (_sourceKeyPair.getKeys().prv === key.key.toUpperCase()) {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
       // Try to get extended keys in order to validate them
@@ -259,7 +259,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       } catch (err) {
         return;
       }
-      if (xprv && xprv.toUpperCase() === key.key.toUpperCase()) {
+      if (xprv && xprv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
     });
@@ -282,6 +282,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region auxiliaryMethods
   /**
    * Generate a DeployParams instance with the transaction data
+   *
    * @returns {DeployUtil.DeployParams}
    */
   private getDeployParams(): DeployUtil.DeployParams {
@@ -296,6 +297,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Generate the session for the Deploy according to the transactionType.
+   *
    * @returns {DeployUtil.ExecutableDeployItem}
    */
   private getSession(): DeployUtil.ExecutableDeployItem {
@@ -324,6 +326,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Checks whether the transaction has the owner signature
+   *
    * @param {string} pub - public key of the signer
    * @returns {boolean} true if the pub key already signed th transaction
    * @private
@@ -331,7 +334,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private isTransactionSignedByPub(pub: string): boolean {
     return (
       _.findIndex(this.transaction.casperTx.approvals, approval => {
-        const approvalSigner = removeAlgoPrefixFromHexValue(approval.signer).toUpperCase();
+        const approvalSigner = removeAlgoPrefixFromHexValue(approval.signer);
         return approvalSigner === pub;
       }) !== -1
     );
@@ -339,6 +342,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Add signatures to the transaction
+   *
    * @private
    */
   private processSigning(): void {

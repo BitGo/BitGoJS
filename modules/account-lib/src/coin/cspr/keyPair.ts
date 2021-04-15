@@ -43,26 +43,17 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       return {
         pub: HDNode.fromBase58(xpub)
           .getPublicKeyBuffer()
-          .toString('hex')
-          .toUpperCase(),
+          .toString('hex'),
         prv: xprv
           ? HDNode.fromBase58(xprv)
               .keyPair.getPrivateKeyBuffer()
               .toString('hex')
-              .toUpperCase()
           : undefined,
       };
     } else {
       return {
-        pub: this.keyPair.Q.getEncoded(true)
-          .toString('hex')
-          .toUpperCase(),
-        prv: this.keyPair.d
-          ? this.keyPair.d
-              .toBuffer(32)
-              .toString('hex')
-              .toUpperCase()
-          : undefined,
+        pub: this.keyPair.Q.getEncoded(true).toString('hex'),
+        prv: this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined,
       };
     }
   }
