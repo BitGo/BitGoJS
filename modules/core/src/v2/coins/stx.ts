@@ -37,9 +37,9 @@ export interface StxTransactionExplanation extends TransactionExplanation {
 }
 
 export interface ExplainTransactionOptions {
-  txHex?: string; // txHex is poorly named here; it is just a wrapped JSON object
+  txHex?: string;
   halfSigned?: {
-    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
+    txHex: string;
   };
   feeInfo: TransactionFee;
 }
