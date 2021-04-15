@@ -2,12 +2,16 @@ import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
+  AuthType,
   BufferReader,
   deserializeTransaction,
   emptyMessageSignature,
   isSingleSig,
   makeSigHashPreSign,
+  nextVerification,
   publicKeyFromSignature,
+  StacksMessageType,
+  PubKeyEncoding,
 } from '@stacks/transactions';
 import { StacksNetwork, StacksTestnet } from '@stacks/network';
 import { BaseTransactionBuilder } from '../baseCoin';
@@ -56,18 +60,41 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.fee({ fee: txData.fee.toString() });
     this.nonce(txData.nonce);
     // check if it is signed or unsigned tx
-    if (
-      isSingleSig(tx.stxTransaction.auth.spendingCondition!) &&
-      tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data
-    ) {
-      const sigHashPreSign = makeSigHashPreSign(
-        tx.stxTransaction.verifyBegin(),
-        tx.stxTransaction.auth.authType!,
-        new BigNum(this._fee.fee),
-        new BigNum(this._nonce),
-      );
-      this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
-      this._fromPubKeys = [publicKeyFromSignature(sigHashPreSign, this._signatures[0])];
+    if (tx.stxTransaction.auth.spendingCondition === undefined)
+      throw new InvalidTransactionError('spending condition cannot be undefined');
+    const authType = tx.stxTransaction.auth.authType ? tx.stxTransaction.auth.authType : AuthType.Standard;
+    if (isSingleSig(tx.stxTransaction.auth.spendingCondition)) {
+      if (tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
+        const sigHashPreSign = makeSigHashPreSign(
+          tx.stxTransaction.verifyBegin(),
+          authType,
+          new BigNum(this._fee.fee),
+          new BigNum(this._nonce),
+        );
+        this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
+        this._fromPubKeys = [publicKeyFromSignature(sigHashPreSign, this._signatures[0])];
+      }
+    } else {
+      let curSignHash = tx.stxTransaction.verifyBegin();
+      tx.stxTransaction.auth.spendingCondition.fields.forEach(field => {
+        if (field.contents.type === StacksMessageType.MessageSignature) {
+          const signature = field.contents;
+          this._signatures.push(signature);
+          this._numberSignatures++;
+          const nextVerify = nextVerification(
+            curSignHash,
+            authType,
+            new BigNum(this._fee.fee),
+            new BigNum(this._nonce),
+            PubKeyEncoding.Compressed,
+            signature,
+          );
+          this._fromPubKeys.push(nextVerify.pubKey.data.toString('hex'));
+          curSignHash = nextVerify.nextSigHash;
+        } else {
+          this._fromPubKeys.push(field.contents.data.toString('hex'));
+        }
+      });
     }
   }
 
@@ -88,8 +115,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._transaction.stxTransaction.setFee(new BigNum(this._fee.fee));
     this._transaction.stxTransaction.setNonce(new BigNum(this._nonce));
-    for (const sig of this._signatures) {
-      await this.transaction.signWithSignatures(sig);
+
+    if (this._signatures.length > 0) {
+      await this.transaction.signWithSignatures(this._signatures, this._fromPubKeys);
     }
     if (this._signatures.length === 0) {
       if (this._numberSignatures > 1 && this._multiSignerKeyPairs.length !== this._numberSignatures + 1) {

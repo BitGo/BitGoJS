@@ -69,6 +69,12 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SINGED_TRANSACTION);
     });
 
+    it('a multisig serialized transfer transaction', async () => {
+      const builder = factory.from(testData.MULTI_SIG_SINGED_TRANSACTION);
+      const tx = await builder.build();
+      should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SINGED_TRANSACTION);
+    });
+
     it('a transfer transaction signed multiple times', async () => {
       const builder = initTxBuilder();
       builder.memo('test memo');

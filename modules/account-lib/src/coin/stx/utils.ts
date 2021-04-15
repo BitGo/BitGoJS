@@ -25,7 +25,6 @@ import { InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { SignResponse } from './iface';
 import { KeyPair } from '.';
 
-
 const ContractFunctionNames = [
   'stack-stx',
   'delegate-stx',
@@ -299,6 +298,7 @@ export function getSTXAddressFromPubKeys(
 
 /**
  * signs a string message
+ *
  * @param keyPair
  * @param data  - message to be signed
  * @returns signed message string
