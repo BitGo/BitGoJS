@@ -1,8 +1,9 @@
-import * as Promise from 'bluebird';
+import * as PromiseB from 'bluebird';
 import { Stx, Tstx } from '../../../../src/v2/coins/';
-
-const co = Promise.coroutine;
+import * as accountLib from '@bitgo/account-lib';
+const co = PromiseB.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
+import * as testData from '../../fixtures/coins/stx';
 
 describe('STX:', function() {
   let bitgo;
@@ -42,6 +43,37 @@ describe('STX:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
+
+  it('should explain a transfer transaction', async function() {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainTransfer,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.txExplainedTransfer.id);
+    explain.outputAmount.should.equal(testData.txExplainedTransfer.outputAmount);
+    explain.outputs[0].amount.should.equal(testData.txExplainedTransfer.outputAmount);
+    explain.outputs[0].address.should.equal(testData.txExplainedTransfer.recipient);
+    explain.outputs[0].memo.should.equal(testData.txExplainedTransfer.memo);
+    explain.fee.should.equal(testData.txExplainedTransfer.fee);
+    explain.changeAmount.should.equal('0');
+  });
+
+
+  it('should explain a contract call transaction', async function() {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainContract,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.txExplainedContract.id);
+    explain.fee.should.equal(testData.txExplainedContract.fee);
+    explain.contractAddress.should.equal(testData.txExplainedContract.contractAddress);
+    explain.contractName.should.equal(testData.txExplainedContract.contractName);
+    explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
+    explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
+    explain.contractFunctionArgs[0].value.should.equal(testData.txExplainedContract.functionArgs[0].value);
+  });
+
+
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
@@ -55,6 +87,57 @@ describe('STX:', function() {
       const keyPair = basecoin.generateKeyPair(seed);
       keyPair.pub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
       keyPair.prv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+    });
+  });
+
+  describe('Sign transaction:', () => {
+    /**
+     * Build an unsigned account-lib multi-signature send transaction
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     */
+    const buildUnsignedTransaction = async function({
+      destination,
+      amount = '100000',
+      publicKey,
+    }) {
+
+      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.fee({
+        fee: '180',
+      });
+      txBuilder.to(destination);
+      txBuilder.amount(amount);
+      txBuilder.nonce(1);
+      txBuilder.fromPubKey(publicKey);
+      return await txBuilder.build();
+    };
+
+    it('should sign transaction', async function() {
+      const key = new accountLib.Stx.KeyPair();
+      const destination = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
+      const amount = '100000';
+
+      const unsignedTransaction = await buildUnsignedTransaction({
+        destination,
+        amount,
+        publicKey: key.getKeys().pub,
+      });
+      const tx = await basecoin.signTransaction({
+        prv: key.getKeys().prv!.toString(),
+        txPrebuild: {
+          txHex: unsignedTransaction.toBroadcastFormat(),
+        },
+      });
+      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+
+      const txBuilder = factory.from(tx.txHex);
+      const signedTx = await txBuilder.build();
+      const txJson = signedTx.toJson();
+      txJson.payload.to.should.equal(destination);
+      txJson.payload.amount.should.equal(amount);
+      signedTx.signature.length.should.equal(1);
     });
   });
 });
