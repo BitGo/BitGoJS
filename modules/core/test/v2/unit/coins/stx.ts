@@ -99,7 +99,7 @@ describe('STX:', function() {
     const buildUnsignedTransaction = async function({
       destination,
       amount = '100000',
-      publicKey
+      publicKey,
     }) {
 
       const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
@@ -109,7 +109,7 @@ describe('STX:', function() {
       });
       txBuilder.to(destination);
       txBuilder.amount(amount);
-      txBuilder.nonce(1)
+      txBuilder.nonce(1);
       txBuilder.fromPubKey(publicKey);
       return await txBuilder.build();
     };
@@ -122,7 +122,7 @@ describe('STX:', function() {
       const unsignedTransaction = await buildUnsignedTransaction({
         destination,
         amount,
-        publicKey: key.getKeys().pub
+        publicKey: key.getKeys().pub,
       });
       const tx = await basecoin.signTransaction({
         prv: key.getKeys().prv!.toString(),

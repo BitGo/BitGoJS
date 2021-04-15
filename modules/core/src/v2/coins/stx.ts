@@ -3,7 +3,6 @@
  */
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
-import { ECPair } from '@bitgo/utxo-lib';
 import {
   BaseCoin,
   KeyPair,
