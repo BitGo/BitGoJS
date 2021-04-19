@@ -9,6 +9,27 @@ describe('STX:', function() {
   let bitgo;
   let basecoin;
 
+  const badValidAddresses = [
+    '',
+    null,
+    'abc',
+    'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
+    'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
+  ];
+  const badVerifyAddresses = [
+    ...badValidAddresses,
+    'SB1DP9Q0QPPKB07FK79MQE0CDJAYEFSGFVXE1KZ8X',
+    'SYB44HYPYAT2BB2QE513NSP81HTMYWBJP2Q9N4TN',
+    'S32T758K6T2YRKG9Q0TJ16B6FP5QQREWZSE461MK8'
+  ];
+
+  const goodAddresses = [
+    'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
+    'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y',
+    'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
+    'SM3W5QFWGPG1JC8R25EVZDEP3BESJZ831JPNNQFTZ',
+  ];
+
   before(function() {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
@@ -25,24 +46,14 @@ describe('STX:', function() {
 
 
   it('should check valid addresses', (function() {
-    const badAddresses = [
-      '',
-      null,
-      'abc',
-      'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
-    ];
-    const goodAddresses = [
-      'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y',
-      'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
-      'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
-    ];
-
-    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
+    badValidAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
+  it('should verify addresses', (function() {
+    goodAddresses.map(address => { basecoin.verifyAddress({ address }).should.equal(true); });
+    badVerifyAddresses.map(address => (() => basecoin.verifyAddress({ address })).should.throw());
+  }));
 
   it('should explain a transfer transaction', async function() {
     const explain = await basecoin.explainTransaction({

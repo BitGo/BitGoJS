@@ -3,6 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
+import { c32addressDecode } from 'c32check';
 import {
   BaseCoin,
   KeyPair,
@@ -17,6 +18,7 @@ import {
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { InvalidAddressError } from '../../errors';
 
 const co = Bluebird.coroutine;
 
@@ -87,9 +89,20 @@ export class Stx extends BaseCoin {
     // TODO: Implement when available on the SDK.
     return Bluebird.resolve(true).asCallback(callback);
   }
+
   verifyAddress(params: VerifyAddressOptions): boolean {
-    // TODO: Implement when available on the SDK.
-    throw true;
+    const { address } = params;
+    if (!this.isValidAddress(address)) throw new InvalidAddressError(`invalid address: ${address}`);
+
+    try {
+      const [version] = c32addressDecode(address);
+      const versionString = accountLib.Stx.AddressVersion[version];
+      if (versionString === undefined) throw new InvalidAddressError(`invalid address version: ${address}`);
+    } catch (e) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    return true;
   }
 
   /**
