@@ -53,8 +53,7 @@ describe('STX:', function() {
     explain.outputAmount.should.equal(testData.txExplainedTransfer.outputAmount);
     explain.outputs[0].amount.should.equal(testData.txExplainedTransfer.outputAmount);
     explain.outputs[0].address.should.equal(testData.txExplainedTransfer.recipient);
-    // TODO: uncomment the following line after account-lib 2.9.0 is released
-    // explain.outputs[0].memo.should.equal(testData.txExplainedTransfer.memo);
+    explain.outputs[0].memo.should.equal(testData.txExplainedTransfer.memo);
     explain.fee.should.equal(testData.txExplainedTransfer.fee);
     explain.changeAmount.should.equal('0');
   });
