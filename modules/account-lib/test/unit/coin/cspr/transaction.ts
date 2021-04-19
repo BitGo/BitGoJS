@@ -90,10 +90,7 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       should.doesNotThrow(() => tx.sign(keypair));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
       should.equal(
         isValidTransactionSignature(
           tx.casperTx.approvals[0].signature,
@@ -119,10 +116,7 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
       should.doesNotThrow(() => tx.sign(keypair));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
       should.equal(
         isValidTransactionSignature(
           tx.casperTx.approvals[0].signature,
@@ -149,10 +143,7 @@ describe('Cspr Transaction', () => {
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.privateKey });
       should.doesNotThrow(() => tx.sign(keypair));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
@@ -162,14 +153,8 @@ describe('Cspr Transaction', () => {
       );
 
       should.doesNotThrow(() => tx.sign(keypair2));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
-      should.equal(
-        tx.casperTx.approvals[1].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
+      should.equal(tx.casperTx.approvals[1].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
@@ -195,10 +180,7 @@ describe('Cspr Transaction', () => {
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.xPrivateKey });
       should.doesNotThrow(() => tx.sign(keypair));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
@@ -208,14 +190,8 @@ describe('Cspr Transaction', () => {
       );
 
       should.doesNotThrow(() => tx.sign(keypair2));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
-      should.equal(
-        tx.casperTx.approvals[1].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
+      should.equal(tx.casperTx.approvals[1].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
@@ -241,10 +217,7 @@ describe('Cspr Transaction', () => {
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.xPrivateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.privateKey });
       should.doesNotThrow(() => tx.sign(keypair));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,
@@ -254,14 +227,8 @@ describe('Cspr Transaction', () => {
       );
 
       should.doesNotThrow(() => tx.sign(keypair2));
-      should.equal(
-        tx.casperTx.approvals[0].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
-      );
-      should.equal(
-        tx.casperTx.approvals[1].signer.toUpperCase(),
-        testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
-      );
+      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
+      should.equal(tx.casperTx.approvals[1].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey);
       should.equal(
         isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
         true,

@@ -70,7 +70,7 @@ export class Transaction extends BaseTransaction {
     const pubKeyBuffer = Uint8Array.from(Buffer.from(pub, 'hex'));
     const parsedPublicKey = Keys.Secp256K1.parsePublicKey(pubKeyBuffer, 'raw');
     const pubKeyHex = Keys.Secp256K1.accountHex(parsedPublicKey);
-    if (removeAlgoPrefixFromHexValue(pubKeyHex).toUpperCase() !== pub) {
+    if (removeAlgoPrefixFromHexValue(pubKeyHex) !== pub) {
       throw new SigningError('Signer does not match signature');
     }
     const signedDeploy = DeployUtil.setSignature(

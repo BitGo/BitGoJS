@@ -55,7 +55,7 @@ describe('CSPR Undelegate Builder', () => {
       const txJson = tx.toJson();
       should.deepEqual(txJson.fee, testData.FEE);
       should.deepEqual(tx.signature.length, 2);
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       tx.type.should.equal(TransactionType.StakingUnlock);
     });
 
@@ -68,7 +68,7 @@ describe('CSPR Undelegate Builder', () => {
       );
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       should.deepEqual(tx.signature.length, 2);
       tx.type.should.equal(TransactionType.StakingUnlock);
     });
@@ -86,7 +86,7 @@ describe('CSPR Undelegate Builder', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       should.deepEqual(tx.signature.length, 1);
       tx.type.should.equal(TransactionType.StakingUnlock);
     });
@@ -125,9 +125,9 @@ describe('CSPR Undelegate Builder', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from.toUpperCase(), owner1Address);
+      should.equal(txJson.from, owner1Address);
       tx.type.should.equal(TransactionType.StakingUnlock);
-      should.equal(txJson.validator.toUpperCase(), DELEGATE_VALIDATOR_ACCOUNT.toUpperCase());
+      should.equal(txJson.validator, DELEGATE_VALIDATOR_ACCOUNT);
     });
   });
 
