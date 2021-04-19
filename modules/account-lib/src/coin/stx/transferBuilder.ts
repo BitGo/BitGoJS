@@ -31,7 +31,6 @@ export class TransferBuilder extends TransactionBuilder {
       this.to(txData.payload.to);
       this.amount(txData.payload.amount);
       if (txData.payload.memo) {
-        txData.payload.memo = txData.payload.memo.replace('\0', '').replace(/\0/g, '');
         this.memo(txData.payload.memo);
       }
       super.initBuilder(tx);
