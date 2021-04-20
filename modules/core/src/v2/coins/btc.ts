@@ -72,7 +72,7 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
-    return Bluebird.resolve('https://bitcoinfees.earn.com/api/v1/fees/recommended');
+    return Bluebird.resolve('https://mempool.space/api/v1/fees/recommended');
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
