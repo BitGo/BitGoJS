@@ -11,9 +11,11 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-import common = require('./common');
-const PendingApproval = require('./pendingapproval');
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+
+import * as common from './common';
+const PendingApproval = require('./pendingapproval');
 
 //
 // Constructor
@@ -43,14 +45,12 @@ PendingApprovals.prototype.list = function(params, callback) {
   }
 
   const self = this;
-  return this.bitgo.get(this.bitgo.url('/pendingapprovals'))
-  .query(queryParams)
-  .result()
-  .then(function(body) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/pendingapprovals')).query(queryParams).result()
+  ).then(function(body) {
     body.pendingApprovals = body.pendingApprovals.map(function(p) { return new PendingApproval(self.bitgo, p); });
     return body;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -64,12 +64,11 @@ PendingApprovals.prototype.get = function(params, callback) {
   common.validateParams(params, ['id'], [], callback);
 
   const self = this;
-  return this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id))
-  .result()
-  .then(function(body) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id)).result()
+  ).then(function(body) {
     return new PendingApproval(self.bitgo, body);
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 export = PendingApprovals;
