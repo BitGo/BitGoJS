@@ -216,10 +216,10 @@ export class Xrp extends BaseCoin {
   /**
    * Get fee info from server
    */
-  public getFeeInfo(_?, callback?): Promise<FeeInfo> {
-    return this.bitgo.get(this.url('/public/feeinfo'))
-      .result()
-      .nodeify(callback);
+  public getFeeInfo(_?, callback?): Bluebird<FeeInfo> {
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/public/feeinfo')).result()
+    ).nodeify(callback);
   }
 
   /**

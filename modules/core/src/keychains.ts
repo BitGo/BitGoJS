@@ -166,17 +166,16 @@ Keychains.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/keychain'))
-  .result('keychains')
-  .then(function(keychains) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/keychain')).result('keychains')
+  ).then(function(keychains) {
     keychains.map(function(keychain) {
       if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
         throw new Error('ethAddress and xpub do not match');
       }
     });
     return keychains;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 /**
@@ -221,22 +220,22 @@ Keychains.prototype.add = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv', 'type', 'isLedger'], callback);
 
-  return this.bitgo.post(this.bitgo.url('/keychain'))
-  .send({
-    xpub: params.xpub,
-    encryptedXprv: params.encryptedXprv,
-    type: params.type,
-    originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-    isLedger: params.isLedger
-  })
-  .result()
-  .then(function(keychain) {
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/keychain'))
+      .send({
+        xpub: params.xpub,
+        encryptedXprv: params.encryptedXprv,
+        type: params.type,
+        originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+        isLedger: params.isLedger,
+      })
+      .result()
+  ).then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -247,16 +246,14 @@ Keychains.prototype.createBitGo = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
-  .send(params)
-  .result()
-  .then(function(keychain) {
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result()
+  ).then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -267,17 +264,15 @@ Keychains.prototype.createBackup = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['provider'], [], callback);
 
-  return this.bitgo.post(this.bitgo.url('/keychain/backup'))
-  .send(params)
-  .result()
-  .then(function(keychain) {
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result()
+  ).then(function(keychain) {
     // not all keychains have an xpub
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -295,16 +290,14 @@ Keychains.prototype.get = function(params, callback) {
   }
 
   const id = params.xpub || params.ethAddress;
-  return this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id)))
-  .send({})
-  .result()
-  .then(function(keychain) {
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id))).send({}).result()
+  ).then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -317,19 +310,18 @@ Keychains.prototype.update = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
-  return this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
-  .send({
-    encryptedXprv: params.encryptedXprv
-  })
-  .result()
-  .then(function(keychain) {
+  return Bluebird.resolve(
+    this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
+      .send({
+        encryptedXprv: params.encryptedXprv,
+      })
+      .result()
+  ).then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
-
 
 module.exports = Keychains;

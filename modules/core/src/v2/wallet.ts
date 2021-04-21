@@ -661,10 +661,11 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -692,10 +693,11 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return this.bitgo.get(this.url('/tx/' + params.txHash))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/tx/' + params.txHash))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -805,10 +807,11 @@ export class Wallet {
       query.type = params.type;
     }
 
-    return this.bitgo.get(this.url('/transfer'))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/transfer'))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -819,9 +822,9 @@ export class Wallet {
   getTransfer(params: GetTransferOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['id'], [], callback);
 
-    return this.bitgo.get(this.url('/transfer/' + params.id))
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/transfer/' + params.id)).result()
+    ).nodeify(callback);
   }
 
   /**
@@ -832,9 +835,9 @@ export class Wallet {
   transferBySequenceId(params: TransferBySequenceIdOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['sequenceId'], [], callback);
 
-    return this.bitgo.get(this.url('/transfer/sequenceId/' + params.sequenceId))
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/transfer/sequenceId/' + params.sequenceId)).result()
+    ).nodeify(callback);
   }
 
   /**
@@ -879,10 +882,11 @@ export class Wallet {
       'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
     ]);
 
-    return this.bitgo.get(this.url('/unspents'))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/unspents'))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1098,10 +1102,9 @@ export class Wallet {
       }
     }
 
-    return this.bitgo.post(this.url('/freeze'))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.url('/freeze')).send(params).result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1113,10 +1116,11 @@ export class Wallet {
   transferComment(params: TransferCommentOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['id'], ['comment'], callback);
 
-    return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
+        .send(params)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1176,10 +1180,11 @@ export class Wallet {
       query.chains = params.chains;
     }
 
-    return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1204,9 +1209,9 @@ export class Wallet {
       this.bitgo.setRequestTracer(params.reqId);
     }
 
-    return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`))
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`)).result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1367,10 +1372,11 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return this.bitgo.get(this.url('/webhooks'))
-      .query(query)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.url('/webhooks'))
+        .query(query)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1402,10 +1408,11 @@ export class Wallet {
     const filteredParams = _.pick(params, ['transferId', 'pendingApprovalId']);
 
     const webhookId = params.webhookId;
-    return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
-      .send(filteredParams)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
+        .send(filteredParams)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1416,10 +1423,11 @@ export class Wallet {
   addWebhook(params: ModifyWebhookOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['url', 'type'], [], callback);
 
-    return this.bitgo.post(this.url('/webhooks'))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.url('/webhooks'))
+        .send(params)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1430,10 +1438,11 @@ export class Wallet {
   removeWebhook(params: ModifyWebhookOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['url', 'type'], [], callback);
 
-    return this.bitgo.del(this.url('/webhooks'))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.del(this.url('/webhooks'))
+        .send(params)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -1521,10 +1530,11 @@ export class Wallet {
       }
     }
 
-    return this.bitgo.post(this.url('/share'))
+    return Bluebird.resolve(
+      this.bitgo.post(this.url('/share'))
       .send(params)
       .result()
-      .nodeify(callback);
+    ).nodeify(callback);
   }
 
   /**
@@ -1622,9 +1632,10 @@ export class Wallet {
     common.validateParams(params, ['userId'], [], callback);
 
     const userId = params.userId;
-    return this.bitgo.del(this.url('/user/' + userId))
+    return Bluebird.resolve(
+      this.bitgo.del(this.url('/user/' + userId))
       .result()
-      .nodeify(callback);
+    ).nodeify(callback);
   }
 
   /**
@@ -1932,10 +1943,11 @@ export class Wallet {
     if ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned)) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
-    return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
+        .send(params)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -2030,7 +2042,7 @@ export class Wallet {
       params.reqId = reqId;
       const coin = self.baseCoin;
       if (_.isObject(params.recipients)) {
-        params.recipients.map(function (recipient) {
+        params.recipients.map((recipient) => {
           const amount = new BigNumber(recipient.amount);
           if (amount.isNegative()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
@@ -2154,11 +2166,12 @@ export class Wallet {
    * @returns {Object} The info returned from the merchant server Payment Ack
    * @deprecated
    */
-  sendPaymentResponse(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo.post(this.url('/sendPayment'))
-      .send(params)
-      .result()
-      .asCallback(callback);
+  sendPaymentResponse(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return Bluebird.resolve(
+      this.bitgo.post(this.url('/sendPayment'))
+        .send(params)
+        .result()
+    ).asCallback(callback);
   }
 
   /**
@@ -2239,7 +2252,9 @@ export class Wallet {
    * @returns {*}
    */
   remove(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo.del(this.url()).result().asCallback(callback);
+    return Bluebird.resolve(
+      this.bitgo.del(this.url()).result()
+    ).asCallback(callback);
   }
 
   /**

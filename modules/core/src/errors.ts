@@ -174,3 +174,21 @@ export class InvalidTransactionError extends BitGoJsError {
     Object.setPrototypeOf(this, InvalidTransactionError.prototype);
   }
 }
+
+export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
+  message: string;
+  status: number;
+  result?: ResponseBodyType;
+  invalidToken?: boolean;
+  needsOTP?: boolean;
+
+  public constructor(message: string, status: number, result?: ResponseBodyType, invalidToken?: boolean, needsOTP?: boolean) {
+    super(message);
+    this.message = message;
+    this.status = status;
+    this.result = result;
+    this.invalidToken = invalidToken;
+    this.needsOTP = needsOTP;
+    Object.setPrototypeOf(this, ApiResponseError.prototype);
+  }
+}
