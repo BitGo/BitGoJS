@@ -39,6 +39,7 @@ import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
+import { ApiResponseError } from './errors';
 
 const debug = debugLib('bitgo:index');
 
@@ -46,37 +47,13 @@ if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
 
-// Patch superagent to return bluebird promises
-const _end = (superagent as any).Request.prototype.end;
-(superagent as any).Request.prototype.end = function(cb) {
-  const self = this;
-  if (typeof cb === 'function') {
-    return _end.call(self, cb);
-  }
-
-  return new Bluebird.Promise(function(resolve, reject) {
-    let error;
-    try {
-      return _end.call(self, function(error, response) {
-        if (error) {
-          return reject(error);
-        }
-        return resolve(response);
-      });
-    } catch (_error) {
-      error = _error;
-      return reject(error);
-    }
-  });
-};
-
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
-(superagent as any).Request.prototype.result = function(optionalField?: string) {
+(superagent as any).Request.prototype.result = function<ResponseResultType = any>(optionalField?: string): Promise<ResponseResultType> {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
 
-function handleResponseResult(optionalField?: string): (res: superagent.Response) => any {
+function handleResponseResult<ResponseResultType>(optionalField?: string): (res: superagent.Response) => ResponseResultType {
   return function(res: superagent.Response) {
     if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
@@ -85,24 +62,16 @@ function handleResponseResult(optionalField?: string): (res: superagent.Response
   };
 }
 
-function errFromResponse(res: superagent.Response): Error {
-  const errString = createResponseErrorString(res);
-  const err: any = new Error(errString);
-
-  err.status = res.status;
-  if (res.body) {
-    err.result = res.body;
-  }
-  if (_.has(res.header, 'x-auth-required') && (res.header['x-auth-required'] === 'true')) {
-    err.invalidToken = true;
-  }
-  if (res.body.needsOTP) {
-    err.needsOTP = true;
-  }
-  return err;
+function errFromResponse<ResponseBodyType>(res: superagent.Response): ApiResponseError {
+  const message = createResponseErrorString(res);
+  const status = res.status;
+  const result = res.body as ResponseBodyType;
+  const invalidToken = _.has(res.header, 'x-auth-required') && (res.header['x-auth-required'] === 'true');
+  const needsOtp = res.body.needsOTP !== undefined;
+  return new ApiResponseError(message, status, result, invalidToken, needsOtp);
 }
 
-function handleResponseError(e): never {
+function handleResponseError(e: Error & { response?: superagent.Response }): never {
   if (e.response) {
     throw errFromResponse(e.response);
   }
