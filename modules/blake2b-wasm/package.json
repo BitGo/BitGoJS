@@ -6,6 +6,9 @@
   "dependencies": {
     "nanoassert": "^1.0.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@bitgo/blake2b": "^3.0.0",
     "browserify": "^14.4.0",
