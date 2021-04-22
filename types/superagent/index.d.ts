@@ -1,11 +1,9 @@
-import * as superagent from 'superagent';
-import * as bluebird from 'bluebird';
+import 'superagent';
 
 declare module 'superagent' {
-  interface Request {
-    result: (optionalField?: string) => bluebird<any>;
+  interface Request<ResultType = any> {
+    result: (optionalField?: string) => Promise<ResultType>;
     proxy: (proxyUrl: string) => this;
-    verifyResponse: (response: superagent.Response) => superagent.Response;
     forceV1Auth: boolean;
     authenticationToken?: string;
     isV2Authenticated?: boolean;
