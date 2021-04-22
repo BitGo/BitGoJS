@@ -3333,7 +3333,7 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
       blockchairContext,
     });
 
-  nock('https://bitcoinfees.earn.com')
+  nock('https://mempool.space')
     .get('/api/v1/fees/recommended')
     .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
@@ -3564,7 +3564,7 @@ module.exports.nockBtcUnsignedRecovery = function(bitgo) {
         blockchairContext,
       },
     });
-  nock('https://bitcoinfees.earn.com')
+  nock('https://mempool.space')
     .get('/api/v1/fees/recommended')
     .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
