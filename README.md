@@ -25,21 +25,32 @@ The release notes for the `core` module are [here](https://github.com/BitGo/BitG
 
 # NodeJS Version Support Policy
 
-Due to constraints from library dependencies, we currenty only support node
-versions `>=10.22.0 <12.0.0`.
+We only support [Long-Term Support](https://github.com/nodejs/Release) versions of Node, with the current set of
+supported versions described in the [`engines` property of the `core` module package.json](https://github.com/BitGo/BitGoJS/blob/master/modules/core/package.json#L18).
 
-**Note:** We intend to support the current `lts` (node 12), in the future.
+We specifically limit our support to LTS versions of Node, not because this package won't work on other versions, but
+because LTS versions tend to be the most widely used in practice. It's possible the packages in this repository will
+work correctly on newer or older versions of Node, but we typeically don't run automated tests against non-LTS (odd
+numbered) versions of Node, with the possible exception of the latest odd numbered version for advanced awareness of
+upcoming breaks in version support.
 
-The `npm` package manager should allow you to install this package with any
-version of Node, with, at most, a warning if your version of Node does not fall
-within the range specified by our node engines property.
+As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our
+package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a
+new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any
+pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that
+allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes
+work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test
+suite on the latest release of the following versions of node:
 
-When using `yarn`, use `yarn install --ignore-engines` when adding the dependency.
+* `10`
+* `12`
+* `14`
+* `15`
 
-If you encounter issues installing this package using any other package
-manager, please report the issue to your package manager.
+JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning
+if your version of Node does not fall within the range specified by our node engines property. If you encounter issues
+installing this package on a supported version of Node, please report the issue to us.
 
 # Notes for Developers
 
 See [DEVELOPERS.md](https://github.com/BitGo/BitGoJS/blob/master/DEVELOPERS.md)
-
