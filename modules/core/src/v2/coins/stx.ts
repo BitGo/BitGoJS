@@ -3,16 +3,56 @@
  */
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
-import { ECPair } from '@bitgo/utxo-lib';
-import { BaseCoin, KeyPair, SignedTransaction, VerifyAddressOptions, VerifyTransactionOptions } from '../baseCoin';
+import { c32addressDecode } from 'c32check';
+import {
+  BaseCoin,
+  KeyPair,
+  SignedTransaction,
+  TransactionExplanation,
+  TransactionRecipient,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+  SignTransactionOptions,
+  TransactionPrebuild as BaseTransactionPrebuild,
+} from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { InvalidAddressError } from '../../errors';
 
 const co = Bluebird.coroutine;
 
 interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
+}
+
+export interface TransactionFee {
+  fee: string;
+}
+export interface StxTransactionExplanation extends TransactionExplanation {
+  memo?: string;
+  type?: number;
+  contractAddress?: string;
+  contractName?: string;
+  contractFunction?: string;
+  contractFunctionArgs?: { type: string; value: string }[];
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string;
+  halfSigned?: {
+    txHex: string;
+  };
+  feeInfo: TransactionFee;
+}
+
+export interface StxSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  source: string;
 }
 
 export class Stx extends BaseCoin {
@@ -49,9 +89,20 @@ export class Stx extends BaseCoin {
     // TODO: Implement when available on the SDK.
     return Bluebird.resolve(true).asCallback(callback);
   }
+
   verifyAddress(params: VerifyAddressOptions): boolean {
-    // TODO: Implement when available on the SDK.
-    throw true;
+    const { address } = params;
+    if (!this.isValidAddress(address)) throw new InvalidAddressError(`invalid address: ${address}`);
+
+    try {
+      const [version] = c32addressDecode(address);
+      const versionString = accountLib.Stx.AddressVersion[version];
+      if (versionString === undefined) throw new InvalidAddressError(`invalid address version: ${address}`);
+    } catch (e) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    return true;
   }
 
   /**
@@ -110,10 +161,121 @@ export class Stx extends BaseCoin {
     }
   }
 
-  signTransaction(params: any): Bluebird<SignedTransaction> {
-    throw new Error('Method not implemented.');
+  /**
+   * Signs stacks transaction
+   * @param params
+   * @param callback
+   */
+  signTransaction(
+    params: StxSignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+
+    return co<SignedTransaction>(function*() {
+      const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
+      const txBuilder = factory.from(params.txPrebuild.txHex);
+      txBuilder.sign({ key: params.prv });
+
+      const transaction: any = yield txBuilder.build();
+
+      if (!transaction) {
+        throw new Error('Invalid message passed to signMessage');
+      }
+
+      const response = {
+        txHex: transaction.toBroadcastFormat(),
+      };
+      return response;
+    })
+      .call(this)
+      .asCallback(callback);
   }
+
   parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Explain a Stacks transaction from txHex
+   * @param params
+   * @param callback
+   */
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<StxTransactionExplanation>
+  ): Bluebird<StxTransactionExplanation> {
+    const self = this;
+    return co<TransactionExplanation>(function*() {
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+      if (!txHex || !params.feeInfo) {
+        throw new Error('missing explain tx parameters');
+      }
+
+      const factory = accountLib.getBuilder(self.getChain());
+      const txBuilder = factory.from(txHex);
+
+      if (!(txBuilder instanceof accountLib.BaseCoin.BaseTransactionBuilder)) {
+        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+      }
+
+      const tx = yield txBuilder.build();
+      const txJson = tx.toJson();
+
+      if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+        const outputs: TransactionRecipient[] = [
+          {
+            address: txJson.payload.to,
+            amount: txJson.payload.amount,
+            memo: txJson.payload.memo,
+          },
+        ];
+
+        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
+        const explanationResult: StxTransactionExplanation = {
+          displayOrder,
+          id: txJson.id,
+          outputAmount: txJson.payload.amount.toString(),
+          changeAmount: '0',
+          outputs,
+          changeOutputs: [],
+          fee: txJson.fee,
+          memo: txJson.payload.memo,
+          type: tx.type,
+        };
+
+        return explanationResult;
+      }
+
+      if (tx.type === accountLib.BaseCoin.TransactionType.ContractCall) {
+        const displayOrder = [
+          'id',
+          'fee',
+          'type',
+          'contractAddress',
+          'contractName',
+          'contractFunction',
+          'contractFunctionArgs',
+        ];
+        const explanationResult: StxTransactionExplanation = {
+          displayOrder,
+          id: txJson.id,
+          changeAmount: '0',
+          outputAmount: '',
+          outputs: [],
+          changeOutputs: [],
+          fee: txJson.fee,
+          type: tx.type,
+          contractAddress: txJson.payload.contractAddress,
+          contractName: txJson.payload.contractName,
+          contractFunction: txJson.payload.functionName,
+          contractFunctionArgs: txJson.payload.functionArgs,
+        };
+
+        return explanationResult;
+      }
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

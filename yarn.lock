@@ -1661,6 +1661,16 @@
     "@octokit/openapi-types" "^2.0.0"
     "@types/node" ">= 8"
 
+"@open-rpc/client-js@^1.6.2":
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/@open-rpc/client-js/-/client-js-1.6.3.tgz#8556bccefc955c26a79d795bc30dcd28fd45ce91"
+  integrity sha512-KNlYB258FgMUopHUXqPAU4JZMAO/8HnGN7LcL/mXnwH/Qcd0GAMVwLLIXc5d9BBqtmDox8wxxAXGBCajRhyczA==
+  dependencies:
+    isomorphic-fetch "^3.0.0"
+    isomorphic-ws "^4.0.1"
+    strict-event-emitter-types "^2.0.0"
+    ws "^7.0.0"
+
 "@opencensus/web-types@0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@opencensus/web-types/-/web-types-0.0.7.tgz#4426de1fe5aa8f624db395d2152b902874f0570a"
@@ -4196,14 +4206,15 @@ cashaddress@^1.1.0:
   dependencies:
     bigi "^1.4.2"
 
-casper-client-sdk@1.0.29:
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.29.tgz#36e00ab9afc19bfbf4ee36e3e196911c75c84a47"
-  integrity sha512-WhLKQCWknZefxNo5BSAzPyA27ZT1hgGEsOeQ4Nu7s4hE80U3a7KpMc4HdTIGJq/s1MGOclot1oH0ezHNruHn0A==
+casper-client-sdk@1.0.39:
+  version "1.0.39"
+  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.39.tgz#c1fbed10a3255fc9b0662bb5c02e48e54b212dd1"
+  integrity sha512-LRtB7yrINm5zujjLsV+2cP47m6SNRqiWjJM38ILfB033dHMu9r49ZpIBfHcPWmhBWqONSgZfXuqBK5sNs2a/pA==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
     "@ethersproject/constants" "^5.0.5"
+    "@open-rpc/client-js" "^1.6.2"
     axios "^0.21.1"
     blakejs "^1.1.0"
     ethereum-cryptography "^0.1.3"
@@ -4211,7 +4222,6 @@ casper-client-sdk@1.0.29:
     jsbi "^3.1.2"
     key-encoder "^2.0.3"
     reflect-metadata "^0.1.13"
-    rpc-client-js "^1.0.2"
     rxjs "^6.5.3"
     tweetnacl-ts "^1.0.3"
     tweetnacl-util "^0.15.0"
@@ -8989,6 +8999,14 @@ isomorphic-fetch@^2.2.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
+isomorphic-fetch@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-fetch/-/isomorphic-fetch-3.0.0.tgz#0267b005049046d2421207215d45d6a262b8b8b4"
+  integrity sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA==
+  dependencies:
+    node-fetch "^2.6.1"
+    whatwg-fetch "^3.4.1"
+
 isomorphic-ws@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
@@ -13055,16 +13073,6 @@ rlp@^2.2.6:
   dependencies:
     bn.js "^4.11.1"
 
-rpc-client-js@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/rpc-client-js/-/rpc-client-js-1.0.2.tgz#0c85bf3d34c905baedba10b8cd959433238be497"
-  integrity sha512-lTVZoTdGDupaY31/QomqbNkz7Xfx+QQosz/CnWB73hSys5PvOpsL4otVYnnuU+kPxvnybi2uvbSjG8kqVA0qog==
-  dependencies:
-    isomorphic-fetch "^2.2.1"
-    isomorphic-ws "^4.0.1"
-    strict-event-emitter-types "^2.0.0"
-    ws "^7.0.0"
-
 run-async@^2.2.0, run-async@^2.4.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/run-async/-/run-async-2.4.1.tgz#8440eccf99ea3e70bd409d49aab88e10c189a455"
@@ -15780,6 +15788,11 @@ whatwg-fetch@3.0.0, whatwg-fetch@>=0.10.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.0.0.tgz#fc804e458cc460009b1a2b966bc8817d2578aefb"
   integrity sha512-9GSJUgz1D4MfyKU7KRqwOjXCXTqWdFNvEr7eUBYchQiVc744mqK/MzXPNR2WsPkmkOa4ywfg8C2n8h+13Bey1Q==
+
+whatwg-fetch@^3.4.1:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.6.2.tgz#dced24f37f2624ed0281725d51d0e2e3fe677f8c"
+  integrity sha512-bJlen0FcuU/0EMLrdbJ7zOnW6ITZLrZMIarMUVmdKtsGvZna8vxKYaexICWPfZ8qwf9fzNq+UEIZrnSaApt6RA==
 
 whatwg-url@^7.0.0:
   version "7.1.0"

@@ -122,7 +122,7 @@ describe('Casper Transaction Builder', () => {
       const tx = (await builder.build()) as Transaction;
       should.exists(tx.casperTx.approvals[0].signer);
       should.exists(tx.casperTx.approvals[0].signature);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
@@ -136,7 +136,7 @@ describe('Casper Transaction Builder', () => {
       const tx = (await builder.build()) as Transaction;
       should.exists(tx.casperTx.approvals[0].signer);
       should.exists(tx.casperTx.approvals[0].signature);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
@@ -149,11 +149,11 @@ describe('Casper Transaction Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
     });
 
     it('should process signing only once per signer with extended key', async function() {
@@ -161,11 +161,11 @@ describe('Casper Transaction Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
     });
 
     it('should add a signature to a transaction', async function() {
@@ -200,7 +200,7 @@ describe('Casper Transaction Builder', () => {
       const signer = tx.casperTx.approvals[0].signer;
       const signature = tx.casperTx.approvals[0].signature;
 
-      removeAlgoPrefixFromHexValue(signer.toUpperCase()).should.equal(signingKeyPair.getKeys().pub);
+      removeAlgoPrefixFromHexValue(signer).should.equal(signingKeyPair.getKeys().pub);
       removeAlgoPrefixFromHexValue(signature).should.equal(_.toLower(sig));
 
       const txJson = tx.toJson();
@@ -233,11 +233,11 @@ describe('Casper Transaction Builder', () => {
       builder.signature(sig, signingKeyPair);
       let tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
 
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
-      should.equal(tx.casperTx.approvals[0].signer.toUpperCase(), sourceAddress);
+      should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
     });
   });
 });

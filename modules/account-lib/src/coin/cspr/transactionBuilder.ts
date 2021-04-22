@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
-import { Deploy, ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import _ from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
@@ -72,7 +71,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     const jsonTransaction = JSON.parse(rawTransaction);
-    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as Deploy;
+    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as DeployUtil.Deploy;
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -250,7 +249,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private checkDuplicatedKeys(key: BaseKey) {
     this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
-      if (_sourceKeyPair.getKeys().prv === key.key.toUpperCase()) {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
       // Try to get extended keys in order to validate them
@@ -260,7 +259,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       } catch (err) {
         return;
       }
-      if (xprv && xprv.toUpperCase() === key.key.toUpperCase()) {
+      if (xprv && xprv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
     });
@@ -283,6 +282,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region auxiliaryMethods
   /**
    * Generate a DeployParams instance with the transaction data
+   *
    * @returns {DeployUtil.DeployParams}
    */
   private getDeployParams(): DeployUtil.DeployParams {
@@ -297,6 +297,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Generate the session for the Deploy according to the transactionType.
+   *
    * @returns {DeployUtil.ExecutableDeployItem}
    */
   private getSession(): DeployUtil.ExecutableDeployItem {
@@ -304,7 +305,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     switch (this.transaction.type) {
       case TransactionType.Send:
         const transferSession = this._session as CasperTransferTransaction;
-        session = ExecutableDeployItem.newTransfer(
+        session = DeployUtil.ExecutableDeployItem.newTransfer(
           transferSession.amount,
           transferSession.target,
           undefined,
@@ -315,7 +316,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
         const moduleBytesSession = this._session as CasperModuleBytesTransaction;
-        session = ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
+        session = DeployUtil.ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
         break;
       default:
         throw new BuildTransactionError('Transaction Type error');
@@ -325,6 +326,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Checks whether the transaction has the owner signature
+   *
    * @param {string} pub - public key of the signer
    * @returns {boolean} true if the pub key already signed th transaction
    * @private
@@ -332,7 +334,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private isTransactionSignedByPub(pub: string): boolean {
     return (
       _.findIndex(this.transaction.casperTx.approvals, approval => {
-        const approvalSigner = removeAlgoPrefixFromHexValue(approval.signer).toUpperCase();
+        const approvalSigner = removeAlgoPrefixFromHexValue(approval.signer);
         return approvalSigner === pub;
       }) !== -1
     );
@@ -340,6 +342,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Add signatures to the transaction
+   *
    * @private
    */
   private processSigning(): void {

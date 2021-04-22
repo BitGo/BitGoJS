@@ -39,6 +39,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   /**
    * Build args needed to create a session, then we can send this session with the contract
+   *
    * @returns {WalletInitContractArgs} contracts args to create a session
    */
   private buildWalletParameters(): WalletInitContractArgs {
@@ -84,13 +85,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     }
     this.validateAddress({ address: address });
     for (const _owner of this._owners) {
-      if (
-        address.substr(0, 2) +
-          Buffer.from(_owner.address.rawPublicKey)
-            .toString('hex')
-            .toUpperCase() ===
-        address.toUpperCase()
-      ) {
+      if (address.substr(0, 2) + Buffer.from(_owner.address.rawPublicKey).toString('hex') === address) {
         throw new BuildTransactionError('Duplicated owner: ' + address);
       }
     }

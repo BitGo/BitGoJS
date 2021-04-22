@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLValue, PublicKey, DeployUtil, Keys } from 'casper-client-sdk';
-import { Approval, Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
@@ -28,7 +27,7 @@ import {
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
-  protected _deploy: Deploy;
+  protected _deploy: DeployUtil.Deploy;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -71,7 +70,7 @@ export class Transaction extends BaseTransaction {
     const pubKeyBuffer = Uint8Array.from(Buffer.from(pub, 'hex'));
     const parsedPublicKey = Keys.Secp256K1.parsePublicKey(pubKeyBuffer, 'raw');
     const pubKeyHex = Keys.Secp256K1.accountHex(parsedPublicKey);
-    if (removeAlgoPrefixFromHexValue(pubKeyHex).toUpperCase() !== pub) {
+    if (removeAlgoPrefixFromHexValue(pubKeyHex) !== pub) {
       throw new SigningError('Signer does not match signature');
     }
     const signedDeploy = DeployUtil.setSignature(
@@ -79,7 +78,7 @@ export class Transaction extends BaseTransaction {
       signatureBuffer,
       PublicKey.fromSecp256K1(parsedPublicKey),
     );
-    const approval = _.last(signedDeploy.approvals) as Approval;
+    const approval = _.last(signedDeploy.approvals) as DeployUtil.Approval;
     if (removeAlgoPrefixFromHexValue(approval.signature) !== signature) {
       throw new SigningError('Invalid signature');
     }
@@ -259,7 +258,7 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  get casperTx(): Deploy {
+  get casperTx(): DeployUtil.Deploy {
     return this._deploy;
   }
 

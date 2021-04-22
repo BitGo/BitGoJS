@@ -320,6 +320,8 @@ export enum UnderlyingAsset {
   GUSD = 'gusd',
   GXC = 'gxc',
   GYEN = 'gyen',
+  HCN = 'hcn',
+  HDO = 'hdo',
   HEDG = 'hedg',
   HKDX = 'hkdx',
   HLC = 'hlc',
