@@ -11,6 +11,7 @@
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "execa": "^5.0.0",
     "glob": "^7.1.6",
     "husky": "^4.3.0",
     "lerna": "^4.0.0",
