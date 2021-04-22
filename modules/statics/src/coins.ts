@@ -299,6 +299,8 @@ export const coins = CoinMap.fromCoins([
   erc20('gusd', 'Gemini Dollar', 2, '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', UnderlyingAsset.GUSD),
   erc20('gxc', 'Game X Coin', 18, '0x953e22945b416730bad05009af05b420e598e412', UnderlyingAsset.GXC),
   erc20('gyen', 'Gmo JPY', 6, '0xc08512927d12348f6620a698105e1baac6ecd911', UnderlyingAsset.GYEN),
+  erc20('hcn', 'Himalaya Coin', 18, '0xb01b22dcd2f4b199a27ec28d8a688dd26f162067', UnderlyingAsset.HCN),
+  erc20('hdo', 'Himalaya Dollar', 18, '0x7c197afcd8d36884309ed731424985e3ed17f018', UnderlyingAsset.HDO),
   erc20('hedg', 'HedgeTrade', 18, '0xf1290473e210b2108a85237fbcd7b6eb42cc654f', UnderlyingAsset.HEDG),
   erc20('hkdx', 'eToro Hong Kong Dollar', 18, '0x1af20b8d1ede928f437b3a86801796b167840d2b', UnderlyingAsset.HKDX),
   erc20('hlc', 'HalalChain', 9, '0x58c69ed6cd6887c0225d1fccecc055127843c69b', UnderlyingAsset.HLC),
