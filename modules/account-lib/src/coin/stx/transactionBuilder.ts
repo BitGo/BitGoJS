@@ -60,8 +60,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.fee({ fee: txData.fee.toString() });
     this.nonce(txData.nonce);
     // check if it is signed or unsigned tx
-    if (tx.stxTransaction.auth.spendingCondition === undefined)
+    if (tx.stxTransaction.auth.spendingCondition === undefined) {
       throw new InvalidTransactionError('spending condition cannot be undefined');
+    }
     const authType = tx.stxTransaction.auth.authType ? tx.stxTransaction.auth.authType : AuthType.Standard;
     if (isSingleSig(tx.stxTransaction.auth.spendingCondition)) {
       if (tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {

@@ -64,8 +64,9 @@ export class Transaction extends BaseTransaction {
     if (!signature) {
       throw new SigningError('Missing signatures');
     }
-    if (signature.length === 1) this._stxTransaction = this._stxTransaction.createTxWithSignature(signature[0].data);
-    else {
+    if (signature.length === 1) {
+      this._stxTransaction = this._stxTransaction.createTxWithSignature(signature[0].data);
+    } else {
       const fields = [...signature, createStacksPublicKey(publicKey[signature.length])];
       (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = fields.map(sig =>
         createTransactionAuthField(PubKeyEncoding.Compressed, sig),
