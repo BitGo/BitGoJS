@@ -288,9 +288,8 @@ export class PendingApproval {
           return self.bitgo
             .put(self.url())
             .send(approvalParams)
-            .result()
-            .nodeify(callback);
-        }).call(this);
+            .result();
+        }).call(this).nodeify(callback);
       }
 
       try {
@@ -318,11 +317,12 @@ export class PendingApproval {
    * @param callback
    */
   reject(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .put(this.url())
-      .send({ state: 'rejected' })
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo
+        .put(this.url())
+        .send({ state: 'rejected' })
+        .result()
+    ).nodeify(callback);
   }
 
   /**

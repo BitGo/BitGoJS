@@ -122,9 +122,9 @@ export class Keychains {
     if (params.reqId) {
       this.bitgo.setRequestTracer(params.reqId);
     }
-    return this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id)))
-        .result()
-        .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id))).result()
+    ).nodeify(callback);
   }
 
   /**
@@ -274,21 +274,22 @@ export class Keychains {
     if (params.reqId) {
       this.bitgo.setRequestTracer(params.reqId);
     }
-    return this.bitgo.post(this.baseCoin.url('/key'))
-      .send({
-        pub: params.pub,
-        encryptedPrv: params.encryptedPrv,
-        type: params.type,
-        source: params.source,
-        provider: params.provider,
-        originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-        enterprise: params.enterprise,
-        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-        disableKRSEmail: params.disableKRSEmail,
-        krsSpecific: params.krsSpecific
-      })
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.post(this.baseCoin.url('/key'))
+        .send({
+          pub: params.pub,
+          encryptedPrv: params.encryptedPrv,
+          type: params.type,
+          source: params.source,
+          provider: params.provider,
+          originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+          enterprise: params.enterprise,
+          derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+          disableKRSEmail: params.disableKRSEmail,
+          krsSpecific: params.krsSpecific,
+        })
+        .result()
+    ).nodeify(callback);
   }
 
   /**

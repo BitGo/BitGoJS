@@ -503,10 +503,9 @@ export class Wallets {
    * @param callback
    */
   listShares(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/walletshare'))
-      .result()
-      .asCallback(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url('/walletshare')).result()
+    ).asCallback(callback);
   }
 
   /**
@@ -518,10 +517,11 @@ export class Wallets {
   getShare(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
-    return this.bitgo
-      .get(this.baseCoin.url('/walletshare/' + params.walletShareId))
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo
+        .get(this.baseCoin.url('/walletshare/' + params.walletShareId))
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -534,11 +534,12 @@ export class Wallets {
   updateShare(params: UpdateShareOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
-    return this.bitgo
-      .post(this.baseCoin.url('/walletshare/' + params.walletShareId))
-      .send(params)
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo
+        .post(this.baseCoin.url('/walletshare/' + params.walletShareId))
+        .send(params)
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -568,11 +569,11 @@ export class Wallets {
   cancelShare(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
-    return this.bitgo
-      .del(this.baseCoin.url('/walletshare/' + params.walletShareId))
-      .send()
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.del(this.baseCoin.url('/walletshare/' + params.walletShareId))
+        .send()
+        .result()
+    ).nodeify(callback);
   }
 
   /**
@@ -722,9 +723,10 @@ export class Wallets {
    * @returns {*}
    */
   getTotalBalances(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/wallet/balances'))
-      .result()
-      .asCallback(callback);
+    return Bluebird.resolve(
+      this.bitgo
+        .get(this.baseCoin.url('/wallet/balances'))
+        .result()
+    ).asCallback(callback);
   }
 }

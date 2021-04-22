@@ -35,7 +35,12 @@ export interface SimulateOptions {
 }
 
 export class Webhooks {
-  public constructor(private bitgo: BitGo, private baseCoin: BaseCoin) {}
+  private bitgo: BitGo;
+  private baseCoin: BaseCoin;
+  public constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+    this.bitgo = bitgo;
+    this.baseCoin = baseCoin;
+  }
 
   /**
    * Fetch list of user webhooks
@@ -44,10 +49,9 @@ export class Webhooks {
    * @returns {*}
    */
   list(callback: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/webhooks'))
-      .result()
-      .nodeify(callback);
+    return Bluebird.resolve(
+      this.bitgo.get(this.baseCoin.url('/webhooks')).result()
+    ).nodeify(callback);
   }
 
   /**

@@ -181,11 +181,12 @@ export class TradingAccount {
       `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
     );
 
-    return this.bitgo
-      .post(url)
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return Bluebird.resolve(
+      this.bitgo
+        .post(url)
+        .send(params)
+        .result()
+    ).asCallback(callback);
   }
 
   /**

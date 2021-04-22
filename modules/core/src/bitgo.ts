@@ -49,6 +49,17 @@ if (!(process as any).browser) {
 
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
+function toBitgoRequest<ResponseResultType = any>(req: superagent.SuperAgentRequest): BitGoRequest<ResponseResultType> {
+  req.result = function(optionalField?: string) {
+    return req.then((response) => {
+      return handleResponseResult<ResponseResultType>(optionalField)(response);
+    }, (error) => {
+      return handleResponseError(error);
+    });
+  };
+  return req;
+}
+
 (superagent as any).Request.prototype.result = function<ResponseResultType = any>(optionalField?: string): Promise<ResponseResultType> {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
@@ -353,7 +364,7 @@ export interface RegisterPushTokenOptions {
   operatingSystem: unknown;
 }
 
-export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest {
+export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest, Promise<superagent.Response> {
   result: (optionalField?: string) => Promise<ResultType>;
 }
 
@@ -537,9 +548,9 @@ export class BitGo {
    * headers to any outbound request.
    * @param method
    */
-  private createPatch(method: typeof patchedRequestMethods[number]): (url: string) => superagent.SuperAgentRequest {
+  private createPatch(method: typeof patchedRequestMethods[number]): (url: string) => BitGoRequest {
     const self = this;
-    return function(url: string): superagent.SuperAgentRequest {
+    return function<ResponseType = any>(url: string): BitGoRequest<ResponseType> {
       let req: superagent.SuperAgentRequest = superagent[method](url);
       if (self._proxy) {
         req = req.proxy(self._proxy);
@@ -569,7 +580,7 @@ export class BitGo {
         req.isV2Authenticated = false;
 
         req.set('Authorization', 'Bearer ' + self._token);
-        return req;
+        return toBitgoRequest(req);
       }
 
       req.set('BitGo-Auth-Version', '2.0');
@@ -600,17 +611,26 @@ export class BitGo {
       // Set the request timeout to just above 5 minutes by default
       req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
 
-      req.then((response) => {
-        // HMAC verification is only allowed to be skipped in certain environments.
-        // This is checked in the constructor, but checking it again at request time
-        // will help prevent against tampering of this property after the object is created
-        if (!self._hmacVerification && !common.Environments[self.getEnv()].hmacVerificationEnforced) {
-          return response;
-        }
+      const originalThen = req.then.bind(req);
+      req.then = (onfulfilled, onrejected) => {
+        /**
+         * Verify the response before calling the original onfulfilled handler,
+         * and make sure onrejected is called if a verification error is encountered
+         */
+        const newOnFulfilled = onfulfilled ? (response: superagent.Response) => {
+          // HMAC verification is only allowed to be skipped in certain environments.
+          // This is checked in the constructor, but checking it again at request time
+          // will help prevent against tampering of this property after the object is created
+          if (!self._hmacVerification && !common.Environments[self.getEnv()].hmacVerificationEnforced) {
+            return onfulfilled(response);
+          }
 
-        return verifyResponse(self, self._token, req, response);
-      });
-      return req;
+          const verifiedResponse = verifyResponse(self, self._token, req, response);
+          return onfulfilled(verifiedResponse);
+        } : null;
+        return originalThen(newOnFulfilled).catch(onrejected);
+      };
+      return toBitgoRequest(req);
     };
   }
 
@@ -977,6 +997,7 @@ export class BitGo {
   /**
    * Gets the user's private keychain, used for receiving shares
    */
+  // cb-compat
   async getECDHSharingKeychain() {
     const result = await this.get(this.url('/user/settings')).result();
     if (!result.settings.ecdhKeychain) {
@@ -1001,17 +1022,19 @@ export class BitGo {
    * (Deprecated: Will be removed in the future) use `bitgo.markets().latest()`
    * @deprecated
    */
-  market() {
+  // cb-compat
+  async market() {
     return this.get(this.url('/market/latest')).result();
   }
 
   /**
    * Get market data from yesterday
    * (Deprecated: Will be removed in the future) use bitgo.markets().yesterday()
+   * @deprecated
    */
-  yesterday() {
-    return this.get(this.url('/market/yesterday'))
-      .result();
+  // cb-compat
+  async yesterday() {
+    return this.get(this.url('/market/yesterday')).result();
   }
 
   /**
@@ -1191,6 +1214,7 @@ export class BitGo {
   /**
    * Login to the bitgo platform.
    */
+  // cb-compat
   async authenticate(params: AuthenticateOptions) {
     try {
       if (!_.isObject(params)) {
@@ -1257,6 +1281,7 @@ export class BitGo {
    * @returns {*}
    * @deprecated
    */
+  // cb-compat
   async registerPushToken(params: RegisterPushTokenOptions) {
     params = params || {};
     common.validateParams(params, ['pushToken', 'operatingSystem'], []);
@@ -1278,7 +1303,8 @@ export class BitGo {
    * - pushVerificationToken: the token received via push notification to confirm the device's mobility
    * @deprecated
    */
-  verifyPushToken(params: VerifyPushTokenOptions) {
+  // cb-compat
+  async verifyPushToken(params: VerifyPushTokenOptions) {
     if (!_.isObject(params)) {
       throw new Error('required object params');
     }
@@ -1302,6 +1328,7 @@ export class BitGo {
   /**
    * Login to the bitgo system using an authcode generated via Oauth
    */
+  // cb-compat
   async authenticateWithAuthCode(params: AuthenticateWithAuthCodeOptions) {
     if (!_.isObject(params)) {
       throw new Error('required object params');
@@ -1342,6 +1369,7 @@ export class BitGo {
    * Use refresh token to get new access token.
    * If the refresh token is null/defined, then we use the stored token from auth
    */
+  // cb-compat
   async refreshToken(params: { refreshToken?: string } = {}) {
     common.validateParams(params, [], ['refreshToken']);
 
@@ -1387,6 +1415,7 @@ export class BitGo {
    *  unlock: <info for actions that require an unlock before firing>
    * }
    */
+  // cb-compat
   async listAccessTokens() {
     return this.get(this.url('/user/accesstoken'))
       .send()
@@ -1420,6 +1449,7 @@ export class BitGo {
    *    unlock: <info for actions that require an unlock before firing>
    * }
    */
+  // cb-compat
   async addAccessToken(params: AddAccessTokenOptions) {
     try {
       if (!_.isString(params.label)) {
@@ -1506,6 +1536,7 @@ export class BitGo {
    * unlock: <info for actions that require an unlock before firing>
    * @param params
    */
+  // cb-compat
   async removeAccessToken({ id, label }: RemoveAccessTokenOptions) {
     if ((!id && !label) || (id && label)) {
       throw new Error('must provide exactly one of id or label');
@@ -1538,6 +1569,7 @@ export class BitGo {
   /**
    * Logout of BitGo
    */
+  // cb-compat
   async logout() {
     const result = await this.get(this.url('/user/logout')).result();
     this.clear();
@@ -1548,6 +1580,7 @@ export class BitGo {
    * Get a user by ID (name/email only)
    * @param id
    */
+  // cb-compat
   async getUser({ id }: GetUserOptions) {
     if (!_.isString(id)) {
       throw new Error('expected string id');
@@ -1562,6 +1595,7 @@ export class BitGo {
    * @param oldPassword {String} - the current password
    * @param newPassword {String} - the new password
    */
+  // cb-compat
   async changePassword({ oldPassword, newPassword }: ChangePasswordOptions) {
     if (!_.isString(oldPassword)) {
       throw new Error('expected string oldPassword');
@@ -1605,6 +1639,7 @@ export class BitGo {
   /**
    * Get the current logged in user
    */
+  // cb-compat
   async me() {
     return this.getUser({ id: 'me' });
   }
@@ -1614,6 +1649,7 @@ export class BitGo {
    * @param {string} otp Required OTP code for the account.
    * @param {number} duration Desired duration of the unlock in seconds (default=600, max=3600).
    */
+  // cb-compat
   async unlock({ otp, duration }: UnlockOptions) {
     if (otp && !_.isString(otp)) {
       throw new Error('expected string or undefined otp');
@@ -1626,6 +1662,7 @@ export class BitGo {
   /**
    * Lock the session
    */
+  // cb-compat
   async lock() {
     return this.post(this.url('/user/lock')).result();
   }
@@ -1633,6 +1670,7 @@ export class BitGo {
   /**
    * Get the current session
    */
+  // cb-compat
   async session() {
     return this.get(this.url('/user/session')).result('session');
   }
@@ -1642,6 +1680,7 @@ export class BitGo {
    * @param {boolean} params.forceSMS If set to true, will use SMS to send the OTP to the user even if they have other 2FA method set up.
    * @deprecated
    */
+  // cb-compat
   async sendOTP(params: { forceSMS?: boolean } = {}) {
     return this.post(this.url('/user/sendotp'))
       .send(params)
@@ -1653,6 +1692,7 @@ export class BitGo {
    * @param params
    * - duration: duration in seconds by which to extend the token, starting at the current time
    */
+  // cb-compat
   async extendToken(params: ExtendTokenOptions = {}) {
     if (!this._extensionKey) {
       throw new Error('missing required property _extensionKey');
@@ -1677,6 +1717,7 @@ export class BitGo {
    * Get a key for sharing a wallet with a user
    * @param email email of user to share wallet with
    */
+  // cb-compat
   async getSharingKey({ email }: GetSharingKeyOptions) {
     if (!_.isString(email)) {
       throw new Error('required string email');
@@ -1691,7 +1732,8 @@ export class BitGo {
    * Test connectivity to the server
    * @param params
    */
-  ping({ reqId }: PingOptions = {}) {
+  // cb-compat
+  async ping({ reqId }: PingOptions = {}) {
     if (reqId) {
       this._reqId = reqId;
     }
@@ -1784,6 +1826,7 @@ export class BitGo {
   /**
    * Get all the address labels on all of the user's wallets
    */
+  // cb-compat
   async labels() {
     return this.get(this.url('/labels')).result('labels');
   }
@@ -1797,6 +1840,7 @@ export class BitGo {
    * @param {boolean} params.cpfpAware flag indicating fee should take into account CPFP
    * @deprecated
    */
+  // cb-compat
   async estimateFee(params: EstimateFeeOptions = {}) {
     const queryParams: any = { version: 12 };
     if (params.numBlocks) {
@@ -1838,9 +1882,9 @@ export class BitGo {
   /**
    * Get BitGo's guarantee using an instant id
    * @param params
-   * @param callback
    * @deprecated
    */
+  // cb-compat
   async instantGuarantee(params: { id: string }) {
     if (!_.isString(params.id)) {
       throw new Error('required string id');
@@ -1867,6 +1911,7 @@ export class BitGo {
    * Get a target address for payment of a BitGo fee
    * @deprecated
    */
+  // cb-compat
   async getBitGoFeeAddress() {
     return this.post(this.url('/billing/address'))
       .send({})
@@ -1878,6 +1923,7 @@ export class BitGo {
    * @param {string} params.address The address to look up.
    * @deprecated
    */
+  // cb-compat
   async getWalletAddress({ address }: { address: string }) {
     return this.get(this.url(`/walletaddress/${address}`)).result();
   }
@@ -1888,6 +1934,7 @@ export class BitGo {
    * @returns {*}
    * @deprecated
    */
+  // cb-compat
   async listWebhooks() {
     return this.get(this.url('/webhooks')).result();
   }
@@ -1899,6 +1946,7 @@ export class BitGo {
    * @returns {*}
    * @deprecated
    */
+  // cb-compat
   async addWebhook(params: WebhookOptions) {
     if (!_.isString(params.url)) {
       throw new Error('required string url');
@@ -1920,6 +1968,7 @@ export class BitGo {
    * @returns {*}
    * @deprecated
    */
+  // cb-compat
   async removeWebhook(params: WebhookOptions) {
     if (!_.isString(params.url)) {
       throw new Error('required string url');
@@ -1940,6 +1989,7 @@ export class BitGo {
    * @param params
    * @returns {*}
    */
+  // cb-compat
   async listWebhookNotifications(params: ListWebhookNotificationsOptions = {}) {
     const query: any = {};
     if (params.prevId) {
@@ -1966,6 +2016,7 @@ export class BitGo {
    * @param params
    * @returns {*}
    */
+  // cb-compat
   async simulateWebhook(params: BitGoSimulateWebhookOptions) {
     common.validateParams(params, ['webhookId', 'blockId'], []);
     if (!_.isString(params.webhookId)) {
@@ -1987,6 +2038,7 @@ export class BitGo {
    * but are unlikely to change during the lifetime of a BitGo object,
    * so they can safely cached.
    */
+  // cb-compat
   async fetchConstants() {
     const env = this.getEnv();
 
@@ -2048,6 +2100,7 @@ export class BitGo {
    * @param params
    * @return {any}
    */
+  // cb-compat
   async calculateMinerFeeInfo(params: any) {
     return TransactionBuilder.calculateMinerFeeInfo(params);
   }
