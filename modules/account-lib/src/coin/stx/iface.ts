@@ -25,12 +25,12 @@ export interface StacksContractPayload {
   contractAddress: string;
   contractName: string;
   functionName: string;
-  functionArgs: ClarityValueJson[]
+  functionArgs: ClarityValueJson[];
 }
 
 export interface ClarityValueJson {
   type: string;
-  value: string
+  value: string;
 }
 
 export interface SignResponse {

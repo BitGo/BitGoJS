@@ -12,6 +12,9 @@ import {
   TransactionAuthField,
   cvToString,
   getCVTypeString,
+  MultiSigSpendingCondition,
+  createTransactionAuthField,
+  PubKeyEncoding,
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { SigningError, ParseTransactionError, InvalidTransactionError, NotSupported } from '../baseCoin/errors';
@@ -57,16 +60,20 @@ export class Transaction extends BaseTransaction {
     signer.appendOrigin(pubKey);
   }
 
-  async signWithSignatures(signature: SignatureData): Promise<void> {
+  async signWithSignatures(signature: SignatureData[], publicKey: string[]): Promise<void> {
     if (!signature) {
       throw new SigningError('Missing signatures');
     }
-    this._stxTransaction = this._stxTransaction.createTxWithSignature(signature.data);
+    if (signature.length === 1) {
+      this._stxTransaction = this._stxTransaction.createTxWithSignature(signature[0].data);
+    } else {
+      const fields = [...signature, createStacksPublicKey(publicKey[signature.length])];
+      (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = fields.map(sig =>
+        createTransactionAuthField(PubKeyEncoding.Compressed, sig),
+      );
+    }
   }
 
-  /**
-   * Get the signatures associated with this transaction.
-   */
   get signature(): string[] {
     if (this._stxTransaction && this._stxTransaction.auth.spendingCondition) {
       if (isSingleSig(this._stxTransaction.auth.spendingCondition)) {
