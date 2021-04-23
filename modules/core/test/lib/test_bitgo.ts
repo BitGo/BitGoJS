@@ -104,6 +104,8 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_WALLET1_ID = '585cc5335573b0a8416aadb1fce63ce3';
     BitGo.V2.OFC_TEST_WALLET_ID = '5cbe3223311315fc7c96ce087f32dbdd';
 
+    BitGo.V2.TEST_RECOVERY_PASSCODE = 'oPXkPN5Q0c8i44i0';
+
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
     BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';
@@ -303,7 +305,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
   } = yield Bluebird.props({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
-    unspentWallet:  this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
+    unspentWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
     sweep1Wallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID }),
   });
 

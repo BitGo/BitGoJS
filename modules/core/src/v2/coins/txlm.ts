@@ -6,11 +6,14 @@ const stellar = require('stellar-sdk');
 export class Txlm extends Xlm {
   constructor(bitgo: BitGo) {
     super(bitgo);
-    stellar.Network.use(new stellar.Network(stellar.Networks.TESTNET));
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {
     return new Txlm(bitgo);
+  }
+
+  protected getStellarNetwork() {
+    return stellar.Networks.TESTNET;
   }
 
   getChain() {

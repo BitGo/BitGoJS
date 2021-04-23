@@ -145,11 +145,14 @@ export class Xlm extends BaseCoin {
   constructor(bitgo: BitGo) {
     super(bitgo);
     this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
-    stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {
     return new Xlm(bitgo);
+  }
+
+  protected getStellarNetwork(): stellar.Networks {
+    return stellar.Networks.PUBLIC;
   }
 
   /**
@@ -681,7 +684,7 @@ export class Xlm extends BaseCoin {
       const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
       const formattedRecoveryAmount = self.baseUnitsToBigUnits(recoveryAmount).toString();
 
-      const txBuilder = new stellar.TransactionBuilder(account);
+      const txBuilder = new stellar.TransactionBuilder(account, { fee: baseTxFee.toFixed(0), networkPassphrase: self.getStellarNetwork() });
       const operation = unfundedDestination ?
         // In this case, we need to create the account
         stellar.Operation.createAccount({
@@ -694,7 +697,7 @@ export class Xlm extends BaseCoin {
           asset: stellar.Asset.native(),
           amount: formattedRecoveryAmount,
         });
-      const tx = txBuilder.addOperation(operation).build();
+      const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
 
       if (!isUnsignedSweep) {
         tx.sign(userKey);
@@ -728,6 +731,7 @@ export class Xlm extends BaseCoin {
    * @returns {Bluebird<HalfSignedTransaction>}
    */
   signTransaction(params: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+    const self = this;
     return co<HalfSignedTransaction>(function *() {
       const { txPrebuild, prv } = params;
 
@@ -746,7 +750,7 @@ export class Xlm extends BaseCoin {
       }
 
       const keyPair = stellar.Keypair.fromSecret(prv);
-      const tx = new stellar.Transaction(txPrebuild.txBase64);
+      const tx = new stellar.Transaction(txPrebuild.txBase64, self.getStellarNetwork());
       tx.sign(keyPair);
 
       return {
@@ -838,7 +842,7 @@ export class Xlm extends BaseCoin {
       let tx: stellar.Transaction;
 
       try {
-        tx = new stellar.Transaction(txBase64);
+        tx = new stellar.Transaction(txBase64, self.getStellarNetwork());
       } catch (e) {
         throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
       }
@@ -900,7 +904,7 @@ export class Xlm extends BaseCoin {
       const outputAmount = spendAmount.toFixed(0);
       const outputAmounts = _.mapValues(spendAmounts, (amount: BigNumber) => amount.toFixed(0));
       const fee = {
-        fee: tx.fee.toFixed(0),
+        fee: new BigNumber(tx.fee).toFixed(0),
         feeRate: null,
         size: null,
       };
@@ -980,7 +984,7 @@ export class Xlm extends BaseCoin {
         throw new Error('missing required tx prebuild property txBase64');
       }
 
-      const tx = new stellar.Transaction(txPrebuild.txBase64);
+      const tx = new stellar.Transaction(txPrebuild.txBase64, self.getStellarNetwork());
 
       if (txParams.recipients && txParams.recipients.length > 1) {
         throw new Error('cannot specify more than 1 recipient');
