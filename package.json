@@ -53,7 +53,10 @@
       "prepare-commit-msg": "exec < /dev/tty && cz --hook || true"
     }
   },
-  "resolutions": {
+  "resolutions": {},
+  "temporary: change back to 'resolutions' before merging": {
+    "bl": "4.0.3",
+    "dot-prop": "5.2.0",
     "elliptic": "^6.5.4",
     "underscore": "^1.12.1",
     "trim-newlines": "^3.0.0"

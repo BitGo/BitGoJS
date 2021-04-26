@@ -1,6 +1,6 @@
 import should from 'should';
 import * as ethUtil from 'ethereumjs-util';
-import EthereumAbi from 'ethereumjs-abi';
+import * as EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Celo } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
@@ -19,10 +19,13 @@ describe('Send transaction', function() {
   };
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
 
-  const getOperationHash = function(tx: BaseTransaction): string {
+  const getOperationHash = function(tx: BaseTransaction): Buffer {
     const { data } = tx.toJson();
     const { tokenContractAddress, expireTime, sequenceId, amount, to } = decodeTransferData(data);
-    const operationParams = [
+    if (!tokenContractAddress) {
+      throw new Error('missing token contract address');
+    }
+    const operationParams: [string[], (string | Buffer)[]] = [
       ['string', 'address', 'uint', 'address', 'uint', 'uint'],
       [
         'CELO-ERC20',

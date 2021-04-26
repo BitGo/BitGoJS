@@ -250,23 +250,23 @@ export class StakingBuilder {
         this.validateDecodedDataLength(decoded.length, 4, data);
         const [groupToVote, amount, lesser, greater] = decoded;
         this._amount = ethUtil.bufferToHex(amount);
-        this._validatorGroup = ethUtil.addHexPrefix(groupToVote);
-        this._lesser = ethUtil.addHexPrefix(lesser);
-        this._greater = ethUtil.addHexPrefix(greater);
+        this._validatorGroup = ethUtil.bufferToHex(groupToVote);
+        this._lesser = ethUtil.bufferToHex(lesser);
+        this._greater = ethUtil.bufferToHex(greater);
         break;
       case StakingOperationTypes.UNVOTE:
         this.validateDecodedDataLength(decoded.length, 5, data);
         const [groupToUnvote, amountUnvote, lesserUnvote, greaterUnvote, indexUnvote] = decoded;
-        this._validatorGroup = ethUtil.addHexPrefix(groupToUnvote);
+        this._validatorGroup = ethUtil.bufferToHex(groupToUnvote);
         this._amount = ethUtil.bufferToHex(amountUnvote);
-        this._lesser = ethUtil.addHexPrefix(lesserUnvote);
-        this._greater = ethUtil.addHexPrefix(greaterUnvote);
+        this._lesser = ethUtil.bufferToHex(lesserUnvote);
+        this._greater = ethUtil.bufferToHex(greaterUnvote);
         this._index = hexStringToNumber(ethUtil.bufferToHex(indexUnvote));
         break;
       case StakingOperationTypes.ACTIVATE:
         this.validateDecodedDataLength(decoded.length, 1, data);
         const [groupToActivate] = decoded;
-        this._validatorGroup = ethUtil.addHexPrefix(groupToActivate);
+        this._validatorGroup = ethUtil.bufferToHex(groupToActivate);
         break;
       case StakingOperationTypes.UNLOCK:
         if (decoded.length !== 1) {
