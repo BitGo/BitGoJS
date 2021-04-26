@@ -1,0 +1,70 @@
+{
+  "name": "@bitgo/utxo-lib",
+  "version": "1.9.1",
+  "description": "Client-side Bitcoin JavaScript library",
+  "main": "./src/index.js",
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin",
+    "zcash",
+    "dash",
+    "browserify",
+    "javascript"
+  ],
+  "scripts": {
+    "coverage-report": "nyc report --reporter=lcov",
+    "coverage-html": "nyc report --reporter=html",
+    "coverage": "BITGO_UTXO_LIB_TEST_EXPECTED_COUNT=3443 nyc --check-coverage --branches 90 --functions 90 mocha --recursive",
+    "integration": "mocha test/integration/",
+    "standard": "standard",
+    "test": "npm run standard && npm run coverage",
+    "unit": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/bitgo-utxo-lib.git"
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@bitgo/blake2b": "^3.0.0-rc.2",
+    "bech32": "0.0.3",
+    "bigi": "^1.4.0",
+    "bip66": "^1.1.0",
+    "bitcoin-ops": "^1.3.0",
+    "bs58check": "^2.0.0",
+    "create-hash": "^1.1.0",
+    "create-hmac": "^1.1.3",
+    "debug": "~3.1.0",
+    "ecurve": "^1.0.0",
+    "merkle-lib": "^2.0.10",
+    "pushdata-bitcoin": "^1.0.1",
+    "randombytes": "^2.0.1",
+    "safe-buffer": "^5.0.1",
+    "typeforce": "^1.11.3",
+    "varuint-bitcoin": "^1.0.4",
+    "wif": "^2.0.1"
+  },
+  "devDependencies": {
+    "bip39": "^2.3.0",
+    "bip65": "^1.0.1",
+    "bs58": "^4.0.0",
+    "dhttp": "^2.4.2",
+    "minimaldata": "^1.0.2",
+    "mocha": "^6.2.3",
+    "nyc": "^14.1.1",
+    "proxyquire": "^1.4.0",
+    "sinon": "^1.12.2",
+    "standard": "^9.0.2"
+  },
+  "license": "MIT",
+  "optionalDependencies": {
+    "secp256k1": "^3.5.2"
+  }
+}

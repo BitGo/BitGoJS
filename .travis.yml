@@ -1,0 +1,25 @@
+sudo: false
+language: node_js
+node_js:
+  - "6"
+  - "7"
+  - "8"
+  - "9"
+  - "10"
+
+env:
+  global:
+    - BITGO_UTXO_LIB_TEST_SKIP_3PBP=1 # BLOCK-253
+  jobs:
+    - TEST_SUITE=standard
+    - TEST_SUITE=coverage
+
+matrix:
+  include:
+    - node_js: "7"
+      env: TEST_SUITE=standard
+    - node_js: "7"
+      env: TEST_SUITE=coverage
+
+script:
+  - npm run-script $TEST_SUITE
