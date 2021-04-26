@@ -175,7 +175,8 @@ module.exports = {
       3: 0x5ba81b19,
       // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
       // 4: 0x2bb40e60
-      4: 0xf5b9230b
+      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
+      4: 0xe9ff75a6 // (Canopy branch id, see https://zips.z.cash/zip-0251)
     },
     coin: coins.ZEC
   },
@@ -191,7 +192,8 @@ module.exports = {
       3: 0x5ba81b19,
       // 4: 0x76b809bb (old Sapling branch id)
       // 4: 0x2bb40e60
-      4: 0xf5b9230b
+      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
+      4: 0xe9ff75a6 // (Canopy branch id, see https://zips.z.cash/zip-0251)
     },
     coin: coins.ZEC
   }
