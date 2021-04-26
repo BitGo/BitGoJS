@@ -1,5 +1,5 @@
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/eth';
 import * as testData from '../../../resources/eth/eth';
 import { getCommon } from '../../../../src/coin/eth/utils';
@@ -7,7 +7,7 @@ import { TxData } from '../../../../src/coin/eth/iface';
 
 describe('ETH Transaction', () => {
   const coinConfig = coins.get('teth');
-  const common = getCommon(coinConfig.network.type);
+  const common = getCommon(coinConfig.network as EthereumNetwork);
   /**
    * @param data
    */

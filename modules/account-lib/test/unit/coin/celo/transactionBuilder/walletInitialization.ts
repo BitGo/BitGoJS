@@ -59,6 +59,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       newTxBuilder.from(serialized);
       newTxBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
       const signedTx = await newTxBuilder.build();
+      should.equal(signedTx.toJson().chainId, 44787);
       should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
