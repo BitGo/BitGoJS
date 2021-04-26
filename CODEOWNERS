@@ -23,18 +23,19 @@ modules/core/src/v2/coins/token.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitg
 modules/core/src/v2/coins/*zec.ts jorge@bitgo.com tyler@bitgo.com
 
 # Trading accounts
-modules/core/src/v2/trading/*.ts irene@bitgo.com tyler@bitgo.com
+modules/core/src/v2/trading/*.ts tyler@bitgo.com
 
 # Express
 modules/express/* tyler@bitgo.com
 
 # Statics
-modules/statics/* tyler@bitgo.com elle@bitgo.com
+modules/statics/* tyler@bitgo.com
 
 # Package Configuration Files
 modules/*/package*.json tyler@bitgo.com
 
-modules/account-lib/* @argjv @twtaylorbitgo @CapnMigraine @marktoda @BitGo/git-admins
+modules/account-lib/* @argjv @twtaylorbitgo @CapnMigraine @marktoda
+modules/utxo-lib/* @tylerlevine @OttoAllmendinger jorge@bitgo.com
 
 # Lock files
 yarn.lock tyler@bitgo.com
