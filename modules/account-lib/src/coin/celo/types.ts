@@ -1,16 +1,16 @@
 import BigNumber from 'bignumber.js';
-import { LocalWallet } from '@celo/contractkit/lib/wallets/local-wallet';
+import { LocalWallet } from '@celo/wallet-local';
 import {
   addHexPrefix,
   toBuffer,
   bufferToHex,
   bufferToInt,
-  rlp,
   rlphash,
   stripZeros,
   ecrecover,
   publicToAddress,
 } from 'ethereumjs-util';
+import * as rlp from 'rlp';
 import { EthLikeTransactionData, TxData } from '../eth/iface';
 import { KeyPair } from '../eth';
 
@@ -39,7 +39,7 @@ export class CeloTransaction {
    * @param numberValue Hex formatted number value. Example '0x01'
    * @returns sanitized value
    */
-  private sanitizeHexString(numberValue) {
+  private sanitizeHexString(numberValue: string): string {
     if (numberValue === '0x0') {
       return '0x';
     } else if (numberValue.length % 2 === 0) {
@@ -49,7 +49,7 @@ export class CeloTransaction {
   }
 
   constructor(tx: TxData) {
-    this.nonce = toBuffer(this.sanitizeHexString(tx.nonce));
+    this.nonce = toBuffer(tx.nonce);
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
     this.data = toBuffer(tx.data);
@@ -99,7 +99,7 @@ export class CeloTransaction {
         .concat([toBuffer(this.getChainId()), stripZeros(toBuffer(0)), stripZeros(toBuffer(0))]);
     }
 
-    return rlphash(items);
+    return rlphash(items) as Buffer;
   }
 
   getSenderAddress(): Buffer {
@@ -161,7 +161,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));
     return new CeloTransactionData(
       new CeloTransaction({
-        nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
+        nonce: new BigNumber(tx.nonce).toNumber(),
         to: tx.to,
         gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
         gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
@@ -182,13 +182,19 @@ export class CeloTransactionData implements EthLikeTransactionData {
 
     const celoLocalWallet = new LocalWallet();
     celoLocalWallet.addAccount(privateKey);
-    const rawTransaction = await celoLocalWallet.signTransaction(data);
+    const rawTransaction = await celoLocalWallet.signTransaction({
+      ...data,
+      chainId: Number(data.chainId),
+    });
 
     const nonceBigNumber = new BigNumber(rawTransaction.tx.nonce);
     rawTransaction.tx.nonce = addHexPrefix(nonceBigNumber.toString(16));
-    rawTransaction.tx.data = data.data;
-    rawTransaction.tx.gasLimit = rawTransaction.tx.gas;
-    this.tx = new CeloTransaction(rawTransaction.tx);
+    this.tx = new CeloTransaction({
+      ...rawTransaction.tx,
+      data: data.data,
+      gasLimit: rawTransaction.tx.gas,
+      nonce: Number(rawTransaction.tx.nonce),
+    });
     this.tx.sign(toBuffer(privateKey));
   }
 

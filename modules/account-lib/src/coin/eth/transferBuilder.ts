@@ -1,3 +1,4 @@
+import BN from 'bn.js';
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
@@ -134,16 +135,16 @@ export class TransferBuilder {
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  protected getOperationData(): (string | Buffer)[][] {
+  protected getOperationData(): [string[], (string | Buffer)[]] {
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           this.getTokenOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -153,7 +154,7 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
           Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
           this._expirationTime,
