@@ -1,0 +1,8 @@
+{
+  "valid": [
+    {
+      "asm": "OP_RETURN deadffffffffffffffffffffffffffffffffbeef deadffffffffffffffffffffffffffffffffbeef",
+      "script": "6a14deadffffffffffffffffffffffffffffffffbeef14deadffffffffffffffffffffffffffffffffbeef"
+    }
+  ]
+}
