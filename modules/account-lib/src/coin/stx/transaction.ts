@@ -145,6 +145,16 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Return the length of a transaction.  This is needed to calculate
+   * the transaction fee.
+   *
+   * @returns {number} size in bytes of the serialized transaction
+   */
+  transactionSize(): number {
+    return this._stxTransaction.serialize().length;
+  }
+
   toBroadcastFormat(): string {
     if (!this._stxTransaction) {
       throw new ParseTransactionError('Empty transaction');
