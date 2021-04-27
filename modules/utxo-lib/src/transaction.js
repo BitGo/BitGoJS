@@ -103,7 +103,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     bufferReader = new ZcashBufferReader(
       bufferReader.buffer,
       bufferReader.offset,
-      tx.version,
+      tx.version
     )
   }
 
