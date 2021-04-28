@@ -103,6 +103,7 @@ describe('STX:', function() {
       destination,
       amount,
       publicKey: key.getKeys().pub,
+      memo: memo
     });
     const unsignedHex = unsignedTransaction.toBroadcastFormat();
 
@@ -112,7 +113,23 @@ describe('STX:', function() {
       feeInfo: { fee: '' },
     });
 
-    explain.memo.should.equal(memo);
+    explain.memo.should.equal(accountLib.Stx.Utils.padMemo(memo));
+    explain.outputs[0].amount.should.equal(amount);
+    explain.outputs[0].address.should.equal(destination);
+  });
+
+  it('should explain unsigned transfer transaction hex', async function() {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.unsignedTxForExplainTransfer,
+      publicKeys: ['03797dd653040d344fd048c1ad05d4cbcb2178b30c6a0c4276994795f3e833da41'],
+      feeInfo: { fee: '' },
+    });
+    explain.outputAmount.should.equal(testData.unsignedTxExplainedTransfer.outputAmount);
+    explain.outputs[0].amount.should.equal(testData.unsignedTxExplainedTransfer.outputAmount);
+    explain.outputs[0].address.should.equal(testData.unsignedTxExplainedTransfer.recipient);
+    explain.outputs[0].memo.should.equal(testData.unsignedTxExplainedTransfer.memo);
+    explain.fee.should.equal(testData.unsignedTxExplainedTransfer.fee);
+    explain.changeAmount.should.equal('0');
   });
 
 
