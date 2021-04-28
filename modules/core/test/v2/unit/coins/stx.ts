@@ -36,6 +36,30 @@ describe('STX:', function() {
     basecoin = bitgo.coin('tstx');
   });
 
+  /**
+   * Build an unsigned account-lib multi-signature send transaction
+   * @param destination The destination address of the transaction
+   * @param amount The amount to send to the recipient
+   */
+  const buildUnsignedTransaction = async function({
+    destination,
+    amount = '100000',
+    publicKey,
+    memo = '',
+  }) {
+    const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.fee({
+      fee: '180',
+    });
+    txBuilder.to(destination);
+    txBuilder.amount(amount);
+    txBuilder.nonce(1);
+    txBuilder.fromPubKey(publicKey);
+    txBuilder.memo(memo);
+    return await txBuilder.build();
+  };
+
   it('should instantiate the coin', function() {
     let localBasecoin = bitgo.coin('tstx');
     localBasecoin.should.be.an.instanceof(Tstx);
@@ -67,6 +91,28 @@ describe('STX:', function() {
     explain.outputs[0].memo.should.equal(testData.txExplainedTransfer.memo);
     explain.fee.should.equal(testData.txExplainedTransfer.fee);
     explain.changeAmount.should.equal('0');
+  });
+
+  it('should explain an unsigned transaction', async function() {
+    const key = new accountLib.Stx.KeyPair();
+    const destination = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
+    const amount = '100000';
+    const memo = 'i cannot be broadcast';
+
+    const unsignedTransaction = await buildUnsignedTransaction({
+      destination,
+      amount,
+      publicKey: key.getKeys().pub,
+    });
+    const unsignedHex = unsignedTransaction.toBroadcastFormat();
+
+    const explain = await basecoin.explainTransaction({
+      txHex: unsignedHex,
+      publicKeys: [key.getKeys().pub],
+      feeInfo: { fee: '' },
+    });
+
+    explain.memo.should.equal(memo);
   });
 
 
@@ -102,29 +148,6 @@ describe('STX:', function() {
   });
 
   describe('Sign transaction:', () => {
-    /**
-     * Build an unsigned account-lib multi-signature send transaction
-     * @param destination The destination address of the transaction
-     * @param amount The amount to send to the recipient
-     */
-    const buildUnsignedTransaction = async function({
-      destination,
-      amount = '100000',
-      publicKey,
-    }) {
-
-      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.fee({
-        fee: '180',
-      });
-      txBuilder.to(destination);
-      txBuilder.amount(amount);
-      txBuilder.nonce(1);
-      txBuilder.fromPubKey(publicKey);
-      return await txBuilder.build();
-    };
-
     it('should sign transaction', async function() {
       const key = new accountLib.Stx.KeyPair();
       const destination = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
