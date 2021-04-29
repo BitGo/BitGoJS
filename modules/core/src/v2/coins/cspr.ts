@@ -91,8 +91,7 @@ export class Cspr extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
   verifyAddress(params: VerifyAddressOptions): boolean {
-    // TODO: Implement when available on the SDK.
-    throw true;
+    return accountLib.Cspr.Utils.isValidAddress(params.address);
   }
 
   /**
