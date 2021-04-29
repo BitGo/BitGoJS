@@ -14,7 +14,7 @@ describe('Stx Transaction', () => {
   });
 
   describe('should sign if transaction is', () => {
-    it('invalid', function () {
+    it('invalid', function() {
       const tx = new Transaction(coin);
       return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
     });
@@ -29,13 +29,21 @@ describe('Stx Transaction', () => {
     });
   });
 
-  describe('should return encoded tx', function () {
-    it('valid sign', async function () {
+  describe('should return encoded tx', function() {
+    it('valid sign', async function() {
       const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
       const keypair = new KeyPair({ prv: testData.TX_SENDER.prv });
       await tx.sign(keypair);
       should.equal(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION);
+    });
+  });
+
+  describe('calculate transaction size', function() {
+    it('expected size', async function() {
+      const tx = new Transaction(coin);
+      tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
+      should.equal(tx.transactionSize(), testData.RAW_TX_UNSIGNED.slice(2).length / 2);
     });
   });
 });
