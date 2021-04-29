@@ -159,7 +159,7 @@ export class Transaction extends BaseTransaction {
     if (!this._stxTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    return bufferToHexPrefixString(this._stxTransaction.serialize());
+    return this._stxTransaction.serialize().toString('hex');
   }
 
   get stxTransaction(): StacksTransaction {
