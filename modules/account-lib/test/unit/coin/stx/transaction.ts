@@ -43,7 +43,7 @@ describe('Stx Transaction', () => {
     it('expected size', async function() {
       const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
-      should.equal(tx.transactionSize(), testData.RAW_TX_UNSIGNED.slice(2).length / 2);
+      should.equal(tx.transactionSize(), testData.RAW_TX_UNSIGNED.length / 2);
     });
   });
 });

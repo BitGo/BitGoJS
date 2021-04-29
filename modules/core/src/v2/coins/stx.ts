@@ -43,6 +43,7 @@ export interface ExplainTransactionOptions {
   halfSigned?: {
     txHex: string;
   };
+  publicKeys?: string[];
   feeInfo: TransactionFee;
 }
 
@@ -212,11 +213,11 @@ export class Stx extends BaseCoin {
         throw new Error('missing explain tx parameters');
       }
 
-      const factory = accountLib.getBuilder(self.getChain());
+      const factory = accountLib.getBuilder(self.getChain()) as accountLib.Stx.TransactionBuilderFactory;
       const txBuilder = factory.from(txHex);
 
-      if (!(txBuilder instanceof accountLib.BaseCoin.BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+      if (params.publicKeys !== undefined) {
+        txBuilder.fromPubKey(params.publicKeys);
       }
 
       const tx = yield txBuilder.build();
