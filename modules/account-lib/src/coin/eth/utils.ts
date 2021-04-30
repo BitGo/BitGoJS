@@ -10,7 +10,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import {BaseCoin, coins, ContractAddressDefinedToken, NetworkType} from '@bitgo/statics';
+import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork, NetworkType } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -40,23 +40,22 @@ import {
   walletInitializationFirstBytes,
   walletSimpleConstructor,
 } from './walletUtil';
-import {mainnetCommon, testnetCommon} from './resources';
 import {EthTransactionData} from './types';
-
-const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
-  [NetworkType.MAINNET, mainnetCommon],
-  [NetworkType.TESTNET, testnetCommon],
-]);
 
 /**
  * @param network
  */
-export function getCommon(network: NetworkType): EthereumCommon {
-  const common = commons.get(network);
-  if (!common) {
-    throw new InvalidTransactionError('Missing network common configuration');
-  }
-  return common;
+export function getCommon(network: EthereumNetwork): EthereumCommon {
+  return EthereumCommon.forCustomChain(
+    // use the mainnet config as a base, override chain ids and network name
+    'mainnet',
+    {
+      name: network.type,
+      networkId: network.chainId,
+      chainId: network.chainId,
+    },
+    'petersburg',
+  );
 }
 
 /**
@@ -89,7 +88,7 @@ export async function signInternal(
  * @returns {string} the transaction signed and encoded
  */
 export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
-  return signInternal(transactionData, keyPair, testnetCommon);
+  return signInternal(transactionData, keyPair, getCommon(coins.get('teth').network as EthereumNetwork));
 }
 
 /**

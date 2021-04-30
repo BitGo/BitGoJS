@@ -34,6 +34,7 @@ describe('Etc send transaction', function() {
       .key(key);
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
+    should.equal(tx.toJson().chainId, 63);
 
     should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     should.equal(tx.signature.length, 2);

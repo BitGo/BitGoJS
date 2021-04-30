@@ -491,7 +491,7 @@ export class Wallet {
     return [
       'addressType', 'changeAddress', 'consolidateAddresses', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange',
       'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
-      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
     ];
@@ -864,7 +864,7 @@ export class Wallet {
    */
   unspents(params: UnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const query = _.pick(params, [
-        'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
+      'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
     ]);
 
     return this.bitgo.get(this.url('/unspents'))
@@ -1005,7 +1005,7 @@ export class Wallet {
       }
 
       self._wallet = yield self.bitgo.put(self.url()).send({
-        tokenFlushThresholds: thresholds
+        tokenFlushThresholds: thresholds,
       }).result();
     }).call(this).asCallback(callback);
   }
@@ -1640,6 +1640,7 @@ export class Wallet {
    * @param {Number} params.validToBlock - (Algorand) The maximum round this will run on
    * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
    * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
+   * @param {String} param.transferId - transfer Id to use in transaction (supported by casper)
    * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
    * @param {Boolean} params.hop - Build this as an Ethereum hop transaction
    * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
@@ -1818,7 +1819,7 @@ export class Wallet {
         txPrebuild: txPrebuild,
         wallet: {
           // this is the version of the multisig address at wallet creation time
-          addressVersion: self._wallet.coinSpecific.addressVersion
+          addressVersion: self._wallet.coinSpecific.addressVersion,
         },
         keychain: keychains[0],
         backupKeychain: (keychains.length > 1) ? keychains[1] : null,
@@ -1836,7 +1837,7 @@ export class Wallet {
             spendableBalanceString: self.spendableBalanceString(),
             balance: self.balance(),
             confirmedBalance: self.confirmedBalance(),
-            spendableBalance: self.spendableBalance()
+            spendableBalance: self.spendableBalance(),
           };
           error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
         }
