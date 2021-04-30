@@ -109,7 +109,7 @@ export class Erc20Token extends Eth {
         throw new Error('missing backupKey');
       }
 
-      if (_.isUndefined(params.walletPassphrase)) {
+      if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
         throw new Error('missing wallet passphrase');
       }
 
@@ -121,7 +121,8 @@ export class Erc20Token extends Eth {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub');
+      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
       if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
@@ -137,19 +138,21 @@ export class Erc20Token extends Eth {
 
       // Decrypt private keys from KeyCard values
       let userPrv;
-      try {
-        userPrv = self.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+        try {
+          userPrv = self.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase,
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
       }
 
       let backupKeyAddress;
       let backupSigningKey;
 
-      if (isKrsRecovery) {
+      if (isKrsRecovery || isUnsignedSweep) {
         const backupHDNode = HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
         backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
@@ -210,18 +213,17 @@ export class Erc20Token extends Eth {
       // Get sequence ID using contract call
       const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
-      // Get operation hash and sign it
-      const operationHash = self.getOperationSha3ForExecuteAndConfirm(
-        recipients,
-        self.getDefaultExpireTime(),
-        sequenceId
-      );
-      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+      let operationHash, signature;
+      if (!isUnsignedSweep) {
+        // Get operation hash and sign it
+        operationHash = self.getOperationSha3ForExecuteAndConfirm(recipients, self.getDefaultExpireTime(), sequenceId);
+        signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-      try {
-        Util.ecRecoverEthAddress(operationHash, signature);
-      } catch (e) {
-        throw new Error('Invalid signature');
+        try {
+          Util.ecRecoverEthAddress(operationHash, signature);
+        } catch (e) {
+          throw new Error('Invalid signature');
+        }
       }
 
       const txInfo = {
@@ -230,6 +232,7 @@ export class Erc20Token extends Eth {
         contractSequenceId: sequenceId,
         signature: signature,
         gasLimit: gasLimit.toString(10),
+        tokenContractAddress: self.tokenContractAddress,
       };
 
       // calculate send data
@@ -248,6 +251,10 @@ export class Erc20Token extends Eth {
         data: sendData,
         spendAmount: txAmount,
       });
+
+      if (isUnsignedSweep) {
+        return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
+      }
 
       if (!isKrsRecovery) {
         tx.sign(backupSigningKey);
