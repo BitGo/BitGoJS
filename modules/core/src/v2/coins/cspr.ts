@@ -15,6 +15,8 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
+  ParseTransactionOptions,
+  ParsedTransaction,
 } from '../baseCoin';
 
 import { NodeCallback } from '../types';
@@ -182,8 +184,11 @@ export class Cspr extends BaseCoin {
       .asCallback(callback);
   }
 
-  parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    throw new Error('Method not implemented.');
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**
