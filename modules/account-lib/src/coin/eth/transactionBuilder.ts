@@ -20,6 +20,7 @@ import {
   isValidEthAddress,
 } from './utils';
 import {walletSimpleByteCode, walletSimpleConstructor} from './walletUtil';
+import { EthereumNetwork } from '@bitgo/statics';
 
 const DEFAULT_M = 3;
 
@@ -61,7 +62,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._common = getCommon(this._coinConfig.network.type);
+    this._common = getCommon(this._coinConfig.network as EthereumNetwork);
     this._type = TransactionType.Send;
     this._counter = 0;
     this._value = '0';

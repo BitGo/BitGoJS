@@ -28,7 +28,6 @@ describe('Eth contract call transaction builder', () => {
     should.exist(tx);
     const json = tx.toJson();
     should.equal(tx.toBroadcastFormat(), rawTx);
-    console.log(json);
   });
 
   it('should deserialize an serialize raw transaction', async () => {

@@ -1,5 +1,5 @@
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
@@ -9,7 +9,7 @@ describe('Eth transaction builder send', () => {
   it('should validate a send type transaction', () => {
     const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
     const coinConfig = coins.get('eth');
-    const common = getCommon(coinConfig.network.type);
+    const common = getCommon(coinConfig.network as EthereumNetwork);
     const tx = new Eth.Transaction(coinConfig, common);
     txBuilder.counter(1);
     txBuilder.type(TransactionType.Send);
@@ -54,6 +54,8 @@ describe('Eth transaction builder send', () => {
         .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
+
+      should.equal(tx.toJson().chainId, 42);
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
       should.equal(tx.signature.length, 2);
       should.equal(tx.inputs.length, 1);
@@ -84,6 +86,27 @@ describe('Eth transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
+    });
+
+    it('Goerli chain id should be correct', async () => {
+      const txBuilder = getBuilder('gteth') as Eth.TransactionBuilder;
+      txBuilder.fee({
+        fee: '1000000000',
+        gasLimit: '12100000',
+      });
+      txBuilder.counter(2);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract(contractAddress);
+      txBuilder
+        .transfer()
+        .amount('0')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.sign({ key: testData.PRIVATE_KEY });
+      const tx = await txBuilder.build();
+      should.equal(tx.toJson().chainId, 5);
     });
   });
 
