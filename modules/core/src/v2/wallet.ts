@@ -2036,7 +2036,7 @@ export class Wallet {
         'message', 'minValue', 'maxValue', 'sequenceId',
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
-        'instant', 'memo', 'type', 'trustlines',
+        'instant', 'memo', 'type', 'trustlines', 'transferId',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
       self.bitgo.setRequestTracer(reqId);
