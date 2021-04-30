@@ -366,6 +366,7 @@ export interface SendManyOptions {
   changeAddress?: string;
   instant?: boolean;
   memo?: Memo;
+  transferId?: number;
 }
 
 export interface WalletData {
