@@ -4,7 +4,7 @@ import { CLValue, DeployUtil, PublicKey } from 'casper-client-sdk';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
 import * as testData from '../../../resources/cspr/cspr';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr';
-import { CHAIN_NAME, OWNER_PREFIX } from '../../../../src/coin/cspr/constants';
+import { CHAIN_NAMES, OWNER_PREFIX } from '../../../../src/coin/cspr/constants';
 import { register } from '../../../../src';
 import {
   getTransferAmount,
@@ -62,7 +62,7 @@ describe('Cspr Transaction', () => {
   const getTransferDeploy = (): DeployUtil.Deploy | undefined => {
     const gasPrice = testData.FEE.gasPrice ? parseInt(testData.FEE.gasPrice) : undefined;
     const sourcePublicKey = PublicKey.fromHex(testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
-    const deployParams = new DeployUtil.DeployParams(sourcePublicKey, CHAIN_NAME, gasPrice);
+    const deployParams = new DeployUtil.DeployParams(sourcePublicKey, CHAIN_NAMES.testnet, gasPrice);
 
     const session = DeployUtil.ExecutableDeployItem.newTransfer(1, sourcePublicKey, undefined, 123);
 

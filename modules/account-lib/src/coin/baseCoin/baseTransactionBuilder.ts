@@ -123,6 +123,13 @@ export abstract class BaseTransactionBuilder {
   }
 
   /**
+   * Get the underlying coin full name as specified in the statics library.
+   */
+  coinName(): string {
+    return this._coinConfig.name;
+  }
+
+  /**
    * Get the transaction being built.
    */
   protected abstract get transaction(): BaseTransaction;

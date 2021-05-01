@@ -1,6 +1,9 @@
 export const SECP256K1_PREFIX = '02';
 export const ED25519_PREFIX = '01';
-export const CHAIN_NAME = 'delta-11';
+export const CHAIN_NAMES = {
+  testnet: 'delta-11',
+  mainnet: 'casper',
+};
 export const TRANSACTION_EXPIRATION = 86400000; // 1 day
 export const DELEGATE_VALIDATOR_ACCOUNT = '0100cd28cec3dd6d29b959ae7b36a8201c92fe6af75fa44d5fa84b7d2e417ca940';
 
