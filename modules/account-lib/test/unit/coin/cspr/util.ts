@@ -76,6 +76,7 @@ describe('CSPR util library', function() {
       const validAddresses = [
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3',
         '020385D724A9A3E7E32BADF40F3279AF5A190CB2CFCAB6639BF532A0069E0E3824D0',
+        '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa', // ed25519
       ];
 
       for (const address of validAddresses) {
