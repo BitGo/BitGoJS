@@ -5,9 +5,11 @@ import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import * as testData from '../../../../resources/cspr/cspr';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
+import { CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
 
 describe('Casper Transfer Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
+  const factoryProd = register('cspr', TransactionBuilderFactory);
   const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
   const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
 
@@ -19,6 +21,16 @@ describe('Casper Transfer Builder', () => {
     txBuilder.transferId(255);
     return txBuilder;
   };
+
+  describe('transfer builder environment', function() {
+    it('should select the right chain name', function() {
+      should.equal(factory.getTransferBuilder().coinName(), 'tcspr');
+      should.equal(factoryProd.getTransferBuilder().coinName(), 'cspr');
+
+      should.equal(factory.getTransferBuilder().chainName, CHAIN_NAMES.testnet);
+      should.equal(factoryProd.getTransferBuilder().chainName, CHAIN_NAMES.mainnet);
+    });
+  });
 
   describe('should build ', () => {
     describe('non serialized transactions', () => {

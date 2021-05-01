@@ -20,7 +20,7 @@ import {
   SignatureData,
 } from './ifaces';
 import { isValidSecp256k1Address, removeAlgoPrefixFromHexValue } from './utils';
-import { CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
+import { CHAIN_NAMES, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -32,12 +32,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _expiration: number;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
+  protected _chainName: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.transaction = new Transaction(_coinConfig);
     this._multiSignerKeyPairs = [];
     this._signatures = [];
+    this._chainName = (this.coinName() === 'cspr' ? CHAIN_NAMES.mainnet : CHAIN_NAMES.testnet);
   }
 
   // region Base Builder
@@ -277,6 +279,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
+
+  /**
+   * Get the chain name for the coin environment
+   */
+  public get chainName(): string {
+    return this._chainName;
+  }
   // endregion
 
   // region auxiliaryMethods
@@ -289,7 +298,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const gasPrice = this._fee.gasPrice ? _.parseInt(this._fee.gasPrice) : undefined;
     return new DeployUtil.DeployParams(
       PublicKey.fromHex(this._source.address),
-      CHAIN_NAME,
+      this._chainName,
       gasPrice,
       this._expiration || TRANSACTION_EXPIRATION,
     );
