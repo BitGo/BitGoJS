@@ -113,6 +113,25 @@ describe('Casper Transaction Builder', () => {
         e => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
       );
     });
+
+    it('should validate addresses', async function() {
+      // validate secp256k1 address
+      const builder = initTransferBuilder();
+      let tx = await builder.build();
+      let txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateAddress({ address: txJson.to });
+      });
+
+      // validate ed25519 address
+      const ed25519Address = '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa';
+      builder.to(ed25519Address);
+      tx = await builder.build();
+      txJson = tx.toJson();
+      should.doesNotThrow(() => {
+        builder.validateAddress({ address: txJson.to });
+      });
+    });
   });
 
   describe('signatures', function() {

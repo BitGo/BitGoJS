@@ -34,6 +34,16 @@ describe('Casper Transfer Builder', () => {
 
   describe('should build ', () => {
     describe('non serialized transactions', () => {
+      it('should build a transaction to an address from an ed25519 key', async function() {
+        const ed25519Address = '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa';
+        const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
+        builder.to(ed25519Address);
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(txJson.to, ed25519Address);
+      });
+
       it('a signed transfer transaction', async () => {
         const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
@@ -660,7 +670,8 @@ describe('Casper Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.fee(testData.FEE);
       txBuilder.source({ address: owner1Address });
-      txBuilder.to(owner2Address);
+      // txBuilder.to(owner2Address);
+      txBuilder.to('01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa');
       txBuilder.build().should.be.rejectedWith(testData.ERROR_MISSING_TRANSFER_AMOUNT);
     });
 

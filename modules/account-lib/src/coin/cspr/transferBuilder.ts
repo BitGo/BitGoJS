@@ -12,7 +12,7 @@ import {
   getTransferDestinationAddress,
   getTransferAmount,
   getTransferId,
-  isValidSecp256k1Address,
+  isValidAddress,
 } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -71,7 +71,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   to(address: string): this {
-    if (!isValidSecp256k1Address(address)) {
+    if (!isValidAddress(address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
     this._toAddress = address;
@@ -113,7 +113,7 @@ export class TransferBuilder extends TransactionBuilder {
     if (!this._toAddress) {
       throw new BuildTransactionError('Invalid transaction: missing to');
     }
-    if (!isValidSecp256k1Address(this._toAddress)) {
+    if (!isValidAddress(this._toAddress)) {
       throw new InvalidParameterValueError('Invalid to address');
     }
     if (!this._amount) {
