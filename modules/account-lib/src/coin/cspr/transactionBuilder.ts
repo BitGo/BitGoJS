@@ -19,7 +19,7 @@ import {
   CasperDelegateTransaction,
   SignatureData,
 } from './ifaces';
-import { isValidSecp256k1Address, removeAlgoPrefixFromHexValue } from './utils';
+import { isValidAddress, removeAlgoPrefixFromHexValue } from './utils';
 import { CHAIN_NAMES, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
@@ -173,7 +173,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress): void {
-    if (!isValidSecp256k1Address(address.address)) {
+    if (!isValidAddress(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
