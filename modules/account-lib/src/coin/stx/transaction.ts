@@ -50,12 +50,9 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  async appendOrigin(keyPair: KeyPair): Promise<void> {
-    const keys = keyPair.getKeys(keyPair.getCompressed());
-    if (!keys.pub) {
-      throw new SigningError('Missing public key');
-    }
-    const pubKey = createStacksPublicKey(keys.pub);
+  async appendOrigin(pubKeyString: string): Promise<void> {
+
+    const pubKey = createStacksPublicKey(pubKeyString);
     const signer = new TransactionSigner(this._stxTransaction);
     signer.appendOrigin(pubKey);
   }

@@ -1,9 +1,10 @@
 import should from 'should';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
-import { TransactionBuilderFactory } from '../../../../../src/coin/stx';
+import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+
 
 describe('Stx Contract call Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
@@ -51,10 +52,12 @@ describe('Stx Contract call Builder', () => {
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
       builder.network(new StacksTestnet());
-      builder.numberSignatures(2);
+
       builder.sign({ key: testData.prv1 });
       builder.sign({ key: testData.prv2 });
-      builder.sign({ key: testData.prv3 });
+      const kp = new KeyPair({ prv: testData.prv3 });
+      builder.fromPubKey(kp.getKeys(kp.getCompressed()).pub);
+      builder.numberSignatures(2);
       const tx = await builder.build();
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_CONTRACT_CALL);
     });
