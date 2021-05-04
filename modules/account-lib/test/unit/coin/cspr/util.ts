@@ -109,5 +109,16 @@ describe('CSPR util library', function() {
         Utils.verifySignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub),
       );
     });
+
+    it('should verify valid amount', function() {
+      Utils.isValidTransferAmount("3000000000").should.be.true();
+      Utils.isValidTransferAmount("99999999999999999999999999999999999999999999999999999999999999999999999999999").should.be.true();
+    });
+
+    it('should verify invalid amount', function() {
+      Utils.isValidTransferAmount("2499999999").should.be.false();
+      Utils.isValidTransferAmount("abc").should.be.false();
+      Utils.isValidTransferAmount("100000000000000000000000000000000000000000000000000000000000000000000000000001").should.be.false();
+    });
   });
 });

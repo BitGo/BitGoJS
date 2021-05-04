@@ -21,7 +21,7 @@ import {
 import { SignResponse } from './ifaces';
 import { KeyPair } from '.';
 
-const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
+const MAX_MOTES_AMOUNT = new BigNumber(10).pow(77);
 const MIN_MOTES_AMOUNT = new BigNumber(2500000000);
 
 /**
@@ -97,6 +97,18 @@ export function isValidTransferAmount(amount: string): boolean {
     bigNumberAmount.isGreaterThanOrEqualTo(MIN_MOTES_AMOUNT) &&
     bigNumberAmount.isLessThan(MAX_MOTES_AMOUNT)
   );
+}
+
+/**
+ * Returns transfer amount limits
+ *
+ * @returns {Object} - object that contains min motes amount and max motes amount
+ */
+export function getTransferAmountLimits(): ({ minMotesAmount: BigNumber, maxMotesAmount: BigNumber }) {
+  return {
+    minMotesAmount: MIN_MOTES_AMOUNT,
+    maxMotesAmount: MAX_MOTES_AMOUNT,
+  };
 }
 
 /**
