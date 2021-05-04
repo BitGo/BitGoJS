@@ -87,7 +87,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
             authType,
             new BigNum(this._fee.fee),
             new BigNum(this._nonce),
-            PubKeyEncoding.Compressed,
+            PubKeyEncoding.Compressed, // useless param as Compressed is hardcoded in stacks lib
             signature,
           );
           this._fromPubKeys.push(nextVerify.pubKey.data.toString('hex'));
@@ -119,20 +119,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     if (this._signatures.length > 0) {
       await this.transaction.signWithSignatures(this._signatures, this._fromPubKeys);
-    }
-    if (this._signatures.length === 0) {
-      if (this._numberSignatures > 1 && this._multiSignerKeyPairs.length !== this._numberSignatures + 1) {
-        throw new SigningError('Invalid number of signers for multi-sig');
-      }
+    } else if (this._multiSignerKeyPairs.length > 0) {
+      this.validateNumberOfSigners();
       await this.transaction.sign(this._multiSignerKeyPairs.slice(0, this._numberSignatures));
       if (this._numberSignatures > 1) {
         // multi-sig
-        await this.transaction.appendOrigin(this._multiSignerKeyPairs[this._numberSignatures]);
+        await this.transaction.appendOrigin(this._fromPubKeys[this._numberSignatures]);
       }
     }
-
     this._transaction.loadInputsAndOutputs();
     return this._transaction;
+  }
+
+  private validateNumberOfSigners() {
+    if (this._numberSignatures > 1 && this._multiSignerKeyPairs.length !== this._numberSignatures) {
+      throw new SigningError('Invalid number of signers for multi-sig');
+    }
   }
 
   /** @inheritdoc */
@@ -147,8 +149,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!this._fromPubKeys.includes(publicKey)) {
       this._fromPubKeys.push(publicKey);
     }
-    this._numberSignatures =
-      this._multiSignerKeyPairs.length > 1 ? this._multiSignerKeyPairs.length - 1 : this._multiSignerKeyPairs.length;
+    this._numberSignatures = this._multiSignerKeyPairs.length;
     return this.transaction;
   }
 
