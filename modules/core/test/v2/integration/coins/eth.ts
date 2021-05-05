@@ -157,6 +157,21 @@ describe('ETH:', function() {
       recovery.should.have.property('tx');
     }));
 
+    it('should construct a token recovery transaction without passphrase for advanced cold wallets', co(function *() {
+      const basecoin = yield bitgo.token('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
+      const recovery = yield basecoin.recover({
+        userKey: 'xpub6BkS6QAreYc5ftRBYdApmdDmqCcMeSyPa9LkKjoipNBoudoDh6rH164izFzS3mvKrZ6MuawQEEdL33wJyb6XsoRuLfrn4pQUHf4BELaxZ1m',
+        backupKey: 'xpub6CXBBAHb5xF1ry8BDe2cbY1QB1nuiR6dtXzvVbEGKCz8jiYJrpToJbsjFmHWHY2JY11DWBWoFcUGcT7JoKGirHiQNLZ3AxsE3GaZoZzbXG5',
+        walletContractAddress: '0xa5558d6e7c64af892c6e74095bd334a21c13e4c3',
+        recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670'
+      });
+
+      // id and tx will always be different because of expireTime
+      should.exist(recovery);
+      recovery.should.have.property('recipients');
+      recovery.should.have.property('amount');
+    }));
+
     it('should construct a token recovery transaction without BitGo and with KRS', co(function *() {
       const basecoin = yield bitgo.token('0x06d22e6fa60fda26b6ca28f73d2d4a81bd9aa2de');
       const recovery = yield basecoin.recover({
