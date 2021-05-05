@@ -1,15 +1,21 @@
-import {BaseCoin as CoinConfig} from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
 import EthereumCommon from 'ethereumjs-common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
-import {RLP} from 'ethers/utils';
+import * as ethers from 'ethers';
+
 import * as Crypto from '../../utils/crypto';
-import {BaseTransaction, BaseTransactionBuilder, TransactionType} from '../baseCoin';
-import {BaseAddress, BaseKey} from '../baseCoin/iface';
-import {Transaction, TransferBuilder, Utils} from '../eth';
-import {BuildTransactionError, InvalidTransactionError, ParseTransactionError, SigningError,} from '../baseCoin/errors';
-import {KeyPair} from './keyPair';
-import {Fee, SignatureParts, TxData} from './iface';
+import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import { Transaction, TransferBuilder, Utils } from '../eth';
+import {
+  BuildTransactionError,
+  InvalidTransactionError,
+  ParseTransactionError,
+  SigningError,
+} from '../baseCoin/errors';
+import { KeyPair } from './keyPair';
+import { Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
   flushCoinsData,
@@ -19,8 +25,7 @@ import {
   hasSignature,
   isValidEthAddress,
 } from './utils';
-import {walletSimpleByteCode, walletSimpleConstructor} from './walletUtil';
-import { EthereumNetwork } from '@bitgo/statics';
+import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 
 const DEFAULT_M = 3;
 
@@ -219,7 +224,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (typeof rawTransaction === 'string') {
       if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
         try {
-          RLP.decode(rawTransaction);
+          ethers.utils.RLP.decode(rawTransaction);
         } catch (e) {
           throw new ParseTransactionError('There was error in decoding the hex string');
         }

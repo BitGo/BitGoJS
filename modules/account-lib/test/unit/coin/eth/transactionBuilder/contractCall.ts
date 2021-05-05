@@ -1,6 +1,7 @@
+import should from 'should';
+
 import { Eth, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import should from 'should';
 
 describe('Eth contract call transaction builder', () => {
   let txBuilder;
@@ -50,10 +51,8 @@ describe('Eth contract call transaction builder', () => {
   });
 
   it('should thrown if contract or data is missing', async () => {
-    const missingContract = await txBuilder.build().catch(e => e);
-    should.equal(missingContract.message, 'Invalid transaction: missing contract address');
+    await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
     txBuilder.contract(contractAddress);
-    const missingData = await txBuilder.build().catch(e => e);
-    should.equal(missingData.message, 'Invalid transaction: missing contract call data field');
+    await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
   });
 });

@@ -1,7 +1,7 @@
 import { NetworkType } from '@bitgo/statics';
 import EthereumCommon from 'ethereumjs-common';
 import { recoverTransaction } from '@celo/contractkit/lib/utils/signing-utils';
-import { RLP } from 'ethers/utils';
+import * as ethers from 'ethers';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
@@ -17,7 +17,7 @@ import { mainnetCommon, testnetCommon } from './resources';
  */
 export function deserialize(serializedTx: string): TxData {
   try {
-    const decodedTx = RLP.decode(serializedTx);
+    const decodedTx = ethers.utils.RLP.decode(serializedTx);
     decodedTx.splice(3, 3); // remove unused feeCurrency, gatewayFeeRecipient and gatewayFee
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = decodedTx;
     let chainId = v;

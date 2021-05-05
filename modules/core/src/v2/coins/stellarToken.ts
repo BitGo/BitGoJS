@@ -25,8 +25,6 @@ export class StellarToken extends Xlm {
   constructor(bitgo: BitGo, tokenConfig: StellarTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
-    const network = this.tokenConfig.network === 'Testnet' ? stellar.Networks.TESTNET : stellar.Networks.PUBLIC;
-    stellar.Network.use(new stellar.Network(network));
 
     const [tokenCoin, token] = _.split(this.tokenConfig.type, Xlm.coinTokenPatternSeparator);
     if (tokenCoin !== tokenConfig.coin) {
@@ -68,6 +66,10 @@ export class StellarToken extends Xlm {
 
   get decimalPlaces() {
     return this.tokenConfig.decimalPlaces;
+  }
+
+  protected getStellarNetwork(): stellar.Networks {
+    return this.tokenConfig.network === 'Testnet' ? stellar.Networks.TESTNET : stellar.Networks.PUBLIC;
   }
 
   getChain() {

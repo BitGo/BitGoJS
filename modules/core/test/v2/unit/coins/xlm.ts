@@ -295,14 +295,14 @@ describe('XLM:', function() {
 
     it('should verify the user signature on a tx', co(function *() {
       const userPub = userKeychain.pub;
-      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64);
+      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(userPub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(true);
     }));
 
     it('should fail to verify the wrong signature on a tx', co(function *() {
       const keyPair = basecoin.generateKeyPair();
-      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64);
+      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(false);
     }));
