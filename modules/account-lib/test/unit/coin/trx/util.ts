@@ -73,8 +73,7 @@ describe('Util library should', function() {
 
   it('sign a string', () => {
     const hexText = Buffer.from(txt).toString('hex');
-    const prvArray = Utils.getByteArrayFromHexAddress(prv);
-    const signed = Utils.signString(hexText, prvArray);
+    const signed = Utils.signString(hexText, prv);
 
     should.equal(signedString, signed);
   });
