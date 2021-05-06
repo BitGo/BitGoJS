@@ -124,8 +124,8 @@ export interface ParsedTransaction extends BaseParsedTransaction {
     bitgo?: Keychain;
   };
   keySignatures: {
-    backupPub: string;
-    bitgoPub: string;
+    backupPub?: string;
+    bitgoPub?: string;
   };
   outputs: Output[];
   missingOutputs: Output[];
@@ -743,7 +743,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     const self = this;
     return co<boolean>(function *(): any {
-      const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
+      const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
       const disableNetworking = !!verification.disableNetworking;
       const parsedTransaction: ParsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
 
@@ -794,7 +794,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
 
       // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-      const payAsYouGoLimit = intendedExternalSpend * 0.015; // 150 basis points is the absolute permitted maximum
+      const payAsYouGoLimit = verification.allowPaygoOutput ?
+        intendedExternalSpend * 0.015 : // 150 basis points is the absolute permitted maximum if paygo outputs are allowed
+        0;
 
       /*
       Some explanation for why we're doing what we're doing:
