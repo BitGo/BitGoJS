@@ -17,13 +17,18 @@ import {
   createStacksPublicKey,
   signWithKey,
   createStacksPrivateKey,
+  PubKeyEncoding,
+  publicKeyFromSignature,
+  createMessageSignature,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
-import { InvalidParameterValueError, SigningError } from '../baseCoin/errors';
+import { InvalidParameterValueError, SigningError, UtilsError } from '../baseCoin/errors';
 import { SignResponse } from './iface';
 import { KeyPair } from '.';
+import { sign } from '../xtz/utils';
+import { isEmpty } from 'lodash';
 
 const ContractFunctionNames = [
   'stack-stx',
@@ -310,4 +315,31 @@ export function signMessage(keyPair: KeyPair, data: string): string {
   } else {
     throw new SigningError('Missing private key');
   }
+}
+
+/**
+ * Verifies a signed message
+ *
+ * The signature must be 130 bytes long -- see RECOVERABLE_ECDSA_SIG_LENGTH_BYTES
+ * in @stacks/transactions/src/constants.ts
+ *
+ * @param {string} message - message to verify the signature
+ * @param {string} signature - signature to verify
+ * @param {string} publicKey - public key as hex string used to verify the signature
+ * @returns {boolean} - verification result
+ */
+export function verifySignature(message: string, signature: string, publicKey: string): boolean {
+  if (!this.isValidPublicKey(publicKey)) return false;
+  if (signature.length !== 130) return false;
+  if (!allHexChars(signature)) throw new UtilsError('Invalid signature input to verifySignature');
+  if (isEmpty(message)) throw new UtilsError('Cannot verify empty messages');
+
+  // provided publicKey can be compressed or uncompressed
+  const keyEncoding = publicKey.length === 66 ? PubKeyEncoding.Compressed : PubKeyEncoding.Uncompressed;
+
+  const messageSig = createMessageSignature(signature);
+
+  const foundKey = publicKeyFromSignature(message, messageSig, keyEncoding);
+
+  return foundKey === publicKey;
 }
