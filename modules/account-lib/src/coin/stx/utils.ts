@@ -23,12 +23,10 @@ import {
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
+import { isEmpty } from 'lodash';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
 import { InvalidParameterValueError, SigningError, UtilsError } from '../baseCoin/errors';
-import { SignResponse } from './iface';
 import { KeyPair } from '.';
-import { sign } from '../xtz/utils';
-import { isEmpty } from 'lodash';
 
 const ContractFunctionNames = [
   'stack-stx',
