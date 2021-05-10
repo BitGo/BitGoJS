@@ -1,9 +1,21 @@
+import { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
-import { AddressFormat } from '../baseCoin/enum';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotImplementedError, NotSupported } from '../baseCoin/errors';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import { toUint8Array } from '../hbar/utils';
+
+export enum AddressFormat {
+  hex = 'hex', // not used
+  base58 = 'base58', // not used
+  string = 'string',
+}
 
 export class KeyPair extends Ed25519KeyPair {
+  /**
+   * Public constructor. By default, creates a key pair with a random master seed.
+   *
+   * @param { KeyPairOptions } source Either a master seed, a private key, or a public key
+   */
   constructor(source?: KeyPairOptions) {
     super(source);
   }
@@ -19,12 +31,20 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /** @inheritdoc */
-  getAddress(format: AddressFormat): string {
-    throw new NotImplementedError('getAddress not implemented');
+  getAddress(format: AddressFormat = AddressFormat.string): string {
+    if (format === AddressFormat.string) {
+      return encodeAddress(toUint8Array(this.keyPair.pub));
+    }
+    throw new NotSupported('Address format not supported.');
   }
 
   /** @inheritdoc */
-  getKeys(): void {
-    throw new NotImplementedError('getKeys not implemented');
+  getKeys(): DefaultKeys {
+    const result: DefaultKeys = { pub: this.keyPair.pub.toString() };
+
+    if (this.keyPair.prv) {
+      result.prv = this.keyPair.prv.toString();
+    }
+    return result;
   }
 }
