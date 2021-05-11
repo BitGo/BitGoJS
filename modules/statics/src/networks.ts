@@ -204,15 +204,15 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
 //TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
   family = CoinFamily.CSPR;
-  explorerUrl = 'https://clarity.casperlabs.io/#/deploys/';
-  accountExplorerUrl = '';
+  explorerUrl = 'https://cspr.live/deploy/';
+  accountExplorerUrl = 'https://cspr.live/account/';
 }
 
 //TODO update explorerUrl STLX-1657
 class CasperTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.CSPR;
-  explorerUrl = 'https://clarity.casperlabs.io/#/deploys/';
-  accountExplorerUrl = '';
+  explorerUrl = 'https://testnet.cspr.live/deploy/';
+  accountExplorerUrl = 'https://testnet.cspr.live/account/';
 }
 
 class Ethereum extends Mainnet implements EthereumNetwork {
