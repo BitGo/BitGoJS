@@ -16,7 +16,7 @@ import {
   isValidSeed,
   Encoding,
   mergeMultisigTransactions,
-} from 'algosdk';
+} from '../../../node_modules/algosdk';
 import { BitGo } from '../../bitgo';
 
 import {

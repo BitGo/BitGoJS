@@ -1,4 +1,4 @@
-import { isValidSeed as AlgoIsValidSeed } from 'algosdk';
+import { isValidSeed as AlgoIsValidSeed } from '../../../node_modules/algosdk';
 import * as stellar from 'stellar-sdk';
 import * as _ from 'lodash';
 import { CoinFamily } from '@bitgo/statics';
