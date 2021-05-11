@@ -67,6 +67,8 @@ export const GAS_LIMIT = '123';
 
 export const FEE = { gasLimit: '10000000', gasPrice: '10' };
 
+export const CUSTOM_CHAIN_NAME = 'custom-integration-test';
+
 export const INVALID_SHORT_KEYPAIR_KEY = '82A34E';
 
 export const INVALID_LONG_KEYPAIR_PRV = ACCOUNT_FROM_SEED.privateKey + 'F1';

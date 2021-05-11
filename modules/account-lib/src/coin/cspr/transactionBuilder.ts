@@ -20,7 +20,7 @@ import {
   SignatureData,
 } from './ifaces';
 import { isValidAddress, removeAlgoPrefixFromHexValue } from './utils';
-import { CHAIN_NAMES, TRANSACTION_EXPIRATION } from './constants';
+import { DEFAULT_CHAIN_NAMES, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -39,7 +39,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = new Transaction(_coinConfig);
     this._multiSignerKeyPairs = [];
     this._signatures = [];
-    this._chainName = (this.coinName() === 'cspr' ? CHAIN_NAMES.mainnet : CHAIN_NAMES.testnet);
+    this._chainName = this.coinName() === 'cspr' ? DEFAULT_CHAIN_NAMES.mainnet : DEFAULT_CHAIN_NAMES.testnet;
   }
 
   // region Base Builder
@@ -165,6 +165,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     // otherwise add the new signature
     this._signatures.push({ signature, keyPair });
+    return this;
+  }
+
+  nodeChainName(chainName: string): this {
+    this._chainName = chainName;
     return this;
   }
 
