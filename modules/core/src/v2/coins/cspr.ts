@@ -166,7 +166,7 @@ export class Cspr extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const txBuilder = accountLib.getBuilder(self.getChain()).from(params.txPrebuild.txHex);
       const key = params.prv;
       txBuilder.sign({ key });
@@ -201,7 +201,7 @@ export class Cspr extends BaseCoin {
    */
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
     const self = this;
-    return co<SupplementGenerateWalletOptions>(function*() {
+    return co<SupplementGenerateWalletOptions>(function* () {
       if (walletParams.rootPrivateKey) {
         if (!self.isValidPrv(walletParams.rootPrivateKey) || walletParams.rootPrivateKey.length !== 64) {
           throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
@@ -246,7 +246,7 @@ export class Cspr extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');

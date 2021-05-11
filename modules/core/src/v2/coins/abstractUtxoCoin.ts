@@ -18,9 +18,12 @@ import {
   BaseCoin,
   ExtraPrebuildParamsOptions,
   KeychainsTriplet,
+  ParseTransactionOptions as BaseParseTransactionOptions,
+  ParsedTransaction as BaseParsedTransaction,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
   SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
@@ -37,7 +40,6 @@ import { promiseProps } from '../promise-utils';
 import { CrossChainRecoveryTool } from '../recovery';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 
 const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
@@ -107,7 +109,7 @@ export interface TransactionParams extends BaseTransactionParams {
 }
 
 
-export interface ParseTransactionOptions {
+export interface ParseTransactionOptions extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild;
   wallet: Wallet;
@@ -115,7 +117,7 @@ export interface ParseTransactionOptions {
   reqId?: RequestTracer;
 }
 
-export interface ParsedTransaction {
+export interface ParsedTransaction extends BaseParsedTransaction {
   keychains: {
     user?: Keychain;
     backup?: Keychain;
@@ -158,7 +160,7 @@ export interface AddressDetails {
   addressType?: string;
 }
 
-export interface SignTransactionOptions {
+export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: {
     txHex: string;
     txInfo: {
@@ -209,7 +211,7 @@ export interface FormattedOfflineVaultTxInfo {
     }[];
   };
   txHex: string;
-  feeInfo: {};
+  feeInfo: Record<string, never>;
   coin: string;
 }
 
@@ -394,7 +396,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         this.bitgo._reqId = reqId;
       }
       const chainhead = yield self.bitgo.get(self.url('/public/block/latest')).result();
-      return chainhead.height;
+      return (chainhead as any).height;
     }).call(this).asCallback(callback);
   }
 
@@ -405,7 +407,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   postProcessPrebuild(prebuild: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co<TransactionPrebuild>(function *() {
+    return co<TransactionPrebuild>(function *(): any {
       if (_.isUndefined(prebuild.txHex)) {
         throw new Error('missing required txPrebuild property txHex');
       }
@@ -465,7 +467,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
     const self = this;
-    return co<ParsedTransaction>(function *() {
+    return co<ParsedTransaction>(function *(): any {
       const {
         txParams,
         txPrebuild,
@@ -740,7 +742,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     const self = this;
-    return co<boolean>(function *() {
+    return co<boolean>(function *(): any {
       const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
       const disableNetworking = !!verification.disableNetworking;
       const parsedTransaction: ParsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
@@ -1629,7 +1631,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
         // it out for a better source when it becomes available.  TODO BG-26359.
         .set('BCHA', 'bitcoin-cash')
-        .set('BSV', 'bitcoin-cash')
+        .set('BSV', 'bitcoin-cash');
 
       const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
       if (!coinGeckoId) {
@@ -1724,7 +1726,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
             const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
-            const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address, params.apiKey);
+            const addrInfo: AddressInfo = (yield self.getAddressInfoFromExplorer(address.address, params.apiKey)) as any;
             // we use txCount here because it implies usage - having tx'es means the addr was generated and used
             if (addrInfo.txCount === 0) {
               numSequentialAddressesWithoutTxs++;
@@ -1732,7 +1734,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
               numSequentialAddressesWithoutTxs = 0;
 
               if (addrInfo.totalBalance > 0) {
-                console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`)
+                console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`);
                 // This address has a balance.
                 address.chainPath = basePath + '/' + addrIndex;
                 address.userKey = derivedKeys[0];
@@ -1740,7 +1742,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
                 addressesById[address.address] = address;
 
                 // Try to find unspents on it.
-                const addressUnspents: UnspentInfo[] = yield self.getUnspentInfoFromExplorer(address.address, params.apiKey);
+                const addressUnspents: UnspentInfo[] = (yield self.getUnspentInfoFromExplorer(address.address, params.apiKey)) as any;
 
                 addressUnspents.forEach(function addAddressToUnspent(unspent) {
                   unspent.address = address.address;
@@ -1803,7 +1805,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
       const keys = yield self.initiateRecovery(params);
 
-      const [userKey, backupKey, bitgoKey] = keys;
+      const [userKey, backupKey, bitgoKey] = (keys as any);
       let derivedUserKey;
       let baseKeyPath;
       if (params.userKeyPath) {
@@ -1811,7 +1813,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         const twoKeys = self.deriveKeys(self.deriveKeys([backupKey, bitgoKey], 0), 0);
         baseKeyPath = [derivedUserKey, ...twoKeys];
       } else {
-        baseKeyPath = self.deriveKeys(self.deriveKeys(keys, 0), 0);
+        baseKeyPath = self.deriveKeys(self.deriveKeys((keys as any), 0), 0);
       }
 
       const queries: any[] = [];
@@ -1861,7 +1863,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       self.prepareTransactionBuilder(transactionBuilder);
       const txInfo: any = {};
 
-      const feePerByte = yield self.getRecoveryFeePerBytes();
+      const feePerByte: number = (yield self.getRecoveryFeePerBytes()) as any;
 
       // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
       // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
@@ -2024,7 +2026,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       if (krsProvider.feeType === 'flatUsd') {
         const feeAmountUsd = krsProvider.feeAmount;
-        const currentPrice = yield self.getRecoveryMarketPrice();
+        const currentPrice: number = (yield self.getRecoveryMarketPrice()) as any;
 
         return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
       } else {
@@ -2121,7 +2123,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return Bluebird.resolve({}).asCallback(callback);
   }
 
-  preCreateBitGo(params: PrecreateBitGoOptions): void {}
+  preCreateBitGo(params: PrecreateBitGoOptions): void {
+    return;
+  }
 
   presignTransaction(params: PresignTransactionOptions, callback?: (err: Error, res: any) => void): Bluebird<any> {
     return Bluebird.resolve(params).asCallback(callback);

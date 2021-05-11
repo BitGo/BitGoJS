@@ -39,12 +39,16 @@ describe('Trading Partners', function() {
     tradingAccount = wallet.toTradingAccount();
   }));
 
-  it('should refer check trading partner by code', co(function *() {
+  it('should refer check trading partner by code', async function() {
     const scope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.addByCodeResponse);
 
-    const addByCodeResponse = yield tradingAccount.partners().addByCode({referralCode: 'TEST', type: TradingPartnerType.AGENCY, requesterSide: TradingReferralRequesterSide.PRIMARY});
+    const addByCodeResponse = await tradingAccount.partners().addByCode({
+      referralCode: 'TEST',
+      type: TradingPartnerType.AGENCY,
+      requesterSide: TradingReferralRequesterSide.PRIMARY,
+    });
 
     addByCodeResponse.should.have.property('id');
     addByCodeResponse.should.have.property('primaryAccountId');
@@ -56,14 +60,14 @@ describe('Trading Partners', function() {
     addByCodeResponse.type.should.eql(TradingPartnerType.AGENCY);
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should list all trading partners', co(function *() {
+  it('should list all trading partners', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.listTradingPartners);
 
-    const partners = yield tradingAccount.partners().list();
+    const partners = await tradingAccount.partners().list();
 
     should.exist(partners);
     partners.should.have.length(2);
@@ -76,13 +80,13 @@ describe('Trading Partners', function() {
       partner.should.have.property('secondaryEnterpriseName');
       partner.should.have.property('requesterAccountId');
       partner.status.should.eql(TradingPartnerStatus.ACCEPTED);
-      [TradingPartnerType.DIRECT,TradingPartnerType.AGENCY].includes(partner.type);
+      [TradingPartnerType.DIRECT, TradingPartnerType.AGENCY].includes(partner.type);
     }
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should balance check trading partners', co(function *() {
+  it('should balance check trading partners', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.listTradingPartners)
@@ -90,13 +94,13 @@ describe('Trading Partners', function() {
       .query(fixtures.balanceCheckTrueRequest)
       .reply(200, { check: true });
 
-    const partners = yield tradingAccount.partners().list();
+    const partners = await tradingAccount.partners().list();
     should.exist(partners);
     partners.should.have.length(2);
 
-    const balanceCheck = yield partners[0].checkBalance('ofctbtc', '24128');
+    const balanceCheck = await partners[0].checkBalance('ofctbtc', '24128');
     balanceCheck.should.be.true();
 
     scope.isDone().should.be.true();
-  }));
+  });
 });

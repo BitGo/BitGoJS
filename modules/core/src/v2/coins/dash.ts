@@ -1,15 +1,15 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
-import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 const co = Bluebird.coroutine;
 import * as request from 'superagent';
 
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
+import { BitGo } from '../../bitgo';
+import { BaseCoin } from '../baseCoin';
 import * as common from '../../common';
 
 export class Dash extends AbstractUtxoCoin {
-  constructor(bitgo: BitGo, network?) {
+  constructor(bitgo: BitGo, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.dash);
   }
 
@@ -41,8 +41,8 @@ export class Dash extends AbstractUtxoCoin {
     return co(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
-      addrInfo.txCount = addrInfo.txApperances;
-      addrInfo.totalBalance = addrInfo.balanceSat;
+      (addrInfo as any).txCount = (addrInfo as any).txApperances;
+      (addrInfo as any).totalBalance = (addrInfo as any).balanceSat;
 
       return addrInfo;
     }).call(this);
@@ -52,7 +52,7 @@ export class Dash extends AbstractUtxoCoin {
     return co(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
-      unspents.forEach(function processUnspent(unspent) {
+      (unspents as any).forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;
         unspent.n = unspent.vout;
       });

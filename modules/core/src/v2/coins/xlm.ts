@@ -68,9 +68,10 @@ interface RecoveryTransaction {
 
 interface BuildOptions {
   wallet?: Wallet;
-  recipients?: object[];
+  recipients?: Record<string, string>[];
   type?: string;
   walletPassphrase?: string;
+  [index: string]: unknown;
 }
 
 interface TransactionPrebuild extends BaseTransactionPrebuild {
@@ -299,11 +300,11 @@ export class Xlm extends BaseCoin {
     return co<number>(function *() {
       const server = new stellar.Server(self.getHorizonUrl());
 
-      const horizonLedgerInfo = yield server
+      const horizonLedgerInfo = (yield server
         .ledgers()
         .order('desc')
         .limit(1)
-        .call();
+        .call()) as any;
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -325,11 +326,11 @@ export class Xlm extends BaseCoin {
     return co<number>(function *() {
       const server = new stellar.Server(self.getHorizonUrl());
 
-      const horizonLedgerInfo = yield server
+      const horizonLedgerInfo = (yield server
         .ledgers()
         .order('desc')
         .limit(1)
-        .call();
+        .call()) as any;
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -550,7 +551,7 @@ export class Xlm extends BaseCoin {
    * Set empty recipients array in trustline txs
    */
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
-    const params: { recipients?: object[] } = {};
+    const params: { recipients?: Record<string, string>[] } = {};
     if (buildParams.type === 'trustline') {
       params.recipients = [];
     }
@@ -636,7 +637,7 @@ export class Xlm extends BaseCoin {
   recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
     return co<RecoveryTransaction>(function *() {
-      const [userKey, backupKey] = yield self.initiateRecovery(params);
+      const [userKey, backupKey] = (yield self.initiateRecovery(params)) as any;
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
@@ -679,8 +680,8 @@ export class Xlm extends BaseCoin {
       }
 
       const walletBalance = Number(self.bigUnitsToBaseUnits(nativeBalanceInfo.balance));
-      const minimumReserve: number = yield self.getMinimumReserve();
-      const baseTxFee: number = yield self.getBaseTransactionFee();
+      const minimumReserve: number = (yield self.getMinimumReserve()) as any;
+      const baseTxFee: number = (yield self.getBaseTransactionFee()) as any;
       const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
       const formattedRecoveryAmount = self.baseUnitsToBigUnits(recoveryAmount).toString();
 

@@ -100,14 +100,14 @@ function handleSendCoins(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.sendCoins(req.body);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       err.status = 400;
       throw err;
     })
-    .then(function(result) {
+    .then(function (result) {
       if (result.status === 'pendingApproval') {
         throw apiResponse(202, result);
       }
@@ -123,14 +123,14 @@ function handleSendMany(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.sendMany(req.body);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       err.status = 400;
       throw err;
     })
-    .then(function(result) {
+    .then(function (result) {
       if (result.status === 'pendingApproval') {
         throw apiResponse(202, result);
       }
@@ -146,10 +146,10 @@ function handleCreateTransaction(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.createTransaction(req.body);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       err.status = 400;
       throw err;
     });
@@ -163,7 +163,7 @@ function handleSignTransaction(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.signTransaction(req.body);
     });
 }
@@ -176,7 +176,7 @@ function handleShareWallet(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.shareWallet(req.body);
     });
 }
@@ -200,7 +200,7 @@ function handleApproveTransaction(req: express.Request) {
   return req.bitgo
     .pendingApprovals()
     .get({ id: req.params.id })
-    .then(function(pendingApproval) {
+    .then(function (pendingApproval) {
       if (params.state === 'approved') {
         return pendingApproval.approve(params);
       }
@@ -217,7 +217,7 @@ function handleConstructApprovalTx(req: express.Request) {
   return req.bitgo
     .pendingApprovals()
     .get({ id: req.params.id })
-    .then(function(pendingApproval) {
+    .then(function (pendingApproval) {
       return pendingApproval.constructApprovalTx(params);
     });
 }
@@ -230,7 +230,7 @@ function handleConsolidateUnspents(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.consolidateUnspents(req.body);
     });
 }
@@ -243,7 +243,7 @@ function handleFanOutUnspents(req: express.Request) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
-    .then(function(wallet) {
+    .then(function (wallet) {
       return wallet.fanOutUnspents(req.body);
     });
 }
@@ -630,28 +630,13 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
 function redirectRequest(bitgo: BitGo, method: string, url: string, req: express.Request, next: express.NextFunction) {
   switch (method) {
     case 'GET':
-      return bitgo
-        .get(url)
-        .result()
-        .nodeify();
+      return bitgo.get(url).result().nodeify();
     case 'POST':
-      return bitgo
-        .post(url)
-        .send(req.body)
-        .result()
-        .nodeify();
+      return bitgo.post(url).send(req.body).result().nodeify();
     case 'PUT':
-      return bitgo
-        .put(url)
-        .send(req.body)
-        .result()
-        .nodeify();
+      return bitgo.put(url).send(req.body).result().nodeify();
     case 'DELETE':
-      return bitgo
-        .del(url)
-        .send(req.body)
-        .result()
-        .nodeify();
+      return bitgo.del(url).send(req.body).result().nodeify();
   }
   // something has presumably gone wrong
   next();
@@ -687,7 +672,7 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
 function prepareBitGo(config: Config) {
   const { env, customRootUri, customBitcoinNetwork } = config;
 
-  return function(req: express.Request, res: express.Response, next: express.NextFunction) {
+  return function (req: express.Request, res: express.Response, next: express.NextFunction) {
     // Get access token
     let accessToken;
     if (req.headers.authorization) {
@@ -719,11 +704,11 @@ function prepareBitGo(config: Config) {
  * @param promiseRequestHandler
  */
 function promiseWrapper(promiseRequestHandler: Function) {
-  return function(req: express.Request, res: express.Response, next: express.NextFunction) {
+  return function (req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
     bluebird
       .try(promiseRequestHandler.bind(null, req, res, next))
-      .then(function(result: any) {
+      .then(function (result: any) {
         let status = 200;
         if (result.__redirect) {
           res.redirect(result.url);
@@ -734,7 +719,7 @@ function promiseWrapper(promiseRequestHandler: Function) {
           res.status(status).send(result);
         }
       })
-      .catch(function(caught) {
+      .catch(function (caught) {
         let err;
         if (caught instanceof Error) {
           err = caught;

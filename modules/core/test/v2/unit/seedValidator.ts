@@ -1,11 +1,9 @@
-import * as Promise from 'bluebird';
 import 'should';
 
 import * as nock from 'nock';
 import { TestBitGo } from '../../lib/test_bitgo';
 
 import { SeedValidator } from '../../../src/v2/internal/seedValidator';
-import * as stellar from 'stellar-sdk';
 import { CoinFamily } from '@bitgo/statics';
 
 describe('SeedValidators:', function() {

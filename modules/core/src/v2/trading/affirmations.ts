@@ -48,9 +48,9 @@ export class Affirmations {
         url = `${url}?status=${status}`;
       }
 
-      const response = yield self.bitgo.get(url).result();
+      const response = (yield self.bitgo.get(url).result()) as any;
 
-      return response.affirmations.map(affirmation => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
+      return response.affirmations.map((affirmation) => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
     })
       .call(this)
       .asCallback(callback);

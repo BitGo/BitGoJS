@@ -44,7 +44,7 @@ describe('Abstract UTXO Coin:', () => {
 
     const outputAmount = 0.01 * 1e8;
 
-    it('should classify outputs which spend change back to a v1 wallet base address as internal', co(function* () {
+    it('should classify outputs which spend change back to a v1 wallet base address as internal', async function() {
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [{
@@ -55,7 +55,7 @@ describe('Abstract UTXO Coin:', () => {
 
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
-      const parsedTransaction = yield coin.parseTransaction({
+      const parsedTransaction = await coin.parseTransaction({
         txParams: {},
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
@@ -71,9 +71,9 @@ describe('Abstract UTXO Coin:', () => {
 
       (coin.explainTransaction as any).restore();
       (coin.verifyAddress as any).restore();
-    }));
+    });
 
-    it('should classify outputs which spend to addresses not on the wallet as external', co(function* () {
+    it('should classify outputs which spend to addresses not on the wallet as external', async function() {
       const externalAddress = 'external_address';
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [{
@@ -85,7 +85,7 @@ describe('Abstract UTXO Coin:', () => {
 
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
-      const parsedTransaction = yield coin.parseTransaction({
+      const parsedTransaction = await coin.parseTransaction({
         txParams: {},
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
@@ -101,9 +101,9 @@ describe('Abstract UTXO Coin:', () => {
 
       (coin.explainTransaction as any).restore();
       (coin.verifyAddress as any).restore();
-    }));
+    });
 
-    it('should accept a custom change address', co(function* () {
+    it('should accept a custom change address', async function() {
       const changeAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
       const outputAmount = 10000;
       const recipients = [];
@@ -118,7 +118,7 @@ describe('Abstract UTXO Coin:', () => {
         ],
       } as any);
 
-      const parsedTransaction = yield coin.parseTransaction({
+      const parsedTransaction = await coin.parseTransaction({
         txParams: { changeAddress, recipients },
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
@@ -133,7 +133,7 @@ describe('Abstract UTXO Coin:', () => {
       });
 
       (coin.explainTransaction as any).restore();
-    }));
+    });
   });
 
   describe('Custom Change Wallets', () => {
@@ -408,16 +408,17 @@ describe('Abstract UTXO Coin:', () => {
       bitgo = new TestBitGo({ env: 'mock' });
       coin = bitgo.coin('tbtc');
     });
-    beforeEach(()=>{
+
+    beforeEach(() => {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(20, 20, 6);
-    })
+    });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it('should construct a recovery transaction with segwit unspents', co(function *() {
+    it('should construct a recovery transaction with segwit unspents', async function() {
       const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
       callBack1.resolves(emptyAddressInfo);
       callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']);
@@ -428,21 +429,21 @@ describe('Abstract UTXO Coin:', () => {
       callBack2.resolves([]);
       const { params, expectedTxHex } = recoverBtcSegwitFixtures();
       recoveryNocks.nockBtcSegwitRecovery(bitgo);
-      const tx = yield coin.recover(params);
+      const tx = await coin.recover(params);
       const transaction = utxoLib.Transaction.fromHex(tx.transactionHex);
       transaction.ins.length.should.equal(2);
       transaction.outs.length.should.equal(1);
       transaction.outs[0].value.should.equal(57112);
       tx.transactionHex.should.equal(expectedTxHex);
-    }));
+    });
 
-    it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
+    it('should construct an unsigned recovery transaction for the offline vault', async function() {
       const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
       callBack1.resolves(emptyAddressInfo);
-      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({txCount: 2, totalBalance: 0});
-      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves({txCount: 2, totalBalance: 100000});
-      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves({txCount: 2, totalBalance: 0});
-      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves({txCount: 2, totalBalance: 120000});
+      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({ txCount: 2, totalBalance: 0 });
+      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves({ txCount: 2, totalBalance: 100000 });
+      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves({ txCount: 2, totalBalance: 0 });
+      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves({ txCount: 2, totalBalance: 120000 });
 
       const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
       callBack2.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves([addressUnspents['2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49']]);
@@ -451,16 +452,15 @@ describe('Abstract UTXO Coin:', () => {
       callBack2.resolves([]);
       const { params, expectedTxHex } = recoverBtcUnsignedFixtures();
       recoveryNocks.nockBtcUnsignedRecovery(bitgo);
-      const txPrebuild = yield coin.recover(params);
+      const txPrebuild = await coin.recover(params);
       txPrebuild.txHex.should.equal(expectedTxHex);
       txPrebuild.should.have.property('feeInfo');
       txPrebuild.coin.should.equal('tbtc');
       txPrebuild.txInfo.unspents.length.should.equal(2);
-    }));
+    });
 
     after(function() {
       nock.cleanAll();
     });
-
   });
 });

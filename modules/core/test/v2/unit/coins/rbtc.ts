@@ -3,12 +3,10 @@ import { Rbtc, Trbtc } from '../../../../src/v2/coins';
 
 describe('RSK Smart Bitcoin', function() {
 	let bitgo;
-	let basecoin;
 
 	before(function() {
 		bitgo = new TestBitGo({ env: 'mock' });
 		bitgo.initializeTestVars();
-		basecoin = bitgo.coin('trbtc');
 	});
 
 	it('should instantiate the coin', function() {

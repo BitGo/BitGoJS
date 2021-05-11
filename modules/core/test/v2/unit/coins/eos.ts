@@ -1,6 +1,4 @@
 import * as should from 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 import * as ecc from 'eosjs-ecc';
 import * as bitcoin from '@bitgo/utxo-lib';
 
@@ -105,14 +103,8 @@ describe('EOS:', function() {
     });
   });
 
-  describe('Transactions:', co(function *() {
-    let eosWallet;
-
-    before(function() {
-      eosWallet = basecoin.newWalletObject(bitgo, basecoin, {});
-    });
-
-    it('should generate a valid transaction signature', co(function *() {
+  describe('Transactions:', function() {
+    it('should generate a valid transaction signature', async function() {
       const signatureData = 'abcd';
       const tx = {
         txHex: signatureData,
@@ -131,14 +123,14 @@ describe('EOS:', function() {
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      const { halfSigned } = yield basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
+      const { halfSigned } = await basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
       const signature = halfSigned.transaction.signatures[0];
       const hdNode = bitcoin.HDNode.fromBase58(keyPair.pub);
       const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.getPublicKeyBuffer()).toString();
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
-    }));
+    });
 
-    it('should explain an EOS transaction', co(function *() {
+    it('should explain an EOS transaction', async function() {
       const explainTransactionParams = {
         headers: {
           ref_block_prefix: 100,
@@ -150,13 +142,13 @@ describe('EOS:', function() {
         },
       };
 
-      const explainedTx = yield basecoin.explainTransaction(explainTransactionParams);
+      const explainedTx = await basecoin.explainTransaction(explainTransactionParams);
       explainedTx.outputAmount.should.equal('100');
       explainedTx.outputs.length.should.equal(1);
       explainedTx.outputs[0].amount.should.equal('100');
       explainedTx.outputs[0].address.should.equal('asdfasdfasdf');
       explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
       explainedTx.memo.should.equal('1');
-    }));
-  }));
+    });
+  });
 });

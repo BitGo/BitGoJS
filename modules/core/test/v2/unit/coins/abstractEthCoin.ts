@@ -13,7 +13,7 @@ import * as bitcoinMessage from 'bitcoinjs-message';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 
 describe('ETH-like coins', () => {
-  _.forEach(['tetc', 'tcelo', 'trbtc'], coinName => {
+  _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {
     describe(`${coinName}`, () => {
       let bitgo;
       let basecoin;
@@ -78,7 +78,7 @@ describe('ETH-like coins', () => {
        * @param tx The transaction to recover a signer from
        * @return The eth address of the signer
        */
-      const recoverSigner = function(tx: BaseCoin.BaseTransaction) {
+      const recoverSigner = function (tx: BaseCoin.BaseTransaction) {
         const { signature } = Eth.Utils.decodeTransferData(tx.toJson().data);
         const { v, r, s } = ethUtil.fromRpcSig(signature);
         const operationHash = getOperationHash(tx);
@@ -97,7 +97,7 @@ describe('ETH-like coins', () => {
        * @param gasPrice The gas price of the transaction
        * @param gasLimit The gas limit of the transaction
        */
-      const buildUnsignedTransaction = async function({
+      const buildUnsignedTransaction = async function ({
         destination,
         contractAddress,
         contractSequenceId = 1,
@@ -126,7 +126,7 @@ describe('ETH-like coins', () => {
         return await txBuilder.build();
       };
 
-      before(function() {
+      before(function () {
         bitgo = new TestBitGo({ env: 'mock' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
@@ -206,7 +206,7 @@ describe('ETH-like coins', () => {
       });
 
       describe('Sign message:', () => {
-        it('should sign and validate a string message', async function() {
+        it('should sign and validate a string message', async function () {
           const keyPair = basecoin.generateKeyPair();
           const message = 'hello world';
           const signature = await basecoin.signMessage(keyPair, message);
@@ -215,7 +215,7 @@ describe('ETH-like coins', () => {
           bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(true);
         });
 
-        it('should fail to validate a string message with wrong public key', async function() {
+        it('should fail to validate a string message with wrong public key', async function () {
           const keyPair = basecoin.generateKeyPair();
           const message = 'hello world';
           const signature = await basecoin.signMessage(keyPair, message);
@@ -230,7 +230,7 @@ describe('ETH-like coins', () => {
         const xprv =
           'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
 
-        it('should sign transaction internally', async function() {
+        it('should sign transaction internally', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
@@ -284,7 +284,7 @@ describe('ETH-like coins', () => {
           recoveredAddress.should.equal(key.getAddress());
         });
 
-        it('should sign transaction internally with an xprv', async function() {
+        it('should sign transaction internally with an xprv', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
@@ -339,7 +339,7 @@ describe('ETH-like coins', () => {
           recoveredAddress.should.equal(key.getAddress());
         });
 
-        it('should sign a half signed transaction', async function() {
+        it('should sign a half signed transaction', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
@@ -405,7 +405,7 @@ describe('ETH-like coins', () => {
           recoveredAddress.should.equal(key.getAddress());
         });
 
-        it('should fail to sign transaction with invalid tx hex', async function() {
+        it('should fail to sign transaction with invalid tx hex', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           await basecoin
             .signTransaction({
@@ -422,7 +422,7 @@ describe('ETH-like coins', () => {
         const xprv =
           'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
 
-        it('should fail if the params object is missing parameters', async function() {
+        it('should fail if the params object is missing parameters', async function () {
           const explainParams = {
             feeInfo: { fee: 1 },
             txHex: null,
@@ -430,7 +430,7 @@ describe('ETH-like coins', () => {
           await basecoin.explainTransaction(explainParams).should.be.rejectedWith('missing explain tx parameters');
         });
 
-        it('explain an unsigned transfer transaction', async function() {
+        it('explain an unsigned transfer transaction', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
@@ -451,7 +451,7 @@ describe('ETH-like coins', () => {
           // TODO check other fields once account-lib properly explains transaction
         });
 
-        it('explain a signed transfer transaction', async function() {
+        it('explain a signed transfer transaction', async function () {
           const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';

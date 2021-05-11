@@ -20,11 +20,11 @@ let isEthAvailable = false;
 
 const ethImport = 'ethereumjs-util';
 import('ethereumjs-util')
-  .then(eth => {
+  .then((eth) => {
     ethUtil = eth;
     isEthAvailable = true;
   })
-  .catch(e => {
+  .catch((e) => {
     // ethereum currently not supported
     debug('unable to load ethereumjs-util:');
     debug(e.stack);
@@ -70,7 +70,7 @@ export class Util {
       if (ba[0] === 0) {
         ba = ba.slice(1);
       }
-      return ba.map(function(v) {
+      return ba.map(function (v) {
         return v < 0 ? v + 256 : v;
       });
     } else {

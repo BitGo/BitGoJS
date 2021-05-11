@@ -389,6 +389,7 @@ export interface BitGo {
   patch(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
 }
 
+// eslint-disable-next-line no-redeclare
 export class BitGo {
   private static _testnetWarningMessage = false;
   private static _constants: any;
@@ -420,7 +421,7 @@ export class BitGo {
   private _blockchain?: any;
   private _travelRule?: any;
   private _pendingApprovals?: any;
-  private _hmacVerification: boolean = true;
+  private _hmacVerification = true;
   /**
    * Constructor for BitGo Object
    */
@@ -451,7 +452,7 @@ export class BitGo {
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
       // for branch deploys, we want to be able to specify custom endpoints while still
       // maintaining the name of specified the environment
-      env =  params.env === 'branch' ? 'branch' : 'custom';
+      env = params.env === 'branch' ? 'branch' : 'custom';
       if (params.customRootURI) {
         common.Environments[env].uri = params.customRootURI;
       }
@@ -951,7 +952,7 @@ export class BitGo {
    * @param   {Number} numWords     Number of 32-bit words
    * @returns {String}          base58 random password
    */
-  generateRandomPassword(numWords: number = 5): string {
+  generateRandomPassword(numWords = 5): string {
     const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
     return bs58.encode(bytes);
   }
@@ -1114,7 +1115,7 @@ export class BitGo {
   /**
    * Gets the user's private keychain, used for receiving shares
    */
-  getECDHSharingKeychain(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getECDHSharingKeychain(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return this.get(this.url('/user/settings'))
       .result()
@@ -1143,7 +1144,7 @@ export class BitGo {
    * (Deprecated: Will be removed in the future) use `bitgo.markets().latest()`
    * @deprecated
    */
-  market(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  market(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.get(this.url('/market/latest'))
       .result()
       .nodeify(callback);
@@ -1153,7 +1154,7 @@ export class BitGo {
    * Get market data from yesterday
    * (Deprecated: Will be removed in the future) use bitgo.markets().yesterday()
    */
-  yesterday(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  yesterday(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.get(this.url('/market/yesterday'))
       .result()
       .nodeify(callback);
@@ -1338,7 +1339,7 @@ export class BitGo {
    */
   authenticate(params: AuthenticateOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co<superagent.Response>(function *() {
+    return co<any>(function *(): any {
       if (!_.isObject(params)) {
         throw new Error('required object params');
       }
@@ -1493,8 +1494,8 @@ export class BitGo {
         })
         .result();
 
-      self._token = body.access_token;
-      self._refreshToken = body.refresh_token;
+      self._token = (body as any).access_token;
+      self._refreshToken = (body as any).refresh_token;
       self._user = yield self.me();
       return body;
     })
@@ -1529,8 +1530,9 @@ export class BitGo {
           client_secret: self._clientSecret
         })
         .result();
-      self._token = body.access_token;
-      self._refreshToken = body.refresh_token;
+
+      self._token = (body as any).access_token;
+      self._refreshToken = (body as any).refresh_token;
       return body;
     })
     .call(this)
@@ -1556,7 +1558,7 @@ export class BitGo {
    *  unlock: <info for actions that require an unlock before firing>
    * }
    */
-  listAccessTokens(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  listAccessTokens(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.get(this.url('/user/accesstoken'))
       .send()
       .result('accessTokens')
@@ -1640,15 +1642,17 @@ export class BitGo {
 
       const response = yield request.send(params);
       if (request.forceV1Auth) {
-        response.body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
+        (response as any).body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
         return response;
       }
 
       // verify the authenticity of the server's response before proceeding any further
-      request.verifyResponse(response);
+      if (response) {
+        request.verifyResponse(response);
+      }
 
-      const responseDetails = self.handleTokenIssuance(response.body);
-      response.body.token = responseDetails.token;
+      const responseDetails = self.handleTokenIssuance((response as any).body);
+      (response as any).body.token = responseDetails.token;
 
       return response;
     }).call(this)
@@ -1718,7 +1722,7 @@ export class BitGo {
    * @param params
    * @param callback
    */
-  logout(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  logout(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       const result = yield self.get(self.url('/user/logout')).result();
@@ -1783,9 +1787,9 @@ export class BitGo {
       const v2Keychains = yield self.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
 
       const updatePasswordParams = {
-        keychains: v1KeychainUpdatePWResult.keychains,
+        keychains: (v1KeychainUpdatePWResult as any).keychains,
         v2_keychains: v2Keychains,
-        version: v1KeychainUpdatePWResult.version,
+        version: (v1KeychainUpdatePWResult as any).version,
         oldPassword: self.calculateHMAC(user.username, oldPassword),
         password: self.calculateHMAC(user.username, newPassword)
       };
@@ -1801,7 +1805,7 @@ export class BitGo {
    * @param params
    * @param callback
    */
-  me(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  me(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.getUser({ id: 'me' }, callback);
   }
 
@@ -1830,7 +1834,7 @@ export class BitGo {
    * @param params
    * @param callback
    */
-  lock(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  lock(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.post(this.url('/user/lock'))
       .result()
       .nodeify(callback);
@@ -1839,7 +1843,7 @@ export class BitGo {
   /**
    * Get the current session
    */
-  session(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  session(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.get(this.url('/user/session'))
       .result('session')
       .nodeify(callback);
@@ -2000,7 +2004,7 @@ export class BitGo {
   /**
    * Get all the address labels on all of the user's wallets
    */
-  labels(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  labels(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.get(this.url('/labels'))
       .result('labels')
       .nodeify(callback);
@@ -2068,16 +2072,16 @@ export class BitGo {
       }
 
       const body = yield self.get(self.url('/instant/' + params.id)).result();
-      if (!body.guarantee) {
+      if (!(body as any).guarantee) {
         throw new Error('no guarantee found in response body');
       }
-      if (!body.signature) {
+      if (!(body as any).signature) {
         throw new Error('no signature found in guarantee response body');
       }
       const signingAddress = common.Environments[self.getEnv()].signingAddress;
-      const signatureBuffer = Buffer.from(body.signature, 'hex');
+      const signatureBuffer = Buffer.from((body as any).signature, 'hex');
       const prefix = bitcoin.networks[common.Environments[self.getEnv()].network].messagePrefix;
-      const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
+      const isValidSignature = bitcoinMessage.verify((body as any).guarantee, signingAddress, signatureBuffer, prefix);
       if (!isValidSignature) {
         throw new Error('incorrect signature');
       }
@@ -2093,7 +2097,7 @@ export class BitGo {
    * @param callback
    * @deprecated
    */
-  getBitGoFeeAddress(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getBitGoFeeAddress(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     return this.post(this.url('/billing/address'))
       .send({})
       .result()
@@ -2226,7 +2230,7 @@ export class BitGo {
    * @param params
    * @param callback
    */
-  fetchConstants(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
+  fetchConstants(params?: Record<string, never>, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       const env = self.getEnv();
@@ -2247,9 +2251,9 @@ export class BitGo {
       // Proxy settings must still be respected however
       const resultPromise = superagent.get(self.url('/client/constants'));
       const result = yield (self._proxy ? resultPromise.proxy(self._proxy) : resultPromise);
-      BitGo._constants[env] = result.body.constants;
+      BitGo._constants[env] = (result as any).body.constants;
 
-      BitGo._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
+      BitGo._constantsExpire[env] = moment.utc().add((result as any).body.ttl, 'second').toDate();
       return BitGo._constants[env];
     }).call(this).asCallback(callback);
   }
@@ -2266,7 +2270,7 @@ export class BitGo {
    * @param params
    * @return {Object} The client constants object
    */
-  getConstants(params?: {}) {
+  getConstants(params?: Record<string, never>) {
     // kick off a fresh request for the client constants
     this.fetchConstants(params, function(err) {
       if (err) {

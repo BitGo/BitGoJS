@@ -102,6 +102,7 @@ export interface PrebuildTransactionOptions {
     };
     offlineVerification?: boolean;
     walletContractAddress?: string;
+    [index: string]: unknown;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
@@ -120,6 +121,7 @@ export interface WalletSignTransactionOptions {
     txPrebuild?: TransactionPrebuild;
     prv?: string;
     isLastSignature?: boolean;
+    [index: string]: unknown;
 }
 
 export interface GetUserPrvOptions {
@@ -196,6 +198,7 @@ export interface ConsolidateUnspentsOptions {
   comment?: string;
   otp?: string;
   targetAddress?: string;
+  [index: string]: unknown;
 }
 
 export interface FanoutUnspentsOptions {
@@ -215,6 +218,7 @@ export interface FanoutUnspentsOptions {
   comment?: string;
   otp?: string;
   targetAddress?: string;
+  [index: string]: unknown;
 }
 
 export interface SweepOptions {
@@ -226,6 +230,7 @@ export interface SweepOptions {
   maxFeeRate?: number;
   feeTxConfirmTarget?: number;
   allowPartialSweep?: boolean;
+  [index: string]: unknown;
 }
 
 export interface FreezeOptions {
@@ -320,6 +325,7 @@ export interface AccelerateTransactionOptions {
     address: string;
     amount: string;
   }[];
+  [index: string]: unknown;
 }
 
 export interface SubmitTransactionOptions {
@@ -336,7 +342,8 @@ export interface SendOptions {
   walletPassphrase?: string;
   prv?: string;
   minConfirms?: number;
-  enforceMinConfirmsForChange?: number;
+  enforceMinConfirmsForChange?: boolean;
+  [index: string]: unknown;
 }
 
 export interface SendManyOptions {
@@ -367,6 +374,7 @@ export interface SendManyOptions {
   instant?: boolean;
   memo?: Memo;
   transferId?: number;
+  [index: string]: unknown;
 }
 
 export interface WalletData {
@@ -463,7 +471,7 @@ export class Wallet {
    * Build a URL using this wallet's id which can be used for BitGo API operations
    * @param extra API specific string to append to the wallet id
    */
-  url(extra: string = ''): string {
+  url(extra = ''): string {
     return this.baseCoin.url('/wallet/' + this.id() + extra);
   }
 
@@ -619,9 +627,9 @@ export class Wallet {
    * @param callback
    * @returns {Wallet}
    */
-  refresh(params: {} = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+  refresh(params: Record<string, never> = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co<Wallet>(function *() {
+    return co<Wallet>(function *(): any {
       self._wallet = yield self.bitgo.get(self.url()).result();
       return this;
     }).call(this).asCallback(callback);
@@ -1000,7 +1008,7 @@ export class Wallet {
    */
   updateTokenFlushThresholds(thresholds: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *() {
+    return co(function *(): any {
       if (self.baseCoin.getFamily() !== 'eth') {
         throw new Error('not supported for this wallet');
       }
@@ -1276,9 +1284,9 @@ export class Wallet {
 
       const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
         self.bitgo.setRequestTracer(reqId);
-        const newAddress = yield self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/address'))
+        const newAddress = (yield self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/address'))
           .send(addressParams)
-          .result();
+          .result()) as any;
 
         // infer its address type
         if (_.isObject(newAddress.coinSpecific)) {
@@ -1432,7 +1440,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  getEncryptedUserKeychain(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getEncryptedUserKeychain(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     const tryKeyChain = co(function *(index: number) {
       if (!self._wallet.keys || index >= self._wallet.keys.length) {
@@ -1481,7 +1489,7 @@ export class Wallet {
         return params.prv;
       }
 
-      const userKeychain = yield self.getEncryptedUserKeychain();
+      const userKeychain = (yield self.getEncryptedUserKeychain()) as any;
       const userEncryptedPrv = userKeychain.encryptedPrv;
 
       let userPrv;
@@ -1543,11 +1551,11 @@ export class Wallet {
         throw new Error('missing required string parameter email');
       }
 
-      const sharing = yield self.bitgo.getSharingKey({ email: params.email.toLowerCase() });
+      const sharing = (yield self.bitgo.getSharingKey({ email: params.email.toLowerCase() })) as any;
       let sharedKeychain;
       if (needsKeychain) {
         try {
-          const keychain = yield self.getEncryptedUserKeychain({});
+          const keychain = (yield self.getEncryptedUserKeychain({})) as any;
           // Decrypt the user key with a passphrase
           if (keychain.encryptedPrv) {
             if (!params.walletPassphrase) {
@@ -1675,14 +1683,14 @@ export class Wallet {
         utxoCoin.getLatestBlockHeight(params.reqId) :
         Promise.resolve(undefined);
       const queries = [buildQuery, blockHeightQuery];
-      const [buildResponse, blockHeight] = yield Promise.all(queries);
+      const [buildResponse, blockHeight] = (yield Promise.all(queries)) as any;
       debug('postprocessing transaction prebuild: %O', buildResponse);
       if (!_.isUndefined(blockHeight)) {
         buildResponse.blockHeight = blockHeight;
       }
-      let prebuild: TransactionPrebuild = yield self.baseCoin.postProcessPrebuild(
+      let prebuild: TransactionPrebuild = (yield self.baseCoin.postProcessPrebuild(
         Object.assign(buildResponse, { wallet: self, buildParams: whitelistedParams })
-      );
+      )) as any;
       delete prebuild.wallet;
       delete prebuild.buildParams;
       prebuild = _.extend({}, prebuild, { walletId: self.id() });
@@ -1794,9 +1802,9 @@ export class Wallet {
       const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : self.prebuildTransaction(params);
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const keychains = yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId: params.reqId });
+      const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId: params.reqId })) as any;
 
-      const txPrebuild = yield txPrebuildQuery;
+      const txPrebuild = (yield txPrebuildQuery) as any;
 
       try {
         const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
@@ -1901,7 +1909,7 @@ export class Wallet {
 
       // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
       const submitParams = Object.assign(params, yield self.prebuildAndSignTransaction(params));
-      delete submitParams.wallet;
+      delete (submitParams as any).wallet;
       return yield self.submitTransaction(submitParams);
     }).call(this).asCallback(callback);
   }
@@ -2088,7 +2096,7 @@ export class Wallet {
    * @param callback
    * @returns {Object} Object with txid, walletId, tx, and fee (if supported for coin)
    */
-  getFirstPendingTransaction(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getFirstPendingTransaction(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return internal.getFirstPendingTransaction({ walletId: this.id() }, this.baseCoin, this.bitgo).asCallback(callback);
   }
 
@@ -2142,7 +2150,7 @@ export class Wallet {
    * @returns {Object} The info returned from the merchant server Payment Ack
    * @deprecated
    */
-  sendPaymentResponse(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  sendPaymentResponse(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo.post(this.url('/sendPayment'))
       .send(params)
       .result()
@@ -2226,7 +2234,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  remove(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  remove(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo.del(this.url()).result().asCallback(callback);
   }
 
@@ -2365,16 +2373,16 @@ export class Wallet {
       }
 
       // this could return 100 build transactions
-      const buildResponse = yield self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/consolidateAccount/build'))
+      const buildResponse = (yield self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/consolidateAccount/build'))
         .send(whitelistedParams)
-        .result();
+        .result()) as any;
 
       // we need to step over each prebuild now - should be in an array in the body
       const consolidations:TransactionPrebuild[] = [];
       for (const consolidateAccountBuild of buildResponse) {
-        let prebuild: TransactionPrebuild = yield self.baseCoin.postProcessPrebuild(
+        let prebuild: TransactionPrebuild = (yield self.baseCoin.postProcessPrebuild(
           Object.assign(consolidateAccountBuild, { wallet: self, buildParams: whitelistedParams })
-        );
+        )) as any;
 
         delete prebuild.wallet;
         delete prebuild.buildParams;
@@ -2412,7 +2420,7 @@ export class Wallet {
         throw new Error('Failed to find consolidation id on consolidation transaction.');
       }
 
-      const signedPrebuild = yield self.prebuildAndSignTransaction(params);
+      const signedPrebuild = (yield self.prebuildAndSignTransaction(params)) as any;
 
       // decorate with our consolidation id
       signedPrebuild.consolidateId = params.prebuildTx.consolidateId;
@@ -2437,7 +2445,7 @@ export class Wallet {
       }
 
       // this gives us a set of account consolidation transactions
-      const unsignedBuilds = yield self.buildAccountConsolidations(params);
+      const unsignedBuilds = (yield self.buildAccountConsolidations(params)) as any;
       if (unsignedBuilds && unsignedBuilds.length > 0) {
         const successfulTxs: any[] = [];
         const failedTxs = new Array<Error>();

@@ -4,14 +4,22 @@
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
     "commitizen": "^4.2.1",
     "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
     "glob": "^7.1.6",
     "husky": "^4.3.0",
     "lerna": "^4.0.0",
     "make-dir": "^3.1.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2"
+    "prettier": "^2.3.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^9.1.1",
+    "typescript": "~4.2.4"
   },
   "workspaces": [
     "modules/*"
@@ -19,7 +27,8 @@
   "scripts": {
     "postinstall": "lerna run build --stream",
     "gen-drone": "chmod 0666 .drone.yml && drone jsonnet --stream && drone sign BitGo/BitGoJS --save && chmod 0444 .drone.yml",
-    "audit": "yarn audit ; test $? -lt 8",
+    "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
+    "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream",
     "unit-test-changed": "lerna run unit-test --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
@@ -45,15 +54,8 @@
     }
   },
   "resolutions": {
-    "bl": "4.0.3",
-    "dot-prop": "5.2.0",
     "elliptic": "^6.5.4",
-    "handlebars": "^4.5.3",
-    "kind-of": "^6.0.3",
-    "minimist": "^1.2.2",
-    "sanitize-html": "~1.20.0",
-    "axios": "^0.21.1",
-    "netmask": "^2.0.1"
+    "underscore": "^1.12.1"
   },
   "config": {
     "commitizen": {

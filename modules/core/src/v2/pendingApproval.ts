@@ -161,7 +161,7 @@ export class PendingApproval {
    * Generate a url for this PendingApproval for making requests to the server.
    * @param extra
    */
-  url(extra: string = ''): string {
+  url(extra = ''): string {
     return this.baseCoin.url('/pendingapprovals/' + this.id() + extra);
   }
 
@@ -172,9 +172,9 @@ export class PendingApproval {
    * @param params
    * @param callback
    */
-  get(params: {} = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
+  get(params: Record<string, never> = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
     const self = this;
-    return co<PendingApproval>(function*() {
+    return co<PendingApproval>(function* (): any {
       self._pendingApproval = yield self.bitgo.get(self.url()).result();
       return self;
     })
@@ -187,7 +187,7 @@ export class PendingApproval {
    */
   private populateWallet(): Bluebird<undefined> {
     const self = this;
-    return co<undefined>(function*() {
+    return co<undefined>(function* (): any {
       const transactionRequest = self.info().transactionRequest;
       if (_.isUndefined(transactionRequest)) {
         throw new Error('missing required object property transactionRequest');
@@ -216,7 +216,7 @@ export class PendingApproval {
    */
   approve(params: ApproveOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
       let canRecreateTransaction = true;
@@ -242,7 +242,7 @@ export class PendingApproval {
        * Internal helper function to get the serialized transaction which is being approved
        */
       function getApprovalTransaction(): Bluebird<{ txHex: string }> {
-        return co<{ txHex: string }>(function*() {
+        return co<{ txHex: string }>(function* () {
           if (self.type() === 'transactionRequest') {
             /*
              * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
@@ -278,23 +278,19 @@ export class PendingApproval {
        * Internal helper function to prepare the approval payload and send it to bitgo
        */
       function sendApproval(transaction: { txHex: string; halfSigned?: string }): Bluebird<any> {
-        return co(function*() {
+        return co(function* () {
           const approvalParams: any = { state: 'approved', otp: params.otp };
           if (transaction) {
             // if the transaction already has a half signed property, we take that directly
             approvalParams.halfSigned = transaction.halfSigned || transaction;
           }
           self.bitgo.setRequestTracer(reqId);
-          return self.bitgo
-            .put(self.url())
-            .send(approvalParams)
-            .result()
-            .nodeify(callback);
+          return self.bitgo.put(self.url()).send(approvalParams).result().nodeify(callback);
         }).call(this);
       }
 
       try {
-        const approvalTransaction = yield getApprovalTransaction();
+        const approvalTransaction = (yield getApprovalTransaction()) as any;
         self.bitgo.setRequestTracer(reqId);
         return yield sendApproval(approvalTransaction);
       } catch (e) {
@@ -317,12 +313,8 @@ export class PendingApproval {
    * @param params
    * @param callback
    */
-  reject(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .put(this.url())
-      .send({ state: 'rejected' })
-      .result()
-      .nodeify(callback);
+  reject(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.put(this.url()).send({ state: 'rejected' }).result().nodeify(callback);
   }
 
   /**
@@ -343,7 +335,7 @@ export class PendingApproval {
    */
   recreateAndSignTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       // this method only makes sense with existing transaction requests
       const transactionRequest = self.info().transactionRequest;
       if (_.isUndefined(transactionRequest)) {
@@ -375,16 +367,16 @@ export class PendingApproval {
 
       const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);
       // compare PAYGo fees
-      const originalParsedTransaction = yield self.baseCoin.parseTransaction({
+      const originalParsedTransaction = (yield self.baseCoin.parseTransaction({
         txParams: prebuildParams,
         wallet: self.wallet,
         txPrebuild: originalPrebuild,
-      });
-      const recreatedParsedTransaction = yield self.baseCoin.parseTransaction({
+      })) as any;
+      const recreatedParsedTransaction = (yield self.baseCoin.parseTransaction({
         txParams: prebuildParams,
         wallet: self.wallet,
         txPrebuild: signedTransaction,
-      });
+      })) as any;
 
       if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
         return signedTransaction;

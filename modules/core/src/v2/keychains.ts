@@ -178,7 +178,7 @@ export class Keychains {
    */
   updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<ChangedKeychains>): Bluebird<ChangedKeychains> {
     const self = this;
-    return co<ChangedKeychains>(function *() {
+    return co<ChangedKeychains>(function *(): any {
       validateParams(params, ['oldPassword', 'newPassword'], [], callback);
       const changedKeys: ChangedKeychains = {};
       let prevId;
@@ -299,7 +299,7 @@ export class Keychains {
   createBitGo(params: CreateBitGoOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     params.source = 'bitgo';
 
-    this.baseCoin.preCreateBitGo(params);
+    this.baseCoin.preCreateBitGo(params as any);
     return this.add(params, callback);
   }
 

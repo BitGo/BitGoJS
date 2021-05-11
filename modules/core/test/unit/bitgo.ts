@@ -5,7 +5,6 @@
 import * as should from 'should';
 import * as nock from 'nock';
 import * as Bluebird from 'bluebird';
-import { Environments } from '../../src/index';
 const co = Bluebird.coroutine;
 
 import * as BitGoJS from '../../src/index';
@@ -122,7 +121,7 @@ describe('BitGo Prototype Methods', function() {
 
     it('goes to microservices', co(function *() {
       bitgo = new TestBitGo({ env: 'mock', microservicesUri: 'https://microservices.uri' });
-      const scope = nock(Environments[bitgo.getEnv()].uri)
+      const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
@@ -132,7 +131,7 @@ describe('BitGo Prototype Methods', function() {
 
     it('goes to microservices even when microservicesUri is not specified', co(function *() {
       bitgo = new TestBitGo({ env: 'mock' });
-      const scope = nock(Environments[bitgo.getEnv()].uri)
+      const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
@@ -427,7 +426,7 @@ describe('BitGo Prototype Methods', function() {
         timestamp: '1521590532925'
       });
 
-      const responseData = yield rp({
+      const responseData = (yield rp({
         uri: url,
         method: 'GET',
         headers: requestHeaders,
@@ -447,7 +446,7 @@ describe('BitGo Prototype Methods', function() {
           };
           return bitgo.verifyResponse(verificationParams);
         }
-      });
+      })) as any;
       responseData.signatureSubject.should.equal('1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}');
       responseData.expectedHmac.should.equal('30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec');
       responseData.isValid.should.equal(true);
@@ -498,7 +497,7 @@ describe('BitGo Prototype Methods', function() {
       const url = 'https://fakeurl.invalid';
       const scope = nock(url).get('/').reply(200, { ok: 1 });
 
-      const res = yield bg.get(url);
+      const res = (yield bg.get(url)) as any;
       res.body.should.have.property('ok', 1);
       scope.done();
     }));
@@ -534,7 +533,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     it('PATCH requests', co(function *() {
-      const res = yield bitgo.patch(bgUrl);
+      const res = (yield bitgo.patch(bgUrl)) as any;
 
       res.status.should.equal(200);
     }));

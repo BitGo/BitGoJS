@@ -40,7 +40,7 @@ export class Enterprise {
    * Enterprise URL for v1 methods, such as getting users
    * @param query
    */
-  url(query: string = ''): string {
+  url(query = ''): string {
     return this.bitgo.url(`/enterprise/${this.id}${query}`);
   }
 
@@ -48,7 +48,7 @@ export class Enterprise {
    * Enterprise URL for v2 methods, such as getting fee address balances
    * @param query
    */
-  coinUrl(query: string = ''): string {
+  coinUrl(query = ''): string {
     return this.baseCoin.url(`/enterprise/${this.id}${query}`);
   }
 
@@ -57,10 +57,10 @@ export class Enterprise {
    * @param params
    * @param callback
    */
-  coinWallets(params: {} = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
+  coinWallets(params: Record<string, never> = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
     return co<Wallet[]>(function* coCoinWallets() {
-      const walletData = yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result();
-      walletData.wallets = walletData.wallets.map(w => {
+      const walletData = (yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result()) as any;
+      walletData.wallets = walletData.wallets.map((w) => {
         return new Wallet(this.bitgo, this.baseCoin, w);
       });
       return walletData;
@@ -74,11 +74,8 @@ export class Enterprise {
    * @param params
    * @param callback
    */
-  users(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.url('/user'))
-      .result()
-      .asCallback(callback);
+  users(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.get(this.url('/user')).result().asCallback(callback);
   }
 
   /**
@@ -86,11 +83,8 @@ export class Enterprise {
    * @param params
    * @param callback
    */
-  getFeeAddressBalance(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.coinUrl('/feeAddressBalance'))
-      .result()
-      .asCallback(callback);
+  getFeeAddressBalance(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.get(this.coinUrl('/feeAddressBalance')).result().asCallback(callback);
   }
 
   /**
@@ -99,11 +93,7 @@ export class Enterprise {
    * @param callback
    */
   addUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .post(this.url('/user'))
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return this.bitgo.post(this.url('/user')).send(params).result().asCallback(callback);
   }
 
   /**
@@ -112,11 +102,7 @@ export class Enterprise {
    * @param callback
    */
   removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .del(this.url('/user'))
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return this.bitgo.del(this.url('/user')).send(params).result().asCallback(callback);
   }
 
   /**
@@ -124,7 +110,7 @@ export class Enterprise {
    * @param params
    * @param callback
    */
-  getFirstPendingTransaction(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getFirstPendingTransaction(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return getFirstPendingTransaction({ enterpriseId: this.id }, this.baseCoin, this.bitgo).asCallback(callback);
   }
 

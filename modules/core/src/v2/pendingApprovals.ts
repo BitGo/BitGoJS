@@ -46,7 +46,7 @@ export class PendingApprovals {
     callback?: NodeCallback<ListPendingApprovalsResult>
   ): Bluebird<ListPendingApprovalsResult> {
     const self = this;
-    return co<ListPendingApprovalsResult>(function*() {
+    return co<ListPendingApprovalsResult>(function* () {
       validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
       const queryParams: any = {};
@@ -61,12 +61,9 @@ export class PendingApprovals {
         throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
       }
 
-      const body = yield self.bitgo
-        .get(self.baseCoin.url('/pendingapprovals'))
-        .query(queryParams)
-        .result();
+      const body = (yield self.bitgo.get(self.baseCoin.url('/pendingapprovals')).query(queryParams).result()) as any;
       body.pendingApprovals = body.pendingApprovals.map(
-        currentApproval => new PendingApproval(self.bitgo, self.baseCoin, currentApproval)
+        (currentApproval) => new PendingApproval(self.bitgo, self.baseCoin, currentApproval)
       );
       return body;
     })
@@ -81,10 +78,10 @@ export class PendingApprovals {
    */
   get(params: GetPendingApprovalOptions = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
     const self = this;
-    return co<PendingApproval>(function*() {
+    return co<PendingApproval>(function* () {
       validateParams(params, ['id'], [], callback);
 
-      const approvalData = yield self.bitgo.get(self.baseCoin.url('/pendingapprovals/' + params.id)).result();
+      const approvalData = (yield self.bitgo.get(self.baseCoin.url('/pendingapprovals/' + params.id)).result()) as any;
       let approvalWallet;
       if (approvalData.wallet) {
         try {

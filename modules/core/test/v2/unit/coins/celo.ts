@@ -4,12 +4,10 @@ import { Celo } from '../../../../src/v2/coins/celo';
 
 describe('Celo Gold', function() {
 	let bitgo;
-	let basecoin;
 
 	before(function() {
 		bitgo = new TestBitGo({ env: 'mock' });
 		bitgo.initializeTestVars();
-		basecoin = bitgo.coin('tcelo');
 	});
 
 	it('should instantiate the coin', function() {

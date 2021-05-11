@@ -76,7 +76,7 @@ export abstract class BaseTransactionBuilder {
    * @see {@link build}
    * @returns valid coin specific transaction (signed or unsigned)
    */
-  protected abstract async buildImplementation(): Promise<BaseTransaction>;
+  protected abstract buildImplementation(): Promise<BaseTransaction>;
 
   /**
    * Check the private key is present and is valid in the blockchain context, throw otherwise.
