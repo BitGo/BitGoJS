@@ -1,18 +1,19 @@
+import * as bitcoin from '@bitgo/utxo-lib';
+import * as Bluebird from 'bluebird';
+import * as _ from 'lodash';
+import * as request from 'superagent';
+const co = Bluebird.coroutine;
+
 import { BitGo } from '../../bitgo';
 import { BlockExplorerUnavailable } from '../../errors';
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
-import * as bitcoin from '@bitgo/utxo-lib';
-import * as request from 'superagent';
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
 import { BlockstreamApi } from '../recovery/blockstreamApi';
 import { BlockchairApi } from '../recovery/blockchairApi';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
-const co = Bluebird.coroutine;
 
-export interface TransactionInfo {
+export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string,
 }
 
@@ -52,7 +53,7 @@ export class Btc extends AbstractUtxoCoin {
   getRecoveryFeePerBytes(): Bluebird<number> {
     const self = this;
     return co<number>(function *getRecoveryFeePerBytes() {
-      const recoveryFeeUrl = yield self.getRecoveryFeeRecommendationApiBaseUrl();
+      const recoveryFeeUrl = (yield self.getRecoveryFeeRecommendationApiBaseUrl()) as any;
 
       const publicFeeDataReq = request.get(recoveryFeeUrl);
       publicFeeDataReq.forceV1Auth = true;
@@ -99,8 +100,7 @@ export class Btc extends AbstractUtxoCoin {
    * @param {TransactionInfo} txInfo
    * @returns {Bluebird<any>}
    */
-  public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
-    const self = this;
+  public verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
     return co(function *verifyRecoveryTransaction() {
       const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
       let res;

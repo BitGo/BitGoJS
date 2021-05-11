@@ -53,7 +53,7 @@ export class Settlements {
       } else {
         url = self.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${self.enterpriseId}/settlements`);
       }
-      const response = yield self.bitgo.get(url).result();
+      const response = (yield self.bitgo.get(url).result()) as any;
 
       return response.settlements.map(settlement => new Settlement(settlement, self.bitgo, self.enterpriseId));
     })

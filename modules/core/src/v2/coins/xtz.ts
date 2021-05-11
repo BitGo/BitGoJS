@@ -231,7 +231,7 @@ export class Xtz extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
       const messageHex = message instanceof Buffer ? message.toString('hex') : Buffer.from(message).toString('hex');
-      const signatureData = yield bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex);
+      const signatureData = (yield bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex)) as any;
       return Buffer.from(signatureData.sig).toString('hex');
     })
       .call(this)

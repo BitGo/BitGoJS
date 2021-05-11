@@ -161,7 +161,7 @@ export class PendingApproval {
    * Generate a url for this PendingApproval for making requests to the server.
    * @param extra
    */
-  url(extra: string = ''): string {
+  url(extra = ''): string {
     return this.baseCoin.url('/pendingapprovals/' + this.id() + extra);
   }
 
@@ -172,9 +172,9 @@ export class PendingApproval {
    * @param params
    * @param callback
    */
-  get(params: {} = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
+  get(params: Record<string, never> = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
     const self = this;
-    return co<PendingApproval>(function*() {
+    return co<PendingApproval>(function*(): any {
       self._pendingApproval = yield self.bitgo.get(self.url()).result();
       return self;
     })
@@ -187,7 +187,7 @@ export class PendingApproval {
    */
   private populateWallet(): Bluebird<undefined> {
     const self = this;
-    return co<undefined>(function*() {
+    return co<undefined>(function*(): any {
       const transactionRequest = self.info().transactionRequest;
       if (_.isUndefined(transactionRequest)) {
         throw new Error('missing required object property transactionRequest');
@@ -294,7 +294,7 @@ export class PendingApproval {
       }
 
       try {
-        const approvalTransaction = yield getApprovalTransaction();
+        const approvalTransaction = (yield getApprovalTransaction()) as any;
         self.bitgo.setRequestTracer(reqId);
         return yield sendApproval(approvalTransaction);
       } catch (e) {
@@ -317,7 +317,7 @@ export class PendingApproval {
    * @param params
    * @param callback
    */
-  reject(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  reject(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo
       .put(this.url())
       .send({ state: 'rejected' })
@@ -375,16 +375,16 @@ export class PendingApproval {
 
       const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);
       // compare PAYGo fees
-      const originalParsedTransaction = yield self.baseCoin.parseTransaction({
+      const originalParsedTransaction = (yield self.baseCoin.parseTransaction({
         txParams: prebuildParams,
         wallet: self.wallet,
         txPrebuild: originalPrebuild,
-      });
-      const recreatedParsedTransaction = yield self.baseCoin.parseTransaction({
+      })) as any;
+      const recreatedParsedTransaction = (yield self.baseCoin.parseTransaction({
         txParams: prebuildParams,
         wallet: self.wallet,
         txPrebuild: signedTransaction,
-      });
+      })) as any;
 
       if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
         return signedTransaction;

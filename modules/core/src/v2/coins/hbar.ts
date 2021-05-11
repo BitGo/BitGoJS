@@ -243,7 +243,7 @@ export class Hbar extends BaseCoin {
 
       const factory = bitgoAccountLib.register(self.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
       const txBuilder = factory.from(txHex);
-      const tx = yield txBuilder.build();
+      const tx = (yield txBuilder.build()) as any;
       const txJson = tx.toJson();
 
       if (tx._txBody.data !== 'cryptoTransfer') {

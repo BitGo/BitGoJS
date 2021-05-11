@@ -270,7 +270,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -282,19 +282,19 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo p2sh test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b801000000b500483045022100bc22f3bbedbada3e24aa5bfa06214fdf5cc3376c732daa249c54a464b8a6bd0b02205d826e1de4f1088c42d5499be6467c350ecf359fcf2a219c9b84f169474fb059014c695221031cd227e40ad61b4e137109cb2845eb6f5a584ed5c67d9d3135cdaa5045a842ea2103a2e7b54c7b2da0992555353b8e26c6acff4248f4351f08787bf3e2efc94b658321025c2a6cde33c2d73ccf12eecf64c54f08f722c2f073824498950695e9883b141253aeffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // This transaction has actually worked: https://testnet.smartbit.com.au/tx/a8ccb928169032d6e1f37bf81dfd9ab6d90362a4f84e577397fa690aa711550c
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -330,7 +330,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -342,20 +342,20 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo p2sh test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
       transaction.forceBCH = true;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b801000000b500483045022100c8491bb9a3e58c0847c794f7edfd0a2591a8c255c9bdf5353ec1b8f17442c32302203d0755ce3169822038317fbffdb56eb346ccb1df07b451835deede9e25290474414c695221031cd227e40ad61b4e137109cb2845eb6f5a584ed5c67d9d3135cdaa5045a842ea2103a2e7b54c7b2da0992555353b8e26c6acff4248f4351f08787bf3e2efc94b658321025c2a6cde33c2d73ccf12eecf64c54f08f722c2f073824498950695e9883b141253aeffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // this transaction has actually worked: https://testnet.smartbit.com.au/tx/a8ccb928169032d6e1f37bf81dfd9ab6d90362a4f84e577397fa690aa711550c
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -391,7 +391,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -403,19 +403,19 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo segwit test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('010000000001011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000023220020440e858228b753544b4c57e300296b55717f811053883f9be9b6a712eacd931cffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a870300483045022100bf3a8914a1bfe92661f27ca37c0d6b5c0b3c7353614c955646929f2e7eb89ffe02202d556b0ffab37c104bae67406ca16f8859cfa37c6a40f2013d89afcecd5594f301695221032c505fc8a1e4b56811b27366a371e61c9faf565dd2fabaff7a70eac19c32157c210251160b583bd5dc0f0d48096505131c4347ab65b4f21ed57d76c38157499c003d2102679712d62a2560917cc43fd2cc3a1b9b61f528c88bc64905bae6ee079e60609f53ae00000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // this transaction has actually worked: https://testnet.smartbit.com.au/tx/d67266f1de905baaee750011fa4b3d88a8e3a1758d5173a659c67709488dde07
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -451,7 +451,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -463,7 +463,7 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo segwit test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000');
 
       // add first signature
@@ -506,7 +506,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -518,25 +518,25 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo 3/5 p2sh test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f22110000000000ffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f221100000000f80047304402203bae1eebe209698af658b091d10f9a625255d15d378b3b81846ff22bd8b6b8f0022043c43737ac29dd57c68dbc82941fd4b712bb9fe5f2c2f2d4fb36022196856c39014cad5321032b3bb7da8cd35f2b31387a32411eb1b4ecbc97f88f413ef3afafdd6251ebe7782103bf401f8a9204bf331217c67042978426d498070f998d923f5974f603663cf0ff21024bbfbc82267c0096fbcf1b3aef443a3ace227a7279016600a100373ecfa7b38021037a0d7a56f5a91d285bea86b332e2bcab7795e32fc2165afaa989fb5fe441d8d72103b78ab4a0c4c00190585b91be57fb54c9aac17dc9516e319399d9104af0052c1d55aeffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature2.tx.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f221100000000fd40010047304402203bae1eebe209698af658b091d10f9a625255d15d378b3b81846ff22bd8b6b8f0022043c43737ac29dd57c68dbc82941fd4b712bb9fe5f2c2f2d4fb36022196856c390147304402204e13599b3550ad747501a58e76523cea5b3b075800546850b744457f4ec8a143022029b7ff0fec247cd80b7213f7910947f5df811f2b8d97b39d650fd901868907c7014cad5321032b3bb7da8cd35f2b31387a32411eb1b4ecbc97f88f413ef3afafdd6251ebe7782103bf401f8a9204bf331217c67042978426d498070f998d923f5974f603663cf0ff21024bbfbc82267c0096fbcf1b3aef443a3ace227a7279016600a100373ecfa7b38021037a0d7a56f5a91d285bea86b332e2bcab7795e32fc2165afaa989fb5fe441d8d72103b78ab4a0c4c00190585b91be57fb54c9aac17dc9516e319399d9104af0052c1d55aeffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
 
       // add third signature
       transaction.transactionHex = signature2.tx;
       transaction.keychain = extraKeypair1;
-      const signature3 = yield fakeProdWallet.signTransaction(transaction);
+      const signature3 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // this transaction has actually worked: https://testnet.smartbit.com.au/tx/aefe61fdf292e52ff94235e64d08d617a6670bc4ab17b18f499a62194a52c180
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -572,7 +572,7 @@ describe('Wallet Prototype Methods', function() {
       .post('/api/v1/billing/address')
       .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
-      const transaction = yield fakeProdWallet.createTransaction({
+      const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
         unspents: [unspent],
         recipients: {},
@@ -584,25 +584,25 @@ describe('Wallet Prototype Methods', function() {
           address: ''
         },
         opReturns: { 'BitGo 3/5 segwit test': 1000 }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('010000000142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d678520000000000ffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('0100000000010142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d67852000000002322002054e45638b45b5b81045c63a75a9e5436d59c11c1a4912b1a82b28cd947e2217bffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8703004830450221008675a5cffe586d0470af387961a56198001e4368c4b24242fa4d50bf5f5608a002203cb988f17cc6b958c9045cb294a17fa0580c3784ca556784b8a7d5cbc938d9b401ad5321032ca600eb36dbe41d265d030e8be0d8a28e8eda40ff45689e66a26e48c3180e9c21023ae2eaab9b7ad991fd3bb23b528b336d33959370c49ac73c05c54d787f174b872103fef2b09781b432232afcd009a66bfee17b54720b5d90b0edfc63e4d8709e1d1a21037c5c9e990362ed1253e6c018a56203eba988d2697baeeedf05fc0f9881305c97210243c099c5fbc97cc5855b881e128b985d79bec7639041ea82a7c9b67a2701bcc355ae00000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature2.tx.should.equal('0100000000010142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d67852000000002322002054e45638b45b5b81045c63a75a9e5436d59c11c1a4912b1a82b28cd947e2217bffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8704004830450221008675a5cffe586d0470af387961a56198001e4368c4b24242fa4d50bf5f5608a002203cb988f17cc6b958c9045cb294a17fa0580c3784ca556784b8a7d5cbc938d9b40148304502210094d0bf6a4fc0d5d951b4a752e6a58785afa4d5b6d3b63a3d2938f1b439e5d431022068270bb1aae86c89c9ac42de4293fb33e27e8b4842c3ea0ff02e571890fb39e101ad5321032ca600eb36dbe41d265d030e8be0d8a28e8eda40ff45689e66a26e48c3180e9c21023ae2eaab9b7ad991fd3bb23b528b336d33959370c49ac73c05c54d787f174b872103fef2b09781b432232afcd009a66bfee17b54720b5d90b0edfc63e4d8709e1d1a21037c5c9e990362ed1253e6c018a56203eba988d2697baeeedf05fc0f9881305c97210243c099c5fbc97cc5855b881e128b985d79bec7639041ea82a7c9b67a2701bcc355ae00000000');
 
       // add third signature
       transaction.transactionHex = signature2.tx;
       transaction.keychain = extraKeypair2;
-      const signature3 = yield fakeProdWallet.signTransaction(transaction);
+      const signature3 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // this transaction has actually worked: https://testnet.smartbit.com.au/tx/d0afa363519c5fad3db24a59293bf39a50d00c60753ddbade79e92f64c46d2f8
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -658,7 +658,7 @@ describe('Wallet Prototype Methods', function() {
       });
 
 
-      const transaction = yield fakeWallet.createTransaction({
+      const transaction = (yield fakeWallet.createTransaction({
         changeAddress: p2shAddress.address,
         unspents: unspents,
         recipients: {},
@@ -670,19 +670,19 @@ describe('Wallet Prototype Methods', function() {
           amount: 81760,
           address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb'
         }
-      });
+      })) as any;
       transaction.transactionHex.should.equal('01000000027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f60100000000ffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a40000000000ffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374ba8ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700000000');
 
       // add first signature
       transaction.keychain = userKeypair;
-      const signature1 = yield fakeProdWallet.signTransaction(transaction);
+      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       signature1.tx.should.equal('010000000001027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f601000000b5004830450221009e4c30c51fbe8b6d14b612440f03f0a770367e4b1da6121edb094e38426de48502201f826a6cebd114635b046f3169465ada86bbfa73d18b303454b64a6e8bea56f9014c69522103da95b28a13aa2d4bb490d70628e2e5d912461d375fef381aadd89dc1256220752103121287a510c5f32e8ba72d2479e90eb52ba44a467173df339feb0ff215f100e32102977cdfbee76066ae739db72d55371ad49dc6712fb8f2f3f69bb1a4c2422b0b1a53aeffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a400000000232200208b91aa03eb0f7f31e3917088084168ba5282a915e7cde0a5a934b7ea02eb057bffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374ba8ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba987000300473044022029abb4230076d7dfd7a38ada42adf02393a8fc39be66bed686902bcc7cdbf1b0022039ed25fb36ed46fbf3c194c2d6625a2455275263ed143af64be6500d2251bbe301695221030780186c0be5df0d2d62cf54cc2f3d2c09911e377aa95b5fe875fa352aed0a592103f3237edd2d87010e8fe9f43f34e8c63de6384283de909795d62af4ddb4d579542102ad03de5504ef947e4e6ee2fa6b15d150d553c21275f49f2ce2359d9fdedb9ade53ae00000000');
 
       // add second signature
       transaction.transactionHex = signature1.tx;
       transaction.keychain = backupKeypair;
       transaction.fullLocalSigning = true;
-      const signature2 = yield fakeProdWallet.signTransaction(transaction);
+      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
       // this transaction has actually worked: https://testnet.smartbit.com.au/tx/e2f696bcba91a376c36bb525df8c367938f6e2fd6344c90587bf12802091124c
       // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
       // changed, changing the output amounts and thus the tx hex.
@@ -725,7 +725,7 @@ describe('Wallet Prototype Methods', function() {
         getSendTxResponse()
       );
       sinon.stub(fakeWallet, 'sendTransaction').resolves(getSendTxResponse());
-      const result = yield fakeWallet.sendMany(params);
+      const result = (yield fakeWallet.sendMany(params)) as any;
       result.tx.should.equal(expectedResult.tx);
       result.fee.should.equal(expectedResult.fee);
       result.feeRate.should.equal(expectedResult.feeRate);

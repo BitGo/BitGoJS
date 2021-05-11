@@ -1,14 +1,13 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
-import { Bch } from './bch';
 import * as bitcoin from '@bitgo/utxo-lib';
-const request = require('superagent');
 import * as Bluebird from 'bluebird';
-import { BaseCoin } from '../baseCoin';
+
 import { AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
-const co = Bluebird.coroutine;
+import { BaseCoin } from '../baseCoin';
+import { Bch } from './bch';
+import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import * as errors from '../../errors';
 import { BlockchairApi } from '../recovery/blockchairApi';

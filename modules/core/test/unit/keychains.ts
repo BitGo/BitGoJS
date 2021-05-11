@@ -73,7 +73,7 @@ describe('Keychains', function v2keychains() {
         version: 1
       });
 
-      const result = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+      const result = (yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword })) as any;
       _.forOwn(result.keychains, function(encryptedXprv, xpub) {
         xpub.should.startWith('xpub');
         try {

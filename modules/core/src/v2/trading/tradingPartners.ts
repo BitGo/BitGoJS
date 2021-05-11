@@ -49,7 +49,7 @@ export class TradingPartners {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
       );
-      const response = yield self.bitgo.get(url).result();
+      const response = (yield self.bitgo.get(url).result()) as any;
 
       return response.tradingPartners.map(
         partner => new TradingPartner(partner, self.bitgo, self.enterpriseId, self.account)

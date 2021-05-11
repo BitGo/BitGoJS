@@ -3,12 +3,9 @@
  */
 import { BitGo } from '../../bitgo';
 import { Bch } from './bch';
-import * as bitcoin from '@bitgo/utxo-lib';
-const request = require('superagent');
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
-import { AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
-const co = Bluebird.coroutine;
+import { AddressInfo, UnspentInfo } from './abstractUtxoCoin';
 import { BlockchairApi } from '../recovery/blockchairApi';
 
 export class Bcha extends Bch {

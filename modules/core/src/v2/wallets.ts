@@ -149,10 +149,10 @@ export class Wallets {
         queryObject.allTokens = params.allTokens;
       }
 
-      const body = yield self.bitgo
+      const body = (yield self.bitgo
         .get(self.baseCoin.url('/wallet'))
         .query(queryObject)
-        .result();
+        .result()) as any;
       body.wallets = body.wallets.map(w => new Wallet(self.bitgo, self.baseCoin, w));
       return body;
     })
@@ -296,7 +296,7 @@ export class Wallets {
     callback?: NodeCallback<WalletWithKeychains>
   ): Bluebird<WalletWithKeychains> {
     const self = this;
-    return co<WalletWithKeychains>(function*() {
+    return co<WalletWithKeychains>(function*(): any {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
       if (!_.isString(params.label)) {
         throw new Error('missing required string parameter label');
@@ -502,7 +502,7 @@ export class Wallets {
    * @param params
    * @param callback
    */
-  listShares(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  listShares(params: Record<string, unknown> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo
       .get(this.baseCoin.url('/walletshare'))
       .result()
@@ -600,7 +600,7 @@ export class Wallets {
 
       let encryptedPrv = params.overrideEncryptedPrv;
 
-      const walletShare = yield self.getShare({ walletShareId: params.walletShareId });
+      const walletShare = (yield self.getShare({ walletShareId: params.walletShareId })) as any;
 
       // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
       if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
@@ -615,7 +615,7 @@ export class Wallets {
         throw new Error('userPassword param must be provided to decrypt shared key');
       }
 
-      const sharingKeychain = yield self.bitgo.getECDHSharingKeychain();
+      const sharingKeychain = (yield self.bitgo.getECDHSharingKeychain()) as any;
       if (_.isUndefined(sharingKeychain.encryptedXprv)) {
         throw new Error('encryptedXprv was not found on sharing keychain');
       }
@@ -721,7 +721,7 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  getTotalBalances(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getTotalBalances(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo
       .get(this.baseCoin.url('/wallet/balances'))
       .result()

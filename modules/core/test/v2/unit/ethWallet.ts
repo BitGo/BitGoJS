@@ -39,7 +39,7 @@ describe('Sign ETH Transaction', co(function *() {
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
 
-    const { halfSigned } = yield ethWallet.signTransaction({ txPrebuild: tx, prv: 'my_user_prv' });
+    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: tx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('recipients', recipients);
     sinon.restore();
   }));
@@ -56,26 +56,26 @@ describe('Sign ETH Transaction', co(function *() {
     sinon.stub(Util, 'xprvToEthPrivateKey');
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
-    let singleRecipientsTx = { recipients : recipients, nextContractSequenceId: 0, isBatch:false };
-    const { halfSigned } = yield ethWallet.signTransaction({ txPrebuild: singleRecipientsTx, prv: 'my_user_prv' });
+    const singleRecipientsTx = { recipients: recipients, nextContractSequenceId: 0, isBatch: false };
+    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: singleRecipientsTx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('recipients', recipients);
     halfSigned.should.have.property('isBatch', false);
     sinon.restore();
   }));
 
   it('should set isBatch to true if multiple recipients', co(function *() {
-    let multipleRecipients =  [{ address: '0x0c7f3bc5d2b2c0dbee1b45536b82569f41b54331',
-    amount: '200',
-    data:
-     '0xcf4c58e2000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064' }
-    ];
+    const multipleRecipients = [{
+      address: '0x0c7f3bc5d2b2c0dbee1b45536b82569f41b54331',
+      amount: '200',
+      data: '0xcf4c58e2000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064',
+    }];
 
-    let multipleRecipientsTx = { recipients : multipleRecipients, nextContractSequenceId: 0, isBatch:true };
+    const multipleRecipientsTx = { recipients: multipleRecipients, nextContractSequenceId: 0, isBatch: true };
 
     sinon.stub(Util, 'xprvToEthPrivateKey');
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
-    const { halfSigned } = yield ethWallet.signTransaction({ txPrebuild: multipleRecipientsTx, prv: 'my_user_prv' });
+    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: multipleRecipientsTx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('isBatch', true);
     sinon.restore();
   }));
@@ -274,7 +274,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       const feeScope = nockFees();
       nockBuild(ethWallet.id());
       try {
-        const res = yield ethWallet.prebuildTransaction(buildParams);
+        const res = (yield ethWallet.prebuildTransaction(buildParams)) as any;
         should.exist(res.hopTransaction);
         should.exist(res.hopTransaction.tx);
         should.exist(res.hopTransaction.tx);
@@ -307,7 +307,7 @@ describe('Add final signature to ETH tx from offline vault', function() {
   });
 
   it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
-    const response = yield coin.signTransaction(paramsFromVault);
+    const response = (yield coin.signTransaction(paramsFromVault)) as any;
     const expectedTx = new EthTx(expectedResult.txHex);
     const actualTx = new EthTx(response.txHex);
     actualTx.nonce.should.deepEqual(expectedTx.nonce);
@@ -350,7 +350,7 @@ describe('prebuildTransaction', function() {
         gasLimit,
       })
       .reply(200, { success: true });
-    const prebuild = yield ethWallet.prebuildTransaction({ recipients, gasLimit });
+    const prebuild = (yield ethWallet.prebuildTransaction({ recipients, gasLimit })) as any;
     scope.isDone().should.equal(true);
     prebuild.success.should.equal(true);
   }));

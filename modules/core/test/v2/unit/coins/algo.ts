@@ -1,15 +1,12 @@
-import * as Promise from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as algosdk from 'algosdk';
-import 'should';
+import * as should from 'should';
 
 const algoFixtures = require('../../fixtures/coins/algo');
-const co = Promise.coroutine;
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 import * as _ from 'lodash';
-import * as should from 'should';
 import * as common from '../../../../src/common';
 
 describe('ALGO:', function() {
@@ -64,13 +61,13 @@ describe('ALGO:', function() {
     basecoin.isValidPrv('UMYEHZ2NNBYX43CU37LMINSHR362FT4GFVWL6V5IHPRCJVPZ46H6CBYLYX').should.equal(false);
   });
 
-  it('should sign message', co(function *() {
+  it('should sign message', async function() {
     const keyPair = basecoin.generateKeyPair();
     const message = Buffer.from('message');
-    const signature = yield basecoin.signMessage(keyPair, message);
+    const signature = await basecoin.signMessage(keyPair, message);
     const pub = algosdk.Address.decode(keyPair.pub).publicKey;
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
-  }));
+  });
 
   it('should validate a stellar seed', function() {
     basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();
@@ -85,15 +82,15 @@ describe('ALGO:', function() {
     let basecoin;
     let wallet;
 
-    before(co(function *() {
+    before(function() {
       basecoin = bitgo.coin('talgo');
       fixtures = algoFixtures.prebuild();
       wallet = new Wallet(bitgo, basecoin, fixtures.walletData);
-    }));
+    });
 
-    it('should sign a prebuild', co(function *() {
+    it('should sign a prebuild', async function() {
       // sign transaction
-      const halfSignedTransaction = yield wallet.signTransaction({
+      const halfSignedTransaction = await wallet.signTransaction({
         txPrebuild: {
           txHex: fixtures.buildTxBase64,
           keys: [fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub],
@@ -103,10 +100,10 @@ describe('ALGO:', function() {
       });
 
       halfSignedTransaction.halfSigned.txHex.should.equal(fixtures.signedTxBase64);
-    }));
+    });
 
-    it('should sign an half-signed signed transaction', co(function *() {
-      const fullySignedTx = yield wallet.signTransaction({
+    it('should sign an half-signed signed transaction', async function() {
+      const fullySignedTx = await wallet.signTransaction({
         txPrebuild: {
           halfSigned: {
             txHex: fixtures.signedTxBase64,
@@ -117,31 +114,30 @@ describe('ALGO:', function() {
         prv: fixtures.backupKeychain.prv,
       });
       fullySignedTx.txHex.should.equal(fixtures.fullySignBase64);
-    }));
+    });
 
-    it('should explain an half-signed transaction', co(function *() {
+    it('should explain an half-signed transaction', async function() {
       const explainParams = { halfSigned: { txHex: fixtures.signedTxBase64 } };
 
-      const explanation = yield basecoin.explainTransaction(explainParams);
+      const explanation = await basecoin.explainTransaction(explainParams);
 
       explanation.outputs[0].amount.should.equal(1000);
       explanation.outputs[0].address.should.equal(fixtures.txData.to);
       explanation.id.should.equal(fixtures.signedTxId);
-    }));
+    });
 
-    it('should explain an fully signed transaction', co(function *() {
+    it('should explain an fully signed transaction', async function() {
       const explainParams = { txHex: fixtures.fullySignBase64 };
 
-      const explanation = yield basecoin.explainTransaction(explainParams);
+      const explanation = await basecoin.explainTransaction(explainParams);
 
       explanation.outputs[0].amount.should.equal(1000);
       explanation.outputs[0].address.should.equal(fixtures.txData.to);
       explanation.id.should.equal(fixtures.signedTxId);
-    }));
+    });
   });
 
-  it('should create algo non participating key reg transaction', function *() {
-
+  it('should create algo non participating key reg transaction', async function() {
     const algocoin = bitgo.coin('talgo');
     const algoWalletData = {
       id: '5b34252f1bf349930e34020a',
@@ -186,7 +182,7 @@ describe('ALGO:', function() {
       .post(path, _.matches(payload))
       .reply(200, responseData);
 
-    const preBuiltData = yield algoWallet.prebuildTransaction(payload);
+    const preBuiltData = await algoWallet.prebuildTransaction(payload);
 
     response.isDone().should.be.true();
     should.deepEqual(preBuiltData, responseData);

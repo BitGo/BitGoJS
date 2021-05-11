@@ -14,13 +14,15 @@ import * as request from 'superagent';
 import {
   BaseCoin,
   FeeEstimateOptions,
+  HalfSignedTransaction as BaseHalfSignedTransaction,
   KeyPair,
-  ParsedTransaction,
   ParseTransactionOptions,
+  ParsedTransaction,
+  PresignTransactionOptions as BasePresignTransactionOptions,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionPrebuild as BaseTransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  HalfSignedTransaction as BaseHalfSignedTransaction,
 } from '../baseCoin';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
@@ -115,7 +117,7 @@ interface SignFinalOptions {
   recipients: Recipient[];
 }
 
-export interface SignTransactionOptions extends SignFinalOptions {
+export interface SignTransactionOptions extends BaseSignTransactionOptions, SignFinalOptions {
   isLastSignature?: boolean;
   expireTime: number;
   sequenceId: number;
@@ -214,6 +216,7 @@ interface BuildOptions {
   wallet?: Wallet;
   recipients?: Recipient[];
   walletPassphrase?: string;
+  [index: string]: unknown;
 }
 
 interface FeeEstimate {
@@ -226,6 +229,10 @@ interface TransactionPrebuild extends BaseTransactionPrebuild {
   buildParams: {
     recipients: Recipient[];
   };
+}
+
+interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTransactionOptions {
+  wallet: Wallet;
 }
 
 interface RecoverTokenTransaction {
@@ -342,11 +349,11 @@ export class Eth extends BaseCoin {
   queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
-      const result = yield self.recoveryBlockchainExplorerQuery({
+      const result = (yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'balance',
         address: address,
-      });
+      })) as any;
       // throw if the result does not exist or the result is not a valid number
       if (!result || !result.result || isNaN(result.result)) {
         throw new Error(`Could not obtain address balance for ${address} from Etherscan, got: ${result.result}`);
@@ -378,13 +385,13 @@ export class Eth extends BaseCoin {
         throw new Error('cannot get token balance for invalid wallet address');
       }
 
-      const result = yield self.recoveryBlockchainExplorerQuery({
+      const result = (yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'tokenbalance',
         contractaddress: tokenContractAddress,
         address: walletContractAddress,
         tag: 'latest',
-      });
+      })) as any;
       // throw if the result does not exist or the result is not a valid number
       if (!result || !result.result || isNaN(result.result)) {
         throw new Error(
@@ -482,13 +489,13 @@ export class Eth extends BaseCoin {
       const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
       const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
       const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
-      const result = yield self.recoveryBlockchainExplorerQuery({
+      const result = (yield self.recoveryBlockchainExplorerQuery({
         module: 'proxy',
         action: 'eth_call',
         to: address,
         data: sequenceIdData,
         tag: 'latest',
-      });
+      })) as any;
       if (!result || !result.result) {
         throw new Error('Could not obtain sequence ID from Etherscan, got: ' + result.result);
       }
@@ -672,11 +679,11 @@ export class Eth extends BaseCoin {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
 
-      const result = yield self.recoveryBlockchainExplorerQuery({
+      const result = (yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'txlist',
         address,
-      });
+      })) as any;
       if (!result || !Array.isArray(result.result)) {
         throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
       }
@@ -714,7 +721,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<OfflineVaultTxInfo>
   ): Bluebird<OfflineVaultTxInfo> {
     const self = this;
-    return co<OfflineVaultTxInfo>(function*() {
+    return co<OfflineVaultTxInfo>(function*(): any {
       const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
       const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
       const response: OfflineVaultTxInfo = {
@@ -866,7 +873,7 @@ export class Eth extends BaseCoin {
       const backupKeyNonce = yield self.getAddressNonce(backupKeyAddress);
 
       // get balance of backupKey to ensure funds are available to pay fees
-      const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
+      const backupKeyBalance = (yield self.queryAddressBalance(backupKeyAddress)) as any;
 
       const totalGasNeeded = gasPrice.mul(gasLimit);
       const weiToGwei = 10 ** 9;
@@ -879,7 +886,7 @@ export class Eth extends BaseCoin {
       }
 
       // get balance of wallet and deduct fees to get transaction amount
-      const txAmount = yield self.queryAddressBalance(params.walletContractAddress);
+      const txAmount = (yield self.queryAddressBalance(params.walletContractAddress)) as any;
 
       // build recipients object
       const recipients = [
@@ -892,7 +899,7 @@ export class Eth extends BaseCoin {
       // Get sequence ID using contract call
       // we need to wait between making two etherscan calls to avoid getting banned
       yield new Promise(resolve => setTimeout(resolve, 1000));
-      const sequenceId = yield self.querySequenceId(params.walletContractAddress);
+      const sequenceId = (yield self.querySequenceId(params.walletContractAddress)) as any;
 
       let operationHash, signature;
       // Get operation hash and sign it
@@ -975,7 +982,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<RecoverTokenTransaction>
   ): Bluebird<RecoverTokenTransaction> {
     const self = this;
-    return co<RecoverTokenTransaction>(function*() {
+    return co<RecoverTokenTransaction>(function*(): any {
       if (!_.isObject(params)) {
         throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
       }
@@ -1166,15 +1173,16 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {Object} response from Etherscan
    */
-  recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
+  recoveryBlockchainExplorerQuery(query: Record<string, string>, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
-      if (common.Environments[self.bitgo.getEnv()].etherscanApiToken) {
-        query.apikey = common.Environments[self.bitgo.getEnv()].etherscanApiToken;
+      const token = common.Environments[self.bitgo.getEnv()].etherscanApiToken;
+      if (token) {
+        query.apikey = token;
       }
-      const response = yield request
+      const response = (yield request
         .get(common.Environments[self.bitgo.getEnv()].etherscanBaseUrl + '/api')
-        .query(query);
+        .query(query)) as any;
 
       if (!response.ok) {
         throw new Error('could not reach Etherscan');
@@ -1200,7 +1208,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<HopParams>
   ): Bluebird<HopParams> {
     const self = this;
-    return co<HopParams>(function*() {
+    return co<HopParams>(function*(): any {
       const wallet = buildParams.wallet;
       const recipients = buildParams.recipients;
       const walletPassphrase = buildParams.walletPassphrase;
@@ -1395,11 +1403,11 @@ export class Eth extends BaseCoin {
    * @param callback
    */
   presignTransaction(
-    params: TransactionPrebuild,
-    callback?: NodeCallback<TransactionPrebuild>
-  ): Bluebird<TransactionPrebuild> {
+    params: PresignTransactionOptions,
+    callback?: NodeCallback<PresignTransactionOptions>
+  ): Bluebird<PresignTransactionOptions> {
     const self = this;
-    return co<TransactionPrebuild>(function*() {
+    return co<PresignTransactionOptions>(function*() {
       if (
         !_.isUndefined(params.hopTransaction) &&
         !_.isUndefined(params.wallet) &&

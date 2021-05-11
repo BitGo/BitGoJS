@@ -199,7 +199,7 @@ Keychains.prototype.updatePassword = function(params, callback) {
     const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
     const newKeychains = {};
     const self = this;
-    _.forOwn(encrypted.keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
+    _.forOwn((encrypted as any).keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
       try {
         const decryptedPrv = self.bitgo.decrypt({ input: oldEncryptedXprv, password: params.oldPassword });
         const newEncryptedPrv = self.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
@@ -209,7 +209,7 @@ Keychains.prototype.updatePassword = function(params, callback) {
         newKeychains[xpub] = oldEncryptedXprv;
       }
     });
-    return { keychains: newKeychains, version: encrypted.version };
+    return { keychains: newKeychains, version: (encrypted as any).version };
   }).call(this).asCallback(callback);
 };
 

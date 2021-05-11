@@ -3,7 +3,9 @@
  */
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { c32addressDecode } from 'c32check';
+
 import {
   BaseCoin,
   KeyPair,
@@ -17,7 +19,6 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError } from '../../errors';
 
 const co = Bluebird.coroutine;
@@ -220,7 +221,7 @@ export class Stx extends BaseCoin {
         txBuilder.fromPubKey(params.publicKeys);
       }
 
-      const tx = yield txBuilder.build();
+      const tx = (yield txBuilder.build()) as any;
       const txJson = tx.toJson();
 
       if (tx.type === accountLib.BaseCoin.TransactionType.Send) {

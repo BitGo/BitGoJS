@@ -90,7 +90,7 @@ interface DeserializedEosTransaction extends EosTransactionHeaders {
   delay_sec: number;
   context_free_actions: EosTransactionAction[];
   actions: EosTransactionAction[];
-  transaction_extensions: object[];
+  transaction_extensions: Record<string, unknown>[];
   address: string;
   amount: string;
   transaction_id: string;
@@ -321,8 +321,7 @@ export class Eos extends BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    // @ts-ignore
-    return bigNumber.toFormat(4, null, { groupSeparator: '', decimalSeparator: '.' });
+    return bigNumber.toFormat(4, null as any, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
@@ -558,7 +557,7 @@ export class Eos extends BaseCoin {
           { actions: tx.actions },
           { sign: false, broadcast: false }
         );
-        tx.transaction_id = rebuiltTransaction.transaction_id;
+        tx.transaction_id = (rebuiltTransaction as any).transaction_id;
       }
 
       return tx;
@@ -692,21 +691,21 @@ export class Eos extends BaseCoin {
 
   /**
    * Make a request to one of the public EOS nodes available
-   * @param endpoint
-   * @param payload
+   * @param params.endpoint
+   * @param params.payload
    */
-  protected getDataFromNode({ endpoint, payload }: { endpoint: string; payload?: object }): Bluebird<any> {
+  protected getDataFromNode(params: { endpoint: string; payload?: Record<string, unknown> }): Bluebird<any> {
     const self = this;
     return co(function*() {
       const nodeUrls = self.getPublicNodeUrls();
       for (const nodeUrl of nodeUrls) {
         try {
-          return yield request.post(nodeUrl + endpoint).send(payload);
+          return yield request.post(nodeUrl + params.endpoint).send(params.payload);
         } catch (e) {
           // let's hope another call succeeds
         }
       }
-      throw new Error(`Unable to call endpoint: ${endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
+      throw new Error(`Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
     }).call(this);
   }
 
@@ -717,10 +716,10 @@ export class Eos extends BaseCoin {
     const self = this;
     return co(function*() {
       const response = yield self.getDataFromNode({ endpoint: '/v1/chain/get_info' });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Unable to fetch chain info');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -735,10 +734,10 @@ export class Eos extends BaseCoin {
         endpoint: '/v1/chain/get_account',
         payload: { account_name: address },
       });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Account not found');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -753,10 +752,10 @@ export class Eos extends BaseCoin {
         endpoint: '/v1/chain/get_block',
         payload: { block_num_or_id: blockNumOrId },
       });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Block not found');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -766,16 +765,16 @@ export class Eos extends BaseCoin {
   protected getTransactionHeadersFromNode(): Bluebird<any> {
     const self = this;
     return co(function*() {
-      const chainInfo = yield self.getChainInfoFromNode();
+      const chainInfo = (yield self.getChainInfoFromNode()) as any;
       const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
       const expireSeconds = 28800; // maximum tx expire time of 8h
-      const chainDate = new Date(chainInfo.head_block_time + 'Z');
+      const chainDate = new Date((chainInfo as any).head_block_time + 'Z');
       const expirationDate = new Date(chainDate.getTime() + expireSeconds * 1000);
 
       return {
         expiration: expirationDate.toISOString(),
-        ref_block_num: chainInfo.head_block_num & 0xffff,
-        ref_block_prefix: headBlockInfoResult.ref_block_prefix,
+        ref_block_num: (chainInfo as any).head_block_num & 0xffff,
+        ref_block_prefix: (headBlockInfoResult as any).ref_block_prefix,
       };
     }).call(this);
   }
@@ -838,9 +837,9 @@ export class Eos extends BaseCoin {
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      const keys = yield self.initiateRecovery(params);
+      const keys = (yield self.initiateRecovery(params)) as any;
 
-      const account = yield self.getAccountFromNode({ address: params.rootAddress });
+      const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
 
       if (!account.core_liquid_balance) {
         throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
@@ -906,7 +905,7 @@ export class Eos extends BaseCoin {
           packed_trx: serializedTransaction,
           signatures: [] as string[],
         },
-        txid: transaction.transaction_id,
+        txid: (transaction as any).transaction_id,
         recoveryAmount: accountBalance,
       };
       const signableTx = Buffer.concat([
@@ -955,7 +954,7 @@ export class Eos extends BaseCoin {
    * * Address must only contain lowercase letters and numbers 1-5
    * @returns a validly formatted EOS address, which may or may not actually be available on chain.
    */
-  generateRandomAddress(params: {}): string {
+  generateRandomAddress(params: Record<string, never>): string {
     const address: string[] = [];
     while (address.length < 12) {
       const char = _.sample(Eos.VALID_ADDRESS_CHARS);

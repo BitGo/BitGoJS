@@ -16,13 +16,12 @@ describe('Virtual Token:', function() {
     (() => bitgo.coin('mycrappytoken')).should.throw('Coin or token type mycrappytoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS.');
   });
 
-  it('should wait for client constants before instantiating coin', Bluebird.coroutine(function *() {
+  it('should wait for client constants before instantiating coin', async function() {
     const promise = bitgo.token('terc');
     should(promise).be.instanceOf(Bluebird.Promise);
-    const erc = yield promise;
+    const erc = await promise;
     erc.should.be.instanceOf(BaseCoin);
     erc.type.should.equal('terc');
     erc.tokenContractAddress.should.equal('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
-  }));
-
+  });
 });

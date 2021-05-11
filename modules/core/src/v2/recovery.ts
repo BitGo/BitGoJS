@@ -191,7 +191,7 @@ export class CrossChainRecoveryTool {
       self._log('Grabbing info for faulty tx...');
 
       const TX_INFO_URL = self.sourceCoin.url(`/public/tx/${faultyTxId}`);
-      const res = yield request.get(TX_INFO_URL);
+      const res = (yield request.get(TX_INFO_URL)) as any;
       const faultyTxInfo = res.body;
 
       self._log('Getting unspents on output addresses..');
@@ -220,7 +220,7 @@ export class CrossChainRecoveryTool {
 
         try {
           const methodName = self.wallet.isV1 ? 'address' : 'getAddress';
-          const walletAddress = yield self.wallet[methodName]({ address: address });
+          const walletAddress = (yield self.wallet[methodName]({ address: address })) as any;
           outputAddresses.push(walletAddress.address);
         } catch (e) {
           self._log(`Address ${address} not found on wallet`);
@@ -245,7 +245,7 @@ export class CrossChainRecoveryTool {
 
       // Get unspents for addresses
       const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${_.uniq(outputAddresses).join(',')}`);
-      const addressRes = yield request.get(ADDRESS_UNSPENTS_URL);
+      const addressRes = (yield request.get(ADDRESS_UNSPENTS_URL)) as any;
       const unspents = addressRes.body;
 
       self.unspents = unspents;
@@ -330,7 +330,7 @@ export class CrossChainRecoveryTool {
 
         // Add v1 specific input fields
         if (self.wallet.isV1) {
-          const addressInfo = yield self.wallet.address({ address: unspentAddress.address });
+          const addressInfo = (yield self.wallet.address({ address: unspentAddress.address })) as any;
 
           unspentAddress.path = unspentAddress.path || `/${unspentAddress.chain}/${unspentAddress.index}`;
           const [txid, nOut] = unspent.id.split(':');
@@ -464,7 +464,7 @@ export class CrossChainRecoveryTool {
    */
   signTransaction(params: SignRecoveryTransactionOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function* signTransaction() {
+    return co(function* signTransaction(): any {
       if (_.isUndefined(self.txInfo)) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }

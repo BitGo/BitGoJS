@@ -18,7 +18,6 @@ import { Config, config } from './config';
 
 const debug = debugLib('bitgo:express');
 
-// eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
 
@@ -50,7 +49,7 @@ function setupLogging(app: express.Application, config: Config): void {
   }
 
   app.use(middleware);
-  morgan.token('remote-user', function(req) {
+  morgan.token('remote-user', function(req: StaticRequest) {
     return req.isProxy ? 'proxy' : 'local_express';
   });
 }
@@ -94,7 +93,7 @@ function configureProxy(app: express.Application, config: Config): void {
 
   const proxy = httpProxy.createProxyServer(options);
 
-  const sendError = (res: http.ServerResponse, status: number, json: object) => {
+  const sendError = (res: http.ServerResponse, status: number, json: Record<string, unknown>) => {
     res.writeHead(status, {
       'Content-Type': 'application/json',
     });
@@ -159,7 +158,6 @@ async function createHttpsServer(
 
   const [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
 
-  // eslint-disable-next-line @typescript-eslint/camelcase
   return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
 }
 

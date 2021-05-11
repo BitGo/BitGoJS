@@ -28,6 +28,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
@@ -43,7 +44,7 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   voteLastBlock?: number;
 }
 
-export interface SignTransactionOptions {
+export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }

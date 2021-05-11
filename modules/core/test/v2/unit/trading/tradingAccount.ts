@@ -31,7 +31,7 @@ describe('Trading Accounts', function() {
     tradingAccount = wallet.toTradingAccount();
   }));
 
-  it('should calculate settlement fees', co(function *() {
+  it('should calculate settlement fees', async function() {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/calculatefees`, {
         counterpartyAccountId: 'counterpartyId',
@@ -46,7 +46,7 @@ describe('Trading Accounts', function() {
         feeCurrency: 'ofctusd'
       });
 
-    const settlementFees = yield tradingAccount.calculateSettlementFees({
+    const settlementFees = await tradingAccount.calculateSettlementFees({
       counterpartyAccountId: 'counterpartyId',
       receiveAmount: '100000000',
       receiveCurrency: 'ofctbtc',
@@ -60,5 +60,5 @@ describe('Trading Accounts', function() {
     settlementFees.should.have.property('feeCurrency', 'ofctusd');
 
     msScope.isDone().should.be.True();
-  }));
+  });
 });

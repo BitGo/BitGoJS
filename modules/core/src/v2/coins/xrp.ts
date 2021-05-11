@@ -5,7 +5,6 @@ import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
-import { BitGo } from '../../bitgo';
 
 import * as rippleAddressCodec from 'ripple-address-codec';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
@@ -14,15 +13,17 @@ import * as rippleKeypairs from 'ripple-keypairs';
 
 import {
   BaseCoin,
-  TransactionExplanation,
+  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
   KeyPair,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   ParseTransactionOptions,
   ParsedTransaction,
+  TransactionExplanation,
   TransactionPrebuild,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
-  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
 } from '../baseCoin';
+import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
@@ -44,7 +45,7 @@ interface FeeInfo {
   baseFee: string;
 }
 
-interface SignTransactionOptions {
+interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }
@@ -354,9 +355,9 @@ export class Xrp extends BaseCoin {
   public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Bluebird<boolean> {
     const self = this;
     return co<boolean>(function *() {
-      const explanation = yield self.explainTransaction({
+      const explanation = (yield self.explainTransaction({
         txHex: txPrebuild.txHex,
-      });
+      })) as any;
 
       const output = [...explanation.outputs, ...explanation.changeOutputs][0];
       const expectedOutput = txParams.recipients && txParams.recipients[0];
@@ -420,7 +421,7 @@ export class Xrp extends BaseCoin {
    */
   public recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryInfo | string>): Bluebird<RecoveryInfo | string> {
     const self = this;
-    return co<RecoveryInfo | string>(function *explainTransaction() {
+    return co<RecoveryInfo | string>(function *explainTransaction(): any {
       const rippledUrl = self.getRippledUrl();
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');

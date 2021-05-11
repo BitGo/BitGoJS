@@ -1,12 +1,9 @@
-import { Promise as BluebirdPromise } from 'bluebird';
 import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
 import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';
 import { randomBytes } from 'crypto';
-
-const co = BluebirdPromise.coroutine;
 
 describe('Casper', function() {
   const coinName = 'tcspr';
@@ -69,18 +66,18 @@ describe('Casper', function() {
       basecoin.isValidPrv(keyPair.prv).should.equal(true);
     });
 
-    it('Should supplement wallet generation', co(function *() {
-      const details = yield basecoin.supplementGenerateWallet({});
+    it('Should supplement wallet generation', async function() {
+      const details = await basecoin.supplementGenerateWallet({});
       details.should.have.property('rootPrivateKey');
       basecoin.isValidPrv(details.rootPrivateKey).should.equal(true);
-    }));
+    });
 
-    it('Should supplement wallet generation with provided private key', co(function *() {
+    it('Should supplement wallet generation with provided private key', async function() {
       const rootPrivateKey = 'e0c5c347fc67a46aa5104ece454882315fe5d70af286dbd3d2e04227ebd2927d';
-      const details = yield basecoin.supplementGenerateWallet({ rootPrivateKey });
+      const details = await basecoin.supplementGenerateWallet({ rootPrivateKey });
       details.should.have.property('rootPrivateKey');
       details.rootPrivateKey.should.equal(rootPrivateKey);
-    }));
+    });
   });
 
   describe('Sign Transaction', () => {
@@ -111,7 +108,7 @@ describe('Casper', function() {
         prv: sourceKeyPair.prv,
       };
 
-      let signedTransaction = await basecoin.signTransaction(params, () => {});
+      let signedTransaction = await basecoin.signTransaction(params);
       signedTransaction.should.have.property('halfSigned');
 
       const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
@@ -121,7 +118,7 @@ describe('Casper', function() {
 
       params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = bitgoKeyPair.prv;
-      signedTransaction = await basecoin.signTransaction(params, () => {});
+      signedTransaction = await basecoin.signTransaction(params);
       signedTransaction.should.not.have.property('halfSigned');
       signedTransaction.should.have.property('txHex');
 
@@ -157,7 +154,7 @@ describe('Casper', function() {
         prv: extendedSourceKeyPair.xprv,
       };
 
-      let signedTransaction = await basecoin.signTransaction(params, () => {});
+      let signedTransaction = await basecoin.signTransaction(params);
       signedTransaction.should.have.property('halfSigned');
 
       const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
@@ -167,7 +164,7 @@ describe('Casper', function() {
 
       params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = extendedBitgoKeyPair.xprv;
-      signedTransaction = await basecoin.signTransaction(params, () => {});
+      signedTransaction = await basecoin.signTransaction(params);
       signedTransaction.should.not.have.property('halfSigned');
       signedTransaction.should.have.property('txHex');
 
@@ -202,7 +199,7 @@ describe('Casper', function() {
         prv: invalidPrivateKey,
       };
 
-      basecoin.signTransaction(params, () => {}).should.be.rejected();
+      await basecoin.signTransaction(params).should.be.rejected();
     });
   });
 
@@ -261,7 +258,7 @@ describe('Casper', function() {
         },
         prv: sourceKeyPair.prv,
       };
-      const { halfSigned } = await basecoin.signTransaction(signTxparams, () => {});
+      const { halfSigned } = await basecoin.signTransaction(signTxparams);
 
       const feeInfo: TransactionFee = {
         gasLimit: '1',
@@ -273,7 +270,7 @@ describe('Casper', function() {
         },
         feeInfo,
       };
-      const explainedTx = await basecoin.explainTransaction(explainTxParams, () => {});
+      const explainedTx = await basecoin.explainTransaction(explainTxParams);
       explainedTx.should.have.properties([
         'displayOrder',
         'id',
@@ -324,7 +321,7 @@ describe('Casper', function() {
         ],
       };
       const explainTxParams: ExplainTransactionOptions = builtTxInfo;
-      const explainedTx = await basecoin.explainTransaction(explainTxParams, () => {});
+      const explainedTx = await basecoin.explainTransaction(explainTxParams);
       explainedTx.should.have.properties([
         'displayOrder',
         'id',
@@ -351,7 +348,7 @@ describe('Casper', function() {
           gasPrice: '11000',
         },
       };
-      await basecoin.explainTransaction(explainTxParams, () => {}).should.be.rejectedWith('missing explain tx parameters');
+      await basecoin.explainTransaction(explainTxParams).should.be.rejectedWith('missing explain tx parameters');
     });
   });
 });

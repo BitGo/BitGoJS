@@ -1,6 +1,4 @@
 import 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
@@ -39,9 +37,9 @@ describe('OFC:', function() {
     teth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
-  })
+  });
 
-  it('can sign payloads', co(function *() {
+  it('can sign payloads', async function() {
     const inputParams = {
       txPrebuild: {
         payload: '{"token":"otestusd"}'
@@ -55,7 +53,7 @@ describe('OFC:', function() {
       }
     };
 
-    const signedResult = yield otestusdCoin.signTransaction(inputParams);
+    const signedResult = await otestusdCoin.signTransaction(inputParams);
     signedResult.should.deepEqual(expectedResult);
-  }));
+  });
 });

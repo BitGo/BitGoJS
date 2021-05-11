@@ -225,7 +225,7 @@ export class Trx extends BaseCoin {
       }
       txBuilder.from(params.txPrebuild.txHex);
       txBuilder.sign({ key: params.prv });
-      const transaction = yield txBuilder.build();
+      const transaction = (yield txBuilder.build()) as any;
       const response = {
         txHex: JSON.stringify(transaction.toJson()),
       };
@@ -353,10 +353,10 @@ export class Trx extends BaseCoin {
           throw new Error('node type not found');
       }
 
-      const response = yield request
+      const response = (yield request
         .post(nodeUri + query.path)
         .type('json')
-        .send(query.jsonObj);
+        .send(query.jsonObj)) as any;
 
       if (!response.ok) {
         throw new Error('could not reach Tron node');
@@ -456,14 +456,14 @@ export class Trx extends BaseCoin {
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
       // get our user, backup keys
-      const keys = yield self.initiateRecovery(params);
+      const keys = (yield self.initiateRecovery(params)) as any;
 
       // we need to decode our bitgoKey to a base58 address
       const bitgoHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
       const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
       // call the node to get our account balance
-      const account = yield self.getAccountFromNode(bitgoHexAddr);
+      const account = (yield self.getAccountFromNode(bitgoHexAddr)) as any;
       const recoveryAmount = account.balance;
 
       const userXPub = keys[0].neutered().toBase58();
@@ -500,7 +500,7 @@ export class Trx extends BaseCoin {
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
         return {
-          tx: (yield txBuilder.build()).toJson(),
+          tx: ((yield txBuilder.build()) as any).toJson(),
           recoveryAmount: recoveryAmountMinusFees,
         };
       }
@@ -518,7 +518,7 @@ export class Trx extends BaseCoin {
       }
 
       return {
-        tx: (yield txBuilder.build()).toJson(),
+        tx: ((yield txBuilder.build()) as any).toJson(),
         recoveryAmount: recoveryAmountMinusFees,
       };
     })
@@ -547,7 +547,7 @@ export class Trx extends BaseCoin {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(txHex);
-      const tx = yield txBuilder.build();
+      const tx = (yield txBuilder.build()) as any;
       const outputs = [
         {
           amount: tx.outputs[0].value.toString(),

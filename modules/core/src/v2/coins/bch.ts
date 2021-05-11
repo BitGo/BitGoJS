@@ -2,13 +2,11 @@ import * as bitcoin from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const cashaddress = require('cashaddress');
 import * as _ from 'lodash';
-import * as request from 'superagent';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
-const co = Bluebird.coroutine;
 import { BlockchairApi } from '../recovery/blockchairApi';
 
 const VALID_ADDRESS_VERSIONS = {
@@ -24,7 +22,7 @@ const containsMixedCaseCharacters = (str) => {
 
 export class Bch extends AbstractUtxoCoin {
 
-  protected constructor(bitgo: BitGo, network?) {
+  protected constructor(bitgo: BitGo, network?: UtxoNetwork) {
     super(bitgo, network || bitcoin.networks.bitcoincash);
   }
 

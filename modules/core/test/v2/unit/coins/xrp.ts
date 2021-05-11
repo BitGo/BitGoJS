@@ -1,12 +1,11 @@
 import 'should';
 
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 const ripple = require('../../../../src/ripple');
-const rippleBinaryCodec = require('ripple-binary-codec');
 
 import * as nock from 'nock';
 nock.disableNetConnect();
@@ -81,26 +80,26 @@ describe('XRP:', function() {
     }
   });
 
-  it('Should be able to explain an XRP transaction', co(function *() {
-    const signedExplanation = yield basecoin.explainTransaction({ txHex: '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D73008114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9F3E010732103AFBB6845826367D738B0D42EA0756C94547E70B064E8FE1260CF21354C898B0B74473045022100CA3A98AA6FC8CCA251C3A2754992E474EA469884EB8D489D2B180EB644AC7695022037EB886DCF57928E5844DB73C2E86DE553FB59DCFC9408F3FD5D802ADB69DFCC8114F0DBA9D34C77B6769F6142AB7C9D0AF67D113EBCE1F1' });
-    const unsignedExplanation = yield basecoin.explainTransaction({ txHex: '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":0,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}' });
+  it('Should be able to explain an XRP transaction', async function() {
+    const signedExplanation = await basecoin.explainTransaction({ txHex: '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D73008114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9F3E010732103AFBB6845826367D738B0D42EA0756C94547E70B064E8FE1260CF21354C898B0B74473045022100CA3A98AA6FC8CCA251C3A2754992E474EA469884EB8D489D2B180EB644AC7695022037EB886DCF57928E5844DB73C2E86DE553FB59DCFC9408F3FD5D802ADB69DFCC8114F0DBA9D34C77B6769F6142AB7C9D0AF67D113EBCE1F1' });
+    const unsignedExplanation = await basecoin.explainTransaction({ txHex: '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":0,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}' });
     unsignedExplanation.id.should.equal('CB36F366F1AC25FCDB38A19F17384ED3509D9B7F063520034597852FB10A1B45');
     signedExplanation.id.should.equal('D52681436CC5B94E9D00BC8172047B1A6F3C028D2D0A5CDFB81680039C48ADFD');
     unsignedExplanation.outputAmount.should.equal('253481');
     signedExplanation.outputAmount.should.equal('253481');
-  }));
+  });
 
-  it('Should be able to explain an XRP AccountSet transaction', co(function *() {
-    const signedExplanation = yield basecoin.explainTransaction({ txHex: '1200032400E5F4AA201B00E9C54768400000000000002D722102000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61730081145FB0771C7BCA6BBB7B2DAF362B7FEFC35AC5DF00F3E01073210228085BA918B150F05B34CE4613AC4A031A816866E143AA7470FB2044D79EAA1474473045022100A8D2B720EFA46A88B4267EB3EFBBA0A6F9432884BC7F8DBF0E962B76E95DE0DE022004430D10DC7B4D1B2D0555EA22FF73FEA2E91636B5715F8909A6D9BC7689A4AC8114E9B5B8F9EC3ACFFB31958A3C1CFBB3CE41CB0725E1F1' });
+  it('Should be able to explain an XRP AccountSet transaction', async function() {
+    const signedExplanation = await basecoin.explainTransaction({ txHex: '1200032400E5F4AA201B00E9C54768400000000000002D722102000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61730081145FB0771C7BCA6BBB7B2DAF362B7FEFC35AC5DF00F3E01073210228085BA918B150F05B34CE4613AC4A031A816866E143AA7470FB2044D79EAA1474473045022100A8D2B720EFA46A88B4267EB3EFBBA0A6F9432884BC7F8DBF0E962B76E95DE0DE022004430D10DC7B4D1B2D0555EA22FF73FEA2E91636B5715F8909A6D9BC7689A4AC8114E9B5B8F9EC3ACFFB31958A3C1CFBB3CE41CB0725E1F1' });
     signedExplanation.id.should.equal('27D273F44EFDBA63D2473C8C5166C2B912F26B88BF21D147008D8E5E37CCBD21');
     signedExplanation.accountSet.messageKey.should.equal('02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61');
     signedExplanation.fee.fee.should.equal('45');
 
-    const unsignedExplanation = yield basecoin.explainTransaction({ txHex: '{"TransactionType":"AccountSet","Account":"r95xbEHFzDfc9XfmXHaDnj6dHNntT9RNcy","Fee":"45","Sequence":15070378,"LastLedgerSequence":15320391,"MessageKey":"02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61"}' });
+    const unsignedExplanation = await basecoin.explainTransaction({ txHex: '{"TransactionType":"AccountSet","Account":"r95xbEHFzDfc9XfmXHaDnj6dHNntT9RNcy","Fee":"45","Sequence":15070378,"LastLedgerSequence":15320391,"MessageKey":"02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61"}' });
     unsignedExplanation.id.should.equal('69E8A046124F15749BF75554D82F19282C1FECAA9785444FCC21107528741EDD');
     unsignedExplanation.accountSet.messageKey.should.equal('02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61');
     unsignedExplanation.fee.fee.should.equal('45');
-  }));
+  });
 
   it('should be able to cosign XRP transaction in any form', function() {
     const unsignedTxHex = '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D8114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9';
@@ -134,28 +133,11 @@ describe('XRP:', function() {
   describe('Fee Management', () => {
     const nockBitGo = new TestBitGo({ env: 'test' });
     const nockBasecoin = nockBitGo.coin('txrp');
-    const keychains = {
-      userKeychain: {
-        pub: 'xpub661MyMwAqRbcH28Z4ssHaU5RBPshZPwqDMD5N2UgLCpRwjKCdmwU6Yv4fwKj3sbbpHNfvoDxTvBLxnrP4xmdd4GjC2sYchh4vPcZPmEwGC9',
-        ethAddress: '0x6a8da5c34f3de5e9f5d9eefaf57d0f2d5a036dad',
-        encryptedPrv: '{"iv":"a3RFke6i1P0HPNYm7wDrzA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"8iIApBSiaz4=","ct":"3AtrOygBC6WsKeoW60XfCPXpWtduG6TGZU2szpi+EhoGamnVlCp53wV30nqIi8ZsRuVcEtCE8Em+Ud6gilSNa01TdETDwuwzfqSDmelH4JKhRe87Qc7jB6O6G7iyRHaddvjgIBmyRv8nLEA4hZ6sdIlM5Sn2UOc="}',
-        prv: 'xprv9s21ZrQH143K4Y45xrLHDL8gdN3D9wDyr8HUZe54msHT4vz46EdDYkbapg3fh1SAsbfhepPZJsNdifvHvzjuCRGmAo8iF24PiqPqHkqyJe8'
-      },
-      backupKeychain: {
-        pub: 'xpub661MyMwAqRbcFsEYzcEnJLynVC2bGvo7As2GRAja1DWRYo7wesUKJNYx6S1vmrB779owGtprReF7AvqfNygT3t4uy3HNqgzw6ju8idgxV5J',
-        ethAddress: '0x1317a1c8cdc5c002ddf8660d981e2ca032e51ac8'
-      },
-      bitgoKeychain: {
-        pub: 'xpub661MyMwAqRbcGKfdv75qtk2ZCTaW52Y5zePWrj9MW6D5PYqQeXSG42Y2oZ495T5yzCd3cxyi37Z9UtKhDwie9JKvYdCf3BzeBvg9L1XsBwF',
-        ethAddress: '0xdf91dfdf0d2fd00be19d890f5d87d4aa01dace68',
-        isBitGo: true
-      }
-    };
 
-    it('Should supplement wallet generation', co(function *() {
-      const details = yield nockBasecoin.supplementGenerateWallet({});
+    it('Should supplement wallet generation', async function() {
+      const details = await nockBasecoin.supplementGenerateWallet({});
       details.should.have.property('rootPrivateKey');
-    }));
+    });
 
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();

@@ -43,45 +43,45 @@ describe('Affirmations', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  it('should list all affirmations', co(function *() {
+  it('should list all affirmations', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations`)
       .reply(200, fixtures.listAffirmations);
 
-    const affirmations = yield enterprise.affirmations().list();
+    const affirmations = await enterprise.affirmations().list();
 
     should.exist(affirmations);
     affirmations.should.have.length(3);
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should list all affirmations filtered by status', co(function *() {
+  it('should list all affirmations filtered by status', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
       .reply(200, fixtures.listOverdueAffirmations);
 
-    const affirmations = yield enterprise.affirmations().list(AffirmationStatus.OVERDUE);
+    const affirmations = await enterprise.affirmations().list(AffirmationStatus.OVERDUE);
 
     should.exist(affirmations);
     affirmations.should.have.length(1);
     affirmations[0].status.should.eql(AffirmationStatus.OVERDUE);
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should get a single affirmation', co(function *() {
+  it('should get a single affirmation', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
       .reply(200, fixtures.singleAffirmation);
 
-    affirmation = yield tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
+    affirmation = await tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
     should.exist(affirmation);
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should affirm an affirmation', co(function *() {
+  it('should affirm an affirmation', async function() {
     const scope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.affirmAffirmationPayloadRequest)
       .reply(200, fixtures.affirmAffirmationPayloadResponse)
@@ -97,32 +97,32 @@ describe('Affirmations', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
-    const payload = yield tradingAccount.buildPayload(fixtures.affirmAffirmationPayloadRequest);
-    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+    const payload = await tradingAccount.buildPayload(fixtures.affirmAffirmationPayloadRequest);
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
-    yield affirmation.affirm(payload, signature);
+    await affirmation.affirm(payload, signature);
 
     scope.isDone().should.be.true();
     platformScope.isDone().should.be.true();
-  }));
+  });
 
-  it('should reject an affirmation', co(function *() {
+  it('should reject an affirmation', async function() {
     const scope = nock(microservicesUri)
       .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
       .reply(200, fixtures.updateAffirmation('rejected'));
 
-    yield affirmation.reject();
+    await affirmation.reject();
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should cancel an affirmation', co(function *() {
+  it('should cancel an affirmation', async function() {
     const scope = nock(microservicesUri)
       .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
       .reply(200, fixtures.updateAffirmation('canceled'));
 
-    yield affirmation.cancel();
+    await affirmation.cancel();
 
     scope.isDone().should.be.true();
-  }));
+  });
 });
