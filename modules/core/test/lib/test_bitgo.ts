@@ -211,7 +211,7 @@ BitGo.prototype.testUserOTP = function() {
 //
 BitGo.prototype.authenticateTestUser = function(otp, callback) {
   return co(function *() {
-    const response = yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp });
+    const response = (yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);
@@ -228,7 +228,7 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
 
 BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
   return co(function *() {
-    const response = yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+    const response = (yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);
@@ -236,7 +236,7 @@ BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
 
 BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) {
   return co(function *coAuthenticateEnterpriseCreatorTestUser() {
-    const response = yield this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp });
+    const response = (yield this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);
@@ -271,7 +271,7 @@ BitGo.prototype.authenticateChangePWTestUser = function(otp, callback) {
 
 BitGo.prototype.authenticateOfcTestUser = function(otp, callback) {
   return co(function *() {
-    const response = yield this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp });
+    const response = (yield this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);
@@ -302,12 +302,12 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     tbtcWallet,
     unspentWallet,
     sweep1Wallet
-  } = yield Bluebird.props({
+  } = (yield Bluebird.props({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
     unspentWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
     sweep1Wallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID }),
-  });
+  })) as any;
 
   const spendableBalance = tethWallet.spendableBalanceString;
 

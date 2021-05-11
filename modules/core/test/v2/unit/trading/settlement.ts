@@ -42,12 +42,12 @@ describe('Settlements', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  it('should list all settlements', co(function *() {
+  it('should list all settlements', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/settlements`)
       .reply(200, fixtures.listSettlements);
 
-    const settlements = yield enterprise.settlements().list();
+    const settlements = await enterprise.settlements().list();
     should.exist(settlements);
     settlements.should.have.length(2);
 
@@ -61,21 +61,21 @@ describe('Settlements', function() {
     }
 
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should get a single settlement', co(function *() {
+  it('should get a single settlement', async function() {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`)
       .reply(200, fixtures.getSingleSettlement);
 
-    const settlement = yield tradingAccount.settlements().get({ id: fixtures.singleSettlementId });
+    const settlement = await tradingAccount.settlements().get({ id: fixtures.singleSettlementId });
 
     should.exist(settlement);
     validateDirectSettlement(settlement);
     scope.isDone().should.be.true();
-  }));
+  });
 
-  it('should create a new direct settlement', co(function *() {
+  it('should create a new direct settlement', async function() {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createDirectSettlementPayloadRequest)
       .reply(200, fixtures.createDirectSettlementPayloadResponse)
@@ -91,11 +91,11 @@ describe('Settlements', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
-    const payload = yield tradingAccount.buildPayload(fixtures.createDirectSettlementPayloadRequest);
+    const payload = await tradingAccount.buildPayload(fixtures.createDirectSettlementPayloadRequest);
 
-    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
-    const settlement = yield tradingAccount.settlements().create({
+    const settlement = await tradingAccount.settlements().create({
       requesterAccountId: tradingAccount.id,
       payload: payload,
       signature: signature,
@@ -119,9 +119,9 @@ describe('Settlements', function() {
 
     msScope.isDone().should.be.true();
     platformScope.isDone().should.be.true();
-  }));
+  });
 
-  it('should create a new agency settlement', co(function *() {
+  it('should create a new agency settlement', async function() {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createAgencySettlementPayloadRequest)
       .reply(200, fixtures.createAgencySettlementPayloadResponse)
@@ -137,11 +137,11 @@ describe('Settlements', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
-    const payload = yield tradingAccount.buildPayload(fixtures.createAgencySettlementPayloadRequest);
+    const payload = await tradingAccount.buildPayload(fixtures.createAgencySettlementPayloadRequest);
 
-    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
-    const settlement = yield tradingAccount.settlements().create({
+    const settlement = await tradingAccount.settlements().create({
       requesterAccountId: tradingAccount.id,
       payload: payload,
       signature: signature,
@@ -171,7 +171,7 @@ describe('Settlements', function() {
 
     msScope.isDone().should.be.true();
     platformScope.isDone().should.be.true();
-  }));
+  });
 
   function validateDirectSettlement(settlement: Settlement): void {
     settlement.should.have.property('id');

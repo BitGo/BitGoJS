@@ -89,10 +89,7 @@ export class TradingAccount {
         amounts: params.amounts,
       };
 
-      const response = yield this.bitgo
-        .post(url)
-        .send(body)
-        .result();
+      const response = (yield this.bitgo.post(url).send(body).result()) as any;
 
       if (!this.verifyPayload(params, response.payload)) {
         throw new Error(
@@ -121,7 +118,7 @@ export class TradingAccount {
     let validAmounts = 0;
     for (const amount of payloadObj.amounts) {
       const matchingExpectedParty = paramsCopy.amounts.findIndex(
-        expectedAmount =>
+        (expectedAmount) =>
           amount.accountId === expectedAmount.accountId &&
           amount.sendCurrency === expectedAmount.sendCurrency &&
           amount.sendSubtotal === expectedAmount.sendAmount &&
@@ -181,11 +178,7 @@ export class TradingAccount {
       `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
     );
 
-    return this.bitgo
-      .post(url)
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return this.bitgo.post(url).send(params).result().asCallback(callback);
   }
 
   /**
@@ -199,13 +192,13 @@ export class TradingAccount {
   signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
     const self = this;
     return co<string>(function* signPayload() {
-      const key = yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] });
+      const key = (yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] })) as any;
       const prv = self.wallet.bitgo.decrypt({
         input: key.encryptedPrv,
         password: params.walletPassphrase,
       });
       const payload = JSON.stringify(params.payload);
-      return (yield self.wallet.baseCoin.signMessage({ prv }, payload)).toString('hex');
+      return ((yield self.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
     })
       .call(this)
       .asCallback(callback);

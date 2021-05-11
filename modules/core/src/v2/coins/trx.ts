@@ -217,7 +217,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
       if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
@@ -225,7 +225,7 @@ export class Trx extends BaseCoin {
       }
       txBuilder.from(params.txPrebuild.txHex);
       txBuilder.sign({ key: params.prv });
-      const transaction = yield txBuilder.build();
+      const transaction = (yield txBuilder.build()) as any;
       const response = {
         txHex: JSON.stringify(transaction.toJson()),
       };
@@ -285,9 +285,7 @@ export class Trx extends BaseCoin {
 
       let prv = key.prv;
       if (self.isValidXprv(prv)) {
-        prv = HDNode.fromBase58(prv)
-          .getKey()
-          .getPrivateKeyBuffer();
+        prv = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
       }
 
       let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
@@ -340,7 +338,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<any>
   ): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       let nodeUri = '';
       switch (query.node) {
         case NodeTypes.Full:
@@ -353,10 +351,10 @@ export class Trx extends BaseCoin {
           throw new Error('node type not found');
       }
 
-      const response = yield request
+      const response = (yield request
         .post(nodeUri + query.path)
         .type('json')
-        .send(query.jsonObj);
+        .send(query.jsonObj)) as any;
 
       if (!response.ok) {
         throw new Error('could not reach Tron node');
@@ -377,7 +375,7 @@ export class Trx extends BaseCoin {
    */
   private getAccountFromNode(address: string, callback?: NodeCallback<AccountResponse>): Bluebird<AccountResponse> {
     const self = this;
-    return co<AccountResponse>(function*() {
+    return co<AccountResponse>(function* () {
       const result = yield self.recoveryPost({
         path: '/walletsolidity/getaccount',
         jsonObj: { address },
@@ -403,7 +401,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<bitgoAccountLib.Trx.Interface.TransactionReceipt>
   ): Bluebird<bitgoAccountLib.Trx.Interface.TransactionReceipt> {
     const self = this;
-    return co<bitgoAccountLib.Trx.Interface.TransactionReceipt>(function*() {
+    return co<bitgoAccountLib.Trx.Interface.TransactionReceipt>(function* () {
       // our addresses should be base58, we'll have to encode to hex
       const result = yield self.recoveryPost({
         path: '/wallet/createtransaction',
@@ -426,9 +424,9 @@ export class Trx extends BaseCoin {
    * @param keysToFind
    */
   checkPermissions(ownerKeys: { address: string; weight: number }[], keys: string[]) {
-    keys = keys.map(k => k.toUpperCase());
+    keys = keys.map((k) => k.toUpperCase());
 
-    ownerKeys.map(key => {
+    ownerKeys.map((key) => {
       const hexKey = key.address.toUpperCase();
       if (!keys.includes(hexKey)) {
         throw new Error(`pub address ${hexKey} not found in account`);
@@ -451,19 +449,19 @@ export class Trx extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co<RecoveryTransaction>(function*() {
+    return co<RecoveryTransaction>(function* () {
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
       // get our user, backup keys
-      const keys = yield self.initiateRecovery(params);
+      const keys = (yield self.initiateRecovery(params)) as any;
 
       // we need to decode our bitgoKey to a base58 address
       const bitgoHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
       const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
       // call the node to get our account balance
-      const account = yield self.getAccountFromNode(bitgoHexAddr);
+      const account = (yield self.getAccountFromNode(bitgoHexAddr)) as any;
       const recoveryAmount = account.balance;
 
       const userXPub = keys[0].neutered().toBase58();
@@ -500,7 +498,7 @@ export class Trx extends BaseCoin {
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
         return {
-          tx: (yield txBuilder.build()).toJson(),
+          tx: ((yield txBuilder.build()) as any).toJson(),
           recoveryAmount: recoveryAmountMinusFees,
         };
       }
@@ -518,7 +516,7 @@ export class Trx extends BaseCoin {
       }
 
       return {
-        tx: (yield txBuilder.build()).toJson(),
+        tx: ((yield txBuilder.build()) as any).toJson(),
         recoveryAmount: recoveryAmountMinusFees,
       };
     })
@@ -536,7 +534,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<TronTransactionExplanation>
   ): Bluebird<TronTransactionExplanation> {
     const self = this;
-    return co<TronTransactionExplanation>(function*() {
+    return co<TronTransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');
@@ -547,7 +545,7 @@ export class Trx extends BaseCoin {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(txHex);
-      const tx = yield txBuilder.build();
+      const tx = (yield txBuilder.build()) as any;
       const outputs = [
         {
           amount: tx.outputs[0].value.toString(),

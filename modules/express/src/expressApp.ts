@@ -18,7 +18,6 @@ import { Config, config } from './config';
 
 const debug = debugLib('bitgo:express');
 
-// eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
 
@@ -50,7 +49,7 @@ function setupLogging(app: express.Application, config: Config): void {
   }
 
   app.use(middleware);
-  morgan.token('remote-user', function(req) {
+  morgan.token('remote-user', function (req: StaticRequest) {
     return req.isProxy ? 'proxy' : 'local_express';
   });
 }
@@ -94,7 +93,7 @@ function configureProxy(app: express.Application, config: Config): void {
 
   const proxy = httpProxy.createProxyServer(options);
 
-  const sendError = (res: http.ServerResponse, status: number, json: object) => {
+  const sendError = (res: http.ServerResponse, status: number, json: Record<string, unknown>) => {
     res.writeHead(status, {
       'Content-Type': 'application/json',
     });
@@ -102,7 +101,7 @@ function configureProxy(app: express.Application, config: Config): void {
     res.end(JSON.stringify(json));
   };
 
-  proxy.on('proxyReq', function(proxyReq, req) {
+  proxy.on('proxyReq', function (proxyReq, req) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
     const parsedUri = url.parse(Environments[env].uri).hostname;
     if (parsedUri) {
@@ -130,7 +129,7 @@ function configureProxy(app: express.Application, config: Config): void {
     });
   });
 
-  app.use(function(req: StaticRequest, res: express.Response) {
+  app.use(function (req: StaticRequest, res: express.Response) {
     if (req.url && (/^\/api\/v[12]\/.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
       req.isProxy = true;
       proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });
@@ -159,7 +158,6 @@ async function createHttpsServer(
 
   const [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
 
-  // eslint-disable-next-line @typescript-eslint/camelcase
   return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
 }
 
@@ -181,7 +179,7 @@ function createHttpServer(app: express.Application): http.Server {
  * @return {Function}
  */
 export function startup(config: Config, baseUri: string): () => void {
-  return function() {
+  return function () {
     const { env, ipc, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
@@ -276,13 +274,13 @@ export function app(cfg: Config): express.Application {
 
   // enable specified debug namespaces
   if (_.isArray(debugNamespace)) {
-    _.forEach(debugNamespace, ns => debugLib.enable(ns));
+    _.forEach(debugNamespace, (ns) => debugLib.enable(ns));
   }
 
   checkPreconditions(cfg);
 
   // Be more robust about accepting URLs with double slashes
-  app.use(function(req, res, next) {
+  app.use(function (req, res, next) {
     req.url = req.url.replace(/\/\//g, '/');
     next();
   });

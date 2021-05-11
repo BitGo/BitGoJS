@@ -53,9 +53,9 @@ export class Settlements {
       } else {
         url = self.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${self.enterpriseId}/settlements`);
       }
-      const response = yield self.bitgo.get(url).result();
+      const response = (yield self.bitgo.get(url).result()) as any;
 
-      return response.settlements.map(settlement => new Settlement(settlement, self.bitgo, self.enterpriseId));
+      return response.settlements.map((settlement) => new Settlement(settlement, self.bitgo, self.enterpriseId));
     })
       .call(this)
       .asCallback(callback);
@@ -111,10 +111,7 @@ export class Settlements {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/settlements`
       );
-      const response = yield self.bitgo
-        .post(url)
-        .send(body)
-        .result();
+      const response = yield self.bitgo.post(url).send(body).result();
 
       return new Settlement(response, self.bitgo, self.enterpriseId);
     })

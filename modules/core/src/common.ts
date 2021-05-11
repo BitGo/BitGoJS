@@ -74,7 +74,7 @@ export function validateParams(
 
   expectedParams = expectedParams || [];
 
-  expectedParams.forEach(function(expectedParam) {
+  expectedParams.forEach(function (expectedParam) {
     if (!params[expectedParam]) {
       throw new Error('Missing parameter: ' + expectedParam);
     }
@@ -83,7 +83,7 @@ export function validateParams(
     }
   });
 
-  optionalParams.forEach(function(optionalParam) {
+  optionalParams.forEach(function (optionalParam) {
     if (params[optionalParam] && !_.isString(params[optionalParam])) {
       throw new Error('Expecting parameter string: ' + optionalParam + ' but found ' + typeof params[optionalParam]);
     }

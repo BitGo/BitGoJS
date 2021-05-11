@@ -161,7 +161,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
-    const recipients = transaction.outputs.map(output => ({ address: output.address, amount: output.value }));
+    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
 
     return {
       halfSigned: {
@@ -219,7 +219,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(txHex);
     const tx = await txBuilder.build();
-    const outputs = tx.outputs.map(output => {
+    const outputs = tx.outputs.map((output) => {
       return {
         address: output.address,
         amount: output.value,

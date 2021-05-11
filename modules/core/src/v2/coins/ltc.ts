@@ -1,15 +1,16 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { BitGo } from '../../bitgo';
-import { InvalidAddressError } from '../../errors';
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
-import { BaseCoin } from '../baseCoin';
 import * as Bluebird from 'bluebird';
-import * as common from '../../common';
-import * as request from 'superagent';
 const co = Bluebird.coroutine;
+import * as request from 'superagent';
+
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
+import { BaseCoin } from '../baseCoin';
+import { BitGo } from '../../bitgo';
+import * as common from '../../common';
+import { InvalidAddressError } from '../../errors';
 
 export class Ltc extends AbstractUtxoCoin {
-  constructor(bitgo: BitGo, network?) {
+  constructor(bitgo: BitGo, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.litecoin);
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = this.getCoinLibrary().networks.bitcoin.scriptHash;
@@ -51,7 +52,7 @@ export class Ltc extends AbstractUtxoCoin {
    * @param scriptHashVersion 1 or 2, where 1 is the old version and 2 is the new version
    * @returns {*} address string
    */
-  canonicalAddress(address: string, scriptHashVersion: number = 2): string {
+  canonicalAddress(address: string, scriptHashVersion = 2): string {
     if (!this.isValidAddress(address, true)) {
       throw new InvalidAddressError();
     }
@@ -100,8 +101,8 @@ export class Ltc extends AbstractUtxoCoin {
 
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`)).result();
 
-      addrInfo.txCount = addrInfo.txApperances;
-      addrInfo.totalBalance = addrInfo.balanceSat;
+      (addrInfo as any).txCount = (addrInfo as any).txApperances;
+      (addrInfo as any).totalBalance = (addrInfo as any).balanceSat;
 
       return addrInfo;
     }).call(this);
@@ -113,7 +114,7 @@ export class Ltc extends AbstractUtxoCoin {
 
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`)).result();
 
-      unspents.forEach(function processUnspent(unspent) {
+      (unspents as any).forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;
         unspent.n = unspent.vout;
       });

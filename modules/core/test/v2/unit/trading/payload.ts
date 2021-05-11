@@ -15,7 +15,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 
-describe('Trade Payloads', function() {
+describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -24,7 +24,7 @@ describe('Trade Payloads', function() {
   let bgUrl;
 
   before(
-    co(function*() {
+    co(function* () {
       bitgo = new TestBitGo({ env: 'mock', microservicesUri });
       bitgo.initializeTestVars();
       basecoin = bitgo.coin('ofc');
@@ -45,26 +45,104 @@ describe('Trade Payloads', function() {
     })
   );
 
-  it(
-    'should create and sign a trade payload with fees',
-    co(function*() {
-      const xprv =
-        'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
-      const xpub =
-        'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
+  it('should create and sign a trade payload with fees', async function () {
+    const xprv =
+      'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
+    const xpub =
+      'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
 
-      const platformScope = nock(bgUrl)
-        .get('/api/v2/ofc/key/keyid')
-        .reply(200, {
-          pub: xpub,
-          encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
-        });
+    const platformScope = nock(bgUrl)
+      .get('/api/v2/ofc/key/keyid')
+      .reply(200, {
+        pub: xpub,
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
+      });
 
-      const msScope = nock(microservicesUri)
-        .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
-        .reply(200, fixtures.validPayloadWithFees);
+    const msScope = nock(microservicesUri)
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
+      .reply(200, fixtures.validPayloadWithFees);
 
-      const payload = yield tradingAccount.buildPayload({
+    const payload = await tradingAccount.buildPayload({
+      amounts: [
+        {
+          accountId: 'walletId',
+          sendCurrency: 'ofctbtc',
+          sendAmount: '100000000',
+          receiveCurrency: 'ofctusd',
+          receiveAmount: '90000',
+        },
+        {
+          accountId: 'counterparty_account_id',
+          sendCurrency: 'ofctusd',
+          sendAmount: '90000',
+          receiveCurrency: 'ofctbtc',
+          receiveAmount: '100000000',
+        },
+      ],
+    });
+
+    should.exist(payload);
+    payload.should.have.property('version', '1.2.0');
+    payload.should.have.property('accountId');
+    payload.should.have.property('nonceHold');
+    payload.should.have.property('nonceSettle');
+    payload.should.have.property('amounts').with.length(2);
+    for (const amount of payload.amounts) {
+      amount.should.have.property('accountId');
+      amount.should.have.property('sendCurrency');
+      amount.should.have.property('sendAmount');
+      amount.should.have.property('sendSubtotal');
+      amount.should.have.property('receiveCurrency');
+      amount.should.have.property('receiveAmount');
+      if (amount.accountId === payload.accountId) {
+        amount.should.have.property('fees').with.length(1);
+      }
+    }
+
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+
+    // signature should be a hex string
+    signature.should.match(/^[0-9a-f]+$/);
+
+    const address = HDNode.fromBase58(xpub).getAddress();
+
+    bitcoinMessage.verify(JSON.stringify(payload), address, Buffer.from(signature, 'hex')).should.be.True();
+
+    platformScope.isDone().should.be.True();
+    msScope.isDone().should.be.True();
+  });
+
+  it('should throw if the payload does not match the build parameters', async function () {
+    const msScope = nock(microservicesUri)
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
+      .twice()
+      .reply(200, fixtures.invalidPayload);
+
+    // no matching amount found between payload and parameters
+    await tradingAccount
+      .buildPayload({
+        amounts: [
+          {
+            accountId: 'walletId',
+            sendCurrency: 'ofctbtc',
+            sendAmount: '10000000',
+            receiveCurrency: 'ofctusd',
+            receiveAmount: '90000',
+          },
+          {
+            accountId: 'counterparty_account_id',
+            sendCurrency: 'ofctusd',
+            sendAmount: '90000',
+            receiveCurrency: 'ofctbtc',
+            receiveAmount: '10000000',
+          },
+        ],
+      })
+      .should.be.rejected();
+
+    // incorrect calculation of subtotal to amount given a fee
+    await tradingAccount
+      .buildPayload({
         amounts: [
           {
             accountId: 'walletId',
@@ -81,93 +159,9 @@ describe('Trade Payloads', function() {
             receiveAmount: '100000000',
           },
         ],
-      });
+      })
+      .should.be.rejected();
 
-      should.exist(payload);
-      payload.should.have.property('version', '1.2.0');
-      payload.should.have.property('accountId');
-      payload.should.have.property('nonceHold');
-      payload.should.have.property('nonceSettle');
-      payload.should.have.property('amounts').with.length(2);
-      for (const amount of payload.amounts) {
-        amount.should.have.property('accountId');
-        amount.should.have.property('sendCurrency');
-        amount.should.have.property('sendAmount');
-        amount.should.have.property('sendSubtotal');
-        amount.should.have.property('receiveCurrency');
-        amount.should.have.property('receiveAmount');
-        if (amount.accountId === payload.accountId) {
-          amount.should.have.property('fees').with.length(1);
-        }
-      }
-
-      const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
-
-      // signature should be a hex string
-      signature.should.match(/^[0-9a-f]+$/);
-
-      const address = HDNode.fromBase58(xpub).getAddress();
-
-      bitcoinMessage.verify(JSON.stringify(payload), address, Buffer.from(signature, 'hex')).should.be.True();
-
-      platformScope.isDone().should.be.True();
-      msScope.isDone().should.be.True();
-    })
-  );
-
-  it(
-    'should throw if the payload does not match the build parameters',
-    co(function*() {
-      const msScope = nock(microservicesUri)
-        .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
-        .twice()
-        .reply(200, fixtures.invalidPayload);
-
-      // no matching amount found between payload and parameters
-      yield tradingAccount
-        .buildPayload({
-          amounts: [
-            {
-              accountId: 'walletId',
-              sendCurrency: 'ofctbtc',
-              sendAmount: '10000000',
-              receiveCurrency: 'ofctusd',
-              receiveAmount: '90000',
-            },
-            {
-              accountId: 'counterparty_account_id',
-              sendCurrency: 'ofctusd',
-              sendAmount: '90000',
-              receiveCurrency: 'ofctbtc',
-              receiveAmount: '10000000',
-            },
-          ],
-        })
-        .should.be.rejected();
-
-      // incorrect calculation of subtotal to amount given a fee
-      yield tradingAccount
-        .buildPayload({
-          amounts: [
-            {
-              accountId: 'walletId',
-              sendCurrency: 'ofctbtc',
-              sendAmount: '100000000',
-              receiveCurrency: 'ofctusd',
-              receiveAmount: '90000',
-            },
-            {
-              accountId: 'counterparty_account_id',
-              sendCurrency: 'ofctusd',
-              sendAmount: '90000',
-              receiveCurrency: 'ofctbtc',
-              receiveAmount: '100000000',
-            },
-          ],
-        })
-        .should.be.rejected();
-
-      msScope.isDone().should.be.True();
-    })
-  );
+    msScope.isDone().should.be.True();
+  });
 });

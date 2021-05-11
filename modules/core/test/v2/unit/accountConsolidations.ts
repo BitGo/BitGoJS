@@ -7,8 +7,6 @@ require('should-sinon');
 
 import '../lib/asserts';
 import * as nock from 'nock';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 
 import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
@@ -25,9 +23,9 @@ describe('Account Consolidations:', function() {
   let bgUrl;
   let fixtures;
 
-  for(const coinName of ['talgo', 'txtz']) {
+  for (const coinName of ['talgo', 'txtz']) {
     describe(coinName + ' Account Consolidations: ', function() {
-      before(co(function* () {
+      before(function() {
         bitgo = new TestBitGo({ env: 'test' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
@@ -42,27 +40,27 @@ describe('Account Consolidations:', function() {
         if (coinName === 'talgo') {
           fixtures = algoFixtures.prebuild();
         }
-      }));
+      });
 
       describe('Building', function() {
-        it('should not allow a non-account consolidation coin build', co(function *() {
+        it('should not allow a non-account consolidation coin build', async function() {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          yield invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
-        }));
+          await invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+        });
 
-        it('should build with no params', co(function *() {
+        it('should build with no params', async function() {
           const scope = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})
             .reply(200, fixtures.buildAccountConsolidation);
 
-          const accountConsolidationBuild = yield wallet.buildAccountConsolidations();
+          const accountConsolidationBuild = await wallet.buildAccountConsolidations();
 
           accountConsolidationBuild.length.should.equal(2);
 
           scope.isDone().should.be.True();
-        }));
+        });
       });
 
       describe('Sending', function() {
@@ -70,28 +68,28 @@ describe('Account Consolidations:', function() {
           sinon.restore();
         });
 
-        it('should not allow a non-account consolidation coin send', co(function *() {
+        it('should not allow a non-account consolidation coin send', async function() {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          yield invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
-        }));
+          await invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+        });
 
-        it('should not allow a non-account consolidation coin send multiples', co(function *() {
+        it('should not allow a non-account consolidation coin send multiples', async function() {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
-          yield invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
-        }));
+          await invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
+        });
 
-        it('should not allow a bad pre-build to be passed', co(function *() {
-          yield wallet.sendAccountConsolidation({ prebuildTx: 'some string' }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
-          yield wallet.sendAccountConsolidation({ prebuildTx: undefined }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
-        }));
+        it('should not allow a bad pre-build to be passed', async function() {
+          await wallet.sendAccountConsolidation({ prebuildTx: 'some string' }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
+          await wallet.sendAccountConsolidation({ prebuildTx: undefined }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
+        });
 
-        it('should require a consolidation id to be passed', co(function *() {
-          yield wallet.sendAccountConsolidation({ prebuildTx: {} }).should.be.rejectedWith({ message: 'Failed to find consolidation id on consolidation transaction.' });
-        }));
+        it('should require a consolidation id to be passed', async function() {
+          await wallet.sendAccountConsolidation({ prebuildTx: {} }).should.be.rejectedWith({ message: 'Failed to find consolidation id on consolidation transaction.' });
+        });
 
-        it('should submit a consolidation transaction', co(function *() {
+        it('should submit a consolidation transaction', async function() {
           const params = { prebuildTx: fixtures.buildAccountConsolidation[0] };
 
           sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(fixtures.signedAccountConsolidationBuilds[0]);
@@ -100,12 +98,12 @@ describe('Account Consolidations:', function() {
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuild)
             .reply(200);
 
-          yield wallet.sendAccountConsolidation(params);
+          await wallet.sendAccountConsolidation(params);
 
           scope.isDone().should.be.True();
-        }));
+        });
 
-        it('should submit a consolidation account send (build + send) with two successes', co(function *() {
+        it('should submit a consolidation account send (build + send) with two successes', async function() {
           const scopeBuild = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})
@@ -123,7 +121,7 @@ describe('Account Consolidations:', function() {
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[1])
             .reply(200);
 
-          const consolidations = yield wallet.sendAccountConsolidations();
+          const consolidations = await wallet.sendAccountConsolidations();
 
           consolidations.success.length.should.equal(2);
           consolidations.failure.length.should.equal(0);
@@ -131,9 +129,9 @@ describe('Account Consolidations:', function() {
           scopeFirstSigned.isDone().should.be.True();
           scopeTwoSigned.isDone().should.be.True();
           scopeBuild.isDone().should.be.True();
-        }));
+        });
 
-        it('should submit a consolidation account send (build + send) with one success, one failure', co(function *() {
+        it('should submit a consolidation account send (build + send) with one success, one failure', async function() {
           const scopeBuild = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})
@@ -151,7 +149,7 @@ describe('Account Consolidations:', function() {
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, fixtures.signedAccountConsolidationBuilds[1])
             .reply(500);
 
-          const consolidations = yield wallet.sendAccountConsolidations();
+          const consolidations = await wallet.sendAccountConsolidations();
 
           consolidations.success.length.should.equal(1);
           consolidations.failure.length.should.equal(1);
@@ -159,7 +157,7 @@ describe('Account Consolidations:', function() {
           scopeWithSuccess.isDone().should.be.True();
           scopeWithError.isDone().should.be.True();
           scopeBuild.isDone().should.be.True();
-        }));
+        });
       });
     });
   }

@@ -4,12 +4,10 @@ import { Tetc } from '../../../../src/v2/coins/tetc';
 
 describe('Ethereum Classic', function() {
 	let bitgo;
-	let basecoin;
 
 	before(function() {
 		bitgo = new TestBitGo({ env: 'mock' });
 		bitgo.initializeTestVars();
-		basecoin = bitgo.coin('tetc');
 	});
 
 	it('should instantiate the coin', function() {

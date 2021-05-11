@@ -142,10 +142,7 @@ export class CrossChainRecoveryTool {
 
       let wallet: Wallet | undefined;
       try {
-        wallet = yield self.bitgo
-          .coin(coinType)
-          .wallets()
-          .get({ id: walletId });
+        wallet = yield self.bitgo.coin(coinType).wallets().get({ id: walletId });
       } catch (e) {
         if (e.status !== 404 && e.status !== 400) {
           throw e;
@@ -191,14 +188,14 @@ export class CrossChainRecoveryTool {
       self._log('Grabbing info for faulty tx...');
 
       const TX_INFO_URL = self.sourceCoin.url(`/public/tx/${faultyTxId}`);
-      const res = yield request.get(TX_INFO_URL);
+      const res = (yield request.get(TX_INFO_URL)) as any;
       const faultyTxInfo = res.body;
 
       self._log('Getting unspents on output addresses..');
 
       // Get output addresses that do not belong to wallet
       // These are where the 'lost coins' live
-      const txOutputAddresses = faultyTxInfo.outputs.map(input => input.address);
+      const txOutputAddresses = faultyTxInfo.outputs.map((input) => input.address);
 
       let outputAddresses: string[] = [];
       for (let address of txOutputAddresses) {
@@ -220,7 +217,7 @@ export class CrossChainRecoveryTool {
 
         try {
           const methodName = self.wallet.isV1 ? 'address' : 'getAddress';
-          const walletAddress = yield self.wallet[methodName]({ address: address });
+          const walletAddress = (yield self.wallet[methodName]({ address: address })) as any;
           outputAddresses.push(walletAddress.address);
         } catch (e) {
           self._log(`Address ${address} not found on wallet`);
@@ -234,18 +231,18 @@ export class CrossChainRecoveryTool {
       }
 
       if (self.recoveryCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map(address => (self.recoveryCoin as Ltc).canonicalAddress(address, 1));
+        outputAddresses = outputAddresses.map((address) => (self.recoveryCoin as Ltc).canonicalAddress(address, 1));
       }
 
       if (self.sourceCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map(address => (self.sourceCoin as Ltc).canonicalAddress(address, 2));
+        outputAddresses = outputAddresses.map((address) => (self.sourceCoin as Ltc).canonicalAddress(address, 2));
       }
 
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
       // Get unspents for addresses
       const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${_.uniq(outputAddresses).join(',')}`);
-      const addressRes = yield request.get(ADDRESS_UNSPENTS_URL);
+      const addressRes = (yield request.get(ADDRESS_UNSPENTS_URL)) as any;
       const unspents = addressRes.body;
 
       self.unspents = unspents;
@@ -330,7 +327,7 @@ export class CrossChainRecoveryTool {
 
         // Add v1 specific input fields
         if (self.wallet.isV1) {
-          const addressInfo = yield self.wallet.address({ address: unspentAddress.address });
+          const addressInfo = (yield self.wallet.address({ address: unspentAddress.address })) as any;
 
           unspentAddress.path = unspentAddress.path || `/${unspentAddress.chain}/${unspentAddress.index}`;
           const [txid, nOut] = unspent.id.split(':');
@@ -464,7 +461,7 @@ export class CrossChainRecoveryTool {
    */
   signTransaction(params: SignRecoveryTransactionOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function* signTransaction() {
+    return co(function* signTransaction(): any {
       if (_.isUndefined(self.txInfo)) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
@@ -547,7 +544,7 @@ export class CrossChainRecoveryTool {
 
   buildUnsigned(callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       if (_.isUndefined(self.txInfo)) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }

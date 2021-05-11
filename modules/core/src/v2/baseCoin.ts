@@ -116,32 +116,39 @@ export interface FeeEstimateOptions {
 }
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface ExtraPrebuildParamsOptions {}
-export type ExtraPrebuildParamsOptions = any;
+export interface ExtraPrebuildParamsOptions {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface PresignTransactionOptions {}
-export type PresignTransactionOptions = any;
+export interface PresignTransactionOptions {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface PrecreateBitGoOptions {}
-export type PrecreateBitGoOptions = any;
+export interface PrecreateBitGoOptions {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface VerifyRecoveryTransactionOptions {}
-export type VerifyRecoveryTransactionOptions = any;
+export interface VerifyRecoveryTransactionOptions {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface ParseTransactionOptions {}
-export type ParseTransactionOptions = any;
+export interface ParseTransactionOptions {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface ParsedTransaction {}
-export type ParsedTransaction = any;
+export interface ParsedTransaction {
+  [index: string]: unknown;
+}
 
 // TODO (SDKT-9): reverse engineer and add options
-// export interface ParseTransactionOptions {}
-export type SignTransactionOptions = any;
+export interface SignTransactionOptions {
+  [index: string]: unknown;
+}
 
 export interface InitiateRecoveryOptions {
   userKey: string;
@@ -299,8 +306,7 @@ export abstract class BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    // @ts-ignore
-    return bigNumber.toFormat(null, null, { groupSeparator: '', decimalSeparator: '.' });
+    return bigNumber.toFormat(null as any, null as any, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
@@ -368,7 +374,10 @@ export abstract class BaseCoin {
   /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
-  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<object>): Bluebird<object> {
+  getExtraPrebuildParams(
+    buildParams: ExtraPrebuildParamsOptions,
+    callback?: NodeCallback<Record<string, unknown>>
+  ): Bluebird<Record<string, unknown>> {
     return Bluebird.resolve({}).asCallback(callback);
   }
 
@@ -415,10 +424,7 @@ export abstract class BaseCoin {
         query.numBlocks = params.numBlocks;
       }
 
-      return self.bitgo
-        .get(self.url('/tx/fee'))
-        .query(query)
-        .result();
+      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
     })
       .call(this)
       .asCallback(callback);
@@ -458,7 +464,9 @@ export abstract class BaseCoin {
    * is a no-op, but coin-specific controller may do something
    * @param params
    */
-  preCreateBitGo(params: PrecreateBitGoOptions): void {}
+  preCreateBitGo(params: PrecreateBitGoOptions): void {
+    return;
+  }
 
   initiateRecovery(params: InitiateRecoveryOptions): Bluebird<any> {
     const self = this;

@@ -66,17 +66,17 @@ describe('Recovery:', function() {
       sandbox.restore();
     });
 
-    it('should generate BTC recovery tx', co(function *() {
+    it('should generate BTC recovery tx', async function() {
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         scan: 5,
-        ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
+        ignoreAddressTypes: ['p2wsh', 'p2shP2wsh'],
       });
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
       recovery.tx.TxId.should.equal('7cf7dc9e9abcb0bc4303332b128af4200b6b3730461a3bb579143b002739f51f');
@@ -94,12 +94,12 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
-    }));
+    });
 
-    it('should generate BTC recovery tx with unencrypted keys', co(function* () {
+    it('should generate BTC recovery tx with unencrypted keys', async function() {
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm',
         backupKey: 'xprv9s21ZrQH143K2cvHDcdruLPTQBUJBDd1XAVbAzFMBFGjcMSH2DgR7T37Dy6YwcRwkh24UkXQKcFAhmkb6g9PXJNqPvfDBAe1eaUK2kJ9stv',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -124,13 +124,13 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
-    }));
+    });
 
-    it('should generate BTC recovery tx with KRS', co(function *() {
+    it('should generate BTC recovery tx with KRS', async function() {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -165,7 +165,7 @@ describe('Recovery:', function() {
       recovery.tx.Vout[1].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[1].ScriptPubKey.Addresses.length.should.equal(1);
       recovery.tx.Vout[1].ScriptPubKey.Addresses[0].should.equal('2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN');
-    }));
+    });
 
     it('should fail to generate a recovery tx if the KRS provider does not support the coin', co(function *() {
       const oldSupportedCoins = config.krsProviders.keyternal.supportedCoins;
@@ -186,13 +186,13 @@ describe('Recovery:', function() {
       config.krsProviders.keyternal.supportedCoins = oldSupportedCoins;
     }));
 
-    it('should fail to generate a recovery tx if the fee address is not specified', co(function *() {
+    it('should fail to generate a recovery tx if the fee address is not specified', async function() {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
       const oldAddress = (config.krsProviders.keyternal.feeAddresses as any).tbtc;
       delete (config.krsProviders.keyternal.feeAddresses as any).tbtc;
 
       const basecoin = bitgo.coin('tbtc');
-      yield basecoin.recover({
+      await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -204,11 +204,11 @@ describe('Recovery:', function() {
       }).should.be.rejectedWith('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
 
       (config.krsProviders.keyternal.feeAddresses as any).tbtc = oldAddress;
-    }));
+    });
 
-    it('should not throw if smartbit fails to response to request to verifyreoverytransaction', co (function *() {
+    it('should not throw if smartbit fails to response to request to verifyreoverytransaction', async function() {
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -218,11 +218,11 @@ describe('Recovery:', function() {
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
-    }));
+    });
 
-    it('should allow the provision of an API key while doing recovery', co (function *() {
+    it('should allow the provision of an API key while doing recovery', async function() {
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -233,9 +233,9 @@ describe('Recovery:', function() {
         apiKey: 'my_______SecretApiKey',
       });
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
-    }));
+    });
 
-    it('should not throw if earn.com (bitcoinfees) fails to response to request to verifyreoverytransaction', co(function* () {
+    it('should not throw if earn.com (bitcoinfees) fails to response to request to verifyreoverytransaction', async function() {
       nock.removeInterceptor({
         hostname: 'bitcoinfees.earn.com',
         path: '/api/v1/fees/recommended',
@@ -244,7 +244,7 @@ describe('Recovery:', function() {
       });
       recoveryNocks.nockbitcoinFeesOffline();
       const basecoin = bitgo.coin('tbtc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -254,7 +254,7 @@ describe('Recovery:', function() {
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
-    }));
+    });
   });
   describe('Recover Bitcoin SV', function() {
     let sandbox: sinon.SinonSandbox;
@@ -276,9 +276,9 @@ describe('Recovery:', function() {
       sandbox.restore();
     });
 
-    it('should generate BSV recovery tx', co(function *() {
+    it('should generate BSV recovery tx', async function() {
       const basecoin = bitgo.coin('tbsv');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
         backupKey: '{"iv":"JG0lyUpjHs7k2UVN9ox31w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
           ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
@@ -299,12 +299,12 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
-    }));
+    });
 
-    it('should generate BSV recovery tx with KRS', co(function *() {
-      nockCoingecko(1000,'bitcoin-cash');
+    it('should generate BSV recovery tx with KRS', async function() {
+      nockCoingecko(1000, 'bitcoin-cash');
       const basecoin = bitgo.coin('tbsv');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
         backupKey: 'xpub661MyMwAqRbcGMSGJsrhpqUhvCQqMUvwshCLfPDXrweN15ce8g96WbfdrDbhKKDx9pwKz9yenwexTFx7ofDchmT2zJZW8eshGKWKwrJrkNp',
         bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
@@ -323,7 +323,7 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
-    }));
+    });
   });
 
   describe('Recover Bitcoin Cash And Bitcoin ABC (BCHA)', function() {
@@ -332,7 +332,7 @@ describe('Recovery:', function() {
       let sandbox: sinon.SinonSandbox;
       beforeEach(() => {
         if (coinName === 'tbch') {
-          nockCoingecko(1000,'bitcoin-cash');
+          nockCoingecko(1000, 'bitcoin-cash');
           sandbox = sinon.createSandbox();
           const callBack1 = sandbox.stub(Bch.prototype, 'getAddressInfoFromExplorer');
           callBack1.resolves(emptyAddressInfo);
@@ -358,9 +358,9 @@ describe('Recovery:', function() {
         sandbox.restore();
       });
 
-      it(`should generate recovery tx for ${coinName}`, co(function *() {
+      it(`should generate recovery tx for ${coinName}`, async function() {
         const basecoin = bitgo.coin(coinName);
-        const recovery = yield basecoin.recover({
+        const recovery = await basecoin.recover({
           userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
           backupKey: '{"iv":"JG0lyUpjHs7k2UVN9ox31w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
             ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
@@ -382,12 +382,11 @@ describe('Recovery:', function() {
         recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
         recovery.inputs[0].should.have.property('redeemScript');
         recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
-      }));
+      });
 
-      it(`should generate ${coinName} recovery tx with KRS`, co(function *() {
-
+      it(`should generate ${coinName} recovery tx with KRS`, async function() {
         const basecoin = bitgo.coin(coinName);
-        const recovery = yield basecoin.recover({
+        const recovery = await basecoin.recover({
           userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
           backupKey: 'xpub661MyMwAqRbcGMSGJsrhpqUhvCQqMUvwshCLfPDXrweN15ce8g96WbfdrDbhKKDx9pwKz9yenwexTFx7ofDchmT2zJZW8eshGKWKwrJrkNp',
           bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
@@ -396,7 +395,7 @@ describe('Recovery:', function() {
           recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
           scan: 5,
           ignoreAddressTypes: ['p2wsh', 'p2shP2wsh'],
-          apiKey: "myKey",
+          apiKey: 'myKey',
         });
 
         should.exist(recovery);
@@ -407,10 +406,8 @@ describe('Recovery:', function() {
         recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
         recovery.inputs[0].should.have.property('redeemScript');
         recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
-        console.log(recovery)
-      }));
+      });
     }
-
   });
 
   describe('Recover Ripple', function() {
@@ -489,11 +486,11 @@ describe('Recovery:', function() {
 
   describe('Recover Litecoin', function() {
     // Todo (kevin): fix test for other recovery source
-    it('should generate LTC recovery tx', co(function *() {
+    it('should generate LTC recovery tx', async function() {
       recoveryNocks.nockLtcRecovery(false);
 
       const basecoin = bitgo.coin('tltc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"Vvthj0ZaCPywdNWM+s5GmA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hxZMB31kp34=","ct":"xGpBHnS3k0G6lU/uv9pC1gsdFqksNV6nLBQ18qL9iuWV9sM5JLyZ67wqnMVVoZgNWaI1fq0kSTCPYwGq2FNAS2GmN/JWb/Pl0UPmfVvhraOnzav0vDv0KaJjOT3S1D/omjzx/W3pw5qSwxov+T65Yt6E19YGGjc="}`,
         backupKey: `{"iv":"/GM1AF21E0Ht6ZmgiWpd+g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"rGsRxlm/pGE=","ct":"cUBV7ELfNEIs0UkDrBjHiRpXvRNCRHLE5dx4X7gprHoTSBKJOJ+5McxHnSLeBvM2vIexSQO9RBzjtC2G1m6hozTOEjWkR0BtTBoi0uw3cXDmmL69pjrABZhLjmCF8znmaF/DCQk/lKQcHEwbImcR/egpq8u9W1A="}`,
         bitgoKey: 'xpub661MyMwAqRbcFwmymyqkCoY6uaZ8PxbjXKWK2pLS8NUutytumJabLvJyGpXzDJRqXJAf4LoACStGgf1bYv6dkbT6D1MKEyhjYE7VHiw5bFP',
@@ -510,13 +507,13 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('52210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53ae');
-    }));
+    });
 
-    it('should generate LTC recovery tx with KRS', co(function *() {
+    it('should generate LTC recovery tx with KRS', async function() {
       recoveryNocks.nockLtcRecovery(true);
 
       const basecoin = bitgo.coin('tltc');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"Vvthj0ZaCPywdNWM+s5GmA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hxZMB31kp34=","ct":"xGpBHnS3k0G6lU/uv9pC1gsdFqksNV6nLBQ18qL9iuWV9sM5JLyZ67wqnMVVoZgNWaI1fq0kSTCPYwGq2FNAS2GmN/JWb/Pl0UPmfVvhraOnzav0vDv0KaJjOT3S1D/omjzx/W3pw5qSwxov+T65Yt6E19YGGjc="}`,
         backupKey: `xpub661MyMwAqRbcEht5QfprPgqQTbvUoRtthmoa57N5kPSqremKhdxBF6CJANnLuxm21oc9Dgf9romMra3J34WjWRKmmWewwvrYNYT53BGARKt`,
         bitgoKey: 'xpub661MyMwAqRbcFwmymyqkCoY6uaZ8PxbjXKWK2pLS8NUutytumJabLvJyGpXzDJRqXJAf4LoACStGgf1bYv6dkbT6D1MKEyhjYE7VHiw5bFP',
@@ -534,11 +531,11 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('52210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53ae');
-    }));
+    });
   });
 
   describe('Recover ZCash', function() {
-    it('should generate ZEC recovery tx', co(function *() {
+    it('should generate ZEC recovery tx', async function() {
       recoveryNocks.nockZecRecovery(bitgo);
 
       const basecoin = bitgo.coin('tzec');
@@ -549,7 +546,7 @@ describe('Recovery:', function() {
       // userKeyWIF:  cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v
       // backupKeyWIF:  cSKRtYTgwTL2hERx8H4KoiScFdeiYBPPf7TCfwsyryE2HLocy2h3
 
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `{"iv":"ZGWK9woJAu020cXwvdfmuQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"6iCPz4FhZ6g=","ct":"8IwFVj2l7L6o6emjMF/G7WIDXeOmjGFoyNgofQwrvnk+ZsckQrKUSVxDzDUeZdJZsZE6fj+ZCVNh1Zfgxxg0rk5rh0bYJJ+WVsizK7jUE4DNJnS5RwBZNNFi9qilHI2bPbzXp+VAyOieSF5nJs9AQSc+rTxda30="}`,
         bitgoKey: 'xpub661MyMwAqRbcFN1MHGSUPL5v1xREhgtbvoCY5Qkbt3dLXZTdV8Au2SsoQ4Kv5SCSSb6sN9Y3eZZBgvZjf7qGj9zaXmFtEcedfiFKLiBXUBq',
@@ -570,13 +567,13 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae');
-    }));
+    });
 
-    it('should generate ZEC recovery tx with KRS', co(function *() {
+    it('should generate ZEC recovery tx with KRS', async function() {
       recoveryNocks.nockZecRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tzec');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `xpub661MyMwAqRbcFLJXSAvqG5gkAftxMvBGYSbYcSPtY9CTVQAUXCfEPoeukWAPKYz24iNmy4iazs73A2PsHLqahK37f5pfdR2b3FBLAz3ATBM`,
         bitgoKey: 'xpub661MyMwAqRbcFN1MHGSUPL5v1xREhgtbvoCY5Qkbt3dLXZTdV8Au2SsoQ4Kv5SCSSb6sN9Y3eZZBgvZjf7qGj9zaXmFtEcedfiFKLiBXUBq',
@@ -598,15 +595,15 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae');
-    }));
+    });
   });
 
   describe('Recover Dash', function() {
-    it('should generate DASH recovery tx', co(function *() {
+    it('should generate DASH recovery tx', async function() {
       recoveryNocks.nockDashRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tdash');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"tZz3ZGLkffG0/eCX0xAHLg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KU3deEQZIzU=","ct":"AOs7uOnCTDwmQI72zmA0CI8c3VjcBUXheSAPPnxOHbz5QQbh/WDUGdX/IoyXcjO4EUreDERjGWIz21lu41ENk0h6pe7eELu1p777qZ/g4o9EAl0XsmjAH+b3fW3YQhdBmhYFboriv2wHSjwly9I4NGtdbEKabZY="}`,
         backupKey: `{"iv":"/Vz19EjCHc93h+53cPp+yA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Mm0Y+nv31Jo=","ct":"3AdTtdM92iVgRICDkNSfE45UbF2BjBncmRy6ytnc3TnEDb25ZjeqZ1yP8VxXsHNszj86GccueUe0VbUwLxrGYC+wWoznGJggFBwVJJzeN00njTVKEaYk2KJCzkVaaMwXADktgxiymfjBaYBKVj0qwUZg2996vZI="}`,
         bitgoKey: 'xpub661MyMwAqRbcGb1Jkx9U8iJfengAni3Ks3udjpiURVgxbQBcYGJjqBDVcrPPU7a96RFut6tsX4AKkQa2DJv3Ti3LtukGcjjYbFVTXVDT8QC',
@@ -623,13 +620,13 @@ describe('Recovery:', function() {
       recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('522103944ef399da9b45f26407dc3d7abd3544ef6fe6c32236bd6fe39f0db339f267a1210281941b32001f6fd10140e7a8f9a8df881f28d96f172528143e275d96c951a0422103a8ad848ac08c1fc598a91cb0786d6b663084ed3e399072de7c15c397629f2c6f53ae');
-    }));
+    });
 
-    it('should generate DASH recovery tx with KRS', co(function *() {
+    it('should generate DASH recovery tx with KRS', async function() {
       recoveryNocks.nockDashRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tdash');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         userKey: `{"iv":"tZz3ZGLkffG0/eCX0xAHLg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KU3deEQZIzU=","ct":"AOs7uOnCTDwmQI72zmA0CI8c3VjcBUXheSAPPnxOHbz5QQbh/WDUGdX/IoyXcjO4EUreDERjGWIz21lu41ENk0h6pe7eELu1p777qZ/g4o9EAl0XsmjAH+b3fW3YQhdBmhYFboriv2wHSjwly9I4NGtdbEKabZY="}`,
         backupKey: `xpub661MyMwAqRbcFvZZLVBGTPBZf6CN2imxDEZcQHMSjUPatWi5RhkmGNBiHUrLuLYDnt16aThj9ZQQ9oBTjvAaJB4BSGm9F3rHBaRbWJ75iay`,
         bitgoKey: 'xpub661MyMwAqRbcGb1Jkx9U8iJfengAni3Ks3udjpiURVgxbQBcYGJjqBDVcrPPU7a96RFut6tsX4AKkQa2DJv3Ti3LtukGcjjYbFVTXVDT8QC',
@@ -650,7 +647,7 @@ describe('Recovery:', function() {
       recovery.coin.should.equal('tdash');
       recovery.backupKey.should.equal('xpub661MyMwAqRbcFvZZLVBGTPBZf6CN2imxDEZcQHMSjUPatWi5RhkmGNBiHUrLuLYDnt16aThj9ZQQ9oBTjvAaJB4BSGm9F3rHBaRbWJ75iay');
       recovery.recoveryAmount.should.equal(60600);
-    }));
+    });
   });
 
   describe('Recover Stellar', function() {
@@ -669,7 +666,7 @@ describe('Recovery:', function() {
       explanation.should.have.property('operations', []);
     }
 
-    it('should generate XLM recovery tx', co(function *() {
+    it('should generate XLM recovery tx', async function() {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
@@ -682,15 +679,15 @@ describe('Recovery:', function() {
       const recoveryAmount = 74999500;
 
       const basecoin = bitgo.coin('txlm');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
 
       recovery.should.have.property('tx');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      yield checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
-    }));
+      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+    });
 
-    it('should recover to an unfunded XLM wallet', co(function *() {
+    it('should recover to an unfunded XLM wallet', async function() {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
@@ -703,15 +700,15 @@ describe('Recovery:', function() {
       const recoveryAmount = 74999500;
 
       const basecoin = bitgo.coin('txlm');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
 
       recovery.should.have.property('tx');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      yield checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
-    }));
+      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+    });
 
-    it('should generate XLM recovery tx with unencrypted keys', co(function *() {
+    it('should generate XLM recovery tx with unencrypted keys', async function() {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
@@ -723,15 +720,15 @@ describe('Recovery:', function() {
       const recoveryAmount = 74999500;
 
       const basecoin = bitgo.coin('txlm');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
 
       recovery.should.have.property('tx');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      yield checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
-    }));
+      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+    });
 
-    it('should generate XLM recovery tx with KRS', co(function *() {
+    it('should generate XLM recovery tx with KRS', async function() {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
@@ -745,16 +742,16 @@ describe('Recovery:', function() {
       const recoveryAmount = 74999500;
 
       const basecoin = bitgo.coin('txlm');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
 
 
       recovery.should.have.property('tx');
       recovery.should.have.property('recoveryAmount', 74999500);
 
-      yield checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
-    }));
+      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+    });
 
-    it('should generate an XLM unsigned sweep', co(function *() {
+    it('should generate an XLM unsigned sweep', async function() {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
@@ -768,13 +765,13 @@ describe('Recovery:', function() {
       const recoveryAmount = 74999500;
 
       const basecoin = bitgo.coin('txlm');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
 
       recovery.should.have.property('tx');
       recovery.should.have.property('recoveryAmount', 74999500);
 
-      yield checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
-    }));
+      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+    });
   });
 
   describe('Recover TRON', function() {
@@ -788,8 +785,8 @@ describe('Recovery:', function() {
       recoveryNocks.nockTronRecovery();
     });
 
-    it('should generate recovery tx from encrypted user and backup keys', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate recovery tx from encrypted user and backup keys', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
         backupKey: '{"iv":"xbOCFaZVnrQLAYKcgMvdNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"86cZ+hT+S0Y=","ct":"RH7Uks/JjNARX9wuIw6r4Map2C9FtLlWYk4zjLcrjzkBuNTCUNQgxF7kU5/SWzD+tomVBj6P9CLkXYzPlR1NhVi+aT9mTW6LK9nJ+ErpLKXzbIAxBLezDjJ5xqUS5cGkjoHCtANL7qTZcDBvOfejLDrUjQdw2WQ="}',
         bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
@@ -803,10 +800,10 @@ describe('Recovery:', function() {
       recoveryTx.tx.signature[1].should.equal('1c637c8c317df0b815cdc27637e4403964d74e3b1751efda08c11acdf226c83263ef4c9f4b7731514ded6b19dc846efb58371b653bbadc8040ac18101cafedb501');
       recoveryTx.tx.txID.should.equal('55d76a068b97933a98e5d02e6fecd4c2971f1d37f0bb850a919b17def906a239');
       recoveryTx.tx.raw_data_hex.should.equal('0a023ffb2208c1647593403d263b40b8b2e6fce72d5a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a15414d0941161d0f7e1da0c8989b1566c9d9b43e1226121541f3a3d6d514e7d43fbbf632a687acd65aafb8a50c18c0cdd6ac03709deae2fce72d');
-    }));
+    });
 
-    it('should generate recovery tx with unencrypted keys', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate recovery tx with unencrypted keys', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: 'xpub661MyMwAqRbcEvKZzdcvuU1nesKjFz8Gh8P1gTsowTCkGCByHRu1JsZwZYPJV6mUT3s3pQYxUtDU3JjkNruSGDK3kZUpgXqTfDAY6664a2H',
         backupKey: 'xpub661MyMwAqRbcF2zqeVjGdDJgEoZMFi5Vksfk3DtD9v4sBraTdgTzV3rTifJGWWudUxswBza3RotmQGxDCVKLNcRh7nW8ECB3BNSU6Xx91fL',
         bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
@@ -817,10 +814,10 @@ describe('Recovery:', function() {
 
       recoveryTx.tx.txID.should.equal('55d76a068b97933a98e5d02e6fecd4c2971f1d37f0bb850a919b17def906a239');
       recoveryTx.tx.raw_data_hex.should.equal('0a023ffb2208c1647593403d263b40b8b2e6fce72d5a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a15414d0941161d0f7e1da0c8989b1566c9d9b43e1226121541f3a3d6d514e7d43fbbf632a687acd65aafb8a50c18c0cdd6ac03709deae2fce72d');
-    }));
+    });
 
-    it('should generate an unsigned sweep', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate an unsigned sweep', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
         backupKey: 'xpub661MyMwAqRbcF2zqeVjGdDJgEoZMFi5Vksfk3DtD9v4sBraTdgTzV3rTifJGWWudUxswBza3RotmQGxDCVKLNcRh7nW8ECB3BNSU6Xx91fL',
         bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
@@ -832,7 +829,7 @@ describe('Recovery:', function() {
 
       recoveryTx.tx.txID.should.equal('55d76a068b97933a98e5d02e6fecd4c2971f1d37f0bb850a919b17def906a239');
       recoveryTx.tx.raw_data_hex.should.equal('0a023ffb2208c1647593403d263b40b8b2e6fce72d5a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a15414d0941161d0f7e1da0c8989b1566c9d9b43e1226121541f3a3d6d514e7d43fbbf632a687acd65aafb8a50c18c0cdd6ac03709deae2fce72d');
-    }));
+    });
   });
 
   describe('Recover EOS', function() {
@@ -846,8 +843,8 @@ describe('Recovery:', function() {
       recoveryNocks.nockEosRecovery();
     });
 
-    it('should generate EOS recovery tx with correct expiration date', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate EOS recovery tx with correct expiration date', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
         backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
@@ -867,14 +864,14 @@ describe('Recovery:', function() {
         }
       };
 
-      const deserializedTx = yield baseCoin.deserializeTransaction(deserializeTransactionParams);
+      const deserializedTx = await baseCoin.deserializeTransaction(deserializeTransactionParams);
       const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
       const hoursUntilExpiration = 8;
       moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
-    }));
+    });
 
-    it('should generate EOS recovery tx with unencrypted keys', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate EOS recovery tx with unencrypted keys', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: 'xprv9s21ZrQH143K4NDgnKH8zTTLpJuCmv6dtykRJwapBH73bvcvTvCQAMmQLxRGqg5YbvXBN5VGD3y2cPGUGyrVcjWDJM573RVseHg4oL64AXx',
         backupKey: 'xprv9s21ZrQH143K4Gh3snX8z5d24djEVwCwVwdHGEssUpKwHqKDtAz8gRPw7Fi12NC3ur94CsJ2KormunQQm3gNkXQiTy534NdfuQ4C2EpdmRp',
         rootAddress: 'kiyjcn1ixftp',
@@ -886,10 +883,10 @@ describe('Recovery:', function() {
       recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(2);
       recoveryTx.txid.should.equal(expectedTxId);
-    }));
+    });
 
-    it('should generate an EOS unsigned sweep', co(function *() {
-      const recoveryTx = yield baseCoin.recover({
+    it('should generate an EOS unsigned sweep', async function() {
+      const recoveryTx = await baseCoin.recover({
         userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
         backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
@@ -902,15 +899,15 @@ describe('Recovery:', function() {
       recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(0);
       recoveryTx.txid.should.equal(expectedTxId);
-    }));
+    });
   });
 
   describe('Recover ERC20', function() {
-    it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
+    it('should successfully construct a recovery transaction for tokens stuck in a wallet', async function() {
       const wallet = bitgo.nockEthWallet();
 
       // There should be 24 Potatokens stuck in our test wallet (based on nock)
-      const tx = yield wallet.recoverToken({
+      const tx = await wallet.recoverToken({
         tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
         recipient: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
         walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE
@@ -938,7 +935,7 @@ describe('Recovery:', function() {
       txInfo.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       txInfo.recipient.should.have.property('amount');
       txInfo.recipient.amount.should.equal('2400');
-    }));
+    });
   });
 
   describe('Wrong Chain Recoveries', function() {
@@ -946,8 +943,8 @@ describe('Recovery:', function() {
       recoveryNocks.nockWrongChainRecoveries(bitgo);
     });
 
-    it('should recover BTC sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
+    it('should recover BTC sent to the wrong chain', async function() {
+      const recovery = await bitgo.coin('tbtc').recoverFromWrongChain({
         coin: bitgo.coin('tltc'),
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
@@ -965,10 +962,10 @@ describe('Recovery:', function() {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should recover LTC sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tltc').recoverFromWrongChain({
+    it('should recover LTC sent to the wrong chain', async function() {
+      const recovery = await bitgo.coin('tltc').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -986,10 +983,10 @@ describe('Recovery:', function() {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should recover BCH sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tbch').recoverFromWrongChain({
+    it('should recover BCH sent to the wrong chain', async function() {
+      const recovery = await bitgo.coin('tbch').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
@@ -1007,10 +1004,10 @@ describe('Recovery:', function() {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should recover BSV sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tbsv').recoverFromWrongChain({
+    it('should recover BSV sent to the wrong chain', async function() {
+      const recovery = await bitgo.coin('tbsv').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
@@ -1028,10 +1025,10 @@ describe('Recovery:', function() {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should generate an unsigned recovery transaction', co(function *() {
-      const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
+    it('should generate an unsigned recovery transaction', async function() {
+      const recovery = await bitgo.coin('tbtc').recoverFromWrongChain({
         coin: bitgo.coin('tltc'),
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
@@ -1047,7 +1044,7 @@ describe('Recovery:', function() {
       recovery.coin.should.equal('tbtc');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
-    }));
+    });
   });
 
   describe('Recover Ethereum', function() {
@@ -1071,7 +1068,7 @@ describe('Recovery:', function() {
       };
     });
 
-    it('should throw on invalid gasLimit', async function(){
+    it('should throw on invalid gasLimit', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
@@ -1083,7 +1080,7 @@ describe('Recovery:', function() {
       .should.be.rejectedWith('Gas limit must be between 30000 and 20000000');
     });
 
-    it('should throw if etherscan errs', async function(){
+    it('should throw if etherscan errs', async function() {
       const nockUnsuccessfulEtherscanData: any[] = [
         {
           params: {
@@ -1117,7 +1114,7 @@ describe('Recovery:', function() {
         .should.be.rejectedWith('Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from Etherscan, got: Rate limit exceeded');
     });
 
-    it('should throw if backup key address has insufficient balance', async function(){
+    it('should throw if backup key address has insufficient balance', async function() {
       const insufficientFeeData: any[] = [
         {
           params: {
@@ -1142,7 +1139,7 @@ describe('Recovery:', function() {
             message: 'OK',
             result: '1234',
           },
-        }, 
+        },
       ];
       recoveryNocks.nockEthRecovery(bitgo, insufficientFeeData);
 
@@ -1156,7 +1153,7 @@ describe('Recovery:', function() {
         'This address must have a balance of at least 300000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     });
 
-    it('should throw on invalid gasPrice', async function(){
+    it('should throw on invalid gasPrice', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
@@ -1164,11 +1161,10 @@ describe('Recovery:', function() {
         ...recoveryParams,
         gasLimit: 400000,
         gasPrice: 2500000,
-      })
-      .should.be.rejectedWith('Gas price must be between 1000000000 and 2500000000000');
+      }).should.be.rejectedWith('Gas price must be between 1000000000 and 2500000000000');
     });
 
-    it('should successfully construct a tx with custom gas price and limit', async function(){
+    it('should successfully construct a tx with custom gas price and limit', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
@@ -1184,22 +1180,22 @@ describe('Recovery:', function() {
     });
     
     
-    it('should construct a recovery transaction without BitGo', co(function *() {
+    it('should construct a recovery transaction without BitGo', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
-      const recovery = yield basecoin.recover(recoveryParams);
+      const recovery = await basecoin.recover(recoveryParams);
       // id and tx will always be different because of expireTime
       should.exist(recovery);
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
-    }));
+    });
 
-    it('should construct a recovery transaction without BitGo and with KRS', co(function *() {
+    it('should construct a recovery transaction without BitGo and with KRS', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
-      const recovery = yield basecoin.recover({
+      const recovery = await basecoin.recover({
         ...recoveryParams,
         backupKey: 'xpub661MyMwAqRbcGsCNiG4BzbxLmXnJFo4K5gVSE2b9AxufAtpuTun1SYwg9Uykqqf4DrKrDZ6KqPm9ehthWbCma7pnaMrtXY11nY7MeFbEDPm',
         krsProvider: 'keyternal',
@@ -1209,13 +1205,13 @@ describe('Recovery:', function() {
       should.exist(recovery);
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
-    }));
+    });
 
-    it('should error when the backup key is unfunded (cannot pay gas)', co(function *() {
+    it('should error when the backup key is unfunded (cannot pay gas)', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
-      const error = yield bitgo.getAsyncError(basecoin.recover({
+      await basecoin.recover({
         userKey: '{"iv":"VNvG6t3fHfxMcfvNuafYYA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
         ':"ccm","adata":"","cipher":"aes","salt":"mc9pCk3H43w=","ct":"Qe4Z1evaXcrOMC\n' +
         'cQ/XMVVBO9M/99D1QQ6LxkG8z3fQtwwOVXM3/6doNrriprUqs+adpFC93KRcAaDroL1E6o17J2k\n' +
@@ -1227,11 +1223,8 @@ describe('Recovery:', function() {
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
-      }));
-
-      should.exist(error);
-      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
-    }));
+      }).should.be.rejectedWith('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
+    });
 
     it('should throw error when the etherscan rate limit is reached', async function() {
       const basecoin = bitgo.coin('teth');

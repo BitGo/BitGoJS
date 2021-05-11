@@ -115,8 +115,8 @@ describe('XLM:', function() {
     basecoin.isValidStellarUsername('Foo@bar.baz').should.equal(false); // only lowercase letters are allowed
   });
 
-  it('Should explain an XLM transaction', co(function *() {
-    const signedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
+  it('Should explain an XLM transaction', async function() {
+    const signedExplanation = await basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
     signedExplanation.outputAmount.should.equal('5000000000');
     signedExplanation.outputAmounts.should.have.property('txlm', '5000000000');
     signedExplanation.outputs.length.should.equal(1);
@@ -128,7 +128,7 @@ describe('XLM:', function() {
     signedExplanation.memo.type.should.equal('text');
     signedExplanation.changeOutputs.length.should.equal(0);
     signedExplanation.changeAmount.should.equal('0');
-    const unsignedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
+    const unsignedExplanation = await basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
     unsignedExplanation.outputAmount.should.equal('10000000000');
     unsignedExplanation.outputAmounts.should.have.property('txlm', '10000000000');
     unsignedExplanation.outputs.length.should.equal(1);
@@ -140,10 +140,10 @@ describe('XLM:', function() {
     unsignedExplanation.memo.type.should.equal('id');
     unsignedExplanation.changeOutputs.length.should.equal(0);
     unsignedExplanation.changeAmount.should.equal('0');
-  }));
+  });
 
-  it('Should explain a trustline transaction', co(function *() {
-    const explanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=' });
+  it('Should explain a trustline transaction', async function() {
+    const explanation = await basecoin.explainTransaction({ txBase64: 'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=' });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('300');
     explanation.memo.should.be.empty();
@@ -156,17 +156,17 @@ describe('XLM:', function() {
     explanation.operations[0].should.have.property('asset');
     explanation.operations[0].asset.code.should.equal('BST');
     explanation.operations[0].asset.issuer.should.equal('GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
-  }));
+  });
 
-  it('Should explain a token transaction', co(function *() {
-    const explanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=' });
+  it('Should explain a token transaction', async function() {
+    const explanation = await basecoin.explainTransaction({ txBase64: 'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=' });
     explanation.outputAmount.should.equal('0');
     explanation.fee.fee.should.equal('100');
     explanation.memo.should.be.empty();
     explanation.changeOutputs.length.should.equal(0);
     explanation.changeAmount.should.equal('0');
     explanation.outputAmounts.should.have.property('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', '500000000');
-  }));
+  });
 
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1', type: 'id' }).should.equal(true);
@@ -180,18 +180,18 @@ describe('XLM:', function() {
     basecoin.isValidMemo({ value: '1', type: 'return' }).should.equal(false);
   });
 
-  it('should supplement wallet generation', co(function *() {
-    const walletParams = yield basecoin.supplementGenerateWallet({});
+  it('should supplement wallet generation', async function() {
+    const walletParams = await basecoin.supplementGenerateWallet({});
     walletParams.should.have.property('rootPrivateKey');
     basecoin.isValidPrv(walletParams.rootPrivateKey).should.equal(true);
-  }));
+  });
 
-  it('should supplement wallet generation with provided private key', co(function *() {
+  it('should supplement wallet generation with provided private key', async function() {
     const rootPrivateKey = basecoin.generateKeyPair().prv;
-    const walletParams = yield basecoin.supplementGenerateWallet({ rootPrivateKey });
+    const walletParams = await basecoin.supplementGenerateWallet({ rootPrivateKey });
     walletParams.should.have.property('rootPrivateKey');
     walletParams.rootPrivateKey.should.equal(rootPrivateKey);
-  }));
+  });
 
   describe('Transaction Verification', function() {
     let basecoin;
@@ -293,23 +293,23 @@ describe('XLM:', function() {
       halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
     }));
 
-    it('should verify the user signature on a tx', co(function *() {
+    it('should verify the user signature on a tx', function() {
       const userPub = userKeychain.pub;
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(userPub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(true);
-    }));
+    });
 
-    it('should fail to verify the wrong signature on a tx', co(function *() {
+    it('should fail to verify the wrong signature on a tx', function() {
       const keyPair = basecoin.generateKeyPair();
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(false);
-    }));
+    });
 
-    it('should fail to verify a transaction signed with the wrong key', co(function *() {
+    it('should fail to verify a transaction signed with the wrong key', async function() {
       // sign transaction
-      const tx = yield wallet.signTransaction({
+      const tx = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: backupKeychain.prv
       });
@@ -330,13 +330,13 @@ describe('XLM:', function() {
           backup: { pub: backupKeychain.pub }
         },
       };
-      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction signed with wrong key');
-    }));
+    });
 
-    it('should fail to verify a transaction to the wrong recipient', co(function *() {
+    it('should fail to verify a transaction to the wrong recipient', async function() {
       // sign transaction
-      const tx = yield wallet.signTransaction({
+      const tx = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: backupKeychain.prv
       });
@@ -357,13 +357,13 @@ describe('XLM:', function() {
           backup: { pub: backupKeychain.pub },
         },
       };
-      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not match expected recipient');
-    }));
+    });
 
-    it('should fail to verify a transaction with the wrong amount', co(function *() {
+    it('should fail to verify a transaction with the wrong amount', async function() {
       // sign transaction
-      const tx = yield wallet.signTransaction({
+      const tx = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: backupKeychain.prv
       });
@@ -384,12 +384,11 @@ describe('XLM:', function() {
           backup: { pub: backupKeychain.pub },
         },
       };
-      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not match expected amount');
-    }));
+    });
 
-    it('should fail to verify a transaction without recipients', co(function *() {
-
+    it('should fail to verify a transaction without recipients', async function() {
       const prebuilt = {
         txBase64: 'AAAAAP1qe44j+i4uIT+arbD4QDQBt8ryEeJd7a0jskQ3nwDeAAAAAAB/4cUAAAACAAAAAAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAA==',
         txInfo: {
@@ -413,7 +412,7 @@ describe('XLM:', function() {
       };
 
       // sign transaction
-      const tx = yield wallet.signTransaction({
+      const tx = await wallet.signTransaction({
         txPrebuild: prebuilt,
         prv: keyPair.prv
       });
@@ -434,11 +433,11 @@ describe('XLM:', function() {
           backup: { pub: backupKeychain.pub },
         },
       };
-      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('transaction prebuild does not have any operations');
-    }));
+    });
 
-    it('should verify a transaction', co(function *() {
+    it('should verify a transaction', async function() {
       const txParams = {
         recipients: [{
           address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
@@ -455,9 +454,9 @@ describe('XLM:', function() {
           backup: { pub: backupKeychain.pub }
         }
       };
-      const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
       validTransaction.should.equal(true);
-    }));
+    });
 
     describe('trustline transactions', function() {
       it('should fail to verify a trustline transaction with unmatching number of trustlines', co(function *() {
@@ -548,7 +547,7 @@ describe('XLM:', function() {
           .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
       }));
 
-      it('should verify a trustline transaction', co(function *() {
+      it('should verify a trustline transaction', async function() {
         const txParams = {
           type: 'trustline',
           recipients: [],
@@ -573,7 +572,7 @@ describe('XLM:', function() {
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
-        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
           disableNetworking: true,
           keychains: {
@@ -581,9 +580,9 @@ describe('XLM:', function() {
             backup: { pub: backupKeychain.pub },
           },
         };
-        const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+        const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
         validTransaction.should.equal(true);
-      }));
+      });
     });
   });
 
@@ -609,7 +608,7 @@ describe('XLM:', function() {
           .should.be.rejectedWith(`user not found: ${stellarAddress}`);
       }));
 
-      it('should resolve a stellar address into an account', co(function *() {
+      it('should resolve a stellar address into an account', async function() {
         const stellarAddress = 'tester*bitgo.com';
         const accountId = 'GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA';
 
@@ -626,12 +625,12 @@ describe('XLM:', function() {
             account_id: accountId,
           });
 
-        const res = yield basecoin.federationLookupByName(stellarAddress);
+        const res = await basecoin.federationLookupByName(stellarAddress);
         res.should.have.property('stellar_address');
         res.should.have.property('account_id');
         res.stellar_address.should.equal(stellarAddress);
         res.account_id.should.equal(accountId);
-      }));
+      });
     });
 
     describe('Look up by account id:', function() {
@@ -652,7 +651,7 @@ describe('XLM:', function() {
           .should.be.rejectedWith(`invalid id: ${accountId}`);
       }));
 
-      it('should return only account_id for non-bitgo accounts', co(function *() {
+      it('should return only account_id for non-bitgo accounts', async function() {
         const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';
 
         nock(uri)
@@ -665,15 +664,15 @@ describe('XLM:', function() {
             account_id: accountId
           });
 
-        const res = yield basecoin.federationLookupByAccountId(accountId);
+        const res = await basecoin.federationLookupByAccountId(accountId);
         res.should.not.have.property('stellar_address');
         res.should.not.have.property('memo_type');
         res.should.not.have.property('memo');
         res.should.have.property('account_id');
         res.account_id.should.equal(accountId);
-      }));
+      });
 
-      it('should resolve a valid account id into an account', co(function *() {
+      it('should resolve a valid account id into an account', async function() {
         const accountId = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
 
         nock(uri)
@@ -689,14 +688,14 @@ describe('XLM:', function() {
             memo: '0'
           });
 
-        const res = yield basecoin.federationLookupByAccountId(accountId);
+        const res = await basecoin.federationLookupByAccountId(accountId);
         res.should.have.property('stellar_address');
         res.should.have.property('account_id');
         res.should.have.property('memo_type');
         res.should.have.property('memo');
         res.account_id.should.equal(accountId);
         res.stellar_address.should.equal('tester*bitgo.com');
-      }));
+      });
     });
   });
 

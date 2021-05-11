@@ -90,7 +90,7 @@ interface DeserializedEosTransaction extends EosTransactionHeaders {
   delay_sec: number;
   context_free_actions: EosTransactionAction[];
   actions: EosTransactionAction[];
-  transaction_extensions: object[];
+  transaction_extensions: Record<string, unknown>[];
   address: string;
   amount: string;
   transaction_id: string;
@@ -321,8 +321,7 @@ export class Eos extends BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    // @ts-ignore
-    return bigNumber.toFormat(4, null, { groupSeparator: '', decimalSeparator: '.' });
+    return bigNumber.toFormat(4, null as any, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
@@ -396,15 +395,13 @@ export class Eos extends BaseCoin {
     params: EosSignTransactionParams,
     callback?: NodeCallback<EosSignedTransaction>
   ): Bluebird<EosSignedTransaction> {
-    return co<EosSignedTransaction>(function*() {
+    return co<EosSignedTransaction>(function* () {
       const prv: string = params.prv;
       const txHex: string = params.txPrebuild.txHex;
       const transaction: EosTx = params.txPrebuild.transaction;
 
       const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv)
-        .getKey()
-        .getPrivateKeyBuffer();
+      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
       const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
       transaction.signatures.push(signature);
@@ -466,7 +463,7 @@ export class Eos extends BaseCoin {
     headers,
   }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
     const self = this;
-    return co<DeserializedEosTransaction>(function*() {
+    return co<DeserializedEosTransaction>(function* () {
       const eosClientConfig = {
         chainId: self.getChainId(),
         transactionHeaders: headers,
@@ -558,7 +555,7 @@ export class Eos extends BaseCoin {
           { actions: tx.actions },
           { sign: false, broadcast: false }
         );
-        tx.transaction_id = rebuiltTransaction.transaction_id;
+        tx.transaction_id = (rebuiltTransaction as any).transaction_id;
       }
 
       return tx;
@@ -575,7 +572,7 @@ export class Eos extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       let transaction;
       try {
         transaction = yield self.deserializeTransaction(params);
@@ -652,7 +649,7 @@ export class Eos extends BaseCoin {
     walletPassphrase,
   }: RecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
-    return co<HDNode[]>(function*() {
+    return co<HDNode[]>(function* () {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
@@ -692,21 +689,21 @@ export class Eos extends BaseCoin {
 
   /**
    * Make a request to one of the public EOS nodes available
-   * @param endpoint
-   * @param payload
+   * @param params.endpoint
+   * @param params.payload
    */
-  protected getDataFromNode({ endpoint, payload }: { endpoint: string; payload?: object }): Bluebird<any> {
+  protected getDataFromNode(params: { endpoint: string; payload?: Record<string, unknown> }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const nodeUrls = self.getPublicNodeUrls();
       for (const nodeUrl of nodeUrls) {
         try {
-          return yield request.post(nodeUrl + endpoint).send(payload);
+          return yield request.post(nodeUrl + params.endpoint).send(params.payload);
         } catch (e) {
           // let's hope another call succeeds
         }
       }
-      throw new Error(`Unable to call endpoint: ${endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
+      throw new Error(`Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
     }).call(this);
   }
 
@@ -715,12 +712,12 @@ export class Eos extends BaseCoin {
    */
   protected getChainInfoFromNode(): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({ endpoint: '/v1/chain/get_info' });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Unable to fetch chain info');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -730,15 +727,15 @@ export class Eos extends BaseCoin {
    */
   protected getAccountFromNode({ address }: { address: string }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_account',
         payload: { account_name: address },
       });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Account not found');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -748,15 +745,15 @@ export class Eos extends BaseCoin {
    */
   protected getBlockFromNode({ blockNumOrId }: { blockNumOrId: string }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_block',
         payload: { block_num_or_id: blockNumOrId },
       });
-      if (response.status !== 200) {
+      if ((response as any).status !== 200) {
         throw new Error('Block not found');
       }
-      return response.body;
+      return (response as any).body;
     }).call(this);
   }
 
@@ -765,17 +762,17 @@ export class Eos extends BaseCoin {
    */
   protected getTransactionHeadersFromNode(): Bluebird<any> {
     const self = this;
-    return co(function*() {
-      const chainInfo = yield self.getChainInfoFromNode();
+    return co(function* () {
+      const chainInfo = (yield self.getChainInfoFromNode()) as any;
       const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
       const expireSeconds = 28800; // maximum tx expire time of 8h
-      const chainDate = new Date(chainInfo.head_block_time + 'Z');
+      const chainDate = new Date((chainInfo as any).head_block_time + 'Z');
       const expirationDate = new Date(chainDate.getTime() + expireSeconds * 1000);
 
       return {
         expiration: expirationDate.toISOString(),
-        ref_block_num: chainInfo.head_block_num & 0xffff,
-        ref_block_prefix: headBlockInfoResult.ref_block_prefix,
+        ref_block_num: (chainInfo as any).head_block_num & 0xffff,
+        ref_block_prefix: (headBlockInfoResult as any).ref_block_prefix,
       };
     }).call(this);
   }
@@ -831,16 +828,16 @@ export class Eos extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co<RecoveryTransaction>(function*() {
+    return co<RecoveryTransaction>(function* () {
       if (!params.rootAddress) {
         throw new Error('missing required string rootAddress');
       }
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      const keys = yield self.initiateRecovery(params);
+      const keys = (yield self.initiateRecovery(params)) as any;
 
-      const account = yield self.getAccountFromNode({ address: params.rootAddress });
+      const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
 
       if (!account.core_liquid_balance) {
         throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
@@ -906,7 +903,7 @@ export class Eos extends BaseCoin {
           packed_trx: serializedTransaction,
           signatures: [] as string[],
         },
-        txid: transaction.transaction_id,
+        txid: (transaction as any).transaction_id,
         recoveryAmount: accountBalance,
       };
       const signableTx = Buffer.concat([
@@ -955,7 +952,7 @@ export class Eos extends BaseCoin {
    * * Address must only contain lowercase letters and numbers 1-5
    * @returns a validly formatted EOS address, which may or may not actually be available on chain.
    */
-  generateRandomAddress(params: {}): string {
+  generateRandomAddress(params: Record<string, never>): string {
     const address: string[] = [];
     while (address.length < 12) {
       const char = _.sample(Eos.VALID_ADDRESS_CHARS);

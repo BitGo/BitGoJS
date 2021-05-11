@@ -5,6 +5,7 @@ import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
 import { removeAlgoPrefixFromHexValue } from '../../../../../src/coin/cspr/utils';
+import { DEFAULT_CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
 
 describe('Casper Transaction Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -30,6 +31,22 @@ describe('Casper Transaction Builder', () => {
     txBuilder.owner(owner2Address);
     txBuilder.owner(owner3Address);
     txBuilder.source({ address: sourceAddress });
+    return txBuilder;
+  };
+
+  const initDelegateBuilder = () => {
+    const txBuilder = factory.getDelegateBuilder();
+    txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
+    txBuilder.source({ address: sourceAddress });
+    txBuilder.amount(testData.MIN_MOTES_AMOUNT);
+    return txBuilder;
+  };
+
+  const initUndelegateBuilder = () => {
+    const txBuilder = factory.getUndelegateBuilder();
+    txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
+    txBuilder.source({ address: sourceAddress });
+    txBuilder.amount(testData.MIN_MOTES_AMOUNT);
     return txBuilder;
   };
 
@@ -257,6 +274,61 @@ describe('Casper Transaction Builder', () => {
       tx = (await builder.build()) as Transaction;
       tx.casperTx.approvals.length.should.equal(1);
       should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
+    });
+  });
+
+  describe('chain name', function() {
+    describe('has default value for', function() {
+      it('transfer transaction', function() {
+        const txBuilder = initTransferBuilder();
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
+      });
+
+      it('wallet initialization transaction', function() {
+        const txBuilder = initWalletBuilder();
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
+      });
+
+      it('delegation transaction', function() {
+        const txBuilder = initDelegateBuilder();
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
+      });
+
+      it('undelegation transaction', function() {
+        const txBuilder = initUndelegateBuilder();
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
+      });
+    });
+    describe('can be manually set for', function() {
+      it('transfer transaction', function() {
+        const txBuilder = initTransferBuilder()
+          .amount(testData.MIN_MOTES_AMOUNT)
+          .nodeChainName(testData.CUSTOM_CHAIN_NAME);
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
+      });
+
+      it('wallet initialization transaction', function() {
+        const txBuilder = initWalletBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
+      });
+
+      it('delegation transaction', function() {
+        const txBuilder = initDelegateBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
+      });
+
+      it('undelegation transaction', function() {
+        const txBuilder = initUndelegateBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
+        should.doesNotThrow(() => txBuilder.validateMandatoryFields());
+        txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
+      });
     });
   });
 });

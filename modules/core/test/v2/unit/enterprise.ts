@@ -3,8 +3,8 @@
 //
 
 import * as nock from 'nock';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import { Enterprise } from '../../../src/v2/enterprise';
 import * as common from '../../../src/common';
 

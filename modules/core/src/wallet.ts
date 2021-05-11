@@ -15,7 +15,6 @@ import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 const TransactionBuilder = require('./transactionBuilder');
 import * as bitcoin from '@bitgo/utxo-lib';
-// TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 const PendingApproval = require('./pendingapproval');
 
 import * as common from './common';
@@ -29,7 +28,7 @@ const request = require('superagent');
 // Constructor
 //
 const Wallet = function(bitgo, wallet) {
-  this.bitgo = bitgo;
+  (this.bitgo as any) = bitgo;
   this.wallet = wallet;
   this.keychains = [];
 
@@ -1305,11 +1304,11 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
       while (uncoveredChildFee > 0 && additionalUnspents.length < maxUnspents) {
         // try to get enough unspents to cover the rest of the child fee
-        const unspents = yield this.unspents({
+        const unspents = (yield this.unspents({
           minConfirms: 1,
           target: uncoveredChildFee,
           limit: maxUnspents - additionalUnspents.length
-        });
+        })) as any;
 
         if (unspents.length === 0) {
           // no more unspents are available
@@ -1430,7 +1429,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    *    (and, if necessary, additional wallet unspents) as inputs
    * 7) Broadcast the new child transaction
    */
-  return co(function *coAccelerateTransaction() {
+  return co(function *coAccelerateTransaction(): any {
     params = params || {};
     common.validateParams(params, ['transactionID'], [], callback);
 
@@ -1641,7 +1640,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
       throw new Error('invalid argument for instant - boolean expected');
     }
 
-    const transaction = yield this.createTransaction(params);
+    const transaction = (yield this.createTransaction(params)) as any;
     const fee = transaction.fee;
     const feeRate = transaction.feeRate;
     const estimatedSize = transaction.estimatedSize;
@@ -1817,7 +1816,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     };
 
     // first, let's take all the wallet's unspents (with min confirms if necessary)
-    const allUnspents = yield self.unspents({ minConfirms: minConfirms });
+    const allUnspents = (yield self.unspents({ minConfirms: minConfirms })) as any;
     if (allUnspents.length < 1) {
       throw new Error('No unspents to branch out');
     }
@@ -2040,7 +2039,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     if (params.maxSize) {
       queryParams.maxSize = params.maxSize;
     }
-    const allUnspents = yield self.unspents(queryParams);
+    const allUnspents = (yield self.unspents(queryParams)) as any;
     // this consolidation is essentially just a waste of money
     if (allUnspents.length <= target) {
       if (iterationCount <= 1) {
@@ -2068,7 +2067,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
 
     const currentChunk = allUnspents.splice(0, inputCount);
     const changeChain = self.getChangeChain(params);
-    const newAddress = yield self.createAddress({ chain: changeChain, validate: validate });
+    const newAddress = (yield self.createAddress({ chain: changeChain, validate: validate })) as any;
     const txParams = _.extend({}, params);
     const currentAddress = newAddress;
     // the total amount that we are consolidating within this batch
@@ -2142,7 +2141,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       // therefore, we proceed by consolidating yet another batch
       // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
       yield Bluebird.delay(1000);
-      consolidationTransactions.push(...yield runNextConsolidation());
+      consolidationTransactions.push(...((yield runNextConsolidation()) as any));
     }
     // this is the final consolidation transaction. We return all the ones we've had so far
     return consolidationTransactions;

@@ -5,7 +5,7 @@ import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import * as testData from '../../../../resources/cspr/cspr';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
-import { CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
+import { DEFAULT_CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
 
 describe('Casper Transfer Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -27,8 +27,8 @@ describe('Casper Transfer Builder', () => {
       should.equal(factory.getTransferBuilder().coinName(), 'tcspr');
       should.equal(factoryProd.getTransferBuilder().coinName(), 'cspr');
 
-      should.equal(factory.getTransferBuilder().chainName, CHAIN_NAMES.testnet);
-      should.equal(factoryProd.getTransferBuilder().chainName, CHAIN_NAMES.mainnet);
+      should.equal(factory.getTransferBuilder().chainName, DEFAULT_CHAIN_NAMES.testnet);
+      should.equal(factoryProd.getTransferBuilder().chainName, DEFAULT_CHAIN_NAMES.mainnet);
     });
   });
 

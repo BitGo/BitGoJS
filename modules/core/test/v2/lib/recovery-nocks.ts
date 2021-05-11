@@ -16,25 +16,18 @@ export function nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline =
   const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
   const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
   if (smartbitOnline) {
-    nock(smartbitBaseUrl)
-      .post('/decodetx', { hex: txHex })
-      .reply(200, decodedTx);
+    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).reply(200, decodedTx);
   } else {
-    nock(smartbitBaseUrl)
-      .post('/decodetx', { hex: txHex })
-      .socketDelay(10000)
-      .replyWithError(503); // "server unavailable"
+    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).socketDelay(10000).replyWithError(503); // "server unavailable"
   }
 }
 
 export function nockbitcoinFees(fastestFee: number, halfHourFee: number, hourFee: number) {
-  nock('https://bitcoinfees.earn.com')
-    .get('/api/v1/fees/recommended')
-    .reply(200, {
-      fastestFee,
-      halfHourFee,
-      hourFee,
-    });
+  nock('https://bitcoinfees.earn.com').get('/api/v1/fees/recommended').reply(200, {
+    fastestFee,
+    halfHourFee,
+    hourFee,
+  });
 }
 
 export function nockbitcoinFeesOffline(fastestFee: number, halfHourFee: number, hourFee: number) {
@@ -46,9 +39,7 @@ export function nockbitcoinFeesOffline(fastestFee: number, halfHourFee: number, 
 export function nockCoingecko(usd: number, coinGeckoName: string) {
   const body = {};
   body[coinGeckoName] = { usd };
-  nock('https://api.coingecko.com')
-    .get(`/api/v3/simple/price?ids=${coinGeckoName}&vs_currencies=USD`)
-    .reply(200, body);
+  nock('https://api.coingecko.com').get(`/api/v3/simple/price?ids=${coinGeckoName}&vs_currencies=USD`).reply(200, body);
 }
 
 export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true, coin = 'bitcoin') {
@@ -377,13 +368,11 @@ export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline =
 
 // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
 export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
-  nock('https://bitcoinfees.earn.com')
-    .get('/api/v1/fees/recommended')
-    .reply(200, {
-      fastestFee: 600,
-      halfHourFee: 600,
-      hourFee: 100,
-    });
+  nock('https://bitcoinfees.earn.com').get('/api/v1/fees/recommended').reply(200, {
+    fastestFee: 600,
+    halfHourFee: 600,
+    hourFee: 100,
+  });
 
   const txHex = isKrsRecovery
     ? '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000'
@@ -399,10 +388,8 @@ export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
               TxId: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
               Vout: '0',
               ScriptSig: {
-                Asm:
-                  '0 3045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-                Hex:
-                  '00483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
+                Asm: '0 3045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
+                Hex: '00483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
               },
               CoinBase: null,
               TxInWitness: null,
@@ -446,10 +433,8 @@ export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
               TxId: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
               Vout: '0',
               ScriptSig: {
-                Asm:
-                  '0 30440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf4747[ALL] 3045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-                Hex:
-                  '004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
+                Asm: '0 30440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf4747[ALL] 3045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
+                Hex: '004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
               },
               CoinBase: null,
               TxInWitness: null,
@@ -665,10 +650,8 @@ export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
                 txid: '43bf039b4d1c069974a3f5573931c41dca5615446e8646e3e0aa1a17e586d005',
                 vout: 0,
                 script_sig: {
-                  asm:
-                    '3045022100d7ee6bec2f134460ef70b21b6268dd2969b2e0166631cd222fd68aa48adc3798022026c832e2fdc9f9059d467d4b9d3a1516db88c8c688a1f187a147151873530ff001 02ee0cc469cd72f5462e1d407b5eb4ecfba503074b61246fe84f35161be51f8c68',
-                  hex:
-                    '483045022100d7ee6bec2f134460ef70b21b6268dd2969b2e0166631cd222fd68aa48adc3798022026c832e2fdc9f9059d467d4b9d3a1516db88c8c688a1f187a147151873530ff0012102ee0cc469cd72f5462e1d407b5eb4ecfba503074b61246fe84f35161be51f8c68',
+                  asm: '3045022100d7ee6bec2f134460ef70b21b6268dd2969b2e0166631cd222fd68aa48adc3798022026c832e2fdc9f9059d467d4b9d3a1516db88c8c688a1f187a147151873530ff001 02ee0cc469cd72f5462e1d407b5eb4ecfba503074b61246fe84f35161be51f8c68',
+                  hex: '483045022100d7ee6bec2f134460ef70b21b6268dd2969b2e0166631cd222fd68aa48adc3798022026c832e2fdc9f9059d467d4b9d3a1516db88c8c688a1f187a147151873530ff0012102ee0cc469cd72f5462e1d407b5eb4ecfba503074b61246fe84f35161be51f8c68',
                 },
                 type: 'pubkeyhash',
                 witness: null,
@@ -1615,7 +1598,7 @@ module.exports.nockXrpRecovery = function nockXrpRecovery() {
     });
 };
 
-module.exports.nockWrongChainRecoveries = function(bitgo) {
+module.exports.nockWrongChainRecoveries = function (bitgo) {
   const env = Environments[bitgo.getEnv()] as Environment;
   nock(env.uri)
     .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
@@ -1805,8 +1788,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     .reply(200, {
       id: '5abaceb63cddfbb607d8306521ddf445',
       users: ['543c11ed356d00cb7600000b98794503'],
-      pub:
-        'xpub661MyMwAqRbcFkYsn3d9wuVNqYzC2zE45hHZUd2iZM3F5dygCMzxKGhCVB4pjmJ1sWynj1RHQi3iiVoUcrQu2bhzu6GWw9A8ZetxYMTPNdZ',
+      pub: 'xpub661MyMwAqRbcFkYsn3d9wuVNqYzC2zE45hHZUd2iZM3F5dygCMzxKGhCVB4pjmJ1sWynj1RHQi3iiVoUcrQu2bhzu6GWw9A8ZetxYMTPNdZ',
       ethAddress: '0x04d893e078feecbe10945c9e1b965132e48b2915',
       encryptedPrv:
         '{"iv":"JmWw8SBtiQ80KNGvjHvknA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"+V24Zb2ZpiE=","ct":"JUDBx3xDRuWnlV7LH7Wbt+eUixifofSYjA3kVNUZwRXh+7JIrBfQeCWCvvWopTJi7YgWaM+aLjbXB8mZrrE+14xmFw4evg34De4Omd7vnnbbk2uxe/r+bL7hL3tCz+b6uv9wd/tMQmLyu5PJuIrj5n8gv8SmNn4="}',
@@ -1816,8 +1798,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     .reply(200, {
       id: '5abacdffae0ec7c107c7d9cf6d60a886',
       users: ['543c11ed356d00cb7600000b98794503'],
-      pub:
-        'xpub661MyMwAqRbcFSici6moqY283j2hzysM3gSUhBLgAk9r3jM21jw6Lwr3eyxmH6wTbd12KCjBQxmWT5AmVdW3aUvb5zrhYpgdCN7UDC7wYE6',
+      pub: 'xpub661MyMwAqRbcFSici6moqY283j2hzysM3gSUhBLgAk9r3jM21jw6Lwr3eyxmH6wTbd12KCjBQxmWT5AmVdW3aUvb5zrhYpgdCN7UDC7wYE6',
       ethAddress: '0xfa5f451f8fc1d7084ed40fcfdd414c092e3fbc31',
       encryptedPrv:
         '{"iv":"SqVdgeFwTzb10li5btyiPA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"yp6P1IYNtAs=","ct":"SHoCHIGD0WyYlieDkgyKTuoaV1VdXIu2rF+XhLAS8fPGWEpj2Lf6Jvjfv+KbUn5CK3OHmWxRB3yjJz8lP1sHgJz68xDh6KnNqEwx5cG8c32+oxN4eEoZZPRrDOq00AHRI6+AtWJgjxGofGfKHE3JEWCZY3C0sBQ="}',
@@ -2248,24 +2229,21 @@ const nockEthData: any[] = [
   },
 ];
 
-module.exports.nockEthRecovery = function(bitgo, nockData = nockEthData) {
+module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
   let apiKey;
   if (Environments[bitgo.getEnv()].etherscanApiToken) {
     apiKey = Environments[bitgo.getEnv()].etherscanApiToken;
   }
 
-  nockData.forEach(data => {
+  nockData.forEach((data) => {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    nock('https://api-kovan.etherscan.io')
-      .get('/api')
-      .query(data.params)
-      .reply(200, data.response);
+    nock('https://api-kovan.etherscan.io').get('/api').query(data.params).reply(200, data.response);
   });
 };
 
-module.exports.nockEtherscanRateLimitError = function() {
+module.exports.nockEtherscanRateLimitError = function () {
   const response = {
     status: '0',
     message: 'NOTOK',
@@ -2278,13 +2256,10 @@ module.exports.nockEtherscanRateLimitError = function() {
     address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
   };
 
-  nock('https://api-kovan.etherscan.io')
-    .get('/api')
-    .query(params)
-    .reply(200, response);
+  nock('https://api-kovan.etherscan.io').get('/api').query(params).reply(200, response);
 };
 
-module.exports.nockLtcRecovery = function(isKrsRecovery) {
+module.exports.nockLtcRecovery = function (isKrsRecovery) {
   nock('http://explorer.litecointools.com/api')
     .get('/addr/QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d')
     .reply(200, {
@@ -2477,7 +2452,7 @@ module.exports.nockLtcRecovery = function(isKrsRecovery) {
   }
 };
 
-module.exports.nockZecRecovery = function(bitgo, isKrsRecovery) {
+module.exports.nockZecRecovery = function (bitgo, isKrsRecovery) {
   const env = Environments[bitgo.getEnv()] as Environment;
   nock(env.zecExplorerBaseUrl)
     .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS')
@@ -2671,7 +2646,7 @@ module.exports.nockZecRecovery = function(bitgo, isKrsRecovery) {
   }
 };
 
-module.exports.nockDashRecovery = function(bitgo, isKrsRecovery) {
+module.exports.nockDashRecovery = function (bitgo, isKrsRecovery) {
   const env = Environments[bitgo.getEnv()] as Environment;
   nock(env.dashExplorerBaseUrl)
     .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW')
@@ -2805,7 +2780,7 @@ module.exports.nockDashRecovery = function(bitgo, isKrsRecovery) {
   }
 };
 
-module.exports.nockXlmRecovery = function() {
+module.exports.nockXlmRecovery = function () {
   nock('https://horizon-testnet.stellar.org')
     .get('/accounts/GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL')
     .reply(404, {
@@ -2876,12 +2851,10 @@ module.exports.nockXlmRecovery = function() {
           href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=&limit=1&order=desc',
         },
         next: {
-          href:
-            'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=desc',
+          href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=desc',
         },
         prev: {
-          href:
-            'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=asc',
+          href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=asc',
         },
       },
       _embedded: {
@@ -2930,7 +2903,7 @@ module.exports.nockXlmRecovery = function() {
     });
 };
 
-module.exports.nockTronRecovery = function() {
+module.exports.nockTronRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
   nock('http://47.252.81.135:8090')
     .post('/wallet/createtransaction')
@@ -2998,10 +2971,8 @@ module.exports.nockTronRecovery = function() {
     });
 };
 
-module.exports.nockEosRecovery = function() {
-  nock('https://jungle3.cryptolions.io:443')
-    .post('*')
-    .reply(502);
+module.exports.nockEosRecovery = function () {
+  nock('https://jungle3.cryptolions.io:443').post('*').reply(502);
   nock('https://jungle3.eosdac.io:443')
     .post('/v1/chain/get_info')
     .reply(200, {
@@ -3204,8 +3175,8 @@ module.exports.nockEosRecovery = function() {
     });
 };
 
-module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: any) {
-  emptyAddrs.forEach(function(addr) {
+module.exports.nockEmptyAddressInfo = function (emptyAddrs: Array<string>, env: any) {
+  emptyAddrs.forEach(function (addr) {
     const data = {};
     data[addr] = {
       address: {
@@ -3238,7 +3209,7 @@ module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: a
   });
 };
 
-module.exports.nockBtcSegwitRecovery = function(bitgo) {
+module.exports.nockBtcSegwitRecovery = function (bitgo) {
   const env = bitgo.getEnv() as any;
   const emptyAddrs = [
     '2N42muVaEhvcyMRr7pmFPnrmprdmWCUvhy7',
@@ -3340,7 +3311,7 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
 
 // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
 // eslint-disable-next-line no-unused-vars
-const smartBitNockBtcSegwitRecovery = function(bitgo) {
+const smartBitNockBtcSegwitRecovery = function (bitgo) {
   const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
@@ -3355,7 +3326,7 @@ const smartBitNockBtcSegwitRecovery = function(bitgo) {
     '2N93AW6R6eLan8rfB715oCse9P6pexfK3Tn',
     '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
   ];
-  emptyAddrs.forEach(function(addr) {
+  emptyAddrs.forEach(function (addr) {
     nock(env.smartBitApiBaseUrl)
       .get('/blockchain/address/' + addr)
       .reply(
@@ -3401,7 +3372,7 @@ const smartBitNockBtcSegwitRecovery = function(bitgo) {
     .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
 
-module.exports.nockBtcUnsignedRecovery = function(bitgo) {
+module.exports.nockBtcUnsignedRecovery = function (bitgo) {
   const env = bitgo.getEnv() as any;
   const emptyAddrs = [
     '2NAmqGejm1YYiE8rUVanU8SsUkUxqJmKhT3',
@@ -3571,7 +3542,7 @@ module.exports.nockBtcUnsignedRecovery = function(bitgo) {
 
 // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
 // eslint-disable-next-line no-unused-vars
-const smartBitNockBtcUnsignedRecovery = function(bitgo) {
+const smartBitNockBtcUnsignedRecovery = function (bitgo) {
   const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
@@ -3586,7 +3557,7 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
     '2N29zwEk5AbcCW2wUWZoxsqh8Tb39ymHGvu',
     '2N2PppF9zw1jxM26VG89NjUA8bFWUPr8vjF',
   ];
-  emptyAddrs.forEach(function(addr) {
+  emptyAddrs.forEach(function (addr) {
     nock(env.smartBitApiBaseUrl)
       .get('/blockchain/address/' + addr)
       .reply(
@@ -3682,10 +3653,8 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
                 txid: 'a51944691864fdebd0af5fe0927cf15faeec4f99167dc4ed667939f39b182dfc',
                 vout: 0,
                 script_sig: {
-                  asm:
-                    '0 304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01 3044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace2301 522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
-                  hex:
-                    '0047304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01473044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace23014c69522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
+                  asm: '0 304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01 3044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace2301 522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
+                  hex: '0047304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01473044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace23014c69522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
                 },
                 type: 'scripthash',
                 witness: ['NULL'],
@@ -3779,10 +3748,8 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
                 txid: '5c335a038e34d6e241492ba2ef3c87c347a73bb6c2881a9bf51f40f0dadc279f',
                 vout: 1,
                 script_sig: {
-                  asm:
-                    '0 3045022100ed2dd9dabfd0bc250b0d08a6286b007edf04c7add8d2cd38e1d94a12d958d324022014a8d756f268a3e89dcb0bc5ac3828b9be0938ffadb5557453afd812556fcb5f01 30450221009c61daf674f679bd0db628295312110840bfc13ce551fd7c0c8cf3d68dfd037002206730d24ccd41cd96826c0fb0a51e47b18e37d71352815bb50bbf58cc2de1320001 52210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
-                  hex:
-                    '00483045022100ed2dd9dabfd0bc250b0d08a6286b007edf04c7add8d2cd38e1d94a12d958d324022014a8d756f268a3e89dcb0bc5ac3828b9be0938ffadb5557453afd812556fcb5f014830450221009c61daf674f679bd0db628295312110840bfc13ce551fd7c0c8cf3d68dfd037002206730d24ccd41cd96826c0fb0a51e47b18e37d71352815bb50bbf58cc2de13200014c6952210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
+                  asm: '0 3045022100ed2dd9dabfd0bc250b0d08a6286b007edf04c7add8d2cd38e1d94a12d958d324022014a8d756f268a3e89dcb0bc5ac3828b9be0938ffadb5557453afd812556fcb5f01 30450221009c61daf674f679bd0db628295312110840bfc13ce551fd7c0c8cf3d68dfd037002206730d24ccd41cd96826c0fb0a51e47b18e37d71352815bb50bbf58cc2de1320001 52210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
+                  hex: '00483045022100ed2dd9dabfd0bc250b0d08a6286b007edf04c7add8d2cd38e1d94a12d958d324022014a8d756f268a3e89dcb0bc5ac3828b9be0938ffadb5557453afd812556fcb5f014830450221009c61daf674f679bd0db628295312110840bfc13ce551fd7c0c8cf3d68dfd037002206730d24ccd41cd96826c0fb0a51e47b18e37d71352815bb50bbf58cc2de13200014c6952210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
                 },
                 type: 'scripthash',
                 witness: ['NULL'],
@@ -4039,10 +4006,8 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
                 txid: 'a51944691864fdebd0af5fe0927cf15faeec4f99167dc4ed667939f39b182dfc',
                 vout: 0,
                 script_sig: {
-                  asm:
-                    '0 304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01 3044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace2301 522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
-                  hex:
-                    '0047304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01473044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace23014c69522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
+                  asm: '0 304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01 3044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace2301 522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
+                  hex: '0047304402203fbd77db1cadb56e4a25b511dd21436111343db4e9b1ea6467e4b5f828cfe38d022039d2bbc525ff1b3d0538ff81b8eb11030856bfbe82b4e5b3b2d76b71f56ccd7b01473044022025a3fc5f93f9f626b308cda14043714814c5fcb3bce826a78b236df2ba03d4120220235dc83c99f6358c77aa4fd797d3f87af6202d4818800d100a519fd97a8ace23014c69522103f983fa66388201efed0c5e569529aa97528c38c9a3d0fa52e4d93495e10086b32103391bcdd0dc42f9aaee3b0643dfff02f5eb58c7a1edfcad89bbcdd444d5eaa0cc2102ca82b357f4db8f035036e9e4e65b871c9f642827570e36291d362791391271bc53ae',
                 },
                 type: 'scripthash',
                 witness: ['NULL'],
@@ -4136,10 +4101,8 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
                 txid: 'a9535d21e6c8d287a017bf214a3b21beaa9a0e854c23f29695ec4bcd9697dd76',
                 vout: 1,
                 script_sig: {
-                  asm:
-                    '0 3045022100e60cd332500dc90d79994ca46e333eea9806352502b55c62de45b6226d27b47e02207fe99f0a58e81f689c85cab7980d64e08c5247c37c5cf38195003c679b5a4bc001 30440220112fa01503080c8fc4a8e680a8606e533ec2b7a7bbc866356bdaec8da7dd459a022017d577057f63773290d279e592dffef23687b81ad4dd812959bce1175015393801 52210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
-                  hex:
-                    '00483045022100e60cd332500dc90d79994ca46e333eea9806352502b55c62de45b6226d27b47e02207fe99f0a58e81f689c85cab7980d64e08c5247c37c5cf38195003c679b5a4bc0014730440220112fa01503080c8fc4a8e680a8606e533ec2b7a7bbc866356bdaec8da7dd459a022017d577057f63773290d279e592dffef23687b81ad4dd812959bce11750153938014c6952210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
+                  asm: '0 3045022100e60cd332500dc90d79994ca46e333eea9806352502b55c62de45b6226d27b47e02207fe99f0a58e81f689c85cab7980d64e08c5247c37c5cf38195003c679b5a4bc001 30440220112fa01503080c8fc4a8e680a8606e533ec2b7a7bbc866356bdaec8da7dd459a022017d577057f63773290d279e592dffef23687b81ad4dd812959bce1175015393801 52210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
+                  hex: '00483045022100e60cd332500dc90d79994ca46e333eea9806352502b55c62de45b6226d27b47e02207fe99f0a58e81f689c85cab7980d64e08c5247c37c5cf38195003c679b5a4bc0014730440220112fa01503080c8fc4a8e680a8606e533ec2b7a7bbc866356bdaec8da7dd459a022017d577057f63773290d279e592dffef23687b81ad4dd812959bce11750153938014c6952210281696424e9bed900a9a518a2ded26c58ccef0ed32312edebe63fe4e3b311816821031d088f4e0f0d3586dcb6f1d21bc430e7b345a9046b451a05c9556e25a9e5a9a721028323a2306df19415073ade9b1f219ba33f0d16e1388681f76e7a03aaf3f685f853ae',
                 },
                 type: 'scripthash',
                 witness: ['NULL'],
@@ -4152,10 +4115,8 @@ const smartBitNockBtcUnsignedRecovery = function(bitgo) {
                 txid: '0eb9ffd355bb3dac749ae6bb0011e8ea2eea012bac13d89223f23b43a00fb8b2',
                 vout: 0,
                 script_sig: {
-                  asm:
-                    '0 30450221009761dedbc1f16c4c98fa26dd0ccc50ef1e0510f621078ccb224e72571e794a8e022031b8f53b7683b5db6a233da9ca6de490a83ae96d83961b18fe701db6be9c78ef01 3045022100a5bdc1c01aecbaeb82e12821e5183790cd389c3b2ace1b8bbec1fbf8aedcbad80220105a9f753205e5df2e75bb13b59d5c8b4de869042bf7f0c705fc00499ab95e4001 52210333fecfcb93d560b2f32ffc53b8a2dadae1e3efa7be47fc9c76dc2eeaa22729c821021f0e7be51cb22833cb1d09e269cc226024d195851b2a458082ad6445c28a883a2103296f90057d0ee10d2a64dbe4c8c29b9363fdde460a1c3a7970a4197b32e94e9753ae',
-                  hex:
-                    '004830450221009761dedbc1f16c4c98fa26dd0ccc50ef1e0510f621078ccb224e72571e794a8e022031b8f53b7683b5db6a233da9ca6de490a83ae96d83961b18fe701db6be9c78ef01483045022100a5bdc1c01aecbaeb82e12821e5183790cd389c3b2ace1b8bbec1fbf8aedcbad80220105a9f753205e5df2e75bb13b59d5c8b4de869042bf7f0c705fc00499ab95e40014c6952210333fecfcb93d560b2f32ffc53b8a2dadae1e3efa7be47fc9c76dc2eeaa22729c821021f0e7be51cb22833cb1d09e269cc226024d195851b2a458082ad6445c28a883a2103296f90057d0ee10d2a64dbe4c8c29b9363fdde460a1c3a7970a4197b32e94e9753ae',
+                  asm: '0 30450221009761dedbc1f16c4c98fa26dd0ccc50ef1e0510f621078ccb224e72571e794a8e022031b8f53b7683b5db6a233da9ca6de490a83ae96d83961b18fe701db6be9c78ef01 3045022100a5bdc1c01aecbaeb82e12821e5183790cd389c3b2ace1b8bbec1fbf8aedcbad80220105a9f753205e5df2e75bb13b59d5c8b4de869042bf7f0c705fc00499ab95e4001 52210333fecfcb93d560b2f32ffc53b8a2dadae1e3efa7be47fc9c76dc2eeaa22729c821021f0e7be51cb22833cb1d09e269cc226024d195851b2a458082ad6445c28a883a2103296f90057d0ee10d2a64dbe4c8c29b9363fdde460a1c3a7970a4197b32e94e9753ae',
+                  hex: '004830450221009761dedbc1f16c4c98fa26dd0ccc50ef1e0510f621078ccb224e72571e794a8e022031b8f53b7683b5db6a233da9ca6de490a83ae96d83961b18fe701db6be9c78ef01483045022100a5bdc1c01aecbaeb82e12821e5183790cd389c3b2ace1b8bbec1fbf8aedcbad80220105a9f753205e5df2e75bb13b59d5c8b4de869042bf7f0c705fc00499ab95e40014c6952210333fecfcb93d560b2f32ffc53b8a2dadae1e3efa7be47fc9c76dc2eeaa22729c821021f0e7be51cb22833cb1d09e269cc226024d195851b2a458082ad6445c28a883a2103296f90057d0ee10d2a64dbe4c8c29b9363fdde460a1c3a7970a4197b32e94e9753ae',
                 },
                 type: 'scripthash',
                 witness: ['NULL'],

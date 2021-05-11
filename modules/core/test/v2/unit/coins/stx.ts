@@ -1,7 +1,5 @@
-import * as PromiseB from 'bluebird';
 import { Stx, Tstx } from '../../../../src/v2/coins/';
 import * as accountLib from '@bitgo/account-lib';
-const co = PromiseB.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/stx';
 

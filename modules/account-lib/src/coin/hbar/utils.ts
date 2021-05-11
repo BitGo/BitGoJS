@@ -39,6 +39,9 @@ export function isValidTransactionId(txId: string): boolean {
   }
   try {
     const tx = TransactionId.fromString(txId);
+    if (_.isNil(tx.accountId)) {
+      return false;
+    }
     return !_.isNaN(tx.accountId.num);
   } catch (e) {
     return false;
