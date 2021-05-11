@@ -80,10 +80,7 @@ export class Affirmation {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.partyAccountId}/affirmations/${self.id}`
       );
-      const response = yield self.bitgo
-        .put(url)
-        .send(bodyWithStatus)
-        .result();
+      const response = yield self.bitgo.put(url).send(bodyWithStatus).result();
       self.updateAffirmationData(response);
     })
       .call(this)

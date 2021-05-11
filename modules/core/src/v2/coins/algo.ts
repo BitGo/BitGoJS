@@ -232,7 +232,7 @@ export class Algo extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       // take txHex first always, but as it might already be signed, take halfSigned second
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
 
@@ -389,9 +389,9 @@ export class Algo extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const { txHex, addressVersion, keys, sk, isHalfSigned } = self.verifySignTransactionParams(params);
-      const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
+      const encodedPublicKeys = _.map(keys, (k) => Address.decode(k).publicKey);
 
       // decode our unsigned/half-signed tx
       let transaction;

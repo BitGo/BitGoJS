@@ -194,7 +194,7 @@ export class Eth2 extends BaseCoin {
    */
   queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const result = (yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'balance',
@@ -247,7 +247,7 @@ export class Eth2 extends BaseCoin {
    */
   getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
-    return co<number>(function*() {
+    return co<number>(function* () {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
 
@@ -259,7 +259,7 @@ export class Eth2 extends BaseCoin {
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter(tx => tx.from === address);
+        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
         nonce = outgoingTxs.length;
       }
       return nonce;
@@ -293,7 +293,7 @@ export class Eth2 extends BaseCoin {
    */
   recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = (yield request
         .get(common.Environments[self.bitgo.getEnv()].eth2ExplorerBaseUrl)
         .query(query)) as any;

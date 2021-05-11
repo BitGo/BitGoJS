@@ -174,7 +174,7 @@ export class Stx extends BaseCoin {
   ): Bluebird<SignedTransaction> {
     const self = this;
 
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
       const txBuilder = factory.from(params.txPrebuild.txHex);
       txBuilder.sign({ key: params.prv });
@@ -208,7 +208,7 @@ export class Stx extends BaseCoin {
     callback?: NodeCallback<StxTransactionExplanation>
   ): Bluebird<StxTransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');

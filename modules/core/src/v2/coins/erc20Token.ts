@@ -184,7 +184,7 @@ export class Erc20Token extends Eth {
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter(tx => tx.from === backupKeyAddress);
+        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
         backupKeyNonce = outgoingTxs.length;
       }
 

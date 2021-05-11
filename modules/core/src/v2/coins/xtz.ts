@@ -189,7 +189,7 @@ export class Xtz extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const txBuilder: any = bitgoAccountLib.getBuilder(self.getChain());
       txBuilder.from(params.txPrebuild.txHex);
       txBuilder.source(params.txPrebuild.source);
@@ -261,7 +261,7 @@ export class Xtz extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');

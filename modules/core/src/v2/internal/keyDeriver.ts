@@ -44,10 +44,7 @@ export class Ed25519KeyDeriver {
       throw new Error('Invalid derivation path');
     }
     const { key, chainCode } = this.getMasterKeyFromSeed(seed);
-    const segments = path
-      .split('/')
-      .slice(1)
-      .map(this.replaceDerive);
+    const segments = path.split('/').slice(1).map(this.replaceDerive);
     return segments.reduce(
       (parentKeys, segment) => this.CKDPriv(parentKeys, segment + Ed25519KeyDeriver.HARDENED_OFFSET),
       { key, chainCode }
@@ -81,9 +78,7 @@ export class Ed25519KeyDeriver {
     const indexBuffer = Buffer.allocUnsafe(4);
     indexBuffer.writeUInt32BE(index, 0);
     const data = Buffer.concat([Buffer.alloc(1, 0), key, indexBuffer]);
-    const I = createHmac('sha512', chainCode)
-      .update(data)
-      .digest();
+    const I = createHmac('sha512', chainCode).update(data).digest();
     const IL = I.slice(0, 32);
     const IR = I.slice(32);
     return {
@@ -97,10 +92,6 @@ export class Ed25519KeyDeriver {
     if (!Ed25519KeyDeriver.PATH_REGEX.test(path)) {
       return false;
     }
-    return !path
-      .split('/')
-      .slice(1)
-      .map(this.replaceDerive)
-      .some(isNaN);
+    return !path.split('/').slice(1).map(this.replaceDerive).some(isNaN);
   }
 }

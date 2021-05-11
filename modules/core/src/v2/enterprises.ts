@@ -31,9 +31,9 @@ export class Enterprises {
    */
   public list(params: Record<string, never> = {}, callback?: NodeCallback<Enterprise[]>): Bluebird<Enterprise[]> {
     const self = this;
-    return co<Enterprise[]>(function*() {
+    return co<Enterprise[]>(function* () {
       const response = (yield self.bitgo.get(self.bitgo.url('/enterprise')).result()) as any;
-      return response.enterprises.map(e => {
+      return response.enterprises.map((e) => {
         // instantiate a new object for each enterprise
         return new Enterprise(self.bitgo, self.baseCoin, e);
       });
@@ -49,7 +49,7 @@ export class Enterprises {
    */
   public get(params: GetEnterpriseOptions = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
     const self = this;
-    return co<Enterprise>(function*() {
+    return co<Enterprise>(function* () {
       const enterpriseId = params.id;
       if (_.isUndefined(enterpriseId)) {
         throw new Error('id must not be empty');
@@ -73,11 +73,8 @@ export class Enterprises {
   // TODO: (CT-686) Flesh out params object with valid enterprise creation parameters
   public create(params: any = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
     const self = this;
-    return co<Enterprise>(function*() {
-      const enterpriseData = (yield self.bitgo
-        .post(self.bitgo.url(`/enterprise`))
-        .send(params)
-        .result()) as any;
+    return co<Enterprise>(function* () {
+      const enterpriseData = (yield self.bitgo.post(self.bitgo.url(`/enterprise`)).send(params).result()) as any;
       return new Enterprise(self.bitgo, self.baseCoin, enterpriseData);
     })
       .call(this)

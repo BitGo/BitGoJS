@@ -50,7 +50,7 @@ export class Affirmations {
 
       const response = (yield self.bitgo.get(url).result()) as any;
 
-      return response.affirmations.map(affirmation => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
+      return response.affirmations.map((affirmation) => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
     })
       .call(this)
       .asCallback(callback);

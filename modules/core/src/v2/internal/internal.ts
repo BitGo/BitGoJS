@@ -25,7 +25,7 @@ export function getFirstPendingTransaction(
   baseCoin: BaseCoin,
   bitgo: BitGo
 ): Bluebird<any> {
-  return co(function*() {
+  return co(function* () {
     // These errors should never happen when this is called from wallet.js or enterprise.js
     if (isUndefined(baseCoin)) {
       throw new Error('Must provide baseCoin');
@@ -36,10 +36,7 @@ export function getFirstPendingTransaction(
     if (isUndefined(params.walletId) && isUndefined(params.enterpriseId)) {
       throw new Error('Must provide either walletId or enterpriseId');
     }
-    return bitgo
-      .get(baseCoin.url('/tx/pending/first'))
-      .query(params)
-      .result();
+    return bitgo.get(baseCoin.url('/tx/pending/first')).query(params).result();
   }).call(this);
 }
 

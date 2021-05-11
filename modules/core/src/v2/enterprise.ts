@@ -60,7 +60,7 @@ export class Enterprise {
   coinWallets(params: Record<string, never> = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
     return co<Wallet[]>(function* coCoinWallets() {
       const walletData = (yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result()) as any;
-      walletData.wallets = walletData.wallets.map(w => {
+      walletData.wallets = walletData.wallets.map((w) => {
         return new Wallet(this.bitgo, this.baseCoin, w);
       });
       return walletData;
@@ -75,10 +75,7 @@ export class Enterprise {
    * @param callback
    */
   users(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.url('/user'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.url('/user')).result().asCallback(callback);
   }
 
   /**
@@ -87,10 +84,7 @@ export class Enterprise {
    * @param callback
    */
   getFeeAddressBalance(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.coinUrl('/feeAddressBalance'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.coinUrl('/feeAddressBalance')).result().asCallback(callback);
   }
 
   /**
@@ -99,11 +93,7 @@ export class Enterprise {
    * @param callback
    */
   addUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .post(this.url('/user'))
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return this.bitgo.post(this.url('/user')).send(params).result().asCallback(callback);
   }
 
   /**
@@ -112,11 +102,7 @@ export class Enterprise {
    * @param callback
    */
   removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .del(this.url('/user'))
-      .send(params)
-      .result()
-      .asCallback(callback);
+    return this.bitgo.del(this.url('/user')).send(params).result().asCallback(callback);
   }
 
   /**

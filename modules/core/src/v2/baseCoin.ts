@@ -424,10 +424,7 @@ export abstract class BaseCoin {
         query.numBlocks = params.numBlocks;
       }
 
-      return self.bitgo
-        .get(self.url('/tx/fee'))
-        .query(query)
-        .result();
+      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
     })
       .call(this)
       .asCallback(callback);

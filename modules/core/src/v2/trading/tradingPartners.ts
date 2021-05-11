@@ -52,7 +52,7 @@ export class TradingPartners {
       const response = (yield self.bitgo.get(url).result()) as any;
 
       return response.tradingPartners.map(
-        partner => new TradingPartner(partner, self.bitgo, self.enterpriseId, self.account)
+        (partner) => new TradingPartner(partner, self.bitgo, self.enterpriseId, self.account)
       );
     })
       .call(this)
@@ -73,10 +73,7 @@ export class TradingPartners {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
       );
-      const response = yield self.bitgo
-        .post(url)
-        .send(params)
-        .result();
+      const response = yield self.bitgo.post(url).send(params).result();
 
       return response;
     })

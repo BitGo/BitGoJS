@@ -217,7 +217,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
       if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
@@ -285,9 +285,7 @@ export class Trx extends BaseCoin {
 
       let prv = key.prv;
       if (self.isValidXprv(prv)) {
-        prv = HDNode.fromBase58(prv)
-          .getKey()
-          .getPrivateKeyBuffer();
+        prv = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
       }
 
       let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
@@ -340,7 +338,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<any>
   ): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       let nodeUri = '';
       switch (query.node) {
         case NodeTypes.Full:
@@ -377,7 +375,7 @@ export class Trx extends BaseCoin {
    */
   private getAccountFromNode(address: string, callback?: NodeCallback<AccountResponse>): Bluebird<AccountResponse> {
     const self = this;
-    return co<AccountResponse>(function*() {
+    return co<AccountResponse>(function* () {
       const result = yield self.recoveryPost({
         path: '/walletsolidity/getaccount',
         jsonObj: { address },
@@ -403,7 +401,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<bitgoAccountLib.Trx.Interface.TransactionReceipt>
   ): Bluebird<bitgoAccountLib.Trx.Interface.TransactionReceipt> {
     const self = this;
-    return co<bitgoAccountLib.Trx.Interface.TransactionReceipt>(function*() {
+    return co<bitgoAccountLib.Trx.Interface.TransactionReceipt>(function* () {
       // our addresses should be base58, we'll have to encode to hex
       const result = yield self.recoveryPost({
         path: '/wallet/createtransaction',
@@ -426,9 +424,9 @@ export class Trx extends BaseCoin {
    * @param keysToFind
    */
   checkPermissions(ownerKeys: { address: string; weight: number }[], keys: string[]) {
-    keys = keys.map(k => k.toUpperCase());
+    keys = keys.map((k) => k.toUpperCase());
 
-    ownerKeys.map(key => {
+    ownerKeys.map((key) => {
       const hexKey = key.address.toUpperCase();
       if (!keys.includes(hexKey)) {
         throw new Error(`pub address ${hexKey} not found in account`);
@@ -451,7 +449,7 @@ export class Trx extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co<RecoveryTransaction>(function*() {
+    return co<RecoveryTransaction>(function* () {
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
@@ -536,7 +534,7 @@ export class Trx extends BaseCoin {
     callback?: NodeCallback<TronTransactionExplanation>
   ): Bluebird<TronTransactionExplanation> {
     const self = this;
-    return co<TronTransactionExplanation>(function*() {
+    return co<TronTransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');

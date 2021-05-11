@@ -395,15 +395,13 @@ export class Eos extends BaseCoin {
     params: EosSignTransactionParams,
     callback?: NodeCallback<EosSignedTransaction>
   ): Bluebird<EosSignedTransaction> {
-    return co<EosSignedTransaction>(function*() {
+    return co<EosSignedTransaction>(function* () {
       const prv: string = params.prv;
       const txHex: string = params.txPrebuild.txHex;
       const transaction: EosTx = params.txPrebuild.transaction;
 
       const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv)
-        .getKey()
-        .getPrivateKeyBuffer();
+      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
       const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
       transaction.signatures.push(signature);
@@ -465,7 +463,7 @@ export class Eos extends BaseCoin {
     headers,
   }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
     const self = this;
-    return co<DeserializedEosTransaction>(function*() {
+    return co<DeserializedEosTransaction>(function* () {
       const eosClientConfig = {
         chainId: self.getChainId(),
         transactionHeaders: headers,
@@ -574,7 +572,7 @@ export class Eos extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function*() {
+    return co<TransactionExplanation>(function* () {
       let transaction;
       try {
         transaction = yield self.deserializeTransaction(params);
@@ -651,7 +649,7 @@ export class Eos extends BaseCoin {
     walletPassphrase,
   }: RecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
-    return co<HDNode[]>(function*() {
+    return co<HDNode[]>(function* () {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
@@ -696,7 +694,7 @@ export class Eos extends BaseCoin {
    */
   protected getDataFromNode(params: { endpoint: string; payload?: Record<string, unknown> }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const nodeUrls = self.getPublicNodeUrls();
       for (const nodeUrl of nodeUrls) {
         try {
@@ -714,7 +712,7 @@ export class Eos extends BaseCoin {
    */
   protected getChainInfoFromNode(): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({ endpoint: '/v1/chain/get_info' });
       if ((response as any).status !== 200) {
         throw new Error('Unable to fetch chain info');
@@ -729,7 +727,7 @@ export class Eos extends BaseCoin {
    */
   protected getAccountFromNode({ address }: { address: string }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_account',
         payload: { account_name: address },
@@ -747,7 +745,7 @@ export class Eos extends BaseCoin {
    */
   protected getBlockFromNode({ blockNumOrId }: { blockNumOrId: string }): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_block',
         payload: { block_num_or_id: blockNumOrId },
@@ -764,7 +762,7 @@ export class Eos extends BaseCoin {
    */
   protected getTransactionHeadersFromNode(): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const chainInfo = (yield self.getChainInfoFromNode()) as any;
       const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
       const expireSeconds = 28800; // maximum tx expire time of 8h
@@ -830,7 +828,7 @@ export class Eos extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co<RecoveryTransaction>(function*() {
+    return co<RecoveryTransaction>(function* () {
       if (!params.rootAddress) {
         throw new Error('missing required string rootAddress');
       }

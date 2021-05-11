@@ -15,7 +15,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 
-describe('Trade Payloads', function() {
+describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -24,7 +24,7 @@ describe('Trade Payloads', function() {
   let bgUrl;
 
   before(
-    co(function*() {
+    co(function* () {
       bitgo = new TestBitGo({ env: 'mock', microservicesUri });
       bitgo.initializeTestVars();
       basecoin = bitgo.coin('ofc');
@@ -45,7 +45,7 @@ describe('Trade Payloads', function() {
     })
   );
 
-  it('should create and sign a trade payload with fees', async function() {
+  it('should create and sign a trade payload with fees', async function () {
     const xprv =
       'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
     const xpub =
@@ -112,7 +112,7 @@ describe('Trade Payloads', function() {
     msScope.isDone().should.be.True();
   });
 
-  it('should throw if the payload does not match the build parameters', async function() {
+  it('should throw if the payload does not match the build parameters', async function () {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
       .twice()

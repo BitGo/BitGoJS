@@ -44,10 +44,7 @@ export class Webhooks {
    * @returns {*}
    */
   list(callback: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/webhooks'))
-      .result()
-      .nodeify(callback);
+    return this.bitgo.get(this.baseCoin.url('/webhooks')).result().nodeify(callback);
   }
 
   /**
@@ -59,12 +56,9 @@ export class Webhooks {
    */
   add(params: AddOptions, callback: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       validateParams(params, ['url', 'type'], [], callback);
-      return self.bitgo
-        .post(self.baseCoin.url('/webhooks'))
-        .send(params)
-        .result();
+      return self.bitgo.post(self.baseCoin.url('/webhooks')).send(params).result();
     })
       .call(this)
       .asCallback(callback);
@@ -79,13 +73,10 @@ export class Webhooks {
    */
   remove(params: RemoveOptions, callback: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       validateParams(params, ['url', 'type'], [], callback);
 
-      return self.bitgo
-        .del(self.baseCoin.url('/webhooks'))
-        .send(params)
-        .result();
+      return self.bitgo.del(self.baseCoin.url('/webhooks')).send(params).result();
     })
       .call(this)
       .asCallback(callback);
@@ -100,7 +91,7 @@ export class Webhooks {
    */
   listNotifications(params: ListNotificationsOptions = {}, callback: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       const queryProperties: (keyof ListNotificationsOptions)[] = [];
       if (params.prevId) {
         if (!_.isString(params.prevId)) {
@@ -116,10 +107,7 @@ export class Webhooks {
       }
       const query = _.pick(params, queryProperties);
 
-      return self.bitgo
-        .get(self.baseCoin.url('/webhooks/notifications'))
-        .query(query)
-        .result();
+      return self.bitgo.get(self.baseCoin.url('/webhooks/notifications')).query(query).result();
     })
       .call(this)
       .asCallback(callback);
@@ -134,7 +122,7 @@ export class Webhooks {
    */
   simulate(params: SimulateOptions, callback: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       validateParams(params, ['webhookId', 'blockId'], [], callback);
 
       const webhookId = params.webhookId;

@@ -46,10 +46,7 @@ export class Markets {
    * current day in a number of currencies
    **/
   latest(params: LatestOptions, callback: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/market/latest'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/market/latest')).result().asCallback(callback);
   }
 
   /**
@@ -60,10 +57,7 @@ export class Markets {
    * previous day in a number of currencies
    */
   yesterday(params: YesterdayOptions, callback: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/market/yesterday'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/market/yesterday')).result().asCallback(callback);
   }
 
   /**
@@ -74,7 +68,7 @@ export class Markets {
    */
   lastDays(params: LastDaysOptions, callback: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       validateParams(params, ['currencyName'], []);
 
       const days = params.days && !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;

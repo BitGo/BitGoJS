@@ -42,7 +42,7 @@ export class Settlement {
     this.status = settlementData.status;
     this.type = settlementData.type;
     this.affirmations = settlementData.affirmations.map(
-      affirmation => new Affirmation(affirmation, this.bitgo, this.enterpriseId)
+      (affirmation) => new Affirmation(affirmation, this.bitgo, this.enterpriseId)
     );
     this.createdAt = new Date(settlementData.createdAt);
     this.expireAt = new Date(settlementData.expireAt);

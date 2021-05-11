@@ -69,10 +69,7 @@ export class TradingPartner {
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.currentAccount.id}/tradingpartners/${partnerAccountId}/balance`
       );
 
-      const response = (yield self.bitgo
-        .get(url)
-        .query({ currency, amount })
-        .result()) as any;
+      const response = (yield self.bitgo.get(url).query({ currency, amount }).result()) as any;
 
       return response.check;
     })

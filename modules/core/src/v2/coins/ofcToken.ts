@@ -94,7 +94,7 @@ export class OfcToken extends Ofc {
     params: SignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    return co<SignedTransaction>(function*() {
+    return co<SignedTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
       const payload = txPrebuild.payload;
       const signatureBuffer = (yield this.signMessage(params, payload)) as any;

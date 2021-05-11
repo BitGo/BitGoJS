@@ -116,7 +116,7 @@ export class Wallets {
     callback?: NodeCallback<{ wallets: Wallet[] }>
   ): Bluebird<{ wallets: Wallet[] }> {
     const self = this;
-    return co<{ wallets: Wallet[] }>(function*() {
+    return co<{ wallets: Wallet[] }>(function* () {
       const queryObject: ListWalletOptions = {};
 
       if (params.skip && params.prevId) {
@@ -149,11 +149,8 @@ export class Wallets {
         queryObject.allTokens = params.allTokens;
       }
 
-      const body = (yield self.bitgo
-        .get(self.baseCoin.url('/wallet'))
-        .query(queryObject)
-        .result()) as any;
-      body.wallets = body.wallets.map(w => new Wallet(self.bitgo, self.baseCoin, w));
+      const body = (yield self.bitgo.get(self.baseCoin.url('/wallet')).query(queryObject).result()) as any;
+      body.wallets = body.wallets.map((w) => new Wallet(self.bitgo, self.baseCoin, w));
       return body;
     })
       .call(this)
@@ -172,7 +169,7 @@ export class Wallets {
    */
   add(params: AddWalletOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       common.validateParams(params, [], ['label', 'enterprise', 'type'], callback);
 
       // no need to pass keys for (single) custodial wallets
@@ -256,10 +253,7 @@ export class Wallets {
         walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
       }
 
-      const newWallet = yield self.bitgo
-        .post(self.baseCoin.url('/wallet'))
-        .send(walletParams)
-        .result();
+      const newWallet = yield self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result();
       return {
         wallet: new Wallet(self.bitgo, self.baseCoin, newWallet),
       };
@@ -296,7 +290,7 @@ export class Wallets {
     callback?: NodeCallback<WalletWithKeychains>
   ): Bluebird<WalletWithKeychains> {
     const self = this;
-    return co<WalletWithKeychains>(function*(): any {
+    return co<WalletWithKeychains>(function* (): any {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
       if (!_.isString(params.label)) {
         throw new Error('missing required string parameter label');
@@ -364,7 +358,7 @@ export class Wallets {
       // Ensure each krsSpecific param is either a string, boolean, or number
       const { krsSpecific } = params;
       if (!_.isUndefined(krsSpecific)) {
-        Object.keys(krsSpecific).forEach(key => {
+        Object.keys(krsSpecific).forEach((key) => {
           const val = krsSpecific[key];
           if (!_.isBoolean(val) && !_.isString(val) && !_.isNumber(val)) {
             throw new Error('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
@@ -377,7 +371,7 @@ export class Wallets {
       const reqId = new RequestTracer();
 
       // Add the user keychain
-      const userKeychainPromise = co(function*() {
+      const userKeychainPromise = co(function* () {
         let userKeychainParams;
         let userKeychain;
         // User provided user key
@@ -413,7 +407,7 @@ export class Wallets {
         return _.extend({}, newUserKeychain, userKeychain);
       }).call(this);
 
-      const backupKeychainPromise = co(function*() {
+      const backupKeychainPromise = co(function* () {
         if (params.backupXpubProvider || self.baseCoin.getFamily() === 'rmg') {
           // If requested, use a KRS or backup key provider
           return self.baseCoin.keychains().createBackup({
@@ -471,10 +465,7 @@ export class Wallets {
       };
       const finalWalletParams = yield self.baseCoin.supplementGenerateWallet(walletParams, keychains);
       self.bitgo.setRequestTracer(reqId);
-      const newWallet = yield self.bitgo
-        .post(self.baseCoin.url('/wallet'))
-        .send(finalWalletParams)
-        .result();
+      const newWallet = yield self.bitgo.post(self.baseCoin.url('/wallet')).send(finalWalletParams).result();
 
       const result: WalletWithKeychains = {
         wallet: new Wallet(self.bitgo, self.baseCoin, newWallet),
@@ -503,10 +494,7 @@ export class Wallets {
    * @param callback
    */
   listShares(params: Record<string, unknown> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/walletshare'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/walletshare')).result().asCallback(callback);
   }
 
   /**
@@ -549,7 +537,7 @@ export class Wallets {
    */
   resendShareInvite(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       common.validateParams(params, ['walletShareId'], [], callback);
 
       const urlParts = params.walletShareId + '/resendemail';
@@ -590,7 +578,7 @@ export class Wallets {
    */
   acceptShare(params: AcceptShareOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function*() {
+    return co(function* () {
       common.validateParams(
         params,
         ['walletShareId'],
@@ -670,7 +658,7 @@ export class Wallets {
    */
   getWallet(params: GetWalletOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co<Wallet>(function*() {
+    return co<Wallet>(function* () {
       common.validateParams(params, ['id'], [], callback);
 
       const query: GetWalletOptions = {};
@@ -702,7 +690,7 @@ export class Wallets {
    */
   getWalletByAddress(params: GetWalletByAddressOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co<Wallet>(function*() {
+    return co<Wallet>(function* () {
       common.validateParams(params, ['address'], [], callback);
 
       self.bitgo.setRequestTracer(params.reqId || new RequestTracer());
@@ -722,9 +710,6 @@ export class Wallets {
    * @returns {*}
    */
   getTotalBalances(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo
-      .get(this.baseCoin.url('/wallet/balances'))
-      .result()
-      .asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/wallet/balances')).result().asCallback(callback);
   }
 }
