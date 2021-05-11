@@ -2,6 +2,7 @@ import should from 'should';
 import { AddressVersion } from '@stacks/transactions';
 import * as testData from '../../../resources/stx/stx';
 import * as Utils from '../../../../src/coin/stx/utils';
+import { Stx } from '../../../../src';
 
 describe('Stx util library', function() {
   describe('address', function() {
@@ -205,6 +206,59 @@ describe('Stx util library', function() {
       for (const memo of memoStrings) {
         Utils.isValidMemo(memo).should.be.false();
       }
+    });
+  });
+
+  describe('sign and verify', function() {
+    const keyPair1 = new Stx.KeyPair({ prv: testData.secretKey1 });
+    const keyPair2 = new Stx.KeyPair({ prv: testData.secretKey2 });
+
+    it('sign a message', function() {
+      should.equal(Stx.Utils.signMessage(keyPair1, testData.message1), testData.expectedSignature1);
+      should.equal(Stx.Utils.signMessage(keyPair2, testData.message2), testData.expectedSignature2);
+    });
+
+    it('verify a signature', function() {
+      Stx.Utils.verifySignature(
+        testData.message1,
+        testData.expectedSignature1,
+        keyPair1.getKeys().pub,
+      ).should.be.true();
+
+      // handle compressed and uncompressed public keys properly
+      Stx.Utils.verifySignature(
+        testData.message2,
+        testData.expectedSignature2,
+        keyPair2.getKeys(false).pub,
+      ).should.be.true();
+
+      Stx.Utils.verifySignature(
+        testData.message2,
+        testData.expectedSignature2,
+        keyPair2.getKeys(true).pub,
+      ).should.be.true();
+    });
+
+    it('should not verify signatures', function() {
+      // empty message
+      should.throws(
+        () => Stx.Utils.verifySignature('', testData.expectedSignature1, keyPair1.getKeys().pub),
+        'Cannot verify empty messages',
+      );
+
+      // wrong public key
+      Stx.Utils.verifySignature(
+        testData.message1,
+        testData.expectedSignature1,
+        keyPair2.getKeys().pub,
+      ).should.be.false();
+
+      // wrong signature
+      Stx.Utils.verifySignature(
+        testData.message2,
+        testData.expectedSignature1,
+        keyPair2.getKeys().pub,
+      ).should.be.false();
     });
   });
 });
