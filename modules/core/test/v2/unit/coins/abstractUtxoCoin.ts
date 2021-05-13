@@ -11,12 +11,12 @@ import * as nock from 'nock';
 const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
 import { Btc } from '../../../../src/v2/coins/btc';
-import { 
-  addressUnspents, 
-  addressInfos, 
-  emptyAddressInfo, 
-  recoverBtcUnsignedFixtures, 
-  recoverBtcSegwitFixtures 
+import {
+  addressUnspents,
+  addressInfos,
+  emptyAddressInfo,
+  recoverBtcUnsignedFixtures,
+  recoverBtcSegwitFixtures
 } from '../../fixtures/coins/recovery';
 
 describe('Abstract UTXO Coin:', () => {
@@ -398,7 +398,88 @@ describe('Abstract UTXO Coin:', () => {
       }).should.be.rejectedWith(/expected outputs missing in transaction prebuild/);
 
       (coin.parseTransaction as any).restore();
+    });
 
+    it('should not allow more than 150 basis points of implicit external outputs (for paygo outputs)', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {},
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [],
+        changeOutputs: [],
+        explicitExternalSpendAmount: 10000,
+        implicitExternalSpendAmount: 151,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+      }).should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
+
+      coinMock.restore();
+    });
+
+    it('should allow 150 basis points of implicit external outputs (for paygo outputs)', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {},
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [],
+        changeOutputs: [],
+        explicitExternalSpendAmount: 1000,
+        implicitExternalSpendAmount: 15,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      const bitcoinMock = sinon.stub(utxoLib.Transaction, 'fromHex').returns({ ins: [] });
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+      }).should.eventually.be.true();
+
+      coinMock.restore();
+      bitcoinMock.restore();
+    });
+
+    it('should not allow any implicit external outputs if paygo outputs are disallowed', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {
+        },
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [],
+        changeOutputs: [],
+        explicitExternalSpendAmount: 0,
+        implicitExternalSpendAmount: 10,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {
+          allowPaygoOutput: false,
+        },
+      }).should.be.rejectedWith('prebuild attempts to spend to unintended external recipients');
+
+      coinMock.restore();
     });
   });
 
