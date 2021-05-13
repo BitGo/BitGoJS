@@ -31,7 +31,7 @@ export function isBase58Address(address: string): boolean {
  * @param str
  */
 export function getByteArrayFromHexAddress(str: string): ByteArray {
-  return tronweb.utils.code.hexStr2byteArray(str);
+  return tronweb.utils.code.hexStr2byteArray(str.replace('0x', ''));
 }
 
 /**

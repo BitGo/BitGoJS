@@ -26,6 +26,11 @@ describe('Util library should', function() {
     should.deepEqual(ba, arr);
   });
 
+  it('be able to convert hex with 0x to bytes ', () => {
+    const ba = Utils.getByteArrayFromHexAddress('0x' + hex);
+    should.deepEqual(ba, arr);
+  });
+
   it('be able to convert hex to bytes', () => {
     const hs = Utils.getHexAddressFromByteArray(arr);
     should.equal(hs, hex);
