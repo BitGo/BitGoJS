@@ -120,6 +120,11 @@ export class Trx extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** @inheritdoc */
+  transactionDataAllowed() {
+    return true;
+  }
+
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Trx(bitgo, staticsCoin);
   }
