@@ -223,12 +223,7 @@ export class Trx extends BaseCoin {
   ): Bluebird<SignedTransaction> {
     const self = this;
     return co<SignedTransaction>(function* () {
-      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
-      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
-      }
-      txBuilder.from(params.txPrebuild.txHex);
+      const txBuilder = bitgoAccountLib.getBuilder(self.getChain()).from(params.txPrebuild.txHex);
       txBuilder.sign({ key: params.prv });
       const transaction = (yield txBuilder.build()) as any;
       const response = {
@@ -493,12 +488,9 @@ export class Trx extends BaseCoin {
       self.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
 
       // construct our tx
-      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
-      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
-      }
-      txBuilder.from(buildTx);
+      const txBuilder = (bitgoAccountLib.getBuilder(self.getChain()) as bitgoAccountLib.Trx.WrappedBuilder).from(
+        buildTx
+      );
 
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
@@ -544,12 +536,7 @@ export class Trx extends BaseCoin {
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');
       }
-      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
-      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
-      }
-      txBuilder.from(txHex);
+      const txBuilder = bitgoAccountLib.getBuilder(self.getChain()).from(txHex);
       const tx = (yield txBuilder.build()) as any;
       const outputs = [
         {
