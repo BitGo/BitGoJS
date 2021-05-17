@@ -19,9 +19,9 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { SigningError, ParseTransactionError, InvalidTransactionError, NotSupported } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
-import { BaseTransaction, Error, TransactionType } from '../baseCoin';
+import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
-import { getTxSenderAddress, bufferToHexPrefixString, removeHexPrefix } from './utils';
+import { getTxSenderAddress, removeHexPrefix } from './utils';
 import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
@@ -37,9 +37,10 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async sign(keyPair: KeyPair[] | KeyPair): Promise<void> {
+  async sign(keyPair: KeyPair[] | KeyPair, sigHash?: string): Promise<void> {
     const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
     const signer = new TransactionSigner(this._stxTransaction);
+    if (sigHash) signer.sigHash = sigHash;
     for (const kp of keyPairs) {
       const keys = kp.getKeys(kp.getCompressed());
       if (!keys.prv) {
@@ -48,26 +49,27 @@ export class Transaction extends BaseTransaction {
       const privKey = createStacksPrivateKey(keys.prv);
       signer.signOrigin(privKey);
     }
+    this._stxTransaction = signer.getTxInComplete();
   }
 
-  async appendOrigin(pubKeyString: string): Promise<void> {
-
-    const pubKey = createStacksPublicKey(pubKeyString);
+  async appendOrigin(pubKeyString: string[]): Promise<void> {
     const signer = new TransactionSigner(this._stxTransaction);
-    signer.appendOrigin(pubKey);
+    pubKeyString.forEach((pubKey) => {
+      signer.appendOrigin(createStacksPublicKey(pubKey));
+    });
   }
 
   async signWithSignatures(signature: SignatureData[], publicKey: string[]): Promise<void> {
     if (!signature) {
       throw new SigningError('Missing signatures');
     }
-    if (signature.length === 1) {
+    if (publicKey.length === 1) {
       this._stxTransaction = this._stxTransaction.createTxWithSignature(signature[0].data);
     } else {
-      const fields = [...signature, createStacksPublicKey(publicKey[signature.length])];
-      (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = fields.map(sig =>
-        createTransactionAuthField(PubKeyEncoding.Compressed, sig),
-      );
+      const authFields = signature.map((sig) => createTransactionAuthField(PubKeyEncoding.Compressed, sig));
+      (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = (
+        this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition
+      ).fields.concat(authFields);
     }
   }
 
@@ -129,7 +131,7 @@ export class Transaction extends BaseTransaction {
         contractAddress: addressToString(payload.contractAddress),
         contractName: payload.contractName.content,
         functionName: payload.functionName.content,
-        functionArgs: payload.functionArgs.map(arg => {
+        functionArgs: payload.functionArgs.map((arg) => {
           return {
             type: getCVTypeString(arg),
             value: cvToString(arg),
