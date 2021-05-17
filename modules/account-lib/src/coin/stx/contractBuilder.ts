@@ -132,7 +132,7 @@ export class ContractBuilder extends TransactionBuilder {
   }
 
   functionArgs(args: ClarityValueJson[]): this {
-    this._functionArgs = args.map(arg => {
+    this._functionArgs = args.map((arg) => {
       let type = arg.type === 'int' ? 'int128' : arg.type;
       type = type === 'uint' ? 'uint128' : type;
       return parseToCV(arg.value, type as ClarityAbiType);
