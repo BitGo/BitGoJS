@@ -703,6 +703,6 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
-  ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TUDHdFQP9rBryf2Q1eeg1xL7pHUiBjrghb', UnderlyingAsset.WBTC),
-  ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TMy398K9n1BJKcfMQ1gKB66Xx1H4MnrVeq', UnderlyingAsset.WETH),
+  ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf', UnderlyingAsset.WBTC),
+  ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
 ]);
