@@ -1,4 +1,5 @@
 import algosdk from 'algosdk';
+import * as hex from '@stablelib/hex';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
@@ -56,6 +57,15 @@ export class Utils implements BaseUtils {
    */
   hexStringToUInt8Array(str: string): Uint8Array {
     return new Uint8Array(Buffer.from(str, 'hex'));
+  }
+  /**
+   * Returns a Uint8Array of the given hex string
+   *
+   * @param {string} str - the hex string to be converted
+   * @returns {string} - the Uint8Array value
+   */
+  toUint8Array(str: string): Uint8Array {
+    return hex.decode(str);
   }
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
@@ -31,10 +32,10 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getKeys(): DefaultKeys {
-    const result: DefaultKeys = { pub: this.keyPair.pub.toString() };
+    const result: DefaultKeys = { pub: this.keyPair.pub };
 
     if (this.keyPair.prv) {
-      result.prv = this.keyPair.prv.toString();
+      result.prv = this.keyPair.prv;
     }
 
     return result;
