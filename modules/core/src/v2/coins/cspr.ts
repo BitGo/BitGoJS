@@ -58,6 +58,13 @@ interface TransactionOutput {
   coin: string;
 }
 
+interface TransactionOperation {
+  type: number;
+  amount: string;
+  coin: string;
+  validator: string;
+}
+
 export class Cspr extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -258,18 +265,47 @@ export class Cspr extends BaseCoin {
         throw new InvalidTransactionError('Error while trying to build transaction');
       }
       const id = Buffer.from(tx.casperTx.hash).toString('hex');
-      const transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
       const amount = accountLib.Cspr.Utils.getTransferAmount(tx.casperTx.session);
-      const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
+      let transferId;
       const outputs: TransactionOutput[] = [];
-      // TODO(https://bitgoinc.atlassian.net/browse/STLX-677): define outputs for different types of tx
-      if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
-        outputs.push({
-          address: toAddress,
-          amount,
-          coin: self.getChain(),
-        });
+      const operations: TransactionOperation[] = [];
+
+      switch (tx.type) {
+        case accountLib.BaseCoin.TransactionType.Send: {
+          transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
+          const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
+          outputs.push({
+            address: toAddress,
+            amount,
+            coin: self.getChain(),
+          });
+          break;
+        }
+        case accountLib.BaseCoin.TransactionType.StakingLock: {
+          const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+          operations.push({
+            type: accountLib.BaseCoin.TransactionType.StakingLock,
+            amount,
+            coin: self.getChain(),
+            validator: validator,
+          });
+          break;
+        }
+        case accountLib.BaseCoin.TransactionType.StakingUnlock: {
+          const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+          operations.push({
+            type: accountLib.BaseCoin.TransactionType.StakingUnlock,
+            amount,
+            coin: self.getChain(),
+            validator: validator,
+          });
+          break;
+        }
+        default: {
+          throw new InvalidTransactionError('Error while trying to get transaction type');
+        }
       }
+
       const outputAmount = outputs
         .reduce((acumulator, output) => {
           const currentValue = new BigNumber(output.amount);
@@ -277,7 +313,16 @@ export class Cspr extends BaseCoin {
         }, new BigNumber(0))
         .toFixed(0);
 
-      const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'transferId', 'fee'];
+      const displayOrder = [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'transferId',
+        'fee',
+        'operations',
+      ];
 
       return {
         displayOrder,
@@ -288,6 +333,7 @@ export class Cspr extends BaseCoin {
         changeAmount: '0', // account base does not make change
         transferId,
         fee: params.feeInfo,
+        operations,
       };
     })
       .call(this)
