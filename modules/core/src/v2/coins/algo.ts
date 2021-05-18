@@ -193,7 +193,7 @@ export class Algo extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
       // See jsdoc comment in isValidPrv
-      let seed = key.prv;
+      let seed: string | Uint8Array = key.prv;
       if (!self.isValidPrv(seed)) {
         throw new Error(`invalid seed: ${seed}`);
       }
@@ -442,4 +442,63 @@ export class Algo extends BaseCoin {
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
   }
+}
+
+// -------------------------------------------------------------------------------------
+// Module Augmentations
+// -------------------------------------------------------------------------------------
+
+// Augments the algosdk module to include types from the BitGo algosdk fork.
+//
+// This is required because latest version of algosdk that is installed in
+// account-lib cause compilation to fail here without augmentation.
+//
+// TODO: Remove augmentation after algosdk fork is completely replaced by
+// account lib.
+declare module 'algosdk' {
+  interface Encoding {
+    decode(_: unknown): any;
+  }
+
+  interface Seed {
+    encode(secretKey: unknown): string;
+    decode(seed: unknown): {
+      checksum: Uint8Array;
+      seed: Uint8Array;
+    };
+  }
+
+  interface Address {
+    decode(address: unknown): {
+      publicKey: Uint8Array;
+      checksum: Uint8Array;
+    };
+    encode(address: unknown): string;
+  }
+
+  class MultiSigTransaction {
+    static from_obj_for_encoding(txnForEnc: unknown): any;
+  }
+
+  interface Multisig {
+    MultiSigTransaction: typeof MultiSigTransaction;
+  }
+
+  interface Nacl {
+    sign(msg: unknown, secretKey: unknown): Uint8Array;
+    verify(msg: unknown, sig: unknown, publicKey: unknown): boolean;
+  }
+
+  export function generateAccountFromSeed(seed: Uint8Array | string): {
+    sk: string;
+    addr: string;
+  };
+
+  export function isValidSeed(seed: string): boolean;
+
+  export const Encoding: Encoding;
+  export const Seed: Seed;
+  export const Address: Address;
+  export const Multisig: Multisig;
+  export const NaclWrapper: Nacl;
 }

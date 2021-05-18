@@ -44,6 +44,7 @@
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",
+    "algosdk": "^1.9.1",
     "bignumber.js": "^9.0.0",
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.39",

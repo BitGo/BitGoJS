@@ -1,10 +1,9 @@
 import should from 'should';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
-import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx';
+import { TransactionBuilderFactory } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-
 
 describe('Stx Contract call Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
@@ -55,8 +54,7 @@ describe('Stx Contract call Builder', () => {
 
       builder.sign({ key: testData.prv1 });
       builder.sign({ key: testData.prv2 });
-      const kp = new KeyPair({ prv: testData.prv3 });
-      builder.fromPubKey(kp.getKeys(kp.getCompressed()).pub);
+      builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
       builder.numberSignatures(2);
       const tx = await builder.build();
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_CONTRACT_CALL);
@@ -67,7 +65,7 @@ describe('Stx Contract call Builder', () => {
         const builder = initTxBuilder();
         should.throws(
           () => builder.sign({ key: 'invalidKey' }),
-          e => e.message === 'Unsupported private key',
+          (e) => e.message === 'Unsupported private key',
         );
       });
       it('a contract call with an invalid contract address', () => {
@@ -75,21 +73,21 @@ describe('Stx Contract call Builder', () => {
         builder.network(new StacksMainnet());
         should.throws(
           () => builder.contractAddress(testData.ACCOUNT_1.address),
-          e => e.message === 'Invalid contract address',
+          (e) => e.message === 'Invalid contract address',
         );
       });
       it('a contract call with an invalid contract name', () => {
         const builder = initTxBuilder();
         should.throws(
           () => builder.contractName('test'),
-          e => e.message === 'Only pox contract supported',
+          (e) => e.message === 'Only pox contract supported',
         );
       });
       it('a contract call with an invalid contract function name', () => {
         const builder = initTxBuilder();
         should.throws(
           () => builder.functionName('test-function'),
-          e => e.message === 'test-function is not supported contract function name',
+          (e) => e.message === 'test-function is not supported contract function name',
         );
       });
     });
