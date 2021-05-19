@@ -21,7 +21,8 @@ const coins = {
   BTG: 'btg',
   LTC: 'ltc',
   ZEC: 'zec',
-  DASH: 'dash'
+  DASH: 'dash',
+  DOGE: 'doge'
 }
 
 function getDefaultBip32Mainnet () {
@@ -136,6 +137,29 @@ module.exports = {
     scriptHash: 0x13,
     wif: 0xef,
     coin: coins.DASH
+  },
+
+  doge: {
+    messagePrefix: '\x19Dogecoin Signed Message:\n',
+    bip32: {
+        public: 0x02facafd,
+        private: 0x02fac398
+      },
+    pubKeyHash: 0x1e,
+    scriptHash: 0x16,
+    wif: 0x9e,
+    coin: coins.DOGE
+  },
+  dogeTest: {
+    messagePrefix: '\x19Dogecoin Signed Message:\n',
+    bip32: {
+        public: 0x043587cf,
+        private: 0x04358394
+    },
+    pubKeyHash: 0x71,
+    scriptHash: 0xc4,
+    wif: 0xf1,
+    coin: coins.DOGE
   },
 
   // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
