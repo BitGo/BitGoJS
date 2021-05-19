@@ -29,3 +29,12 @@ export const BaseTransactionSchema = joi
 
     throw new Error('lastRound cannot be greater than or equal to firstRound');
   });
+
+export const TransferTransactionSchema = joi.object({
+  amount: joi.custom((val) => typeof val === 'number' || typeof val === 'bigint').required(),
+  to: joi
+    .string()
+    .custom((addr) => utils.isValidAddress(addr))
+    .required(),
+  closeRemainderTo: joi.string().optional(),
+});

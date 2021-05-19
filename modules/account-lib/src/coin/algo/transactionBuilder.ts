@@ -41,6 +41,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _lease?: Uint8Array;
   protected _note?: Uint8Array;
   protected _reKeyTo?: string;
+  protected _suggestedParams: algosdk.SuggestedParams;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -96,6 +97,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
     this._sender = sender.address;
+    this._transaction.sender(sender.address);
 
     return this;
   }
@@ -279,7 +281,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } else if (this._keyPairs.length > 1) {
       this.transaction.signMultiSig(this._keyPairs);
     }
-
+    this._transaction.loadInputsAndOutputs();
     return this._transaction;
   }
 
@@ -294,8 +296,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new ParseTransactionError(`raw transaction cannot be decoded: ${err}`);
     }
 
+    this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
+    this._isFlatFee = true;
     this._fee = algosdkTxn.fee;
-    this._sender = algosdk.encodeAddress(algosdkTxn.from.publicKey);
     this._genesisHash = algosdkTxn.genesisHash.toString('base64');
     this._genesisId = algosdkTxn.genesisID;
     this._firstRound = algosdkTxn.firstRound;
@@ -315,6 +318,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._keyPairs.push(keypair);
 
     return this._transaction;
+  }
+
+  numberOfSigners(num: number): this {
+    this._transaction.setNumberOfRequiredSigners(num);
+
+    return this;
   }
 
   /**
@@ -400,6 +409,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
   }
 
   /**
