@@ -157,6 +157,7 @@ export interface BitGoOptions {
   proxy?: string;
   etherscanApiToken?: string;
   hmacVerification?: boolean;
+  authVersion?: 2 | 3;
 }
 
 export interface User {
@@ -273,6 +274,14 @@ export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   text: string;
   timestamp: number;
   statusCode?: number;
+}
+
+export interface VerifyResponseInfo {
+  isValid: boolean;
+  expectedHmac: string;
+  signatureSubject: string;
+  isInResponseValidityWindow: boolean;
+  verificationTime: number;
 }
 
 export interface AuthenticateOptions {
@@ -422,6 +431,7 @@ export class BitGo {
   private _travelRule?: any;
   private _pendingApprovals?: any;
   private _hmacVerification = true;
+  private _authVersion = 2;
   /**
    * Constructor for BitGo Object
    */
@@ -470,6 +480,10 @@ export class BitGo {
       }
     } else {
       env = params.env || process.env.BITGO_ENV as EnvironmentName;
+    }
+
+    if (params.authVersion !== undefined) {
+      this._authVersion = params.authVersion;
     }
 
     // if this env is an alias, swap it out with the equivalent supported environment
@@ -606,7 +620,8 @@ export class BitGo {
           return prototypicalEnd.apply(thisReq, arguments as any);
         }
 
-        thisReq.set('BitGo-Auth-Version', '2.0');
+        thisReq.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
+
         // prevent IE from caching requests
         thisReq.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
         if (self._token) {
@@ -654,7 +669,11 @@ export class BitGo {
             req.url = url.format(urlDetails);
           }
 
-          const requestProperties = self.calculateRequestHeaders({ url: req.url, token: self._token, text: data });
+          const requestProperties = self.calculateRequestHeaders({
+            url: req.url,
+            token: self._token,
+            text: data,
+          });
           thisReq.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
           // we're not sending the actual token, but only its hash
@@ -687,7 +706,7 @@ export class BitGo {
           statusCode: response.status,
           text: response.text,
           timestamp: response.header.timestamp,
-          token: req.authenticationToken
+          token: req.authenticationToken,
         });
 
         if (!verificationResponse.isValid) {
@@ -702,7 +721,7 @@ export class BitGo {
             receivedHmac,
             hmacInput: signatureSubject,
             requestToken: req.authenticationToken,
-            bitgoToken: partialBitgoToken
+            bitgoToken: partialBitgoToken,
           };
           debug('Invalid response HMAC: %O', errorDetails);
           const error: any = new Error('invalid response HMAC, possible man-in-the-middle-attack');
@@ -710,6 +729,19 @@ export class BitGo {
           error.status = 511;
           throw error;
         }
+
+        if (self._authVersion === 3 && !verificationResponse.isInResponseValidityWindow) {
+          const errorDetails = {
+            timestamp: response.header.timestamp,
+            verificationTime: verificationResponse.verificationTime,
+          };
+          debug('Server response outside response validity time window: %O', errorDetails);
+          const error: any = new Error('server response outside response validity time window, possible man-in-the-middle-attack');
+          error.result = errorDetails;
+          error.status = 511;
+          throw error;
+        }
+
         return response;
       };
 
@@ -1230,10 +1262,10 @@ export class BitGo {
   }
 
   /**
-   * Calculate the string that is to be HMACed for a certain HTTP request or response
-   * @param urlPath
-   * @param text
-   * @param timestamp
+   * Calculate the subject string that is to be HMAC'ed for a HTTP request or response
+   * @param urlPath request url, including query params
+   * @param text request body text
+   * @param timestamp request timestamp from `Date.now()`
    * @param statusCode Only set for HTTP responses, leave blank for requests
    * @returns {string}
    */
@@ -1242,6 +1274,9 @@ export class BitGo {
     const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
     if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
       return [timestamp, queryPath, statusCode, text].join('|');
+    }
+    if (this._authVersion === 3) {
+      return [timestamp, '3.0', queryPath, text].join('|');
     }
     return [timestamp, queryPath, text].join('|');
   }
@@ -1276,7 +1311,7 @@ export class BitGo {
   /**
    * Verify the HMAC for an HTTP response
    */
-  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac }: VerifyResponseOptions) {
+  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac }: VerifyResponseOptions): VerifyResponseInfo {
     const signatureSubject = this.calculateHMACSubject({
       urlPath,
       text,
@@ -1287,11 +1322,17 @@ export class BitGo {
     // calculate the HMAC
     const expectedHmac = this.calculateHMAC(token, signatureSubject);
 
+    // determine if the response is still within the validity window (5 minute window)
+    const now = Date.now();
+    const isInResponseValidityWindow = timestamp >= (now - 1000 * 60 * 5) && timestamp <= now;
+
     // verify the HMAC and timestamp
     return {
       isValid: expectedHmac === hmac,
       expectedHmac,
       signatureSubject,
+      isInResponseValidityWindow,
+      verificationTime: now,
     };
   }
 

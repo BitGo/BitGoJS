@@ -31,6 +31,7 @@ export interface Config {
   timeout: number;
   customRootUri?: string;
   customBitcoinNetwork?: V1Network;
+  authVersion: number;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -48,6 +49,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   timeout: args.timeout,
   customRootUri: args.customrooturi,
   customBitcoinNetwork: args.custombitcoinnetwork,
+  authVersion: args.authVersion,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -66,6 +68,7 @@ export const EnvConfig = (): Partial<Config> => ({
   timeout: Number(readEnvVar('BITGO_TIMEOUT')),
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
   customBitcoinNetwork: (readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network),
+  authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
 });
 
 export const DefaultConfig: Config = {
@@ -80,6 +83,7 @@ export const DefaultConfig: Config = {
   // This will require a major version bump, since this is a breaking change to default behavior.
   disableEnvCheck: true,
   timeout: 305 * 1000,
+  authVersion: 2,
 };
 
 /**
@@ -116,6 +120,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     timeout: get('timeout'),
     customRootUri: get('customRootUri'),
     customBitcoinNetwork: get('customBitcoinNetwork'),
+    authVersion: get('authVersion'),
   };
 }
 
