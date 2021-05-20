@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import BigNumber from 'bignumber.js';
+import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { NotImplementedError } from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
+import { Transaction } from './transaction';
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey?: string;
   protected _selectionKey?: string;
@@ -57,17 +59,38 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected buildImplementation(): Promise<Transaction> {
-    throw new NotImplementedError('buildImplementation not implemented');
+  protected async buildImplementation(): Promise<Transaction> {
+    this.transaction.setAlgoTransaction(
+      algosdk.makeKeyRegistrationTxn(
+        this._sender!,
+        this._fee!,
+        this._firstRound!,
+        this._lastRound!,
+        this._note!,
+        this._genesisHash!,
+        this._genesisId!,
+        this._voteKey!,
+        this._selectionKey!,
+        this._voteFirst!,
+        this._voteLast!,
+        this._voteKeyDilution!,
+      ),
+    );
+    return await super.buildImplementation();
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: unknown): Transaction {
-    throw new NotImplementedError('fromImplementation not implemented');
-  }
-
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('signImplementation not implemented');
+    const tx = super.fromImplementation(rawTransaction);
+    const algoTx = tx.getAlgoTransaction();
+    if (!algoTx) {
+      throw new InvalidTransactionError('Transaction is empty');
+    }
+    this.voteKey(algoTx.voteKey);
+    this.selectionKey(algoTx.selectionKey);
+    this.voteFirst(algoTx.voteFirst);
+    this.voteLast(algoTx.voteLast);
+    this.voteKeyDilution(algoTx.voteKeyDilution);
+    return tx;
   }
 }
