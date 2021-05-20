@@ -234,7 +234,7 @@ describe('Algo Transaction Builder', () => {
   });
 
   describe('transaction validation', () => {
-    test('sanity test', () => {
+    it('sanity test', () => {
       const algoTxn = algosdk.makeApplicationNoOpTxn(
         account1.address,
         {
