@@ -23,6 +23,7 @@ import { InvalidAddressError } from '../../errors';
 
 const co = Bluebird.coroutine;
 
+// eslint-disable-next-line no-unused-vars
 interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
 }
@@ -50,7 +51,9 @@ export interface ExplainTransactionOptions {
 
 export interface StxSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
-  prv: string;
+  prv: string[];
+  pubKeys?: string[];
+  numberSignature?: number;
 }
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
@@ -173,12 +176,12 @@ export class Stx extends BaseCoin {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-
     return co<SignedTransaction>(function* () {
       const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
       const txBuilder = factory.from(params.txPrebuild.txHex);
-      txBuilder.sign({ key: params.prv });
-
+      params.prv.forEach((prv) => txBuilder.sign({ key: prv }));
+      if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
+      if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
       const transaction: any = yield txBuilder.build();
 
       if (!transaction) {
