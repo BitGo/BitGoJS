@@ -2,7 +2,7 @@
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 export class KeyRegistrationBuilder extends TransactionBuilder {
@@ -92,5 +92,29 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     this.voteLast(algoTx.voteLast);
     this.voteKeyDilution(algoTx.voteKeyDilution);
     return tx;
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction?: Transaction): void {
+    super.validateTransaction(transaction);
+    this.validateMandatoryFields();
+  }
+
+  private validateMandatoryFields(): void {
+    if (!this._voteKey) {
+      throw new BuildTransactionError('Invalid transaction: missing voteKey');
+    }
+    if (!this._selectionKey) {
+      throw new BuildTransactionError('Invalid transaction: missing selectionKey');
+    }
+    if (!this._voteFirst) {
+      throw new BuildTransactionError('Invalid transaction: missing voteFirst');
+    }
+    if (!this._voteLast) {
+      throw new BuildTransactionError('Invalid transaction: missing voteLast');
+    }
+    if (!this._voteKeyDilution) {
+      throw new BuildTransactionError('Invalid transaction: missing voteKeyDilution');
+    }
   }
 }
