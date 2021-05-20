@@ -1,14 +1,8 @@
 import { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
-import { NotImplementedError, NotSupported } from '../baseCoin/errors';
+import { NotImplementedError } from '../baseCoin/errors';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
-import { toUint8Array } from '../hbar/utils';
-
-export enum AddressFormat {
-  hex = 'hex', // not used
-  base58 = 'base58', // not used
-  string = 'string',
-}
+import utils from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -31,11 +25,8 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /** @inheritdoc */
-  getAddress(format: AddressFormat = AddressFormat.string): string {
-    if (format === AddressFormat.string) {
-      return encodeAddress(toUint8Array(this.keyPair.pub));
-    }
-    throw new NotSupported('Address format not supported.');
+  getAddress(): string {
+    return encodeAddress(utils.hexStringToUInt8Array(this.keyPair.pub));
   }
 
   /** @inheritdoc */
@@ -45,6 +36,7 @@ export class KeyPair extends Ed25519KeyPair {
     if (this.keyPair.prv) {
       result.prv = this.keyPair.prv.toString();
     }
+
     return result;
   }
 }
