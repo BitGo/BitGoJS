@@ -232,4 +232,44 @@ describe('Algo Transaction Builder', () => {
       should.doesNotThrow(() => txnBuilder.getTransaction().toBroadcastFormat());
     }); */
   });
+
+  describe('transaction validation', () => {
+    test('sanity test', () => {
+      const algoTxn = algosdk.makeApplicationNoOpTxn(
+        account1.address,
+        {
+          fee: 1000,
+          flatFee: true,
+          firstRound: 1,
+          lastRound: 10,
+          genesisID: testnet.genesisID,
+          genesisHash: testnet.genesisHash,
+        },
+        0,
+      );
+
+      txnBuilder.getTransaction().setAlgoTransaction(algoTxn);
+
+      should.doesNotThrow(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+    });
+
+    it('should validate last round is after first round', () => {
+      const algoTxn = algosdk.makeApplicationNoOpTxn(
+        account1.address,
+        {
+          fee: 1000,
+          flatFee: true,
+          firstRound: 10,
+          lastRound: 1,
+          genesisID: testnet.genesisID,
+          genesisHash: testnet.genesisHash,
+        },
+        0,
+      );
+
+      txnBuilder.getTransaction().setAlgoTransaction(algoTxn);
+
+      should.throws(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+    });
+  });
 });

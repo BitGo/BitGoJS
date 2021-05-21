@@ -1,13 +1,19 @@
-import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError, ParseTransactionError, SigningError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  InvalidTransactionError,
+  SigningError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
 import { KeyPair } from './keyPair';
+import { BaseTransactionSchema } from './txnSchema';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -344,13 +350,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: unknown): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const buffer = typeof rawTransaction === 'string' ? Buffer.from(rawTransaction, 'hex') : rawTransaction;
+    const algosdkTxn: algosdk.Transaction = algosdk.decodeUnsignedTransaction(buffer);
+
+    this.validateAlgoTxn(algosdkTxn);
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
+  validateTransaction(transaction: Transaction): void {
+    const algoTxn = transaction.getAlgoTransaction();
+    if (!algoTxn) {
+      throw new InvalidTransactionError('Transaction is missing the internal algo transaction');
+    }
+
+    this.validateAlgoTxn(algoTxn);
   }
 
   /** @inheritdoc */
@@ -379,5 +393,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       genesisID: this._genesisId,
       genesisHash: this._genesisHash,
     };
+  }
+
+  private validateAlgoTxn(algoTxn: algosdk.Transaction): void {
+    const validationResult = BaseTransactionSchema.validate({
+      fee: algoTxn.fee,
+      firstRound: algoTxn.firstRound,
+      genesisHash: algoTxn.genesisHash.toString('base64'),
+      lastRound: algoTxn.lastRound,
+      sender: algosdk.encodeAddress(algoTxn.from.publicKey),
+      txType: algoTxn.type,
+      genesisId: algoTxn.genesisID,
+      lease: algoTxn.lease,
+      note: algoTxn.note,
+      reKeyTo: algoTxn.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 }
