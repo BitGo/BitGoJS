@@ -232,4 +232,32 @@ describe('Algo Transaction Builder', () => {
       should.doesNotThrow(() => txnBuilder.getTransaction().toBroadcastFormat());
     }); */
   });
+
+  describe('transaction validation', () => {
+    it('should validate a normal transaction', () => {
+      txnBuilder
+        .fee({ fee: '1000' })
+        .isFlatFee(true)
+        .firstRound(1)
+        .lastRound(10)
+        .sender({ address: account1.address })
+        .genesisId(testnet.genesisID)
+        .genesisHash(testnet.genesisHash);
+
+      should.doesNotThrow(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+    });
+
+    it('should validate last round is after first round', () => {
+      txnBuilder
+        .fee({ fee: '1000' })
+        .isFlatFee(true)
+        .firstRound(10)
+        .lastRound(1)
+        .sender({ address: account1.address })
+        .genesisId(testnet.genesisID)
+        .genesisHash(testnet.genesisHash);
+
+      should.throws(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+    });
+  });
 });
