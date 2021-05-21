@@ -409,7 +409,7 @@ describe('Abstract UTXO Coin:', () => {
         explicitExternalOutputs: [],
         implicitExternalOutputs: [],
         changeOutputs: [],
-        explicitExternalSpendAmount: 10000,
+        explicitExternalSpendAmount: 1000,
         implicitExternalSpendAmount: 151,
         needsCustomChangeKeySignatureVerification: false,
       });
