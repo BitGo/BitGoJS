@@ -726,6 +726,21 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * Get the maximum percentage limit for pay-as-you-go outputs
+   *
+   * @protected
+   */
+  protected getPayGoLimit(allowPaygoOutput?: boolean): number {
+    // allowing paygo outputs needs to be the default behavior, so only disallow paygo outputs if the
+    // relevant verification option is both set and false
+    if (!_.isNil(allowPaygoOutput) && !allowPaygoOutput) {
+      return 0;
+    }
+    // 150 basis points is the absolute permitted maximum if paygo outputs are allowed
+    return 0.015;
+  }
+
+  /**
    * Verify that a transaction prebuild complies with the original intention
    *
    * @param params
@@ -794,9 +809,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
 
       // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-      const payAsYouGoLimit = verification.allowPaygoOutput ?
-        intendedExternalSpend * 0.015 : // 150 basis points is the absolute permitted maximum if paygo outputs are allowed
-        0;
+      const payAsYouGoLimit = intendedExternalSpend * self.getPayGoLimit(verification.allowPaygoOutput);
 
       /*
       Some explanation for why we're doing what we're doing:

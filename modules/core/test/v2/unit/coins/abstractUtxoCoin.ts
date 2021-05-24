@@ -481,6 +481,35 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
     });
+
+    it('should allow paygo outputs if empty verification object is passed', async () => {
+      const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
+        keychains: {},
+        keySignatures: {},
+        outputs: [],
+        missingOutputs: [],
+        explicitExternalOutputs: [],
+        implicitExternalOutputs: [],
+        changeOutputs: [],
+        explicitExternalSpendAmount: 1000,
+        implicitExternalSpendAmount: 15,
+        needsCustomChangeKeySignatureVerification: false,
+      });
+
+      const bitcoinMock = sinon.stub(utxoLib.Transaction, 'fromHex').returns({ ins: [] });
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }).should.eventually.be.true();
+
+      coinMock.restore();
+      bitcoinMock.restore();
+    });
   });
 
   describe('Recover Wallet:', () => {
