@@ -35,7 +35,7 @@ describe('STX:', function() {
   });
 
   /**
-   * Build an unsigned account-lib multi-signature send transaction
+   * Build an unsigned account-lib signle-signature send transaction
    * @param destination The destination address of the transaction
    * @param amount The amount to send to the recipient
    */
@@ -54,6 +54,31 @@ describe('STX:', function() {
     txBuilder.amount(amount);
     txBuilder.nonce(1);
     txBuilder.fromPubKey(publicKey);
+    txBuilder.memo(memo);
+    return await txBuilder.build();
+  };
+
+  /**
+   * Build an unsigned account-lib multi-signature send transaction
+   * @param destination The destination address of the transaction
+   * @param amount The amount to send to the recipient
+   */
+  const buildmultiSigUnsignedTransaction = async function({
+    destination,
+    amount = '100000',
+    publicKeys,
+    memo = '',
+  }) {
+    const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.fee({
+      fee: '180',
+    });
+    txBuilder.to(destination);
+    txBuilder.amount(amount);
+    txBuilder.nonce(1);
+    txBuilder.fromPubKey(publicKeys);
+    txBuilder.numberSignatures(2);
     txBuilder.memo(memo);
     return await txBuilder.build();
   };
@@ -101,7 +126,7 @@ describe('STX:', function() {
       destination,
       amount,
       publicKey: key.getKeys().pub,
-      memo: memo
+      memo: memo,
     });
     const unsignedHex = unsignedTransaction.toBroadcastFormat();
 
@@ -164,8 +189,8 @@ describe('STX:', function() {
 
   describe('Sign transaction:', () => {
     it('should sign transaction', async function() {
-      const key = new accountLib.Stx.KeyPair();
-      const destination = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
+      const key = new accountLib.Stx.KeyPair({ prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
+      const destination = 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0';
       const amount = '100000';
 
       const unsignedTransaction = await buildUnsignedTransaction({
@@ -174,19 +199,47 @@ describe('STX:', function() {
         publicKey: key.getKeys().pub,
       });
       const tx = await basecoin.signTransaction({
-        prv: key.getKeys().prv!.toString(),
+        prv: [key.getKeys().prv!.toString()],
+        pubKeys: [key.getKeys().pub],
         txPrebuild: {
           txHex: unsignedTransaction.toBroadcastFormat(),
         },
       });
       const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
-
       const txBuilder = factory.from(tx.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
       txJson.payload.to.should.equal(destination);
       txJson.payload.amount.should.equal(amount);
       signedTx.signature.length.should.equal(1);
+    });
+
+    it('should sign multisig transaction', async function() {
+      const key1 = new accountLib.Stx.KeyPair({ prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
+      const key2 = new accountLib.Stx.KeyPair({ prv: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
+      const key3 = new accountLib.Stx.KeyPair({ prv: 'e75dcb66f84287eaf347955e94fa04337298dbd95aa0dbb985771104ef1913db01' });
+      const destination = 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0';
+      const amount = '100000';
+      const publicKeys = [key1.getKeys(true).pub, key2.getKeys(true).pub, key3.getKeys(true).pub];
+      const unsignedTransaction = await buildmultiSigUnsignedTransaction({
+        destination,
+        amount,
+        publicKeys,
+      });
+      const tx = await basecoin.signTransaction({
+        prv: ['21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601', 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01'],
+        pubKeys: [key1.getKeys().pub, key2.getKeys().pub, key3.getKeys().pub],
+        numberSignature: 2,
+        txPrebuild: {
+          txHex: unsignedTransaction.toBroadcastFormat(),
+        },
+      });
+      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+      const txBuilder = factory.from(tx.txHex);
+      const signedTx = await txBuilder.build();
+      const txJson = signedTx.toJson();
+      txJson.payload.to.should.equal(destination);
+      txJson.payload.amount.should.equal(amount);
     });
   });
 });
