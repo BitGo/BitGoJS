@@ -431,7 +431,7 @@ export class BitGo {
   private _travelRule?: any;
   private _pendingApprovals?: any;
   private _hmacVerification = true;
-  private _authVersion = 2;
+  private readonly _authVersion: Exclude<BitGoOptions['authVersion'], undefined> = 2;
   /**
    * Constructor for BitGo Object
    */
@@ -827,6 +827,13 @@ export class BitGo {
    */
   getEnv(): EnvironmentName {
     return this._env;
+  }
+
+  /**
+   * Return the current auth version used for requests to the BitGo server
+   */
+  getAuthVersion(): number {
+    return this._authVersion;
   }
 
   /**
