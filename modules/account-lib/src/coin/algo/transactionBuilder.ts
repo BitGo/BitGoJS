@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
-import { BaseTransaction, BaseTransactionBuilder } from '../baseCoin';
+import { BaseTransactionBuilder } from '../baseCoin';
 import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
@@ -23,6 +23,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // the fee is specified as a number here instead of a big number because
   // the algosdk also specifies it as a number.
   protected _fee: number;
+  protected _isFlatFee: boolean;
 
   protected _sender: string;
   protected _genesisHash: string;
@@ -51,11 +52,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   fee(feeObj: BaseFee): this {
     const fee = new BigNumber(feeObj.fee).toNumber();
-    if (fee < MIN_FEE) {
+    if (this._isFlatFee && fee < MIN_FEE) {
       throw new InsufficientFeeError(fee, MIN_FEE);
     }
 
     this._fee = fee;
+
+    return this;
+  }
+
+  /**
+   * Sets whether the fee is a flat fee.
+   *
+   * A flat fee is the fee for the entire transaction whereas a normal fee
+   * is a fee for every byte in the transaction.
+   *
+   * @param {boolean} isFlatFee Whether the fee should be specified as a flat fee.
+   * @returns {TransactionBuilder} This transaction builder.
+   */
+  isFlatFee(isFlatFee: boolean): this {
+    this._isFlatFee = isFlatFee;
 
     return this;
   }

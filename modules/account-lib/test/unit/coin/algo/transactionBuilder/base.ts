@@ -37,7 +37,9 @@ describe('Algo Transaction Builder', () => {
   });
 
   describe('setter validation', () => {
-    it('should validate fee is not lt 1000 microalgos', () => {
+    it('should validate fee is not lt 1000 microalgos if flat fee is set to true', () => {
+      txnBuilder.isFlatFee(true);
+
       should.throws(
         () => txnBuilder.fee({ fee: '999' }),
         (e: Error) => e.name === InsufficientFeeError.name,
