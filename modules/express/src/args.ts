@@ -80,4 +80,8 @@ parser.addArgument(['-t', '--timeout'], {
   help: 'Proxy server timeout in milliseconds',
 });
 
+parser.addArgument(['--authversion'], {
+  help: 'BitGo authentication scheme version to use (default 2). See BitGo documentation for more details on auth versions.',
+});
+
 export const args = () => parser.parseArgs();

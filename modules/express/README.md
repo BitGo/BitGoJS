@@ -184,6 +184,7 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --disableproxy         | `BITGO_DISABLE_PROXY` <sup>0</sup>       | N/A           | Disable proxying of routes not explicitly handled by bitgo-express                                                      |
 | N/A             | --disableenvcheck      | `BITGO_DISABLE_ENV_CHECK` <sup>0</sup>   | N/A           | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment.         |
 | -i              | --ipc                  | `BITGO_IPC`                              | N/A           | If set, bind to the given IPC (unix domain) socket. Binding to an IPC socket can be useful if the caller of bitgo-express resides on the same host as the bitgo-express instance itself, since the socket can be secured using normal file permissions and ownership semantics. Note: This is not supported on Windows platforms. |
+| N/A             | --authversion          | `BITGO_AUTH_VERSION`                     | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. Please see the [BitGo API documentation](https://app.bitgo.com/docs) for more info on authentication scheme versions. |
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
 * Disable SSL

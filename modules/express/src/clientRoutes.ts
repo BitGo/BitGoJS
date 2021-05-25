@@ -5,7 +5,7 @@ import * as bodyParser from 'body-parser';
 import * as bluebird from 'bluebird';
 import * as url from 'url';
 import * as debugLib from 'debug';
-import { BitGo, Coin, Errors } from 'bitgo';
+import { BitGo, BitGoOptions, Coin, Errors } from 'bitgo';
 import * as _ from 'lodash';
 import * as express from 'express';
 
@@ -684,7 +684,7 @@ function prepareBitGo(config: Config) {
     const userAgent = req.headers['user-agent']
       ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
       : BITGOEXPRESS_USER_AGENT;
-    const bitgoConstructorParams = {
+    const bitgoConstructorParams: BitGoOptions = {
       env,
       customRootURI: customRootUri,
       customBitcoinNetwork,
