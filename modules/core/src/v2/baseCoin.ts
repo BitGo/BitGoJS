@@ -79,6 +79,7 @@ export interface VerificationOptions {
     bitgo?: Keychain;
   };
   addresses?: { [address: string]: AddressVerificationData };
+  allowPaygoOutput?: boolean;
 }
 
 export interface VerifyTransactionOptions {
