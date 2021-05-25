@@ -23,6 +23,7 @@
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
+    "unit-test:algo": "nyc -- mocha --opts test/mocha.opts \"test/unit/coin/algo/**/*.ts\"",
     "test": "npm run unit-test"
   },
   "repository": {

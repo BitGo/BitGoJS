@@ -64,7 +64,7 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signers = keyPair.map((kp) => kp.getAddress());
+    const signers = keyPair.map(kp => kp.getAddress());
     const multiSigOptions = {
       version: 1,
       threshold: this._numberOfRequiredSigners,
