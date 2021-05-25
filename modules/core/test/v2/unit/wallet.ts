@@ -957,4 +957,16 @@ describe('V2 Wallet:', function() {
       createShareNock.isDone().should.be.True();
     });
   });
+
+  describe('Wallet Freezing', function() {
+    it('should freeze wallet for specified duration in seconds', async function() {
+      const params = { duration: 60 };
+      const scope =
+        nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/freeze`, params)
+        .reply(200, {});
+      await wallet.freeze(params);
+      scope.isDone().should.be.True();
+    });
+  });
 });
