@@ -85,6 +85,7 @@ describe('Config:', () => {
       timeout: 'argtimeout',
       customRootUri: 'argcustomRootUri',
       customBitcoinNetwork: 'argcustomBitcoinNetwork',
+      authVersion: 2,
     });
     argStub.restore();
     envStub.restore();

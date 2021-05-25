@@ -40,6 +40,9 @@ export { Xrp };
 import * as Stx from './coin/stx';
 export { Stx };
 
+import * as Algo from './coin/algo';
+export { Algo };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,

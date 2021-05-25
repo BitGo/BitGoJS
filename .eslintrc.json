@@ -77,7 +77,7 @@
     "require-yield": "off",
     "semi": ["error", "always"],
     "space-before-blocks": ["error"],
-    "space-before-function-paren": ["error", { "named": "never", "anonymous": "never", "asyncArrow": "always" }],
+    "space-before-function-paren": ["error", { "named": "never", "anonymous": "always", "asyncArrow": "always" }],
     "space-infix-ops": ["error"],
     "spaced-comment": ["error", "always"],
     "switch-colon-spacing": ["error", {"before": false, "after": true}],
