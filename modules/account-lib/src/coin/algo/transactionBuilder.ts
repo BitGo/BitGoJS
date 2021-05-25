@@ -413,4 +413,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
   }
+  /**
+   * Convenience method to retrieve the algosdk suggested parameters.
+   *
+   * @returns {algosdk.SuggestedParams} The algosdk suggested parameters.
+   */
+  protected get suggestedParams(): algosdk.SuggestedParams {
+    return {
+      flatFee: this._isFlatFee,
+      fee: this._fee,
+      firstRound: this._firstRound,
+      lastRound: this._lastRound,
+      genesisID: this._genesisId,
+      genesisHash: this._genesisHash,
+    };
+  }
 }
