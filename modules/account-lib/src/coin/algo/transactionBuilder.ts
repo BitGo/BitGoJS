@@ -2,11 +2,12 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { BuildTransactionError, NotImplementedError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
+import { KeyPair } from './keyPair';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -19,6 +20,7 @@ const BETANET_GENESIS_HASH = 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
+  protected _keyPairs: KeyPair[];
 
   // the fee is specified as a number here instead of a big number because
   // the algosdk also specifies it as a number.
@@ -38,6 +40,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     super(coinConfig);
 
     this._transaction = new Transaction(coinConfig);
+    this._keyPairs = [];
   }
 
   /**
@@ -256,6 +259,53 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!algosdk.isValidAddress(address)) {
       throw new AddressValidationError(address);
     }
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    if (this._keyPairs.length === 0) {
+      throw new SigningError('No keypairs assigned for signing the transaction');
+    } else if (this._keyPairs.length === 1) {
+      this.transaction.sign(this._keyPairs[0]);
+    } else {
+      this.transaction.signMultiSig(this._keyPairs);
+    }
+
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
+    const buffer = typeof rawTransaction === 'string' ? Buffer.from(rawTransaction, 'hex') : rawTransaction;
+    let algosdkTxn: algosdk.Transaction;
+
+    try {
+      algosdkTxn = algosdk.decodeUnsignedTransaction(buffer);
+    } catch (err: unknown) {
+      throw new ParseTransactionError(`raw transaction cannot be decoded: ${err}`);
+    }
+
+    this._fee = algosdkTxn.fee;
+    this._sender = algosdk.encodeAddress(algosdkTxn.from.publicKey);
+    this._genesisHash = algosdkTxn.genesisHash.toString('base64');
+    this._genesisId = algosdkTxn.genesisID;
+    this._firstRound = algosdkTxn.firstRound;
+    this._lastRound = algosdkTxn.lastRound;
+    this._lease = algosdkTxn.lease;
+    this._note = algosdkTxn.note;
+    this._reKeyTo = algosdkTxn.reKeyTo ? algosdk.encodeAddress(algosdkTxn.reKeyTo.publicKey) : undefined;
+
+    this._transaction.setAlgoTransaction(algosdkTxn);
+
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    const keypair = new KeyPair({ prv: key });
+    this._keyPairs.push(keypair);
+
+    return this._transaction;
   }
 
   /**

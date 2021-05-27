@@ -25,3 +25,18 @@ export const accounts = {
     address: 'HNVCPPGOW2SC2YVDVDICU3YNONSTEFLXDXREHJR2YBEKDC2Z3IUZSC6YGI',
   },
 } as const;
+
+export const networks = {
+  mainnet: {
+    genesisID: 'mainnet-v1.0',
+    genesisHash: 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=',
+  },
+  testnet: {
+    genesisID: 'testnet-v1.0',
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+  },
+  betanet: {
+    genesisID: 'betanet-v1.0',
+    genesisHash: 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=',
+  },
+} as const;
