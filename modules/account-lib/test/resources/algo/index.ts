@@ -8,6 +8,8 @@ export const accounts = {
     secretKey: Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex'),
     pubKey: Buffer.from('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a', 'hex'),
     address: '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
+    voteKey: "O0lMKXAaqN4h7jVJr8LHY0hvEbK62OJLJkN1soxp9Bg=",
+    selectionKey: "wXjfzAoZhls/zrhgAn8zas/WTktvRuxeps6fkv2au+c="
   },
   account2: {
     secretKey: Buffer.from('4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb', 'hex'),

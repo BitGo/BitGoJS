@@ -2,7 +2,7 @@
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 export class KeyRegistrationBuilder extends TransactionBuilder {
@@ -17,10 +17,16 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   voteKey(key: string): void {
+    if (!key) {
+      throw new InvalidParameterValueError('voteKey can not be undefined');
+    }
     this._voteKey = key;
   }
 
   selectionKey(key: string): void {
+    if (!key) {
+      throw new InvalidParameterValueError('selectionKey can not be undefined');
+    }
     this._selectionKey = key;
   }
 
