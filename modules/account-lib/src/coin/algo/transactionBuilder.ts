@@ -259,6 +259,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
+   * Sets the number of signers required to sign the transaction.
+   *
+   * The number of signers cannot be set to a negative value.
+   *
+   * @param {number} n The number of signers.
+   * @returns {TransactionBuilder} This transaction builder.
+   */
+  numberOfSigners(n: number): this {
+    if (n < 0) {
+      throw new BuildTransactionError(`Number of signers: '${n}' cannot be negative`);
+    }
+
+    this._transaction.numberOfSigners(n);
+
+    return this;
+  }
+
+  /**
    * @inheritdoc
    * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
    */
