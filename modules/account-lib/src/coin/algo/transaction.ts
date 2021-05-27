@@ -10,11 +10,11 @@ import { TxData } from './ifaces';
 export class Transaction extends BaseTransaction {
   private _algoTransaction?: algosdk.Transaction;
   private _signedTransaction?: algosdk.EncodedSignedTransaction;
-  private _numberOfSigners: number;
+  private _numberOfRequiredSigners: number;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._numberOfSigners = 0;
+    this._numberOfRequiredSigners = 0;
   }
 
   /** @inheritdoc */
@@ -22,10 +22,10 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       return false;
     }
-    if (this._numberOfSigners === 0) {
+    if (this._numberOfRequiredSigners === 0) {
       return false;
     }
-    if (this._numberOfSigners === 1) {
+    if (this._numberOfRequiredSigners === 1) {
       const sender = algosdk.encodeAddress(this._algoTransaction.from.publicKey);
       const addr = algosdk.encodeAddress(utils.toUint8Array(key));
       if (addr === sender) {
@@ -67,7 +67,7 @@ export class Transaction extends BaseTransaction {
     const signers = keyPair.map((kp) => kp.getAddress());
     const multiSigOptions = {
       version: 1,
-      threshold: this._numberOfSigners,
+      threshold: this._numberOfRequiredSigners,
       addrs: signers,
     };
     const msigAddress = algosdk.multisigAddress(multiSigOptions);
@@ -84,13 +84,17 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = algosdk.decodeSignedTransaction(signed);
   }
 
+  get numberOfRequiredSigners(): number {
+    return this._numberOfRequiredSigners;
+  }
+
   /**
    * Sets the number of signers required for signing this transaction.
    *
    * @param {number} num Threshold number of signers.
    */
-  numberOfSigners(num: number): void {
-    this._numberOfSigners = num;
+  setNumberOfRequiredSigners(num: number): void {
+    this._numberOfRequiredSigners = num;
   }
 
   /**

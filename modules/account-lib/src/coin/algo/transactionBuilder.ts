@@ -263,11 +263,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    if (this._keyPairs.length === 0) {
-      throw new SigningError('No keypairs assigned for signing the transaction');
-    } else if (this._keyPairs.length === 1) {
+    const numberOfSigners = this._keyPairs.length;
+    if (numberOfSigners < this._transaction.numberOfRequiredSigners) {
+      throw new SigningError('Insufficient number of signers');
+    }
+
+    if (this._keyPairs.length === 1) {
       this.transaction.sign(this._keyPairs[0]);
-    } else {
+    } else if (this._keyPairs.length > 1) {
       this.transaction.signMultiSig(this._keyPairs);
     }
 
@@ -316,12 +319,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} n The number of signers.
    * @returns {TransactionBuilder} This transaction builder.
    */
-  numberOfSigners(n: number): this {
+  numberOfRequiredSigners(n: number): this {
     if (n < 0) {
       throw new BuildTransactionError(`Number of signers: '${n}' cannot be negative`);
     }
 
-    this._transaction.numberOfSigners(n);
+    this._transaction.setNumberOfRequiredSigners(n);
 
     return this;
   }

@@ -117,10 +117,10 @@ describe('Algo Transaction Builder', () => {
     });
 
     it('should validate number of signers is not less than 0', () => {
-      should.throws(() => txnBuilder.numberOfSigners(-1));
+      should.throws(() => txnBuilder.numberOfRequiredSigners(-1));
 
       for (let i = 0; i < STANDARD_REQUIRED_NUMBER_OF_SIGNERS; i++) {
-        should.doesNotThrow(() => txnBuilder.numberOfSigners(i));
+        should.doesNotThrow(() => txnBuilder.numberOfRequiredSigners(i));
       }
     });
   });
