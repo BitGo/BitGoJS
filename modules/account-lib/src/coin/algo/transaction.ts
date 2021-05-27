@@ -149,11 +149,11 @@ export class Transaction extends BaseTransaction {
       fee: this._algoTransaction.fee,
       firstRound: this._algoTransaction.firstRound,
       lastRound: this._algoTransaction.lastRound,
-      amount: this._algoTransaction.amount.toString(),
       note: this._algoTransaction.note,
     };
     if (this.type === TransactionType.Send) {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
+      result.amount = this._algoTransaction.amount.toString();
     }
     return result;
   }

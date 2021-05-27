@@ -86,7 +86,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: unknown): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
     if (!algoTx) {
@@ -102,7 +102,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    super.validateTransaction(transaction);
+    // super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
 

@@ -41,7 +41,7 @@ export class KeyExclusionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: unknown): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
     if (!algoTx) {

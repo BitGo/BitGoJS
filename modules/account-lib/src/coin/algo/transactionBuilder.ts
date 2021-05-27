@@ -292,7 +292,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     try {
       algosdkTxn = algosdk.decodeUnsignedTransaction(buffer);
-    } catch (err: unknown) {
+    } catch (err) {
       throw new ParseTransactionError(`raw transaction cannot be decoded: ${err}`);
     }
 
