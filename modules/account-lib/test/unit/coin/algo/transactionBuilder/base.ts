@@ -9,6 +9,8 @@ import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 
 import * as AlgoResources from '../../../../resources/algo';
 
+const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;
+
 class StubTransactionBuilder extends TransactionBuilder {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -60,6 +62,14 @@ describe('Algo Transaction Builder', () => {
       );
       should.doesNotThrow(() => txnBuilder.sender({ address: account1.address }));
       assert.calledTwice(spy);
+    });
+
+    it('should validate number of signers is not less than 0', () => {
+      should.throws(() => txnBuilder.numberOfSigners(-1));
+
+      for (let i = 0; i < STANDARD_REQUIRED_NUMBER_OF_SIGNERS; i++) {
+        should.doesNotThrow(() => txnBuilder.numberOfSigners(i));
+      }
     });
   });
 
