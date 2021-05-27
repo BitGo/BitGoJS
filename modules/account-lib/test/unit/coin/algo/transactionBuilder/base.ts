@@ -53,7 +53,7 @@ describe('Algo Transaction Builder', () => {
     });
 
     it('should validate sender address is a valid algo address', () => {
-      const spy = sinon.spy(txnBuilder, 'sender');
+      const spy = sinon.spy(txnBuilder, 'validateAddress');
       should.throws(
         () => txnBuilder.sender({ address: 'asdf' }),
         (e: Error) => e.name === AddressValidationError.name,
