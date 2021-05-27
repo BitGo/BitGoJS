@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
 import { BaseAddress } from '../baseCoin/iface';
 import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 
@@ -28,11 +29,12 @@ export class TransferBuilder extends TransactionBuilder {
         this._reKeyTo,
       ),
     );
+    this.transaction.setTransactionType(TransactionType.Send);
     return await super.buildImplementation();
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: unknown): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
     if (!algoTx) {
@@ -45,7 +47,8 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    super.validateTransaction(transaction);
+    // TODO: uncomment super call after it is implemented in transactionBuilder
+    // super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
 

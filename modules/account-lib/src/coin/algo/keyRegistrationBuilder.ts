@@ -3,7 +3,6 @@ import { NotImplementedError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { Transaction } from './transaction';
 
 export class KeyRegistrationBuilder extends TransactionBuilder {
   constructor(coinConfig: Readonly<CoinConfig>) {

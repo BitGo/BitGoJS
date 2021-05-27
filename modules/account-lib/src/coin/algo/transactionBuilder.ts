@@ -41,26 +41,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _lease?: Uint8Array;
   protected _note?: Uint8Array;
   protected _reKeyTo?: string;
+  protected _suggestedParams: algosdk.SuggestedParams;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
 
     this._transaction = new Transaction(coinConfig);
     this._keyPairs = [];
-  }
-
-  protected async buildImplementation(): Promise<Transaction> {
-    throw new NotImplementedError('buildImplementation not implemented');
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: unknown): Transaction {
-    throw new NotImplementedError('fromImplementation not implemented');
-  }
-
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('signImplementation not implemented');
   }
 
   /**
@@ -110,6 +97,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
     this._sender = sender.address;
+    this._transaction.sender(sender.address);
 
     return this;
   }
@@ -327,8 +315,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected signImplementation({ key }: BaseKey): Transaction {
     const keypair = new KeyPair({ prv: key });
     this._keyPairs.push(keypair);
+    this._transaction.setNumberOfRequiredSigners(this._keyPairs.length);
 
     return this._transaction;
+  }
+
+  numberOfSigners(num: number): void {
+    this._transaction.setNumberOfRequiredSigners(num);
   }
 
   /**
@@ -393,6 +386,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
   /**
    * Convenience method to retrieve the algosdk suggested parameters.
    *
@@ -426,20 +424,5 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
-  }
-  /**
-   * Convenience method to retrieve the algosdk suggested parameters.
-   *
-   * @returns {algosdk.SuggestedParams} The algosdk suggested parameters.
-   */
-  protected get suggestedParams(): algosdk.SuggestedParams {
-    return {
-      flatFee: this._isFlatFee,
-      fee: this._fee,
-      firstRound: this._firstRound,
-      lastRound: this._lastRound,
-      genesisID: this._genesisId,
-      genesisHash: this._genesisHash,
-    };
   }
 }

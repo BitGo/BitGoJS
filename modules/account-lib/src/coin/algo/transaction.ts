@@ -9,8 +9,9 @@ import { TxData } from './ifaces';
 
 export class Transaction extends BaseTransaction {
   private _algoTransaction?: algosdk.Transaction;
-  private _signedTransaction?: algosdk.EncodedSignedTransaction;
+  private _signedTransaction?: Uint8Array;
   private _numberOfRequiredSigners: number;
+  private _sender: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -19,22 +20,24 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
-    if (!this._algoTransaction) {
-      return false;
-    }
     if (this._numberOfRequiredSigners === 0) {
       return false;
     }
-    if (this._numberOfRequiredSigners === 1) {
-      const sender = algosdk.encodeAddress(this._algoTransaction.from.publicKey);
-      const addr = algosdk.encodeAddress(utils.toUint8Array(key));
-      if (addr === sender) {
-        return true;
-      } else {
-        return false;
-      }
-    }
+    // TODO: depend on keypair impl
+    // if (this._numberOfSigners === 1) {
+    //   const kp = new KeyPair({ prv: key });
+    //   const addr = kp.getAddress();
+    //   if (addr === this._sender) {
+    //     return true;
+    //   } else {
+    //     return false;
+    //   }
+    // }
     return true;
+  }
+
+  sender(address: string): void {
+    this._sender = address;
   }
 
   /**
@@ -46,10 +49,9 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const { prv } = keyPair.getKeys();
-    if (prv) {
-      const signed = algosdk.signTransaction(this._algoTransaction, utils.toUint8Array(prv));
-      this._signedTransaction = algosdk.decodeSignedTransaction(signed.blob);
+    const signKey = keyPair.getKeys().prv + keyPair.getKeys().pub;
+    if (signKey) {
+      this._signedTransaction = algosdk.signTransaction(this._algoTransaction, utils.toUint8Array(signKey)).blob;
     } else {
       throw new InvalidKey('Private key undefined');
     }
@@ -64,7 +66,7 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signers = keyPair.map(kp => kp.getAddress());
+    const signers = keyPair.map((kp) => kp.getAddress());
     const multiSigOptions = {
       version: 1,
       threshold: this._numberOfRequiredSigners,
@@ -74,14 +76,13 @@ export class Transaction extends BaseTransaction {
     this._algoTransaction.from = algosdk.decodeAddress(msigAddress);
     const tx = this._algoTransaction;
     const signatures: Uint8Array[] = keyPair.reduce<Uint8Array[]>((result, kp) => {
-      const { prv } = kp.getKeys();
-      if (prv) {
-        result.push(algosdk.signMultisigTransaction(tx, multiSigOptions, utils.toUint8Array(prv)).blob);
+      const keys = kp.getKeys();
+      if (keys) {
+        result.push(algosdk.signMultisigTransaction(tx, multiSigOptions, utils.toUint8Array(keys.prv + keys.pub)).blob);
       }
       return result;
     }, []);
-    const signed = algosdk.mergeMultisigTransactions(signatures);
-    this._signedTransaction = algosdk.decodeSignedTransaction(signed);
+    this._signedTransaction = algosdk.mergeMultisigTransactions(signatures);
   }
 
   get numberOfRequiredSigners(): number {
@@ -127,11 +128,11 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toBroadcastFormat(): algosdk.EncodedTransaction {
+  toBroadcastFormat(): Uint8Array {
     if (!this._signedTransaction) {
       throw new ParseTransactionError('Transaction not signed');
     }
-    return this._signedTransaction.txn;
+    return this._signedTransaction;
   }
 
   /** @inheritdoc */
