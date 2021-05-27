@@ -51,7 +51,7 @@ describe('Algo KeyPair', () => {
 
     it('should fail to create from an invalid private key', () => {
       const source = {
-        prv: '82A34E',
+        prv: '82A34',
       };
       should.throws(() => new Algo.KeyPair(source));
     });

@@ -2,7 +2,8 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
 import { BaseAddress } from '../baseCoin/iface';
-import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
+import { InvalidParameterValueError, BuildTransactionError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 
@@ -28,23 +29,27 @@ export class TransferBuilder extends TransactionBuilder {
         this._reKeyTo,
       ),
     );
+    this.transaction.setTransactionType(TransactionType.Send);
     return await super.buildImplementation();
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: unknown): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
-    if (!algoTx) {
-      throw new InvalidTransactionError('Transaction is empty');
+    if (algoTx) {
+      this.amount(algoTx.amount);
+      this.to({ address: algosdk.encodeAddress(algoTx.to.publicKey) });
+      if (algoTx.closeRemainderTo) {
+        this.closeRemainderTo({ address: algosdk.encodeAddress(algoTx.closeRemainderTo.publicKey) });
+      }
     }
-    this.amount(algoTx.amount);
-    this.to({ address: algosdk.encodeAddress(algoTx.to.publicKey) });
+
     return tx;
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
+  validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
