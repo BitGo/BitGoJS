@@ -503,6 +503,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
+      'stakingOptions'
     ];
   }
 
@@ -2046,6 +2047,7 @@ export class Wallet {
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
         'instant', 'memo', 'type', 'trustlines', 'transferId',
+        'stakingOptions'
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
       self.bitgo.setRequestTracer(reqId);
