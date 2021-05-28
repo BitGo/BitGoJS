@@ -5,6 +5,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { TransactionType } from '../baseCoin';
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey?: string;
   protected _selectionKey?: string;
@@ -82,6 +83,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._voteKeyDilution!,
       ),
     );
+    this.transaction.setTransactionType(TransactionType.KeyRegistration);
     return await super.buildImplementation();
   }
 

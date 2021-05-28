@@ -155,6 +155,13 @@ export class Transaction extends BaseTransaction {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
       result.amount = this._algoTransaction.amount.toString();
     }
+    if (this.type === TransactionType.KeyRegistration) {
+      result.voteKey = this._algoTransaction.voteKey.toString('hex');
+      result.selectionKey = this._algoTransaction.selectionKey.toString('hex');
+      result.voteFirst = this._algoTransaction.voteFirst;
+      result.voteLast = this._algoTransaction.voteLast;
+      result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+    }
     return result;
   }
 

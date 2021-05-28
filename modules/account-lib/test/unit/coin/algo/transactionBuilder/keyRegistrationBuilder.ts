@@ -39,6 +39,60 @@ describe('Algo KeyRegistration Builder', () => {
     });
   });
 
+  describe('validation should fail', () => {
+    it("missing: voteKey", () => {
+      builder.selectionKey(sender.selectionKey)
+      builder.voteFirst(1);
+      builder.voteLast(100);
+      builder.voteKeyDilution(9)
+      should.throws(
+        () => builder.validateTransaction(),
+        (e: Error) => e.message === "Invalid transaction: missing voteKey",
+      );
+    })
+    it("missing: selectionKey", () => {
+      builder.voteKey(sender.voteKey)
+      builder.voteFirst(1);
+      builder.voteLast(100);
+      builder.voteKeyDilution(9)
+      should.throws(
+        () => builder.validateTransaction(),
+        (e: Error) => e.message === "Invalid transaction: missing selectionKey",
+      );
+    })
+    it("missing: voteFirst", () => {
+      builder.voteKey(sender.voteKey)
+      builder.selectionKey(sender.selectionKey)
+      builder.voteLast(100);
+      builder.voteKeyDilution(9)
+      should.throws(
+        () => builder.validateTransaction(),
+        (e: Error) => e.message === "Invalid transaction: missing voteFirst",
+      );
+    })
+    it("missing: voteLast", () => {
+      builder.voteKey(sender.voteKey)
+      builder.selectionKey(sender.selectionKey)
+      builder.voteFirst(1);
+      builder.voteKeyDilution(9)
+      should.throws(
+        () => builder.validateTransaction(),
+        (e: Error) => e.message === "Invalid transaction: missing voteLast",
+      );
+    })
+    it("missing: voteKeyDilution", () => {
+      builder.voteKey(sender.voteKey)
+      builder.selectionKey(sender.selectionKey)
+      builder.voteFirst(1);
+      builder.voteLast(100);
+      should.throws(
+        () => builder.validateTransaction(),
+        (e: Error) => e.message === "Invalid transaction: missing voteKeyDilution",
+      );
+    })
+  })
+  
+
   describe('build key registration transaction', () => {
     it('should build a key registration transaction', async () => {
       builder.sender({ address: sender.address });
@@ -55,9 +109,14 @@ describe('Algo KeyRegistration Builder', () => {
       builder.sign({ key: sender.secretKey.toString('hex') });
       const tx = await builder.build();
       const txJson = tx.toJson();
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.voteFirst, 1);
+      should.deepEqual(txJson.voteLast, 100);
+      should.deepEqual(txJson.voteKeyDilution, 9);
     });
   });
 });
