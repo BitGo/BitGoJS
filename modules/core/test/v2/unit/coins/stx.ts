@@ -199,7 +199,7 @@ describe('STX:', function() {
         publicKey: key.getKeys().pub,
       });
       const tx = await basecoin.signTransaction({
-        prv: [key.getKeys().prv!.toString()],
+        prv: key.getKeys().prv!.toString(),
         pubKeys: [key.getKeys().pub],
         txPrebuild: {
           txHex: unsignedTransaction.toBroadcastFormat(),

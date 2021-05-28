@@ -51,7 +51,7 @@ export interface ExplainTransactionOptions {
 
 export interface StxSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
-  prv: string[];
+  prv: string | string[];
   pubKeys?: string[];
   numberSignature?: number;
 }
@@ -179,7 +179,8 @@ export class Stx extends BaseCoin {
     return co<SignedTransaction>(function* () {
       const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
       const txBuilder = factory.from(params.txPrebuild.txHex);
-      params.prv.forEach((prv) => txBuilder.sign({ key: prv }));
+      const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
+      prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
       if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
       if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
       const transaction: any = yield txBuilder.build();
