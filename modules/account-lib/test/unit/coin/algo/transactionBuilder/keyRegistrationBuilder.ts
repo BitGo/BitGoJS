@@ -123,7 +123,7 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteKeyDilution, 9);
     });
 
-    it('should build a signed trx from an unsigned raw transaction from a raw transaction', async () => {
+    it('should build a signed trx from an unsigned raw transaction', async () => {
       const rawTransaction = utils.hexStringToUInt8Array(rawTransactions.unsigned);
       builder.from(rawTransaction);
       builder.numberOfSigners(1);
