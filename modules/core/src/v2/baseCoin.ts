@@ -20,6 +20,10 @@ import { PendingApprovals } from './pendingApprovals';
 import { Keychain, Keychains, KeyIndices } from './keychains';
 import { Enterprises } from './enterprises';
 
+// re-export account lib transaction types
+import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
+export type TransactionType = AccountLibBasecoin.TransactionType;
+
 export interface TransactionRecipient {
   address: string;
   amount: string | number;
