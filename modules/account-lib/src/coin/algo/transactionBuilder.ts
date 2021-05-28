@@ -1,13 +1,19 @@
-import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError, ParseTransactionError, SigningError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  InvalidTransactionError,
+  SigningError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
 import { KeyPair } from './keyPair';
+import { BaseTransactionSchema } from './txnSchema';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -344,15 +350,46 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: unknown): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const buffer = typeof rawTransaction === 'string' ? Buffer.from(rawTransaction, 'hex') : rawTransaction;
+    // TODO: Implement support for decoding signed transactions as well
+    const algoTxn: algosdk.Transaction = algosdk.decodeUnsignedTransaction(buffer);
+
+    const validationResult = BaseTransactionSchema.validate({
+      fee: algoTxn.fee,
+      firstRound: algoTxn.firstRound,
+      genesisHash: algoTxn.genesisHash.toString('base64'),
+      lastRound: algoTxn.lastRound,
+      sender: algosdk.encodeAddress(algoTxn.from.publicKey),
+      genesisId: algoTxn.genesisID,
+      lease: algoTxn.lease,
+      note: algoTxn.note,
+      reKeyTo: algoTxn.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
-  }
+  validateTransaction(_: Transaction): void {
+    const validationResult = BaseTransactionSchema.validate({
+      fee: this._fee,
+      firstRound: this._firstRound,
+      genesisHash: this._genesisHash,
+      lastRound: this._lastRound,
+      sender: this._sender,
+      genesisId: this._genesisId,
+      lease: this._lease,
+      note: this._note,
+      reKeyTo: this._reKeyTo,
+    });
 
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
