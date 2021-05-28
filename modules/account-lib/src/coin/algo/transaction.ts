@@ -156,8 +156,8 @@ export class Transaction extends BaseTransaction {
       result.amount = this._algoTransaction.amount.toString();
     }
     if (this.type === TransactionType.KeyRegistration) {
-      result.voteKey = this._algoTransaction.voteKey.toString('hex');
-      result.selectionKey = this._algoTransaction.selectionKey.toString('hex');
+      result.voteKey = this._algoTransaction.voteKey.toString('base64');
+      result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
       result.voteFirst = this._algoTransaction.voteFirst;
       result.voteLast = this._algoTransaction.voteLast;
       result.voteKeyDilution = this._algoTransaction.voteKeyDilution;

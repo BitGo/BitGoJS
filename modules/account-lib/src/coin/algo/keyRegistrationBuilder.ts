@@ -94,8 +94,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     if (!algoTx) {
       throw new InvalidTransactionError('Transaction is empty');
     }
-    this.voteKey(algoTx.voteKey.toString());
-    this.selectionKey(algoTx.selectionKey.toString());
+    this.voteKey(algoTx.voteKey.toString('base64'));
+    this.selectionKey(algoTx.selectionKey.toString('base64'));
     this.voteFirst(algoTx.voteFirst);
     this.voteLast(algoTx.voteLast);
     this.voteKeyDilution(algoTx.voteKeyDilution);

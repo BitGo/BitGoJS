@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
 import { KeyRegistrationBuilder } from '../../../../../src/coin/algo/keyRegistrationBuilder';
+import utils from '../../../../../src/coin/algo/utils';
 
 import * as AlgoResources from '../../../../resources/algo';
 
@@ -10,6 +11,7 @@ describe('Algo KeyRegistration Builder', () => {
   
   const sender = AlgoResources.accounts.account1;
   const receiver = AlgoResources.accounts.account2;
+  const { rawTransactions } = AlgoResources
 
 
   beforeEach(() => {
@@ -110,7 +112,9 @@ describe('Algo KeyRegistration Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
       should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
+      should.deepEqual(txJson.selectionKey.toString('base64'), sender.selectionKey);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
@@ -118,5 +122,24 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
     });
-  });
-});
+
+    it('should build a signed trx from an unsigned raw transaction from a raw transaction', async () => {
+      const rawTransaction = utils.hexStringToUInt8Array(rawTransactions.unsigned);
+      builder.from(rawTransaction);
+      builder.numberOfSigners(1);
+      builder.sign({ key: sender.secretKey.toString('hex') });
+      const tx = await builder.build();
+      const txJson = tx.toJson()
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
+      should.deepEqual(txJson.selectionKey.toString('base64'), sender.selectionKey);
+      should.deepEqual(txJson.from, sender.address);
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.voteFirst, 1);
+      should.deepEqual(txJson.voteLast, 100);
+      should.deepEqual(txJson.voteKeyDilution, 9);
+    })
+  })
+})
