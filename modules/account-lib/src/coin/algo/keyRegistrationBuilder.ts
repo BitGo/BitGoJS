@@ -91,14 +91,13 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
-    if (!algoTx) {
-      throw new InvalidTransactionError('Transaction is empty');
+    if (algoTx) {
+      this.voteKey(algoTx.voteKey.toString('base64'));
+      this.selectionKey(algoTx.selectionKey.toString('base64'));
+      this.voteFirst(algoTx.voteFirst);
+      this.voteLast(algoTx.voteLast);
+      this.voteKeyDilution(algoTx.voteKeyDilution);
     }
-    this.voteKey(algoTx.voteKey.toString('base64'));
-    this.selectionKey(algoTx.selectionKey.toString('base64'));
-    this.voteFirst(algoTx.voteFirst);
-    this.voteLast(algoTx.voteLast);
-    this.voteKeyDilution(algoTx.voteKeyDilution);
     return tx;
   }
 
