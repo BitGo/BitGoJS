@@ -1,13 +1,20 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
+import { Transaction } from '../../../../../src/coin/algo';
 import { KeyRegistrationBuilder } from '../../../../../src/coin/algo/keyRegistrationBuilder';
 import utils from '../../../../../src/coin/algo/utils';
 
 import * as AlgoResources from '../../../../resources/algo';
 
+class StubTransactionBuilder extends KeyRegistrationBuilder {
+  getTransaction(): Transaction {
+    return this._transaction;
+  }
+}
+
 describe('Algo KeyRegistration Builder', () => {
-  let builder: KeyRegistrationBuilder;
+  let builder: StubTransactionBuilder;
   
   const sender = AlgoResources.accounts.account1;
   const { rawTransactions } = AlgoResources
@@ -15,7 +22,7 @@ describe('Algo KeyRegistration Builder', () => {
 
   beforeEach(() => {
     const config = coins.get('algo');
-    builder = new KeyRegistrationBuilder(config)
+    builder = new StubTransactionBuilder(config)
   });
 
   describe('setter validation', () => {
@@ -85,6 +92,15 @@ describe('Algo KeyRegistration Builder', () => {
   });
 
   describe('validation should fail', () => {
+    beforeEach(() => {
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet()
+    });
+    
     it('missing: voteKey', () => {
       builder
         .selectionKey(sender.selectionKey)
@@ -92,7 +108,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteLast(100)
         .voteKeyDilution(9);
       should.throws(
-        () => builder.validateTransaction(),
+        () => builder.validateTransaction(builder.getTransaction()),
         (e: Error) => e.message === 'Invalid transaction: missing voteKey',
       );
     })
@@ -103,7 +119,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteLast(100)
         .voteKeyDilution(9);
       should.throws(
-        () => builder.validateTransaction(),
+        () => builder.validateTransaction(builder.getTransaction()),
         (e: Error) => e.message === 'Invalid transaction: missing selectionKey',
       );
     })
@@ -114,7 +130,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteLast(100)
         .voteKeyDilution(9)
       should.throws(
-        () => builder.validateTransaction(),
+        () => builder.validateTransaction(builder.getTransaction()),
         (e: Error) => e.message === 'Invalid transaction: missing voteFirst',
       );
     })
@@ -125,7 +141,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteFirst(1)
         .voteKeyDilution(9);
       should.throws(
-        () => builder.validateTransaction(),
+        () => builder.validateTransaction(builder.getTransaction()),
         (e: Error) => e.message === 'Invalid transaction: missing voteLast',
       );
     })
@@ -136,7 +152,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteFirst(1)
         .voteLast(100);
       should.throws(
-        () => builder.validateTransaction(),
+        () => builder.validateTransaction(builder.getTransaction()),
         (e: Error) => e.message === 'Invalid transaction: missing voteKeyDilution',
       );
     })
@@ -175,8 +191,6 @@ describe('Algo KeyRegistration Builder', () => {
     it('should build a signed trx from an unsigned raw transaction', async () => {
       const rawTransaction = utils.hexStringToUInt8Array(rawTransactions.unsigned);
       builder.from(rawTransaction);
-      builder.numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
       const tx = await builder.build();
       const txJson = tx.toJson()
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));

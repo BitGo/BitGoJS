@@ -51,7 +51,7 @@ export class KeyExclusionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
+  validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
   }
 }

@@ -108,8 +108,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    // super.validateTransaction(transaction);
+  validateTransaction(transaction: Transaction): void {
+    super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
 
