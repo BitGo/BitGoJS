@@ -20,19 +20,15 @@ export class KeyExclusionBuilder extends TransactionBuilder {
     const rekeyTo = undefined;
     const nonParticipation = true;
     this.transaction.setAlgoTransaction(
-      algosdk.makeKeyRegistrationTxn(
+      algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender!,
-        this._fee!,
-        this._firstRound!,
-        this._lastRound!,
         this._note!,
-        this._genesisHash!,
-        this._genesisId!,
         voteKey,
         selectionKey,
         voteFirst,
         voteLast,
         voteKeyDilution,
+        this.suggestedParams,
         rekeyTo,
         nonParticipation,
       ),

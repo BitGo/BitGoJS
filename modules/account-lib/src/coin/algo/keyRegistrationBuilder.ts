@@ -7,11 +7,11 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransactionType } from '../baseCoin';
 export class KeyRegistrationBuilder extends TransactionBuilder {
-  protected _voteKey?: string;
-  protected _selectionKey?: string;
-  protected _voteFirst?: number;
-  protected _voteLast?: number;
-  protected _voteKeyDilution?: number;
+  protected _voteKey: string;
+  protected _selectionKey: string;
+  protected _voteFirst: number;
+  protected _voteLast: number;
+  protected _voteKeyDilution: number;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -74,19 +74,15 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.setAlgoTransaction(
-      algosdk.makeKeyRegistrationTxn(
-        this._sender!,
-        this._fee!,
-        this._firstRound!,
-        this._lastRound!,
-        this._note!,
-        this._genesisHash!,
-        this._genesisId!,
-        this._voteKey!,
-        this._selectionKey!,
-        this._voteFirst!,
-        this._voteLast!,
-        this._voteKeyDilution!,
+      algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+        this._sender,
+        this._note,
+        this._voteKey,
+        this._selectionKey,
+        this._voteFirst,
+        this._voteLast,
+        this._voteKeyDilution,
+        this.suggestedParams,
       ),
     );
     this.transaction.setTransactionType(TransactionType.KeyRegistration);
