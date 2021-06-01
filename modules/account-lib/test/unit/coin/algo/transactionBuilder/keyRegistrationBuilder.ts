@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
 import { KeyRegistrationBuilder } from '../../../../../src/coin/algo/keyRegistrationBuilder';
@@ -10,7 +10,6 @@ describe('Algo KeyRegistration Builder', () => {
   let builder: KeyRegistrationBuilder;
   
   const sender = AlgoResources.accounts.account1;
-  const receiver = AlgoResources.accounts.account2;
   const { rawTransactions } = AlgoResources
 
 
@@ -23,8 +22,8 @@ describe('Algo KeyRegistration Builder', () => {
     it('should validate voteKey, is set and is a valid string', () => {
       const spy = sinon.spy(builder, 'voteKey');
       should.throws(
-        () => builder.voteKey(""),
-        (e: Error) => e.message === "voteKey can not be undefined",
+        () => builder.voteKey(''),
+        (e: Error) => e.message === 'voteKey can not be undefined',
       );
       should.doesNotThrow(() => builder.voteKey(sender.voteKey));
       assert.calledTwice(spy);
@@ -33,13 +32,13 @@ describe('Algo KeyRegistration Builder', () => {
     it('should validate selection key, is set and is a valid string', () => {
       const spy = sinon.spy(builder, 'selectionKey');
       should.throws(
-        () => builder.selectionKey(""),
+        () => builder.selectionKey(''),
         (e: Error) => e.message === 'selectionKey can not be undefined'
       );
       should.doesNotThrow(() => builder.selectionKey(sender.selectionKey));
       assert.calledTwice(spy);
     });
-    
+
     it('should validate vote First key is gt than 0', () => {
       const spy = sinon.spy(builder, 'voteFirst');
       should.throws(
@@ -73,8 +72,9 @@ describe('Algo KeyRegistration Builder', () => {
 
     it('should validate vote Key Dilution', () => {
       const spy = sinon.spy(builder, 'voteKeyDilution');
-      builder.voteFirst(5);
-      builder.voteLast(18)
+      builder
+        .voteFirst(5)
+        .voteLast(18);
       should.throws(
         () => builder.voteKeyDilution(25),
         (e: Error) => e.message === 'Key dilution value must be less than or equal to the square root of the voteKey validity range.',
@@ -85,54 +85,59 @@ describe('Algo KeyRegistration Builder', () => {
   });
 
   describe('validation should fail', () => {
-    it("missing: voteKey", () => {
-      builder.selectionKey(sender.selectionKey)
-      builder.voteFirst(1);
-      builder.voteLast(100);
-      builder.voteKeyDilution(9)
+    it('missing: voteKey', () => {
+      builder
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(),
-        (e: Error) => e.message === "Invalid transaction: missing voteKey",
+        (e: Error) => e.message === 'Invalid transaction: missing voteKey',
       );
     })
-    it("missing: selectionKey", () => {
-      builder.voteKey(sender.voteKey)
-      builder.voteFirst(1);
-      builder.voteLast(100);
-      builder.voteKeyDilution(9)
+    it('missing: selectionKey', () => {
+      builder
+        .voteKey(sender.voteKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(),
-        (e: Error) => e.message === "Invalid transaction: missing selectionKey",
+        (e: Error) => e.message === 'Invalid transaction: missing selectionKey',
       );
     })
-    it("missing: voteFirst", () => {
-      builder.voteKey(sender.voteKey)
-      builder.selectionKey(sender.selectionKey)
-      builder.voteLast(100);
-      builder.voteKeyDilution(9)
+    it('missing: voteFirst', () => {
+      builder
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteLast(100)
+        .voteKeyDilution(9)
       should.throws(
         () => builder.validateTransaction(),
-        (e: Error) => e.message === "Invalid transaction: missing voteFirst",
+        (e: Error) => e.message === 'Invalid transaction: missing voteFirst',
       );
     })
-    it("missing: voteLast", () => {
-      builder.voteKey(sender.voteKey)
-      builder.selectionKey(sender.selectionKey)
-      builder.voteFirst(1);
-      builder.voteKeyDilution(9)
+    it('missing: voteLast', () => {
+      builder
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(),
-        (e: Error) => e.message === "Invalid transaction: missing voteLast",
+        (e: Error) => e.message === 'Invalid transaction: missing voteLast',
       );
     })
-    it("missing: voteKeyDilution", () => {
-      builder.voteKey(sender.voteKey)
-      builder.selectionKey(sender.selectionKey)
-      builder.voteFirst(1);
-      builder.voteLast(100);
+    it('missing: voteKeyDilution', () => {
+      builder
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100);
       should.throws(
         () => builder.validateTransaction(),
-        (e: Error) => e.message === "Invalid transaction: missing voteKeyDilution",
+        (e: Error) => e.message === 'Invalid transaction: missing voteKeyDilution',
       );
     })
   })
@@ -140,17 +145,18 @@ describe('Algo KeyRegistration Builder', () => {
 
   describe('build key registration transaction', () => {
     it('should build a key registration transaction', async () => {
-      builder.sender({ address: sender.address });
-      builder.fee({ fee: '1000' });
-      builder.firstRound(1);
-      builder.lastRound(100);
-      builder.voteKey(sender.voteKey)
-      builder.selectionKey(sender.selectionKey)
-      builder.voteFirst(1);
-      builder.voteLast(100);
-      builder.voteKeyDilution(9)
-      builder.testnet();
-      builder.numberOfSigners(1);
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1);
       builder.sign({ key: sender.secretKey.toString('hex') });
       const tx = await builder.build();
       const txJson = tx.toJson();

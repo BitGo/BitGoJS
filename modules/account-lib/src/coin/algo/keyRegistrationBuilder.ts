@@ -17,23 +17,26 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     super(coinConfig);
   }
 
-  voteKey(key: string): void {
+  voteKey(key: string): KeyRegistrationBuilder {
     if (!key) {
       throw new InvalidParameterValueError('voteKey can not be undefined');
     }
     this._voteKey = key;
+    return this;
   }
 
-  selectionKey(key: string): void {
+  selectionKey(key: string): KeyRegistrationBuilder {
     if (!key) {
       throw new InvalidParameterValueError('selectionKey can not be undefined');
     }
     this._selectionKey = key;
+    return this;
   }
 
-  voteFirst(round: number): void {
+  voteFirst(round: number): KeyRegistrationBuilder {
     this.validateValue(new BigNumber(round));
     this._voteFirst = round;
+    return this;
   }
 
   /**
@@ -41,19 +44,20 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    * @param {number} round No theoretical limit. A recommended range is 3,000,000 rounds.
    * https://developer.algorand.org/docs/run-a-node/participate/generate_keys/
    */
-  voteLast(round: number = 3000000): void {
+  voteLast(round: number = 3000000): KeyRegistrationBuilder {
     this.validateValue(new BigNumber(round));
     if (this._voteFirst && round <= this._voteFirst) {
       throw new Error('VoteKey last round must be greater than first round');
     }
     this._voteLast = round;
+    return this;
   }
 
   /**
    * @param {number} size Defaults to 10,000. To reduce the size of the participation key, set the key dilution value to roughly the square root of the range that the partkey is valid for.
    * https://developer.algorand.org/docs/run-a-node/participate/generate_keys/#generate-the-participation-key-with-goal
    */
-  voteKeyDilution(size: number = 10000): void {
+  voteKeyDilution(size: number = 10000): KeyRegistrationBuilder {
     this.validateValue(new BigNumber(size));
     if (this._voteFirst && this._voteLast) {
       if (size <= Math.sqrt(this._voteLast - this._voteFirst)) {
@@ -64,6 +68,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         );
       }
     }
+    return this;
   }
 
   /** @inheritdoc */
@@ -104,7 +109,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    super.validateTransaction(transaction);
+    // super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
 
