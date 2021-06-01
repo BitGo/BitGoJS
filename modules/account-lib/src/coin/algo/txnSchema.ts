@@ -1,6 +1,9 @@
 import joi from 'joi';
 import utils from './utils';
 
+const voteKeySchema = joi.string().custom((addr) => utils.isValidAddress(addr));
+const selectionKeySchema = joi.string().custom((addr) => utils.isValidAddress(addr));
+
 export const BaseTransactionSchema = joi
   .object({
     fee: joi.number().required(),
@@ -29,3 +32,11 @@ export const BaseTransactionSchema = joi
 
     throw new Error('lastRound cannot be greater than or equal to firstRound');
   });
+
+  export const KeyRegTxnSchema = joi.object({
+    voteKey: voteKeySchema.required(),
+    selectionKey: selectionKeySchema.required(),
+    voteFirst: joi.number().required(),
+    voteLast: joi.number().required(),
+    voteKeyDilution: joi.number().required(),
+});

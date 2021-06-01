@@ -17,7 +17,7 @@ describe('Algo KeyRegistration Builder', () => {
   let builder: StubTransactionBuilder;
   
   const sender = AlgoResources.accounts.account1;
-  const { rawTransactions } = AlgoResources
+  const { rawTx } = AlgoResources
 
 
   beforeEach(() => {
@@ -47,7 +47,7 @@ describe('Algo KeyRegistration Builder', () => {
     });
 
     it('should validate vote First key is gt than 0', () => {
-      const spy = sinon.spy(builder, 'voteFirst');
+      const spy = sinon.spy(builder, 'validateValue');
       should.throws(
         () => builder.voteFirst(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
@@ -57,12 +57,14 @@ describe('Algo KeyRegistration Builder', () => {
     });
 
     it('should validate vote Last key is gt than 0', () => {
+      const validateValueSpy = sinon.spy(builder, 'validateValue');
       const spy = sinon.spy(builder, 'voteLast');
       should.throws(
         () => builder.voteLast(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.voteLast(15));
+      assert.calledTwice(validateValueSpy)
       assert.calledTwice(spy);
     });
 
@@ -78,6 +80,7 @@ describe('Algo KeyRegistration Builder', () => {
     });
 
     it('should validate vote Key Dilution', () => {
+      const validateValueSpy = sinon.spy(builder, 'validateValue');
       const spy = sinon.spy(builder, 'voteKeyDilution');
       builder
         .voteFirst(5)
@@ -88,6 +91,7 @@ describe('Algo KeyRegistration Builder', () => {
       );
       should.doesNotThrow(() => builder.voteKeyDilution(2));
       assert.calledTwice(spy);
+      should(validateValueSpy.callCount).be.exactly(4)
     });
   });
 
@@ -109,7 +113,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(builder.getTransaction()),
-        (e: Error) => e.message === 'Invalid transaction: missing voteKey',
+        (e: Error) => e.message === 'Transaction validation failed: "voteKey" is required',
       );
     })
     it('missing: selectionKey', () => {
@@ -120,7 +124,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(builder.getTransaction()),
-        (e: Error) => e.message === 'Invalid transaction: missing selectionKey',
+        (e: Error) => e.message === 'Transaction validation failed: "selectionKey" is required',
       );
     })
     it('missing: voteFirst', () => {
@@ -131,7 +135,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
       should.throws(
         () => builder.validateTransaction(builder.getTransaction()),
-        (e: Error) => e.message === 'Invalid transaction: missing voteFirst',
+        (e: Error) => e.message === 'Transaction validation failed: "voteFirst" is required',
       );
     })
     it('missing: voteLast', () => {
@@ -142,7 +146,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9);
       should.throws(
         () => builder.validateTransaction(builder.getTransaction()),
-        (e: Error) => e.message === 'Invalid transaction: missing voteLast',
+        (e: Error) => e.message === 'Transaction validation failed: "voteLast" is required',
       );
     })
     it('missing: voteKeyDilution', () => {
@@ -153,7 +157,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteLast(100);
       should.throws(
         () => builder.validateTransaction(builder.getTransaction()),
-        (e: Error) => e.message === 'Invalid transaction: missing voteKeyDilution',
+        (e: Error) => e.message === 'Transaction validation failed: "voteKeyDilution" is required',
       );
     })
   })
@@ -189,7 +193,7 @@ describe('Algo KeyRegistration Builder', () => {
     });
 
     it('should build a signed trx from an unsigned raw transaction', async () => {
-      const rawTransaction = utils.hexStringToUInt8Array(rawTransactions.unsigned);
+      const rawTransaction = utils.hexStringToUInt8Array(rawTx.keyReg.unsigned);
       builder.from(rawTransaction);
       const tx = await builder.build();
       const txJson = tx.toJson()
