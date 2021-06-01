@@ -2,10 +2,11 @@
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransactionType } from '../baseCoin';
+import { KeyRegTxnSchema } from './txnSchema';
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey: string;
   protected _selectionKey: string;
@@ -106,24 +107,15 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    this.validateMandatoryFields();
-  }
-
-  private validateMandatoryFields(): void {
-    if (!this._voteKey) {
-      throw new BuildTransactionError('Invalid transaction: missing voteKey');
-    }
-    if (!this._selectionKey) {
-      throw new BuildTransactionError('Invalid transaction: missing selectionKey');
-    }
-    if (!this._voteFirst) {
-      throw new BuildTransactionError('Invalid transaction: missing voteFirst');
-    }
-    if (!this._voteLast) {
-      throw new BuildTransactionError('Invalid transaction: missing voteLast');
-    }
-    if (!this._voteKeyDilution) {
-      throw new BuildTransactionError('Invalid transaction: missing voteKeyDilution');
+    const validationResult = KeyRegTxnSchema.validate({
+      voteKey: this._voteKey,
+      selectionKey: this._selectionKey,
+      voteFirst: this._voteFirst,
+      voteLast: this._voteLast,
+      voteKeyDilution: this._voteKeyDilution,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
   }
 }

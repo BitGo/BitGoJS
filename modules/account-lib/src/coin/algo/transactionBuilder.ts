@@ -430,23 +430,4 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       genesisHash: this._genesisHash,
     };
   }
-
-  private validateAlgoTxn(algoTxn: algosdk.Transaction): void {
-    const validationResult = BaseTransactionSchema.validate({
-      fee: algoTxn.fee,
-      firstRound: algoTxn.firstRound,
-      genesisHash: algoTxn.genesisHash.toString('base64'),
-      lastRound: algoTxn.lastRound,
-      sender: algosdk.encodeAddress(algoTxn.from.publicKey),
-      txType: algoTxn.type,
-      genesisId: algoTxn.genesisID,
-      lease: algoTxn.lease,
-      note: algoTxn.note,
-      reKeyTo: algoTxn.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
-    });
-
-    if (validationResult.error) {
-      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
-    }
-  }
 }
