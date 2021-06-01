@@ -39,6 +39,49 @@ describe('Algo KeyRegistration Builder', () => {
       should.doesNotThrow(() => builder.selectionKey(sender.selectionKey));
       assert.calledTwice(spy);
     });
+    
+    it('should validate vote First key is gt than 0', () => {
+      const spy = sinon.spy(builder, 'voteFirst');
+      should.throws(
+        () => builder.voteFirst(-1),
+        (e: Error) => e.message === 'Value cannot be less than zero',
+      );
+      should.doesNotThrow(() => builder.voteFirst(15));
+      assert.calledTwice(spy);
+    });
+
+    it('should validate vote Last key is gt than 0', () => {
+      const spy = sinon.spy(builder, 'voteLast');
+      should.throws(
+        () => builder.voteLast(-1),
+        (e: Error) => e.message === 'Value cannot be less than zero',
+      );
+      should.doesNotThrow(() => builder.voteLast(15));
+      assert.calledTwice(spy);
+    });
+
+    it('should validate vote Last key is gt than FirstKey', () => {
+      const spy = sinon.spy(builder, 'voteLast');
+      builder.voteFirst(15);
+      should.throws(
+        () => builder.voteLast(12),
+        (e: Error) => e.message === 'VoteKey last round must be greater than first round',
+      );
+      should.doesNotThrow(() => builder.voteLast(18));
+      assert.calledTwice(spy);
+    });
+
+    it('should validate vote Key Dilution', () => {
+      const spy = sinon.spy(builder, 'voteKeyDilution');
+      builder.voteFirst(5);
+      builder.voteLast(18)
+      should.throws(
+        () => builder.voteKeyDilution(25),
+        (e: Error) => e.message === 'Key dilution value must be less than or equal to the square root of the voteKey validity range.',
+      );
+      should.doesNotThrow(() => builder.voteKeyDilution(2));
+      assert.calledTwice(spy);
+    });
   });
 
   describe('validation should fail', () => {

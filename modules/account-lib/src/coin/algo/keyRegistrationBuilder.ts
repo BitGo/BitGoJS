@@ -2,7 +2,7 @@
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransactionType } from '../baseCoin';
@@ -43,7 +43,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    */
   voteLast(round: number = 3000000): void {
     this.validateValue(new BigNumber(round));
-    if (this._voteFirst && round < this._voteFirst) {
+    if (this._voteFirst && round <= this._voteFirst) {
       throw new Error('VoteKey last round must be greater than first round');
     }
     this._voteLast = round;
@@ -54,6 +54,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    * https://developer.algorand.org/docs/run-a-node/participate/generate_keys/#generate-the-participation-key-with-goal
    */
   voteKeyDilution(size: number = 10000): void {
+    this.validateValue(new BigNumber(size));
     if (this._voteFirst && this._voteLast) {
       if (size <= Math.sqrt(this._voteLast - this._voteFirst)) {
         this._voteKeyDilution = size;
@@ -103,7 +104,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    // super.validateTransaction(transaction);
+    super.validateTransaction(transaction);
     this.validateMandatoryFields();
   }
 
