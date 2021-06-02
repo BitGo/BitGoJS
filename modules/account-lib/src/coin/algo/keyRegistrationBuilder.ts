@@ -3,9 +3,9 @@ import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransactionType } from '../baseCoin';
 import { KeyRegTxnSchema } from './txnSchema';
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey: string;
@@ -81,22 +81,21 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     return this;
   }
 
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setAlgoTransaction(
-      algosdk.makeKeyRegistrationTxnWithSuggestedParams(
-        this._sender,
-        this._note,
-        this._voteKey,
-        this._selectionKey,
-        this._voteFirst,
-        this._voteLast,
-        this._voteKeyDilution,
-        this.suggestedParams,
-      ),
+  protected buildAlgoTxn(): algosdk.Transaction {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      this._sender,
+      this._note,
+      this._voteKey,
+      this._selectionKey,
+      this._voteFirst,
+      this._voteLast,
+      this._voteKeyDilution,
+      this.suggestedParams,
     );
-    this.transaction.setTransactionType(TransactionType.KeyRegistration);
-    return await super.buildImplementation();
+  }
+
+  protected get transactionType(): TransactionType {
+    return TransactionType.KeyRegistration;
   }
 
   /** @inheritdoc */

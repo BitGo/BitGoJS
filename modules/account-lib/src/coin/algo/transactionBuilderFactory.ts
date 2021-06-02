@@ -21,7 +21,7 @@ export class TransactionBuilderFactory {
   }
 
   getAssetTransferBuilder(): AssetTransferBuilder {
-    throw new NotImplementedError('getAssetTransferBuilder not implemented');
+    return new AssetTransferBuilder(this.coinConfig);
   }
 
   from(raw: string | Uint8Array): TransactionBuilder {

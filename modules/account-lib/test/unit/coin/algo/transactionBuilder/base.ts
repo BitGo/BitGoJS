@@ -13,6 +13,7 @@ import { Transaction } from '../../../../../src/coin/algo/transaction';
 import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 
 import * as AlgoResources from '../../../../resources/algo';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
 
 const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;
 
@@ -79,6 +80,13 @@ class StubTransactionBuilder extends TransactionBuilder {
 
   getSuggestedParams(): algosdk.SuggestedParams {
     return this.suggestedParams;
+  }
+
+  protected buildAlgoTxn(): algosdk.Transaction {
+    throw new Error('Method not implemented.');
+  }
+  protected get transactionType(): TransactionType {
+    throw new Error('Method not implemented.');
   }
 }
 

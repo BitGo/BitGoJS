@@ -167,6 +167,7 @@ export class Transaction extends BaseTransaction {
       firstRound: this._algoTransaction.firstRound,
       lastRound: this._algoTransaction.lastRound,
       note: this._algoTransaction.note,
+      tokenId: this._algoTransaction?.assetIndex,
     };
     if (this.type === TransactionType.Send) {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);

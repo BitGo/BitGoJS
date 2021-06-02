@@ -11,10 +11,7 @@ export const BaseTransactionSchema = joi
     firstRound: joi.number().positive().required(),
     genesisHash: joi.string().base64().required(),
     lastRound: joi.number().positive().required(),
-    sender: joi
-      .string()
-      .custom((addr) => utils.isValidAddress(addr))
-      .required(),
+    sender: addressSchema.required(),
     genesisId: joi.string().optional(),
     lease: joi.optional(),
     note: joi.optional(),
@@ -43,13 +40,15 @@ export const TransferTransactionSchema = joi.object({
   closeRemainderTo: joi.string().optional(),
 });
 
-export const KeyRegTxnSchema = joi.object({
+export const KeyRegTxnSchema = joi
+  .object({
     voteKey: addressSchema.required(),
     selectionKey: addressSchema.required(),
     voteFirst: joi.number().positive().required(),
     voteLast: joi.number().positive().required(),
     voteKeyDilution: joi.number().positive().required(),
-}).custom((obj) => {
+  })
+  .custom((obj) => {
     const voteFirst: number = obj.voteFirst;
     const voteLast: number = obj.voteLast;
     const voteKeyDilution: number = obj.voteKeyDilution;
@@ -61,6 +60,13 @@ export const KeyRegTxnSchema = joi.object({
     if (voteKeyDilution > Math.sqrt(voteLast - voteFirst)) {
       throw new KeyDilutionError(voteKeyDilution);
     }
-    
-    return obj
+
+    return obj;
   });
+
+export const AssetTransferTxnSchema = joi.object({
+  assetIndex: joi.number().required(),
+  assetAmount: joi.custom((val) => typeof val === 'number' || typeof val === 'bigint').required(),
+  receiver: addressSchema.required(),
+  closeTo: addressSchema.optional(),
+});
