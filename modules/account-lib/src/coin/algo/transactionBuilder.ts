@@ -1,12 +1,19 @@
-import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
-import { BaseTransaction, BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { BaseTransactionBuilder } from '../baseCoin';
+import {
+  BuildTransactionError,
+  InvalidTransactionError,
+  SigningError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
+import { KeyPair } from './keyPair';
+import { BaseTransactionSchema } from './txnSchema';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -19,10 +26,12 @@ const BETANET_GENESIS_HASH = 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
+  protected _keyPairs: KeyPair[];
 
   // the fee is specified as a number here instead of a big number because
   // the algosdk also specifies it as a number.
   protected _fee: number;
+  protected _isFlatFee: boolean;
 
   protected _sender: string;
   protected _genesisHash: string;
@@ -32,11 +41,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _lease?: Uint8Array;
   protected _note?: Uint8Array;
   protected _reKeyTo?: string;
+  protected _suggestedParams: algosdk.SuggestedParams;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
 
     this._transaction = new Transaction(coinConfig);
+    this._keyPairs = [];
   }
 
   /**
@@ -51,11 +62,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   fee(feeObj: BaseFee): this {
     const fee = new BigNumber(feeObj.fee).toNumber();
-    if (fee < MIN_FEE) {
+    if (this._isFlatFee && fee < MIN_FEE) {
       throw new InsufficientFeeError(fee, MIN_FEE);
     }
 
     this._fee = fee;
+
+    return this;
+  }
+
+  /**
+   * Sets whether the fee is a flat fee.
+   *
+   * A flat fee is the fee for the entire transaction whereas a normal fee
+   * is a fee for every byte in the transaction.
+   *
+   * @param {boolean} isFlatFee Whether the fee should be specified as a flat fee.
+   * @returns {TransactionBuilder} This transaction builder.
+   */
+  isFlatFee(isFlatFee: boolean): this {
+    this._isFlatFee = isFlatFee;
 
     return this;
   }
@@ -71,6 +97,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
     this._sender = sender.address;
+    this._transaction.sender(sender.address);
 
     return this;
   }
@@ -242,6 +269,81 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    const numberOfSigners = this._keyPairs.length;
+    if (numberOfSigners < this._transaction.numberOfRequiredSigners) {
+      throw new SigningError('Insufficient number of signers');
+    }
+
+    if (this._keyPairs.length === 1) {
+      this.transaction.sign(this._keyPairs[0]);
+    } else if (this._keyPairs.length > 1) {
+      this.transaction.signMultiSig(this._keyPairs);
+    }
+    this._transaction.loadInputsAndOutputs();
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
+    const buffer = typeof rawTransaction === 'string' ? Buffer.from(rawTransaction, 'hex') : rawTransaction;
+    let algosdkTxn: algosdk.Transaction;
+
+    try {
+      algosdkTxn = algosdk.decodeUnsignedTransaction(buffer);
+    } catch (err: unknown) {
+      throw new ParseTransactionError(`raw transaction cannot be decoded: ${err}`);
+    }
+
+    this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
+    this._isFlatFee = true;
+    this._fee = algosdkTxn.fee;
+    this._genesisHash = algosdkTxn.genesisHash.toString('base64');
+    this._genesisId = algosdkTxn.genesisID;
+    this._firstRound = algosdkTxn.firstRound;
+    this._lastRound = algosdkTxn.lastRound;
+    this._lease = algosdkTxn.lease;
+    this._note = algosdkTxn.note;
+    this._reKeyTo = algosdkTxn.reKeyTo ? algosdk.encodeAddress(algosdkTxn.reKeyTo.publicKey) : undefined;
+
+    this._transaction.setAlgoTransaction(algosdkTxn);
+
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    const keypair = new KeyPair({ prv: key });
+    this._keyPairs.push(keypair);
+
+    return this._transaction;
+  }
+
+  numberOfSigners(num: number): this {
+    this._transaction.setNumberOfRequiredSigners(num);
+
+    return this;
+  }
+
+  /**
+   * Sets the number of signers required to sign the transaction.
+   *
+   * The number of signers cannot be set to a negative value.
+   *
+   * @param {number} n The number of signers.
+   * @returns {TransactionBuilder} This transaction builder.
+   */
+  numberOfRequiredSigners(n: number): this {
+    if (n < 0) {
+      throw new BuildTransactionError(`Number of signers: '${n}' cannot be negative`);
+    }
+
+    this._transaction.setNumberOfRequiredSigners(n);
+
+    return this;
+  }
+
   /**
    * @inheritdoc
    * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
@@ -257,15 +359,46 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: unknown): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const buffer = typeof rawTransaction === 'string' ? Buffer.from(rawTransaction, 'hex') : rawTransaction;
+    // TODO: Implement support for decoding signed transactions as well
+    const algoTxn: algosdk.Transaction = algosdk.decodeUnsignedTransaction(buffer);
+
+    const validationResult = BaseTransactionSchema.validate({
+      fee: algoTxn.fee,
+      firstRound: algoTxn.firstRound,
+      genesisHash: algoTxn.genesisHash.toString('base64'),
+      lastRound: algoTxn.lastRound,
+      sender: algosdk.encodeAddress(algoTxn.from.publicKey),
+      genesisId: algoTxn.genesisID,
+      lease: algoTxn.lease,
+      note: algoTxn.note,
+      reKeyTo: algoTxn.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
-  }
+  validateTransaction(_: Transaction): void {
+    const validationResult = BaseTransactionSchema.validate({
+      fee: this._fee,
+      firstRound: this._firstRound,
+      genesisHash: this._genesisHash,
+      lastRound: this._lastRound,
+      sender: this._sender,
+      genesisId: this._genesisId,
+      lease: this._lease,
+      note: this._note,
+      reKeyTo: this._reKeyTo,
+    });
 
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
@@ -276,5 +409,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  /**
+   * Convenience method to retrieve the algosdk suggested parameters.
+   *
+   * @returns {algosdk.SuggestedParams} The algosdk suggested parameters.
+   */
+  protected get suggestedParams(): algosdk.SuggestedParams {
+    return {
+      flatFee: this._isFlatFee,
+      fee: this._fee,
+      firstRound: this._firstRound,
+      lastRound: this._lastRound,
+      genesisID: this._genesisId,
+      genesisHash: this._genesisHash,
+    };
   }
 }
