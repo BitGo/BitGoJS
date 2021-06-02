@@ -459,7 +459,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return algosdk.decodeUnsignedTransaction(buffer);
     } else if (this.isDecodableSignedTransaction(buffer)) {
-      return algosdk.Transaction.from_obj_for_encoding(algosdk.decodeSignedTransaction(buffer).txn);
+      // TODO: Replace with
+      // return algosdk.Transaction.from_obj_for_encoding(algosdk.decodeSignedTransaction(buffer).txn);
+      // see: https://github.com/algorand/js-algorand-sdk/issues/364
+      // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
+      // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
+      return algosdk.decodeSignedTransaction(buffer).txn as unknown as algosdk.Transaction;
     } else {
       throw new InvalidTransactionError('Transaction cannot be decoded');
     }
