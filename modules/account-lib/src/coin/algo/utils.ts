@@ -1,8 +1,13 @@
+import crypto from 'crypto';
 import algosdk from 'algosdk';
 import * as hex from '@stablelib/hex';
+import base32 from 'hi-base32';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { InvalidKey, NotImplementedError } from '../baseCoin/errors';
+
+const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
+const ALGORAND_ADDRESS_LENGTH = 58;
 
 /**
  * Determines whether the string is a composed of hex chars only.
@@ -66,6 +71,29 @@ export class Utils implements BaseUtils {
    */
   toUint8Array(str: string): Uint8Array {
     return hex.decode(str);
+  }
+
+  /**
+   * Transforms an Ed25519 public key into an algorand address.
+   *
+   * @param {Uint8Array} pk The Ed25519 public key.
+   * @see https://developer.algorand.org/docs/features/accounts/#transformation-public-key-to-algorand-address
+   *
+   * @returns {string} The algorand address.
+   */
+  publicKeyToAlgoAddress(pk: Uint8Array): string {
+    const pkHex = Buffer.from(pk).toString('hex');
+    if (!this.isValidPublicKey(pkHex)) {
+      throw new InvalidKey(`The public key: ${pkHex} is invalid`);
+    }
+
+    const hash = crypto.createHash('SHA512-256').update(pk).digest();
+    const checksum = hash.slice(-ALGORAND_CHECKSUM_BYTE_LENGTH);
+
+    const address = base32.encode(Buffer.concat([pk, checksum]));
+    const addressWithPaddingRemoved = address.slice(0, ALGORAND_ADDRESS_LENGTH);
+
+    return addressWithPaddingRemoved;
   }
 }
 
