@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumCommon from 'ethereumjs-common';
+import EthereumCommon from '@ethereumjs/common';
 import * as Eth from '../eth';
 import { TxData } from '../eth/iface';
 import { CeloTransactionData } from './types';

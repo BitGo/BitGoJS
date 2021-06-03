@@ -1,4 +1,4 @@
-import {Buffer} from 'buffer';
+import { Buffer } from 'buffer';
 import assert from 'assert';
 import {
   addHexPrefix,
@@ -10,13 +10,13 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork, NetworkType } from '@bitgo/statics';
+import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
-import EthereumCommon from 'ethereumjs-common';
+import EthereumCommon from '@ethereumjs/common';
 import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
-import {BuildTransactionError, InvalidTransactionError, SigningError} from '../baseCoin/errors';
-import {TransactionType} from '../baseCoin';
+import { BuildTransactionError, SigningError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import {
   ActivateMethodId,
   LockMethodId,
@@ -25,8 +25,8 @@ import {
   VoteMethodId,
   WithdrawMethodId,
 } from '../celo/stakingUtils';
-import {FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData} from './iface';
-import {KeyPair} from './keyPair';
+import { FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
+import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
   flushCoinsMethodId,
@@ -40,7 +40,7 @@ import {
   walletInitializationFirstBytes,
   walletSimpleConstructor,
 } from './walletUtil';
-import {EthTransactionData} from './types';
+import { EthTransactionData } from './types';
 
 /**
  * @param network
@@ -222,9 +222,9 @@ export function decodeWalletCreationData(data: string): string[] {
 
   // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
   // so we should pad until they are the standard 20 bytes
-  const paddedAddresses = addresses.map(address => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
+  const paddedAddresses = addresses.map((address) => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
 
-  return paddedAddresses.map(address => addHexPrefix(address));
+  return paddedAddresses.map((address) => addHexPrefix(address));
 }
 
 /**
@@ -449,7 +449,7 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
  * @returns statics BaseCoin object for the matching token
  */
 export function getToken(tokenContractAddress: string): Readonly<BaseCoin> | undefined {
-  const tokens = coins.filter(coin => {
+  const tokens = coins.filter((coin) => {
     if (coin instanceof ContractAddressDefinedToken) {
       return coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase();
     }
@@ -458,7 +458,7 @@ export function getToken(tokenContractAddress: string): Readonly<BaseCoin> | und
 
   // if length of tokens is 1, return the first, else return undefined
   // Can't directly index into tokens, or call `length`, so we use map to get an array
-  const tokensArray = tokens.map(token => token);
+  const tokensArray = tokens.map((token) => token);
   if (tokensArray.length >= 1) {
     // there should never be two tokens with the same contract address, so we assert that here
     assert(tokensArray.length === 1);

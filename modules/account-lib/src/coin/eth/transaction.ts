@@ -2,7 +2,7 @@
  * Ethereum transaction model. This is the base model for all ethereum based coins (Celo, ETC, RSK, ETH)
  */
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumCommon from 'ethereumjs-common';
+import EthereumCommon from '@ethereumjs/common';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey, Entry } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';

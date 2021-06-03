@@ -1,5 +1,5 @@
 import { coins, EthereumNetwork } from '@bitgo/statics';
-import EthereumCommon from 'ethereumjs-common';
+import EthereumCommon from '@ethereumjs/common';
 
 /**
  * A Common object defining the chain and the hardfork for CELO Testnet
