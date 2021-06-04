@@ -270,12 +270,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (numberOfSigners < this._transaction.numberOfRequiredSigners) {
       throw new SigningError('Insufficient number of signers');
     }
-
-    if (this._keyPairs.length === 1) {
-      this.transaction.sign(this._keyPairs[0]);
-    } else if (this._keyPairs.length > 1) {
-      this.transaction.signMultiSig(this._keyPairs);
-    }
+    this.transaction.sign(this._keyPairs);
     this._transaction.loadInputsAndOutputs();
     return this._transaction;
   }
