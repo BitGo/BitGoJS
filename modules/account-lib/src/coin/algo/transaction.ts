@@ -45,7 +45,23 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signer keys.
    */
-  sign(keyPair: KeyPair): void {
+  sign(keyPair: KeyPair[]): void {
+    if (!this._algoTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    if (this._numberOfRequiredSigners === 1) {
+      this.signSingle(keyPair[0]);
+    } else if (this._numberOfRequiredSigners > 1) {
+      this.signMultiSig(keyPair);
+    }
+  }
+
+  /**
+   * Signs transaction.
+   *
+   * @param {KeyPair} keyPair Signer keys.
+   */
+  private signSingle(keyPair: KeyPair): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -62,7 +78,7 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signers keys.
    */
-  signMultiSig(keyPair: KeyPair[]): void {
+  private signMultiSig(keyPair: KeyPair[]): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
