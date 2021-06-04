@@ -247,6 +247,7 @@ export enum UnderlyingAsset {
   COVER = 'cover',
   CPAY = 'cpay',
   CPLT = 'cplt',
+  CQT = 'cqt',
   CQX = 'cqx',
   CRDT = 'crdt',
   CRE = 'cre',
