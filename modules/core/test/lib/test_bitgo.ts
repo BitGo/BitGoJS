@@ -187,7 +187,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.OFC_TEST_WALLET_ID = '5cbe3563afc275b40369e096073b8a16';
 
     // Algo wallet for non participating key reg transaction
-    BitGo.V2.TEST_ALGO_WALLET_ID = '602566f550a05c0006fe13a03b57141f';
+    BitGo.V2.TEST_ALGO_WALLET_ID = '60a531d3efa67900069ea5427a4b1b34';
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
