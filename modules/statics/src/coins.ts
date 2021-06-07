@@ -6,11 +6,13 @@ import {
   erc20CompatibleAccountCoin,
   hederaCoin,
   stellarToken,
+  algoToken,
   tceloToken,
   terc20,
   tstellarToken,
   tronToken,
   ttronToken,
+  talgoToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -23,6 +25,7 @@ const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOK
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
+const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -40,8 +43,16 @@ export const coins = CoinMap.fromCoins([
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH),
   utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC),
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
-  account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
-  account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
+  account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, ALGO_FEATURES, KeyCurve.Ed25519),
+  account(
+    'talgo',
+    'Testnet Algorand',
+    Networks.test.algorand,
+    6,
+    UnderlyingAsset.ALGO,
+    ALGO_FEATURES,
+    KeyCurve.Ed25519
+  ),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
@@ -716,4 +727,34 @@ export const coins = CoinMap.fromCoins([
   ),
   ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf', UnderlyingAsset.WBTC),
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
+  talgoToken(
+    'talgo:16026728',
+    'Sparrow',
+    2,
+    UnderlyingAsset['talgo:16026728'],
+    'https://someurl.com/',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USON'
+  ),
+  talgoToken(
+    'talgo:16026732',
+    'Sparrow',
+    7,
+    UnderlyingAsset['talgo:16026732'],
+    'https://someurl.sparrow.com/',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SPRW'
+  ),
+  talgoToken(
+    'talgo:16026733',
+    'Kalki',
+    8,
+    UnderlyingAsset['talgo:16026733'],
+    'https://someurl.kalki.com/',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'KAL'
+  ),
 ]);
