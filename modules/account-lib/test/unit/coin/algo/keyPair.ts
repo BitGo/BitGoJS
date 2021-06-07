@@ -1,8 +1,8 @@
 import should from 'should';
 import { test } from 'mocha';
-
 import { Algo } from '../../../../src';
 import * as AlgoResources from '../../../resources/algo';
+import { OddPrivateKeyValidationError, PrivateKeyValidationError, PublicKeyValidationError } from '../../../../src/coin/algo';
 
 describe('Algo KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
@@ -13,7 +13,7 @@ describe('Algo KeyPair', () => {
 
   describe('Keypair creation', () => {
     test('initial state', () => {
-      const keyPair = new Algo.KeyPair();
+      const keyPair = new Algo.KeyPair(); 
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
       should.equal(keyPair.getKeys().prv!.length, 64);
@@ -33,6 +33,30 @@ describe('Algo KeyPair', () => {
     test('initialization from public key', () => {
       const keyPair = new Algo.KeyPair({ pub: account3.pubKey.toString('hex') });
       should.equal(keyPair.getKeys().pub, account3.pubKey.toString('hex'));
+    });
+  });
+
+  describe('Validate keypair', () => {
+    it('from an invalid odd private key', () => {
+      const source = { prv: '9d61b19deffd5' };
+      should.throws(
+        () => new Algo.KeyPair(source), 
+        (e: Error) => e.name === OddPrivateKeyValidationError.name,
+      );
+    });
+    it('from an invalid private key', () => {
+      const source = { prv: '9d61b19deffd5a60' };
+      should.throws(
+        () => new Algo.KeyPair(source), 
+        (e: Error) => e.name === PrivateKeyValidationError.name,
+      );
+    });
+    it('from an invalid public key', () => {
+      const source = { pub: '82A34E' };
+      should.throws(
+        () => new Algo.KeyPair(source), 
+        (e: Error) => e.name === PublicKeyValidationError.name,
+      );
     });
   });
 

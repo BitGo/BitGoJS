@@ -3,4 +3,4 @@ export { TransactionBuilder } from './transactionBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { Transaction } from './transaction';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
-export { InsufficientFeeError, AddressValidationError } from './errors';
+export { InsufficientFeeError, AddressValidationError, PrivateKeyValidationError, PublicKeyValidationError, OddPrivateKeyValidationError } from './errors';
