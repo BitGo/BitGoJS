@@ -729,7 +729,7 @@ export const coins = CoinMap.fromCoins([
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
   talgoToken(
     'talgo:16026728',
-    'Sparrow',
+    'Unison',
     2,
     UnderlyingAsset['talgo:16026728'],
     'https://someurl.com/',
@@ -740,7 +740,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     'talgo:16026732',
     'Sparrow',
-    7,
+    4,
     UnderlyingAsset['talgo:16026732'],
     'https://someurl.sparrow.com/',
     AccountCoin.DEFAULT_FEATURES,
