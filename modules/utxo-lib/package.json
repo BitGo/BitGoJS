@@ -33,7 +33,7 @@
     "src"
   ],
   "dependencies": {
-    "@bitgo/blake2b": "^3.0.0-rc.2",
+    "@bitgo/blake2b": "^3.0.0",
     "bech32": "0.0.3",
     "bigi": "^1.4.0",
     "bip66": "^1.1.0",
