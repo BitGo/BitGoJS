@@ -62,6 +62,10 @@ export interface HederaCoinConstructorOptions extends AccountConstructorOptions 
   nodeAccountId: string;
 }
 
+export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
+  assetURL: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -180,6 +184,32 @@ export class HederaCoin extends AccountCoinToken {
     });
 
     this.nodeAccountId = options.nodeAccountId;
+  }
+}
+
+/**
+ * The Algo network supports tokens (assets)
+ * Algo tokens work similar to native ALGO coin, but the token name is determined by
+ * unique asset id on the chain. Internally, BitGo uses token identifiers of the format: (t)algo:<assetId>
+ *
+ */
+export class AlgoCoin extends AccountCoinToken {
+  public assetURL: string;
+
+  constructor(options: AlgoCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    if (options.assetURL) {
+      try {
+        new URL(options.assetURL);
+      } catch (ex) {
+        throw new InvalidDomainError(options.name, options.assetURL);
+      }
+    }
+
+    this.assetURL = options.assetURL;
   }
 }
 
@@ -591,4 +621,76 @@ export function hederaCoin(
       primaryKeyCurve,
     })
   );
+}
+
+/**
+ * Factory function for ALGO token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param assetURL Optional asset Url for more informationa about the asset
+ * See https://developer.algorand.org/docs/reference/transactions/#url
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to ALGO mainnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function algoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  assetURL: string = '',
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.algorand,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new AlgoCoin({
+      name,
+      fullName,
+      decimalPlaces,
+      asset,
+      assetURL,
+      features,
+      prefix,
+      suffix,
+      network,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet ALGO token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param assetURL Optional asset Url for more informationa about the asset
+ * See https://developer.algorand.org/docs/reference/transactions/#url
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Algo testnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function talgoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  assetURL: string = '',
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.algorand
+) {
+  return algoToken(name, fullName, decimalPlaces, asset, assetURL, features, prefix, suffix, network);
 }
