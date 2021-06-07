@@ -31,7 +31,6 @@ export class TransferBuilder extends TransactionBuilder {
       ),
     );
     this.transaction.setTransactionType(TransactionType.Send);
-
     return await super.buildImplementation();
   }
 

@@ -45,7 +45,23 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signer keys.
    */
-  sign(keyPair: KeyPair): void {
+  sign(keyPair: KeyPair[]): void {
+    if (!this._algoTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    if (this._numberOfRequiredSigners === 1) {
+      this.signSingle(keyPair[0]);
+    } else if (this._numberOfRequiredSigners > 1) {
+      this.signMultiSig(keyPair);
+    }
+  }
+
+  /**
+   * Signs transaction.
+   *
+   * @param {KeyPair} keyPair Signer keys.
+   */
+  private signSingle(keyPair: KeyPair): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -62,7 +78,7 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signers keys.
    */
-  signMultiSig(keyPair: KeyPair[]): void {
+  private signMultiSig(keyPair: KeyPair[]): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -150,11 +166,18 @@ export class Transaction extends BaseTransaction {
       fee: this._algoTransaction.fee,
       firstRound: this._algoTransaction.firstRound,
       lastRound: this._algoTransaction.lastRound,
-      amount: this._algoTransaction.amount.toString(),
       note: this._algoTransaction.note,
     };
     if (this.type === TransactionType.Send) {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
+      result.amount = this._algoTransaction.amount.toString();
+    }
+    if (this.type === TransactionType.KeyRegistration) {
+      result.voteKey = this._algoTransaction.voteKey.toString('base64');
+      result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
+      result.voteFirst = this._algoTransaction.voteFirst;
+      result.voteLast = this._algoTransaction.voteLast;
+      result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
     }
     return result;
   }

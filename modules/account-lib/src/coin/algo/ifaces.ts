@@ -7,4 +7,9 @@ export interface TxData {
   firstRound: number;
   lastRound: number;
   note?: Uint8Array;
+  voteKey?: string;
+  selectionKey?: string;
+  voteFirst?: number;
+  voteLast?: number;
+  voteKeyDilution?: number;
 }

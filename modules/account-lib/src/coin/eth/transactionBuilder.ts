@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
-import EthereumCommon from 'ethereumjs-common';
+import EthereumCommon from '@ethereumjs/common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
@@ -149,7 +149,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     switch (decodedType) {
       case TransactionType.WalletInitialization:
         const owners = Utils.decodeWalletCreationData(transactionJson.data);
-        owners.forEach(element => {
+        owners.forEach((element) => {
           this.owner(element);
         });
         break;

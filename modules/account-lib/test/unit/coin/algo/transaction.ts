@@ -20,11 +20,12 @@ describe('Algo Transaction', () => {
 
     it('should not sign', () => {
       should.throws(
-        () => tx.sign(new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })),
+        () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
         'Empty transaction',
       );
+      tx.setNumberOfRequiredSigners(2);
       should.throws(
-        () => tx.signMultiSig([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
+        () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
         'Empty transaction',
       );
     });

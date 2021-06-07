@@ -1097,6 +1097,7 @@ export class Wallet {
     }
 
     return this.bitgo.post(this.url('/freeze'))
+      .send(params)
       .result()
       .nodeify(callback);
   }

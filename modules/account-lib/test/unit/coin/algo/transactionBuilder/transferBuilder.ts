@@ -98,6 +98,20 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.lastRound, 100);
     });
 
+    it('should build from raw signed tx', async () => {
+      builder.from(AlgoResources.rawTx.transfer.signed);
+      builder.numberOfSigners(1);
+      builder.sign({ key: sender.secretKey.toString('hex') });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
+      should.deepEqual(txJson.from, sender.address);
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.amount, '10000');
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+    });
+
     it('should sign from raw unsigned tx', async () => {
       builder.from(AlgoResources.rawTx.transfer.unsigned);
       builder.numberOfSigners(1);
