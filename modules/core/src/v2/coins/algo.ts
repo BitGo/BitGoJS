@@ -193,7 +193,7 @@ export class Algo extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
       // See jsdoc comment in isValidPrv
-      let seed: string | Uint8Array = key.prv;
+      let seed = key.prv;
       if (!self.isValidPrv(seed)) {
         throw new Error(`invalid seed: ${seed}`);
       }
