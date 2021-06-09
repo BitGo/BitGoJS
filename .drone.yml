@@ -15,16 +15,22 @@ steps:
   - yarn --version
   - git --version
 
-- name: install
+- name: fetch
   image: node:10
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
 
 - name: check-commits
   image: node:10
   commands:
-  - yarn run check-commits
+  - COMMITLINT_VERSION=$(node -p "require('./package.json').devDependencies[\"@commitlint/cli\"]") && 
+      yarn global add @commitlint/cli@$COMMITLINT_VERSION @commitlint/config-conventional@$COMMITLINT_VERSION
+  - PATH=$(yarn global bin):$PATH yarn run check-commits
+
+- name: install
+  image: node:10
+  commands:
+  - yarn install
 
 - name: audit
   image: node:10
