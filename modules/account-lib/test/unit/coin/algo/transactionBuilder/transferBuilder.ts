@@ -144,10 +144,107 @@ describe('Algo Transfer Builder', () => {
         .lastRound(100)
         .testnet()
         .numberOfSigners(2)
+        .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
         .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
       const tx = await builder.build();
       const txJson = tx.toJson();
+      should.deepEqual(txJson.from, msigAddress);
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.fee, 22000);
+      should.deepEqual(txJson.amount, '10000');
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+    });
+    it('should build a half signed transfer transaction', async () => {
+      const msigAddress = algosdk.multisigAddress({
+        version: 1,
+        threshold: 2,
+        addrs: [AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address],
+      });
+      builder
+        .sender({ address: sender.address })
+        .to({ address: receiver.address })
+        .amount(10000)
+        .isFlatFee(true)
+        .fee({ fee: '22000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet()
+        .numberOfSigners(2)
+        .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
+        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.from, msigAddress);
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.fee, 22000);
+      should.deepEqual(txJson.amount, '10000');
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+    });
+    it('should sign a half signed transfer tx', async () => {
+      const msigAddress = algosdk.multisigAddress({
+        version: 1,
+        threshold: 2,
+        addrs: [AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address],
+      });
+      builder.from(AlgoResources.rawTx.transfer.halfSigned);
+      builder
+        .numberOfSigners(2)
+        .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
+        .sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+      const tx = await builder.build();
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.from, msigAddress);
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.fee, 22000);
+      should.deepEqual(txJson.amount, '10000');
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+    });
+
+    it('should build a half signed transfer transaction with 3 signers', async () => {
+      const addresses = [
+        AlgoResources.accounts.account1.address,
+        AlgoResources.accounts.account3.address,
+        AlgoResources.accounts.account4.address,
+      ];
+      const numberOfSigners = 3;
+      const msigAddress = algosdk.multisigAddress({
+        version: 1,
+        threshold: numberOfSigners,
+        addrs: addresses,
+      });
+      builder
+        .sender({ address: sender.address })
+        .to({ address: receiver.address })
+        .amount(10000)
+        .isFlatFee(true)
+        .fee({ fee: '22000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet()
+        .numberOfSigners(numberOfSigners)
+        .setSigners(addresses)
+        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      const tx1 = await builder.build();
+      const builder2 = new TransferBuilder(coins.get('algo'));
+      builder2.from(tx1.toBroadcastFormat());
+      builder2
+        .numberOfSigners(numberOfSigners)
+        .setSigners(addresses)
+        .sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+      const tx2 = await builder2.build();
+      const builder3 = new TransferBuilder(coins.get('algo'));
+      builder3.from(tx2.toBroadcastFormat());
+      builder3
+        .numberOfSigners(numberOfSigners)
+        .setSigners(addresses)
+        .sign({ key: AlgoResources.accounts.account4.secretKey.toString('hex') });
+      const tx3 = await builder3.build();
+      const txJson = tx3.toJson();
       should.deepEqual(txJson.from, msigAddress);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.fee, 22000);

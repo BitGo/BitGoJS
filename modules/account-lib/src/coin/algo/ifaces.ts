@@ -1,3 +1,5 @@
+import algosdk from 'algosdk';
+
 export interface TxData {
   id: string;
   from: string;
@@ -12,4 +14,9 @@ export interface TxData {
   voteFirst?: number;
   voteLast?: number;
   voteKeyDilution?: number;
+}
+
+export interface EncodedTx {
+  txn: algosdk.EncodedTransaction;
+  signed: boolean;
 }

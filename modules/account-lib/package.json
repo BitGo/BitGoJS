@@ -18,7 +18,7 @@
     "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
     "hedera-gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/hbar/protobuf/hedera.js ./resources/hbar/protobuf/Timestamp.proto ./resources/hbar/protobuf/BasicTypes.proto ./resources/hbar/protobuf/Duration.proto ./resources/hbar/protobuf/CryptoCreate.proto ./resources/hbar/protobuf/CryptoTransfer.proto ./resources/hbar/protobuf/TransactionBody.proto ./resources/hbar/protobuf/Transaction.proto ./resources/hbar/protobuf/TransactionContents.proto",
     "hedera-gen-protobufts": "pbts -o ./resources/hbar/protobuf/hedera.d.ts ./resources/hbar/protobuf/hedera.js",
-    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
+    "lint": "eslint 'src/coin/algo/*.ts' && eslint 'test/unit/coin/algo/**/*.ts' || true",
     "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
