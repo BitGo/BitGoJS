@@ -1,15 +1,14 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { NotImplementedError } from '../baseCoin/errors';
+import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { KeyRegistrationBuilder } from './keyRegistrationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { AssetTransferBuilder } from './assetTransferBuilder';
 
-export class TransactionBuilderFactory {
-  private readonly coinConfig: Readonly<CoinConfig>;
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    this.coinConfig = coinConfig;
+export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
   }
 
   getKeyRegistrationBuilder(): KeyRegistrationBuilder {
@@ -26,5 +25,9 @@ export class TransactionBuilderFactory {
 
   from(raw: string | Uint8Array): TransactionBuilder {
     throw new NotImplementedError('from not implemented');
+  }
+
+  public getWalletInitializationBuilder() {
+    throw new Error('Method not implemented.');
   }
 }

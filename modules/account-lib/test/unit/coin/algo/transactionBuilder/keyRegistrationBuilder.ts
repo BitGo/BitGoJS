@@ -15,14 +15,13 @@ class StubTransactionBuilder extends KeyRegistrationBuilder {
 
 describe('Algo KeyRegistration Builder', () => {
   let builder: StubTransactionBuilder;
-  
-  const sender = AlgoResources.accounts.account1;
-  const { rawTx } = AlgoResources
 
+  const sender = AlgoResources.accounts.account1;
+  const { rawTx } = AlgoResources;
 
   beforeEach(() => {
     const config = coins.get('algo');
-    builder = new StubTransactionBuilder(config)
+    builder = new StubTransactionBuilder(config);
   });
 
   describe('setter validation', () => {
@@ -52,41 +51,26 @@ describe('Algo KeyRegistration Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.voteLast(15));
-      assert.calledThrice(validateValueSpy)
+      assert.calledThrice(validateValueSpy);
     });
 
     it('should validate vote Key Dilution', () => {
       const validateValueSpy = sinon.spy(builder, 'validateValue');
-      builder
-        .voteFirst(5)
-        .voteLast(18);
+      builder.voteFirst(5).voteLast(18);
       should.doesNotThrow(() => builder.voteKeyDilution(2));
-      assert.calledThrice(validateValueSpy)
+      assert.calledThrice(validateValueSpy);
     });
   });
 
   describe('transaction validation', () => {
     beforeEach(() => {
-      builder
-        .sender({ address: sender.address })
-        .fee({ fee: '1000' })
-        .firstRound(1)
-        .lastRound(100)
-        .testnet()
+      builder.sender({ address: sender.address }).fee({ fee: '1000' }).firstRound(1).lastRound(100).testnet();
     });
     it('should validate a normal transaction', () => {
-      builder
-        .voteKey(sender.voteKey)
-        .selectionKey(sender.selectionKey)
-        .voteFirst(1)
-        .voteLast(100)
-        .voteKeyDilution(9);
-      should.doesNotThrow(
-        () => builder.validateTransaction(builder.getTransaction())
-      );
-    })
-  })
-  
+      builder.voteKey(sender.voteKey).selectionKey(sender.selectionKey).voteFirst(1).voteLast(100).voteKeyDilution(9);
+      should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
+    });
+  });
 
   describe('build key registration transaction', () => {
     it('should build a key registration transaction', async () => {
@@ -128,7 +112,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteFirst(1)
         .voteLast(100)
         .voteKeyDilution(9)
-        .testnet()
+        .testnet();
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
@@ -146,7 +130,7 @@ describe('Algo KeyRegistration Builder', () => {
     it('should build a trx from an unsigned raw transaction', async () => {
       builder.from(rawTx.keyReg.unsigned);
       const tx = await builder.build();
-      const txJson = tx.toJson()
+      const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
       should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
       should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
@@ -157,7 +141,7 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteFirst, 1);
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
-    })
+    });
 
     it('should sign from raw unsigned tx', async () => {
       builder.from(rawTx.keyReg.unsigned);
@@ -177,7 +161,7 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
     });
-  })
+  });
 
   describe('build multi-sig key registration transaction', () => {
     it('should build a msig registration transaction', async () => {
@@ -198,6 +182,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
         .testnet()
         .numberOfSigners(2)
+        .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
         .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
       const tx = await builder.build();
@@ -214,4 +199,4 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteKeyDilution, 9);
     });
   });
-})
+});
