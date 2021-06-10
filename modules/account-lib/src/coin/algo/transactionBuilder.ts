@@ -473,6 +473,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       return false;
     }
   }
+  
 
   /**
    * Decodes a signed or unsigned algo transaction.

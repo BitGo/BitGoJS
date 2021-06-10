@@ -99,17 +99,27 @@ export class Transaction extends BaseTransaction {
     const msigAddress = algosdk.multisigAddress(multiSigOptions);
     this._algoTransaction.from = algosdk.decodeAddress(msigAddress);
 
-    // Check if it is a signed or unsigned tx.
-    // If unsigned, sign it using first keypair and then append next signatures.
-    // If signed, appending next signatures.
-    let signedTx = this._signedTransaction
-      ? this._signedTransaction
-      : algosdk.signMultisigTransaction(this._algoTransaction, multiSigOptions, keyPair.shift()!.getSigningKey()).blob;
-
+    let signature;
+    if (this._signedTransaction) {
+      signature = this._signedTransaction;
+    } else {
+      const key = keyPair[0].getKeys();
+      keyPair = keyPair.slice(1);
+      signature = algosdk.signMultisigTransaction(
+        this._algoTransaction,
+        multiSigOptions,
+        utils.toUint8Array(key.prv + key.pub),
+      ).blob;
+    }
     keyPair.forEach((kp) => {
-      signedTx = algosdk.appendSignMultisigTransaction(signedTx, multiSigOptions, kp.getSigningKey()).blob;
+      const key = kp.getKeys();
+      signature = algosdk.appendSignMultisigTransaction(
+        signature,
+        multiSigOptions,
+        utils.toUint8Array(key.prv + key.pub),
+      ).blob;
     });
-    this._signedTransaction = signedTx;
+    this._signedTransaction = signature;
   }
 
   set signedTransaction(txn: Uint8Array) {
