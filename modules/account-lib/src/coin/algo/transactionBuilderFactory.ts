@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotImplementedError, NotSupported } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { KeyRegistrationBuilder } from './keyRegistrationBuilder';
 import { TransferBuilder } from './transferBuilder';
@@ -12,22 +12,69 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   getKeyRegistrationBuilder(): KeyRegistrationBuilder {
-    throw new NotImplementedError('getKeyRegistrationBuilder not implemented');
+    return new KeyRegistrationBuilder(this._coinConfig);
   }
 
   getTransferBuilder(): TransferBuilder {
-    throw new NotImplementedError('getTransferBuilder not implemented');
+    return new TransferBuilder(this._coinConfig);
   }
 
   getAssetTransferBuilder(): AssetTransferBuilder {
     return new AssetTransferBuilder(this._coinConfig);
   }
 
-  from(raw: string | Uint8Array): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  from(rawTxn: string | Uint8Array): TransactionBuilder {
+    const builder = this.getBuilder(rawTxn);
+    if (!builder) {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
+
+    builder.from(rawTxn);
+
+    return builder;
+  }
+
+  private getBuilder(rawTxn: string | Uint8Array): TransactionBuilder | undefined {
+    if (this.isRawKeyRegistrationTransaction(rawTxn)) {
+      return this.getKeyRegistrationBuilder();
+    } else if (this.isRawTransferTransaction(rawTxn)) {
+      return this.getTransferBuilder();
+    } else if (this.isRawAssetTransferTransaction(rawTxn)) {
+      return this.getAssetTransferBuilder();
+    }
+  }
+
+  private isRawKeyRegistrationTransaction(raw: string | Uint8Array): boolean {
+    const builder = this.getKeyRegistrationBuilder();
+    try {
+      builder.from(raw);
+      return true;
+    } catch (_: unknown) {
+      return false;
+    }
+  }
+
+  private isRawTransferTransaction(raw: string | Uint8Array): boolean {
+    const builder = this.getTransferBuilder();
+    try {
+      builder.from(raw);
+      return true;
+    } catch (_: unknown) {
+      return false;
+    }
+  }
+
+  private isRawAssetTransferTransaction(raw: string | Uint8Array): boolean {
+    const builder = this.getAssetTransferBuilder();
+    try {
+      builder.from(raw);
+      return true;
+    } catch (_: unknown) {
+      return false;
+    }
   }
 
   public getWalletInitializationBuilder() {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedError('Method not implemented.');
   }
 }

@@ -21,3 +21,8 @@ export interface EncodedTx {
   txn: algosdk.Transaction;
   signed: boolean;
 }
+
+export interface EncodedTx {
+  txn: algosdk.Transaction;
+  signed: boolean;
+}

@@ -388,16 +388,40 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(_: Transaction): void {
+    this.validateBaseFields(
+      this._fee,
+      this._firstRound,
+      this._genesisHash,
+      this._lastRound,
+      this._sender,
+      this._genesisId,
+      this._lease,
+      this._note,
+      this._reKeyTo,
+    );
+  }
+
+  private validateBaseFields(
+    fee: number,
+    firstRound: number,
+    genesisHash: string,
+    lastRound: number,
+    sender: string,
+    genesisId: string,
+    lease: Uint8Array | undefined,
+    note: Uint8Array | undefined,
+    reKeyTo: string | undefined,
+  ): void {
     const validationResult = BaseTransactionSchema.validate({
-      fee: this._fee,
-      firstRound: this._firstRound,
-      genesisHash: this._genesisHash,
-      lastRound: this._lastRound,
-      sender: this._sender,
-      genesisId: this._genesisId,
-      lease: this._lease,
-      note: this._note,
-      reKeyTo: this._reKeyTo,
+      fee,
+      firstRound,
+      genesisHash,
+      lastRound,
+      sender,
+      genesisId,
+      lease,
+      note,
+      reKeyTo,
     });
 
     if (validationResult.error) {
