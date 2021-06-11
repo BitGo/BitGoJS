@@ -18,7 +18,9 @@ export class AddressValidationError extends BuildTransactionError {
 }
 export class KeyDilutionError extends BuildTransactionError {
   constructor(incorrectValue: number) {
-    super(`The keyDilution value '${incorrectValue}' must be less than or equal to the square root of the voteKey validity range.`);
+    super(
+      `The keyDilution value '${incorrectValue}' must be less than or equal to the square root of the voteKey validity range.`,
+    );
     this.name = KeyDilutionError.name;
   }
 }
