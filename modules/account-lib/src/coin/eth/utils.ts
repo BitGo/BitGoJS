@@ -260,12 +260,12 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
+    to: addHexPrefix(bufferToHex(to)),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
-    tokenContractAddress: addHexPrefix(tokenContractAddress),
+    tokenContractAddress: addHexPrefix(bufferToHex(tokenContractAddress)),
   };
 }
 
@@ -286,7 +286,7 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
+    to: addHexPrefix(bufferToHex(to)),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
@@ -312,8 +312,8 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
   );
 
   return {
-    forwarderAddress: addHexPrefix(forwarderAddress),
-    tokenAddress: addHexPrefix(tokenAddress),
+    forwarderAddress: addHexPrefix(bufferToHex(forwarderAddress)),
+    tokenAddress: addHexPrefix(bufferToHex(tokenAddress)),
   };
 }
 
@@ -385,7 +385,7 @@ export function hexStringToNumber(hex: string): number {
  * @returns {string} the calculated forwarder contract address
  */
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(contractAddress, contractCounter);
+  const forwarderAddress = generateAddress(toBuffer(contractAddress), toBuffer(contractCounter));
   return addHexPrefix(forwarderAddress.toString('hex'));
 }
 
@@ -396,7 +396,9 @@ export function calculateForwarderAddress(contractAddress: string, contractCount
  * @returns {string} String representation of the signature
  */
 export function toStringSig(sig: SignatureParts): string {
-  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+  return bufferToHex(
+    Buffer.concat([setLengthLeft(toBuffer(sig.r), 32), setLengthLeft(toBuffer(sig.s), 32), toBuffer(sig.v)]),
+  );
 }
 
 /**

@@ -1,4 +1,4 @@
-import ethUtil from 'ethereumjs-util';
+import ethUtil, { bufferToHex } from 'ethereumjs-util';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
 import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
@@ -12,7 +12,6 @@ import {
   UnlockMethodId,
   WithdrawMethodId,
 } from './stakingUtils';
-import * as BN from 'bn.js';
 
 export class StakingBuilder {
   private readonly DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -250,36 +249,36 @@ export class StakingBuilder {
       case StakingOperationTypes.VOTE:
         this.validateDecodedDataLength(decoded.length, 4, data);
         const [groupToVote, amount, lesser, greater] = decoded;
-        this._amount = ethUtil.addHexPrefix((amount as BN).toString(16));
-        this._validatorGroup = ethUtil.addHexPrefix(groupToVote as string);
-        this._lesser = ethUtil.addHexPrefix(lesser as string);
-        this._greater = ethUtil.addHexPrefix(greater as string);
+        this._amount = ethUtil.bufferToHex(amount);
+        this._validatorGroup = ethUtil.addHexPrefix(bufferToHex(groupToVote));
+        this._lesser = ethUtil.addHexPrefix(bufferToHex(lesser));
+        this._greater = ethUtil.addHexPrefix(bufferToHex(greater));
         break;
       case StakingOperationTypes.UNVOTE:
         this.validateDecodedDataLength(decoded.length, 5, data);
         const [groupToUnvote, amountUnvote, lesserUnvote, greaterUnvote, indexUnvote] = decoded;
-        this._validatorGroup = ethUtil.addHexPrefix(groupToUnvote as string);
-        this._amount = ethUtil.addHexPrefix((amountUnvote as BN).toString(16));
-        this._lesser = ethUtil.addHexPrefix(lesserUnvote as string);
-        this._greater = ethUtil.addHexPrefix(greaterUnvote as string);
-        this._index = (indexUnvote as BN).toNumber();
+        this._validatorGroup = ethUtil.addHexPrefix(bufferToHex(groupToUnvote));
+        this._amount = ethUtil.addHexPrefix(bufferToHex(amountUnvote));
+        this._lesser = ethUtil.addHexPrefix(bufferToHex(lesserUnvote));
+        this._greater = ethUtil.addHexPrefix(bufferToHex(greaterUnvote));
+        this._index = hexStringToNumber(bufferToHex(indexUnvote));
         break;
       case StakingOperationTypes.ACTIVATE:
         this.validateDecodedDataLength(decoded.length, 1, data);
         const [groupToActivate] = decoded;
-        this._validatorGroup = ethUtil.addHexPrefix(groupToActivate as string);
+        this._validatorGroup = ethUtil.addHexPrefix(bufferToHex(groupToActivate));
         break;
       case StakingOperationTypes.UNLOCK:
         if (decoded.length !== 1) {
           throw new BuildTransactionError(`Invalid unlock decoded data: ${data}`);
         }
         const [decodedAmount] = decoded;
-        this._amount = ethUtil.addHexPrefix((decodedAmount as BN).toString(16));
+        this._amount = bufferToHex(decodedAmount);
         break;
       case StakingOperationTypes.WITHDRAW:
         this.validateDecodedDataLength(decoded.length, 1, data);
         const [index] = decoded;
-        this._index = (index as BN).toNumber();
+        this._index = hexStringToNumber(bufferToHex(index));
         break;
       default:
         throw new BuildTransactionError(`Invalid staking data: ${this._type}`);
