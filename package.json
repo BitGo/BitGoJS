@@ -56,7 +56,8 @@
   "resolutions": {
     "elliptic": "^6.5.4",
     "underscore": "^1.12.1",
-    "trim-newlines": "^3.0.0"
+    "trim-newlines": "^3.0.0",
+    "normalize-url": "^6.0.1"
   },
   "config": {
     "commitizen": {
