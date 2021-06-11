@@ -356,35 +356,55 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const decodedTxn = this.decodeAlgoTxn(rawTransaction);
     const algoTxn = decodedTxn.txn;
 
-    const validationResult = BaseTransactionSchema.validate({
-      fee: algoTxn?.fee,
-      firstRound: algoTxn?.firstRound,
-      genesisHash: algoTxn?.genesisHash.toString('base64'),
-      lastRound: algoTxn?.lastRound,
-      sender: algoTxn ? algosdk.encodeAddress(algoTxn.from.publicKey) : undefined,
-      genesisId: algoTxn?.genesisID,
-      lease: algoTxn?.lease,
-      note: algoTxn?.note,
-      reKeyTo: algoTxn?.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
-    });
-
-    if (validationResult.error) {
-      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
-    }
+    this.validateBaseFields(
+      algoTxn.fee,
+      algoTxn.firstRound,
+      algoTxn.genesisHash.toString('base64'),
+      algoTxn.lastRound,
+      algosdk.encodeAddress(algoTxn.from.publicKey),
+      algoTxn.genesisID,
+      algoTxn.lease,
+      algoTxn.note,
+      algoTxn.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
+    );
   }
 
   /** @inheritdoc */
   validateTransaction(_: Transaction): void {
+    this.validateBaseFields(
+      this._fee,
+      this._firstRound,
+      this._genesisHash,
+      this._lastRound,
+      this._sender,
+      this._genesisId,
+      this._lease,
+      this._note,
+      this._reKeyTo,
+    );
+  }
+
+  private validateBaseFields(
+    fee: number,
+    firstRound: number,
+    genesisHash: string,
+    lastRound: number,
+    sender: string,
+    genesisId: string,
+    lease: Uint8Array | undefined,
+    note: Uint8Array | undefined,
+    reKeyTo: string | undefined,
+  ): void {
     const validationResult = BaseTransactionSchema.validate({
-      fee: this._fee,
-      firstRound: this._firstRound,
-      genesisHash: this._genesisHash,
-      lastRound: this._lastRound,
-      sender: this._sender,
-      genesisId: this._genesisId,
-      lease: this._lease,
-      note: this._note,
-      reKeyTo: this._reKeyTo,
+      fee,
+      firstRound,
+      genesisHash,
+      lastRound,
+      sender,
+      genesisId,
+      lease,
+      note,
+      reKeyTo,
     });
 
     if (validationResult.error) {

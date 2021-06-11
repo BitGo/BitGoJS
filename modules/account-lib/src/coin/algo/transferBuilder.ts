@@ -50,12 +50,33 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const decodeTxn = this.decodeAlgoTxn(rawTransaction);
+    const algoTxn = decodeTxn.txn;
+    if (algoTxn.type !== algosdk.TransactionType.pay) {
+      throw new InvalidTransactionError(
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`,
+      );
+    }
+
+    this.validateFields(
+      algosdk.encodeAddress(algoTxn.to.publicKey),
+      algoTxn.amount,
+      algoTxn.closeRemainderTo ? algosdk.encodeAddress(algoTxn.closeRemainderTo.publicKey) : undefined,
+    );
+  }
+
+  /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
+    this.validateFields(this._to, this._amount, this._closeRemainderTo);
+  }
+
+  private validateFields(to: string, amount: number | bigint, closeRemainderTo: string | undefined) {
     const validationResult = TransferTransactionSchema.validate({
-      to: this._to,
-      amount: this._amount,
-      closeRemainderTo: this._closeRemainderTo,
+      to,
+      amount,
+      closeRemainderTo,
     });
 
     if (validationResult.error) {
