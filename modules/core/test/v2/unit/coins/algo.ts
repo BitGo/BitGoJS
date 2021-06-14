@@ -1,4 +1,4 @@
-import * as accountLib from '../../../../../account-lib';
+import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as AlgoResources from '../../fixtures/coins/algo';
 import { randomBytes } from 'crypto';

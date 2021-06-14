@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-import * as accountLib from '../../../../account-lib';
+import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
 import {
   NaclWrapper,
