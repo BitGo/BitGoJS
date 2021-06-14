@@ -4,8 +4,6 @@
 import * as Bluebird from 'bluebird';
 import * as accountLib from '../../../../account-lib';
 import * as _ from 'lodash';
-import * as stellar from 'stellar-sdk';
-import { CoinFamily } from '@bitgo/statics';
 import {
   NaclWrapper,
   Multisig,
@@ -34,7 +32,6 @@ import {
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
-import { SeedValidator } from '../internal/seedValidator';
 
 const co = Bluebird.coroutine;
 
@@ -198,12 +195,11 @@ export class Algo extends BaseCoin {
    * @param message
    */
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    const self = this;
     return co<Buffer>(function* cosignMessage() {
       // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
       // See jsdoc comment in isValidPrv
       let seed: string | Uint8Array = key.prv;
-      if (!self.isValidPrv(seed)) {
+      if (!this.isValidPrv(seed)) {
         throw new Error(`invalid seed: ${seed}`);
       }
       if (typeof seed === 'string') {
@@ -241,14 +237,13 @@ export class Algo extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<AlgoTransactionExplanation>
   ): Bluebird<AlgoTransactionExplanation> {
-    const self = this;
     return co<AlgoTransactionExplanation>(function* () {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');
       }
 
-      const factory = accountLib.getBuilder(self.getChain()) as accountLib.Algo.TransactionBuilderFactory;
+      const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
       const txBuilder = factory.from(txHex);
 
@@ -268,7 +263,7 @@ export class Algo extends BaseCoin {
         const explanationResult: AlgoTransactionExplanation = {
           displayOrder,
           id: txJson.id,
-          outputAmount: txJson.payload.amount.toString(),
+          outputAmount: txJson.amount.toString(),
           changeAmount: '0',
           outputs,
           changeOutputs: [],
@@ -296,7 +291,7 @@ export class Algo extends BaseCoin {
         const explanationResult: AlgoTransactionExplanation = {
           displayOrder,
           id: txJson.id,
-          outputAmount: txJson.payload.amount.toString(),
+          outputAmount: '0',
           changeAmount: '0',
           outputs: [],
           changeOutputs: [],
@@ -314,23 +309,6 @@ export class Algo extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
-  }
-
-  isStellarSeed(seed: string): boolean {
-    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
-  }
-
-  convertFromStellarSeed(seed: string): string | null {
-    // assume this is a trust custodial seed if its a valid ed25519 prv
-    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
-      return null;
-    }
-
-    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
-      return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
-    }
-
-    return null;
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
@@ -398,9 +376,8 @@ export class Algo extends BaseCoin {
     params: SignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    const self = this;
     return co<SignedTransaction>(function* () {
-      const { txHex, addressVersion, keys, sk, isHalfSigned } = self.verifySignTransactionParams(params);
+      const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
       const encodedPublicKeys = _.map(keys, (k) => Address.decode(k).publicKey);
 
       // decode our unsigned/half-signed tx
