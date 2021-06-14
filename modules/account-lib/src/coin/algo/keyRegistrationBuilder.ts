@@ -129,7 +129,6 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
     const decodedTxn = this.decodeAlgoTxn(rawTransaction);
     const algoTxn = decodedTxn.txn as unknown as algosdk.Transaction;
-    
     if (algoTxn.type !== algosdk.TransactionType.keyreg) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.keyreg}`,

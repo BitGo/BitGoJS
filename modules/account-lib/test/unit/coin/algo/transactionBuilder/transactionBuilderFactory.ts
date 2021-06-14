@@ -25,9 +25,7 @@ describe('Algo Transaction Builder Factory', () => {
   describe('serialized transactions', () => {
     it('a non signed keyreg transaction from serialized', async () => {
       const builder = factory.from(AlgoResources.rawTx.keyReg.unsigned);
-      builder
-        .numberOfRequiredSigners(1)
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      builder.numberOfRequiredSigners(1).sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.KeyRegistration);
       should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
@@ -68,9 +66,7 @@ describe('Algo Transaction Builder Factory', () => {
 
     it('a unsigned transfer transaction from serialized', async () => {
       const builder = factory.from(AlgoResources.rawTx.transfer.unsigned);
-      builder
-        .numberOfRequiredSigners(1)
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      builder.numberOfRequiredSigners(1).sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       const tx = await builder.build();
       should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
       should.equal(tx.type, TransactionType.Send);
