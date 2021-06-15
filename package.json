@@ -11,6 +11,7 @@
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "execa": "^5.0.0",
     "glob": "^7.1.6",
     "husky": "^4.3.0",
     "lerna": "^4.0.0",
@@ -45,7 +46,8 @@
     "gen-docs": "lerna run gen-docs --stream --parallel",
     "check-fmt-changed": "lerna run check-fmt --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
     "check-fmt": "lerna run check-fmt --stream --parallel",
-    "check-commits": "yarn commitlint --from=origin/${DRONE_REPO_BRANCH:-master} -V"
+    "check-commits": "yarn commitlint --from=origin/${DRONE_REPO_BRANCH:-master} -V",
+    "check-versions": "node ./check-package-versions.js"
   },
   "husky": {
     "hooks": {
@@ -56,7 +58,8 @@
   "resolutions": {
     "elliptic": "^6.5.4",
     "underscore": "^1.12.1",
-    "trim-newlines": "^3.0.0"
+    "trim-newlines": "^3.0.0",
+    "normalize-url": "^6.0.1"
   },
   "config": {
     "commitizen": {
