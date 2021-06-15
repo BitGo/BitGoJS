@@ -238,7 +238,7 @@ export const coins = CoinMap.fromCoins([
   erc20('cover', 'Cover', 18, '0x5d8d9f5b96f4438195be9b99eee6118ed4304286', UnderlyingAsset.COVER),
   erc20('cpay', 'Cryptopay', 0, '0x0ebb614204e47c09b6c3feb9aaecad8ee060e23e', UnderlyingAsset.CPAY),
   erc20('cplt', 'Coineru Platinum', 8, '0xa3f7871a4b86bcc3b6e97c8fd0745e71c55e1f82', UnderlyingAsset.CPLT),
-  erc20('cqt', 'Covalent', 18, '0xd53dc349df9c52bc5eb3cf07bf90dfaee768d0e5', UnderlyingAsset.CQT),
+  erc20('cqt', 'Covalent', 18, '0xd417144312dbf50465b1c641d016962017ef6240', UnderlyingAsset.CQT),
   erc20('cqx', 'Coinquista Coin', 18, '0x618c29dd2d16475b2ae6244f9e8aaead68f0ca44', UnderlyingAsset.CQX),
   erc20('crdt', 'Crypto Daily Token', 18, '0xdaab5e695bb0e8ce8384ee56ba38fa8290618e52', UnderlyingAsset.CRDT),
   erc20('cre', 'CarryToken', 18, '0x115ec79f1de567ec68b7ae7eda501b406626478e', UnderlyingAsset.CRE),
