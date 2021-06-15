@@ -313,7 +313,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   setSigners(addrs: string | string[]): this {
-    const signers = addrs instanceof Array ? addrs : [addrs];
+    const signers = Array.isArray(addrs) ? addrs : [addrs];
     signers.forEach((address) => this.validateAddress({ address: address }));
     this._transaction.signers = signers;
     return this;
