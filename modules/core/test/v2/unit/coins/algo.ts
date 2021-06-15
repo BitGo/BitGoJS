@@ -308,7 +308,7 @@ describe('ALGO:', function () {
     }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender: senders[0], memo });
       txBuilder.numberOfSigners(2);
-      txBuilder.setSigners(senders.map(({ address }) => address ));
+      txBuilder.setSigners(senders.map(({ address }) => address));
       txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       txBuilder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
       return await txBuilder.build();
@@ -387,7 +387,7 @@ describe('ALGO:', function () {
         sender,
         memo,
       });
-        
+
       const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: unsignedHex,
@@ -439,6 +439,35 @@ describe('ALGO:', function () {
       explain.voteFirst.should.equal(1);
       explain.voteLast.should.equal(100);
       explain.voteKeyDilution.should.equal(9);
+    });
+  });
+  describe('Sign transaction', () => {
+    it('should sign transaction', async function () {
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: AlgoResources.rawTx.transfer.unsigned,
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account1.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.signed);
+    });
+
+    it('should sign half signed transaction', async function () {
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            txHex: AlgoResources.rawTx.transfer.halfSigned,
+          },
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex'), AlgoResources.accounts.account3.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
     });
   });
 });

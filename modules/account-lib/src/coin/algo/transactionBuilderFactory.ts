@@ -74,11 +74,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
   }
 
-  public getWalletInitializationBuilder() {
+  public getWalletInitializationBuilder(): void {
     throw new NotImplementedError('Method not implemented.');
-  }
-
-  public getWalletInitializationBuilder() {
-    throw new Error('Method not implemented.');
   }
 }
