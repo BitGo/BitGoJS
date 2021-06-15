@@ -11,10 +11,7 @@ export const BaseTransactionSchema = joi
     firstRound: joi.number().positive().required(),
     genesisHash: joi.string().base64().required(),
     lastRound: joi.number().positive().required(),
-    sender: joi
-      .string()
-      .custom((addr) => utils.isValidAddress(addr))
-      .required(),
+    sender: addressSchema.required(),
     genesisId: joi.string().optional(),
     lease: joi.optional(),
     note: joi.optional(),
@@ -63,5 +60,12 @@ export const KeyRegTxnSchema = joi
     if (voteKeyDilution > Math.sqrt(voteLast - voteFirst)) {
       throw new KeyDilutionError(voteKeyDilution);
     }
+
     return obj;
   });
+
+export const AssetTransferTxnSchema = joi.object({
+  tokenId: joi.number().required(),
+  assetAmount: joi.custom((val) => typeof val === 'number' || typeof val === 'bigint').required(),
+  receiver: addressSchema.required(),
+});

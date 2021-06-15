@@ -14,6 +14,7 @@ export interface TxData {
   voteFirst?: number;
   voteLast?: number;
   voteKeyDilution?: number;
+  tokenId?: number;
 }
 
 export interface EncodedTx {
