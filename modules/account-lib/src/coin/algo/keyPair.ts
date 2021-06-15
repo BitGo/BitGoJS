@@ -40,4 +40,14 @@ export class KeyPair extends Ed25519KeyPair {
 
     return result;
   }
+
+  /**
+   * Getting the base64 private key for signing an algo transaction.
+   *
+   * @returns {Uint8Array} base64 private key
+   * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
+   */
+  getSigningKey(): Uint8Array {
+    return utils.toUint8Array(this.keyPair.prv + this.keyPair.pub);
+  }
 }

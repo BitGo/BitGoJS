@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import { InvalidTransactionError, InvalidKey } from '../baseCoin/errors';
+import { InvalidTransactionError, InvalidKey, SigningError } from '../baseCoin/errors';
 import utils from './utils';
 import { KeyPair } from './keyPair';
 import { TxData } from './ifaces';
@@ -12,10 +12,12 @@ export class Transaction extends BaseTransaction {
   private _signedTransaction?: Uint8Array;
   private _numberOfRequiredSigners: number;
   private _sender: string;
+  private _signers: string[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._numberOfRequiredSigners = 0;
+    this._signers = [];
   }
 
   /** @inheritdoc */
@@ -78,27 +80,40 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signers keys.
    */
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private signMultiSig(keyPair: KeyPair[]): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signers = keyPair.map((kp) => kp.getAddress());
+    if (this._signers.length === 0) {
+      throw new SigningError('Signers not specified for multisig');
+    }
+    if (keyPair.length === 0) {
+      throw new SigningError('Keypair not specified for multisig');
+    }
     const multiSigOptions = {
       version: 1,
       threshold: this._numberOfRequiredSigners,
-      addrs: signers,
+      addrs: this._signers,
     };
     const msigAddress = algosdk.multisigAddress(multiSigOptions);
     this._algoTransaction.from = algosdk.decodeAddress(msigAddress);
-    const tx = this._algoTransaction;
-    const signatures: Uint8Array[] = keyPair.reduce<Uint8Array[]>((result, kp) => {
-      const keys = kp.getKeys();
-      if (keys) {
-        result.push(algosdk.signMultisigTransaction(tx, multiSigOptions, utils.toUint8Array(keys.prv + keys.pub)).blob);
-      }
-      return result;
-    }, []);
-    this._signedTransaction = algosdk.mergeMultisigTransactions(signatures);
+
+    // Check if it is a signed or unsigned tx.
+    // If unsigned, sign it using first keypair and then append next signatures.
+    // If signed, appending next signatures.
+    let signedTx = this._signedTransaction
+      ? this._signedTransaction
+      : algosdk.signMultisigTransaction(this._algoTransaction, multiSigOptions, keyPair.shift()!.getSigningKey()).blob;
+
+    keyPair.forEach((kp) => {
+      signedTx = algosdk.appendSignMultisigTransaction(signedTx, multiSigOptions, kp.getSigningKey()).blob;
+    });
+    this._signedTransaction = signedTx;
+  }
+
+  set signedTransaction(txn: Uint8Array) {
+    this._signedTransaction = txn;
   }
 
   get numberOfRequiredSigners(): number {
@@ -112,6 +127,10 @@ export class Transaction extends BaseTransaction {
    */
   setNumberOfRequiredSigners(num: number): void {
     this._numberOfRequiredSigners = num;
+  }
+
+  set signers(addrs: string[]) {
+    this._signers = addrs;
   }
 
   /**

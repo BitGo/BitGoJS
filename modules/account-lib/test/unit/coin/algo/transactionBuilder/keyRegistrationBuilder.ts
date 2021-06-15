@@ -182,6 +182,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
         .testnet()
         .numberOfSigners(2)
+        .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
         .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
       const tx = await builder.build();
