@@ -9,8 +9,7 @@ import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
 import { KeyPair } from './keyPair';
 import { BaseTransactionSchema } from './txnSchema';
-import { EncodedTx } from './ifaces';
-import utils from './utils';
+import Utils from './utils';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -288,12 +287,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    const decodedTxn = this.decodeAlgoTxn(rawTransaction);
+    const decodedTxn = Utils.decodeAlgoTxn(rawTransaction);
     const algosdkTxn = decodedTxn.txn;
 
     if (decodedTxn.signed) {
       this._transaction.signedTransaction =
-        typeof rawTransaction === 'string' ? utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
+        typeof rawTransaction === 'string' ? Utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
     }
     this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
     this._isFlatFee = true;
@@ -366,7 +365,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
-    const decodedTxn = this.decodeAlgoTxn(rawTransaction);
+    const decodedTxn = Utils.decodeAlgoTxn(rawTransaction);
     const algoTxn = decodedTxn.txn;
 
     const validationResult = BaseTransactionSchema.validate({
@@ -459,64 +458,5 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       genesisID: this._genesisId,
       genesisHash: this._genesisHash,
     };
-  }
-
-  /**
-   * Checks if a unsigned algo transaction can be decoded.
-   *
-   * @param {Uint8Array} txn The encoded unsigned transaction.
-   * @returns {boolean} true if the transaction can be decoded, otherwise false
-   */
-  protected isDecodableUnsignedAlgoTxn(txn: Uint8Array): boolean {
-    try {
-      algosdk.decodeUnsignedTransaction(txn);
-      return true;
-    } catch (_: unknown) {
-      return false;
-    }
-  }
-
-  /**
-   * Checks if a signed algo transaction can be decoded.
-   *
-   * @param {Uint8Array} txn The encoded signed transaction.
-   * @returns {boolean} true if the transaction can be decoded, otherwise false
-   */
-  protected isDecodableSignedTransaction(txn: Uint8Array): boolean {
-    try {
-      algosdk.decodeSignedTransaction(txn);
-      return true;
-    } catch (_: unknown) {
-      return false;
-    }
-  }
-
-  /**
-   * Decodes a signed or unsigned algo transaction.
-   *
-   * @param {Uint8Array | string} txnBytes The encoded unsigned or signed txn.
-   * @returns {EncodedTx} The decoded transaction.
-   */
-  protected decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
-    if (this.isDecodableUnsignedAlgoTxn(buffer)) {
-      return {
-        txn: algosdk.decodeUnsignedTransaction(buffer),
-        signed: false,
-      };
-    } else if (this.isDecodableSignedTransaction(buffer)) {
-      // TODO: Replace with
-      // return algosdk.Transaction.from_obj_for_encoding(algosdk.decodeSignedTransaction(buffer).txn);
-      // see: https://github.com/algorand/js-algorand-sdk/issues/364
-      // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
-      // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
-      const tx: any = algosdk.decodeSignedTransaction(buffer);
-      return {
-        txn: tx.txn,
-        signed: true,
-      };
-    } else {
-      throw new InvalidTransactionError('Transaction cannot be decoded');
-    }
   }
 }

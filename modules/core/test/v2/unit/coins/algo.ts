@@ -204,13 +204,13 @@ describe('ALGO:', function () {
       const destination = AlgoResources.accounts.account2.address;
       const amount = 10000;
       const memo = AlgoResources.explainRawTx.transfer.note;
-      const unsignedTransaction = await buildSignedTransaction({
+      const signedTransaction = await buildSignedTransaction({
         sender,
         destination,
         amount,
         memo,
       });
-      const signedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const signedHex = Buffer.from(signedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: signedHex,
         feeInfo: { fee: '1000' },
@@ -225,13 +225,13 @@ describe('ALGO:', function () {
       const destination = AlgoResources.accounts.account2.address;
       const amount = 10000;
       const memo = AlgoResources.explainRawTx.transfer.note;
-      const unsignedTransaction = await buildMultiSignedTransaction({
+      const signedTransaction = await buildMultiSignedTransaction({
         senders,
         destination,
         amount,
         memo,
       });
-      const signedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const signedHex = Buffer.from(signedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: signedHex,
         feeInfo: { fee: '1000' },
@@ -242,13 +242,144 @@ describe('ALGO:', function () {
     });
   });
 
-  describe('KeyReg Builder: ', () => {
+  describe('Asset Transfer Builder: ', () => {
+    const buildBaseAssetTransferTransaction = ({
+      destination,
+      amount = 1000,
+      tokenId,
+      sender,
+    }) => {
+      const factory = accountLib.register('algo', accountLib.Algo.TransactionBuilderFactory);
+      const txBuilder = factory.getAssetTransferBuilder();
+      const lease = new Uint8Array(randomBytes(32));
+      txBuilder.sender({ address: sender })
+        .isFlatFee(true)
+        .fee({
+          fee: '1000',
+        })
+        .tokenId(tokenId)
+        .firstRound(1)
+        .lastRound(100)
+        .lease(lease)
+        .to({ address: destination })
+        .amount(amount)
+        .testnet();
+      return txBuilder;
+    };
+
+    /**
+       * Build an unsigned account-lib single-signature asset transfer transaction
+       * @param sender The senders address
+       * @param destination The destination address of the transaction
+       * @param amount The amount to send to the recipient
+       * @param tokenId The assetIndex for the token
+       */
+    const buildUnsignedTransaction = async function ({
+      sender,
+      destination,
+      amount = 10000,
+      tokenId,
+    }) {
+      const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
+      return await txBuilder.build();
+    };
+
+    /**
+       * Build a signed account-lib single-signature send transaction
+       * @param sender The senders address
+       * @param destination The destination address of the transaction
+       * @param amount The amount to send to the recipient
+       * @param tokenId The assetIndex for the token
+       */
+    const buildSignedTransaction = async function ({
+      sender,
+      destination,
+      amount = 10000,
+      tokenId,
+    }) {
+      const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
+      txBuilder.numberOfSigners(1);
+      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      return await txBuilder.build();
+    };
+    
+    it('should explain an unsigned asset transfer transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.assetTransfer.unsigned,
+        feeInfo: { fee: '1000' },
+      });
+      explain.outputAmount.should.equal('1000');
+      explain.outputs[0].amount.should.equal('1000');
+      explain.outputs[0].address.should.equal(receiver.address);
+      explain.fee.should.equal(1000);
+      explain.changeAmount.should.equal('0');
+      explain.tokenId.should.equal(1);
+    });
+
+    it('should explain a signed asset transfer transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.assetTransfer.signed,
+        feeInfo: { fee: '1000' },
+      });
+      explain.outputAmount.should.equal('10000000000000000000');
+      explain.outputs[0].amount.should.equal('10000000000000000000');
+      explain.outputs[0].address.should.equal(receiver.address);
+      explain.fee.should.equal(1000);
+      explain.changeAmount.should.equal('0');
+      explain.tokenId.should.equal(1);
+    });
+
+    it('should explain an unsigned transaction', async function () {
+      const sender = AlgoResources.accounts.account1.address;
+      const destination = AlgoResources.accounts.account2.address;
+      const amount = 10000;
+      const tokenId = 1;
+      const unsignedTransaction = await buildUnsignedTransaction({
+        sender,
+        destination,
+        amount,
+        tokenId,
+      });
+      const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const explain = await basecoin.explainTransaction({
+        txHex: unsignedHex,
+        feeInfo: { fee: '1000' },
+      });
+      explain.outputs[0].amount.should.equal(amount.toString());
+      explain.outputs[0].address.should.equal(destination);
+      explain.tokenId.should.equal(1);
+    });
+
+    it('should explain a signed transaction', async function () {
+      const sender = AlgoResources.accounts.account1.address;
+      const destination = AlgoResources.accounts.account2.address;
+      const amount = 10000;
+      const tokenId = 1;
+      const signedTransaction = await buildSignedTransaction({
+        sender,
+        destination,
+        amount,
+        tokenId,
+      });
+      const signedHex = Buffer.from(signedTransaction.toBroadcastFormat()).toString('hex');
+      const explain = await basecoin.explainTransaction({
+        txHex: signedHex,
+        feeInfo: { fee: '1000' },
+      });
+      explain.outputs[0].amount.should.equal(amount.toString());
+      explain.outputs[0].address.should.equal(destination);
+      explain.tokenId.should.equal(1);
+    });
+  });
+
+
+  describe('Wallet Init Builder: ', () => {
     const buildBaseKeyRegTransaction = ({
       sender,
       memo = '',
     }) => {
       const factory = accountLib.register('algo', accountLib.Algo.TransactionBuilderFactory);
-      const txBuilder = factory.getKeyRegistrationBuilder();
+      const txBuilder = factory.getWalletInitializationBuilder();
       const lease = new Uint8Array(randomBytes(32));
       const note = new Uint8Array(Buffer.from(memo, 'utf-8'));
       txBuilder.sender({ address: sender.address })
@@ -308,7 +439,7 @@ describe('ALGO:', function () {
     }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender: senders[0], memo });
       txBuilder.numberOfSigners(2);
-      txBuilder.setSigners(senders.map(({ address }) => address ));
+      txBuilder.setSigners(senders.map(({ address }) => address));
       txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
       txBuilder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
       return await txBuilder.build();
@@ -387,7 +518,7 @@ describe('ALGO:', function () {
         sender,
         memo,
       });
-        
+
       const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: unsignedHex,
@@ -404,11 +535,11 @@ describe('ALGO:', function () {
     it('should explain a signed transaction', async function () {
       const sender = AlgoResources.accounts.account1;
       const memo = AlgoResources.explainRawTx.transfer.note;
-      const unsignedTransaction = await buildSignedTransaction({
+      const signedTransaction = await buildSignedTransaction({
         sender,
         memo,
       });
-      const signedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const signedHex = Buffer.from(signedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: signedHex,
         feeInfo: { fee: '1000' },
@@ -424,11 +555,11 @@ describe('ALGO:', function () {
     it('should explain a multiSigned transaction', async function () {
       const senders = [AlgoResources.accounts.account1, AlgoResources.accounts.account3];
       const memo = AlgoResources.explainRawTx.transfer.note;
-      const unsignedTransaction = await buildMultiSignedTransaction({
+      const signedTransaction = await buildMultiSignedTransaction({
         senders,
         memo,
       });
-      const signedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const signedHex = Buffer.from(signedTransaction.toBroadcastFormat()).toString('hex');
       const explain = await basecoin.explainTransaction({
         txHex: signedHex,
         feeInfo: { fee: '1000' },
@@ -439,6 +570,35 @@ describe('ALGO:', function () {
       explain.voteFirst.should.equal(1);
       explain.voteLast.should.equal(100);
       explain.voteKeyDilution.should.equal(9);
+    });
+  });
+  describe('Sign transaction', () => {
+    it('should sign transaction', async function () {
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: AlgoResources.rawTx.transfer.unsigned,
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account1.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.signed);
+    });
+
+    it('should sign half signed transaction', async function () {
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            txHex: AlgoResources.rawTx.transfer.halfSigned,
+          },
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex'), AlgoResources.accounts.account3.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
     });
   });
 });

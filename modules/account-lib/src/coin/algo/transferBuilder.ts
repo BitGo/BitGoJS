@@ -7,6 +7,7 @@ import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransferTransactionSchema } from './txnSchema';
+import Utils from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _to: string;
@@ -33,7 +34,6 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
@@ -48,35 +48,22 @@ export class TransferBuilder extends TransactionBuilder {
     return tx;
   }
 
-  /** @inheritdoc */
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
-    const decodedTxn = this.decodeAlgoTxn(rawTransaction);
-    const algoTxn = decodedTxn.txn as unknown as algosdk.Transaction;
+    const { txn: algoTxn } = Utils.decodeAlgoTxn(rawTransaction);
 
     if (algoTxn.type !== algosdk.TransactionType.pay) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`,
       );
     }
-
-    this.validateFields(
-      algosdk.encodeAddress(algoTxn.to.publicKey),
-      algoTxn.amount,
-      algoTxn.closeRemainderTo ? algosdk.encodeAddress(algoTxn.closeRemainderTo.publicKey) : undefined,
-    );
   }
 
-  /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    this.validateFields(this._to, this._amount, this._closeRemainderTo);
-  }
-
-  private validateFields(to: string, amount: number | bigint, closeRemainderTo: string | undefined) {
     const validationResult = TransferTransactionSchema.validate({
-      to,
-      amount,
-      closeRemainderTo,
+      to: this._to,
+      amount: this._amount,
+      closeRemainderTo: this._closeRemainderTo,
     });
 
     if (validationResult.error) {

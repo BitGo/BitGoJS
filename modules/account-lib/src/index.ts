@@ -66,7 +66,7 @@ const coinBuilderMap = {
   stx: Stx.TransactionBuilderFactory,
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,
-  talgo: Algo.TransactionBuilderFactory
+  talgo: Algo.TransactionBuilderFactory,
 };
 
 /**

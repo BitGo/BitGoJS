@@ -4,18 +4,6 @@
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
-import {
-  NaclWrapper,
-  Multisig,
-  Address,
-  Seed,
-  generateAccountFromSeed,
-  generateAccount,
-  isValidAddress,
-  isValidSeed,
-  Encoding,
-  mergeMultisigTransactions,
-} from 'algosdk';
 import { BitGo } from '../../bitgo';
 
 import {
@@ -43,6 +31,7 @@ export interface AlgoTransactionExplanation extends TransactionExplanation {
   voteFirst?: number;
   voteLast?: number;
   voteKeyDilution?: number;
+  tokenId?: number;
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -95,9 +84,10 @@ export interface ExplainTransactionOptions {
 export interface VerifiedTransactionParameters {
   txHex: string;
   addressVersion: number;
-  keys: string[];
-  sk: string;
+  signers: string[];
+  prv: string;
   isHalfSigned: boolean;
+  numberSigners: number;
 }
 
 export class Algo extends BaseCoin {
@@ -149,10 +139,14 @@ export class Algo extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const pair = seed ? generateAccountFromSeed(seed) : generateAccount();
+    const keyPair = seed ? new accountLib.Algo.KeyPair({ seed }) : new accountLib.Algo.KeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
     return {
-      pub: pair.addr, // encoded pub
-      prv: Seed.encode(pair.sk), // encoded seed
+      pub: keys.pub,
+      prv: keys.prv,
     };
   }
 
@@ -163,7 +157,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return isValidAddress(pub);
+    return accountLib.Algo.algoUtils.isValidPublicKey(pub);
   }
 
   /**
@@ -175,7 +169,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return isValidSeed(prv);
+    return accountLib.Algo.algoUtils.isValidPrivateKey(prv);
   }
 
   /**
@@ -185,7 +179,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidAddress(address: string): boolean {
-    return isValidAddress(address);
+    return accountLib.Algo.algoUtils.isValidAddress(address);
   }
 
   /**
@@ -196,26 +190,11 @@ export class Algo extends BaseCoin {
    */
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
-      // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
-      // See jsdoc comment in isValidPrv
-      let seed: string | Uint8Array = key.prv;
-      if (!this.isValidPrv(seed)) {
-        throw new Error(`invalid seed: ${seed}`);
+      const algoKeypair = new accountLib.Algo.KeyPair({ prv: key.prv });
+      if (Buffer.isBuffer(message)) {
+        message = message.toString('hex');
       }
-      if (typeof seed === 'string') {
-        try {
-          seed = Seed.decode(seed).seed;
-        } catch (e) {
-          throw new Error(`could not decode seed: ${seed}`);
-        }
-      }
-      const keyPair = generateAccountFromSeed(seed);
-
-      if (!Buffer.isBuffer(message)) {
-        message = Buffer.from(message);
-      }
-
-      return Buffer.from(NaclWrapper.sign(message, keyPair.sk));
+      return algoKeypair.signMessage(message);
     })
       .call(this)
       .asCallback(callback);
@@ -246,7 +225,6 @@ export class Algo extends BaseCoin {
       const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
       const txBuilder = factory.from(txHex);
-
       const tx = (yield txBuilder.build()) as any;
       const txJson = tx.toJson();
 
@@ -272,10 +250,12 @@ export class Algo extends BaseCoin {
           type: tx.type,
         };
 
+        if (txJson.tokenId) explanationResult.tokenId = txJson.tokenId;
+
         return explanationResult;
       }
 
-      if (tx.type === accountLib.BaseCoin.TransactionType.KeyRegistration) {
+      if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
         const displayOrder = [
           'id',
           'fee',
@@ -340,11 +320,7 @@ export class Algo extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    if (
-      !_.has(params.txPrebuild, 'keys[0]') ||
-      !_.has(params.txPrebuild, 'keys[1]') ||
-      !_.has(params.txPrebuild, 'keys[2]')
-    ) {
+    if (!_.has(params.txPrebuild, 'keys')) {
       throw new Error('missing public keys parameter to sign transaction');
     }
 
@@ -352,15 +328,11 @@ export class Algo extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
-    // we need to re-encode our public keys using algosdk's format
-    const keys = [params.txPrebuild.keys[0], params.txPrebuild.keys[1], params.txPrebuild.keys[2]];
-
-    // re-encode sk from our prv (this acts as a seed out of the keychain)
-    const seed = Seed.decode(prv).seed;
-    const pair = generateAccountFromSeed(seed);
-    const sk = pair.sk;
-
-    return { txHex, addressVersion, keys, sk, isHalfSigned };
+    const signers = params.txPrebuild.keys.map((key) =>
+      accountLib.Algo.algoUtils.publicKeyToAlgoAddress(accountLib.Algo.algoUtils.toUint8Array(key))
+    );
+    const numberSigners = signers.length;
+    return { txHex, addressVersion, signers, prv, isHalfSigned, numberSigners };
   }
 
   /**
@@ -376,39 +348,25 @@ export class Algo extends BaseCoin {
     params: SignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
+    const self = this;
     return co<SignedTransaction>(function* () {
-      const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
-      const encodedPublicKeys = _.map(keys, (k) => Address.decode(k).publicKey);
-
-      // decode our unsigned/half-signed tx
-      let transaction;
-      let txToHex;
-      try {
-        txToHex = Buffer.from(txHex, 'base64');
-        const initialDecodedTx = Encoding.decode(txToHex);
-
-        // we need to scrub the txn of sigs for half-signed
-        const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
-
-        transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
-      } catch (e) {
-        throw new Error('transaction needs to be a valid tx encoded as base64 string');
+      const { txHex, signers, prv, isHalfSigned, numberSigners } = self.verifySignTransactionParams(params);
+      const factory = accountLib.register(self.getChain(), accountLib.Algo.TransactionBuilderFactory);
+      const txBuilder = factory.from(txHex);
+      txBuilder.numberOfRequiredSigners(numberSigners);
+      txBuilder.sign({ key: prv });
+      txBuilder.setSigners(signers);
+      const transaction: any = yield txBuilder.build();
+      if (!transaction) {
+        throw new Error('Invalid transaction');
       }
-
-      // sign our tx
-      let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
-
-      // if we have already signed it, we'll have to merge that with our previous tx
-      if (isHalfSigned) {
-        signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
-      }
-
-      const signedBase64 = Buffer.from(signed).toString('base64');
-
-      if (isHalfSigned) {
-        return { txHex: signedBase64 };
+      const signedTxHex = Buffer.from(transaction.toBroadcastFormat()).toString('hex');
+      if (numberSigners === 1) {
+        return { txHex: signedTxHex };
+      } else if (isHalfSigned) {
+        return { txHex: signedTxHex };
       } else {
-        return { halfSigned: { txHex: signedBase64 } };
+        return { halfSigned: { txHex: signedTxHex } };
       }
     })
       .call(this)

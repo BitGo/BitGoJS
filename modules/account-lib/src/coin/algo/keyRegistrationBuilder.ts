@@ -7,6 +7,8 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { KeyRegTxnSchema } from './txnSchema';
+import Utils from './utils';
+
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey: string;
   protected _selectionKey: string;
@@ -126,8 +128,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
-    const decodedTxn = this.decodeAlgoTxn(rawTransaction);
-    const algoTxn = decodedTxn.txn as unknown as algosdk.Transaction;
+    const decodeTxn = Utils.decodeAlgoTxn(rawTransaction);
+    const algoTxn = decodeTxn.txn;
     if (algoTxn.type !== algosdk.TransactionType.keyreg) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.keyreg}`,
