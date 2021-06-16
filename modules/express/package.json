@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "9.9.6",
+  "version": "9.9.7",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -18,13 +18,13 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "scripts": {
-    "test": "npm run unit-test",
-    "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
-    "integration-test": "nyc -- mocha --opts test/mocha.opts \"test/integration/**/*.ts\"",
+    "test": "yarn unit-test",
+    "unit-test": "yarn nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
+    "integration-test": "yarn nyc -- mocha --opts test/mocha.opts \"test/integration/**/*.ts\"",
     "clean": "rm -rf dist/*",
     "prepare": "yarn build",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
-    "lint": "eslint 'src/**/*.ts' 'test/**/*.ts' || true",
+    "lint": "yarn eslint 'src/**/*.ts' 'test/**/*.ts' || true",
     "build": "tsc",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
@@ -32,13 +32,13 @@
     "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
     "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
     "precommit": "lint-staged",
-    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
+    "check-fmt": "yarn prettier --check '{src,test}/**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
-    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
+    "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^11.15.0",
+    "bitgo": "^11.16.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.19.0",
     "debug": "^3.1.0",

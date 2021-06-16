@@ -221,6 +221,7 @@ local CheckPreconditions(version) = {
     BuildInfo(version),
     Install(version),
     Command("check-commits", version),
+    Command("check-versions", version),
     Command("audit", version),
     Command("lint", version),
     Command("check-fmt", version),
