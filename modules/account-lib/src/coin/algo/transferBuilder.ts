@@ -17,21 +17,20 @@ export class TransferBuilder extends TransactionBuilder {
     super(coinConfig);
   }
 
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setAlgoTransaction(
-      algosdk.makePaymentTxnWithSuggestedParams(
-        this._sender,
-        this._to,
-        this._amount,
-        this._closeRemainderTo,
-        this._note,
-        this.suggestedParams,
-        this._reKeyTo,
-      ),
+  protected buildAlgoTxn(): algosdk.Transaction {
+    return algosdk.makePaymentTxnWithSuggestedParams(
+      this._sender,
+      this._to,
+      this._amount,
+      this._closeRemainderTo,
+      this._note,
+      this.suggestedParams,
+      this._reKeyTo,
     );
-    this.transaction.setTransactionType(TransactionType.Send);
-    return await super.buildImplementation();
+  }
+
+  protected get transactionType(): TransactionType {
+    return TransactionType.Send;
   }
 
   /** @inheritdoc */

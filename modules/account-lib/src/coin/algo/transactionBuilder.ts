@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
-import { BaseTransactionBuilder } from '../baseCoin';
+import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
@@ -268,10 +268,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this.transaction.setAlgoTransaction(this.buildAlgoTxn());
+    this.transaction.setTransactionType(this.transactionType);
+
     this.transaction.sign(this._keyPairs);
     this._transaction.loadInputsAndOutputs();
     return this._transaction;
   }
+
+  /**
+   * Builds the algorand transaction.
+   */
+  protected abstract buildAlgoTxn(): algosdk.Transaction;
+
+  /**
+   * The transaction type.
+   */
+  protected abstract get transactionType(): TransactionType;
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
