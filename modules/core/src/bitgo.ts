@@ -42,6 +42,8 @@ import { GlobalCoinFactory } from './v2/coinFactory';
 
 const debug = debugLib('bitgo:index');
 
+const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
+
 if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
@@ -387,7 +389,7 @@ export interface VerifyPushTokenOptions {
 
 export interface BitGoRequest extends superagent.Request {
   result: (optionalField?: string) => Bluebird<any>;
-  end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
+  end: (callback?: NodeCallback<superagent.Response>) => void;
 }
 
 export interface BitGo {
@@ -544,9 +546,6 @@ export class BitGo {
     // functions that use it.
     this._validate = params.validate === undefined ? true : params.validate;
 
-    // Create superagent methods specific to this BitGo instance.
-    const methods = ['get', 'post', 'put', 'del', 'patch'];
-
     if (!params.proxy && process.env.BITGO_USE_PROXY) {
       params.proxy = process.env.BITGO_USE_PROXY;
     }
@@ -557,8 +556,8 @@ export class BitGo {
 
     this._proxy = params.proxy;
 
-    for (const index in methods) {
-      const method = methods[index];
+    // Create superagent methods specific to this BitGo instance.
+    for (const method of supportedRequestMethods) {
       this[method] = this.createPatch(method);
     }
 
@@ -580,9 +579,9 @@ export class BitGo {
    * headers to any outbound request.
    * @param method
    */
-  private createPatch(method: string): (url: string, callback?: NodeCallback<superagent.Response>) => superagent.Request {
+  private createPatch(method: typeof supportedRequestMethods[number]): (url: string, callback?: NodeCallback<superagent.Response>) => superagent.Request {
     const self = this;
-    return function(...args) {
+    return function (...args) {
       let req: superagent.SuperAgentRequest = superagent[method].apply(null, args);
       if (self._proxy) {
         req = req.proxy(self._proxy);
@@ -590,7 +589,7 @@ export class BitGo {
 
       // Patch superagent to return promises
       const prototypicalEnd = req.end;
-      req.end = function() {
+      req.end = function (): void {
         const thisReq: superagent.SuperAgentRequest = this;
         // intercept a request before it's submitted to the server for v2 authentication (based on token)
         thisReq.set('BitGo-SDK-Version', self.version());
