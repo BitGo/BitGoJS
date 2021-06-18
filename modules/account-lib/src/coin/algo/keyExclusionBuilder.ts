@@ -26,6 +26,6 @@ export class KeyExclusionBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.KeyRegistration;
+    return TransactionType.WalletInitialization;
   }
 }
