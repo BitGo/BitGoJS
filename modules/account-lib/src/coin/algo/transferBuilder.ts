@@ -7,6 +7,7 @@ import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransferTransactionSchema } from './txnSchema';
+import Utils from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _to: string;
@@ -33,7 +34,6 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
@@ -48,7 +48,16 @@ export class TransferBuilder extends TransactionBuilder {
     return tx;
   }
 
-  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const { txn: algoTxn } = Utils.decodeAlgoTxn(rawTransaction);
+
+    if (algoTxn.type !== algosdk.TransactionType.pay) {
+      throw new InvalidTransactionError(
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`,
+      );
+    }
+  }
+
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
     const validationResult = TransferTransactionSchema.validate({

@@ -60,7 +60,6 @@ export const KeyRegTxnSchema = joi
     if (voteKeyDilution > Math.sqrt(voteLast - voteFirst)) {
       throw new KeyDilutionError(voteKeyDilution);
     }
-
     return obj;
   });
 

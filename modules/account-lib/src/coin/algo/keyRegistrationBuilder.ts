@@ -7,6 +7,8 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { KeyRegTxnSchema } from './txnSchema';
+import Utils from './utils';
+
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey: string;
   protected _selectionKey: string;
@@ -83,6 +85,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    *
    * @param {number} size [10000]. To reduce the size of the participation key, set the key dilution value to roughly the square root of the range that the partkey is valid for.
    * https://developer.algorand.org/docs/run-a-node/participate/generate_keys/#generate-the-participation-key-with-goal
+   * @param size
    */
   voteKeyDilution(size = 10000): KeyRegistrationBuilder {
     this.validateValue(new BigNumber(size));
@@ -112,6 +115,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
+
     if (algoTx) {
       this.voteKey(algoTx.voteKey.toString('base64'));
       this.selectionKey(algoTx.selectionKey.toString('base64'));
@@ -123,15 +127,45 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const decodeTxn = Utils.decodeAlgoTxn(rawTransaction);
+    const algoTxn = decodeTxn.txn;
+    if (algoTxn.type !== algosdk.TransactionType.keyreg) {
+      throw new InvalidTransactionError(
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.keyreg}`,
+      );
+    }
+
+    this.validateFields(
+      algoTxn.voteKey.toString('base64'),
+      algoTxn.selectionKey.toString('base64'),
+      algoTxn.voteFirst,
+      algoTxn.voteLast,
+      algoTxn.voteKeyDilution,
+    );
+  }
+
+  /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
+    this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
+  }
+
+  private validateFields(
+    voteKey: string,
+    selectionKey: string,
+    voteFirst: number,
+    voteLast: number,
+    voteKeyDilution: number,
+  ): void {
     const validationResult = KeyRegTxnSchema.validate({
-      voteKey: this._voteKey,
-      selectionKey: this._selectionKey,
-      voteFirst: this._voteFirst,
-      voteLast: this._voteLast,
-      voteKeyDilution: this._voteKeyDilution,
+      voteKey,
+      selectionKey,
+      voteFirst,
+      voteLast,
+      voteKeyDilution,
     });
+
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }

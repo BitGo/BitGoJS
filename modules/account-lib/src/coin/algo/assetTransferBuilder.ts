@@ -6,6 +6,7 @@ import { TransactionType } from '../baseCoin';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
 import { AssetTransferTxnSchema } from './txnSchema';
+import Utils from './utils';
 
 export class AssetTransferBuilder extends TransferBuilder {
   private _tokenId: number;
@@ -90,7 +91,7 @@ export class AssetTransferBuilder extends TransferBuilder {
   }
 
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
-    const { txn: algoTxn } = this.decodeAlgoTxn(rawTransaction);
+    const { txn: algoTxn } = Utils.decodeAlgoTxn(rawTransaction);
     if (algoTxn.type !== algosdk.TransactionType.axfer) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.axfer}`,
