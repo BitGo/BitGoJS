@@ -105,7 +105,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.KeyRegistration;
+    return TransactionType.WalletInitialization;
   }
 
   /** @inheritdoc */

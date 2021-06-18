@@ -192,7 +192,7 @@ export class Transaction extends BaseTransaction {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
       result.amount = this._algoTransaction.amount.toString();
     }
-    if (this.type === TransactionType.KeyRegistration) {
+    if (this.type === TransactionType.WalletInitialization) {
       result.voteKey = this._algoTransaction.voteKey.toString('base64');
       result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
       result.voteFirst = this._algoTransaction.voteFirst;
