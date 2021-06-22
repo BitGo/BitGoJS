@@ -31,11 +31,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   private getBuilder(rawTxn: string | Uint8Array): TransactionBuilder {
     const decodeTxn = Utils.decodeAlgoTxn(rawTxn);
     const algoTxn = decodeTxn.txn;
-    if (algoTxn.type == algosdk.TransactionType.keyreg) {
+    if (algoTxn.type === algosdk.TransactionType.keyreg) {
       return this.getWalletInitializationBuilder();
-    } else if (algoTxn.type == algosdk.TransactionType.pay) {
+    } else if (algoTxn.type === algosdk.TransactionType.pay) {
       return this.getTransferBuilder();
-    } else if (algoTxn.type == algosdk.TransactionType.axfer) {
+    } else if (algoTxn.type === algosdk.TransactionType.axfer) {
       return this.getAssetTransferBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');

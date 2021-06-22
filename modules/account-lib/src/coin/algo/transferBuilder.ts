@@ -50,7 +50,6 @@ export class TransferBuilder extends TransactionBuilder {
 
   validateRawTransaction(rawTransaction: Uint8Array | string): void {
     const { txn: algoTxn } = Utils.decodeAlgoTxn(rawTransaction);
-
     if (algoTxn.type !== algosdk.TransactionType.pay) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`,
