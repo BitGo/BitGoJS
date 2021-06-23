@@ -23,7 +23,8 @@
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
-    "test": "npm run unit-test"
+    "test": "npm run unit-test",
+    "test-eos": "nyc -- mocha --opts test/mocha.opts \"test/unit/coin/eos/**/*.ts\""
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.39",
     "elliptic": "^6.5.2",
+    "eosjs": "^22.0.0",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "5.2.0",
     "ethers": "^5.1.3",
