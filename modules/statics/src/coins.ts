@@ -317,7 +317,7 @@ export const coins = CoinMap.fromCoins([
   erc20('fxrt', 'FXRT', 3, '0x506742a24c54b77c5af4065b2626ab96c641f90e', UnderlyingAsset.FXRT),
   erc20('gala', 'gala', 8, '0x15d4c048f83bd7e37d49ea4c83a07267ec4203da', UnderlyingAsset.GALA),
   erc20('gbpx', 'eToro Pound Sterling', 18, '0xf85ef57fcdb36d628d063fa663e61e44d35ae661', UnderlyingAsset.GBPX),
-  erc20('gdt', 'GDT', 8, '0xae0f7aa5b963088746a7bf85b685d72ea76540b3', UnderlyingAsset.GDT),
+  erc20('gdt', 'GDT', 8, '0xc67b12049c2d0cf6e476bc64c7f82fc6c63cffc5', UnderlyingAsset.GDT),
   erc20('gen', 'DAOstack', 18, '0x543ff227f64aa17ea132bf9886cab5db55dcaddf', UnderlyingAsset.GEN),
   erc20('gldx', 'eToro Gold', 18, '0x7d2bebd6e41b05384f0a8eb8ff228daac6f39c96', UnderlyingAsset.GLDX),
   erc20('glm', 'Golem', 18, '0x7dd9c5cba05e151c895fde1cf355c9a1d5da6429', UnderlyingAsset.GLM),
