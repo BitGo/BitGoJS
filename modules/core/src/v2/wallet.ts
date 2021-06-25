@@ -1959,7 +1959,7 @@ export class Wallet {
     }
 
     if (_.isUndefined(params.address)) {
-      throw new Error('missing required parameter amount');
+      throw new Error('missing required parameter address');
     }
 
     const coin = this.baseCoin;
