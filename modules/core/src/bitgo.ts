@@ -42,22 +42,24 @@ import { GlobalCoinFactory } from './v2/coinFactory';
 
 const debug = debugLib('bitgo:index');
 
+const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
+
 if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
 
 // Patch superagent to return bluebird promises
 const _end = (superagent as any).Request.prototype.end;
-(superagent as any).Request.prototype.end = function(cb) {
+(superagent as any).Request.prototype.end = function (cb) {
   const self = this;
   if (typeof cb === 'function') {
     return _end.call(self, cb);
   }
 
-  return new Bluebird.Promise(function(resolve, reject) {
+  return new Bluebird.Promise(function (resolve, reject) {
     let error;
     try {
-      return _end.call(self, function(error, response) {
+      return _end.call(self, function (error, response) {
         if (error) {
           return reject(error);
         }
@@ -72,12 +74,12 @@ const _end = (superagent as any).Request.prototype.end;
 
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
-(superagent as any).Request.prototype.result = function(optionalField?: string) {
+(superagent as any).Request.prototype.result = function (optionalField?: string) {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
 
 function handleResponseResult(optionalField?: string): (res: superagent.Response) => any {
-  return function(res: superagent.Response) {
+  return function (res: superagent.Response) {
     if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
     }
@@ -246,6 +248,7 @@ export interface CalculateHmacSubjectOptions {
   urlPath: string;
   text: string;
   timestamp: number;
+  method: typeof supportedRequestMethods[number];
   statusCode?: number;
 }
 
@@ -254,12 +257,14 @@ export interface CalculateRequestHmacOptions {
   text: string;
   timestamp: number;
   token: string;
+  method: typeof supportedRequestMethods[number];
 }
 
 export interface CalculateRequestHeadersOptions {
   url: string;
   text: string;
   token: string;
+  method: typeof supportedRequestMethods[number];
 }
 
 export interface RequestHeaders {
@@ -273,6 +278,7 @@ export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   url: string;
   text: string;
   timestamp: number;
+  method: typeof supportedRequestMethods[number];
   statusCode?: number;
 }
 
@@ -387,7 +393,7 @@ export interface VerifyPushTokenOptions {
 
 export interface BitGoRequest extends superagent.Request {
   result: (optionalField?: string) => Bluebird<any>;
-  end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
+  end: (callback?: NodeCallback<superagent.Response>) => void;
 }
 
 export interface BitGo {
@@ -544,9 +550,6 @@ export class BitGo {
     // functions that use it.
     this._validate = params.validate === undefined ? true : params.validate;
 
-    // Create superagent methods specific to this BitGo instance.
-    const methods = ['get', 'post', 'put', 'del', 'patch'];
-
     if (!params.proxy && process.env.BITGO_USE_PROXY) {
       params.proxy = process.env.BITGO_USE_PROXY;
     }
@@ -557,8 +560,8 @@ export class BitGo {
 
     this._proxy = params.proxy;
 
-    for (const index in methods) {
-      const method = methods[index];
+    // Create superagent methods specific to this BitGo instance.
+    for (const method of supportedRequestMethods) {
       this[method] = this.createPatch(method);
     }
 
@@ -566,7 +569,7 @@ export class BitGo {
     const e = new Error();
 
     // Kick off first load of constants
-    this.fetchConstants({}, function(err) {
+    this.fetchConstants({}, function (err) {
       if (err) {
         // make sure an error does not terminate the entire script
         console.error('failed to fetch initial client constants from BitGo');
@@ -580,9 +583,9 @@ export class BitGo {
    * headers to any outbound request.
    * @param method
    */
-  private createPatch(method: string): (url: string, callback?: NodeCallback<superagent.Response>) => superagent.Request {
+  private createPatch(method: typeof supportedRequestMethods[number]): (url: string, callback?: NodeCallback<superagent.Response>) => superagent.Request {
     const self = this;
-    return function(...args) {
+    return function (...args) {
       let req: superagent.SuperAgentRequest = superagent[method].apply(null, args);
       if (self._proxy) {
         req = req.proxy(self._proxy);
@@ -590,7 +593,7 @@ export class BitGo {
 
       // Patch superagent to return promises
       const prototypicalEnd = req.end;
-      req.end = function() {
+      req.end = function (): void {
         const thisReq: superagent.SuperAgentRequest = this;
         // intercept a request before it's submitted to the server for v2 authentication (based on token)
         thisReq.set('BitGo-SDK-Version', self.version());
@@ -673,6 +676,7 @@ export class BitGo {
             url: req.url,
             token: self._token,
             text: data,
+            method,
           });
           thisReq.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
@@ -688,7 +692,7 @@ export class BitGo {
 
       // verify that the response received from the server is signed correctly
       // right now, it is very permissive with the timestamp variance
-      req.verifyResponse = function(response) {
+      req.verifyResponse = function (response) {
         if (!req.isV2Authenticated || !req.authenticationToken) {
           return response;
         }
@@ -707,6 +711,7 @@ export class BitGo {
           text: response.text,
           timestamp: response.header.timestamp,
           token: req.authenticationToken,
+          method,
         });
 
         if (!verificationResponse.isValid) {
@@ -746,7 +751,7 @@ export class BitGo {
       };
 
       let lastPromise: Bluebird<any> | null = null;
-      req.then = function() {
+      req.then = function () {
         if (!lastPromise) {
           // cannot redefine end() to return a Bluebird<any>, even though
           // that gets monkey patched in at runtime, so this cast is required
@@ -1158,7 +1163,7 @@ export class BitGo {
     const self = this;
     return this.get(this.url('/user/settings'))
       .result()
-      .then(function(result) {
+      .then(function (result) {
         if (!result.settings.ecdhKeychain) {
           return self.reject('ecdh keychain not found for user', callback);
         }
@@ -1274,16 +1279,20 @@ export class BitGo {
    * @param text request body text
    * @param timestamp request timestamp from `Date.now()`
    * @param statusCode Only set for HTTP responses, leave blank for requests
+   * @param method request method
    * @returns {string}
    */
-  calculateHMACSubject({ urlPath, text, timestamp, statusCode }: CalculateHmacSubjectOptions): string {
+  calculateHMACSubject({ urlPath, text, timestamp, statusCode, method }: CalculateHmacSubjectOptions): string {
     const urlDetails = url.parse(urlPath);
     const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
     if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
+      if (this._authVersion === 3) {
+        return [method.toUpperCase(), timestamp, queryPath, statusCode, text].join('|');
+      }
       return [timestamp, queryPath, statusCode, text].join('|');
     }
     if (this._authVersion === 3) {
-      return [timestamp, '3.0', queryPath, text].join('|');
+      return [method.toUpperCase(), timestamp, '3.0', queryPath, text].join('|');
     }
     return [timestamp, queryPath, text].join('|');
   }
@@ -1291,8 +1300,8 @@ export class BitGo {
   /**
    * Calculate the HMAC for an HTTP request
    */
-  calculateRequestHMAC({ url: urlPath, text, timestamp, token }: CalculateRequestHmacOptions): string {
-    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp });
+  calculateRequestHMAC({ url: urlPath, text, timestamp, token, method }: CalculateRequestHmacOptions): string {
+    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp, method });
 
     // calculate the HMAC
     return this.calculateHMAC(token, signatureSubject);
@@ -1301,9 +1310,9 @@ export class BitGo {
   /**
    * Calculate request headers with HMAC
    */
-  calculateRequestHeaders({ url, text, token }: CalculateRequestHeadersOptions): RequestHeaders {
+  calculateRequestHeaders({ url, text, token, method }: CalculateRequestHeadersOptions): RequestHeaders {
     const timestamp = Date.now();
-    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token });
+    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token, method });
 
     // calculate the SHA256 hash of the token
     const hashDigest = sjcl.hash.sha256.hash(token);
@@ -1318,12 +1327,13 @@ export class BitGo {
   /**
    * Verify the HMAC for an HTTP response
    */
-  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac }: VerifyResponseOptions): VerifyResponseInfo {
+  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac, method }: VerifyResponseOptions): VerifyResponseInfo {
     const signatureSubject = this.calculateHMACSubject({
       urlPath,
       text,
       timestamp,
       statusCode,
+      method,
     });
 
     // calculate the HMAC
@@ -1658,7 +1668,7 @@ export class BitGo {
         if (!_.isArray(params.ipRestrict)) {
           throw new Error('ipRestrict must be an array');
         }
-        _.forEach(params.ipRestrict, function(ipAddr) {
+        _.forEach(params.ipRestrict, (ipAddr) => {
           if (!_.isString(ipAddr)) {
             throw new Error('ipRestrict must be an array of IP address strings');
           }
@@ -2320,7 +2330,7 @@ export class BitGo {
    */
   getConstants(params?: Record<string, never>) {
     // kick off a fresh request for the client constants
-    this.fetchConstants(params, function(err) {
+    this.fetchConstants(params, (err) => {
       if (err) {
         // make sure an error does not terminate the entire script
         console.error('failed to fetch client constants from BitGo');
