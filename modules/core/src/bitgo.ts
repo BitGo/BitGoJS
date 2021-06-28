@@ -50,16 +50,16 @@ if (!(process as any).browser) {
 
 // Patch superagent to return bluebird promises
 const _end = (superagent as any).Request.prototype.end;
-(superagent as any).Request.prototype.end = function(cb) {
+(superagent as any).Request.prototype.end = function (cb) {
   const self = this;
   if (typeof cb === 'function') {
     return _end.call(self, cb);
   }
 
-  return new Bluebird.Promise(function(resolve, reject) {
+  return new Bluebird.Promise(function (resolve, reject) {
     let error;
     try {
-      return _end.call(self, function(error, response) {
+      return _end.call(self, function (error, response) {
         if (error) {
           return reject(error);
         }
@@ -74,12 +74,12 @@ const _end = (superagent as any).Request.prototype.end;
 
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
-(superagent as any).Request.prototype.result = function(optionalField?: string) {
+(superagent as any).Request.prototype.result = function (optionalField?: string) {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
 
 function handleResponseResult(optionalField?: string): (res: superagent.Response) => any {
-  return function(res: superagent.Response) {
+  return function (res: superagent.Response) {
     if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
     }
@@ -569,7 +569,7 @@ export class BitGo {
     const e = new Error();
 
     // Kick off first load of constants
-    this.fetchConstants({}, function(err) {
+    this.fetchConstants({}, function (err) {
       if (err) {
         // make sure an error does not terminate the entire script
         console.error('failed to fetch initial client constants from BitGo');
@@ -692,7 +692,7 @@ export class BitGo {
 
       // verify that the response received from the server is signed correctly
       // right now, it is very permissive with the timestamp variance
-      req.verifyResponse = function(response) {
+      req.verifyResponse = function (response) {
         if (!req.isV2Authenticated || !req.authenticationToken) {
           return response;
         }
@@ -751,7 +751,7 @@ export class BitGo {
       };
 
       let lastPromise: Bluebird<any> | null = null;
-      req.then = function() {
+      req.then = function () {
         if (!lastPromise) {
           // cannot redefine end() to return a Bluebird<any>, even though
           // that gets monkey patched in at runtime, so this cast is required
@@ -1163,7 +1163,7 @@ export class BitGo {
     const self = this;
     return this.get(this.url('/user/settings'))
       .result()
-      .then(function(result) {
+      .then(function (result) {
         if (!result.settings.ecdhKeychain) {
           return self.reject('ecdh keychain not found for user', callback);
         }
@@ -1668,7 +1668,7 @@ export class BitGo {
         if (!_.isArray(params.ipRestrict)) {
           throw new Error('ipRestrict must be an array');
         }
-        _.forEach(params.ipRestrict, function(ipAddr) {
+        _.forEach(params.ipRestrict, (ipAddr) => {
           if (!_.isString(ipAddr)) {
             throw new Error('ipRestrict must be an array of IP address strings');
           }
@@ -2330,7 +2330,7 @@ export class BitGo {
    */
   getConstants(params?: Record<string, never>) {
     // kick off a fresh request for the client constants
-    this.fetchConstants(params, function(err) {
+    this.fetchConstants(params, (err) => {
       if (err) {
         // make sure an error does not terminate the entire script
         console.error('failed to fetch client constants from BitGo');
