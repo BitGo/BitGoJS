@@ -332,7 +332,7 @@ export interface SubmitTransactionOptions {
   otp?: string;
   txHex?: string;
   halfSigned?: string;
-  comment ?: string;
+  comment?: string;
 }
 
 export interface SendOptions {
