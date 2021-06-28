@@ -248,6 +248,7 @@ export interface CalculateHmacSubjectOptions {
   urlPath: string;
   text: string;
   timestamp: number;
+  method: typeof supportedRequestMethods[number];
   statusCode?: number;
 }
 
@@ -256,12 +257,14 @@ export interface CalculateRequestHmacOptions {
   text: string;
   timestamp: number;
   token: string;
+  method: typeof supportedRequestMethods[number];
 }
 
 export interface CalculateRequestHeadersOptions {
   url: string;
   text: string;
   token: string;
+  method: typeof supportedRequestMethods[number];
 }
 
 export interface RequestHeaders {
@@ -275,6 +278,7 @@ export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   url: string;
   text: string;
   timestamp: number;
+  method: typeof supportedRequestMethods[number];
   statusCode?: number;
 }
 
@@ -672,6 +676,7 @@ export class BitGo {
             url: req.url,
             token: self._token,
             text: data,
+            method,
           });
           thisReq.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
@@ -706,6 +711,7 @@ export class BitGo {
           text: response.text,
           timestamp: response.header.timestamp,
           token: req.authenticationToken,
+          method,
         });
 
         if (!verificationResponse.isValid) {
@@ -1273,16 +1279,20 @@ export class BitGo {
    * @param text request body text
    * @param timestamp request timestamp from `Date.now()`
    * @param statusCode Only set for HTTP responses, leave blank for requests
+   * @param method request method
    * @returns {string}
    */
-  calculateHMACSubject({ urlPath, text, timestamp, statusCode }: CalculateHmacSubjectOptions): string {
+  calculateHMACSubject({ urlPath, text, timestamp, statusCode, method }: CalculateHmacSubjectOptions): string {
     const urlDetails = url.parse(urlPath);
     const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
     if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
+      if (this._authVersion === 3) {
+        return [method.toUpperCase(), timestamp, queryPath, statusCode, text].join('|');
+      }
       return [timestamp, queryPath, statusCode, text].join('|');
     }
     if (this._authVersion === 3) {
-      return [timestamp, '3.0', queryPath, text].join('|');
+      return [method.toUpperCase(), timestamp, '3.0', queryPath, text].join('|');
     }
     return [timestamp, queryPath, text].join('|');
   }
@@ -1290,8 +1300,8 @@ export class BitGo {
   /**
    * Calculate the HMAC for an HTTP request
    */
-  calculateRequestHMAC({ url: urlPath, text, timestamp, token }: CalculateRequestHmacOptions): string {
-    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp });
+  calculateRequestHMAC({ url: urlPath, text, timestamp, token, method }: CalculateRequestHmacOptions): string {
+    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp, method });
 
     // calculate the HMAC
     return this.calculateHMAC(token, signatureSubject);
@@ -1300,9 +1310,9 @@ export class BitGo {
   /**
    * Calculate request headers with HMAC
    */
-  calculateRequestHeaders({ url, text, token }: CalculateRequestHeadersOptions): RequestHeaders {
+  calculateRequestHeaders({ url, text, token, method }: CalculateRequestHeadersOptions): RequestHeaders {
     const timestamp = Date.now();
-    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token });
+    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token, method });
 
     // calculate the SHA256 hash of the token
     const hashDigest = sjcl.hash.sha256.hash(token);
@@ -1317,12 +1327,13 @@ export class BitGo {
   /**
    * Verify the HMAC for an HTTP response
    */
-  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac }: VerifyResponseOptions): VerifyResponseInfo {
+  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac, method }: VerifyResponseOptions): VerifyResponseInfo {
     const signatureSubject = this.calculateHMACSubject({
       urlPath,
       text,
       timestamp,
       statusCode,
+      method,
     });
 
     // calculate the HMAC
