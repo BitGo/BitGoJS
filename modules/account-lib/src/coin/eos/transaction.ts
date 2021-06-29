@@ -1,4 +1,6 @@
 import * as EosJs from 'eosjs';
+const { TextEncoder, TextDecoder } = require('util');
+import ser from 'eosjs/dist/eosjs-serialize';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
@@ -49,68 +51,39 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Signs transaction.
-   *
-   * @param {EosJS.Api} api Eos API.
-   * @param {string[]} requiredKeys signing keys.
-   */
-  async sign(requiredKeys: string[]): Promise<void> {
-    this._signedTransaction = await this.serializeTransaction(this.eosApi, true, requiredKeys);
-  }
-
-  /**
-   * Serializes an unsigned transaction.
-   *
-   * @param {EosJS.Api} api Eos API.
-   * @param {string[]} requiredKeys signing keys.
-   */
-  async serializeUnsignedTransaction(api: EosJs.Api): Promise<void> {
-    this._serializedUnsignedTransaction = await this.serializeTransaction(api, false, []);
-  }
-
-  /**
-   * Serializes a transaction.
-   *
-   * @param {EosJS.Api} api Eos API.
-   * @param {boolean} sign sign the transaction or not.
-   * @param {string[]} requiredKeys signing keys.
-   * @returns {EosJS.RpcInterfaces.PushTransactionArgs} serialized transaction
-   */
-  private async serializeTransaction(
-    api: EosJs.Api,
-    sign: boolean,
-    requiredKeys: string[],
-  ): Promise<EosJs.RpcInterfaces.PushTransactionArgs> {
-    if (!this._eosTransaction) {
-      throw new InvalidTransactionError('Empty transaction');
-    }
-    return (await api.transact(this._eosTransaction, {
-      broadcast: false,
-      sign,
-      requiredKeys,
-      blocksBehind: this._blocksBehind,
-      expireSeconds: this._expireSeconds,
-    })) as EosJs.RpcInterfaces.PushTransactionArgs;
-  }
-
-  /**
    * Set underlying eos transaction.
-   *
+   * @param {EosJs.RpcInterfaces.PushTransactionArgs} tx represents a broadcast format tx
    * @returns {void}
    */
-
   setEosTransaction(tx: EosJs.RpcInterfaces.PushTransactionArgs): void {
     this._eosTransaction = tx;
   }
 
   /**
+   * Set underlying signed eos transaction.
+   * @param {EosJs.RpcInterfaces.PushTransactionArgs} tx represents a broadcast format signed tx
+   * @returns {void}
+   */
+  setEosSignedTransaction(tx: EosJs.RpcInterfaces.PushTransactionArgs): void {
+    this._signedTransaction = tx;
+  }
+
+  /**
    * Get underlying eos transaction.
    *
-   * @returns {EosJS.ApiInterfaces.Transaction}
+   * @returns {EosJs.RpcInterfaces.PushTransactionArgs}
    */
-
-  getEosTransaction(): EosJs.ApiInterfaces.Transaction | undefined {
+  getEosTransaction(): EosJs.RpcInterfaces.PushTransactionArgs | undefined {
     return this._eosTransaction;
+  }
+
+  /**
+   * Get underlying signed eos transaction.
+   *
+   * @returns {EosJs.RpcInterfaces.PushTransactionArgs}
+   */
+  getEosSignedTransaction(): EosJs.RpcInterfaces.PushTransactionArgs | undefined {
+    return this._signedTransaction;
   }
 
   /** @inheritdoc */
@@ -121,10 +94,22 @@ export class Transaction extends BaseTransaction {
     if (this._signedTransaction) {
       return this._signedTransaction;
     }
-    if (!this._serializedUnsignedTransaction) {
-      throw new InvalidTransactionError('Please serialize the transaction first');
-    }
-    return this._serializedUnsignedTransaction;
+    return this._eosTransaction;
+  }
+
+  // TODO
+  // METHOD PICKED FROM EOSJS-API line 186
+  public deserialize(buffer: ser.SerialBuffer, type: string): any {
+    // return this.transactionTypes.get(type).deserialize(buffer);
+  }
+
+  // TODO
+  // METHOD PICKED FROM EOSJS-API line 219
+  /** Convert a transaction from binary. Leaves actions in hex. */
+  public deserializeTransaction(transaction: Uint8Array): EosJs.ApiInterfaces.Transaction {
+    const buffer = new ser.SerialBuffer({ textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
+    buffer.pushArray(transaction);
+    return this.deserialize(buffer, 'transaction');
   }
 
   /** @inheritdoc */
@@ -133,7 +118,8 @@ export class Transaction extends BaseTransaction {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const actions = this._eosTransaction.actions;
+    const deserializedTransaction = this.deserializeTransaction(this._eosTransaction.serializedTransaction);
+    const actions = deserializedTransaction.actions;
     const result: TxData = {
       actions: [],
     };

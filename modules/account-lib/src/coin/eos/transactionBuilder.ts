@@ -74,6 +74,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     const tx = await this._eosTxBuilder?.send();
     this._transaction.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
+    this._transaction.setEosSignedTransaction(
+      (await this._eosTxBuilder?.send({
+        sign: true,
+      })) as EosJs.RpcInterfaces.PushTransactionArgs,
+    );
     return this._transaction;
   }
 
