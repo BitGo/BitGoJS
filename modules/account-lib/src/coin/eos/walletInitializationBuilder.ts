@@ -3,8 +3,13 @@ import { BaseKey } from '../baseCoin/iface';
 import { NotImplementedError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
+import { Action } from './ifaces';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
+  protected actionData(action: Action, data: any): Action {
+    throw new NotImplementedError('Method not implemented.');
+  }
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }

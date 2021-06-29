@@ -1,14 +1,15 @@
-import * as EosJS from 'eosjs';
+import * as EosJs from 'eosjs';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TxData } from './ifaces';
+
 // import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
-  private _eosTransaction?: EosJS.ApiInterfaces.Transaction;
-  private _signedTransaction?: EosJS.RpcInterfaces.PushTransactionArgs;
-  private _serializedUnsignedTransaction?: EosJS.RpcInterfaces.PushTransactionArgs;
+  private _eosTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
+  private _signedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
+  private _serializedUnsignedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
   private _numberOfRequiredSigners: number;
   private _sender: string;
   private _signers: string[];
@@ -23,21 +24,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
-    if (this._numberOfRequiredSigners === 0) {
-      return false;
-    }
-    // if (this._numberOfRequiredSigners === 1) {
-    //   const kp = new KeyPair({ prv: key });
-    //   const addr = kp.getAddress();
-    //   if (addr === this._sender) {
-    //     return true;
-    //   } else {
-    //     return false;
-    //   }
-    // } else {
-    //   return true;
-    // }
-    throw new NotImplementedError('canSign not implemented');
+    return true;
   }
 
   sender(address: string): void {
@@ -67,8 +54,8 @@ export class Transaction extends BaseTransaction {
    * @param {EosJS.Api} api Eos API.
    * @param {string[]} requiredKeys signing keys.
    */
-  async sign(api: EosJS.Api, requiredKeys: string[]): Promise<void> {
-    this._signedTransaction = await this.serializeTransaction(api, true, requiredKeys);
+  async sign(requiredKeys: string[]): Promise<void> {
+    this._signedTransaction = await this.serializeTransaction(this.eosApi, true, requiredKeys);
   }
 
   /**
@@ -77,7 +64,7 @@ export class Transaction extends BaseTransaction {
    * @param {EosJS.Api} api Eos API.
    * @param {string[]} requiredKeys signing keys.
    */
-  async serializeUnsignedTransaction(api: EosJS.Api): Promise<void> {
+  async serializeUnsignedTransaction(api: EosJs.Api): Promise<void> {
     this._serializedUnsignedTransaction = await this.serializeTransaction(api, false, []);
   }
 
@@ -90,10 +77,10 @@ export class Transaction extends BaseTransaction {
    * @returns {EosJS.RpcInterfaces.PushTransactionArgs} serialized transaction
    */
   private async serializeTransaction(
-    api: EosJS.Api,
+    api: EosJs.Api,
     sign: boolean,
     requiredKeys: string[],
-  ): Promise<EosJS.RpcInterfaces.PushTransactionArgs> {
+  ): Promise<EosJs.RpcInterfaces.PushTransactionArgs> {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -103,7 +90,7 @@ export class Transaction extends BaseTransaction {
       requiredKeys,
       blocksBehind: this._blocksBehind,
       expireSeconds: this._expireSeconds,
-    })) as EosJS.RpcInterfaces.PushTransactionArgs;
+    })) as EosJs.RpcInterfaces.PushTransactionArgs;
   }
 
   /**
@@ -112,7 +99,7 @@ export class Transaction extends BaseTransaction {
    * @returns {void}
    */
 
-  setEosTransaction(tx: EosJS.ApiInterfaces.Transaction): void {
+  setEosTransaction(tx: EosJs.RpcInterfaces.PushTransactionArgs): void {
     this._eosTransaction = tx;
   }
 
@@ -122,12 +109,12 @@ export class Transaction extends BaseTransaction {
    * @returns {EosJS.ApiInterfaces.Transaction}
    */
 
-  getEosTransaction(): EosJS.ApiInterfaces.Transaction | undefined {
+  getEosTransaction(): EosJs.ApiInterfaces.Transaction | undefined {
     return this._eosTransaction;
   }
 
   /** @inheritdoc */
-  toBroadcastFormat(): EosJS.RpcInterfaces.PushTransactionArgs {
+  toBroadcastFormat(): EosJs.RpcInterfaces.PushTransactionArgs {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }

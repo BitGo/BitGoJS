@@ -21,10 +21,10 @@ interface Auth {
   keys: AuthKey[];
 }
 
-interface Action {
+export interface Action {
   account?: string;
   name?: string;
-  authorization?: ser.Authorization[];
+  authorization?: Authorization[];
   data?: {
     from?: string; // transfer, delegatebw, undelegatebw
     to?: string; // transfer
@@ -84,7 +84,6 @@ interface Action {
   };
   hex_data?: string;
 }
-
 export interface TxData {
   actions: Action[];
   expiration?: string;
@@ -96,4 +95,8 @@ export interface TxData {
   context_free_actions?: Action[];
   context_free_data?: Uint8Array[];
   transaction_extensions?: [number, string][];
+}
+export interface Authorization {
+  actor: string;
+  permission: string;
 }
