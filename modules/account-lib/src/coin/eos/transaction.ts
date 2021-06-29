@@ -100,6 +100,7 @@ export class Transaction extends BaseTransaction {
   // TODO
   // METHOD PICKED FROM EOSJS-API line 186
   public deserialize(buffer: ser.SerialBuffer, type: string): any {
+    // transactionTypes comes from abi
     // return this.transactionTypes.get(type).deserialize(buffer);
   }
 
