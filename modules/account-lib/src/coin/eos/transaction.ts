@@ -73,7 +73,12 @@ export class Transaction extends BaseTransaction {
     }
     this._eosTxBuilder = eosTxBuilder;
     try {
-      const tx = await this._eosTxBuilder.send({ broadcast: false });
+      const tx = await this._eosTxBuilder.send({
+        broadcast: false,
+        sign: false,
+        expireSeconds: this._expireSeconds,
+        blocksBehind: this._blocksBehind,
+      });
       const signedTx = await this._eosTxBuilder.send({
         broadcast: false,
         sign: true,
