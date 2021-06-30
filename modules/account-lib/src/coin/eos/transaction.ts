@@ -67,7 +67,7 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = tx;
   }
 
-  async build(eosTxBuilder?: EosTxBuilder): Promise<void> {
+  async build(eosTxBuilder?: EosTxBuilder): Promise<this> {
     if (!eosTxBuilder) {
       throw new BuildTransactionError('No builder specified');
     }
@@ -90,6 +90,7 @@ export class Transaction extends BaseTransaction {
     } catch (error) {
       throw new BuildTransactionError('Could not build raw trx');
     }
+    return this;
   }
   /**
    * Get underlying eos transaction.
