@@ -15,7 +15,7 @@ describe('Eos Transaction', () => {
   let tx: Transaction;
 
   const sender = EosResources.accounts.account1;
-
+  const receiver = EosResources.accounts.account2;
   beforeEach(() => {
     const config = coins.get('eos');
     tx = new Transaction(config);
@@ -40,12 +40,15 @@ describe('Eos Transaction', () => {
         await api.getAbi('eosio.token');
         const eosBuilder = api.buildTransaction();
         if (eosBuilder) {
-          eosBuilder.with('eosio.token').as(sender.name).transfer(sender.name, 'bob', '1.0000 SYS', 'Some memo');
+          eosBuilder
+            .with('eosio.token')
+            .as(sender.name)
+            .transfer(sender.name, receiver.name, '1.0000 SYS', 'Some memo');
           await tx.build(eosBuilder);
           tx.setTransactionType(TransactionType.Send);
           const json = await tx.toJson();
           should.deepEqual(json.actions[0].data.from, sender.name);
-          should.deepEqual(json.actions[0].data.to, 'bob');
+          should.deepEqual(json.actions[0].data.to, 'david');
           should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
           should.deepEqual(json.actions[0].data.memo, 'Some memo');
         }
