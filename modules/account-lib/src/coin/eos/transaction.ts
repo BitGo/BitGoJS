@@ -1,30 +1,24 @@
 import * as EosJs from 'eosjs';
-import ser from 'eosjs/dist/eosjs-serialize';
+// import ser from 'eosjs/dist/eosjs-serialize';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
-import { TxData } from './ifaces';
-const { TextEncoder, TextDecoder } = require('util');
+import { TxJson } from './ifaces';
+import Utils from './utils';
 
 // import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
   private _eosTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
   private _signedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
-  private _serializedUnsignedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
-  private _numberOfRequiredSigners: number;
   private _sender: string;
-  private _signers: string[];
   private _blocksBehind: number;
   private _expireSeconds: number;
-  private eosApi: EosJs.Api;
   private _eosTxBuilder?: EosTxBuilder;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._numberOfRequiredSigners = 0;
-    this._signers = [];
   }
 
   /** @inheritdoc */
@@ -73,16 +67,24 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = tx;
   }
 
-  async build(eosApi: EosJs.Api, eosTxBuilder?: EosTxBuilder) {
-    this.eosApi = eosApi;
+  async build(eosTxBuilder?: EosTxBuilder): Promise<void> {
+    if (!eosTxBuilder) {
+      throw new BuildTransactionError('No builder specified');
+    }
     this._eosTxBuilder = eosTxBuilder;
-    const tx = await eosTxBuilder?.send();
-    this.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
-    this.setEosSignedTransaction(
-      (await this._eosTxBuilder?.send({
+    try {
+      const tx = await this._eosTxBuilder.send({ broadcast: false });
+      const signedTx = await this._eosTxBuilder.send({
+        broadcast: false,
         sign: true,
-      })) as EosJs.RpcInterfaces.PushTransactionArgs,
-    );
+        expireSeconds: this._expireSeconds,
+        blocksBehind: this._blocksBehind,
+      });
+      this.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
+      this.setEosSignedTransaction(signedTx as EosJs.RpcInterfaces.PushTransactionArgs);
+    } catch (error) {
+      throw new BuildTransactionError('Could not build raw trx');
+    }
   }
   /**
    * Get underlying eos transaction.
@@ -113,41 +115,18 @@ export class Transaction extends BaseTransaction {
     return this._eosTransaction;
   }
 
-  // TODO
-  // METHOD PICKED FROM EOSJS-API line 186
-  public deserialize(buffer: ser.SerialBuffer, type: string): any {
-    // transactionTypes comes from abi
-    // return this.transactionTypes.get(type).deserialize(buffer);
-  }
-
-  /**
-   * Deserialize eos tx
-   *
-   * @param {Uint8Array} transaction = tx
-   * @returns {EosJs.ApiInterfaces.Transaction} Eos tx
-   */
-  public deserializeTransaction(transaction: Uint8Array): EosJs.ApiInterfaces.Transaction {
-    const buffer = new ser.SerialBuffer({ textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
-    buffer.pushArray(transaction);
-    return this.deserialize(buffer, 'transaction');
-  }
-
   /** @inheritdoc */
-  toJson(): any {
-    // throw new NotImplementedError('toJson not implemented');
+  toJson(): TxJson {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const deserializedTransaction = this.deserializeTransaction(this._eosTransaction.serializedTransaction);
+    const deserializedTransaction = Utils.deserializeTransaction(this._eosTransaction.serializedTransaction);
     const actions = deserializedTransaction.actions;
-    const result: TxData = {
+    const result: TxJson = {
       actions: [],
     };
     if (this.type === TransactionType.Send) {
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           from: actions[0].data.from,
           to: actions[0].data.to,
@@ -158,9 +137,6 @@ export class Transaction extends BaseTransaction {
     }
     if (this.type === TransactionType.StakingActivate || this.type === TransactionType.StakingWithdraw) {
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           from: actions[0].data.from,
           receiver: actions[0].data.receiver,
@@ -173,9 +149,6 @@ export class Transaction extends BaseTransaction {
 
     if (this.type === TransactionType.BuyRamBytes) {
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           payer: actions[0].data.payer,
           receiver: actions[0].data.receiver,
@@ -186,9 +159,6 @@ export class Transaction extends BaseTransaction {
 
     if (this.type === TransactionType.WalletInitialization) {
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           creator: actions[0].data.creator,
           name: actions[0].data.name,
@@ -197,9 +167,6 @@ export class Transaction extends BaseTransaction {
         },
       });
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           payer: actions[1].data.payer,
           receiver: actions[1].data.receiver,
@@ -207,9 +174,6 @@ export class Transaction extends BaseTransaction {
         },
       });
       result.actions.push({
-        name: actions[0].name,
-        account: actions[0].account,
-        authorization: actions[0].authorization,
         data: {
           from: actions[2].data.from,
           receiver: actions[2].data.receiver,

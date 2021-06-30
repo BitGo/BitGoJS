@@ -93,7 +93,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.actions.forEach((action) => {
       this.actionData(eosTxBuilder.with(action.account).as(action.authorization), action.data);
     });
-    await this._transaction.build(eosApi, eosTxBuilder);
+    await this._transaction.build(eosTxBuilder);
     return this._transaction;
   }
 
