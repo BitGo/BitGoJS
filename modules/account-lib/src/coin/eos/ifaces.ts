@@ -22,10 +22,10 @@ interface Auth {
 }
 
 export interface Action {
-  account?: string;
-  name?: string;
-  authorization?: Authorization[];
-  data?: {
+  account: string;
+  name: string;
+  authorization: Authorization[];
+  data: {
     from?: string; // transfer, delegatebw, undelegatebw
     to?: string; // transfer
     quantity?: string; // transfer

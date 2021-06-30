@@ -1,11 +1,12 @@
 import * as EosJs from 'eosjs';
-const { TextEncoder, TextDecoder } = require('util');
 import ser from 'eosjs/dist/eosjs-serialize';
+import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TxData } from './ifaces';
+const { TextEncoder, TextDecoder } = require('util');
 
 // import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
@@ -17,6 +18,8 @@ export class Transaction extends BaseTransaction {
   private _signers: string[];
   private _blocksBehind: number;
   private _expireSeconds: number;
+  private eosApi: EosJs.Api;
+  private _eosTxBuilder?: EosTxBuilder;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -52,6 +55,7 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Set underlying eos transaction.
+   *
    * @param {EosJs.RpcInterfaces.PushTransactionArgs} tx represents a broadcast format tx
    * @returns {void}
    */
@@ -61,6 +65,7 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Set underlying signed eos transaction.
+   *
    * @param {EosJs.RpcInterfaces.PushTransactionArgs} tx represents a broadcast format signed tx
    * @returns {void}
    */
@@ -68,6 +73,17 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = tx;
   }
 
+  async build(eosApi: EosJs.Api, eosTxBuilder?: EosTxBuilder) {
+    this.eosApi = eosApi;
+    this._eosTxBuilder = eosTxBuilder;
+    const tx = await eosTxBuilder?.send();
+    this.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
+    this.setEosSignedTransaction(
+      (await this._eosTxBuilder?.send({
+        sign: true,
+      })) as EosJs.RpcInterfaces.PushTransactionArgs,
+    );
+  }
   /**
    * Get underlying eos transaction.
    *
@@ -104,9 +120,12 @@ export class Transaction extends BaseTransaction {
     // return this.transactionTypes.get(type).deserialize(buffer);
   }
 
-  // TODO
-  // METHOD PICKED FROM EOSJS-API line 219
-  /** Convert a transaction from binary. Leaves actions in hex. */
+  /**
+   * Deserialize eos tx
+   *
+   * @param {Uint8Array} transaction = tx
+   * @returns {EosJs.ApiInterfaces.Transaction} Eos tx
+   */
   public deserializeTransaction(transaction: Uint8Array): EosJs.ApiInterfaces.Transaction {
     const buffer = new ser.SerialBuffer({ textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
     buffer.pushArray(transaction);
@@ -126,6 +145,9 @@ export class Transaction extends BaseTransaction {
     };
     if (this.type === TransactionType.Send) {
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           from: actions[0].data.from,
           to: actions[0].data.to,
@@ -136,6 +158,9 @@ export class Transaction extends BaseTransaction {
     }
     if (this.type === TransactionType.StakingActivate || this.type === TransactionType.StakingWithdraw) {
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           from: actions[0].data.from,
           receiver: actions[0].data.receiver,
@@ -148,6 +173,9 @@ export class Transaction extends BaseTransaction {
 
     if (this.type === TransactionType.BuyRamBytes) {
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           payer: actions[0].data.payer,
           receiver: actions[0].data.receiver,
@@ -158,6 +186,9 @@ export class Transaction extends BaseTransaction {
 
     if (this.type === TransactionType.WalletInitialization) {
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           creator: actions[0].data.creator,
           name: actions[0].data.name,
@@ -166,6 +197,9 @@ export class Transaction extends BaseTransaction {
         },
       });
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           payer: actions[1].data.payer,
           receiver: actions[1].data.receiver,
@@ -173,6 +207,9 @@ export class Transaction extends BaseTransaction {
         },
       });
       result.actions.push({
+        name: actions[0].name,
+        account: actions[0].account,
+        authorization: actions[0].authorization,
         data: {
           from: actions[2].data.from,
           receiver: actions[2].data.receiver,

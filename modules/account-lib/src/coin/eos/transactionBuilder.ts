@@ -15,9 +15,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
 
   private _keypair: KeyPair[];
-  private eosApi: EosJs.Api;
-  private _eosTxBuilder?: EosTxBuilder;
   private _rpc: EosJs.JsonRpc;
+  private actions: Action[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -27,10 +26,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   protected abstract actionData(action: EosJs.ApiInterfaces.ActionSerializerType, data: any): any;
 
-  protected action(account: string, actor: string, data: any): this {
-    if (this._eosTxBuilder) {
-      this.actionData(this._eosTxBuilder.with(account).as(actor), data);
-    }
+  protected abstract actionName(): string;
+
+  protected action(account: string, actors: string[], data: any): this {
+    const auth = actors.map((a) => {
+      return {
+        actor: a,
+        permission: 'active',
+      };
+    });
+    const action: Action = {
+      account: account,
+      authorization: auth,
+      data: data,
+      name: this.actionName(),
+    };
+    this.actions.push(action);
     return this;
   }
 
@@ -41,7 +52,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  private initEosApi(): void {
+  /**
+   * Initialize Eos API
+   *
+   * @returns {EosJs.Api} initialized Api
+   */
+  private getEosApi(): EosJs.Api {
     if (this._keypair.length === 0) {
       throw new BuildTransactionError('Keypair cannot be less than zero');
     }
@@ -51,7 +67,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       return result;
     }, <string[]>[]);
     const signatureProvider = new JsSignatureProvider(requiredKeys);
-    this.eosApi = new EosJs.Api({
+    const eosApi = new EosJs.Api({
       rpc: this._rpc,
       signatureProvider: signatureProvider,
       abiProvider: new OfflineAbiProvider(),
@@ -59,7 +75,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       textDecoder: new TextDecoder(),
       textEncoder: new TextEncoder(),
     });
-    this._eosTxBuilder = new EosTxBuilder(this.eosApi);
+    return eosApi;
   }
 
   mocknet(): void {
@@ -72,13 +88,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    const tx = await this._eosTxBuilder?.send();
-    this._transaction.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
-    this._transaction.setEosSignedTransaction(
-      (await this._eosTxBuilder?.send({
-        sign: true,
-      })) as EosJs.RpcInterfaces.PushTransactionArgs,
-    );
+    const eosApi = this.getEosApi();
+    const eosTxBuilder = new EosTxBuilder(eosApi);
+    this.actions.forEach((action) => {
+      this.actionData(eosTxBuilder.with(action.account).as(action.authorization), action.data);
+    });
+    await this._transaction.build(eosApi, eosTxBuilder);
     return this._transaction;
   }
 
