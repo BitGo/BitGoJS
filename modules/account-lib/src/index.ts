@@ -70,6 +70,8 @@ const coinBuilderMap = {
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,
   talgo: Algo.TransactionBuilderFactory,
+  eos: Eos.TransactionBuilderFactory,
+  teos: Eos.TransactionBuilderFactory,
 };
 
 /**

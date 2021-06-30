@@ -1,15 +1,24 @@
 import * as EosJs from 'eosjs';
-import ser from 'eosjs/dist/eosjs-serialize';
+import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
+import { OfflineAbiProvider } from './OfflineAbiProvider';
 const { TextEncoder, TextDecoder } = require('util');
-const transactionAbi = require('eosjs/src/transaction.abi.json');
+
+const initApi = () => {
+  return new EosJs.Api({
+    rpc: new EosJs.JsonRpc(''),
+    signatureProvider: new JsSignatureProvider(['5JaDD9yfdXTtVnCgurdBMd7RNNtVHuiCfFoSN3u3FccpwRmV6hE']),
+    abiProvider: new OfflineAbiProvider(),
+    chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+    textDecoder: new TextDecoder(),
+    textEncoder: new TextEncoder(),
+  });
+};
 export class Utils implements BaseUtils {
-  deserializeTransaction(rawTx: Uint8Array): EosJs.ApiInterfaces.Transaction {
-    const transactionTypes = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
-    const buffer = new ser.SerialBuffer({ textEncoder: new TextEncoder(), textDecoder: new TextDecoder() });
-    buffer.pushArray(rawTx);
-    return transactionTypes.get('transaction')?.deserialize(buffer);
+  async deserializeTransaction(rawTx: Uint8Array): Promise<EosJs.ApiInterfaces.Transaction> {
+    const api = initApi();
+    return api.deserializeTransactionWithActions(rawTx);
   }
   public static ADDRESS_LENGTH = 12;
 

@@ -1,5 +1,5 @@
 import * as EosJs from 'eosjs';
-// import ser from 'eosjs/dist/eosjs-serialize';
+import * as ecc from 'eosjs-ecc';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
@@ -7,8 +7,6 @@ import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/erro
 import { BaseKey } from '../baseCoin/iface';
 import { TxJson } from './ifaces';
 import Utils from './utils';
-
-// import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
   private _eosTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
   private _signedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
@@ -24,6 +22,14 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
+  }
+
+  sign(rawTx: string, key: string): void {
+    if (!this._signedTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    const signature = ecc.Signature.sign(rawTx, key).toString();
+    this._signedTransaction?.signatures.push(signature);
   }
 
   sender(address: string): void {
@@ -122,11 +128,11 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): TxJson {
+  async toJson(): Promise<TxJson> {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const deserializedTransaction = Utils.deserializeTransaction(this._eosTransaction.serializedTransaction);
+    const deserializedTransaction = await Utils.deserializeTransaction(this._eosTransaction.serializedTransaction);
     const actions = deserializedTransaction.actions;
     const result: TxJson = {
       actions: [],
