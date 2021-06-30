@@ -11,10 +11,13 @@ export class Utils implements BaseUtils {
     buffer.pushArray(rawTx);
     return transactionTypes.get('transaction')?.deserialize(buffer);
   }
+  public static ADDRESS_LENGTH = 12;
 
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
+    // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
+    return /^[a-z1-5.]*$/.test(address) || address.length > Utils.ADDRESS_LENGTH;
   }
 
   /** @inheritdoc */
