@@ -3,7 +3,7 @@ import * as ecc from 'eosjs-ecc';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
-import * as fs from 'fs';
+import { EosResponses } from './resources/eosResponses';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
@@ -112,33 +112,24 @@ describe('EOS:', function() {
     const rootAddress = 'i1skda3kso43';
     const destinationAddress = 'ks13kdh245ls';
 
-    // load mock responses from json files
-    const rootResponse = JSON.parse(
-      fs.readFileSync(`${__dirname}/resources/eos/getAccountResponseSuccess1.json`).toString());
-    const desResponse = JSON.parse(
-      fs.readFileSync(`${__dirname}/resources/eos/getAccountResponseSuccess2.json`).toString());
-    const getInfoResponse = JSON.parse(
-      fs.readFileSync(`${__dirname}/resources/eos/getInfoResponseSuccess1.json`).toString());
-    const getBlockResponse = JSON.parse(
-      fs.readFileSync(`${__dirname}/resources/eos/getBlockResponseSuccess1.json`).toString());
-
     // mock responses to the block chain
-    const callBack = sinon.createSandbox().stub(Eos.prototype, <any>'getDataFromNode');
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, <any>'getDataFromNode');
     callBack.withArgs({
       endpoint: '/v1/chain/get_account',
       payload: { account_name: rootAddress },
-    }).resolves(rootResponse);
+    }).resolves(EosResponses.getAccountResponseSuccess1);
     callBack.withArgs({
       endpoint: '/v1/chain/get_account',
       payload: { account_name: destinationAddress },
-    }).resolves(desResponse);
+    }).resolves(EosResponses.getAccountResponseSuccess2);
     callBack.withArgs({
       endpoint: '/v1/chain/get_info',
-    }).resolves(getInfoResponse);
+    }).resolves(EosResponses.getInfoResponseSuccess1);
     callBack.withArgs({
       endpoint: '/v1/chain/get_block',
       payload: { block_num_or_id: 191839472 },
-    }).resolves(getBlockResponse);
+    }).resolves(EosResponses.getBlockResponseSuccess1);
 
     // can create unsigned recovery transaction
     const unsignedRecoveryTransaction = await basecoin.recover({
@@ -165,6 +156,8 @@ describe('EOS:', function() {
       .equal('26c1e628f854afd6d9bea0771c69564ad4ec72410c0dcd063e77022db60f4d8d');
     unsignedRecoveryTransaction2.recoveryAmount.should.equal('5.0000');
     unsignedRecoveryTransaction2.transaction.signatures.length.should.equal(0);
+
+    sandBox.restore();
   });
 
   describe('Transactions:', function() {
