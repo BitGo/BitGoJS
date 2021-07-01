@@ -139,8 +139,6 @@ describe('EOS:', function() {
       recoveryDestination: destinationAddress,
       rootAddress,
     });
-    unsignedRecoveryTransaction.txid.should
-      .equal('0b380917a7214601285a0f8651f8f64fb9a139a0208c110016bd5d0ded318395');
     unsignedRecoveryTransaction.recoveryAmount.should.equal('5.0000');
     unsignedRecoveryTransaction.transaction.signatures.length.should.equal(0);
 
@@ -152,8 +150,6 @@ describe('EOS:', function() {
       recoveryDestination: `${destinationAddress}?memoId=0`,
       rootAddress: `${rootAddress}?memoId=0`,
     });
-    unsignedRecoveryTransaction2.txid.should
-      .equal('26c1e628f854afd6d9bea0771c69564ad4ec72410c0dcd063e77022db60f4d8d');
     unsignedRecoveryTransaction2.recoveryAmount.should.equal('5.0000');
     unsignedRecoveryTransaction2.transaction.signatures.length.should.equal(0);
 
