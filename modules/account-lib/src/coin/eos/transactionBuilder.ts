@@ -4,9 +4,10 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import * as EosJs from 'eosjs';
+import fetch from 'node-fetch';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { NotImplementedError, BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { AddressValidationError } from './errors';
 import utils from './utils';
@@ -14,6 +15,7 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
 import { OfflineAbiProvider } from './OfflineAbiProvider';
+const { TextEncoder, TextDecoder } = require('util');
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -26,14 +28,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._keypair = [];
+    this.actions = [];
     this.mocknet();
+    this._transaction = new Transaction(_coinConfig);
   }
 
   protected abstract actionData(action: EosJs.ApiInterfaces.ActionSerializerType, data: any): any;
 
   protected abstract actionName(): string;
 
-  protected action(account: string, actors: string[], data: any): this {
+  action(account: string, actors: string[], data: any): this {
     const auth = actors.map((a) => {
       return {
         actor: a,
@@ -54,6 +58,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected signImplementation({ key }: BaseKey): Transaction {
     const keypair = new KeyPair({ prv: key });
     this._keypair.push(keypair);
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: any): Transaction {
+    utils.deserializeTransaction(rawTransaction).then((tx) => {
+      this.actions = tx.actions;
+    });
     return this._transaction;
   }
 
@@ -104,19 +116,31 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    const eosApi = this.getEosApi();
-    const eosTxBuilder = new EosTxBuilder(eosApi);
-    this.actions.forEach((action) => {
-      this.actionData(eosTxBuilder.with(action.account).as(action.authorization), action.data);
-    });
-    await this._transaction.build(eosTxBuilder);
+    try {
+      const eosApi = this.getEosApi();
+      await eosApi.getAbi('eosio.token');
+      const eosTxBuilder = new EosTxBuilder(eosApi);
+      this.actions.forEach((action) => {
+        this.actionData(eosTxBuilder.with(action.account).as(action.authorization), action.data);
+      });
+      await this._transaction.build(eosTxBuilder);
+    } catch (e) {
+      console.error(e);
+    }
+
     return this._transaction;
   }
 
   // region Getters and Setters
+
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
   }
   // endregion
 
@@ -137,7 +161,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+    try {
+      utils.deserializeTransaction(rawTransaction);
+    } catch (e) {
+      throw new ParseTransactionError('Invalid transaction');
+    }
   }
 
   /** @inheritdoc */

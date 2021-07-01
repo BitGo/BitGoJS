@@ -5,7 +5,7 @@ import { NotImplementedError } from '../baseCoin/errors';
 import { OfflineAbiProvider } from './OfflineAbiProvider';
 const { TextEncoder, TextDecoder } = require('util');
 
-const initApi = () => {
+export const initApi = (): EosJs.Api => {
   return new EosJs.Api({
     rpc: new EosJs.JsonRpc(''),
     signatureProvider: new JsSignatureProvider(['5JaDD9yfdXTtVnCgurdBMd7RNNtVHuiCfFoSN3u3FccpwRmV6hE']),
@@ -18,7 +18,8 @@ const initApi = () => {
 export class Utils implements BaseUtils {
   async deserializeTransaction(rawTx: Uint8Array): Promise<EosJs.ApiInterfaces.Transaction> {
     const api = initApi();
-    return api.deserializeTransactionWithActions(rawTx);
+    const tx = await api.deserializeTransactionWithActions(rawTx);
+    return tx;
   }
   public static ADDRESS_LENGTH = 12;
 
@@ -36,12 +37,12 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPrivateKey(key: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return true;
   }
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return true;
   }
 
   /** @inheritdoc */

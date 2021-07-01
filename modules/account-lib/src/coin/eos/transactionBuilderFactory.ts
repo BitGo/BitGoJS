@@ -34,9 +34,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @returns {TransactionBuilder} the builder initialized
    */
   private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    if (tx) {
-      builder.initBuilder(tx);
-    }
+    // if (tx) {
+    //   builder.initBuilder(tx);
+    // }
     return builder;
   }
 }

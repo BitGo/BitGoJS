@@ -1,15 +1,13 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import fetch from 'node-fetch';
-import { Api, JsonRpc } from 'eosjs';
-import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import { Transaction } from '../../../../src/coin/eos/transaction';
 import * as EosResources from '../../../resources/eos';
 import { TransactionType } from '../../../../src/coin/baseCoin';
+import { initApi } from '../../../../src/coin/eos/utils';
 
-const signatureProvider = new JsSignatureProvider([EosResources.accounts.account1.privateKey]);
-const rpc = new JsonRpc('http://127.0.0.1:8888', { fetch });
-const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
+// const signatureProvider = new JsSignatureProvider([EosResources.accounts.account1.privateKey]);
+// const rpc = new JsonRpc('http://127.0.0.1:8888', { fetch });
+const api = initApi();
 
 describe('Eos Transaction', () => {
   let tx: Transaction;

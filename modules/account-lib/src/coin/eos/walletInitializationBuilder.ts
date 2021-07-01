@@ -6,6 +6,9 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Action } from './ifaces';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
+  protected actionName(): string {
+    throw new Error('Method not implemented.');
+  }
   protected actionData(action: Action, data: any): Action {
     throw new NotImplementedError('Method not implemented.');
   }

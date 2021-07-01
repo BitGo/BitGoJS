@@ -16,17 +16,27 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
-    throw new NotImplementedError('method not implemented');
+    throw new NotImplementedError('error: method not implemented');
   }
 
   protected actionData(
     action: EosJs.ApiInterfaces.ActionSerializerType,
     data: any,
   ): EosJs.ApiInterfaces.ActionSerializerType {
-    return action.transfer(data);
+    return action.transfer(data.from, data.to, data.quantity, data.memo);
   }
 
   protected actionName(): string {
     return 'transfer';
+  }
+
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: any): void {
+    super.validateRawTransaction(rawTransaction);
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction?: Transaction): void {
+    super.validateTransaction(transaction);
   }
 }

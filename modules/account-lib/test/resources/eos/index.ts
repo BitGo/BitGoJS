@@ -26,17 +26,15 @@ export const accounts = {
     privateKey: '5Jhpg7jQuYK2cBPEHuRaB8v5EMfxY1YeKHgHjPoPgdqGt8BQqxC',
     publicKey: 'EOS5QCH3oSK2yJVDViSkDAsSAAM4c61VN2bgqwF824Nqc6FgED5Hx',
   },
+};
 
-  transferTransaction: {
-    signatures: [
-      'SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d',
-    ],
-    serializedTransaction: new Uint8Array(
-      Buffer.from(
-        '4765dc6075495cb31e51000000000100a6823403ea3055000000572d3ccdcd010000000080d0553400000000a8ed32322a0000000080d055340000000080e4b6491027000000000000045359530000000009536f6d65206d656d6f00',
-        'hex',
-      ),
+export const tranferTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '4765dc6075495cb31e51000000000100a6823403ea3055000000572d3ccdcd010000000080d0553400000000a8ed32322a0000000080d055340000000080e4b6491027000000000000045359530000000009536f6d65206d656d6f00',
+      'hex',
     ),
-    serializedContextFreeData: null,
-  },
+  ),
+  serializedContextFreeData: null,
 };
