@@ -565,6 +565,7 @@ export enum UnderlyingAsset {
   WABI = 'wabi',
   WBTC = 'wbtc',
   WCFG = 'wcfg',
+  WEC = 'wec',
   WET = 'wet',
   WETH = 'weth',
   WHALE = 'whale',
