@@ -3,10 +3,11 @@ import * as ecc from 'eosjs-ecc';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TxJson } from './ifaces';
 import Utils from './utils';
+import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
   private _eosTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
   private _signedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
@@ -14,6 +15,7 @@ export class Transaction extends BaseTransaction {
   private _blocksBehind: number;
   private _expireSeconds: number;
   private _eosTxBuilder?: EosTxBuilder;
+  private _chainId: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -24,12 +26,18 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  sign(rawTx: string, key: string): void {
-    if (!this._signedTransaction) {
+  sign(keys: KeyPair[]): void {
+    if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signature = ecc.Signature.sign(rawTx, key).toString();
-    this._signedTransaction?.signatures.push(signature);
+    if (!this._signedTransaction) {
+      this._signedTransaction = this._eosTransaction;
+    }
+    const txHex = Buffer.from(this._signedTransaction.serializedTransaction);
+    keys.forEach((key) => {
+      const signature = ecc.Signature.sign(txHex, key.getKeys().prv).toString();
+      this._signedTransaction?.signatures.push(signature);
+    });
   }
 
   sender(address: string): void {
@@ -64,41 +72,6 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Set underlying signed eos transaction.
-   *
-   * @param {EosJs.RpcInterfaces.PushTransactionArgs} tx represents a broadcast format signed tx
-   * @returns {void}
-   */
-  setEosSignedTransaction(tx: EosJs.RpcInterfaces.PushTransactionArgs): void {
-    this._signedTransaction = tx;
-  }
-
-  async build(eosTxBuilder?: EosTxBuilder): Promise<this> {
-    if (!eosTxBuilder) {
-      throw new BuildTransactionError('No builder specified');
-    }
-    this._eosTxBuilder = eosTxBuilder;
-    try {
-      const tx = await this._eosTxBuilder.send({
-        broadcast: false,
-        sign: false,
-        expireSeconds: this._expireSeconds,
-        blocksBehind: this._blocksBehind,
-      });
-      const signedTx = await this._eosTxBuilder.send({
-        broadcast: false,
-        sign: true,
-        expireSeconds: this._expireSeconds,
-        blocksBehind: this._blocksBehind,
-      });
-      this.setEosTransaction(tx as EosJs.RpcInterfaces.PushTransactionArgs);
-      this.setEosSignedTransaction(signedTx as EosJs.RpcInterfaces.PushTransactionArgs);
-    } catch (error) {
-      throw new BuildTransactionError('Could not build raw trx');
-    }
-    return this;
-  }
-  /**
    * Get underlying eos transaction.
    *
    * @returns {EosJs.RpcInterfaces.PushTransactionArgs}
@@ -114,6 +87,11 @@ export class Transaction extends BaseTransaction {
    */
   getEosSignedTransaction(): EosJs.RpcInterfaces.PushTransactionArgs | undefined {
     return this._signedTransaction;
+  }
+
+  setChainId(id: string): this {
+    this._chainId = id;
+    return this;
   }
 
   /** @inheritdoc */
@@ -132,7 +110,10 @@ export class Transaction extends BaseTransaction {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const deserializedTransaction = await Utils.deserializeTransaction(this._eosTransaction.serializedTransaction);
+    const deserializedTransaction = await Utils.deserializeTransaction(
+      this._eosTransaction.serializedTransaction,
+      this._chainId,
+    );
     const actions = deserializedTransaction.actions;
     const result: TxJson = {
       actions: [],

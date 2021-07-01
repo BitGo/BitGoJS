@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { NotImplementedError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Action } from './ifaces';
@@ -13,6 +14,7 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this._transaction.setTransactionType(TransactionType.Send);
     return super.buildImplementation();
   }
 
@@ -73,7 +75,7 @@ class TransferActionBuilder {
     return this;
   }
 
-  quantitiy(qty: string): this {
+  quantity(qty: string): this {
     this._quantity = qty;
     return this;
   }

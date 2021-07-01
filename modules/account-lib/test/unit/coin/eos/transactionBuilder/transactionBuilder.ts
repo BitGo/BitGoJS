@@ -25,7 +25,7 @@ describe('Eos Transfer builder', () => {
         .actionBuilder('eosio.token', [sender.name])
         .from(sender.name)
         .to(receiver.name)
-        .quantitiy('1.0000 SYS')
+        .quantity('1.0000 SYS')
         .memo('Some memo')
         .buildAction();
       const tx = await builder.build();

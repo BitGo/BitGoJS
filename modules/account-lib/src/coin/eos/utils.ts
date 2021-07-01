@@ -16,8 +16,8 @@ export const initApi = (chainId: string): EosJs.Api => {
   });
 };
 export class Utils implements BaseUtils {
-  async deserializeTransaction(rawTx: Uint8Array): Promise<EosJs.ApiInterfaces.Transaction> {
-    const api = initApi();
+  async deserializeTransaction(rawTx: Uint8Array, chainId: string): Promise<EosJs.ApiInterfaces.Transaction> {
+    const api = initApi(chainId);
     const tx = await api.deserializeTransactionWithActions(rawTx);
     return tx;
   }

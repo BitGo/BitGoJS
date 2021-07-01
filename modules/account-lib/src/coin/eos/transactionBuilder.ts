@@ -15,7 +15,7 @@ import { Action } from './ifaces';
 import { Utils } from '.';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
+  protected _transaction: Transaction;
 
   private _keypair: KeyPair[];
   private _chainId: string;
@@ -69,7 +69,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
-    utils.deserializeTransaction(rawTransaction).then((tx) => {
+    utils.deserializeTransaction(rawTransaction, this._chainId).then((tx) => {
       this.actions = tx.actions;
     });
     return this._transaction;
@@ -120,8 +120,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           sign: false,
         },
       );
-      this._transaction.setEosTransaction(result);
-      await this._transaction.sign(this._keypair);
+      this._transaction.setEosTransaction(result as EosJs.RpcInterfaces.PushTransactionArgs);
+      this._transaction.setChainId(this._chainId);
+      this._transaction.sign(this._keypair);
     } catch (e) {
       throw new BuildTransactionError(`Could not build tx`);
     }
@@ -160,7 +161,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
     try {
-      utils.deserializeTransaction(rawTransaction);
+      utils.deserializeTransaction(rawTransaction, this._chainId);
     } catch (e) {
       throw new ParseTransactionError('Invalid transaction');
     }
