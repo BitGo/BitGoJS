@@ -682,7 +682,6 @@ export class Eos extends BaseCoin {
       if (!self.isValidAddress(recoveryDestination)) {
         throw new Error('Invalid destination address!');
       }
-
       return keys;
     }).call(this);
   }
@@ -837,7 +836,8 @@ export class Eos extends BaseCoin {
 
       const keys = (yield self.initiateRecovery(params)) as any;
 
-      const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
+      const rootAddressDetails = self.getAddressDetails(params.rootAddress);
+      const account = (yield self.getAccountFromNode({ address: rootAddressDetails.address })) as any;
 
       if (!account.core_liquid_balance) {
         throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
@@ -879,7 +879,7 @@ export class Eos extends BaseCoin {
 
       const destinationAddress = params.recoveryDestination;
       const destinationAddressDetails = self.getAddressDetails(destinationAddress);
-      const destinationAccount = yield self.getAccountFromNode({ address: destinationAddress });
+      const destinationAccount = yield self.getAccountFromNode({ address: destinationAddressDetails.address });
       if (!destinationAccount) {
         throw new Error('Destination account not found');
       }
@@ -889,7 +889,7 @@ export class Eos extends BaseCoin {
 
       const transferAction = self.getTransferAction({
         recipient: destinationAddressDetails.address,
-        sender: params.rootAddress,
+        sender: rootAddressDetails.address,
         amount: new BigNumber(recoveryAmount),
         memo: destinationAddressDetails.memoId,
       });

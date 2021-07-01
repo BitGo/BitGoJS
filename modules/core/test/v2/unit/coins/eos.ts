@@ -1,6 +1,9 @@
 import * as should from 'should';
 import * as ecc from 'eosjs-ecc';
 import * as bitcoin from '@bitgo/utxo-lib';
+import * as sinon from 'sinon';
+import { Eos } from '../../../../src/v2/coins';
+import { EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
@@ -101,6 +104,56 @@ describe('EOS:', function() {
       keyPair.pub.should.equal('xpub661MyMwAqRbcF2SUqUMiqxWGwaVX6sH4okTtX8jxJ1A14wfL8W7jZEoNE537JqSESXFpTcXCZahPz7RKQLpAEGsVp233dc5CffLSecpU13X');
       keyPair.prv.should.equal('xprv9s21ZrQH143K2YN1jSpiUpZYPYf2hQZDSXYHikLLjfd2C9LBaxoV1SUtNnZGnXeyJ6uFWMbQTfjXqVfgNqRBw5yyaCtBK1AM8PF3XZtKjQp');
     });
+  });
+
+  it('should create unsigned recovery transaction without Bitgo', async function() {
+    const userKey = 'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
+    const backupKey = 'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
+    const rootAddress = 'i1skda3kso43';
+    const destinationAddress = 'ks13kdh245ls';
+
+    // mock responses to the block chain
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, <any>'getDataFromNode');
+    callBack.withArgs({
+      endpoint: '/v1/chain/get_account',
+      payload: { account_name: rootAddress },
+    }).resolves(EosResponses.getAccountResponseSuccess1);
+    callBack.withArgs({
+      endpoint: '/v1/chain/get_account',
+      payload: { account_name: destinationAddress },
+    }).resolves(EosResponses.getAccountResponseSuccess2);
+    callBack.withArgs({
+      endpoint: '/v1/chain/get_info',
+    }).resolves(EosResponses.getInfoResponseSuccess1);
+    callBack.withArgs({
+      endpoint: '/v1/chain/get_block',
+      payload: { block_num_or_id: 191839472 },
+    }).resolves(EosResponses.getBlockResponseSuccess1);
+
+    // can create unsigned recovery transaction
+    const unsignedRecoveryTransaction = await basecoin.recover({
+      userKey,
+      backupKey,
+      bitgoKey: 'key',
+      recoveryDestination: destinationAddress,
+      rootAddress,
+    });
+    unsignedRecoveryTransaction.recoveryAmount.should.equal('5.0000');
+    unsignedRecoveryTransaction.transaction.signatures.length.should.equal(0);
+
+    // destination address and root address can include memoId
+    const unsignedRecoveryTransaction2 = await basecoin.recover({
+      userKey,
+      backupKey,
+      bitgoKey: 'key',
+      recoveryDestination: `${destinationAddress}?memoId=0`,
+      rootAddress: `${rootAddress}?memoId=0`,
+    });
+    unsignedRecoveryTransaction2.recoveryAmount.should.equal('5.0000');
+    unsignedRecoveryTransaction2.transaction.signatures.length.should.equal(0);
+
+    sandBox.restore();
   });
 
   describe('Transactions:', function() {
