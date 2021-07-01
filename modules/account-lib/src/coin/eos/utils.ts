@@ -1,16 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as EosJs from 'eosjs';
-import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
+
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { OfflineAbiProvider } from './OfflineAbiProvider';
 const { TextEncoder, TextDecoder } = require('util');
 
-export const initApi = (): EosJs.Api => {
+export const initApi = (chainId: string): EosJs.Api => {
+  // @ts-ignore
   return new EosJs.Api({
-    rpc: new EosJs.JsonRpc(''),
-    signatureProvider: new JsSignatureProvider(['5JaDD9yfdXTtVnCgurdBMd7RNNtVHuiCfFoSN3u3FccpwRmV6hE']),
     abiProvider: new OfflineAbiProvider(),
-    chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+    chainId: chainId,
     textDecoder: new TextDecoder(),
     textEncoder: new TextEncoder(),
   });

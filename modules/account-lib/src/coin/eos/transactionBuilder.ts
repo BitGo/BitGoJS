@@ -2,9 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import * as EosJs from 'eosjs';
-import fetch from 'node-fetch';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { BuildTransactionError, ParseTransactionError } from '../baseCoin/errors';
@@ -14,44 +12,52 @@ import utils from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
-import { OfflineAbiProvider } from './OfflineAbiProvider';
-const { TextEncoder, TextDecoder } = require('util');
+import { Utils } from '.';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
 
   private _keypair: KeyPair[];
-  private _rpc: EosJs.JsonRpc;
   private _chainId: string;
   private actions: Action[];
+  private _expiration: string;
+  private _ref_block_num: number;
+  private _ref_block_prefix: number;
+  private _account: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._keypair = [];
     this.actions = [];
-    this.mocknet();
+    this.testnet();
     this._transaction = new Transaction(_coinConfig);
   }
 
-  protected abstract actionData(action: EosJs.ApiInterfaces.ActionSerializerType, data: any): any;
-
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
   protected abstract actionName(): string;
 
-  action(account: string, actors: string[], data: any): this {
-    const auth = actors.map((a) => {
+  protected abstract createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action;
+
+  action(account: string, actors: string[]): Action {
+    this._account = account;
+    const auth = actors.map((actor) => {
       return {
-        actor: a,
+        actor: actor,
         permission: 'active',
       };
     });
     const action: Action = {
       account: account,
       authorization: auth,
-      data: data,
+      data: {},
       name: this.actionName(),
     };
     this.actions.push(action);
-    return this;
+    return action;
   }
 
   /** @inheritdoc */
@@ -69,63 +75,55 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  /**
-   * Initialize Eos API
-   *
-   * @returns {EosJs.Api} initialized Api
-   */
-  private getEosApi(): EosJs.Api {
-    if (this._keypair.length === 0) {
-      throw new BuildTransactionError('Keypair cannot be less than zero');
-    }
-    const requiredKeys = this._keypair.reduce((result, kp) => {
-      const prv = kp.getKeys().prv;
-      if (prv) result.push(prv);
-      return result;
-    }, <string[]>[]);
-    const signatureProvider = new JsSignatureProvider(requiredKeys);
-    const eosApi = new EosJs.Api({
-      rpc: this._rpc,
-      signatureProvider: signatureProvider,
-      abiProvider: new OfflineAbiProvider(),
-      chainId: this._chainId,
-      textDecoder: new TextDecoder(),
-      textEncoder: new TextEncoder(),
-    });
-    return eosApi;
-  }
-
-  mocknet(): this {
-    this._rpc = new EosJs.JsonRpc('http://127.0.0.1:8888', { fetch });
-    this._chainId = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
-    return this;
-  }
-
   testnet(): this {
-    this._rpc = new EosJs.JsonRpc('https://api.testnet.eos.io', { fetch });
-    // TODO: update chain id of testnet
-    this._chainId = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
+    this._chainId = '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840';
     return this;
   }
 
   mainnet(): this {
-    this._rpc = new EosJs.JsonRpc('https://api.eosnewyork.io', { fetch });
     this._chainId = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
+    return this;
+  }
+
+  expiration(expiration: string): this {
+    this._expiration = expiration;
+    return this;
+  }
+
+  refBlockNum(ref_block_num: number): this {
+    this.validateValue(new BigNumber(ref_block_num));
+    this._ref_block_num = ref_block_num;
+    return this;
+  }
+
+  refBlockPrefix(ref_block_prefix: number): this {
+    this.validateValue(new BigNumber(ref_block_prefix));
+    this._ref_block_prefix = ref_block_prefix;
     return this;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     try {
-      const eosApi = this.getEosApi();
-      await eosApi.getAbi('eosio.token');
+      const eosApi = Utils.initApi(this._chainId);
+      await eosApi.getAbi(this._account);
       const eosTxBuilder = new EosTxBuilder(eosApi);
-      this.actions.forEach((action) => {
-        this.actionData(eosTxBuilder.with(action.account).as(action.authorization), action.data);
-      });
-      await this._transaction.build(eosTxBuilder);
+      const result = await eosApi.transact(
+        {
+          expiration: this._expiration,
+          ref_block_num: this._ref_block_num,
+          ref_block_prefix: this._ref_block_prefix,
+          actions: this.actions.map((action) => this.createAction(eosTxBuilder, action)),
+        },
+        {
+          broadcast: false,
+          sign: false,
+        },
+      );
+      this._transaction.setEosTransaction(result);
+      await this._transaction.sign(this._keypair);
     } catch (e) {
-      console.error(e);
+      throw new BuildTransactionError(`Could not build tx`);
     }
 
     return this._transaction;

@@ -15,13 +15,19 @@ describe('Eos Transfer builder', () => {
 
   describe('build transaction', () => {
     it('should build a transaction', async () => {
-      builder.testnet().sign({ key: sender.privateKey });
-      builder.action('eosio.token', [sender.name], {
-        from: sender.name,
-        to: receiver.name,
-        quantity: '1.0000 SYS',
-        memo: 'Some memo',
-      });
+      builder
+        .testnet()
+        .expiration('2019-09-19T16:39:15')
+        .refBlockNum(100)
+        .refBlockPrefix(100)
+        .sign({ key: sender.privateKey });
+      builder
+        .actionBuilder('eosio.token', [sender.name])
+        .from(sender.name)
+        .to(receiver.name)
+        .quantitiy('1.0000 SYS')
+        .memo('Some memo')
+        .buildAction();
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);

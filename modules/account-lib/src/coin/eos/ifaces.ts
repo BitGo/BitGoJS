@@ -25,7 +25,7 @@ export interface ActionData {
   from?: string; // transfer, delegatebw, undelegatebw
   to?: string; // transfer
   quantity?: string; // transfer
-  memo?: Uint8Array; // transfer
+  memo?: string; // transfer
   bytes?: number; // buyrambytes
   transfer?: boolean; // delegatebw, undelegatebw
   stake_net_quantity?: string; // delegatebw, undelegatebw
