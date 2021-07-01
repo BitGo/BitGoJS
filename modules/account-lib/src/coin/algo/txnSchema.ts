@@ -67,4 +67,5 @@ export const AssetTransferTxnSchema = joi.object({
   tokenId: joi.number().required(),
   assetAmount: joi.custom((val) => typeof val === 'number' || typeof val === 'bigint').required(),
   receiver: addressSchema.required(),
+  closeRemainderTo: joi.string().optional(),
 });

@@ -102,7 +102,7 @@ export class Utils implements BaseUtils {
    * @param {Uint8Array} txn The encoded unsigned transaction.
    * @returns {boolean} true if the transaction can be decoded, otherwise false
    */
-   protected isDecodableUnsignedAlgoTxn(txn: Uint8Array): boolean {
+  protected isDecodableUnsignedAlgoTxn(txn: Uint8Array): boolean {
     try {
       algosdk.decodeUnsignedTransaction(txn);
       return true;
@@ -125,7 +125,6 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
-  
 
   /**
    * Decodes a signed or unsigned algo transaction.
@@ -133,7 +132,7 @@ export class Utils implements BaseUtils {
    * @param {Uint8Array | string} txnBytes The encoded unsigned or signed txn.
    * @returns {EncodedTx} The decoded transaction.
    */
-    decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
+  decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
     const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {

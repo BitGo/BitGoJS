@@ -10,6 +10,7 @@ import Utils from './utils';
 
 export class AssetTransferBuilder extends TransferBuilder {
   private _tokenId: number;
+  protected _closeRemainderTo?: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -61,7 +62,7 @@ export class AssetTransferBuilder extends TransferBuilder {
     return algosdk.makeAssetTransferTxnWithSuggestedParams(
       this._sender,
       this._to,
-      undefined,
+      this._closeRemainderTo,
       undefined,
       this._amount,
       this._note,
@@ -112,10 +113,18 @@ export class AssetTransferBuilder extends TransferBuilder {
       tokenId,
       assetAmount,
       receiver,
+      closeRemainderTo: this._closeRemainderTo,
     });
 
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
+  }
+
+  closeRemainderTo(closeRemainderTo: BaseAddress): this {
+    this.validateAddress(closeRemainderTo);
+    this._closeRemainderTo = closeRemainderTo.address;
+
+    return this;
   }
 }
