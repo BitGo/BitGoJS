@@ -3,7 +3,7 @@ import * as ecc from 'eosjs-ecc';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
-import { EosResponses } from './resources/eosResponses';
+import { EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 

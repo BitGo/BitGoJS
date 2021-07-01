@@ -187,9 +187,9 @@ const getInfoResponseSuccess1 = {
     head_block_num: 191839472,
     last_irreversible_block_num: 191839146,
     last_irreversible_block_id:
-    '0b6f3baa99cce33f4f8a9fe4d613e903eb7d77d58ca639201d71d7a006eb3f9f',
+            '0b6f3baa99cce33f4f8a9fe4d613e903eb7d77d58ca639201d71d7a006eb3f9f',
     head_block_id:
-    '0b6f3cf0baa1983af4a9e53c4864d0d7d83aa1f53c2f772228c51dfd9cd3450d',
+            '0b6f3cf0baa1983af4a9e53c4864d0d7d83aa1f53c2f772228c51dfd9cd3450d',
     head_block_time: '2021-06-29T18:53:00.500',
     head_block_producer: 'eoseouldotio',
     virtual_block_cpu_limit: 200000,
@@ -199,7 +199,7 @@ const getInfoResponseSuccess1 = {
     server_version_string: 'v2.0.12',
     fork_db_head_block_num: 191839472,
     fork_db_head_block_id:
-    '0b6f3cf0baa1983af4a9e53c4864d0d7d83aa1f53c2f772228c51dfd9cd3450d',
+            '0b6f3cf0baa1983af4a9e53c4864d0d7d83aa1f53c2f772228c51dfd9cd3450d',
     server_full_version_string: 'v2.0.12-32a47e396a13b948263b1dc9762a6e2292a2c2ef',
   },
 };
@@ -209,4 +209,4 @@ export const EosResponses = {
   getAccountResponseSuccess2,
   getInfoResponseSuccess1,
   getBlockResponseSuccess1,
-};
+} as const;
