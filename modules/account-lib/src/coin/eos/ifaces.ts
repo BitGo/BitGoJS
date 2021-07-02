@@ -83,7 +83,7 @@ export interface Action {
   account: string;
   name: string;
   authorization: Authorization[];
-  data: ActionData;
+  data: ActionData | string;
   hex_data?: string;
 }
 

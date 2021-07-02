@@ -49,13 +49,14 @@ describe('Eos Transfer builder', () => {
     });
 
     it('should build a trx from a raw transaction', async () => {
+      builder.testnet();
       builder.from(EosResources.tranferTransaction.serializedTransaction);
-      // const tx = await builder.build();
-      // const json = await tx.toJson();
-      // should.deepEqual(json.actions[0].data.from, sender.name);
-      // should.deepEqual(json.actions[0].data.to, 'david');
-      // should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
-      // should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      const tx = await builder.build();
+      const json = await tx.toJson();
+      should.deepEqual(json.actions[0].data.from, sender.name);
+      should.deepEqual(json.actions[0].data.to, 'david');
+      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.memo, 'Some memo');
     });
   });
 

@@ -5,6 +5,7 @@ import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Action } from './ifaces';
+import { TransferActionBuilder } from './eosActionBuilder';
 
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -33,12 +34,22 @@ export class TransferBuilder extends TransactionBuilder {
     return new TransferActionBuilder(super.action(account, actors));
   }
 
-  protected createAction(builder: EosTxBuilder, action: Action | string): EosJs.Serialize.Action | string {
-    if (typeof action === 'string') {
-      return action;
+  /** @inheritdoc */
+  protected createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action {
+    const data = action.data;
+    if (typeof data === 'string') {
+      return {
+        account: action.account,
+        name: action.name,
+        authorization: action.authorization,
+        data: data,
+      };
+    } else {
+      return builder
+        .with(action.account)
+        .as(action.authorization)
+        .transfer(data.from, data.to, data.quantity, data.memo);
     }
-    const { data } = action as Action;
-    return builder.with(action.account).as(action.authorization).transfer(data.from, data.to, data.quantity, data.memo);
   }
 
   protected actionName(): string {
@@ -53,50 +64,5 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
     super.validateTransaction(transaction);
-  }
-}
-
-class TransferActionBuilder {
-  private _from: string;
-  private _to: string;
-  private _quantity: string;
-  private _memo: string;
-  private action: Action;
-
-  constructor(act: Action) {
-    this.action = act;
-  }
-
-  from(from: string): this {
-    this._from = from;
-    return this;
-  }
-
-  to(to: string): this {
-    this._to = to;
-    return this;
-  }
-
-  quantity(qty: string): this {
-    this._quantity = qty;
-    return this;
-  }
-
-  memo(memo: string): this {
-    this._memo = memo;
-    return this;
-  }
-
-  buildAction(): Action {
-    this.validateMandatoryFields();
-    this.action.data.from = this._from;
-    this.action.data.to = this._to;
-    this.action.data.quantity = this._quantity;
-    this.action.data.memo = this._memo;
-    return this.action;
-  }
-
-  private validateMandatoryFields() {
-    // TODO: perform validataion on from, to and quantity
   }
 }

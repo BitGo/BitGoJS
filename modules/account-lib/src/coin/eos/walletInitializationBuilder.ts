@@ -6,6 +6,7 @@ import { NotImplementedError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { Action } from './ifaces';
+import { EosActionBuilder } from './eosActionBuilder';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -29,6 +30,11 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action {
+    throw new Error('Method not implemented.');
+  }
+
+  /** @inheritdoc */
+  actionBuilder(account: string, actors: string[]): EosActionBuilder {
     throw new Error('Method not implemented.');
   }
 

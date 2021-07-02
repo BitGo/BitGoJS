@@ -12,6 +12,7 @@ import utils from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
+import { EosActionBuilder } from './eosActionBuilder';
 import { Utils } from '.';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -20,9 +21,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _keypair: KeyPair[];
   private _chainId: string;
   private actions: Action[];
-  private _expiration: string;
-  private _ref_block_num: number;
-  private _ref_block_prefix: number;
+  private _expiration?: string;
+  private _ref_block_num?: number;
+  private _ref_block_prefix?: number;
   private _account: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -40,9 +41,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract actionName(): string;
 
-  protected abstract createAction(builder: EosTxBuilder, action: Action | string): EosJs.Serialize.Action | string;
+  /**
+   * Create and append serialize action object.
+   *
+   * @param {EosTxBuilder} builder Eos transaction builder
+   * @param {Action} action append data in this action
+   */
+  protected abstract createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action;
 
-  action(account: string, actors: string[]): Action {
+  /**
+   * Returns builder for action.
+   *
+   * @param {string} account e.g eosio.token.
+   * @param {string[]} actors authorization actors.
+   */
+  abstract actionBuilder(account: string, actors: string[]): EosActionBuilder;
+
+  protected action(account: string, actors: string[]): Action {
     this._account = account;
     const auth = actors.map((actor) => {
       return {
@@ -70,48 +85,64 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
     const tx = utils.deserializeTransaction(rawTransaction, this._chainId);
-    console.log(tx);
     if (!tx) {
       throw new InvalidTransactionError('Invalid tx ');
     }
-    // this.expiration(tx.expiration);
-    // this.refBlockNum(tx.ref_block_num);
-    // this.refBlockPrefix(tx.ref_block_prefix);
-    tx.actions;
-    this.actions = tx.actions;
-    // this._transaction.setEosTransaction(tx);
-    // .then(tx => {
-    //   this.actions = tx.actions;
-    //   console.log(tx);
-    //   // this._transaction.setEosTransaction(tx);
-    // });
+    this.expiration(tx.expiration);
+    this.refBlockNum(tx.ref_block_num);
+    this.refBlockPrefix(tx.ref_block_prefix);
+    tx.actions.forEach((item) => {
+      const action = this.action(
+        item.account,
+        item.authorization.map((act) => act.actor),
+      );
+      action.data = item.data;
+    });
+    this._transaction.setEosTransaction({
+      signatures: [],
+      serializedTransaction: rawTransaction,
+    });
     return this._transaction;
   }
 
+  /**
+   * set chainId of testnet
+   *
+   * @returns {TransactionBuilder} transaction builder
+   */
   testnet(): this {
     this._chainId = '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840';
     return this;
   }
 
+  /**
+   * Set chainId of mainnet
+   *
+   * @returns {TransactionBuilder} transaction builder
+   */
   mainnet(): this {
     this._chainId = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';
     return this;
   }
 
-  expiration(expiration: string): this {
+  expiration(expiration?: string): this {
     this._expiration = expiration;
     return this;
   }
 
-  refBlockNum(ref_block_num: number): this {
-    this.validateValue(new BigNumber(ref_block_num));
-    this._ref_block_num = ref_block_num;
+  refBlockNum(ref_block_num?: number): this {
+    if (ref_block_num) {
+      this.validateValue(new BigNumber(ref_block_num));
+      this._ref_block_num = ref_block_num;
+    }
     return this;
   }
 
-  refBlockPrefix(ref_block_prefix: number): this {
-    this.validateValue(new BigNumber(ref_block_prefix));
-    this._ref_block_prefix = ref_block_prefix;
+  refBlockPrefix(ref_block_prefix?: number): this {
+    if (ref_block_prefix) {
+      this.validateValue(new BigNumber(ref_block_prefix));
+      this._ref_block_prefix = ref_block_prefix;
+    }
     return this;
   }
 
@@ -120,14 +151,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     try {
       const eosApi = Utils.initApi(this._chainId);
       await eosApi.getAbi(this._account);
-      // const eosTxBuilder = new EosTxBuilder(eosApi);
+      const eosTxBuilder = new EosTxBuilder(eosApi);
       const result = await eosApi.transact(
         {
           expiration: this._expiration,
           ref_block_num: this._ref_block_num,
           ref_block_prefix: this._ref_block_prefix,
-          actions: [],
-          // actions: this.actions.map(action => this.createAction(eosTxBuilder, action)),
+          actions: this.actions.map((action) => this.createAction(eosTxBuilder, action)),
         },
         {
           broadcast: false,
