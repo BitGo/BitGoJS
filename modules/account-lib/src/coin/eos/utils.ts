@@ -3,12 +3,13 @@ import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
-import { OfflineAbiProvider } from './OfflineAbiProvider';
+import OfflineAbiProvider from './OfflineAbiProvider';
 const { TextEncoder, TextDecoder } = require('util');
 
 export const initApi = (chainId: string): EosJs.Api => {
   // @ts-ignore
   return new EosJs.Api({
+    // @ts-ignore
     abiProvider: new OfflineAbiProvider(),
     chainId: chainId,
     textDecoder: new TextDecoder(),

@@ -1,5 +1,9 @@
 import ser from 'eosjs/dist/eosjs-serialize';
 
+export interface RawAbi {
+  accountName: string;
+  abi?: Uint8Array;
+}
 interface AuthKey {
   key: string;
   weight: number;
