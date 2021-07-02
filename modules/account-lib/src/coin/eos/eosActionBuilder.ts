@@ -1,4 +1,6 @@
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { Action, ActionData } from './ifaces';
+import { TransferActionSchema } from './txnSchema';
 
 export abstract class EosActionBuilder {}
 
@@ -36,7 +38,7 @@ export class TransferActionBuilder extends EosActionBuilder {
   }
 
   buildAction(): Action {
-    this.validateMandatoryFields();
+    this.validateMandatoryFields(this._from, this._to, this._quantity, this._memo);
     this.actionData = {
       from: this._from,
       to: this._to,
@@ -47,7 +49,15 @@ export class TransferActionBuilder extends EosActionBuilder {
     return this.action;
   }
 
-  private validateMandatoryFields() {
-    // TODO: perform validataion on from, to and quantity
+  private validateMandatoryFields(from: string, to: string, quantity: string, memo: string) {
+    const validationResult = TransferActionSchema.validate({
+      from,
+      to,
+      quantity,
+      memo,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 }

@@ -1,6 +1,5 @@
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
-import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
@@ -11,10 +10,6 @@ import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
   private _eosTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
   private _signedTransaction?: EosJs.RpcInterfaces.PushTransactionArgs;
-  private _sender: string;
-  private _blocksBehind: number;
-  private _expireSeconds: number;
-  private _eosTxBuilder?: EosTxBuilder;
   private _chainId: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -38,18 +33,6 @@ export class Transaction extends BaseTransaction {
       const signature = ecc.Signature.sign(txHex, key.getKeys().prv).toString();
       this._signedTransaction?.signatures.push(signature);
     });
-  }
-
-  sender(address: string): void {
-    this._sender = address;
-  }
-
-  blocksBehind(blocksBehind: number): void {
-    this._blocksBehind = blocksBehind;
-  }
-
-  expireSeconds(expireSeconds: number): void {
-    this._expireSeconds = expireSeconds;
   }
 
   /**

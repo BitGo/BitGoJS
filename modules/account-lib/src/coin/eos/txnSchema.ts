@@ -6,3 +6,10 @@ export const BaseTransactionSchema = joi.object({
   refBlockPrefix: joi.number().positive().required(),
   actions: joi.array().items(joi.object()).min(1),
 });
+
+export const TransferActionSchema = joi.object({
+  from: joi.string().required(),
+  to: joi.string().required(),
+  quantity: joi.string().required(),
+  memo: joi.string().required(),
+});
