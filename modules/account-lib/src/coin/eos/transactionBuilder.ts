@@ -5,7 +5,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { AddressValidationError } from './errors';
 import utils from './utils';
@@ -40,7 +40,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract actionName(): string;
 
-  protected abstract createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action;
+  protected abstract createAction(builder: EosTxBuilder, action: Action | string): EosJs.Serialize.Action | string;
 
   action(account: string, actors: string[]): Action {
     this._account = account;
@@ -69,9 +69,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
-    utils.deserializeTransaction(rawTransaction, this._chainId).then((tx) => {
-      this.actions = tx.actions;
-    });
+    const tx = utils.deserializeTransaction(rawTransaction, this._chainId);
+    console.log(tx);
+    if (!tx) {
+      throw new InvalidTransactionError('Invalid tx ');
+    }
+    // this.expiration(tx.expiration);
+    // this.refBlockNum(tx.ref_block_num);
+    // this.refBlockPrefix(tx.ref_block_prefix);
+    tx.actions;
+    this.actions = tx.actions;
+    // this._transaction.setEosTransaction(tx);
+    // .then(tx => {
+    //   this.actions = tx.actions;
+    //   console.log(tx);
+    //   // this._transaction.setEosTransaction(tx);
+    // });
     return this._transaction;
   }
 
@@ -107,13 +120,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     try {
       const eosApi = Utils.initApi(this._chainId);
       await eosApi.getAbi(this._account);
-      const eosTxBuilder = new EosTxBuilder(eosApi);
+      // const eosTxBuilder = new EosTxBuilder(eosApi);
       const result = await eosApi.transact(
         {
           expiration: this._expiration,
           ref_block_num: this._ref_block_num,
           ref_block_prefix: this._ref_block_prefix,
-          actions: this.actions.map((action) => this.createAction(eosTxBuilder, action)),
+          actions: [],
+          // actions: this.actions.map(action => this.createAction(eosTxBuilder, action)),
         },
         {
           broadcast: false,

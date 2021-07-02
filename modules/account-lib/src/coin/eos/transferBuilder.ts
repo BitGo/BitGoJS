@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
-import { NotImplementedError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
@@ -20,7 +19,7 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
-    throw new NotImplementedError('error: method not implemented');
+    return super.fromImplementation(rawTransaction);
   }
 
   /**
@@ -34,8 +33,11 @@ export class TransferBuilder extends TransactionBuilder {
     return new TransferActionBuilder(super.action(account, actors));
   }
 
-  protected createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action {
-    const { data } = action;
+  protected createAction(builder: EosTxBuilder, action: Action | string): EosJs.Serialize.Action | string {
+    if (typeof action === 'string') {
+      return action;
+    }
+    const { data } = action as Action;
     return builder.with(action.account).as(action.authorization).transfer(data.from, data.to, data.quantity, data.memo);
   }
 

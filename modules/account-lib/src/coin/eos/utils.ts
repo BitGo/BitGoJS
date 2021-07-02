@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as EosJs from 'eosjs';
-
+import * as ecc from 'eosjs-ecc';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { OfflineAbiProvider } from './OfflineAbiProvider';
@@ -16,11 +16,21 @@ export const initApi = (chainId: string): EosJs.Api => {
   });
 };
 export class Utils implements BaseUtils {
-  async deserializeTransaction(rawTx: Uint8Array, chainId: string): Promise<EosJs.ApiInterfaces.Transaction> {
+  async deserializeTransactionWithActions(
+    rawTx: Uint8Array,
+    chainId: string,
+  ): Promise<EosJs.ApiInterfaces.Transaction> {
     const api = initApi(chainId);
     const tx = await api.deserializeTransactionWithActions(rawTx);
     return tx;
   }
+
+  deserializeTransaction(rawTx: Uint8Array, chainId: string): EosJs.ApiInterfaces.Transaction {
+    const api = initApi(chainId);
+    const tx = api.deserializeTransaction(rawTx);
+    return tx;
+  }
+
   public static ADDRESS_LENGTH = 12;
 
   /** @inheritdoc */
@@ -37,12 +47,12 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPrivateKey(key: string): boolean {
-    return true;
+    return ecc.isValidPrivate(key);
   }
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    return true;
+    return ecc.isValidPublic(key);
   }
 
   /** @inheritdoc */

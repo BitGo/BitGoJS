@@ -110,7 +110,7 @@ export class Transaction extends BaseTransaction {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const deserializedTransaction = await Utils.deserializeTransaction(
+    const deserializedTransaction = await Utils.deserializeTransactionWithActions(
       this._eosTransaction.serializedTransaction,
       this._chainId,
     );

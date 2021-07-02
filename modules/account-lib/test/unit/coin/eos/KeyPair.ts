@@ -2,7 +2,7 @@ import * as should from 'should';
 import * as EosResources from '../../../resources/eos';
 import { Eos } from '../../../../src';
 
-describe('Eos KeyPair', function() {
+describe('Eos KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(32, 'a') };
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
