@@ -13,8 +13,7 @@ describe('CSPR Delegate Builder', () => {
   const validator = DELEGATE_VALIDATOR_ACCOUNT;
 
   const initDelegateTxBuilder = () => {
-    const builder = factory.getDelegateBuilder();
-    return builder;
+    return factory.getDelegateBuilder();
   };
 
   const addFeeToBuilder = (builder: DelegateBuilder, gasLimit: string, gasPrice: string) => {
@@ -89,6 +88,15 @@ describe('CSPR Delegate Builder', () => {
       should.equal(txJson.from, owner1Address);
       should.deepEqual(tx.signature.length, 1);
       tx.type.should.equal(TransactionType.StakingLock);
+    });
+
+    it('a delegate transaction with large amount', async function() {
+      const amount = '10000000000000000';
+      let txBuilder = initUnsignedDelegateTxBuilder();
+      txBuilder = addAmountToBuilder(txBuilder, amount);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.amount.should.equal(amount);
     });
   });
 
