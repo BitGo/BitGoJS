@@ -5,7 +5,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { AddressValidationError } from './errors';
 import utils from './utils';
@@ -13,6 +13,7 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
 import { EosActionBuilder } from './eosActionBuilder';
+import { BaseTransactionSchema } from './txnSchema';
 import { Utils } from '.';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -21,9 +22,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _keypair: KeyPair[];
   private _chainId: string;
   private actions: Action[];
-  private _expiration?: string;
-  private _ref_block_num?: number;
-  private _ref_block_prefix?: number;
+  private _expiration: string;
+  private _ref_block_num: number;
+  private _ref_block_prefix: number;
   private _account: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -88,9 +89,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!tx) {
       throw new InvalidTransactionError('Invalid tx ');
     }
-    this.expiration(tx.expiration);
-    this.refBlockNum(tx.ref_block_num);
-    this.refBlockPrefix(tx.ref_block_prefix);
+    this.expiration(tx.expiration || '');
+    this.refBlockNum(tx.ref_block_num || 0);
+    this.refBlockPrefix(tx.ref_block_prefix || 0);
     tx.actions.forEach((item) => {
       const action = this.action(
         item.account,
@@ -125,12 +126,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  expiration(expiration?: string): this {
+  expiration(expiration: string): this {
     this._expiration = expiration;
     return this;
   }
 
-  refBlockNum(ref_block_num?: number): this {
+  refBlockNum(ref_block_num: number): this {
     if (ref_block_num) {
       this.validateValue(new BigNumber(ref_block_num));
       this._ref_block_num = ref_block_num;
@@ -138,7 +139,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  refBlockPrefix(ref_block_prefix?: number): this {
+  refBlockPrefix(ref_block_prefix: number): this {
     if (ref_block_prefix) {
       this.validateValue(new BigNumber(ref_block_prefix));
       this._ref_block_prefix = ref_block_prefix;
@@ -204,21 +205,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    try {
-      utils.deserializeTransaction(rawTransaction, this._chainId);
-    } catch (e) {
-      throw new ParseTransactionError('Invalid transaction');
+    const decodedTx = utils.deserializeTransaction(rawTransaction, this._chainId);
+    const validationResult = BaseTransactionSchema.validate({
+      expiration: decodedTx.expiration,
+      refBlockNum: decodedTx.ref_block_num,
+      refBlockPrefix: decodedTx.ref_block_prefix,
+      actions: decodedTx.actions,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
   }
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    this.validateBaseFields();
+    this.validateBaseFields(this._expiration, this._ref_block_num, this._ref_block_prefix, this.actions);
   }
 
-  private validateBaseFields(): void {
-    if (this.actions.length === 0) {
-      throw new BuildTransactionError('Actions cannot be less than zero');
+  private validateBaseFields(expiration: string, refBlockNum: number, refBlockPrefix: number, actions: Action[]): void {
+    const validationResult = BaseTransactionSchema.validate({
+      expiration,
+      refBlockNum,
+      refBlockPrefix,
+      actions,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
   }
 
@@ -228,5 +240,4 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
   }
-  // endregion
 }

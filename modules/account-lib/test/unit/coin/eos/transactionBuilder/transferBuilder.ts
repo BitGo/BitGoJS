@@ -1,5 +1,6 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
+import sinon, { assert } from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/eos/transferBuilder';
 import * as EosResources from '../../../../resources/eos';
 import { Transaction } from '../../../../../src/coin/eos/transaction';
@@ -20,8 +21,56 @@ describe('Eos Transfer builder', () => {
     builder = new StubTransactionBuilder(config);
   });
 
+  describe('setter validation', () => {
+    it('should validate refBlockNum', () => {
+      const spy = sinon.spy(builder, 'refBlockNum');
+      should.throws(
+        () => builder.refBlockNum(-1),
+        (e: Error) => e.message === 'Value cannot be less than zero',
+      );
+      should.doesNotThrow(() => builder.refBlockNum(100));
+      assert.calledTwice(spy);
+    });
+
+    it('should validate refBlockPrefix', () => {
+      const spy = sinon.spy(builder, 'refBlockPrefix');
+      should.throws(
+        () => builder.refBlockPrefix(-1),
+        (e: Error) => e.message === 'Value cannot be less than zero',
+      );
+      should.doesNotThrow(() => builder.refBlockPrefix(100));
+      assert.calledTwice(spy);
+    });
+  });
+
   describe('build transaction', () => {
     it('should build a transaction', async () => {
+      builder
+        .testnet()
+        .expiration('2019-09-19T16:39:15')
+        .refBlockNum(100)
+        .refBlockPrefix(100)
+        .sign({ key: sender.privateKey });
+      builder
+        .actionBuilder('eosio.token', [sender.name])
+        .from(sender.name)
+        .to(receiver.name)
+        .quantity('1.0000 SYS')
+        .memo('Some memo')
+        .buildAction();
+      const tx = await builder.build();
+      const json = await tx.toJson();
+      should.deepEqual(json.actions[0].data.from, sender.name);
+      should.deepEqual(json.actions[0].data.to, 'david');
+      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(
+        tx.toBroadcastFormat().serializedTransaction,
+        EosResources.tranferTransaction.serializedTransaction,
+      );
+    });
+
+    it('should build a multi-sig transaction', async () => {
       builder
         .testnet()
         .expiration('2019-09-19T16:39:15')
@@ -51,6 +100,18 @@ describe('Eos Transfer builder', () => {
     it('should build a trx from a raw transaction', async () => {
       builder.testnet();
       builder.from(EosResources.tranferTransaction.serializedTransaction);
+      const tx = await builder.build();
+      const json = await tx.toJson();
+      should.deepEqual(json.actions[0].data.from, sender.name);
+      should.deepEqual(json.actions[0].data.to, 'david');
+      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+    });
+
+    it('should build a trx from a raw transaction and sign the tx', async () => {
+      builder.testnet();
+      builder.from(EosResources.tranferTransaction.serializedTransaction);
+      builder.sign({ key: EosResources.accounts.account1.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
