@@ -1,15 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as EosJs from 'eosjs';
-import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { Action } from './ifaces';
 import { TransferActionBuilder } from './eosActionBuilder';
 
-export class TransferBuilder extends TransactionBuilder {
+export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this.actionBuilders = [];
   }
 
   /** @inheritdoc */
@@ -30,30 +28,10 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {string[]} actors Authorization field
    * @returns {TransferActionBuilder} builder to construct transfer action
    */
-  actionBuilder(account: string, actors: string[]): TransferActionBuilder {
-    return new TransferActionBuilder(super.action(account, actors));
-  }
-
-  /** @inheritdoc */
-  protected createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action {
-    const data = action.data;
-    if (typeof data === 'string') {
-      return {
-        account: action.account,
-        name: action.name,
-        authorization: action.authorization,
-        data: data,
-      };
-    } else {
-      return builder
-        .with(action.account)
-        .as(action.authorization)
-        .transfer(data.from, data.to, data.quantity, data.memo);
-    }
-  }
-
-  protected actionName(): string {
-    return 'transfer';
+  transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
+    const builder = new TransferActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
   }
 
   /** @inheritdoc */

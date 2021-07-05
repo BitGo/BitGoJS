@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as EosJs from 'eosjs';
@@ -12,7 +10,7 @@ import utils from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
-import { EosActionBuilder } from './eosActionBuilder';
+import { EosActionBuilder, TransferActionBuilder } from './eosActionBuilder';
 import { BaseTransactionSchema } from './txnSchema';
 import { Utils } from '.';
 
@@ -21,7 +19,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   private _keypair: KeyPair[];
   private _chainId: string;
-  private actions: Action[];
+  private actions: EosJs.Serialize.Action[];
+  protected actionBuilders: EosActionBuilder[];
   private _expiration: string;
   private _ref_block_num: number;
   private _ref_block_prefix: number;
@@ -35,28 +34,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig);
   }
 
-  /**
-   * Get action name
-   *
-   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
-   */
-  protected abstract actionName(): string;
-
-  /**
-   * Create and append serialize action object.
-   *
-   * @param {EosTxBuilder} builder Eos transaction builder
-   * @param {Action} action append data in this action
-   */
-  protected abstract createAction(builder: EosTxBuilder, action: Action): EosJs.Serialize.Action;
-
-  /**
-   * Returns builder for action.
-   *
-   * @param {string} account e.g eosio.token.
-   * @param {string[]} actors authorization actors.
-   */
-  abstract actionBuilder(account: string, actors: string[]): EosActionBuilder;
+  transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
+    return new TransferActionBuilder(this.action(account, actors));
+  }
 
   protected action(account: string, actors: string[]): Action {
     this._account = account;
@@ -70,9 +50,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       account: account,
       authorization: auth,
       data: {},
-      name: this.actionName(),
+      name: '',
     };
-    this.actions.push(action);
     return action;
   }
 
@@ -92,13 +71,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.expiration(tx.expiration || '');
     this.refBlockNum(tx.ref_block_num || 0);
     this.refBlockPrefix(tx.ref_block_prefix || 0);
-    tx.actions.forEach((item) => {
-      const action = this.action(
-        item.account,
-        item.authorization.map((act) => act.actor),
-      );
-      action.data = item.data;
-    });
+    this.actions.push(...tx.actions);
+    this._account = tx.actions[0].account;
     this._transaction.setEosTransaction({
       signatures: [],
       serializedTransaction: rawTransaction,
@@ -153,12 +127,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const eosApi = Utils.initApi(this._chainId);
       await eosApi.getAbi(this._account);
       const eosTxBuilder = new EosTxBuilder(eosApi);
+      this.actions.push(...this.actionBuilders.map((b) => b.build(eosTxBuilder)));
       const result = await eosApi.transact(
         {
           expiration: this._expiration,
           ref_block_num: this._ref_block_num,
           ref_block_prefix: this._ref_block_prefix,
-          actions: this.actions.map((action) => this.createAction(eosTxBuilder, action)),
+          actions: this.actions,
         },
         {
           broadcast: false,

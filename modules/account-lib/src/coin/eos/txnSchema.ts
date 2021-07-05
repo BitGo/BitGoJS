@@ -4,7 +4,7 @@ export const BaseTransactionSchema = joi.object({
   expiration: joi.string().required(),
   refBlockNum: joi.number().positive().required(),
   refBlockPrefix: joi.number().positive().required(),
-  actions: joi.array().items(joi.object()).min(1),
+  actions: joi.array().items(joi.object()).min(0),
 });
 
 export const TransferActionSchema = joi.object({

@@ -1,11 +1,11 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import sinon, { assert } from 'sinon';
-import { TransferBuilder } from '../../../../../src/coin/eos/transferBuilder';
+import { EosTransactionBuilder } from '../../../../../src/coin/eos/eosTransactionBuilder';
 import * as EosResources from '../../../../resources/eos';
 import { Transaction } from '../../../../../src/coin/eos/transaction';
 
-class StubTransactionBuilder extends TransferBuilder {
+class StubTransactionBuilder extends EosTransactionBuilder {
   getTransaction(): Transaction {
     return this._transaction;
   }
@@ -52,12 +52,11 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio.token', [sender.name])
+        .transferActionBuilder('eosio.token', [sender.name])
         .from(sender.name)
         .to(receiver.name)
         .quantity('1.0000 SYS')
-        .memo('Some memo')
-        .buildAction();
+        .memo('Some memo');
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
@@ -78,12 +77,11 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio.token', [sender.name])
+        .transferActionBuilder('eosio.token', [sender.name])
         .from(sender.name)
         .to(receiver.name)
         .quantity('1.0000 SYS')
-        .memo('Some memo')
-        .buildAction();
+        .memo('Some memo');
       builder.sign({ key: EosResources.accounts.account3.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
@@ -130,12 +128,11 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio.token', [sender.name])
+        .transferActionBuilder('eosio.token', [sender.name])
         .from(sender.name)
         .to(receiver.name)
         .quantity('1.0000 SYS')
-        .memo('Some memo')
-        .buildAction();
+        .memo('Some memo');
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
   });
