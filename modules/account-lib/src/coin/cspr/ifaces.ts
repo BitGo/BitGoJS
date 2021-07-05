@@ -82,3 +82,8 @@ export interface SignResponse {
   signature: Uint8Array;
   recid: number;
 }
+
+export interface AddressDetails {
+  address: string;
+  transferId?: string;
+}
