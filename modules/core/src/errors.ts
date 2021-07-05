@@ -119,6 +119,13 @@ export class InvalidMemoIdError extends InvalidAddressError {
   }
 }
 
+export class InvalidPaymentIdError extends InvalidAddressError {
+  public constructor(message?: string) {
+    super(message || 'invalid payment id');
+    Object.setPrototypeOf(this, InvalidPaymentIdError.prototype);
+  }
+}
+
 export class KeyRecoveryServiceError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'key recovery service encountered an error');
