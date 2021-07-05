@@ -1,10 +1,10 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { UnstakeBuilder } from '../../../../../src/coin/eos/unstakeBuilder';
+import { EosTransactionBuilder } from '../../../../../src/coin/eos/eosTransactionBuilder';
 import * as EosResources from '../../../../resources/eos';
 import { Transaction } from '../../../../../src/coin/eos/transaction';
 
-class StubTransactionBuilder extends UnstakeBuilder {
+class StubTransactionBuilder extends EosTransactionBuilder {
   getTransaction(): Transaction {
     return this._transaction;
   }
@@ -29,12 +29,11 @@ describe('Eos Unstake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .unstakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .unstake_net_quantity('1.0000 SYS')
-        .unstake_cpu_quantity('1.0000 SYS')
-        .buildAction();
+        .unstake_cpu_quantity('1.0000 SYS');
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
@@ -55,12 +54,11 @@ describe('Eos Unstake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .unstakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .unstake_net_quantity('1.0000 SYS')
-        .unstake_cpu_quantity('1.0000 SYS')
-        .buildAction();
+        .unstake_cpu_quantity('1.0000 SYS');
       builder.sign({ key: EosResources.accounts.account3.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
@@ -107,12 +105,11 @@ describe('Eos Unstake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .unstakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .unstake_net_quantity('1.0000 SYS')
-        .unstake_cpu_quantity('1.0000 SYS')
-        .buildAction();
+        .unstake_cpu_quantity('1.0000 SYS');
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
   });

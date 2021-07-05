@@ -1,10 +1,10 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { StakeBuilder } from '../../../../../src/coin/eos/stakeBuilder';
+import { EosTransactionBuilder } from '../../../../../src/coin/eos/eosTransactionBuilder';
 import * as EosResources from '../../../../resources/eos';
 import { Transaction } from '../../../../../src/coin/eos/transaction';
 
-class StubTransactionBuilder extends StakeBuilder {
+class StubTransactionBuilder extends EosTransactionBuilder {
   getTransaction(): Transaction {
     return this._transaction;
   }
@@ -29,13 +29,12 @@ describe('Eos Stake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .stake_net_quantity('1.0000 SYS')
         .stake_cpu_quantity('1.0000 SYS')
-        .transfer(false)
-        .buildAction();
+        .transfer(false);
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
@@ -57,13 +56,12 @@ describe('Eos Stake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .stake_net_quantity('1.0000 SYS')
         .stake_cpu_quantity('1.0000 SYS')
-        .transfer(false)
-        .buildAction();
+        .transfer(false);
       builder.sign({ key: EosResources.accounts.account3.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
@@ -113,13 +111,12 @@ describe('Eos Stake builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .actionBuilder('eosio', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
         .receiver(receiver.name)
         .stake_net_quantity('1.0000 SYS')
         .stake_cpu_quantity('1.0000 SYS')
-        .transfer(false)
-        .buildAction();
+        .transfer(false);
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
   });
