@@ -13,3 +13,18 @@ export const TransferActionSchema = joi.object({
   quantity: joi.string().required(),
   memo: joi.string().required(),
 });
+
+export const StakeActionSchema = joi.object({
+  from: joi.string().required(),
+  receiver: joi.string().required(),
+  stake_net_quantity: joi.string().required(),
+  stake_cpu_quantity: joi.string().required(),
+  transfer: joi.boolean().required(),
+});
+
+export const UnstakeActionSchema = joi.object({
+  from: joi.string().required(),
+  receiver: joi.string().required(),
+  unstake_net_quantity: joi.string().required(),
+  unstake_cpu_quantity: joi.string().required(),
+});

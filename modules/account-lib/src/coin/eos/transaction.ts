@@ -63,15 +63,6 @@ export class Transaction extends BaseTransaction {
     return this._eosTransaction;
   }
 
-  /**
-   * Get underlying signed eos transaction.
-   *
-   * @returns {EosJs.RpcInterfaces.PushTransactionArgs}
-   */
-  getEosSignedTransaction(): EosJs.RpcInterfaces.PushTransactionArgs | undefined {
-    return this._signedTransaction;
-  }
-
   setChainId(id: string): this {
     this._chainId = id;
     return this;
@@ -111,13 +102,25 @@ export class Transaction extends BaseTransaction {
         },
       });
     }
-    if (this.type === TransactionType.StakingActivate || this.type === TransactionType.StakingWithdraw) {
+    if (this.type === TransactionType.StakingActivate) {
       result.actions.push({
         data: {
           from: actions[0].data.from,
           receiver: actions[0].data.receiver,
           stake_net_quantity: actions[0].data.stake_net_quantity,
           stake_cpu_quantity: actions[0].data.stake_cpu_quantity,
+          transfer: actions[0].data.transfer,
+        },
+      });
+    }
+
+    if (this.type === TransactionType.StakingWithdraw) {
+      result.actions.push({
+        data: {
+          from: actions[0].data.from,
+          receiver: actions[0].data.receiver,
+          unstake_net_quantity: actions[0].data.unstake_net_quantity,
+          unstake_cpu_quantity: actions[0].data.unstake_cpu_quantity,
           transfer: actions[0].data.transfer,
         },
       });
