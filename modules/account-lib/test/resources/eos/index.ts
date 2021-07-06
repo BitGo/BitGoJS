@@ -28,6 +28,16 @@ export const accounts = {
   },
 };
 
+export const permission = {
+  permission1: {
+    name: 'some.perm',
+    privateKey: '5Jo5FrZgNXGk7XtWGbTjnG7P2ChHyxYsnij7n2XceHtMo1vAdnn',
+    publicKey: 'EOS84sGZeiwH21SDuAgUQoXdEuowccNP5ceuQU6GrFPfwPboJmZ7u',
+    type: 'some.act',
+    requirement: 'action.perm',
+  },
+};
+
 export const tranferTransaction = {
   signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
   serializedTransaction: new Uint8Array(
@@ -55,6 +65,50 @@ export const unstakeTransaction = {
   serializedTransaction: new Uint8Array(
     Buffer.from(
       '33af835d64006400000000000000010000000000ea3055c08fca86a9a8d2d4010000000080d0553400000000a8ed3232300000000080d055340000000080e4b649102700000000000004535953000000001027000000000000045359530000000000',
+      'hex',
+    ),
+  ),
+  serializedContextFreeData: null,
+};
+
+export const updateAuthTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea30550040cbdaa86c52d5010000000080d0553400000000a8ed3232550000000080d055340000905755a024c500000000a8ed323201000000010003a2a70865b500e3e9347c009d944bf8a3b42a32dac02fe465b51bc93699a20d110100010000000080d0553400000000a8ed323201000000',
+      'hex',
+    ),
+  ),
+  serializedContextFreeData: null,
+};
+
+export const deleteAuthTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea30550040cbdaa8aca24a010000000080d0553400000000a8ed3232100000000080d055340000905755a024c500',
+      'hex',
+    ),
+  ),
+  serializedContextFreeData: null,
+};
+
+export const linkAuthTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea30550000002d6b03a78b010000000080d0553400000000a8ed3232200000000080d055340000000080d055340000001919a024c500e455154cea323200',
+      'hex',
+    ),
+  ),
+  serializedContextFreeData: null,
+};
+
+export const unlinkAuthTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea30550040cbdac0e9e2d4010000000080d0553400000000a8ed3232180000000080d055340000000080d055340000001919a024c500',
       'hex',
     ),
   ),

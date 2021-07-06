@@ -1,8 +1,19 @@
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import * as EosJs from 'eosjs';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { Action } from './ifaces';
-import { StakeActionSchema, TransferActionSchema, UnstakeActionSchema } from './txnSchema';
+import { Action, PermissionAuth } from './ifaces';
+import {
+  DeleteAuthActionSchema,
+  LinkAuthActionSchema,
+  PermissionAuthSchema,
+  StakeActionSchema,
+  TransferActionSchema,
+  UnlinkAuthActionSchema,
+  UnstakeActionSchema,
+  UpdateAuthActionSchema,
+} from './txnSchema';
+import Utils from './utils';
+import { PermissionAuthValidationError } from './errors';
 
 export abstract class EosActionBuilder {
   protected action: Action;
@@ -144,31 +155,19 @@ export class StakeActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
+      this.validateMandatoryFields(
+        this._from,
+        this._receiver,
+        this._stake_net_quantity,
+        this._stake_cpu_quantity,
+        this._transfer,
+      );
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
         .delegatebw(this._from, this._receiver, this._stake_net_quantity, this._stake_cpu_quantity, this._transfer);
     }
   }
-
-  // buildAction(): Action {
-  //   this.validateMandatoryFields(
-  //     this._from,
-  //     this._receiver,
-  //     this._stake_net_quantity,
-  //     this._stake_cpu_quantity,
-  //     this._transfer,
-  //   );
-  //   this.actionData = {
-  //     from: this._from,
-  //     receiver: this._receiver,
-  //     stake_net_quantity: this._stake_net_quantity,
-  //     stake_cpu_quantity: this._stake_cpu_quantity,
-  //     transfer: this._transfer,
-  //   };
-  //   this.action.data = this.actionData;
-  //   return this.action;
-  // }
 
   private validateMandatoryFields(
     from: string,
@@ -240,24 +239,13 @@ export class UnstakeActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
+      this.validateMandatoryFields(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
         .undelegatebw(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
     }
   }
-
-  // buildAction(): Action {
-  //   this.validateMandatoryFields(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
-  //   this.actionData = {
-  //     from: this._from,
-  //     receiver: this._receiver,
-  //     unstake_net_quantity: this._unstake_net_quantity,
-  //     unstake_cpu_quantity: this._unstake_cpu_quantity,
-  //   };
-  //   this.action.data = this.actionData;
-  //   return this.action;
-  // }
 
   private validateMandatoryFields(
     from: string,
@@ -270,6 +258,297 @@ export class UnstakeActionBuilder extends EosActionBuilder {
       receiver,
       unstake_net_quantity,
       unstake_cpu_quantity,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
+}
+
+export class UpdateAuthActionBuilder extends EosActionBuilder {
+  private _account: string;
+  private _permission_name: string;
+  private _parent: string;
+  private _auth: PermissionAuth;
+
+  constructor(act: Action) {
+    super(act);
+    this.action.name = this.actionName();
+  }
+
+  account(account: string): this {
+    if (Utils.isValidName(account)) {
+      this._account = account;
+    }
+    return this;
+  }
+
+  permission_name(permission_name: string): this {
+    if (Utils.isValidName(permission_name)) {
+      this._permission_name = permission_name;
+    }
+    return this;
+  }
+
+  parent(parent: string): this {
+    if (Utils.isValidName(parent)) {
+      this._parent = parent;
+    }
+    return this;
+  }
+
+  auth(auth: PermissionAuth): this {
+    const validationResult = PermissionAuthSchema.validate(auth);
+    if (validationResult.error) {
+      throw new PermissionAuthValidationError(`Permission auth validation failed: ${validationResult.error.message}`);
+    }
+    this._auth = auth;
+    return this;
+  }
+
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
+  actionName(): string {
+    return 'updateauth';
+  }
+
+  build(builder: EosTxBuilder): EosJs.Serialize.Action {
+    const data = this.action.data;
+    if (typeof data === 'string') {
+      return {
+        account: this.action.account,
+        name: this.actionName(),
+        authorization: this.action.authorization,
+        data: data,
+      };
+    } else {
+      this.validateMandatoryFields(this._account, this._permission_name, this._parent, this._auth);
+      return builder
+        .with(this.action.account)
+        .as(this.action.authorization)
+        .updateauth(this._account, this._permission_name, this._parent, this._auth);
+    }
+  }
+
+  private validateMandatoryFields(account: string, permission_name: string, parent: string, auth: PermissionAuth) {
+    const validationResult = UpdateAuthActionSchema.validate({
+      account,
+      permission_name,
+      parent,
+      auth,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
+}
+
+export class DeleteAuthActionBuilder extends EosActionBuilder {
+  private _account: string;
+  private _permission_name: string;
+
+  constructor(act: Action) {
+    super(act);
+    this.action.name = this.actionName();
+  }
+
+  account(account: string): this {
+    if (Utils.isValidName(account)) {
+      this._account = account;
+    }
+    return this;
+  }
+
+  permission_name(permission_name: string): this {
+    if (Utils.isValidName(permission_name)) {
+      this._permission_name = permission_name;
+    }
+    return this;
+  }
+
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
+  actionName(): string {
+    return 'deleteauth';
+  }
+
+  build(builder: EosTxBuilder): EosJs.Serialize.Action {
+    const data = this.action.data;
+    if (typeof data === 'string') {
+      return {
+        account: this.action.account,
+        name: this.actionName(),
+        authorization: this.action.authorization,
+        data: data,
+      };
+    } else {
+      this.validateMandatoryFields(this._account, this._permission_name);
+      return builder
+        .with(this.action.account)
+        .as(this.action.authorization)
+        .deleteauth(this._account, this._permission_name);
+    }
+  }
+
+  private validateMandatoryFields(account: string, permission_name: string) {
+    const validationResult = DeleteAuthActionSchema.validate({
+      account,
+      permission_name,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
+}
+
+export class LinkAuthActionBuilder extends EosActionBuilder {
+  private _account: string;
+  private _code: string;
+  private _type: string;
+  private _requirement: string;
+
+  constructor(act: Action) {
+    super(act);
+    this.action.name = this.actionName();
+  }
+
+  account(account: string): this {
+    if (Utils.isValidName(account)) {
+      this._account = account;
+    }
+    return this;
+  }
+
+  code(code: string): this {
+    if (Utils.isValidName(code)) {
+      this._code = code;
+    }
+    return this;
+  }
+
+  type(type: string): this {
+    if (Utils.isValidName(type)) {
+      this._type = type;
+    }
+    return this;
+  }
+
+  requirement(requirement: string): this {
+    if (Utils.isValidName(requirement)) {
+      this._requirement = requirement;
+    }
+    return this;
+  }
+
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
+  actionName(): string {
+    return 'linkauth';
+  }
+
+  build(builder: EosTxBuilder): EosJs.Serialize.Action {
+    const data = this.action.data;
+    if (typeof data === 'string') {
+      return {
+        account: this.action.account,
+        name: this.actionName(),
+        authorization: this.action.authorization,
+        data: data,
+      };
+    } else {
+      this.validateMandatoryFields(this._account, this._code, this._type, this._requirement);
+      return builder
+        .with(this.action.account)
+        .as(this.action.authorization)
+        .linkauth(this._account, this._code, this._type, this._requirement);
+    }
+  }
+
+  private validateMandatoryFields(account: string, code: string, type: string, requirement: string) {
+    const validationResult = LinkAuthActionSchema.validate({
+      account,
+      code,
+      type,
+      requirement,
+    });
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
+}
+
+export class UnlinkAuthActionBuilder extends EosActionBuilder {
+  private _account: string;
+  private _code: string;
+  private _type: string;
+
+  constructor(act: Action) {
+    super(act);
+    this.action.name = this.actionName();
+  }
+
+  account(account: string): this {
+    if (Utils.isValidName(account)) {
+      this._account = account;
+    }
+    return this;
+  }
+
+  code(code: string): this {
+    if (Utils.isValidName(code)) {
+      this._code = code;
+    }
+    return this;
+  }
+
+  type(type: string): this {
+    if (Utils.isValidName(type)) {
+      this._type = type;
+    }
+    return this;
+  }
+
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
+  actionName(): string {
+    return 'unlinkauth';
+  }
+
+  build(builder: EosTxBuilder): EosJs.Serialize.Action {
+    const data = this.action.data;
+    if (typeof data === 'string') {
+      return {
+        account: this.action.account,
+        name: this.actionName(),
+        authorization: this.action.authorization,
+        data: data,
+      };
+    } else {
+      this.validateMandatoryFields(this._account, this._code, this._type);
+      return builder
+        .with(this.action.account)
+        .as(this.action.authorization)
+        .unlinkauth(this._account, this._code, this._type);
+    }
+  }
+
+  private validateMandatoryFields(account: string, code: string, type: string) {
+    const validationResult = UnlinkAuthActionSchema.validate({
+      account,
+      code,
+      type,
     });
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);

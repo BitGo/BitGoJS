@@ -1,7 +1,7 @@
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
+import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TxJson } from './ifaces';
@@ -33,15 +33,6 @@ export class Transaction extends BaseTransaction {
       const signature = ecc.Signature.sign(txHex, key.getKeys().prv).toString();
       this._signedTransaction?.signatures.push(signature);
     });
-  }
-
-  /**
-   * Set the transaction type.
-   *
-   * @param {TransactionType} transactionType The transaction type to be set.
-   */
-  setTransactionType(transactionType: TransactionType): void {
-    this._type = transactionType;
   }
 
   /**
