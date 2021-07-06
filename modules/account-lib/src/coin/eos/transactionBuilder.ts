@@ -10,7 +10,7 @@ import utils from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
-import { EosActionBuilder } from './eosActionBuilder';
+import { EosActionBuilder, TransferActionBuilder } from './eosActionBuilder';
 import { BaseTransactionSchema } from './txnSchema';
 import { Utils } from '.';
 
@@ -34,6 +34,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig);
   }
 
+<<<<<<< HEAD
+=======
+  transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
+    return new TransferActionBuilder(this.action(account, actors));
+  }
+
+>>>>>>> 9192d0d1 (feat(account-lib): buy ram bytes builder)
   protected action(account: string, actors: string[]): Action {
     this._account = account;
     const auth = actors.map((actor) => {

@@ -91,17 +91,27 @@ export const unstakeTransaction = {
   serializedContextFreeData: null,
 };
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 export const updateAuthTransaction = {
   signatures: [],
   serializedTransaction: new Uint8Array(
     Buffer.from(
       '33af835d64006400000000000000010000000000ea30550040cbdaa86c52d5010000000080d0553400000000a8ed3232550000000080d055340000905755a024c500000000a8ed323201000000010003a2a70865b500e3e9347c009d944bf8a3b42a32dac02fe465b51bc93699a20d110100010000000080d0553400000000a8ed323201000000',
+=======
+
+export const buyRamBytesTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea305500b0cafe4873bd3e010000000080d0553400000000a8ed3232140000000080d055340000000080e4b6490020000000',
+>>>>>>> 9192d0d1 (feat(account-lib): buy ram bytes builder)
       'hex',
     ),
   ),
   serializedContextFreeData: null,
 };
+<<<<<<< HEAD
 
 export const deleteAuthTransaction = {
   signatures: [],
@@ -137,3 +147,5 @@ export const unlinkAuthTransaction = {
 };
 =======
 >>>>>>> 9f3e01f3 (feat(account-lib): stake unstake builder)
+=======
+>>>>>>> 9192d0d1 (feat(account-lib): buy ram bytes builder)

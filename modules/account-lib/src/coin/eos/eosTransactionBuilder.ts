@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+<<<<<<< HEAD
 import { StakeActionBuilder } from './StakeActionBuilder';
 import { UnstakeActionBuilder } from './UnstakeActionBuilder';
 import { UpdateAuthActionBuilder } from './UpdateAuthActionBuilder';
@@ -9,6 +10,9 @@ import { DeleteAuthActionBuilder } from './DeleteAuthActionBuilder';
 import { LinkAuthActionBuilder } from './LinkAuthActionBuilder';
 import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
 import { TransferActionBuilder } from './TransferActionBuilder';
+=======
+import { StakeActionBuilder, TransferActionBuilder, UnstakeActionBuilder, BuyRamBytesActionBuilder } from './eosActionBuilder';
+>>>>>>> 9192d0d1 (feat(account-lib): buy ram bytes builder)
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -70,6 +74,7 @@ export class EosTransactionBuilder extends TransactionBuilder {
    *
    * @param {string} account Account name
    * @param {string[]} actors Authorization field
+<<<<<<< HEAD
    * @returns {UpdateAuthActionBuilder} builder to construct update auth action
    */
   updateAuthActionBuilder(account: string, actors: string[]): UpdateAuthActionBuilder {
@@ -113,6 +118,12 @@ export class EosTransactionBuilder extends TransactionBuilder {
    */
   unlinkAuthActionBuilder(account: string, actors: string[]): UnlinkAuthActionBuilder {
     const builder = new UnlinkAuthActionBuilder(super.action(account, actors));
+=======
+   * @returns {BuyRamBytesActionBuilder} builder to construct buyrambytes action
+   */
+  buyRamBytesActionBuilder(account: string, actors: string[]): BuyRamBytesActionBuilder {
+    const builder = new BuyRamBytesActionBuilder(super.action(account, actors));
+>>>>>>> 9192d0d1 (feat(account-lib): buy ram bytes builder)
     this.actionBuilders.push(builder);
     return builder;
   }
