@@ -6,7 +6,6 @@ import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/cr
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
 import { EncodedTx } from './ifaces';
-import _ from 'lodash';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
@@ -156,38 +155,6 @@ export class Utils implements BaseUtils {
       throw new InvalidTransactionError('Transaction cannot be decoded');
     }
   }
-
-  /**
-   * Estimate the transaction byte size by signing it with a random hey and calculating the byte length
-   * @param txInfo {Object} required fields to build a multisig transaction
-   * @return {number} estimated byte size of the signed transaction
-   */
-  getTransactionByteSize(txInfo): Number {
-    // The txInfo for keyreg txes only contain the object for encoding with no metadata so we can't use the normal
-    // createMultisigTransaction constructor because it will fail to construct the tx without the metadata. Since we
-    // already have the object for encoding we can instead just estimate its size directly.
-    if (!_.isUndefined(txInfo.objForEncoding)) {
-      return txInfo.estimateSize();
-    }
-  
-    const { fee = 1000 } = txInfo;
-    const transaction = this.createMultisigTransaction(Object.assign({}, txInfo, { fee }));
-    return transaction.estimateSize();
-  }
-
-  /**
-   * Create a Multisig transaction object using Algorand SDK.
-   * @param txInfo {Object} required fields to build a multisig transaction
-   * @return {MultiSigTransaction} as defined in Algorand SDK
-   */
-  protected createMultisigTransaction(txInfo): any {
-    const note = _.get(txInfo, 'note', '');
-    const convertedNote = new Uint8Array(Buffer.from(note, 'utf-8'));
-    const refinedTx = Object.assign({}, txInfo, { note: convertedNote });
-  
-    return new algosdk.Transaction(refinedTx);
-  }
-  
 }
 
 const utils = new Utils();
