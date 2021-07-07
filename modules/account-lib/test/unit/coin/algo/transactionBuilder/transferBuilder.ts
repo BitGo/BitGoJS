@@ -11,7 +11,10 @@ describe('Algo Transfer Builder', () => {
 
   const sender = AlgoResources.accounts.account1;
   const receiver = AlgoResources.accounts.account2;
-
+  const {
+    networks: { testnet },
+  } = AlgoResources;
+  const { genesisHash, genesisID } = testnet;
   beforeEach(() => {
     const config = coins.get('algo');
     builder = new TransferBuilder(config);
@@ -60,6 +63,8 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
     it('should build an unsigned transfer transaction', async () => {
@@ -84,6 +89,8 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
     it('should build from raw unsigned tx', async () => {
@@ -155,6 +162,8 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
     it('should build a half signed transfer transaction', async () => {
       const msigAddress = algosdk.multisigAddress({
@@ -182,6 +191,8 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
     it('should sign a half signed transfer tx', async () => {
       const msigAddress = algosdk.multisigAddress({
@@ -251,6 +262,8 @@ describe('Algo Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
   });
 });

@@ -35,6 +35,10 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const lastRound = 10;
       const fee = 1000;
       const tokenId = 1;
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
 
       const tx = await txnBuilder
         .fee({ fee: fee.toString() })
@@ -54,9 +58,10 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       should.deepEqual(txJson.fee, fee);
       should.deepEqual(txJson.firstRound, firstRound);
       should.deepEqual(txJson.lastRound, lastRound);
-
       should.deepEqual(txJson.tokenId, tokenId);
       should.deepEqual(txJson.amount, amount.toString());
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
     it('should decode an unsigned asset transfer transaction', async () => {
@@ -107,7 +112,10 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     test('allowlist parameters are set correctly', async () => {
       const tokenId = 123;
       const sender = account1.address;
-
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
       txnBuilder
         .allowListAsset(tokenId, { address: sender })
         .firstRound(1)
@@ -124,6 +132,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       should.equal(txJson.to, account1.address);
       should.equal(txJson.tokenId, tokenId);
       should.equal(txJson.fee, 1000);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
   });
 });
