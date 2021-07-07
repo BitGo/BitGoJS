@@ -40,6 +40,19 @@ export class Transaction extends BaseTransaction {
     });
   }
 
+  verifySignature(publicKeys: string[]): boolean {
+    const serializedTransaction = this._signedTransaction?.serializedTransaction;
+    if (this._signedTransaction && serializedTransaction) {
+      this._signedTransaction.signatures.forEach((signature, index) => {
+        ecc.verify(signature, Buffer.from(serializedTransaction), publicKeys[index]);
+        return false;
+      });
+      return true;
+    } else {
+      throw new InvalidTransactionError('Transaction has not been signed');
+    }
+  }
+
   /**
    * Set underlying eos transaction.
    *

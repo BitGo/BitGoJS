@@ -36,6 +36,7 @@ describe('Eos Transfer builder', () => {
         .memo('Some memo');
       const tx = await builder.build();
       const json = await tx.toJson();
+      should.deepEqual(builder.getTransaction().verifySignature([sender.publicKey]), true);
       should.deepEqual(json.actions[0].data.from, sender.name);
       should.deepEqual(json.actions[0].data.to, 'david');
       should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
@@ -62,6 +63,10 @@ describe('Eos Transfer builder', () => {
       builder.sign({ key: EosResources.accounts.account3.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
+      should.deepEqual(
+        builder.getTransaction().verifySignature([sender.publicKey, EosResources.accounts.account3.publicKey]),
+        true,
+      );
       should.deepEqual(json.actions[0].data.from, sender.name);
       should.deepEqual(json.actions[0].data.to, 'david');
       should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
