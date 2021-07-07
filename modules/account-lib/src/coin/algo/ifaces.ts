@@ -15,8 +15,8 @@ export interface TxData {
   voteLast?: number;
   voteKeyDilution?: number;
   tokenId?: number;
-  genesisID?: string;
-  genesisHash?: string | Buffer;
+  genesisID: string;
+  genesisHash: string | Buffer;
 }
 
 export interface EncodedTx {
