@@ -17,6 +17,13 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     this.action.name = this.actionName();
   }
 
+  /**
+   * Sets the permission's owner to be linked and the payer of the RAM needed to store
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} account valid eos name
+   */
   account(account: string): this {
     if (Utils.isValidName(account)) {
       this._account = account;
@@ -24,6 +31,13 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the owner of the action to be linked
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} code valid eos name
+   */
   code(code: string): this {
     if (Utils.isValidName(code)) {
       this._code = code;
@@ -31,6 +45,13 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the the action to be linked
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} type valid eos name
+   */
   type(type: string): this {
     if (Utils.isValidName(type)) {
       this._type = type;
@@ -38,6 +59,13 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the name of the permission
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} requirement valid eos name
+   */
   requirement(requirement: string): this {
     if (Utils.isValidName(requirement)) {
       this._requirement = requirement;
@@ -54,6 +82,7 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     return 'linkauth';
   }
 
+  /** @inheritdoc */
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
     const data = this.action.data;
     if (typeof data === 'string') {
@@ -72,6 +101,14 @@ export class LinkAuthActionBuilder extends EosActionBuilder {
     }
   }
 
+  /**
+   * Validates whether the required fields are present
+   *
+   * @param {string} account name of account
+   * @param {string} code owner of the action to be linked
+   * @param {string} type the action to be linked
+   * @param {string} requirement the permission to be linked
+   */
   private validateMandatoryFields(account: string, code: string, type: string, requirement: string) {
     const validationResult = LinkAuthActionSchema.validate({
       account,

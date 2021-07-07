@@ -15,6 +15,13 @@ export class DeleteAuthActionBuilder extends EosActionBuilder {
     this.action.name = this.actionName();
   }
 
+  /**
+   * Sets the account to delete permssions from
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} account valid eos name
+   */
   account(account: string): this {
     if (Utils.isValidName(account)) {
       this._account = account;
@@ -22,6 +29,13 @@ export class DeleteAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the name of the permission to delete
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} permission_name valid eos name
+   */
   permission_name(permission_name: string): this {
     if (Utils.isValidName(permission_name)) {
       this._permission_name = permission_name;
@@ -38,6 +52,7 @@ export class DeleteAuthActionBuilder extends EosActionBuilder {
     return 'deleteauth';
   }
 
+  /** @inheritdoc */
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
     const data = this.action.data;
     if (typeof data === 'string') {
@@ -56,6 +71,12 @@ export class DeleteAuthActionBuilder extends EosActionBuilder {
     }
   }
 
+  /**
+   * Validates whether the required fields are present
+   *
+   * @param {string} account name of account
+   * @param {string} permission_name name of permission
+   */
   private validateMandatoryFields(account: string, permission_name: string) {
     const validationResult = DeleteAuthActionSchema.validate({
       account,

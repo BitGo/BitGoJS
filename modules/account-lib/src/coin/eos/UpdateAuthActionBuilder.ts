@@ -18,6 +18,13 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     this.action.name = this.actionName();
   }
 
+  /**
+   * Sets the new permission's owner
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} account valid eos name
+   */
   account(account: string): this {
     if (Utils.isValidName(account)) {
       this._account = account;
@@ -25,6 +32,13 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the new permission's name
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} permission_name valid eos name
+   */
   permission_name(permission_name: string): this {
     if (Utils.isValidName(permission_name)) {
       this._permission_name = permission_name;
@@ -32,6 +46,13 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the permission's active status
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} parent valid eos name
+   */
   parent(parent: string): this {
     if (Utils.isValidName(parent)) {
       this._parent = parent;
@@ -39,6 +60,13 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Sets the authorization' for the new permssion
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {PermissionAuth} auth valid eos name
+   */
   auth(auth: PermissionAuth): this {
     const validationResult = PermissionAuthSchema.validate(auth);
     if (validationResult.error) {
@@ -57,6 +85,7 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     return 'updateauth';
   }
 
+  /** @inheritdoc */
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
     const data = this.action.data;
     if (typeof data === 'string') {
@@ -75,6 +104,14 @@ export class UpdateAuthActionBuilder extends EosActionBuilder {
     }
   }
 
+  /**
+   * Validates whether the required fields are present
+   *
+   * @param {string} account name of account
+   * @param {string} permission_name name of the new permission
+   * @param {string} parent the permissions active status
+   * @param {PermissionAuth} auth the authorization for the permission
+   */
   private validateMandatoryFields(account: string, permission_name: string, parent: string, auth: PermissionAuth) {
     const validationResult = UpdateAuthActionSchema.validate({
       account,

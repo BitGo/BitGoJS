@@ -3,21 +3,21 @@ import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
-import { UnstakeActionSchema } from './txnSchema';
+import { TransferActionSchema } from './txnSchema';
 
-export class UnstakeActionBuilder extends EosActionBuilder {
+export class TransferActionBuilder extends EosActionBuilder {
   private _from: string;
-  private _receiver: string;
-  private _unstake_net_quantity: string;
-  private _unstake_cpu_quantity: string;
+  private _to: string;
+  private _quantity: string;
+  private _memo: string;
 
   constructor(act: Action) {
     super(act);
-    this.action = act;
+    this.action.name = this.actionName();
   }
 
   /**
-   * Sets the account name of the user staking resources
+   * Sets the account name of the user sending tokens
    *
    * @returns {this} this action builder.
    *
@@ -29,38 +29,38 @@ export class UnstakeActionBuilder extends EosActionBuilder {
   }
 
   /**
-   * Sets the account name of the reciever of the staked resources
+   * Sets the account name of the user receiving tokens
    *
    * @returns {this} this action builder.
    *
-   * @param {string} receiver valid eos name
+   * @param {string} to valid eos name
    */
-  receiver(receiver: string): this {
-    this._receiver = receiver;
+  to(to: string): this {
+    this._to = to;
     return this;
   }
 
   /**
-   * Sets the NET unstaking quantity
+   * Sets the quantity of tokens
    *
    * @returns {this} this action builder.
    *
-   * @param {string} unstake_net_quantity valid eos quantity
+   * @param {string} qty valid eos quantity
    */
-  unstake_net_quantity(unstake_net_quantity: string): this {
-    this._unstake_net_quantity = unstake_net_quantity;
+  quantity(qty: string): this {
+    this._quantity = qty;
     return this;
   }
 
   /**
-   * Sets the CPU unstaking quantity
+   * Sets the memo
    *
    * @returns {this} this action builder.
    *
-   * @param {string} unstake_cpu_quantity valid eos quantity
+   * @param {string} memo valid eos memo
    */
-  unstake_cpu_quantity(unstake_cpu_quantity: string): this {
-    this._unstake_cpu_quantity = unstake_cpu_quantity;
+  memo(memo: string): this {
+    this._memo = memo;
     return this;
   }
 
@@ -70,7 +70,7 @@ export class UnstakeActionBuilder extends EosActionBuilder {
    * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
    */
   actionName(): string {
-    return 'undelegatebw';
+    return 'transfer';
   }
 
   /** @inheritdoc */
@@ -84,11 +84,11 @@ export class UnstakeActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
-      this.validateMandatoryFields(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
+      this.validateMandatoryFields(this._from, this._to, this._quantity, this._memo);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
-        .undelegatebw(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
+        .transfer(this._from, this._to, this._quantity, this._memo);
     }
   }
 
@@ -96,21 +96,16 @@ export class UnstakeActionBuilder extends EosActionBuilder {
    * Validates whether the required fields are present
    *
    * @param {string} from name of sender
-   * @param {string} receiver name of receiver
-   * @param {string} unstake_net_quantity NET quantity
-   * @param {string} unstake_cpu_quantity CPU quantity
+   * @param {string} to name of receiver
+   * @param {string} quantity token quantity
+   * @param {string} memo trx memo
    */
-  private validateMandatoryFields(
-    from: string,
-    receiver: string,
-    unstake_net_quantity: string,
-    unstake_cpu_quantity: string,
-  ) {
-    const validationResult = UnstakeActionSchema.validate({
+  private validateMandatoryFields(from: string, to: string, quantity: string, memo: string) {
+    const validationResult = TransferActionSchema.validate({
       from,
-      receiver,
-      unstake_net_quantity,
-      unstake_cpu_quantity,
+      to,
+      quantity,
+      memo,
     });
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);

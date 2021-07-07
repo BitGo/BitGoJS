@@ -17,26 +17,61 @@ export class StakeActionBuilder extends EosActionBuilder {
     this.action.name = this.actionName();
   }
 
+  /**
+   * Sets the account name of the user staking resources
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} from valid eos name
+   */
   from(from: string): this {
     this._from = from;
     return this;
   }
 
+  /**
+   * Sets the account name of the reciever of the staked resources
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} receiver valid eos name
+   */
   receiver(receiver: string): this {
     this._receiver = receiver;
     return this;
   }
 
+  /**
+   * Sets the NET staking quantity
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} stake_net_quantity valid eos quantity
+   */
   stake_net_quantity(stake_net_quantity: string): this {
     this._stake_net_quantity = stake_net_quantity;
     return this;
   }
 
+  /**
+   * Sets the CPU staking quantity
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {string} stake_cpu_quantity valid eos quantity
+   */
   stake_cpu_quantity(stake_cpu_quantity: string): this {
     this._stake_cpu_quantity = stake_cpu_quantity;
     return this;
   }
 
+  /**
+   * Sets whether the ownership should be transfered
+   *
+   * @returns {this} this action builder.
+   *
+   * @param {boolean} transfer defaults to true
+   */
   transfer(transfer: boolean): this {
     this._transfer = transfer;
     return this;
@@ -51,6 +86,7 @@ export class StakeActionBuilder extends EosActionBuilder {
     return 'delegatebw';
   }
 
+  /** @inheritdoc */
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
     const data = this.action.data;
     if (typeof data === 'string') {
@@ -75,6 +111,15 @@ export class StakeActionBuilder extends EosActionBuilder {
     }
   }
 
+  /**
+   * Validates whether the required fields are present
+   *
+   * @param {string} from name of sender
+   * @param {string} receiver name of receiver
+   * @param {string} stake_net_quantity NET quantity
+   * @param {string} stake_cpu_quantity CPU quantity
+   * @param {string} transfer Ownership transfer
+   */
   private validateMandatoryFields(
     from: string,
     receiver: string,

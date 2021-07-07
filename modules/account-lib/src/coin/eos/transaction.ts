@@ -21,6 +21,11 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
+  /**
+   * Signs transaction.
+   *
+   * @param {KeyPair} keys Signer keys.
+   */
   sign(keys: KeyPair[]): void {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
@@ -54,6 +59,12 @@ export class Transaction extends BaseTransaction {
     return this._eosTransaction;
   }
 
+  /**
+   * Sets the EOS chain id
+   *
+   * @param {string} id
+   * @returns {this} the transaction
+   */
   setChainId(id: string): this {
     this._chainId = id;
     return this;
