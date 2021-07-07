@@ -1,6 +1,7 @@
 import should from 'should';
+import algosdk from 'algosdk';
 import utils from '../../../../src/coin/algo/utils';
-
+import { Algo } from '../../../../src';
 import * as AlgoResources from '../../../resources/algo';
 
 describe('utils', () => {
@@ -12,5 +13,12 @@ describe('utils', () => {
     should.equal(utils.publicKeyToAlgoAddress(account1.pubKey), account1.address);
     should.equal(utils.publicKeyToAlgoAddress(account2.pubKey), account2.address);
     should.equal(utils.publicKeyToAlgoAddress(account3.pubKey), account3.address);
+  });
+
+  it('should encode an object from a string message', () => {
+    const note = Buffer.from('hola mundo', 'base64');
+    const objEncoded = Algo.algoUtils.encodeObj(note);
+    const objEncodedByAlgo = algosdk.encodeObj(note);
+    should.deepEqual(objEncoded, objEncodedByAlgo);
   });
 });
