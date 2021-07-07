@@ -7,7 +7,7 @@ import { EosTransactionBuilder } from './eosTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   public getTransferBuilder(): EosTransactionBuilder {
-    throw new Error('Method not implemented.');
+    return new EosTransactionBuilder(this._coinConfig);
   }
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -15,25 +15,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+    const builder = new EosTransactionBuilder(this._coinConfig);
+    builder.from(raw);
+    return builder;
   }
 
   /** @inheritdoc */
   getWalletInitializationBuilder(tx?: Transaction): void {
     throw new NotImplementedError('wallet not implemented');
-  }
-
-  /**
-   * Initialize the builder with the given transaction
-   *
-   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @param {TransactionBuilder} builder - the builder to be initialized
-   * @returns {TransactionBuilder} the builder initialized
-   */
-  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    // if (tx) {
-    //   builder.initBuilder(tx);
-    // }
-    return builder;
   }
 }

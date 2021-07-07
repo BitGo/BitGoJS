@@ -2,15 +2,13 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import {
-  DeleteAuthActionBuilder,
-  LinkAuthActionBuilder,
-  StakeActionBuilder,
-  TransferActionBuilder,
-  UnlinkAuthActionBuilder,
-  UnstakeActionBuilder,
-  UpdateAuthActionBuilder,
-} from './eosActionBuilder';
+import { TransferActionBuilder } from './eosActionBuilder';
+import { StakeActionBuilder } from './StakeActionBuilder';
+import { UnstakeActionBuilder } from './UnstakeActionBuilder';
+import { UpdateAuthActionBuilder } from './UpdateAuthActionBuilder';
+import { DeleteAuthActionBuilder } from './DeleteAuthActionBuilder';
+import { LinkAuthActionBuilder } from './LinkAuthActionBuilder';
+import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {

@@ -1,32 +1,19 @@
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { InvalidTransactionError } from '../baseCoin/errors';
+import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
-import { TransferActionSchema } from './txnSchema';
+import { UnstakeActionSchema } from './txnSchema';
 
-export abstract class EosActionBuilder {
-  protected action: Action;
-  constructor(act: Action) {
-    this.action = act;
-  }
-
-  /**
-   * Build eos transaction action
-   *
-   * @param {EosTxBuilder} builder Eos transaction builder
-   */
-  abstract build(builder: EosTxBuilder): EosJs.Serialize.Action;
-}
-
-export class TransferActionBuilder extends EosActionBuilder {
+export class UnstakeActionBuilder extends EosActionBuilder {
   private _from: string;
-  private _to: string;
-  private _quantity: string;
-  private _memo: string;
+  private _receiver: string;
+  private _unstake_net_quantity: string;
+  private _unstake_cpu_quantity: string;
 
   constructor(act: Action) {
     super(act);
-    this.action.name = this.actionName();
+    this.action = act;
   }
 
   from(from: string): this {
@@ -34,18 +21,18 @@ export class TransferActionBuilder extends EosActionBuilder {
     return this;
   }
 
-  to(to: string): this {
-    this._to = to;
+  receiver(receiver: string): this {
+    this._receiver = receiver;
     return this;
   }
 
-  quantity(qty: string): this {
-    this._quantity = qty;
+  unstake_net_quantity(unstake_net_quantity: string): this {
+    this._unstake_net_quantity = unstake_net_quantity;
     return this;
   }
 
-  memo(memo: string): this {
-    this._memo = memo;
+  unstake_cpu_quantity(unstake_cpu_quantity: string): this {
+    this._unstake_cpu_quantity = unstake_cpu_quantity;
     return this;
   }
 
@@ -55,7 +42,7 @@ export class TransferActionBuilder extends EosActionBuilder {
    * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
    */
   actionName(): string {
-    return 'transfer';
+    return 'undelegatebw';
   }
 
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
@@ -68,19 +55,25 @@ export class TransferActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
+      this.validateMandatoryFields(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
-        .transfer(this._from, this._to, this._quantity, this._memo);
+        .undelegatebw(this._from, this._receiver, this._unstake_net_quantity, this._unstake_cpu_quantity);
     }
   }
 
-  private validateMandatoryFields(from: string, to: string, quantity: string, memo: string) {
-    const validationResult = TransferActionSchema.validate({
+  private validateMandatoryFields(
+    from: string,
+    receiver: string,
+    unstake_net_quantity: string,
+    unstake_cpu_quantity: string,
+  ) {
+    const validationResult = UnstakeActionSchema.validate({
       from,
-      to,
-      quantity,
-      memo,
+      receiver,
+      unstake_net_quantity,
+      unstake_cpu_quantity,
     });
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);

@@ -1,51 +1,31 @@
 import * as EosJs from 'eosjs';
 import { TransactionBuilder as EosTxBuilder } from 'eosjs/dist/eosjs-api';
 import { InvalidTransactionError } from '../baseCoin/errors';
+import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
-import { TransferActionSchema } from './txnSchema';
+import { DeleteAuthActionSchema } from './txnSchema';
+import Utils from './utils';
 
-export abstract class EosActionBuilder {
-  protected action: Action;
-  constructor(act: Action) {
-    this.action = act;
-  }
-
-  /**
-   * Build eos transaction action
-   *
-   * @param {EosTxBuilder} builder Eos transaction builder
-   */
-  abstract build(builder: EosTxBuilder): EosJs.Serialize.Action;
-}
-
-export class TransferActionBuilder extends EosActionBuilder {
-  private _from: string;
-  private _to: string;
-  private _quantity: string;
-  private _memo: string;
+export class DeleteAuthActionBuilder extends EosActionBuilder {
+  private _account: string;
+  private _permission_name: string;
 
   constructor(act: Action) {
     super(act);
     this.action.name = this.actionName();
   }
 
-  from(from: string): this {
-    this._from = from;
+  account(account: string): this {
+    if (Utils.isValidName(account)) {
+      this._account = account;
+    }
     return this;
   }
 
-  to(to: string): this {
-    this._to = to;
-    return this;
-  }
-
-  quantity(qty: string): this {
-    this._quantity = qty;
-    return this;
-  }
-
-  memo(memo: string): this {
-    this._memo = memo;
+  permission_name(permission_name: string): this {
+    if (Utils.isValidName(permission_name)) {
+      this._permission_name = permission_name;
+    }
     return this;
   }
 
@@ -55,7 +35,7 @@ export class TransferActionBuilder extends EosActionBuilder {
    * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
    */
   actionName(): string {
-    return 'transfer';
+    return 'deleteauth';
   }
 
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
@@ -68,19 +48,18 @@ export class TransferActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
+      this.validateMandatoryFields(this._account, this._permission_name);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
-        .transfer(this._from, this._to, this._quantity, this._memo);
+        .deleteauth(this._account, this._permission_name);
     }
   }
 
-  private validateMandatoryFields(from: string, to: string, quantity: string, memo: string) {
-    const validationResult = TransferActionSchema.validate({
-      from,
-      to,
-      quantity,
-      memo,
+  private validateMandatoryFields(account: string, permission_name: string) {
+    const validationResult = DeleteAuthActionSchema.validate({
+      account,
+      permission_name,
     });
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
