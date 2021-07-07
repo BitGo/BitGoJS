@@ -11,6 +11,7 @@ import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
 import { TransferActionBuilder } from './TransferActionBuilder';
 import { BuyRamBytesActionBuilder } from './BuyRamBytesActionBuilder';
 import { VoteActionBuilder } from './VoteActionBuilder';
+import { PowerUpActionBuilder } from './powerupActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -35,7 +36,7 @@ export class EosTransactionBuilder extends TransactionBuilder {
    * @param {string[]} actors Authorization field
    * @returns {BuyRamBytesActionBuilder} builder to construct transfer action
    */
-   buyRamBytesActionBuilder(account: string, actors: string[]): BuyRamBytesActionBuilder {
+  buyRamBytesActionBuilder(account: string, actors: string[]): BuyRamBytesActionBuilder {
     const builder = new BuyRamBytesActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
@@ -50,6 +51,19 @@ export class EosTransactionBuilder extends TransactionBuilder {
    */
   transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
     const builder = new TransferActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize power up building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {TransferActionBuilder} builder to construct transfer action
+   */
+  powerupActionBuilder(account: string, actors: string[]): PowerUpActionBuilder {
+    const builder = new PowerUpActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
   }

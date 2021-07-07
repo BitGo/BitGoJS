@@ -62,6 +62,9 @@ export class Utils implements BaseUtils {
     throw new NotImplementedError('method not implemented');
   }
 
+  verifySignature(signature: string, data: string | Buffer, pubkey: string): boolean {
+    return ecc.verify(signature, data, pubkey) === true;
+  }
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new NotImplementedError('method not implemented');

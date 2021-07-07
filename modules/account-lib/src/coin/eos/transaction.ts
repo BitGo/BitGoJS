@@ -206,6 +206,17 @@ export class Transaction extends BaseTransaction {
             },
           });
           break;
+        case 'powerup':
+          result.actions.push({
+            data: {
+              payer: action.data.payer,
+              receiver: action.data.receiver,
+              days: action.data.days,
+              net_frac: action.data.net_frac,
+              cpu_frac: action.data.cpu_frac,
+              max_payment: action.data.max_payment,
+            },
+          });
       }
     });
     return result;
