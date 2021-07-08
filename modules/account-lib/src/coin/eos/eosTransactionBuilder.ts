@@ -9,6 +9,7 @@ import { DeleteAuthActionBuilder } from './DeleteAuthActionBuilder';
 import { LinkAuthActionBuilder } from './LinkAuthActionBuilder';
 import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
 import { TransferActionBuilder } from './TransferActionBuilder';
+import { BuyRamBytesActionBuilder } from './BuyRamBytesActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -24,6 +25,19 @@ export class EosTransactionBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
     return super.fromImplementation(rawTransaction);
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {BuyRamBytesActionBuilder} builder to construct transfer action
+   */
+   buyRamBytesActionBuilder(account: string, actors: string[]): BuyRamBytesActionBuilder {
+    const builder = new BuyRamBytesActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
   }
 
   /**
