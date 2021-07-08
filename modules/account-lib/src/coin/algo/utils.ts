@@ -2,11 +2,11 @@ import crypto from 'crypto';
 import algosdk from 'algosdk';
 import * as hex from '@stablelib/hex';
 import base32 from 'hi-base32';
+import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
 import { EncodedTx } from './ifaces';
-import _ from 'lodash';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
@@ -103,7 +103,7 @@ export class Utils implements BaseUtils {
    * @param {Uint8Array} txn The encoded unsigned transaction.
    * @returns {boolean} true if the transaction can be decoded, otherwise false
    */
-   protected isDecodableUnsignedAlgoTxn(txn: Uint8Array): boolean {
+  protected isDecodableUnsignedAlgoTxn(txn: Uint8Array): boolean {
     try {
       algosdk.decodeUnsignedTransaction(txn);
       return true;
@@ -126,7 +126,6 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
-  
 
   /**
    * Decodes a signed or unsigned algo transaction.
@@ -134,7 +133,7 @@ export class Utils implements BaseUtils {
    * @param {Uint8Array | string} txnBytes The encoded unsigned or signed txn.
    * @returns {EncodedTx} The decoded transaction.
    */
-    decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
+  decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
     const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {
@@ -159,17 +158,18 @@ export class Utils implements BaseUtils {
 
   /**
    * Estimate the transaction byte size by signing it with a random hey and calculating the byte length
+   *
    * @param txInfo {Object} required fields to build a multisig transaction
-   * @return {number} estimated byte size of the signed transaction
+   * @returns {number} estimated byte size of the signed transaction
    */
-  getTransactionByteSize(txInfo): Number {
+  getTransactionByteSize(txInfo): number {
     // The txInfo for keyreg txes only contain the object for encoding with no metadata so we can't use the normal
     // createMultisigTransaction constructor because it will fail to construct the tx without the metadata. Since we
     // already have the object for encoding we can instead just estimate its size directly.
     if (!_.isUndefined(txInfo.objForEncoding)) {
       return txInfo.estimateSize();
     }
-  
+
     const { fee = 1000 } = txInfo;
     const transaction = this.createMultisigTransaction(Object.assign({}, txInfo, { fee }));
     return transaction.estimateSize();
@@ -177,17 +177,27 @@ export class Utils implements BaseUtils {
 
   /**
    * Create a Multisig transaction object using Algorand SDK.
+   *
    * @param txInfo {Object} required fields to build a multisig transaction
-   * @return {MultiSigTransaction} as defined in Algorand SDK
+   * @returns {MultiSigTransaction} as defined in Algorand SDK
    */
   protected createMultisigTransaction(txInfo): any {
     const note = _.get(txInfo, 'note', '');
     const convertedNote = new Uint8Array(Buffer.from(note, 'utf-8'));
     const refinedTx = Object.assign({}, txInfo, { note: convertedNote });
-  
+
     return new algosdk.Transaction(refinedTx);
   }
-  
+  /*
+   * encodeObj takes a javascript object and returns its msgpack encoding
+   * Note that the encoding sorts the fields alphabetically
+   *
+   * @param {Record<string | number | symbol, any>} obj js obj
+   * @returns {Uint8Array} Uint8Array binary representation
+   */
+  encodeObj(obj: Record<string | number | symbol, any>): Uint8Array {
+    return algosdk.encodeObj(obj);
+  }
 }
 
 const utils = new Utils();
