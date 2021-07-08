@@ -63,15 +63,6 @@ export class Transaction extends BaseTransaction {
     return this._eosTransaction;
   }
 
-  /**
-   * Get underlying signed eos transaction.
-   *
-   * @returns {EosJs.RpcInterfaces.PushTransactionArgs}
-   */
-  getEosSignedTransaction(): EosJs.RpcInterfaces.PushTransactionArgs | undefined {
-    return this._signedTransaction;
-  }
-
   setChainId(id: string): this {
     this._chainId = id;
     return this;
@@ -101,64 +92,99 @@ export class Transaction extends BaseTransaction {
     const result: TxJson = {
       actions: [],
     };
-    if (this.type === TransactionType.Send) {
-      result.actions.push({
-        data: {
-          from: actions[0].data.from,
-          to: actions[0].data.to,
-          quantity: actions[0].data.quantity,
-          memo: actions[0].data.memo,
-        },
-      });
-    }
-    if (this.type === TransactionType.StakingActivate || this.type === TransactionType.StakingWithdraw) {
-      result.actions.push({
-        data: {
-          from: actions[0].data.from,
-          receiver: actions[0].data.receiver,
-          stake_net_quantity: actions[0].data.stake_net_quantity,
-          stake_cpu_quantity: actions[0].data.stake_cpu_quantity,
-          transfer: actions[0].data.transfer,
-        },
-      });
-    }
-
-    if (this.type === TransactionType.BuyRamBytes) {
-      result.actions.push({
-        data: {
-          payer: actions[0].data.payer,
-          receiver: actions[0].data.receiver,
-          bytes: actions[0].data.bytes,
-        },
-      });
-    }
-
-    if (this.type === TransactionType.WalletInitialization) {
-      result.actions.push({
-        data: {
-          creator: actions[0].data.creator,
-          name: actions[0].data.name,
-          owner: actions[0].data.owner,
-          active: actions[0].data.active,
-        },
-      });
-      result.actions.push({
-        data: {
-          payer: actions[1].data.payer,
-          receiver: actions[1].data.receiver,
-          bytes: actions[1].data.bytes,
-        },
-      });
-      result.actions.push({
-        data: {
-          from: actions[2].data.from,
-          receiver: actions[2].data.receiver,
-          stake_net_quantity: actions[2].data.stake_net_quantity,
-          stake_cpu_quantity: actions[2].data.stake_cpu_quantity,
-          transfer: actions[2].data.transfer,
-        },
-      });
-    }
+    // console.log(actions);
+    actions.forEach((action) => {
+      switch (action.name) {
+        case 'transfer':
+          result.actions.push({
+            data: {
+              from: action.data.from,
+              to: action.data.to,
+              quantity: action.data.quantity,
+              memo: action.data.memo,
+            },
+          });
+          break;
+        case 'delegatebw':
+          result.actions.push({
+            data: {
+              from: action.data.from,
+              receiver: action.data.receiver,
+              stake_net_quantity: action.data.stake_net_quantity,
+              stake_cpu_quantity: action.data.stake_cpu_quantity,
+              transfer: action.data.transfer,
+            },
+          });
+          break;
+        case 'undelegatebw':
+          result.actions.push({
+            data: {
+              from: action.data.from,
+              receiver: action.data.receiver,
+              unstake_net_quantity: action.data.unstake_net_quantity,
+              unstake_cpu_quantity: action.data.unstake_cpu_quantity,
+              transfer: action.data.transfer,
+            },
+          });
+          break;
+        case 'buyrambytes':
+          result.actions.push({
+            data: {
+              payer: action.data.payer,
+              receiver: action.data.receiver,
+              bytes: action.data.bytes,
+            },
+          });
+          break;
+        case 'newaccount':
+          result.actions.push({
+            data: {
+              creator: action.data.creator,
+              name: action.data.name,
+              owner: action.data.owner,
+              active: action.data.active,
+            },
+          });
+          break;
+        case 'updateauth':
+          result.actions.push({
+            data: {
+              account: action.data.account,
+              permission: action.data.permission,
+              parent: action.data.parent,
+              auth: action.data.auth,
+            },
+          });
+          break;
+        case 'deleteauth':
+          result.actions.push({
+            data: {
+              account: action.data.account,
+              permission: action.data.permission,
+            },
+          });
+          break;
+        case 'linkauth':
+          result.actions.push({
+            data: {
+              account: action.data.account,
+              code: action.data.code,
+              type: action.data.type,
+              requirement: action.data.requirement,
+            },
+          });
+          break;
+        case 'unlinkauth':
+          result.actions.push({
+            data: {
+              account: action.data.account,
+              code: action.data.code,
+              type: action.data.type,
+            },
+          });
+          break;
+      }
+    });
     return result;
   }
 }

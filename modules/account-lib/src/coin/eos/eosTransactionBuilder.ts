@@ -1,8 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '../baseCoin';
+// import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransferActionBuilder } from './eosActionBuilder';
+import { StakeActionBuilder, TransferActionBuilder, UnstakeActionBuilder } from './eosActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -12,7 +12,6 @@ export class EosTransactionBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._transaction.setTransactionType(TransactionType.Send);
     return super.buildImplementation();
   }
 
@@ -30,6 +29,32 @@ export class EosTransactionBuilder extends TransactionBuilder {
    */
   transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
     const builder = new TransferActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {StakeActionBuilder} builder to construct stake action
+   */
+  stakeActionBuilder(account: string, actors: string[]): StakeActionBuilder {
+    const builder = new StakeActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {UnstakeActionBuilder} builder to construct unstake action
+   */
+  unstakeActionBuilder(account: string, actors: string[]): UnstakeActionBuilder {
+    const builder = new UnstakeActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
   }

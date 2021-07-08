@@ -10,7 +10,7 @@ class StubTransactionBuilder extends EosTransactionBuilder {
   }
 }
 
-describe('Eos Transfer builder', () => {
+describe('Eos Stake builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = EosResources.accounts.account1;
@@ -29,20 +29,22 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .transferActionBuilder('eosio.token', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
-        .to(receiver.name)
-        .quantity('1.0000 SYS')
-        .memo('Some memo');
+        .receiver(receiver.name)
+        .stake_net_quantity('1.0000 SYS')
+        .stake_cpu_quantity('1.0000 SYS')
+        .transfer(false);
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
-      should.deepEqual(json.actions[0].data.to, 'david');
-      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
-      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(json.actions[0].data.receiver, 'david');
+      should.deepEqual(json.actions[0].data.stake_net_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.stake_cpu_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.transfer, false);
       should.deepEqual(
         tx.toBroadcastFormat().serializedTransaction,
-        EosResources.tranferTransaction.serializedTransaction,
+        EosResources.stakeTransaction.serializedTransaction,
       );
     });
 
@@ -54,45 +56,49 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .transferActionBuilder('eosio.token', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
-        .to(receiver.name)
-        .quantity('1.0000 SYS')
-        .memo('Some memo');
+        .receiver(receiver.name)
+        .stake_net_quantity('1.0000 SYS')
+        .stake_cpu_quantity('1.0000 SYS')
+        .transfer(false);
       builder.sign({ key: EosResources.accounts.account3.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
-      should.deepEqual(json.actions[0].data.to, 'david');
-      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
-      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(json.actions[0].data.receiver, 'david');
+      should.deepEqual(json.actions[0].data.stake_net_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.stake_cpu_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.transfer, false);
       should.deepEqual(
         tx.toBroadcastFormat().serializedTransaction,
-        EosResources.tranferTransaction.serializedTransaction,
+        EosResources.stakeTransaction.serializedTransaction,
       );
     });
 
     it('should build a trx from a raw transaction', async () => {
       builder.testnet();
-      builder.from(EosResources.tranferTransaction.serializedTransaction);
+      builder.from(EosResources.stakeTransaction.serializedTransaction);
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
-      should.deepEqual(json.actions[0].data.to, 'david');
-      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
-      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(json.actions[0].data.receiver, 'david');
+      should.deepEqual(json.actions[0].data.stake_net_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.stake_cpu_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.transfer, false);
     });
 
     it('should build a trx from a raw transaction and sign the tx', async () => {
       builder.testnet();
-      builder.from(EosResources.tranferTransaction.serializedTransaction);
+      builder.from(EosResources.stakeTransaction.serializedTransaction);
       builder.sign({ key: EosResources.accounts.account1.privateKey });
       const tx = await builder.build();
       const json = await tx.toJson();
       should.deepEqual(json.actions[0].data.from, sender.name);
-      should.deepEqual(json.actions[0].data.to, 'david');
-      should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
-      should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(json.actions[0].data.receiver, 'david');
+      should.deepEqual(json.actions[0].data.stake_net_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.stake_cpu_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.transfer, false);
     });
   });
 
@@ -105,11 +111,12 @@ describe('Eos Transfer builder', () => {
         .refBlockPrefix(100)
         .sign({ key: sender.privateKey });
       builder
-        .transferActionBuilder('eosio.token', [sender.name])
+        .stakeActionBuilder('eosio', [sender.name])
         .from(sender.name)
-        .to(receiver.name)
-        .quantity('1.0000 SYS')
-        .memo('Some memo');
+        .receiver(receiver.name)
+        .stake_net_quantity('1.0000 SYS')
+        .stake_cpu_quantity('1.0000 SYS')
+        .transfer(false);
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
   });

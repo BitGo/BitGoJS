@@ -32,8 +32,10 @@ export interface ActionData {
   memo?: string; // transfer
   bytes?: number; // buyrambytes
   transfer?: boolean; // delegatebw, undelegatebw
-  stake_net_quantity?: string; // delegatebw, undelegatebw
-  stake_cpu_quantity?: string; // delegatebw, undelegatebw
+  stake_net_quantity?: string; // undelegatebw
+  stake_cpu_quantity?: string; // undelegatebw
+  unstake_net_quantity?: string; // undelegatebw
+  unstake_cpu_quantity?: string; // undelegatebw
   creator?: string; // newaccount
   name?: string; // newaccount
   owner?: {
