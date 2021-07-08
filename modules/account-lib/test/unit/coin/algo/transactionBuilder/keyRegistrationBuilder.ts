@@ -14,6 +14,10 @@ class StubTransactionBuilder extends KeyRegistrationBuilder {
 }
 
 describe('Algo KeyRegistration Builder', () => {
+  const {
+    networks: { testnet },
+  } = AlgoResources;
+  const { genesisHash, genesisID } = testnet;
   let builder: StubTransactionBuilder;
 
   const sender = AlgoResources.accounts.account1;
@@ -99,6 +103,8 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteFirst, 1);
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
     it('should build an unsigned key registration transaction', async () => {
@@ -125,6 +131,8 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteFirst, 1);
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
     it('should build a trx from an unsigned raw transaction', async () => {
@@ -197,6 +205,8 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteFirst, 1);
       should.deepEqual(txJson.voteLast, 100);
       should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
   });
 });
