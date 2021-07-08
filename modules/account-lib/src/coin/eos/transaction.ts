@@ -107,7 +107,6 @@ export class Transaction extends BaseTransaction {
     const result: TxJson = {
       actions: [],
     };
-    // console.log(actions);
     actions.forEach((action) => {
       switch (action.name) {
         case 'transfer':
@@ -195,6 +194,15 @@ export class Transaction extends BaseTransaction {
               account: action.data.account,
               code: action.data.code,
               type: action.data.type,
+            },
+          });
+          break;
+        case 'voteproducer':
+          result.actions.push({
+            data: {
+              voter: action.data.voter,
+              proxy: action.data.proxy,
+              producers: action.data.producers,
             },
           });
           break;

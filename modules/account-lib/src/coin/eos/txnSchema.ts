@@ -87,3 +87,21 @@ export const BuyRamBytesActionSchema = joi.object({
   receiver: joi.string().pattern(nameRegex).required(),
   bytes: joi.number().positive().required(),
 });
+
+export const VoteActionSchema = 
+  joi.alternatives().try(
+      joi.object({
+        voter: joi.string().pattern(nameRegex).required(),
+        proxy: joi.string().pattern(nameRegex).required().max(0).allow(''),
+        producers: joi
+          .array()
+          .items(joi.string().pattern(nameRegex)).required().min(1)
+      }),
+      joi.object({
+        voter: joi.string().pattern(nameRegex).required(),
+        proxy: joi.string().pattern(nameRegex).required(),
+        producers: joi
+          .array()
+          .items(joi.string().pattern(nameRegex)).max(0)
+      }),
+  )

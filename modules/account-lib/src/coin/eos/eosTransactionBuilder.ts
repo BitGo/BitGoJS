@@ -10,6 +10,7 @@ import { LinkAuthActionBuilder } from './LinkAuthActionBuilder';
 import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
 import { TransferActionBuilder } from './TransferActionBuilder';
 import { BuyRamBytesActionBuilder } from './BuyRamBytesActionBuilder';
+import { VoteActionBuilder } from './VoteActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -127,6 +128,19 @@ export class EosTransactionBuilder extends TransactionBuilder {
    */
   unlinkAuthActionBuilder(account: string, actors: string[]): UnlinkAuthActionBuilder {
     const builder = new UnlinkAuthActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {VoteActionBuilder} builder to construct vote action
+   */
+  voteActionBuilder(account: string, actors: string[]): VoteActionBuilder {
+    const builder = new VoteActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
   }
