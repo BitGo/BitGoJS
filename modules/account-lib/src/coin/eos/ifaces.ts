@@ -55,6 +55,10 @@ export interface ActionData {
   };
   payer?: string; // buyrambytes
   receiver?: string; // delegatebw, undelegatebw, buyrambytes
+  days?: number; // powerup
+  net_frac?: string; // powerup
+  cpu_frac?: string; // powerup
+  max_payment?: string; // powerup
   code?: string; // setcode, linkauth, unlinkauth
   account?: string; // setcode, setabi, updateauth, deleteauth, linkauth, unlinkauth
   abi?: string; // setabi

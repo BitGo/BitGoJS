@@ -140,6 +140,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._transaction.setChainId(this._chainId);
       this._transaction.sign(this._keypair);
     } catch (e) {
+      console.log(e);
       throw new BuildTransactionError(`Could not build tx`);
     }
 

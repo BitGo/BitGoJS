@@ -88,20 +88,24 @@ export const BuyRamBytesActionSchema = joi.object({
   bytes: joi.number().positive().required(),
 });
 
-export const VoteActionSchema = 
-  joi.alternatives().try(
-      joi.object({
-        voter: joi.string().pattern(nameRegex).required(),
-        proxy: joi.string().pattern(nameRegex).required().max(0).allow(''),
-        producers: joi
-          .array()
-          .items(joi.string().pattern(nameRegex)).required().min(1)
-      }),
-      joi.object({
-        voter: joi.string().pattern(nameRegex).required(),
-        proxy: joi.string().pattern(nameRegex).required(),
-        producers: joi
-          .array()
-          .items(joi.string().pattern(nameRegex)).max(0)
-      }),
-  )
+export const VoteActionSchema = joi.alternatives().try(
+  joi.object({
+    voter: joi.string().pattern(nameRegex).required(),
+    proxy: joi.string().pattern(nameRegex).required().max(0).allow(''),
+    producers: joi.array().items(joi.string().pattern(nameRegex)).required().min(1),
+  }),
+  joi.object({
+    voter: joi.string().pattern(nameRegex).required(),
+    proxy: joi.string().pattern(nameRegex).required(),
+    producers: joi.array().items(joi.string().pattern(nameRegex)).max(0),
+  }),
+);
+
+export const PowerupActionSchema = joi.object({
+  payer: joi.string().pattern(nameRegex).required(),
+  receiver: joi.string().pattern(nameRegex).required(),
+  days: joi.number().positive().required(),
+  net_frac: joi.string().required(),
+  cpu_frac: joi.string().required(),
+  max_payment: joi.string().required(),
+});
