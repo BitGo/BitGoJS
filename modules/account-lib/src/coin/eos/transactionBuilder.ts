@@ -10,7 +10,7 @@ import utils from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Action } from './ifaces';
-import { EosActionBuilder, TransferActionBuilder } from './eosActionBuilder';
+import { EosActionBuilder } from './eosActionBuilder';
 import { BaseTransactionSchema } from './txnSchema';
 import { Utils } from '.';
 
@@ -32,10 +32,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.actions = [];
     this.testnet();
     this._transaction = new Transaction(_coinConfig);
-  }
-
-  transferActionBuilder(account: string, actors: string[]): TransferActionBuilder {
-    return new TransferActionBuilder(this.action(account, actors));
   }
 
   protected action(account: string, actors: string[]): Action {

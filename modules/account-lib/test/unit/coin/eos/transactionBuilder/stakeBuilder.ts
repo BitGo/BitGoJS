@@ -48,6 +48,40 @@ describe('Eos Stake builder', () => {
       );
     });
 
+    it('should build a multi action transaction', async () => {
+      builder
+        .testnet()
+        .expiration('2019-09-19T16:39:15')
+        .refBlockNum(100)
+        .refBlockPrefix(100)
+        .sign({ key: sender.privateKey });
+      builder
+        .stakeActionBuilder('eosio', [sender.name])
+        .from(sender.name)
+        .receiver(receiver.name)
+        .stake_net_quantity('1.0000 SYS')
+        .stake_cpu_quantity('1.0000 SYS')
+        .transfer(false);
+      builder
+        .stakeActionBuilder('eosio', [sender.name])
+        .from(sender.name)
+        .receiver(receiver.name)
+        .stake_net_quantity('1.0000 SYS')
+        .stake_cpu_quantity('1.0000 SYS')
+        .transfer(false);
+      const tx = await builder.build();
+      const json = await tx.toJson();
+      should.deepEqual(json.actions[0].data.from, sender.name);
+      should.deepEqual(json.actions[0].data.receiver, 'david');
+      should.deepEqual(json.actions[0].data.stake_net_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.stake_cpu_quantity, '1.0000 SYS');
+      should.deepEqual(json.actions[0].data.transfer, false);
+      should.deepEqual(
+        tx.toBroadcastFormat().serializedTransaction,
+        EosResources.doubleStakeTransaction.serializedTransaction,
+      );
+    });
+
     it('should build a multi-sig transaction', async () => {
       builder
         .testnet()

@@ -3,6 +3,7 @@ import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
+import { NameValidationError } from './errors';
 import OfflineAbiProvider from './OfflineAbiProvider';
 const { TextEncoder, TextDecoder } = require('util');
 
@@ -64,6 +65,14 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new NotImplementedError('method not implemented');
+  }
+
+  isValidName(s: string): boolean {
+    const regex = new RegExp(/^[.1-5a-z]{0,12}[.1-5a-j]?$/);
+    if (!regex.test(s)) {
+      throw new NameValidationError();
+    }
+    return true;
   }
 }
 

@@ -2,7 +2,13 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { StakeActionBuilder, TransferActionBuilder, UnstakeActionBuilder } from './eosActionBuilder';
+import { StakeActionBuilder } from './StakeActionBuilder';
+import { UnstakeActionBuilder } from './UnstakeActionBuilder';
+import { UpdateAuthActionBuilder } from './UpdateAuthActionBuilder';
+import { DeleteAuthActionBuilder } from './DeleteAuthActionBuilder';
+import { LinkAuthActionBuilder } from './LinkAuthActionBuilder';
+import { UnlinkAuthActionBuilder } from './UnlinkAuthActionBuilder';
+import { TransferActionBuilder } from './TransferActionBuilder';
 
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -55,6 +61,58 @@ export class EosTransactionBuilder extends TransactionBuilder {
    */
   unstakeActionBuilder(account: string, actors: string[]): UnstakeActionBuilder {
     const builder = new UnstakeActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {UpdateAuthActionBuilder} builder to construct update auth action
+   */
+  updateAuthActionBuilder(account: string, actors: string[]): UpdateAuthActionBuilder {
+    const builder = new UpdateAuthActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {DeleteAuthActionBuilder} builder to construct delete auth action
+   */
+  deleteAuthActionBuilder(account: string, actors: string[]): DeleteAuthActionBuilder {
+    const builder = new DeleteAuthActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {LinkAuthActionBuilder} builder to construct link auth action
+   */
+  linkAuthActionBuilder(account: string, actors: string[]): LinkAuthActionBuilder {
+    const builder = new LinkAuthActionBuilder(super.action(account, actors));
+    this.actionBuilders.push(builder);
+    return builder;
+  }
+
+  /**
+   * Initialize building action
+   *
+   * @param {string} account Account name
+   * @param {string[]} actors Authorization field
+   * @returns {UnlinkAuthActionBuilder} builder to construct unlink auth action
+   */
+  unlinkAuthActionBuilder(account: string, actors: string[]): UnlinkAuthActionBuilder {
+    const builder = new UnlinkAuthActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
   }

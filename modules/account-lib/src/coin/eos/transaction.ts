@@ -1,7 +1,7 @@
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
+import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TxJson } from './ifaces';
@@ -21,6 +21,11 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
+  /**
+   * Signs transaction.
+   *
+   * @param {KeyPair} keys Signer keys.
+   */
   sign(keys: KeyPair[]): void {
     if (!this._eosTransaction) {
       throw new InvalidTransactionError('Empty transaction');
@@ -35,13 +40,17 @@ export class Transaction extends BaseTransaction {
     });
   }
 
-  /**
-   * Set the transaction type.
-   *
-   * @param {TransactionType} transactionType The transaction type to be set.
-   */
-  setTransactionType(transactionType: TransactionType): void {
-    this._type = transactionType;
+  verifySignature(publicKeys: string[]): boolean {
+    const serializedTransaction = this._signedTransaction?.serializedTransaction;
+    if (this._signedTransaction && serializedTransaction) {
+      this._signedTransaction.signatures.forEach((signature, index) => {
+        ecc.verify(signature, Buffer.from(serializedTransaction), publicKeys[index]);
+        return false;
+      });
+      return true;
+    } else {
+      throw new InvalidTransactionError('Transaction has not been signed');
+    }
   }
 
   /**
@@ -63,6 +72,12 @@ export class Transaction extends BaseTransaction {
     return this._eosTransaction;
   }
 
+  /**
+   * Sets the EOS chain id
+   *
+   * @param {string} id
+   * @returns {this} the transaction
+   */
   setChainId(id: string): this {
     this._chainId = id;
     return this;

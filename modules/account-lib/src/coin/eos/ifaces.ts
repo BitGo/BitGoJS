@@ -19,10 +19,11 @@ interface AuthAccount {
   weight: number;
 }
 
-interface Auth {
+export interface PermissionAuth {
   threshold: number;
   accounts: AuthAccount[];
   keys: AuthKey[];
+  waits: [];
 }
 
 export interface ActionData {
@@ -59,7 +60,7 @@ export interface ActionData {
   abi?: string; // setabi
   permission?: string; // updateauth, deleteauth
   parent?: string; // updateauth
-  auth?: Auth; // updateauth
+  auth?: PermissionAuth; // updateauth
   type?: string; // linkauth, unlinkauth
   requirement?: string; // linkauth
   proposer?: string; // approve, unapprove, propose, cancel, exec
