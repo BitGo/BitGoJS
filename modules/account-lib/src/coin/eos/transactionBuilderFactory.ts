@@ -1,9 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
-import { TransactionBuilder } from './transactionBuilder';
-import { Transaction } from './transaction';
 import { EosTransactionBuilder } from './eosTransactionBuilder';
+import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   public getTransferBuilder(): EosTransactionBuilder {
@@ -21,7 +20,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction): void {
-    throw new NotImplementedError('wallet not implemented');
+  getWalletInitializationBuilder(tx?: Transaction): EosTransactionBuilder {
+    return new EosTransactionBuilder(this._coinConfig);
   }
 }
