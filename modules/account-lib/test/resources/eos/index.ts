@@ -125,3 +125,14 @@ export const unlinkAuthTransaction = {
   ),
   serializedContextFreeData: null,
 };
+
+export const buyRamBytesTransaction = {
+  signatures: ['SIG_K1_KVgqPFjr1C96K6F7xSBpn91w8BYVyPrb7g5xQ9ogf2XE81B26cYaJpsPTLn5eWJPuDX5jvWk3w2jvcxYT6L7WALrEJ5n4d'],
+  serializedTransaction: new Uint8Array(
+    Buffer.from(
+      '33af835d64006400000000000000010000000000ea305500b0cafe4873bd3e010000000080d0553400000000a8ed3232140000000080d055340000000080e4b6490020000000',
+      'hex',
+    ),
+  ),
+  serializedContextFreeData: null,
+};

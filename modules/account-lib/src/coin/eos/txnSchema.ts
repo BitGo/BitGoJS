@@ -81,3 +81,9 @@ export const UnlinkAuthActionSchema = joi.object({
   code: joi.string().pattern(nameRegex).required(),
   type: joi.string().pattern(nameRegex).required(),
 });
+
+export const BuyRamBytesActionSchema = joi.object({
+  payer: joi.string().pattern(nameRegex).required(),
+  receiver: joi.string().pattern(nameRegex).required(),
+  bytes: joi.number().positive().required(),
+});
