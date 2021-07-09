@@ -105,6 +105,12 @@ export class Transaction extends BaseTransaction {
     );
     const actions = deserializedTransaction.actions;
     const result: TxJson = {
+      expiration: deserializedTransaction.expiration,
+      ref_block_num: deserializedTransaction.ref_block_num,
+      ref_block_prefix: deserializedTransaction.ref_block_prefix,
+      max_net_usage_words: deserializedTransaction.max_net_usage_words,
+      max_cpu_usage_ms: deserializedTransaction.max_cpu_usage_ms,
+      delay_sec: deserializedTransaction.delay_sec,
       actions: [],
     };
     actions.forEach((action) => {

@@ -3,6 +3,9 @@
 // import * as bitcoin from '@bitgo/utxo-lib';
 
 // import { TestBitGo } from '../../../lib/test_bitgo';
+// import * as accountLib from '@bitgo/account-lib';
+import * as EosResources from '../../fixtures/coins/eos';
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 // describe('EOS:', function() {
 //   let bitgo;
@@ -153,3 +156,28 @@
 //     });
 //   });
 // });
+
+describe('Eos:', function () {
+  let bitgo;
+  let basecoin;
+
+  before(function () {
+    bitgo = new TestBitGo({ env: 'test' });
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('teos');
+  });
+
+  it('should explain an unsigned transfer transaction hex', async function () {
+    await basecoin.explainTransaction({
+      txHex: EosResources.transactions.transferTransaction.serializedTransaction,
+      feeInfo: { fee: '1000' },
+    });
+    // console.log(explain);
+    // explain.outputAmount.should.equal('10000');
+    // explain.outputs[0].amount.should.equal('10000');
+    // explain.outputs[0].address.should.equal(receiver.address);
+    // Buffer.from(explain.outputs[0].memo).toString().should.equal(AlgoResources.explainRawTx.transfer.note);
+    // explain.fee.should.equal(1000);
+    // explain.changeAmount.should.equal('0');
+  });
+});

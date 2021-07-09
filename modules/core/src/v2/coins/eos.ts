@@ -2,6 +2,7 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
+import * as accountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   TransactionExplanation,
@@ -9,6 +10,7 @@ import {
   ParseTransactionOptions,
   ParsedTransaction,
   VerifyTransactionOptions,
+  TransactionRecipient,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   HalfSignedTransaction as BaseHalfSignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
@@ -28,6 +30,111 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
+import * as ser from 'eosjs/dist/eosjs-serialize';
+
+interface AuthKey {
+  key: string;
+  weight: number;
+}
+interface Permission {
+  actor: string;
+  permission: string;
+}
+
+interface AuthAccount {
+  permission: ser.Authorization;
+  weight: number;
+}
+export interface PermissionAuth {
+  threshold: number;
+  accounts: AuthAccount[];
+  keys: AuthKey[];
+  waits: [];
+}
+
+export interface ActionData {
+  from?: string; // transfer, delegatebw, undelegatebw
+  to?: string; // transfer
+  quantity?: string; // transfer
+  memo?: string; // transfer
+  bytes?: number; // buyrambytes
+  transfer?: boolean; // delegatebw, undelegatebw
+  stake_net_quantity?: string; // undelegatebw
+  stake_cpu_quantity?: string; // undelegatebw
+  unstake_net_quantity?: string; // undelegatebw
+  unstake_cpu_quantity?: string; // undelegatebw
+  creator?: string; // newaccount
+  name?: string; // newaccount
+  owner?: {
+    // newaccount
+    threshold: number;
+    keys: AuthKey[];
+    accounts: string[];
+    waits: string[];
+  };
+  active?: {
+    // newaccount
+    threshold: number;
+    keys: AuthKey[];
+    accounts: string[];
+    waits: string[];
+  };
+  payer?: string; // buyrambytes
+  receiver?: string; // delegatebw, undelegatebw, buyrambytes
+  code?: string; // setcode, linkauth, unlinkauth
+  account?: string; // setcode, setabi, updateauth, deleteauth, linkauth, unlinkauth
+  abi?: string; // setabi
+  permission?: string; // updateauth, deleteauth
+  parent?: string; // updateauth
+  auth?: PermissionAuth; // updateauth
+  type?: string; // linkauth, unlinkauth
+  requirement?: string; // linkauth
+  proposer?: string; // approve, unapprove, propose, cancel, exec
+  proposal_name?: string; // approve, unapprove, propose, cancel, exec
+  level?: Permission; // approve, unapprove
+  canceler?: string; // cancel
+  executer?: string; // exec
+  voter?: string; // voteproducer
+  proxy?: string; // voteproducer
+  producers?: string[]; // voteproducer
+  // propose
+  requested?: Permission[];
+  trx?: {
+    expiration: string;
+    ref_block_num: number;
+    ref_block_prefix: number;
+    max_net_usage_words: number;
+    max_cpu_usage_ms: number;
+    delay_sec: number;
+    context_free_actions: [];
+    actions: ser.SerializedAction[];
+    transaction_extensions: [];
+  };
+}
+
+interface jsonAction {
+  data: ActionData;
+}
+
+export interface TxJson {
+  expiration: string;
+  ref_block_num: number;
+  ref_block_prefix: number;
+  max_net_usage_words: number;
+  max_cpu_usage_ms: number;
+  delay_sec: number;
+  actions: jsonAction[];
+}
+
+interface EosTransactionExplanation extends TransactionExplanation {
+  expiration: string;
+  ref_block_num: number;
+  ref_block_prefix: number;
+  max_net_usage_words: number;
+  max_cpu_usage_ms: number;
+  delay_sec: number;
+  actions: jsonAction[];
+}
 
 interface AddressDetails {
   address: string;
@@ -111,8 +218,9 @@ export interface EosSignedTransaction extends BaseHalfSignedTransaction {
 // }
 
 interface ExplainTransactionOptions {
-  transaction: { packed_trx: string };
-  headers: EosTransactionHeaders;
+  txHex?: string;
+  transaction?: { packed_trx: string };
+  headers?: EosTransactionHeaders;
 }
 
 // interface RecoveryTransaction {
@@ -569,38 +677,88 @@ export class Eos extends BaseCoin {
    */
   explainTransaction(
     params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    // const self = this;
-    return co<TransactionExplanation>(function* () {
-      let transaction;
+    callback?: NodeCallback<EosTransactionExplanation>
+  ): Bluebird<EosTransactionExplanation> {
+    const self = this;
+    return co<EosTransactionExplanation>(function* () {
+      const txHex = params.txHex;
+
+      if (!txHex) {
+        throw new Error('Missing explain transaction params');
+      }
+      const factory = accountLib.getBuilder(self.getChain()) as accountLib.Eos.TransactionBuilderFactory;
+
+      const txBuilder = factory.from(txHex);
+      const tx = (yield txBuilder.build()) as any;
+      const txJson = (yield tx.toJson()) as unknown as TxJson;
+      const outputs: TransactionRecipient[] = [];
+      txJson.actions.forEach((action) => {
+        if (action.data.to && action.data.quantity) {
+          outputs.push({
+            address: action.data.to,
+            amount: action.data.quantity,
+            memo: action.data.memo,
+          });
+        }
+      });
+      const displayOrder = [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'type',
+        'expiration',
+        'ref_block_num',
+        'ref_block_prefix',
+      ];
+      const explanationResult: EosTransactionExplanation = {
+        displayOrder,
+        id: '',
+        changeOutputs: [],
+        outputs,
+        outputAmount: '0',
+        changeAmount: '0',
+        fee: { fee: '0' },
+        actions: txJson.actions,
+        expiration: txJson.expiration,
+        ref_block_num: txJson.ref_block_num,
+        ref_block_prefix: txJson.ref_block_prefix,
+        max_net_usage_words: txJson.max_net_usage_words,
+        max_cpu_usage_ms: txJson.max_cpu_usage_ms,
+        delay_sec: txJson.delay_sec,
+      };
+
+      return explanationResult;
+      // let transaction;
       // try {
       //   transaction = yield self.deserializeTransaction(params);
       // } catch (e) {
       //   throw new Error('invalid EOS transaction or headers');
       // }
-      return {
-        displayOrder: [
-          'id',
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'memo',
-          'proxy',
-          'producers',
-        ],
-        id: transaction.transaction_id,
-        changeOutputs: [],
-        outputAmount: transaction.amount,
-        changeAmount: 0,
-        outputs: !!transaction.address ? [{ address: transaction.address, amount: transaction.amount }] : [],
-        fee: {},
-        memo: transaction.memo,
-        proxy: transaction.proxy,
-        producers: transaction.producers,
-      };
+      // return {
+      //   displayOrder: [
+      //     'id',
+      //     'outputAmount',
+      //     'changeAmount',
+      //     'outputs',
+      //     'changeOutputs',
+      //     'fee',
+      //     'memo',
+      //     'proxy',
+      //     'producers',
+      //   ],
+      //   id: transaction.transaction_id,
+      //   changeOutputs: [],
+      //   outputAmount: transaction.amount,
+      //   changeAmount: 0,
+      //   outputs: !!transaction.address ? [{ address: transaction.address, amount: transaction.amount }] : [],
+      //   fee: {},
+      //   memo: transaction.memo,
+      //   proxy: transaction.proxy,
+      //   producers: transaction.producers,
+      // };
     })
       .call(this)
       .asCallback(callback);

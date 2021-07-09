@@ -105,6 +105,12 @@ interface jsonAction {
 }
 
 export interface TxJson {
+  expiration?: string;
+  ref_block_num?: number;
+  ref_block_prefix?: number;
+  max_net_usage_words?: number;
+  max_cpu_usage_ms?: number;
+  delay_sec?: number;
   actions: jsonAction[];
 }
 
