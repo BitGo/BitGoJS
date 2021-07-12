@@ -2438,6 +2438,65 @@ module.exports.nockLtcRecovery = function (isKrsRecovery) {
       unconfirmedTxApperances: 0,
       txApperances: 0,
       transactions: [],
+    })
+    .get('/tx/fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39')
+    .reply(200, {
+      txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
+      version: 1,
+      locktime: 476097,
+      vin: [
+        {
+          txid: '78cd1b82384e106aaa8f4c10253211252d3db4807470e83c049db12a2637a967',
+          vout: 1,
+          sequence: 4294967295,
+          n: 0,
+          scriptSig: {
+            hex: '004730440220752f19ce5d6ce6de28f6c2d42d72e36528e54b4229b7e7b2626dc6edbec144280220714dc421c2955cc122322a558484d34dd3cec0605b1775c167724bf1a63e4a6b01483045022100d98444b2158abfe6310592382af67333a1853525fde049686e47c43874f91e0402200775c62b5d07751ca049a3ae7e580b37ce8a3c037e9aa81bcabec939f20eda32014c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953ae',
+            asm: '0 30440220752f19ce5d6ce6de28f6c2d42d72e36528e54b4229b7e7b2626dc6edbec144280220714dc421c2955cc122322a558484d34dd3cec0605b1775c167724bf1a63e4a6b[ALL] 3045022100d98444b2158abfe6310592382af67333a1853525fde049686e47c43874f91e0402200775c62b5d07751ca049a3ae7e580b37ce8a3c037e9aa81bcabec939f20eda32[ALL] 522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953ae',
+          },
+          addr: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
+          valueSat: 60000000,
+          value: 0.6,
+          doubleSpentTxID: null,
+        },
+      ],
+      vout: [
+        {
+          value: '0.19955120',
+          n: 0,
+          scriptPubKey: {
+            hex: 'a914b4eafbbe60824ec918f76a4b4a97f331a5d6be2087',
+            asm: 'OP_HASH160 b4eafbbe60824ec918f76a4b4a97f331a5d6be20 OP_EQUAL',
+            addresses: ['Qd6bEkzrwMm13oFkKhd9GKwtndBNvv958v'],
+            type: 'scripthash',
+          },
+          spentTxId: '4bab9c6238f390c113fb10f2e3a4580c90f956a782feab581640516a94918c15',
+          spentIndex: 0,
+          spentHeight: 610500,
+        },
+        {
+          value: '0.40000000',
+          n: 1,
+          scriptPubKey: {
+            hex: 'a914ef856a40c6dc109591b7d4fad170986d0bb404af87',
+            asm: 'OP_HASH160 ef856a40c6dc109591b7d4fad170986d0bb404af OP_EQUAL',
+            addresses: ['QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP'],
+            type: 'scripthash',
+          },
+          spentTxId: null,
+          spentIndex: null,
+          spentHeight: null,
+        },
+      ],
+      blockhash: '2e809dc5157b4c1ab6a9ab2d2a291683209013097a31a31262d61b2d7140b9c3',
+      blockheight: 476097,
+      confirmations: 1487867,
+      time: 1522193720,
+      blocktime: 1522193720,
+      valueOut: 0.5995512,
+      size: 370,
+      valueIn: 0.6,
+      fees: 0.0004488,
     });
 
   if (isKrsRecovery) {

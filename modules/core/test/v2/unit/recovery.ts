@@ -965,6 +965,8 @@ describe('Recovery:', function() {
     });
 
     it('should recover LTC sent to the wrong chain', async function() {
+      recoveryNocks.nockLtcRecovery(false);
+
       const recovery = await bitgo.coin('tltc').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
@@ -1105,7 +1107,7 @@ describe('Recovery:', function() {
             message: 'NOTOK',
             result: 'Rate limit exceeded',
           },
-        }, 
+        },
       ];
       recoveryNocks.nockEthRecovery(bitgo, nockUnsuccessfulEtherscanData);
 
@@ -1178,8 +1180,8 @@ describe('Recovery:', function() {
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
     });
-    
-    
+
+
     it('should construct a recovery transaction without BitGo', async function() {
       recoveryNocks.nockEthRecovery(bitgo);
 

@@ -122,4 +122,22 @@ export class Ltc extends AbstractUtxoCoin {
       return unspents;
     }).call(this);
   }
+
+  getTxInfoFromExplorer(faultyTxId: string): any {
+    return co(function *getTxInfoFromExplorer() {
+      const res = (yield request.get(this.recoveryBlockchainExplorerUrl(`/tx/${faultyTxId}`))) as any;
+      const faultyTxInfo = res.body;
+
+      faultyTxInfo.input = faultyTxInfo.vin;
+      faultyTxInfo.outputs = faultyTxInfo.vout;
+
+      (faultyTxInfo.input as any).forEach(function processTxInput(input) {
+        input.address = input.addr;
+      });
+      (faultyTxInfo.outputs as any).forEach(function processTxOutputs(output) {
+        output.address = output.scriptPubKey.addresses[0];
+      });
+      return faultyTxInfo;
+    }).call(this);
+  }
 }
