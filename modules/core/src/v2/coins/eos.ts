@@ -30,111 +30,8 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import * as ser from 'eosjs/dist/eosjs-serialize';
 
-interface AuthKey {
-  key: string;
-  weight: number;
-}
-interface Permission {
-  actor: string;
-  permission: string;
-}
-
-interface AuthAccount {
-  permission: ser.Authorization;
-  weight: number;
-}
-export interface PermissionAuth {
-  threshold: number;
-  accounts: AuthAccount[];
-  keys: AuthKey[];
-  waits: [];
-}
-
-export interface ActionData {
-  from?: string; // transfer, delegatebw, undelegatebw
-  to?: string; // transfer
-  quantity?: string; // transfer
-  memo?: string; // transfer
-  bytes?: number; // buyrambytes
-  transfer?: boolean; // delegatebw, undelegatebw
-  stake_net_quantity?: string; // undelegatebw
-  stake_cpu_quantity?: string; // undelegatebw
-  unstake_net_quantity?: string; // undelegatebw
-  unstake_cpu_quantity?: string; // undelegatebw
-  creator?: string; // newaccount
-  name?: string; // newaccount
-  owner?: {
-    // newaccount
-    threshold: number;
-    keys: AuthKey[];
-    accounts: string[];
-    waits: string[];
-  };
-  active?: {
-    // newaccount
-    threshold: number;
-    keys: AuthKey[];
-    accounts: string[];
-    waits: string[];
-  };
-  payer?: string; // buyrambytes
-  receiver?: string; // delegatebw, undelegatebw, buyrambytes
-  code?: string; // setcode, linkauth, unlinkauth
-  account?: string; // setcode, setabi, updateauth, deleteauth, linkauth, unlinkauth
-  abi?: string; // setabi
-  permission?: string; // updateauth, deleteauth
-  parent?: string; // updateauth
-  auth?: PermissionAuth; // updateauth
-  type?: string; // linkauth, unlinkauth
-  requirement?: string; // linkauth
-  proposer?: string; // approve, unapprove, propose, cancel, exec
-  proposal_name?: string; // approve, unapprove, propose, cancel, exec
-  level?: Permission; // approve, unapprove
-  canceler?: string; // cancel
-  executer?: string; // exec
-  voter?: string; // voteproducer
-  proxy?: string; // voteproducer
-  producers?: string[]; // voteproducer
-  // propose
-  requested?: Permission[];
-  trx?: {
-    expiration: string;
-    ref_block_num: number;
-    ref_block_prefix: number;
-    max_net_usage_words: number;
-    max_cpu_usage_ms: number;
-    delay_sec: number;
-    context_free_actions: [];
-    actions: ser.SerializedAction[];
-    transaction_extensions: [];
-  };
-}
-
-interface jsonAction {
-  data: ActionData;
-}
-
-export interface TxJson {
-  expiration: string;
-  ref_block_num: number;
-  ref_block_prefix: number;
-  max_net_usage_words: number;
-  max_cpu_usage_ms: number;
-  delay_sec: number;
-  actions: jsonAction[];
-}
-
-interface EosTransactionExplanation extends TransactionExplanation {
-  expiration: string;
-  ref_block_num: number;
-  ref_block_prefix: number;
-  max_net_usage_words: number;
-  max_cpu_usage_ms: number;
-  delay_sec: number;
-  actions: jsonAction[];
-}
+export interface EosTransactionExplanation extends TransactionExplanation, accountLib.Eos.interfaces.TxJson {}
 
 interface AddressDetails {
   address: string;
@@ -527,149 +424,6 @@ export class Eos extends BaseCoin {
       .asCallback(callback);
   }
 
-  // private deserializeStakeAction(eosClient: EosJs, serializedStakeAction: string): DeserializedStakeAction {
-  //   const eosStakeActionStruct = eosClient.fc.abiCache.abi('eosio').structs.delegatebw;
-  //   const serializedStakeActionBuffer = Buffer.from(serializedStakeAction, 'hex');
-  //   const stakeAction = EosJs.modules.Fcbuffer.fromBuffer(eosStakeActionStruct, serializedStakeActionBuffer);
-
-  //   if (stakeAction.from !== stakeAction.receiver) {
-  //     throw new Error(`staker (${stakeAction.from}) and receiver (${stakeAction.receiver}) must be the same`);
-  //   }
-
-  //   if (stakeAction.transfer !== 0) {
-  //     throw new Error('cannot transfer funds as part of delegatebw action');
-  //   }
-
-  //   // stake_cpu_quantity is used as the amount because the BitGo platform only stakes cpu for voting transactions
-  //   return {
-  //     address: stakeAction.from,
-  //     amount: this.bigUnitsToBaseUnits(stakeAction.stake_cpu_quantity.split(' ')[0]),
-  //   };
-  // }
-
-  // private static deserializeVoteAction(eosClient: EosJs, serializedVoteAction: string): DeserializedVoteAction {
-  //   const eosVoteActionStruct = eosClient.fc.abiCache.abi('eosio').structs.voteproducer;
-  //   const serializedVoteActionBuffer = Buffer.from(serializedVoteAction, 'hex');
-  //   const voteAction = EosJs.modules.Fcbuffer.fromBuffer(eosVoteActionStruct, serializedVoteActionBuffer);
-
-  //   const proxyIsEmpty = _.isEmpty(voteAction.proxy);
-  //   const producersIsEmpty = _.isEmpty(voteAction.producers);
-  //   if ((proxyIsEmpty && producersIsEmpty) || (!proxyIsEmpty && !producersIsEmpty)) {
-  //     throw new Error('voting transactions must specify either producers or proxy to vote for');
-  //   }
-
-  //   return { address: voteAction.voter, proxy: voteAction.proxy, producers: voteAction.producers };
-  // }
-
-  /**
-   * Deserialize a transaction
-   * @param transaction
-   * @param headers
-   */
-  // private deserializeTransaction({
-  //   transaction,
-  //   headers,
-  // }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
-  //   const self = this;
-  //   return co<DeserializedEosTransaction>(function* () {
-  //     const eosClientConfig = {
-  //       chainId: self.getChainId(),
-  //       transactionHeaders: headers,
-  //     };
-  //     const eosClient = new EosJs(eosClientConfig);
-
-  //     // Get tx base values
-  //     const eosTxStruct = eosClient.fc.structs.transaction;
-  //     const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
-  //     const tx = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
-
-  //     // Only support transactions with one (transfer | voteproducer) or two (delegatebw & voteproducer) actions
-  //     if (tx.actions.length !== 1 && tx.actions.length !== 2) {
-  //       throw new Error(`invalid number of actions: ${tx.actions.length}`);
-  //     }
-
-  //     const txAction = tx.actions[0];
-  //     if (!txAction) {
-  //       throw new Error('missing transaction action');
-  //     }
-
-  //     if (txAction.name === 'transfer') {
-  //       // Transfers should only have 1 action
-  //       if (tx.actions.length !== 1) {
-  //         throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
-  //       }
-
-  //       const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
-  //       const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
-  //       const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
-  //       tx.address = transferActionData.to;
-  //       tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
-  //       tx.memo = transferActionData.memo;
-  //     } else if (txAction.name === 'delegatebw') {
-  //       // The delegatebw action should only be part of voting transactions
-  //       if (tx.actions.length !== 2) {
-  //         throw new Error(
-  //           `staking transactions that include the delegatebw action should have 2 actions: ${tx.actions.length} given`
-  //         );
-  //       }
-
-  //       const txAction2 = tx.actions[1];
-  //       if (txAction2.name !== 'voteproducer') {
-  //         throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: voteproducer`);
-  //       }
-
-  //       const deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction.data);
-  //       const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction2.data);
-  //       if (deserializedStakeAction.address !== deserializedVoteAction.address) {
-  //         throw new Error(
-  //           `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-  //         );
-  //       }
-
-  //       tx.amount = deserializedStakeAction.amount;
-  //       tx.proxy = deserializedVoteAction.proxy;
-  //       tx.producers = deserializedVoteAction.producers;
-  //     } else if (txAction.name === 'voteproducer') {
-  //       if (tx.actions.length > 2) {
-  //         throw new Error('voting transactions should not have more than 2 actions');
-  //       }
-
-  //       let deserializedStakeAction;
-  //       if (tx.actions.length === 2) {
-  //         const txAction2 = tx.actions[1];
-  //         if (txAction2.name !== 'delegatebw') {
-  //           throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: delegatebw`);
-  //         }
-
-  //         deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction2.data);
-  //       }
-
-  //       const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction.data);
-  //       if (!!deserializedStakeAction && deserializedStakeAction.address !== deserializedVoteAction.address) {
-  //         throw new Error(
-  //           `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-  //         );
-  //       }
-
-  //       tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
-  //       tx.proxy = deserializedVoteAction.proxy;
-  //       tx.producers = deserializedVoteAction.producers;
-  //     } else {
-  //       throw new Error(`invalid action: ${txAction.name}`);
-  //     }
-  //     // Get the tx id if tx headers were provided
-  //     if (headers) {
-  //       const rebuiltTransaction = yield eosClient.transaction(
-  //         { actions: tx.actions },
-  //         { sign: false, broadcast: false }
-  //       );
-  //       tx.transaction_id = (rebuiltTransaction as any).transaction_id;
-  //     }
-
-  //     return tx;
-  //   }).call(this);
-  // }
-
   /**
    * Explain/parse transaction
    * @param params - ExplainTransactionOptions
@@ -690,7 +444,7 @@ export class Eos extends BaseCoin {
 
       const txBuilder = factory.from(txHex);
       const tx = (yield txBuilder.build()) as any;
-      const txJson = (yield tx.toJson()) as unknown as TxJson;
+      const txJson = (yield tx.toJson()) as unknown as accountLib.Eos.interfaces.TxJson;
       const outputs: TransactionRecipient[] = [];
       txJson.actions.forEach((action) => {
         if (action.data.to && action.data.quantity) {
@@ -703,15 +457,18 @@ export class Eos extends BaseCoin {
       });
       const displayOrder = [
         'id',
+        'changeOutputs',
+        'outputs',
         'outputAmount',
         'changeAmount',
-        'outputs',
-        'changeOutputs',
         'fee',
-        'type',
+        'actions',
         'expiration',
         'ref_block_num',
         'ref_block_prefix',
+        'max_net_usage_words',
+        'max_cpu_usage_ms',
+        'delay_sec',
       ];
       const explanationResult: EosTransactionExplanation = {
         displayOrder,
@@ -729,36 +486,7 @@ export class Eos extends BaseCoin {
         max_cpu_usage_ms: txJson.max_cpu_usage_ms,
         delay_sec: txJson.delay_sec,
       };
-
       return explanationResult;
-      // let transaction;
-      // try {
-      //   transaction = yield self.deserializeTransaction(params);
-      // } catch (e) {
-      //   throw new Error('invalid EOS transaction or headers');
-      // }
-      // return {
-      //   displayOrder: [
-      //     'id',
-      //     'outputAmount',
-      //     'changeAmount',
-      //     'outputs',
-      //     'changeOutputs',
-      //     'fee',
-      //     'memo',
-      //     'proxy',
-      //     'producers',
-      //   ],
-      //   id: transaction.transaction_id,
-      //   changeOutputs: [],
-      //   outputAmount: transaction.amount,
-      //   changeAmount: 0,
-      //   outputs: !!transaction.address ? [{ address: transaction.address, amount: transaction.amount }] : [],
-      //   fee: {},
-      //   memo: transaction.memo,
-      //   proxy: transaction.proxy,
-      //   producers: transaction.producers,
-      // };
     })
       .call(this)
       .asCallback(callback);

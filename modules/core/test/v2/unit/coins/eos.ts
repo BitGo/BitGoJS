@@ -4,8 +4,10 @@
 
 // import { TestBitGo } from '../../../lib/test_bitgo';
 // import * as accountLib from '@bitgo/account-lib';
+import * as accountLib from '@bitgo/account-lib';
 import * as EosResources from '../../fixtures/coins/eos';
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { EosTransactionExplanation } from '../../../../src/v2/coins/eos';
 
 // describe('EOS:', function() {
 //   let bitgo;
@@ -160,24 +162,91 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 describe('Eos:', function () {
   let bitgo;
   let basecoin;
-
+  const sender = EosResources.accounts.account1;
+  const receiver = EosResources.accounts.account2;
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teos');
   });
 
-  it('should explain an unsigned transfer transaction hex', async function () {
-    await basecoin.explainTransaction({
+  const createBaseBuilder = () => {
+    const factory = accountLib.register('eos', accountLib.Eos.TransactionBuilderFactory);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const txBuilder = factory.getEosTransactionBuilder();
+    txBuilder
+      .testnet()
+      .expiration('2019-09-19T16:39:15')
+      .refBlockNum(100)
+      .refBlockPrefix(100);
+    return txBuilder;
+  };
+
+  it('should explain a transaction hex', async function () {
+    const explain = await basecoin.explainTransaction({
       txHex: EosResources.transactions.transferTransaction.serializedTransaction,
-      feeInfo: { fee: '1000' },
-    });
-    // console.log(explain);
-    // explain.outputAmount.should.equal('10000');
-    // explain.outputs[0].amount.should.equal('10000');
-    // explain.outputs[0].address.should.equal(receiver.address);
-    // Buffer.from(explain.outputs[0].memo).toString().should.equal(AlgoResources.explainRawTx.transfer.note);
-    // explain.fee.should.equal(1000);
-    // explain.changeAmount.should.equal('0');
+      feeInfo: { fee: '0' },
+    }) as EosTransactionExplanation;
+    explain.outputs[0].address.should.equal(receiver.name);
+    explain.outputs[0].amount.should.equal('1.0000 SYS');
+    explain.outputs[0].memo?.should.equal('Some memo');
+    explain.expiration?.should.equal('2019-09-19T16:39:15.000');
+    explain.ref_block_num?.should.equal(100);
+    explain.ref_block_prefix?.should.equal(100);
+    explain.actions[0].name.should.equal('transfer');
+  });
+
+  it('should explain a transfer transaction', async function () {
+    const txBuilder = createBaseBuilder();
+    txBuilder
+      .sign({ key: sender.privateKey });
+    txBuilder
+      .transferActionBuilder('eosio.token', [sender.name])
+      .from(sender.name)
+      .to(receiver.name)
+      .quantity('1.0000 SYS')
+      .memo('Some memo');
+    txBuilder.sign({ key: EosResources.accounts.account3.privateKey });
+    const tx = await txBuilder.build();
+    const explain = await basecoin.explainTransaction({
+      txHex: tx.toBroadcastFormat().serializedTransaction,
+      feeInfo: { fee: '0' },
+    }) as EosTransactionExplanation;
+    explain.outputs[0].address.should.equal(receiver.name);
+    explain.outputs[0].amount.should.equal('1.0000 SYS');
+    explain.outputs[0].memo?.should.equal('Some memo');
+    explain.expiration?.should.equal('2019-09-19T16:39:15.000');
+    explain.ref_block_num?.should.equal(100);
+    explain.ref_block_prefix?.should.equal(100);
+    explain.actions[0].name.should.equal('transfer');
+  });
+
+  it('should explain a powerup transaction', async function () {
+    const txBuilder = createBaseBuilder();
+    txBuilder
+      .testnet()
+      .expiration('2019-09-19T16:39:15')
+      .refBlockNum(100)
+      .refBlockPrefix(100)
+      .sign({ key: sender.privateKey });
+    txBuilder
+      .powerupActionBuilder('eosio', [sender.name])
+      .payer(sender.name)
+      .receiver(receiver.name)
+      .days(1)
+      .netFrac('2000000000')
+      .cpuFrac('8000000000')
+      .maxPayment('10.0000 EOS');
+    txBuilder.sign({ key: EosResources.accounts.account3.privateKey });
+    const tx = await txBuilder.build();
+    const explain = await basecoin.explainTransaction({
+      txHex: tx.toBroadcastFormat().serializedTransaction,
+      feeInfo: { fee: '0' },
+    }) as EosTransactionExplanation;
+    explain.expiration?.should.equal('2019-09-19T16:39:15.000');
+    explain.ref_block_num?.should.equal(100);
+    explain.ref_block_prefix?.should.equal(100);
+    explain.actions[0].name.should.equal('powerup');
   });
 });

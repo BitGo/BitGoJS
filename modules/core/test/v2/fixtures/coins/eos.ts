@@ -299,3 +299,23 @@ export const transactions = {
     serializedContextFreeData: null,
   },
 };
+
+export const accounts = {
+  account1: {
+    name: 'alex1',
+    privateKey: '5JaDD9yfdXTtVnCgurdBMd7RNNtVHuiCfFoSN3u3FccpwRmV6hE',
+    publicKey: 'EOS5hqRbQY6HqZEh4LBLmFJUjEMXznYf8eymDkyZceU21rqeF9mJ1',
+  },
+
+  account2: {
+    name: 'david',
+    privateKey: '5J1owiEQiSLo3K6fyPeaiE6EhJ7Riz8xUd3Mk3u9HtyxFfR7aC7',
+    publicKey: 'EOS5HVEVr37Ms3ofpKV2WgtqA3YC1TAHLPX1tHceYAWBmN8WYdhQH',
+  },
+
+  account3: {
+    name: 'kerry',
+    privateKey: '5Jhpg7jQuYK2cBPEHuRaB8v5EMfxY1YeKHgHjPoPgdqGt8BQqxC',
+    publicKey: 'EOS5QCH3oSK2yJVDViSkDAsSAAM4c61VN2bgqwF824Nqc6FgED5Hx',
+  },
+};

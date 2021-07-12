@@ -142,7 +142,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } catch (e) {
       throw new BuildTransactionError(`Could not build tx`);
     }
-
+    await this._transaction.loadInputsAndOutputs();
     return this._transaction;
   }
 

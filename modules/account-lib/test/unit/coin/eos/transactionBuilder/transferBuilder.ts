@@ -41,6 +41,12 @@ describe('Eos Transfer builder', () => {
       should.deepEqual(json.actions[0].data.to, 'david');
       should.deepEqual(json.actions[0].data.quantity, '1.0000 SYS');
       should.deepEqual(json.actions[0].data.memo, 'Some memo');
+      should.deepEqual(tx.inputs[0].address, sender.name);
+      should.deepEqual(tx.inputs[0].value, '1.0000 SYS');
+      should.deepEqual(tx.inputs[0].coin, 'eos');
+      should.deepEqual(tx.outputs[0].address, 'david');
+      should.deepEqual(tx.outputs[0].value, '1.0000 SYS');
+      should.deepEqual(tx.outputs[0].coin, 'eos');
       should.deepEqual(
         tx.toBroadcastFormat().serializedTransaction,
         EosResources.tranferTransaction.serializedTransaction,

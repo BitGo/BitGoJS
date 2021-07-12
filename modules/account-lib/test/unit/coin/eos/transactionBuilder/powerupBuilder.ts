@@ -44,6 +44,12 @@ describe('Eos Power up builder', () => {
       should.deepEqual(json.actions[0].data.net_frac, '2000000000');
       should.deepEqual(json.actions[0].data.cpu_frac, '8000000000');
       should.deepEqual(json.actions[0].data.max_payment, '10.0000 EOS');
+      should.deepEqual(tx.inputs[0].address, sender.name);
+      should.deepEqual(tx.inputs[0].value, '0');
+      should.deepEqual(tx.inputs[0].coin, 'eos');
+      should.deepEqual(tx.outputs[0].address, receiver.name);
+      should.deepEqual(tx.outputs[0].value, '0');
+      should.deepEqual(tx.outputs[0].coin, 'eos');
       should.deepEqual(builder.getTransaction().verifySignature([sender.publicKey]), true);
       should.deepEqual(
         tx.toBroadcastFormat().serializedTransaction,
