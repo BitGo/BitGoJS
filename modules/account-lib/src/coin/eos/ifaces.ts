@@ -100,6 +100,7 @@ export interface Action {
 }
 
 interface jsonAction {
+  name: string;
   data: ActionData;
 }
 
@@ -127,6 +128,6 @@ export interface Authorization {
 export interface PublicKey {
   threshold: number;
   keys: AuthKey[];
-  accounts: string[],
-  waits: string[]
+  accounts: string[];
+  waits: string[];
 }
