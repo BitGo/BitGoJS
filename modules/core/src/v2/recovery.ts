@@ -187,8 +187,9 @@ export class CrossChainRecoveryTool {
 
       self._log('Grabbing info for faulty tx...');
 
-      // calling source coin's method of exploring transactions
-      const faultyTxInfo = (yield self.sourceCoin.getTxInfoFromExplorer(faultyTxId)) as any;
+      const TX_INFO_URL = self.sourceCoin.url(`/public/tx/${faultyTxId}`);
+      const res = (yield request.get(TX_INFO_URL)) as any;
+      const faultyTxInfo = res.body;
 
       self._log('Getting unspents on output addresses..');
 

@@ -43,9 +43,6 @@ export { Stx };
 import * as Algo from './coin/algo';
 export { Algo };
 
-import * as Eos from './coin/eos';
-export { Eos };
-
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -70,8 +67,6 @@ const coinBuilderMap = {
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,
   talgo: Algo.TransactionBuilderFactory,
-  eos: Eos.TransactionBuilderFactory,
-  teos: Eos.TransactionBuilderFactory,
 };
 
 /**

@@ -1,5 +1,3 @@
-import * as querystring from 'querystring';
-import * as url from 'url';
 import BigNumber from 'bignumber.js';
 import { bufferToHex, stripHexPrefix } from 'ethereumjs-util';
 import {
@@ -25,10 +23,9 @@ import {
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
-import * as _ from 'lodash';
+import { isEmpty } from 'lodash';
 import { isValidXpub, isValidXprv } from '../../utils/crypto';
 import { InvalidParameterValueError, SigningError, UtilsError } from '../baseCoin/errors';
-import { AddressDetails } from './iface';
 import { KeyPair } from '.';
 
 const ContractFunctionNames = [
@@ -199,7 +196,7 @@ export function isValidPrivateKey(prv: string): boolean {
  * @returns {boolean} - the validation result
  */
 function allHexChars(maybe: string): boolean {
-  return /^([0-9a-f])+$/i.test(maybe);
+  return maybe.match(/^[0-9a-f]+$/i) !== null;
 }
 
 /**
@@ -333,7 +330,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
   if (!this.isValidPublicKey(publicKey)) return false;
   if (signature.length !== 130) return false;
   if (!allHexChars(signature)) throw new UtilsError('Invalid signature input to verifySignature');
-  if (_.isEmpty(message)) throw new UtilsError('Cannot verify empty messages');
+  if (isEmpty(message)) throw new UtilsError('Cannot verify empty messages');
 
   // provided publicKey can be compressed or uncompressed
   const keyEncoding = publicKey.length === 66 ? PubKeyEncoding.Compressed : PubKeyEncoding.Uncompressed;
@@ -343,76 +340,4 @@ export function verifySignature(message: string, signature: string, publicKey: s
   const foundKey = publicKeyFromSignature(message, messageSig, keyEncoding);
 
   return foundKey === publicKey;
-}
-
-/**
- * Process address into address and memo id
- *
- * @param {String} address the address to process
- * @returns {Object} object containing address and memo id
- */
-export function getAddressDetails(address: string): AddressDetails {
-  const addressDetails = url.parse(address);
-  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
-  const baseAddress = <string>addressDetails.pathname;
-  if (!isValidAddress(baseAddress)) {
-    throw new UtilsError(`invalid address: ${address}`);
-  }
-  // address doesn't have a memo id
-  if (baseAddress === address) {
-    return {
-      address: address,
-      memoId: undefined,
-    };
-  }
-
-  if (_.isUndefined(queryDetails.memoId)) {
-    // if there are more properties, the query details need to contain the memo id property
-    throw new UtilsError(`invalid address with memo id: ${address}`);
-  }
-  const memoId = <string>queryDetails.memoId;
-  const intMemoId = parseInt(memoId, 10);
-  if (isNaN(intMemoId) || intMemoId < 0) {
-    throw new Error(`invalid memo id: ${memoId}`);
-  }
-
-  return {
-    address: baseAddress,
-    memoId,
-  };
-}
-
-/**
- * Validate and return address with appended memo id
- *
- * @param {AddressDetails} addressDetails
- * @returns {string} address with memo id
- */
-export function normalizeAddress({ address, memoId }: AddressDetails): string {
-  if (!isValidAddress(address)) {
-    throw new UtilsError(`invalid address: ${address}`);
-  }
-  if (!_.isUndefined(memoId)) {
-    const intMemoId = parseInt(memoId, 10);
-    if (isNaN(intMemoId) || intMemoId < 0) {
-      throw new Error(`invalid memo id: ${memoId}`);
-    }
-    return `${address}?memoId=${memoId}`;
-  }
-  return address;
-}
-
-/**
- * Return boolean indicating whether input is a valid address with memo id
- *
- * @param {String} address address in the form <address>?memoId=<memoId>
- * @returns {Boolean} true is input is a valid address
- */
-export function isValidAddressWithPaymentId(address: string): boolean {
-  try {
-    const addressDetails = getAddressDetails(address);
-    return address === normalizeAddress(addressDetails);
-  } catch (e) {
-    return false;
-  }
 }

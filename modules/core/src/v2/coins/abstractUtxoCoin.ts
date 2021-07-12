@@ -1700,14 +1700,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
   protected abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
-  getTxInfoFromExplorer(faultyTxId: string): any {
-    return co(function *getUnspentFromWrongChain() {
-      const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
-      const res = (yield request.get(TX_INFO_URL)) as any;
-      return res.body;
-    }).call(this);
-  }
-
   /**
    * Derive child keys at specific index, from provided parent keys
    * @param {bitcoin.HDNode[]} keyArray

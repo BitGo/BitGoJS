@@ -90,7 +90,7 @@ export class DelegateBuilder extends TransactionBuilder {
       action: CLValue.string(this._action),
       delegator: CLValue.publicKey(delegator),
       validator: CLValue.publicKey(validator),
-      amount: CLValue.u512(this._amount),
+      amount: CLValue.u512(new BigNumber(this._amount).toNumber()),
     };
   }
 

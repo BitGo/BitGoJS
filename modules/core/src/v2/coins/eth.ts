@@ -23,8 +23,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionParams,
-  TransactionRecipient,
 } from '../baseCoin';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
@@ -34,7 +32,6 @@ import * as common from '../../common';
 import * as config from '../../config';
 import { Util } from '../internal/util';
 import { EthereumLibraryUnavailableError } from '../../errors';
-import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -90,14 +87,6 @@ interface HopPrebuild {
   tx: string;
   id: string;
   signature: string;
-  paymentId: string;
-  gasPrice: number;
-  gasLimit: number;
-  amount: number;
-  recipient: string;
-  nonce: number;
-  userReqSig: string;
-  gasPriceMax: number;
 }
 
 interface Recipient {
@@ -235,30 +224,11 @@ interface FeeEstimate {
   feeEstimate: number;
 }
 
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
+interface TransactionPrebuild extends BaseTransactionPrebuild {
   hopTransaction?: HopPrebuild;
   buildParams: {
     recipients: Recipient[];
   };
-  recipients: TransactionRecipient[];
-  nextContractSequenceId: string;
-  gasPrice: number;
-  gasLimit: number;
-  isBatch: boolean;
-  coin: string;
-  token?: string;
-}
-
-// TODO: This interface will need to be updated for the new fee model introduced in the London Hard Fork
-interface EthTransactionParams extends TransactionParams {
-  gasPrice?: number;
-  gasLimit?: number;
-  hopParams?: HopParams;
-}
-
-interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  txParams: EthTransactionParams;
 }
 
 interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTransactionOptions {
@@ -282,15 +252,8 @@ interface RecoverTokenTransaction {
 export class Eth extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
-  readonly staticsCoin?: Readonly<StaticsBaseCoin>;
-
-  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
-    this.staticsCoin = staticsCoin;
-  }
-
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Eth(bitgo, staticsCoin);
+  static createInstance(bitgo: BitGo): BaseCoin {
+    return new Eth(bitgo);
   }
 
   /**
@@ -1520,109 +1483,7 @@ export class Eth extends BaseCoin {
     return true;
   }
 
-  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
-    return txPrebuild.coin === this.getChain();
-  }
-
-  /**
-   * Verify that a transaction prebuild complies with the original intention
-   *
-   * @param params
-   * @param params.txParams params object passed to send
-   * @param params.txPrebuild prebuild object returned by server
-   * @param params.wallet Wallet object to obtain keys to verify against
-   * @param callback
-   * @returns {boolean}
-   */
-  verifyTransaction(params: VerifyEthTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    const self = this;
-    return co<boolean>(function* (): any {
-      const { txParams, txPrebuild, wallet } = params;
-      if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
-        throw new Error(`missing params`);
-      }
-      if (txPrebuild.hopTransaction && txPrebuild.isBatch) {
-        throw new Error(`tx cannot be both a batch and hop transaction`);
-      }
-      if (txPrebuild.recipients.length !== 1) {
-        throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
-      }
-      if (txPrebuild.hopTransaction) {
-        // Check recipient amount for hop transaction
-        if (txParams.recipients.length !== 1) {
-          throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
-        }
-        const expectedAmount = new BigNumber(txParams.recipients[0].amount);
-        if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'hop transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-
-        // Check tx sends to hop address
-        const decodedHopTx = new optionalDeps.EthTx(txPrebuild.hopTransaction.tx);
-        const expectedHopAddress = decodedHopTx.getSenderAddress().toString('hex');
-        if (
-          expectedHopAddress.toLowerCase() !==
-          optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address.toLowerCase())
-        ) {
-          throw new Error('recipient address of txPrebuild does not match hop address');
-        }
-
-        // Convert TransactionRecipient array to Recipient array
-        const recipients: Recipient[] = txParams.recipients.map((r) => {
-          return {
-            address: r.address,
-            amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
-          };
-        });
-
-        // Check destination address and amount
-        yield self.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
-      } else if (txPrebuild.isBatch) {
-        // Check total amount for batch transaction
-        let expectedTotalAmount = new BigNumber(0);
-        for (let i = 0; i < txParams.recipients.length; i++) {
-          expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
-        }
-        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-
-        // Check batch transaction is sent to the batcher contract address for the chain
-        const batcherContractAddress = (self.staticsCoin?.network as EthereumNetwork).batcherContractAddress;
-        if (
-          !batcherContractAddress ||
-          batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
-        ) {
-          throw new Error('recipient address of txPrebuild does not match batcher address');
-        }
-      } else {
-        // Check recipient address and amount for normal transaction
-        if (txParams.recipients.length !== 1) {
-          throw new Error(`normal transaction only supports 1 recipient but ${txParams.recipients.length} found`);
-        }
-        const expectedAmount = new BigNumber(txParams.recipients[0].amount);
-        if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-        if (txParams.recipients[0].address !== txPrebuild.recipients[0].address) {
-          throw new Error(
-            'destination address in normal txPrebuild does not match that in txParams supplied by client'
-          );
-        }
-      }
-      // Check coin is correct for all transaction types
-      if (!self.verifyCoin(txPrebuild)) {
-        throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
-      }
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

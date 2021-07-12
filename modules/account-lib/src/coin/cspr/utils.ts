@@ -1,14 +1,11 @@
-import * as _ from 'lodash';
-import * as querystring from 'querystring';
-import * as url from 'url';
 import { createHash } from 'crypto';
 import BigNumber from 'bignumber.js';
 import { Keys, PublicKey, DeployUtil } from 'casper-client-sdk';
 import * as hex from '@stablelib/hex';
 import { ecdsaSign, ecdsaVerify } from 'secp256k1';
-import { InvalidTransactionError, SigningError, UtilsError } from '../baseCoin/errors';
+import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { DefaultKeys } from '../baseCoin/iface';
-import { TransactionType } from '../baseCoin';
+import { Ed25519KeyPair, TransactionType } from '../baseCoin';
 import * as Crypto from './../../utils/crypto';
 import {
   SECP256K1_PREFIX,
@@ -21,7 +18,7 @@ import {
   UNDELEGATE_CONTRACT_ACTION,
   ED25519_PREFIX,
 } from './constants';
-import { SignResponse, AddressDetails } from './ifaces';
+import { SignResponse } from './ifaces';
 import { KeyPair } from '.';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
@@ -60,37 +57,6 @@ export function isValidPublicKey(pub: string): boolean {
 }
 
 /**
- * Indicates whether the passed string is a safe hex string
- *
- * @param hex the hex value to validate
- */
-export function isValidHex(hex: string): boolean {
-  return /^([0-9a-f])+$/i.test(hex);
-}
-
-/**
- * validate ed25519 address
- * @param {string} address hex string composed of a prefix and an ed25519 public key
- * @returns {boolean} true if address is valid
- */
-export function isValidEd25519Address(address: string): boolean {
-  return isValidHex(address) &&
-    address.startsWith(ED25519_PREFIX) &&
-    Crypto.isValidEd25519PublicKey(address.slice(ED25519_PREFIX.length));
-}
-
-/**
- * validate secp256k1 address
- * @param {string} address hex string composed of a prefix and an secp256k1 public key
- * @returns {boolean} true if address is valid
- */
-export function isValidSecp256k1Address(address: string): boolean {
-  return isValidHex(address) &&
-    address.startsWith(SECP256K1_PREFIX) &&
-    Crypto.isValidPub(address.slice(SECP256K1_PREFIX.length));
-}
-
-/**
  * validate address.
  *
  * @param {string} address composed of a prefix and a Secp256k1 or Ed25519 public key
@@ -101,73 +67,21 @@ export function isValidAddress(address: string): boolean {
 }
 
 /**
- * Process address into address and transfer id
- *
- * @param {String} address the address to process
- * @returns {Object} object containing address and transfer id
+ * validate ed25519 address
+ * @param {string} address hex string composed of a prefix and an ed25519 public key
+ * @returns {boolean} true if address is valid
  */
-export function getAddressDetails(address: string): AddressDetails {
-  const addressDetails = url.parse(address);
-  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
-  const baseAddress = <string>addressDetails.pathname;
-  if (!isValidAddress(baseAddress)) {
-    throw new UtilsError(`invalid address: ${address}`);
-  }
-  // address doesn't have a transfer id
-  if (baseAddress === address) {
-    return {
-      address: address,
-      transferId: undefined,
-    };
-  }
-
-  if (_.isUndefined(queryDetails.transferId)) {
-    // if there are more properties, the query details need to contain the transfer id property
-    throw new UtilsError(`invalid address with transfer id: ${address}`);
-  }
-  const transferId = <string>queryDetails.transferId;
-  if (isNaN(parseInt(transferId))) {
-    throw new UtilsError(`invalid transfer id: ${transferId}`);
-  }
-
-  return {
-    address: baseAddress,
-    transferId,
-  };
+export function isValidEd25519Address(address: string): boolean {
+  return address.startsWith(ED25519_PREFIX) && Crypto.isValidEd25519PublicKey(address.slice(ED25519_PREFIX.length));
 }
 
 /**
- * Validate and return address with appended transfer id
- *
- * @param {AddressDetails} addressDetails
- * @returns {String} address with transfer id
+ * validate secp256k1 address
+ * @param {string} address hex string composed of a prefix and an secp256k1 public key
+ * @returns {boolean} true if address is valid
  */
-export function normalizeAddress({ address, transferId }: AddressDetails): string {
-  if (!isValidAddress(address)) {
-    throw new UtilsError(`invalid address: ${address}`);
-  }
-  if (!_.isUndefined(transferId)) {
-    if (isNaN(parseInt(transferId))) {
-      throw new Error(`invalid transfer id: ${transferId}`);
-    }
-    return `${address}?transferId=${transferId}`;
-  }
-  return address;
-}
-
-/**
- * Return boolean indicating whether input is a valid address with transfer id
- *
- * @param {String} address address in the form <address>?transferId=<transferId>
- * @returns {Boolean} true is input is a valid address
- */
-export function isValidAddressWithPaymentId(address: string): boolean {
-  try {
-    const addressDetails = getAddressDetails(address);
-    return address === normalizeAddress(addressDetails);
-  } catch (e) {
-    return false;
-  }
+export function isValidSecp256k1Address(address: string): boolean {
+  return address.startsWith(SECP256K1_PREFIX) && Crypto.isValidPub(address.slice(SECP256K1_PREFIX.length));
 }
 
 /**
@@ -409,7 +323,7 @@ function isValidSignature(signature: string, data: Uint8Array | string, publicKe
  * @param {string} publicKey Public Key as hex string used to verify the signature.
  */
 export function verifySignature(signature: string, data: Uint8Array | string, publicKey: string) {
-  if (!isValidPublicKey(publicKey)) {
+  if (!this.isValidPublicKey(publicKey)) {
     throw new SigningError(`invalid pub: ${publicKey}`);
   }
   if (

@@ -109,30 +109,5 @@ describe('CSPR util library', function() {
         Utils.verifySignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub),
       );
     });
-
-    it('should fail to validate invalid address with payment id', function() {
-      const invalidAddresses = [
-        '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=x',
-        '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?memoId=1',
-        'X0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=1',
-      ];
-
-      for (const address of invalidAddresses) {
-        should.doesNotThrow(() => Utils.isValidAddress(address));
-        Utils.isValidAddressWithPaymentId(address).should.be.false();
-      }
-    });
-
-    it('should validate address with payment id', function () {
-      const validAddresses = [
-        '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=0',
-        '020385D724A9A3E7E32BADF40F3279AF5A190CB2CFCAB6639BF532A0069E0E3824D0?transferId=1',
-        '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa?transferId=999999999', // ed25519
-      ];
-
-      for (const address of validAddresses) {
-        Utils.isValidAddressWithPaymentId(address).should.be.true();
-      }
-    });
   });
 });

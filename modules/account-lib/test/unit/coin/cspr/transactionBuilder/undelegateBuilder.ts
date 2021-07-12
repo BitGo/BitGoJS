@@ -90,15 +90,6 @@ describe('CSPR Undelegate Builder', () => {
       should.deepEqual(tx.signature.length, 1);
       tx.type.should.equal(TransactionType.StakingUnlock);
     });
-
-    it('an undelegate transaction with large amount', async function() {
-      const amount = '10000000000000000';
-      let txBuilder = initUnsignedUndelegateTxBuilder();
-      txBuilder = addAmountToBuilder(txBuilder, amount);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.amount.should.equal(amount);
-    });
   });
 
   describe('should fail to build', () => {

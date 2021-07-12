@@ -11,13 +11,11 @@ describe('Stx util library', function() {
         'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
         'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y',
         'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
-        'ST1WVJMS5VS41F0YMH7D2M0VHXRG4CY43ZJZBS60A?memoId=4',
-        'SPSZBZ3W0JC2MEBN0M9PAM2QB5SH72QYEQAMN6HD?memoId=0',
-        'SP3BV7092K9ZS9NJ9ZYMPXE69SV6Y6072M7HEZ49E?memoId=255',
+        'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
       ];
 
       for (const address of validAddresses) {
-        Utils.isValidAddressWithPaymentId(address).should.be.true();
+        Utils.isValidAddress(address).should.be.true();
       }
     });
 
@@ -25,16 +23,13 @@ describe('Stx util library', function() {
       const invalidAddresses = [
         'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
         'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
-        'ST1WVJMS5VS41F0YMH7D2M0VHXRG4CY43ZJZBS60A?memoId=NaN',
-        'SPSZBZ3W0JC2MEBN0M9PAM2QB5SH72QYEQAMN6HD?memoId=',
-        'SP3BV7092K9ZS9NJ9ZYMPXE69SV6Y6072M7HEZ49E?memoId=testing',
         '',
         'abc',
       ];
 
       for (const address of invalidAddresses) {
         should.doesNotThrow(() => Utils.isValidAddress(address));
-        Utils.isValidAddressWithPaymentId(address).should.be.false();
+        Utils.isValidAddress(address).should.be.false();
       }
     });
 

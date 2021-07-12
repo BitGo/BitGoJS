@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 
-import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
+import { Eth, RecoverOptions, RecoveryInfo, optionalDeps } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../internal/util';
 import * as config from '../../config';
@@ -328,9 +328,5 @@ export class Erc20Token extends Eth {
         value: optionalDeps.ethUtil.toBuffer(txInfo.signature),
       },
     ];
-  }
-
-  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
-    return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
   }
 }

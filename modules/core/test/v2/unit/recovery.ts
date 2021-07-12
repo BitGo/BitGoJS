@@ -832,75 +832,75 @@ describe('Recovery:', function() {
     });
   });
 
-  // describe('Recover EOS', function() {
-  //   let baseCoin;
-  //   const expectedPackedTrx = '7122315d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000';
-  //   const expectedTxId = '99c6a4eedf5cff246314bdc0a053c12d75488df3aa09474bad4ceca88d8b2498';
-  //   before(function() {
-  //     baseCoin = bitgo.coin('teos');
-  //   });
-  //   beforeEach(function() {
-  //     recoveryNocks.nockEosRecovery();
-  //   });
+  describe('Recover EOS', function() {
+    let baseCoin;
+    const expectedPackedTrx = '7122315d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000';
+    const expectedTxId = '99c6a4eedf5cff246314bdc0a053c12d75488df3aa09474bad4ceca88d8b2498';
+    before(function() {
+      baseCoin = bitgo.coin('teos');
+    });
+    beforeEach(function() {
+      recoveryNocks.nockEosRecovery();
+    });
 
-  //   it('should generate EOS recovery tx with correct expiration date', async function() {
-  //     const recoveryTx = await baseCoin.recover({
-  //       userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
-  //       backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
-  //       walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-  //       rootAddress: 'kiyjcn1ixftp',
-  //       recoveryDestination: 'jzjkpn1bjnti',
-  //     });
+    it('should generate EOS recovery tx with correct expiration date', async function() {
+      const recoveryTx = await baseCoin.recover({
+        userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
+        backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
 
-  //     recoveryTx.should.have.property('transaction');
-  //     recoveryTx.transaction.compression.should.equal('none');
-  //     recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
-  //     recoveryTx.transaction.signatures.length.should.equal(2);
-  //     recoveryTx.txid.should.equal(expectedTxId);
+      recoveryTx.should.have.property('transaction');
+      recoveryTx.transaction.compression.should.equal('none');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
+      recoveryTx.transaction.signatures.length.should.equal(2);
+      recoveryTx.txid.should.equal(expectedTxId);
 
-  //     const deserializeTransactionParams = {
-  //       transaction: {
-  //         packed_trx: recoveryTx.transaction.packed_trx
-  //       }
-  //     };
+      const deserializeTransactionParams = {
+        transaction: {
+          packed_trx: recoveryTx.transaction.packed_trx
+        }
+      };
 
-  //     const deserializedTx = await baseCoin.deserializeTransaction(deserializeTransactionParams);
-  //     const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
-  //     const hoursUntilExpiration = 8;
-  //     moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
-  //   });
+      const deserializedTx = await baseCoin.deserializeTransaction(deserializeTransactionParams);
+      const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
+      const hoursUntilExpiration = 8;
+      moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
+    });
 
-  //   it('should generate EOS recovery tx with unencrypted keys', async function() {
-  //     const recoveryTx = await baseCoin.recover({
-  //       userKey: 'xprv9s21ZrQH143K4NDgnKH8zTTLpJuCmv6dtykRJwapBH73bvcvTvCQAMmQLxRGqg5YbvXBN5VGD3y2cPGUGyrVcjWDJM573RVseHg4oL64AXx',
-  //       backupKey: 'xprv9s21ZrQH143K4Gh3snX8z5d24djEVwCwVwdHGEssUpKwHqKDtAz8gRPw7Fi12NC3ur94CsJ2KormunQQm3gNkXQiTy534NdfuQ4C2EpdmRp',
-  //       rootAddress: 'kiyjcn1ixftp',
-  //       recoveryDestination: 'jzjkpn1bjnti',
-  //     });
+    it('should generate EOS recovery tx with unencrypted keys', async function() {
+      const recoveryTx = await baseCoin.recover({
+        userKey: 'xprv9s21ZrQH143K4NDgnKH8zTTLpJuCmv6dtykRJwapBH73bvcvTvCQAMmQLxRGqg5YbvXBN5VGD3y2cPGUGyrVcjWDJM573RVseHg4oL64AXx',
+        backupKey: 'xprv9s21ZrQH143K4Gh3snX8z5d24djEVwCwVwdHGEssUpKwHqKDtAz8gRPw7Fi12NC3ur94CsJ2KormunQQm3gNkXQiTy534NdfuQ4C2EpdmRp',
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
 
-  //     recoveryTx.should.have.property('transaction');
-  //     recoveryTx.transaction.compression.should.equal('none');
-  //     recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
-  //     recoveryTx.transaction.signatures.length.should.equal(2);
-  //     recoveryTx.txid.should.equal(expectedTxId);
-  //   });
+      recoveryTx.should.have.property('transaction');
+      recoveryTx.transaction.compression.should.equal('none');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
+      recoveryTx.transaction.signatures.length.should.equal(2);
+      recoveryTx.txid.should.equal(expectedTxId);
+    });
 
-  //   it('should generate an EOS unsigned sweep', async function() {
-  //     const recoveryTx = await baseCoin.recover({
-  //       userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
-  //       backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
-  //       walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-  //       rootAddress: 'kiyjcn1ixftp',
-  //       recoveryDestination: 'jzjkpn1bjnti',
-  //     });
+    it('should generate an EOS unsigned sweep', async function() {
+      const recoveryTx = await baseCoin.recover({
+        userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
+        backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
 
-  //     recoveryTx.should.have.property('transaction');
-  //     recoveryTx.transaction.compression.should.equal('none');
-  //     recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
-  //     recoveryTx.transaction.signatures.length.should.equal(0);
-  //     recoveryTx.txid.should.equal(expectedTxId);
-  //   });
-  // });
+      recoveryTx.should.have.property('transaction');
+      recoveryTx.transaction.compression.should.equal('none');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
+      recoveryTx.transaction.signatures.length.should.equal(0);
+      recoveryTx.txid.should.equal(expectedTxId);
+    });
+  });
 
   describe('Recover ERC20', function() {
     it('should successfully construct a recovery transaction for tokens stuck in a wallet', async function() {

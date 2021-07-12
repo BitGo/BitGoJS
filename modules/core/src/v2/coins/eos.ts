@@ -17,7 +17,7 @@ import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
 import { HDNode } from '@bitgo/utxo-lib';
-// import * as EosJs from 'eosjs';
+import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import * as url from 'url';
 import * as querystring from 'querystring';
@@ -84,42 +84,42 @@ export interface EosSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: EosHalfSigned;
 }
 
-// interface DeserializedEosTransaction extends EosTransactionHeaders {
-//   max_net_usage_words: number;
-//   max_cpu_usage_ms: number;
-//   delay_sec: number;
-//   context_free_actions: EosTransactionAction[];
-//   actions: EosTransactionAction[];
-//   transaction_extensions: Record<string, unknown>[];
-//   address: string;
-//   amount: string;
-//   transaction_id: string;
-//   memo?: string;
-//   proxy?: string;
-//   producers?: string[];
-// }
+interface DeserializedEosTransaction extends EosTransactionHeaders {
+  max_net_usage_words: number;
+  max_cpu_usage_ms: number;
+  delay_sec: number;
+  context_free_actions: EosTransactionAction[];
+  actions: EosTransactionAction[];
+  transaction_extensions: Record<string, unknown>[];
+  address: string;
+  amount: string;
+  transaction_id: string;
+  memo?: string;
+  proxy?: string;
+  producers?: string[];
+}
 
-// interface DeserializedStakeAction {
-//   address: string;
-//   amount: string;
-// }
+interface DeserializedStakeAction {
+  address: string;
+  amount: string;
+}
 
-// interface DeserializedVoteAction {
-//   address: string;
-//   proxy: string;
-//   producers: string[];
-// }
+interface DeserializedVoteAction {
+  address: string;
+  proxy: string;
+  producers: string[];
+}
 
 interface ExplainTransactionOptions {
   transaction: { packed_trx: string };
   headers: EosTransactionHeaders;
 }
 
-// interface RecoveryTransaction {
-//   transaction: EosTx;
-//   txid: string;
-//   recoveryAmount: number;
-// }
+interface RecoveryTransaction {
+  transaction: EosTx;
+  txid: string;
+  recoveryAmount: number;
+}
 
 interface RecoveryOptions {
   userKey: string; // Box A
@@ -419,148 +419,148 @@ export class Eos extends BaseCoin {
       .asCallback(callback);
   }
 
-  // private deserializeStakeAction(eosClient: EosJs, serializedStakeAction: string): DeserializedStakeAction {
-  //   const eosStakeActionStruct = eosClient.fc.abiCache.abi('eosio').structs.delegatebw;
-  //   const serializedStakeActionBuffer = Buffer.from(serializedStakeAction, 'hex');
-  //   const stakeAction = EosJs.modules.Fcbuffer.fromBuffer(eosStakeActionStruct, serializedStakeActionBuffer);
+  private deserializeStakeAction(eosClient: EosJs, serializedStakeAction: string): DeserializedStakeAction {
+    const eosStakeActionStruct = eosClient.fc.abiCache.abi('eosio').structs.delegatebw;
+    const serializedStakeActionBuffer = Buffer.from(serializedStakeAction, 'hex');
+    const stakeAction = EosJs.modules.Fcbuffer.fromBuffer(eosStakeActionStruct, serializedStakeActionBuffer);
 
-  //   if (stakeAction.from !== stakeAction.receiver) {
-  //     throw new Error(`staker (${stakeAction.from}) and receiver (${stakeAction.receiver}) must be the same`);
-  //   }
+    if (stakeAction.from !== stakeAction.receiver) {
+      throw new Error(`staker (${stakeAction.from}) and receiver (${stakeAction.receiver}) must be the same`);
+    }
 
-  //   if (stakeAction.transfer !== 0) {
-  //     throw new Error('cannot transfer funds as part of delegatebw action');
-  //   }
+    if (stakeAction.transfer !== 0) {
+      throw new Error('cannot transfer funds as part of delegatebw action');
+    }
 
-  //   // stake_cpu_quantity is used as the amount because the BitGo platform only stakes cpu for voting transactions
-  //   return {
-  //     address: stakeAction.from,
-  //     amount: this.bigUnitsToBaseUnits(stakeAction.stake_cpu_quantity.split(' ')[0]),
-  //   };
-  // }
+    // stake_cpu_quantity is used as the amount because the BitGo platform only stakes cpu for voting transactions
+    return {
+      address: stakeAction.from,
+      amount: this.bigUnitsToBaseUnits(stakeAction.stake_cpu_quantity.split(' ')[0]),
+    };
+  }
 
-  // private static deserializeVoteAction(eosClient: EosJs, serializedVoteAction: string): DeserializedVoteAction {
-  //   const eosVoteActionStruct = eosClient.fc.abiCache.abi('eosio').structs.voteproducer;
-  //   const serializedVoteActionBuffer = Buffer.from(serializedVoteAction, 'hex');
-  //   const voteAction = EosJs.modules.Fcbuffer.fromBuffer(eosVoteActionStruct, serializedVoteActionBuffer);
+  private static deserializeVoteAction(eosClient: EosJs, serializedVoteAction: string): DeserializedVoteAction {
+    const eosVoteActionStruct = eosClient.fc.abiCache.abi('eosio').structs.voteproducer;
+    const serializedVoteActionBuffer = Buffer.from(serializedVoteAction, 'hex');
+    const voteAction = EosJs.modules.Fcbuffer.fromBuffer(eosVoteActionStruct, serializedVoteActionBuffer);
 
-  //   const proxyIsEmpty = _.isEmpty(voteAction.proxy);
-  //   const producersIsEmpty = _.isEmpty(voteAction.producers);
-  //   if ((proxyIsEmpty && producersIsEmpty) || (!proxyIsEmpty && !producersIsEmpty)) {
-  //     throw new Error('voting transactions must specify either producers or proxy to vote for');
-  //   }
+    const proxyIsEmpty = _.isEmpty(voteAction.proxy);
+    const producersIsEmpty = _.isEmpty(voteAction.producers);
+    if ((proxyIsEmpty && producersIsEmpty) || (!proxyIsEmpty && !producersIsEmpty)) {
+      throw new Error('voting transactions must specify either producers or proxy to vote for');
+    }
 
-  //   return { address: voteAction.voter, proxy: voteAction.proxy, producers: voteAction.producers };
-  // }
+    return { address: voteAction.voter, proxy: voteAction.proxy, producers: voteAction.producers };
+  }
 
   /**
    * Deserialize a transaction
    * @param transaction
    * @param headers
    */
-  // private deserializeTransaction({
-  //   transaction,
-  //   headers,
-  // }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
-  //   const self = this;
-  //   return co<DeserializedEosTransaction>(function* () {
-  //     const eosClientConfig = {
-  //       chainId: self.getChainId(),
-  //       transactionHeaders: headers,
-  //     };
-  //     const eosClient = new EosJs(eosClientConfig);
+  private deserializeTransaction({
+    transaction,
+    headers,
+  }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
+    const self = this;
+    return co<DeserializedEosTransaction>(function* () {
+      const eosClientConfig = {
+        chainId: self.getChainId(),
+        transactionHeaders: headers,
+      };
+      const eosClient = new EosJs(eosClientConfig);
 
-  //     // Get tx base values
-  //     const eosTxStruct = eosClient.fc.structs.transaction;
-  //     const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
-  //     const tx = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
+      // Get tx base values
+      const eosTxStruct = eosClient.fc.structs.transaction;
+      const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
+      const tx = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
 
-  //     // Only support transactions with one (transfer | voteproducer) or two (delegatebw & voteproducer) actions
-  //     if (tx.actions.length !== 1 && tx.actions.length !== 2) {
-  //       throw new Error(`invalid number of actions: ${tx.actions.length}`);
-  //     }
+      // Only support transactions with one (transfer | voteproducer) or two (delegatebw & voteproducer) actions
+      if (tx.actions.length !== 1 && tx.actions.length !== 2) {
+        throw new Error(`invalid number of actions: ${tx.actions.length}`);
+      }
 
-  //     const txAction = tx.actions[0];
-  //     if (!txAction) {
-  //       throw new Error('missing transaction action');
-  //     }
+      const txAction = tx.actions[0];
+      if (!txAction) {
+        throw new Error('missing transaction action');
+      }
 
-  //     if (txAction.name === 'transfer') {
-  //       // Transfers should only have 1 action
-  //       if (tx.actions.length !== 1) {
-  //         throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
-  //       }
+      if (txAction.name === 'transfer') {
+        // Transfers should only have 1 action
+        if (tx.actions.length !== 1) {
+          throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
+        }
 
-  //       const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
-  //       const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
-  //       const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
-  //       tx.address = transferActionData.to;
-  //       tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
-  //       tx.memo = transferActionData.memo;
-  //     } else if (txAction.name === 'delegatebw') {
-  //       // The delegatebw action should only be part of voting transactions
-  //       if (tx.actions.length !== 2) {
-  //         throw new Error(
-  //           `staking transactions that include the delegatebw action should have 2 actions: ${tx.actions.length} given`
-  //         );
-  //       }
+        const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
+        const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
+        const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
+        tx.address = transferActionData.to;
+        tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+        tx.memo = transferActionData.memo;
+      } else if (txAction.name === 'delegatebw') {
+        // The delegatebw action should only be part of voting transactions
+        if (tx.actions.length !== 2) {
+          throw new Error(
+            `staking transactions that include the delegatebw action should have 2 actions: ${tx.actions.length} given`
+          );
+        }
 
-  //       const txAction2 = tx.actions[1];
-  //       if (txAction2.name !== 'voteproducer') {
-  //         throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: voteproducer`);
-  //       }
+        const txAction2 = tx.actions[1];
+        if (txAction2.name !== 'voteproducer') {
+          throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: voteproducer`);
+        }
 
-  //       const deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction.data);
-  //       const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction2.data);
-  //       if (deserializedStakeAction.address !== deserializedVoteAction.address) {
-  //         throw new Error(
-  //           `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-  //         );
-  //       }
+        const deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction.data);
+        const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction2.data);
+        if (deserializedStakeAction.address !== deserializedVoteAction.address) {
+          throw new Error(
+            `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
+          );
+        }
 
-  //       tx.amount = deserializedStakeAction.amount;
-  //       tx.proxy = deserializedVoteAction.proxy;
-  //       tx.producers = deserializedVoteAction.producers;
-  //     } else if (txAction.name === 'voteproducer') {
-  //       if (tx.actions.length > 2) {
-  //         throw new Error('voting transactions should not have more than 2 actions');
-  //       }
+        tx.amount = deserializedStakeAction.amount;
+        tx.proxy = deserializedVoteAction.proxy;
+        tx.producers = deserializedVoteAction.producers;
+      } else if (txAction.name === 'voteproducer') {
+        if (tx.actions.length > 2) {
+          throw new Error('voting transactions should not have more than 2 actions');
+        }
 
-  //       let deserializedStakeAction;
-  //       if (tx.actions.length === 2) {
-  //         const txAction2 = tx.actions[1];
-  //         if (txAction2.name !== 'delegatebw') {
-  //           throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: delegatebw`);
-  //         }
+        let deserializedStakeAction;
+        if (tx.actions.length === 2) {
+          const txAction2 = tx.actions[1];
+          if (txAction2.name !== 'delegatebw') {
+            throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: delegatebw`);
+          }
 
-  //         deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction2.data);
-  //       }
+          deserializedStakeAction = self.deserializeStakeAction(eosClient, txAction2.data);
+        }
 
-  //       const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction.data);
-  //       if (!!deserializedStakeAction && deserializedStakeAction.address !== deserializedVoteAction.address) {
-  //         throw new Error(
-  //           `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-  //         );
-  //       }
+        const deserializedVoteAction = Eos.deserializeVoteAction(eosClient, txAction.data);
+        if (!!deserializedStakeAction && deserializedStakeAction.address !== deserializedVoteAction.address) {
+          throw new Error(
+            `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
+          );
+        }
 
-  //       tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
-  //       tx.proxy = deserializedVoteAction.proxy;
-  //       tx.producers = deserializedVoteAction.producers;
-  //     } else {
-  //       throw new Error(`invalid action: ${txAction.name}`);
-  //     }
-  //     // Get the tx id if tx headers were provided
-  //     if (headers) {
-  //       const rebuiltTransaction = yield eosClient.transaction(
-  //         { actions: tx.actions },
-  //         { sign: false, broadcast: false }
-  //       );
-  //       tx.transaction_id = (rebuiltTransaction as any).transaction_id;
-  //     }
+        tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
+        tx.proxy = deserializedVoteAction.proxy;
+        tx.producers = deserializedVoteAction.producers;
+      } else {
+        throw new Error(`invalid action: ${txAction.name}`);
+      }
+      // Get the tx id if tx headers were provided
+      if (headers) {
+        const rebuiltTransaction = yield eosClient.transaction(
+          { actions: tx.actions },
+          { sign: false, broadcast: false }
+        );
+        tx.transaction_id = (rebuiltTransaction as any).transaction_id;
+      }
 
-  //     return tx;
-  //   }).call(this);
-  // }
+      return tx;
+    }).call(this);
+  }
 
   /**
    * Explain/parse transaction
@@ -571,14 +571,14 @@ export class Eos extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
-    // const self = this;
+    const self = this;
     return co<TransactionExplanation>(function* () {
       let transaction;
-      // try {
-      //   transaction = yield self.deserializeTransaction(params);
-      // } catch (e) {
-      //   throw new Error('invalid EOS transaction or headers');
-      // }
+      try {
+        transaction = yield self.deserializeTransaction(params);
+      } catch (e) {
+        throw new Error('invalid EOS transaction or headers');
+      }
       return {
         displayOrder: [
           'id',
@@ -682,6 +682,7 @@ export class Eos extends BaseCoin {
       if (!self.isValidAddress(recoveryDestination)) {
         throw new Error('Invalid destination address!');
       }
+
       return keys;
     }).call(this);
   }
@@ -812,122 +813,122 @@ export class Eos extends BaseCoin {
    * @param transaction The EOS transaction returned from `eosClient.transaction` to serialize
    * @return {String} serialized transaction in hex format
    */
-  // serializeTransaction(eosClient: EosJs, transaction: EosJs.transaction): string {
-  //   const eosTxStruct = eosClient.fc.structs.transaction;
-  //   const txHex = transaction.transaction.transaction;
-  //   const txObject = eosTxStruct.fromObject(txHex);
+  serializeTransaction(eosClient: EosJs, transaction: EosJs.transaction): string {
+    const eosTxStruct = eosClient.fc.structs.transaction;
+    const txHex = transaction.transaction.transaction;
+    const txObject = eosTxStruct.fromObject(txHex);
 
-  //   return EosJs.modules.Fcbuffer.toBuffer(eosTxStruct, txObject).toString('hex');
-  // }
+    return EosJs.modules.Fcbuffer.toBuffer(eosTxStruct, txObject).toString('hex');
+  }
 
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
    * @param callback
    */
-  // recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
-  //   const self = this;
-  //   return co<RecoveryTransaction>(function* () {
-  //     if (!params.rootAddress) {
-  //       throw new Error('missing required string rootAddress');
-  //     }
-  //     const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-  //     const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+  recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    const self = this;
+    return co<RecoveryTransaction>(function* () {
+      if (!params.rootAddress) {
+        throw new Error('missing required string rootAddress');
+      }
+      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-  //     const keys = (yield self.initiateRecovery(params)) as any;
+      const keys = (yield self.initiateRecovery(params)) as any;
 
-  //     const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
+      const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
 
-  //     if (!account.core_liquid_balance) {
-  //       throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
-  //     }
+      if (!account.core_liquid_balance) {
+        throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
+      }
 
-  //     if (!account.permissions) {
-  //       throw new Error('Could not find permissions for ' + params.rootAddress);
-  //     }
-  //     const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
-  //     const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
+      if (!account.permissions) {
+        throw new Error('Could not find permissions for ' + params.rootAddress);
+      }
+      const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
+      const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
 
-  //     const activePermission = _.find(account.permissions, { perm_name: 'active' });
-  //     const requiredAuth = _.get(activePermission, 'required_auth');
-  //     if (!requiredAuth) {
-  //       throw new Error('Required auth for active permission not found in account');
-  //     }
-  //     if (requiredAuth.threshold !== 2) {
-  //       throw new Error('Unexpected active permission threshold');
-  //     }
+      const activePermission = _.find(account.permissions, { perm_name: 'active' });
+      const requiredAuth = _.get(activePermission, 'required_auth');
+      if (!requiredAuth) {
+        throw new Error('Required auth for active permission not found in account');
+      }
+      if (requiredAuth.threshold !== 2) {
+        throw new Error('Unexpected active permission threshold');
+      }
 
-  //     const foundPubs = {};
-  //     const requiredAuthKeys = requiredAuth.keys;
-  //     for (const signer of requiredAuthKeys) {
-  //       if (signer.weight !== 1) {
-  //         throw new Error('invalid signer weight');
-  //       }
-  //       // if it's a dupe of a pub we already know, block
-  //       if (foundPubs[signer.key]) {
-  //         throw new Error('duplicate signer key');
-  //       }
-  //       foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
-  //     }
-  //     if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
-  //       throw new Error('unexpected incidence frequency of user signer key');
-  //     }
+      const foundPubs = {};
+      const requiredAuthKeys = requiredAuth.keys;
+      for (const signer of requiredAuthKeys) {
+        if (signer.weight !== 1) {
+          throw new Error('invalid signer weight');
+        }
+        // if it's a dupe of a pub we already know, block
+        if (foundPubs[signer.key]) {
+          throw new Error('duplicate signer key');
+        }
+        foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
+      }
+      if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
+        throw new Error('unexpected incidence frequency of user signer key');
+      }
 
-  //     const accountBalance = account.core_liquid_balance.split(' ')[0];
-  //     const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance));
+      const accountBalance = account.core_liquid_balance.split(' ')[0];
+      const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance));
 
-  //     const destinationAddress = params.recoveryDestination;
-  //     const destinationAddressDetails = self.getAddressDetails(destinationAddress);
-  //     const destinationAccount = yield self.getAccountFromNode({ address: destinationAddress });
-  //     if (!destinationAccount) {
-  //       throw new Error('Destination account not found');
-  //     }
+      const destinationAddress = params.recoveryDestination;
+      const destinationAddressDetails = self.getAddressDetails(destinationAddress);
+      const destinationAccount = yield self.getAccountFromNode({ address: destinationAddress });
+      if (!destinationAccount) {
+        throw new Error('Destination account not found');
+      }
 
-  //     const transactionHeaders = yield self.getTransactionHeadersFromNode();
-  //     const eosClient = new EosJs({ chainId: self.getChainId(), transactionHeaders });
+      const transactionHeaders = yield self.getTransactionHeadersFromNode();
+      const eosClient = new EosJs({ chainId: self.getChainId(), transactionHeaders });
 
-  //     const transferAction = self.getTransferAction({
-  //       recipient: destinationAddressDetails.address,
-  //       sender: params.rootAddress,
-  //       amount: new BigNumber(recoveryAmount),
-  //       memo: destinationAddressDetails.memoId,
-  //     });
+      const transferAction = self.getTransferAction({
+        recipient: destinationAddressDetails.address,
+        sender: params.rootAddress,
+        amount: new BigNumber(recoveryAmount),
+        memo: destinationAddressDetails.memoId,
+      });
 
-  //     const transaction = yield eosClient.transaction({ actions: [transferAction] }, { sign: false, broadcast: false });
+      const transaction = yield eosClient.transaction({ actions: [transferAction] }, { sign: false, broadcast: false });
 
-  //     const serializedTransaction = self.serializeTransaction(eosClient, transaction);
-  //     const txObject = {
-  //       transaction: {
-  //         compression: 'none',
-  //         packed_trx: serializedTransaction,
-  //         signatures: [] as string[],
-  //       },
-  //       txid: (transaction as any).transaction_id,
-  //       recoveryAmount: accountBalance,
-  //     };
-  //     const signableTx = Buffer.concat([
-  //       Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
-  //       Buffer.from(serializedTransaction, 'hex'), // The serialized unsigned tx
-  //       Buffer.from(new Uint8Array(32)), // Some padding
-  //     ]).toString('hex');
+      const serializedTransaction = self.serializeTransaction(eosClient, transaction);
+      const txObject = {
+        transaction: {
+          compression: 'none',
+          packed_trx: serializedTransaction,
+          signatures: [] as string[],
+        },
+        txid: (transaction as any).transaction_id,
+        recoveryAmount: accountBalance,
+      };
+      const signableTx = Buffer.concat([
+        Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
+        Buffer.from(serializedTransaction, 'hex'), // The serialized unsigned tx
+        Buffer.from(new Uint8Array(32)), // Some padding
+      ]).toString('hex');
 
-  //     if (isUnsignedSweep) {
-  //       return txObject;
-  //     }
+      if (isUnsignedSweep) {
+        return txObject;
+      }
 
-  //     const userSignature = self.signTx(signableTx, keys[0]);
-  //     txObject.transaction.signatures.push(userSignature);
+      const userSignature = self.signTx(signableTx, keys[0]);
+      txObject.transaction.signatures.push(userSignature);
 
-  //     if (!isKrsRecovery) {
-  //       const backupSignature = self.signTx(signableTx, keys[1]);
-  //       txObject.transaction.signatures.push(backupSignature);
-  //     }
+      if (!isKrsRecovery) {
+        const backupSignature = self.signTx(signableTx, keys[1]);
+        txObject.transaction.signatures.push(backupSignature);
+      }
 
-  //     return txObject;
-  //   })
-  //     .call(this)
-  //     .asCallback(callback);
-  // }
+      return txObject;
+    })
+      .call(this)
+      .asCallback(callback);
+  }
 
   parseTransaction(
     params: ParseTransactionOptions,

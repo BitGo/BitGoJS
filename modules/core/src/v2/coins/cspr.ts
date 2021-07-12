@@ -10,19 +10,19 @@ import {
   BaseCoin,
   KeyPair,
   SignedTransaction,
+  VerifyAddressOptions,
   VerifyTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
   ParseTransactionOptions,
   ParsedTransaction,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
 } from '../baseCoin';
 
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
+import { InvalidTransactionError } from '../../errors';
 
 const co = Bluebird.coroutine;
 
@@ -65,10 +65,6 @@ interface TransactionOperation {
   validator: string;
 }
 
-interface VerifyAddressOptions extends BaseVerifyAddressOptions {
-  rootAddress: string;
-}
-
 export class Cspr extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -103,26 +99,8 @@ export class Cspr extends BaseCoin {
     // TODO: Implement when available on the SDK.
     return Bluebird.resolve(true).asCallback(callback);
   }
-
-  /**
-   * Check if address is valid, then make sure it matches the root address.
-   *
-   * @param {VerifyAddressOptions} params address and rootAddress to verify
-   */
   verifyAddress(params: VerifyAddressOptions): boolean {
-    const { address, rootAddress } = params;
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    const addressDetails = accountLib.Cspr.Utils.getAddressDetails(address);
-    const rootAddressDetails = accountLib.Cspr.Utils.getAddressDetails(rootAddress);
-    if (addressDetails.address !== rootAddressDetails.address) {
-      throw new UnexpectedAddressError(
-        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
-      );
-    }
-    return true;
+    return accountLib.Cspr.Utils.isValidAddress(params.address);
   }
 
   /**
@@ -173,17 +151,10 @@ export class Cspr extends BaseCoin {
     }
   }
 
-  /**
-   * Return boolean indicating whether input is valid CSPR address
-   *
-   * @param address the pub to be checked
-   * @returns true if the address is valid
-   */
   isValidAddress(address: string): boolean {
     try {
-      const addressDetails = accountLib.Cspr.Utils.getAddressDetails(address);
-      return address === accountLib.Cspr.Utils.normalizeAddress(addressDetails);
-    } catch (e) {
+      return accountLib.Cspr.Utils.isValidAddress(address);
+    } catch (error) {
       return false;
     }
   }

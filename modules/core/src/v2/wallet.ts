@@ -1810,11 +1810,12 @@ export class Wallet {
       const txPrebuild = (yield txPrebuildQuery) as any;
 
       try {
+        const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
         yield self.baseCoin.verifyTransaction({
           txParams: params,
           txPrebuild,
           wallet: self,
-          verification: params.verification ?? {},
+          verification: verificationParams,
           reqId: params.reqId,
         });
       } catch (e) {

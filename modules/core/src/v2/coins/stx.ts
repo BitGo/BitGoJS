@@ -99,9 +99,8 @@ export class Stx extends BaseCoin {
     const { address } = params;
     if (!this.isValidAddress(address)) throw new InvalidAddressError(`invalid address: ${address}`);
 
-    const addressDetails = accountLib.Stx.Utils.getAddressDetails(address);
     try {
-      const [version] = c32addressDecode(addressDetails.address);
+      const [version] = c32addressDecode(address);
       const versionString = accountLib.Stx.AddressVersion[version];
       if (versionString === undefined) throw new InvalidAddressError(`invalid address version: ${address}`);
     } catch (e) {
@@ -161,7 +160,7 @@ export class Stx extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     try {
-      return accountLib.Stx.Utils.isValidAddressWithPaymentId(address);
+      return accountLib.Stx.Utils.isValidAddress(address);
     } catch (e) {
       return false;
     }

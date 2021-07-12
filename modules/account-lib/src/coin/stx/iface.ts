@@ -37,8 +37,3 @@ export interface SignResponse {
   signature: string;
   recid: number;
 }
-
-export interface AddressDetails {
-  address: string;
-  memoId?: string;
-}

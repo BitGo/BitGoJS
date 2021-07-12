@@ -45,7 +45,6 @@ export interface AccountNetwork extends BaseNetwork {
 export interface EthereumNetwork extends AccountNetwork {
   // unique chain id used for replay-protecting transactions
   readonly chainId: number;
-  readonly batcherContractAddress?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -222,7 +221,6 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://etherscan.io/address/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
-  batcherContractAddress = '0x92c44c271a53f5cec699549c531d595c9692f663';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -243,7 +241,6 @@ class Kovan extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 42;
-  batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
 }
 
 class Goerli extends Testnet implements EthereumNetwork {
@@ -252,7 +249,6 @@ class Goerli extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 5;
-  batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
