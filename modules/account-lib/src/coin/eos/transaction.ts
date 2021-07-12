@@ -111,6 +111,7 @@ export class Transaction extends BaseTransaction {
       switch (action.name) {
         case 'transfer':
           result.actions.push({
+            name: action.name,
             data: {
               from: action.data.from,
               to: action.data.to,
@@ -121,6 +122,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'delegatebw':
           result.actions.push({
+            name: action.name,
             data: {
               from: action.data.from,
               receiver: action.data.receiver,
@@ -132,6 +134,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'undelegatebw':
           result.actions.push({
+            name: action.name,
             data: {
               from: action.data.from,
               receiver: action.data.receiver,
@@ -143,6 +146,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'buyrambytes':
           result.actions.push({
+            name: action.name,
             data: {
               payer: action.data.payer,
               receiver: action.data.receiver,
@@ -152,6 +156,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'newaccount':
           result.actions.push({
+            name: action.name,
             data: {
               creator: action.data.creator,
               name: action.data.name,
@@ -162,6 +167,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'updateauth':
           result.actions.push({
+            name: action.name,
             data: {
               account: action.data.account,
               permission: action.data.permission,
@@ -172,6 +178,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'deleteauth':
           result.actions.push({
+            name: action.name,
             data: {
               account: action.data.account,
               permission: action.data.permission,
@@ -180,6 +187,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'linkauth':
           result.actions.push({
+            name: action.name,
             data: {
               account: action.data.account,
               code: action.data.code,
@@ -190,6 +198,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'unlinkauth':
           result.actions.push({
+            name: action.name,
             data: {
               account: action.data.account,
               code: action.data.code,
@@ -199,6 +208,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'voteproducer':
           result.actions.push({
+            name: action.name,
             data: {
               voter: action.data.voter,
               proxy: action.data.proxy,
@@ -208,6 +218,7 @@ export class Transaction extends BaseTransaction {
           break;
         case 'powerup':
           result.actions.push({
+            name: action.name,
             data: {
               payer: action.data.payer,
               receiver: action.data.receiver,
@@ -220,8 +231,9 @@ export class Transaction extends BaseTransaction {
           break;
         case 'newaccount':
           result.actions.push({
+            name: action.name,
             data: {
-              creator : action.data.creator,
+              creator: action.data.creator,
               name: action.data.name,
               owner: action.data.owner,
               active: action.data.active,

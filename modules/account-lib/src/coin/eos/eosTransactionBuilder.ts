@@ -14,7 +14,6 @@ import { VoteActionBuilder } from './VoteActionBuilder';
 import { PowerUpActionBuilder } from './powerupActionBuilder';
 import { NewAccountActionBuilder } from './NewAccountActionBuilder';
 
-
 export class EosTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -168,7 +167,7 @@ export class EosTransactionBuilder extends TransactionBuilder {
    * @param {string[]} actors Authorization field
    * @returns {NewAccountActionBuilder} builder to construct new account
    */
-   newAccountActionBuilder(account: string, actors: string[]): NewAccountActionBuilder {
+  newAccountActionBuilder(account: string, actors: string[]): NewAccountActionBuilder {
     const builder = new NewAccountActionBuilder(super.action(account, actors));
     this.actionBuilders.push(builder);
     return builder;
