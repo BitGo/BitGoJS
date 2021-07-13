@@ -7,8 +7,11 @@ import {
   ContractCallOptions,
   UnsignedMultiSigContractCallOptions,
   ClarityValue,
-  parseToCV,
   ClarityAbiType,
+  encodeClarityValue,
+  tupleCV,
+  bufferCV,
+  noneCV,
 } from '@stacks/transactions';
 import { TransactionType } from '../baseCoin';
 import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
@@ -131,12 +134,37 @@ export class ContractBuilder extends TransactionBuilder {
     return this;
   }
 
-  functionArgs(args: ClarityValueJson[]): this {
+  functionArgs(args: ClarityValueJson[] | ClarityValue[]): this {
     this._functionArgs = args.map((arg) => {
-      let type = arg.type === 'int' ? 'int128' : arg.type;
-      type = type === 'uint' ? 'uint128' : type;
-      return parseToCV(arg.value, type as ClarityAbiType);
+      if (arg.val) {
+        return this.parseCv(arg);
+      } else {
+        // got direct clarity value after deserialization in fromImplementation
+        return arg;
+      }
     });
     return this;
+  }
+
+  private parseCv(arg: ClarityValueJson): ClarityValue | undefined {
+    if (arg.val === 'none') {
+      return noneCV();
+    } else if (arg.type === 'buffer') {
+      return bufferCV(arg.val);
+    } else if (arg.type === 'tuple') {
+      if (arg.val instanceof Array) {
+        const data = {};
+        arg.val.forEach((a) => {
+          data[a.key] = this.parseCv({ type: a.type, val: a.val });
+        });
+        return tupleCV(data);
+      } else {
+        return noneCV();
+      }
+    } else if (typeof arg.val === 'string') {
+      return encodeClarityValue(arg.type as ClarityAbiType, arg.val);
+    } else {
+      return noneCV();
+    }
   }
 }
