@@ -1,5 +1,5 @@
-import { ClarityAbiType, PayloadType } from '@stacks/transactions';
-import { KeyPair } from '.';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ClarityValue, PayloadType } from '@stacks/transactions';
 
 export interface TxData {
   id: string;
@@ -25,14 +25,19 @@ export interface StacksContractPayload {
   contractAddress: string;
   contractName: string;
   functionName: string;
-  functionArgs: ClarityValueJson[];
+  functionArgs: ClarityValue[];
 }
 
 export interface ClarityValueJson {
   type: string;
-  value: string;
+  val: any | TupleData[];
 }
 
+export interface TupleData {
+  type: string;
+  val: any;
+  key: string;
+}
 export interface SignResponse {
   signature: string;
   recid: number;

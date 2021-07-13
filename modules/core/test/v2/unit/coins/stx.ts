@@ -171,7 +171,7 @@ describe('STX:', function() {
     explain.contractName.should.equal(testData.txExplainedContract.contractName);
     explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
     explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
-    explain.contractFunctionArgs[0].value.should.equal(testData.txExplainedContract.functionArgs[0].value);
+    explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
   });
 
 
