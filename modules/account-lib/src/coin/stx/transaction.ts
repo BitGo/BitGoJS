@@ -10,8 +10,6 @@ import {
   createStacksPublicKey,
   isSingleSig,
   TransactionAuthField,
-  cvToString,
-  getCVTypeString,
   MultiSigSpendingCondition,
   createTransactionAuthField,
   PubKeyEncoding,
@@ -131,12 +129,7 @@ export class Transaction extends BaseTransaction {
         contractAddress: addressToString(payload.contractAddress),
         contractName: payload.contractName.content,
         functionName: payload.functionName.content,
-        functionArgs: payload.functionArgs.map((arg) => {
-          return {
-            type: getCVTypeString(arg),
-            value: cvToString(arg),
-          };
-        }),
+        functionArgs: payload.functionArgs,
       };
       return contractPayload;
     } else {
