@@ -26,7 +26,7 @@ import ContractType = protocol.Transaction.Contract.ContractType;
 
 const DEFAULT_EXPIRATION = 3600000; // one hour
 const MAX_DURATION = 31536000000; // one year
-export const MAX_FEE = 1000000000; // 1e9 = 1000 TRX acording https://developers.tron.network/docs/setting-a-fee-limit-on-deployexecution
+export const MAX_FEE = 5000000000; // 5e9 = 5000 TRX acording https://developers.tron.network/docs/setting-a-fee-limit-on-deployexecution
 
 export class ContractCallBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
