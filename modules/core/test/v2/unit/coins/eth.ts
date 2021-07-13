@@ -223,7 +223,8 @@ describe('ETH:', function () {
         .should.be.rejectedWith('txPrebuild should only have 1 recipient but 2 found');
     });
 
-    it('should reject a hop prebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
+    // CR-338: temporarily disable eth hop tx verification
+    xit('should reject a hop prebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 
@@ -263,7 +264,8 @@ describe('ETH:', function () {
         .should.be.rejectedWith('hop transaction only supports 1 recipient but 2 found');
     });
 
-    it('should reject a hop txPrebuild from the bitgo server with the wrong amount', async function () {
+    // CR-338: temporarily disable eth hop tx verification
+    xit('should reject a hop txPrebuild from the bitgo server with the wrong amount', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 
@@ -303,7 +305,8 @@ describe('ETH:', function () {
         .should.be.rejectedWith('hop transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client');
     });
 
-    it('should reject a hop txPrebuild that does not send to its hop address', async function () {
+    // CR-338: temporarily disable eth hop tx verification
+    xit('should reject a hop txPrebuild that does not send to its hop address', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 

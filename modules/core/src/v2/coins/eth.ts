@@ -1548,37 +1548,8 @@ export class Eth extends BaseCoin {
         throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
       }
       if (txPrebuild.hopTransaction) {
-        // Check recipient amount for hop transaction
-        if (txParams.recipients.length !== 1) {
-          throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
-        }
-        const expectedAmount = new BigNumber(txParams.recipients[0].amount);
-        if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'hop transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-
-        // Check tx sends to hop address
-        const decodedHopTx = new optionalDeps.EthTx(txPrebuild.hopTransaction.tx);
-        const expectedHopAddress = decodedHopTx.getSenderAddress().toString('hex');
-        if (
-          expectedHopAddress.toLowerCase() !==
-          optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address.toLowerCase())
-        ) {
-          throw new Error('recipient address of txPrebuild does not match hop address');
-        }
-
-        // Convert TransactionRecipient array to Recipient array
-        const recipients: Recipient[] = txParams.recipients.map((r) => {
-          return {
-            address: r.address,
-            amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
-          };
-        });
-
-        // Check destination address and amount
-        yield self.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
+        // Temporarily do not verify hop transactions
+        return true;
       } else if (txPrebuild.isBatch) {
         // Check total amount for batch transaction
         let expectedTotalAmount = new BigNumber(0);
