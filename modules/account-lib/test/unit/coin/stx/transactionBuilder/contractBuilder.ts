@@ -46,6 +46,12 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_CONTRACT_CALL);
 
       tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
     });
 
     it('a signed contract call with args', async () => {
@@ -74,6 +80,12 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_WITH_ARGS);
 
       tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
     });
 
     it('a signed contract call transaction', async () => {
@@ -103,6 +115,12 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
     });
 
     it('a multisig transfer transaction', async () => {
