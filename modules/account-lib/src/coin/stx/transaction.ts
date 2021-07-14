@@ -218,6 +218,22 @@ export class Transaction extends BaseTransaction {
           },
         ];
       }
+    } else if (txJson.payload.payloadType === PayloadType.ContractCall) {
+      this._outputs = [
+        {
+          address: txJson.payload.contractAddress,
+          value: '0',
+          coin: this._coinConfig.name,
+        },
+      ];
+
+      this._inputs = [
+        {
+          address: txJson.from,
+          value: '0',
+          coin: this._coinConfig.name,
+        },
+      ];
     }
   }
 }
