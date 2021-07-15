@@ -104,7 +104,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        recipients: [{ amount: '1000000000000000', address: hopContractAddress }],
+        recipients: [{ amount: '5000000000000000', address: hopContractAddress }],
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
@@ -167,7 +167,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        recipients: [{ amount: '1000000000000', address: address1 }],
+        recipients: [{ amount: '5000000000000', address: address1 }],
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
@@ -223,8 +223,7 @@ describe('ETH:', function () {
         .should.be.rejectedWith('txPrebuild should only have 1 recipient but 2 found');
     });
 
-    // CR-338: temporarily disable eth hop tx verification
-    xit('should reject a hop prebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
+    it('should reject a hop txPrebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 
@@ -235,7 +234,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        recipients: [{ amount: '1000000000000000', address: hopContractAddress }],
+        recipients: [{ amount: '5000000000000000', address: hopContractAddress }],
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
@@ -264,8 +263,7 @@ describe('ETH:', function () {
         .should.be.rejectedWith('hop transaction only supports 1 recipient but 2 found');
     });
 
-    // CR-338: temporarily disable eth hop tx verification
-    xit('should reject a hop txPrebuild from the bitgo server with the wrong amount', async function () {
+    it('should reject a hop txPrebuild that does not send to its hop address', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 
@@ -276,48 +274,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        recipients: [{ amount: '5000000000000000', address: hopContractAddress }],
-        nextContractSequenceId: 0,
-        gasPrice: 20000000000,
-        gasLimit: 500000,
-        isBatch: false,
-        coin: 'teth',
-        walletId: 'fakeWalletId',
-        walletContractAddress: 'fakeWalletContractAddress',
-        hopTransaction: {
-          tx: hopTx,
-          id: hopTxid,
-          signature: hopTxBitgoSignature,
-          paymentId: '0',
-          gasPrice: 20000000000,
-          gasLimit: 500000,
-          amount: '1000000000000000',
-          recipient: hopDestinationAddress,
-          nonce: 0,
-          userReqSig: userReqSig,
-          gasPriceMax: 500000000000,
-        },
-      };
-
-      const verification = {};
-
-      await coin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
-        .should.be.rejectedWith('hop transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client');
-    });
-
-    // CR-338: temporarily disable eth hop tx verification
-    xit('should reject a hop txPrebuild that does not send to its hop address', async function () {
-      const coin = bitgo.coin('teth');
-      const wallet = new Wallet(bitgo, coin, {});
-
-      const txParams = {
-        recipients: [{ amount: '1000000000000000', address: hopDestinationAddress }],
-        wallet: wallet,
-        walletPassphrase: 'fakeWalletPassphrase',
-      };
-
-      const txPrebuild = {
-        recipients: [{ amount: '1000000000000000', address: address1 }],
+        recipients: [{ amount: '5000000000000000', address: address1 }],
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
@@ -400,7 +357,7 @@ describe('ETH:', function () {
         .should.be.rejectedWith('recipient address of txPrebuild does not match batcher address');
     });
 
-    it('should reject a normal prebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
+    it('should reject a normal txPrebuild from the bitgo server that was not intended have exactly 1 recipient', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 
