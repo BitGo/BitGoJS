@@ -339,6 +339,7 @@ export interface SendOptions {
   address?: string;
   amount?: number | string;
   data?: string;
+  feeLimit?: string;
   message?: string;
   walletPassphrase?: string;
   prv?: string;
@@ -352,6 +353,7 @@ export interface SendManyOptions {
   recipients?: {
     address: string;
     amount: string | number;
+    feeLimit?: string;
     data?: string;
   }[];
   numBlocks?: number;
@@ -2001,7 +2003,6 @@ export class Wallet {
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
     }
-
     const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
     return this.sendMany(sendManyOptions).nodeify(callback);
   }
