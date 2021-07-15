@@ -312,6 +312,26 @@ export class Trx extends BaseCoin {
     return hdNode.keyPair.__Q.getEncoded(false).toString('hex');
   }
 
+  /**
+   * Modify prebuild before sending it to the server.
+   * @param buildParams The whitelisted parameters for this prebuild
+   * @param callback
+   */
+  getExtraPrebuildParams(buildParams: any, callback?: NodeCallback<any>): Bluebird<any> {
+    const recipients: any[] = [{}];
+    return co<any>(function* () {
+      if (buildParams.recipients[0].data && buildParams.feeLimit) {
+        recipients[0].feeLimit = buildParams.feeLimit;
+        return {
+          recipients,
+        };
+      }
+      return {};
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
   compressedPubToHexAddress(pub: string): string {
     const byteArrayAddr = bitgoAccountLib.Trx.Utils.getByteArrayFromHexAddress(pub);
     const rawAddress = bitgoAccountLib.Trx.Utils.getRawAddressFromPubKey(byteArrayAddr);
