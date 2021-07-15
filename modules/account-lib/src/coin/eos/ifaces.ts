@@ -137,3 +137,8 @@ export interface PublicKey {
   accounts: string[];
   waits: string[];
 }
+
+export interface AddressDetails {
+  address: string;
+  memoId?: string;
+}

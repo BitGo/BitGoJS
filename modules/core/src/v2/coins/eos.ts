@@ -17,26 +17,16 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
-import { randomBytes } from 'crypto';
 import { HDNode } from '@bitgo/utxo-lib';
-// import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
-import * as url from 'url';
-import * as querystring from 'querystring';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
 
 export interface EosTransactionExplanation extends TransactionExplanation, accountLib.Eos.interfaces.TxJson {}
-
-interface AddressDetails {
-  address: string;
-  memoId?: string;
-}
 
 export interface EosTx {
   signatures: string[];
@@ -71,9 +61,10 @@ interface EosTransactionPrebuild {
 }
 
 export interface EosSignTransactionParams extends BaseSignTransactionOptions {
-  prv: string;
   txPrebuild: EosTransactionPrebuild;
   recipients: Recipient[];
+  keyPair: KeyPair;
+  txHex: string;
 }
 
 export interface EosHalfSigned {
@@ -88,43 +79,11 @@ export interface EosSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: EosHalfSigned;
 }
 
-// interface DeserializedEosTransaction extends EosTransactionHeaders {
-//   max_net_usage_words: number;
-//   max_cpu_usage_ms: number;
-//   delay_sec: number;
-//   context_free_actions: EosTransactionAction[];
-//   actions: EosTransactionAction[];
-//   transaction_extensions: Record<string, unknown>[];
-//   address: string;
-//   amount: string;
-//   transaction_id: string;
-//   memo?: string;
-//   proxy?: string;
-//   producers?: string[];
-// }
-
-// interface DeserializedStakeAction {
-//   address: string;
-//   amount: string;
-// }
-
-// interface DeserializedVoteAction {
-//   address: string;
-//   proxy: string;
-//   producers: string[];
-// }
-
 interface ExplainTransactionOptions {
   txHex?: string;
   transaction?: { packed_trx: string };
   headers?: EosTransactionHeaders;
 }
-
-// interface RecoveryTransaction {
-//   transaction: EosTx;
-//   txid: string;
-//   recoveryAmount: number;
-// }
 
 interface RecoveryOptions {
   userKey: string; // Box A
@@ -194,18 +153,18 @@ export class Eos extends BaseCoin {
    *
    * @param seed - Seed from which the new keypair should be generated, otherwise a random seed is used
    */
+
   generateKeyPair(seed?: Buffer): KeyPair {
-    if (!seed) {
-      // An extended private key has both a normal 256 bit private key and a 256
-      // bit chain code, both of which must be random. 512 bits is therefore the
-      // maximum entropy and gives us maximum security against cracking.
-      seed = randomBytes(512 / 8);
+    const keyPair = seed ? new accountLib.Eos.KeyPair({ seed }) : new accountLib.Eos.KeyPair();
+    const keys = keyPair.getExtendedKeys();
+
+    if (!keys.xprv) {
+      throw new Error('Missing xprv in key generation.');
     }
-    const extendedKey = HDNode.fromSeedBuffer(seed);
-    const xpub = extendedKey.neutered().toBase58();
+
     return {
-      pub: xpub,
-      prv: extendedKey.toBase58(),
+      pub: keys.xpub,
+      prv: keys.xprv,
     };
   }
 
@@ -216,8 +175,7 @@ export class Eos extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      HDNode.fromBase58(pub);
-      return true;
+      return accountLib.Eos.Utils.default.isValidPublicKey(pub);
     } catch (e) {
       return false;
     }
@@ -230,92 +188,10 @@ export class Eos extends BaseCoin {
    */
   isValidPrv(prv: string): boolean {
     try {
-      HDNode.fromBase58(prv);
-      return true;
+      return accountLib.Eos.Utils.default.isValidPrivateKey(prv);
     } catch (e) {
       return false;
     }
-  }
-
-  /**
-   * Evaluates whether a memo is valid
-   *
-   * @param value - the memo to be checked
-   */
-  isValidMemo({ value }: { value: string }): boolean {
-    return _.isString(value) && value.length <= 256;
-  }
-
-  /**
-   * Return boolean indicating whether a memo id is valid
-   *
-   * @param memoId - the memo id to be checked
-   */
-  isValidMemoId(memoId: string): boolean {
-    if (!this.isValidMemo({ value: memoId })) {
-      return false;
-    }
-
-    let memoIdNumber;
-    try {
-      memoIdNumber = new BigNumber(memoId);
-    } catch (e) {
-      return false;
-    }
-
-    return memoIdNumber.gte(0);
-  }
-
-  /**
-   * Process address into address and memo id
-   * @param address - the address
-   */
-  getAddressDetails(address: string): AddressDetails {
-    const destinationDetails = url.parse(address);
-    const destinationAddress = destinationDetails.pathname;
-
-    if (!destinationAddress) {
-      throw new InvalidAddressError(`failed to parse address: ${address}`);
-    }
-
-    // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
-    // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
-    if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > Eos.ADDRESS_LENGTH) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    // address doesn't have a memo id
-    if (destinationDetails.pathname === address) {
-      return {
-        address: address,
-        memoId: undefined,
-      };
-    }
-
-    if (!destinationDetails.query) {
-      throw new InvalidAddressError(`failed to parse query string: ${address}`);
-    }
-
-    const queryDetails = querystring.parse(destinationDetails.query);
-    if (!queryDetails.memoId) {
-      // if there are more properties, the query details need to contain the memoId property
-      throw new InvalidAddressError(`invalid property in address: ${address}`);
-    }
-
-    if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
-      // valid addresses can only contain one memo id
-      throw new InvalidAddressError(`invalid address '${address}', must contain exactly one memoId`);
-    }
-
-    const [memoId] = _.castArray(queryDetails.memoId);
-    if (!this.isValidMemoId(memoId)) {
-      throw new InvalidAddressError(`invalid address: '${address}', memoId is not valid`);
-    }
-
-    return {
-      address: destinationAddress,
-      memoId,
-    };
   }
 
   /**
@@ -330,27 +206,13 @@ export class Eos extends BaseCoin {
   }
 
   /**
-   * Validate and return address with appended memo id
-   *
-   * @param address
-   * @param memoId
-   */
-  normalizeAddress({ address, memoId }: AddressDetails): string {
-    if (memoId && this.isValidMemoId(memoId)) {
-      return `${address}?memoId=${memoId}`;
-    }
-    return address;
-  }
-
-  /**
    * Return boolean indicating whether input is valid public key for the coin
    *
    * @param address - the address to be checked
    */
   isValidAddress(address: string): boolean {
     try {
-      const addressDetails = this.getAddressDetails(address);
-      return address === this.normalizeAddress(addressDetails);
+      return accountLib.Eos.Utils.default.isValidAddress(address);
     } catch (e) {
       return false;
     }
@@ -363,28 +225,11 @@ export class Eos extends BaseCoin {
    * @param rootAddress - the wallet's root address
    */
   verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
-    if (!rootAddress || !_.isString(rootAddress)) {
-      throw new Error('missing required string rootAddress');
-    }
-
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    const addressDetails = this.getAddressDetails(address);
-    const rootAddressDetails = this.getAddressDetails(rootAddress);
-
-    if (!addressDetails || !rootAddressDetails) {
+    try {
+      return accountLib.Eos.Utils.default.verifyAddress({ address, rootAddress });
+    } catch (e) {
       return false;
     }
-
-    if (addressDetails.address !== rootAddressDetails.address) {
-      throw new UnexpectedAddressError(
-        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
-      );
-    }
-
-    return true;
   }
 
   /**
@@ -400,17 +245,28 @@ export class Eos extends BaseCoin {
     params: EosSignTransactionParams,
     callback?: NodeCallback<EosSignedTransaction>
   ): Bluebird<EosSignedTransaction> {
+    const self = this;
     return co<EosSignedTransaction>(function* () {
-      const prv: string = params.prv;
       const txHex: string = params.txPrebuild.txHex;
-      const transaction: EosTx = params.txPrebuild.transaction;
+      if (!txHex) {
+        throw new Error('Missing sign transaction params');
+      }
+      const factory = accountLib.register(self.getChain(), accountLib.Eos.TransactionBuilderFactory);
+      const txBuilder = factory.from(txHex);
+      txBuilder.sign({ key: params.keyPair.prv });
+      const tx = (yield txBuilder.build()) as any;
+      if (!tx) {
+        throw new Error('Invalid transaction');
+      }
+      if (!tx.verifySignature([params.keyPair.pub])) {
+        throw new Error('Invalid Signature');
+      }
 
-      const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
-      const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
-
-      transaction.signatures.push(signature);
-
+      const transaction: EosTx = {
+        signatures: tx._eosTransaction.signatures,
+        packed_trx: tx._eosTransaction.serializedTransaction,
+        compression: tx._eosTransaction.serializedContextFreeData,
+      };
       const txParams = {
         transaction,
         txHex,
