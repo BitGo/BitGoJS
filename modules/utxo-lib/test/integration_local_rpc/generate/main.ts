@@ -1,0 +1,132 @@
+/**
+ * @prettier
+ */
+import * as assert from 'assert';
+
+const utxolib = require('../../../src');
+const coins = require('../../../src/coins');
+
+import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
+import {
+  createScriptPubKey,
+  createSpendTransaction,
+  getKeyTriple,
+  isSupportedDepositType,
+  isSupportedSpendType,
+  ScriptType,
+  scriptTypes,
+} from './outputScripts';
+import { Network } from './types';
+import { RpcClient } from './RpcClient';
+import { wipeFixtures, writeFixture } from './fixtures';
+
+async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
+  switch (network) {
+    case utxolib.networks.testnet:
+      await rpc.createWallet('utxolibtest');
+  }
+
+  const minBlocks = 300;
+  const diff = minBlocks - (await rpc.getBlockCount());
+
+  if (diff > 0) {
+    console.log(`mining ${diff} blocks to reach height ${minBlocks}`);
+    const address = await rpc.getNewAddress();
+    await rpc.generateToAddress(diff, address);
+  }
+}
+
+function toRegtestAddress(network: Network, scriptType: ScriptType, script: Buffer): string {
+  if (scriptType === 'p2wsh' || scriptType === 'p2wkh') {
+    switch (network) {
+      case utxolib.networks.testnet:
+        network = { bech32: 'bcrt' };
+        break;
+      case utxolib.networks.litecoinTest:
+        network = { bech32: 'rltc' };
+        break;
+      case utxolib.networks.bitcoingoldTestnet:
+        network = { bech32: 'btgrt' };
+        break;
+    }
+  }
+  return utxolib.address.fromOutputScript(script, network);
+}
+
+async function createTransactionsForScriptType(
+  rpc: RpcClient,
+  scriptType: ScriptType,
+  network: Network
+): Promise<void> {
+  const logTag = `createTransaction ${scriptType} ${coins.getNetworkName(network)}`;
+  if (!isSupportedDepositType(network, scriptType)) {
+    console.log(logTag + ': not supported, skipping');
+    return;
+  }
+  console.log(logTag);
+
+  const keys = getKeyTriple('rpctest');
+  const script = createScriptPubKey(keys, scriptType, network);
+  const address = toRegtestAddress(network, scriptType, script);
+  const depositTxid = await rpc.sendToAddress(address, 1);
+  const depositTx = await rpc.getRawTransaction(depositTxid);
+  await writeFixture(network, `deposit_${scriptType}.json`, await rpc.getRawTransactionVerbose(depositTxid));
+  if (!isSupportedSpendType(network, scriptType)) {
+    console.log(logTag + ': spend not supported, skipping spend');
+    return;
+  }
+
+  const spendTx = createSpendTransaction(keys, scriptType, depositTxid, depositTx, script, network);
+  const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
+  assert.strictEqual(spendTxid, spendTx.getId());
+  await writeFixture(network, `spend_${scriptType}.json`, await rpc.getRawTransactionVerbose(spendTxid));
+}
+
+async function createTransactions(rpc: RpcClient, network: Network) {
+  for (const scriptType of scriptTypes) {
+    await createTransactionsForScriptType(rpc, scriptType, network);
+  }
+}
+
+async function run(network: Network) {
+  await wipeFixtures(network);
+
+  let rpc;
+  let node: Node | undefined;
+  if (process.env.UTXOLIB_TESTS_USE_DOCKER === '1') {
+    node = await getRegtestNode(network);
+    rpc = await RpcClient.forUrlWait(network, getRegtestNodeUrl(network));
+  } else {
+    rpc = await RpcClient.fromEnvvar(network);
+  }
+
+  try {
+    await initBlockchain(rpc, network);
+    await createTransactions(rpc, network);
+  } catch (e) {
+    console.error(`error for network ${coins.getNetworkName(network)}`);
+    throw e;
+  } finally {
+    if (node) {
+      await node.stop();
+    }
+  }
+}
+
+async function main() {
+  for (const networkName of Object.keys(utxolib.networks)) {
+    const network = utxolib.networks[networkName];
+    if (!coins.isTestnet(network)) {
+      continue;
+    }
+
+    await run(utxolib.networks[networkName]);
+  }
+}
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

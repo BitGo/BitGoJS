@@ -52,6 +52,7 @@
     "wif": "^2.0.1"
   },
   "devDependencies": {
+    "axios": "^0.21.1",
     "bip39": "^2.3.0",
     "bip65": "^1.0.1",
     "bs58": "^4.0.0",
@@ -61,7 +62,8 @@
     "nyc": "^14.1.1",
     "proxyquire": "^1.4.0",
     "sinon": "^1.12.2",
-    "standard": "^9.0.2"
+    "standard": "^9.0.2",
+    "ts-node": "^10.1.0"
   },
   "license": "MIT",
   "optionalDependencies": {
