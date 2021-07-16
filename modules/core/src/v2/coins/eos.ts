@@ -253,12 +253,15 @@ export class Eos extends BaseCoin {
       }
       const factory = accountLib.register(self.getChain(), accountLib.Eos.TransactionBuilderFactory);
       const txBuilder = factory.from(txHex);
-      txBuilder.sign({ key: params.keyPair.prv });
+      const hdNode = HDNode.fromBase58(params.keyPair.prv);
+      const privateKey = hdNode.keyPair.toWIF();
+      const publicKey = ecc.privateToPublic(privateKey);
+      txBuilder.sign({ key: privateKey });
       const tx = (yield txBuilder.build()) as any;
       if (!tx) {
         throw new Error('Invalid transaction');
       }
-      if (!tx.verifySignature([params.keyPair.pub])) {
+      if (!tx.verifySignature([publicKey])) {
         throw new Error('Invalid Signature');
       }
 
@@ -547,129 +550,6 @@ export class Eos extends BaseCoin {
     const privateKeyBuffer = signingKey.getKey().getPrivateKeyBuffer();
     return ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
   }
-
-  /**
-   * Serialize an EOS transaction, to the format that should be signed
-   * @param eosClient an offline EOSClient that has the transaction structs
-   * @param transaction The EOS transaction returned from `eosClient.transaction` to serialize
-   * @return {String} serialized transaction in hex format
-   */
-  // serializeTransaction(eosClient: EosJs, transaction: EosJs.transaction): string {
-  //   const eosTxStruct = eosClient.fc.structs.transaction;
-  //   const txHex = transaction.transaction.transaction;
-  //   const txObject = eosTxStruct.fromObject(txHex);
-
-  //   return EosJs.modules.Fcbuffer.toBuffer(eosTxStruct, txObject).toString('hex');
-  // }
-
-  /**
-   * Builds a funds recovery transaction without BitGo
-   * @param params
-   * @param callback
-   */
-  // recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
-  //   const self = this;
-  //   return co<RecoveryTransaction>(function* () {
-  //     if (!params.rootAddress) {
-  //       throw new Error('missing required string rootAddress');
-  //     }
-  //     const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-  //     const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
-
-  //     const keys = (yield self.initiateRecovery(params)) as any;
-
-  //     const account = (yield self.getAccountFromNode({ address: params.rootAddress })) as any;
-
-  //     if (!account.core_liquid_balance) {
-  //       throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
-  //     }
-
-  //     if (!account.permissions) {
-  //       throw new Error('Could not find permissions for ' + params.rootAddress);
-  //     }
-  //     const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
-  //     const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
-
-  //     const activePermission = _.find(account.permissions, { perm_name: 'active' });
-  //     const requiredAuth = _.get(activePermission, 'required_auth');
-  //     if (!requiredAuth) {
-  //       throw new Error('Required auth for active permission not found in account');
-  //     }
-  //     if (requiredAuth.threshold !== 2) {
-  //       throw new Error('Unexpected active permission threshold');
-  //     }
-
-  //     const foundPubs = {};
-  //     const requiredAuthKeys = requiredAuth.keys;
-  //     for (const signer of requiredAuthKeys) {
-  //       if (signer.weight !== 1) {
-  //         throw new Error('invalid signer weight');
-  //       }
-  //       // if it's a dupe of a pub we already know, block
-  //       if (foundPubs[signer.key]) {
-  //         throw new Error('duplicate signer key');
-  //       }
-  //       foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
-  //     }
-  //     if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
-  //       throw new Error('unexpected incidence frequency of user signer key');
-  //     }
-
-  //     const accountBalance = account.core_liquid_balance.split(' ')[0];
-  //     const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance));
-
-  //     const destinationAddress = params.recoveryDestination;
-  //     const destinationAddressDetails = self.getAddressDetails(destinationAddress);
-  //     const destinationAccount = yield self.getAccountFromNode({ address: destinationAddress });
-  //     if (!destinationAccount) {
-  //       throw new Error('Destination account not found');
-  //     }
-
-  //     const transactionHeaders = yield self.getTransactionHeadersFromNode();
-  //     const eosClient = new EosJs({ chainId: self.getChainId(), transactionHeaders });
-
-  //     const transferAction = self.getTransferAction({
-  //       recipient: destinationAddressDetails.address,
-  //       sender: params.rootAddress,
-  //       amount: new BigNumber(recoveryAmount),
-  //       memo: destinationAddressDetails.memoId,
-  //     });
-
-  //     const transaction = yield eosClient.transaction({ actions: [transferAction] }, { sign: false, broadcast: false });
-
-  //     const serializedTransaction = self.serializeTransaction(eosClient, transaction);
-  //     const txObject = {
-  //       transaction: {
-  //         compression: 'none',
-  //         packed_trx: serializedTransaction,
-  //         signatures: [] as string[],
-  //       },
-  //       txid: (transaction as any).transaction_id,
-  //       recoveryAmount: accountBalance,
-  //     };
-  //     const signableTx = Buffer.concat([
-  //       Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
-  //       Buffer.from(serializedTransaction, 'hex'), // The serialized unsigned tx
-  //       Buffer.from(new Uint8Array(32)), // Some padding
-  //     ]).toString('hex');
-
-  //     if (isUnsignedSweep) {
-  //       return txObject;
-  //     }
-
-  //     const userSignature = self.signTx(signableTx, keys[0]);
-  //     txObject.transaction.signatures.push(userSignature);
-
-  //     if (!isKrsRecovery) {
-  //       const backupSignature = self.signTx(signableTx, keys[1]);
-  //       txObject.transaction.signatures.push(backupSignature);
-  //     }
-
-  //     return txObject;
-  //   })
-  //     .call(this)
-  //     .asCallback(callback);
-  // }
 
   parseTransaction(
     params: ParseTransactionOptions,
