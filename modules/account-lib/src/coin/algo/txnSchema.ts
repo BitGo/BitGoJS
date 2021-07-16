@@ -1,6 +1,5 @@
 import joi from 'joi';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { KeyDilutionError } from './errors';
 import utils from './utils';
 
 const addressSchema = joi.string().custom((addr) => utils.isValidAddress(addr));
@@ -51,14 +50,9 @@ export const KeyRegTxnSchema = joi
   .custom((obj) => {
     const voteFirst: number = obj.voteFirst;
     const voteLast: number = obj.voteLast;
-    const voteKeyDilution: number = obj.voteKeyDilution;
 
     if (voteFirst > voteLast) {
       throw new InvalidTransactionError('VoteKey last round must be greater than first round');
-    }
-
-    if (voteKeyDilution > Math.sqrt(voteLast - voteFirst)) {
-      throw new KeyDilutionError(voteKeyDilution);
     }
     return obj;
   });
