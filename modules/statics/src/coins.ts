@@ -463,6 +463,7 @@ export const coins = CoinMap.fromCoins([
   erc20('prdx', 'PRDX Token', 9, '0xe17900f23b7ebb2791f25f1eaa63d8f5e603e9a5', UnderlyingAsset.PRDX),
   erc20('pro', 'Propy', 18, '0x9041fe5b3fdea0f5e4afdc17e75180738d877a01', UnderlyingAsset.PRO),
   erc20('prts', 'Protos', 0, '0x835a44027ee4e92bbd8874e5ede9e5148b069e96', UnderlyingAsset.PRTS),
+  erc20('npxs', 'Pundi X', 18, '0xa15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3', UnderlyingAsset.NPXS),
   erc20('pundix', 'Pundi X2', 18, '0x0fd10b9899882a6f2fcb5c371e17e70fdee00c38', UnderlyingAsset.PUNDIX),
   erc20('pusd', 'PegUSD Token', 8, '0x93d3296cac208422bf587c3597d116e809870f2b', UnderlyingAsset.PUSD),
   erc20('qash', 'QASH', 6, '0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6', UnderlyingAsset.QASH),
