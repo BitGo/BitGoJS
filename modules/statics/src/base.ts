@@ -429,6 +429,7 @@ export enum UnderlyingAsset {
   NGNT = 'ngnt',
   NIAX = 'niax',
   NMR = 'nmr',
+  NPXS = 'npxs',
   NU = 'nu',
   NZDX = 'nzdx',
   OCEAN = 'ocean',
