@@ -1,0 +1,58 @@
+{
+  "hex": "0400008085202f89016139c03bb646297013b8ed2e530f849caf39a013fef8f71347668e72d3809a90000000006a4730440220782d1c435a195138a6417252b351f05f392a8b4c2ba24191c4f9b3ffcf662fbb02202e17d6d605f854a54c7a915fb78003fb2060d48d9e57b6010f0fb46b94d41a720121035afb3f25f2ffcfa12ac2bb2254422945d96c0ed23d5f5ad54c686d8af1475d6bfeffffff0200e1f505000000001976a914d2eb140d8b7006e7b862827043f9cddd50da981188ac0c83d717000000001976a91400467eace2b45fda198a0adae2cb1daccf48030d88ac22010000550100000000000000000000000000",
+  "txid": "16deefead137ff005a24116e30f7b6a1c99874e770b2339dd40e746f2b3b96cb",
+  "size": 244,
+  "overwintered": true,
+  "version": 4,
+  "versiongroupid": "892f2085",
+  "locktime": 290,
+  "expiryheight": 341,
+  "vin": [
+    {
+      "txid": "909a80d3728e664713f7f8fe13a039af9c840f532eedb813702946b63bc03961",
+      "vout": 0,
+      "scriptSig": {
+        "asm": "30440220782d1c435a195138a6417252b351f05f392a8b4c2ba24191c4f9b3ffcf662fbb02202e17d6d605f854a54c7a915fb78003fb2060d48d9e57b6010f0fb46b94d41a72[ALL] 035afb3f25f2ffcfa12ac2bb2254422945d96c0ed23d5f5ad54c686d8af1475d6b",
+        "hex": "4730440220782d1c435a195138a6417252b351f05f392a8b4c2ba24191c4f9b3ffcf662fbb02202e17d6d605f854a54c7a915fb78003fb2060d48d9e57b6010f0fb46b94d41a720121035afb3f25f2ffcfa12ac2bb2254422945d96c0ed23d5f5ad54c686d8af1475d6b"
+      },
+      "sequence": 4294967294
+    }
+  ],
+  "vout": [
+    {
+      "value": 1,
+      "valueZat": 100000000,
+      "valueSat": 100000000,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 d2eb140d8b7006e7b862827043f9cddd50da9811 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a914d2eb140d8b7006e7b862827043f9cddd50da981188ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "tmUwaqz5D8hQvHjJXxSXrKhKvqSzfepZAHV"
+        ]
+      }
+    },
+    {
+      "value": 3.99999756,
+      "valueZat": 399999756,
+      "valueSat": 399999756,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 00467eace2b45fda198a0adae2cb1daccf48030d OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a91400467eace2b45fda198a0adae2cb1daccf48030d88ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "tm9jonEkjKg1ipAufn4MnhR1kzhx1tfYBcE"
+        ]
+      }
+    }
+  ],
+  "vjoinsplit": [],
+  "valueBalance": 0,
+  "valueBalanceZat": 0,
+  "vShieldedSpend": [],
+  "vShieldedOutput": []
+}
