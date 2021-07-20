@@ -630,13 +630,13 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
 function redirectRequest(bitgo: BitGo, method: string, url: string, req: express.Request, next: express.NextFunction) {
   switch (method) {
     case 'GET':
-      return bitgo.get(url).result().nodeify();
+      return bitgo.get(url).result();
     case 'POST':
-      return bitgo.post(url).send(req.body).result().nodeify();
+      return bitgo.post(url).send(req.body).result();
     case 'PUT':
-      return bitgo.put(url).send(req.body).result().nodeify();
+      return bitgo.put(url).send(req.body).result();
     case 'DELETE':
-      return bitgo.del(url).send(req.body).result().nodeify();
+      return bitgo.del(url).send(req.body).result();
   }
   // something has presumably gone wrong
   next();
@@ -703,7 +703,7 @@ function prepareBitGo(config: Config) {
  * Promise handler wrapper to handle sending responses and error cases
  * @param promiseRequestHandler
  */
-function promiseWrapper(promiseRequestHandler: Function) {
+function promiseWrapper(promiseRequestHandler: express.RequestHandler) {
   return function (req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
     bluebird
@@ -753,7 +753,7 @@ function promiseWrapper(promiseRequestHandler: Function) {
   };
 }
 
-export function setupRoutes(app: express.Application, config: Config) {
+export function setupRoutes(app: express.Application, config: Config): void {
   // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
   // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
   // Express routes on the BitGo server and return an error message that says that one should call BitGo Express
