@@ -4,11 +4,11 @@
 import * as assert from 'assert';
 
 import { isSupportedDepositType, isSupportedSpendType, ScriptType, scriptTypes } from './generate/outputScripts.util';
-import { Network } from './generate/types';
 import { readFixture } from './generate/fixtures';
+import { Network } from '../../src/networkTypes';
+import { isTestnet } from '../../src/coins';
 
 const utxolib = require('../../src');
-const coins = require('../../src/coins');
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
@@ -39,7 +39,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
 Object.keys(utxolib.networks).forEach((networkName) => {
   const network = utxolib.networks[networkName];
-  if (!coins.isTestnet(network)) {
+  if (!isTestnet(network)) {
     return;
   }
 
