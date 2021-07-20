@@ -16,6 +16,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return builder;
   }
 
+  /**
+   * Returns the base Eos Transaction Builder.
+   *
+   * @returns {EosTransactionBuilder} the base EosTransactionBuilder
+   */
   public getEosTransactionBuilder(): EosTransactionBuilder {
     return new EosTransactionBuilder(this._coinConfig);
   }

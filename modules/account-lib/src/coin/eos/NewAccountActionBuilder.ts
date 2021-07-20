@@ -33,7 +33,7 @@ export class NewAccountActionBuilder extends EosActionBuilder {
    *
    * @returns {this} this action builder.
    *
-   * @param {string} receiver valid eos name
+   * @param {string} name valid eos name
    */
   name(name: string): this {
     this._name = name;
@@ -60,8 +60,8 @@ export class NewAccountActionBuilder extends EosActionBuilder {
    * @param {PublicKey} active valid eos public key
    */
   active(active: PublicKey): this {
-  this._active = active;
-  return this;
+    this._active = active;
+    return this;
   }
 
   /**
@@ -84,12 +84,7 @@ export class NewAccountActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
-      this.validateMandatoryFields(
-        this._creator,
-        this._name,
-        this._owner,
-        this._active,
-      );
+      this.validateMandatoryFields(this._creator, this._name, this._owner, this._active);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
@@ -105,17 +100,12 @@ export class NewAccountActionBuilder extends EosActionBuilder {
    * @param {PublicKey} owner owner public key
    * @param {PublicKey} active active public key
    */
-  private validateMandatoryFields(
-    creator: string,
-    name: string,
-    owner: PublicKey,
-    active: PublicKey
-  ) {
+  private validateMandatoryFields(creator: string, name: string, owner: PublicKey, active: PublicKey) {
     const validationResult = NewAccoutActionSchema.validate({
       creator,
       name,
       owner,
-      active
+      active,
     });
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);

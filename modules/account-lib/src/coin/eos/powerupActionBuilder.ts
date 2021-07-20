@@ -85,10 +85,16 @@ export class PowerUpActionBuilder extends EosActionBuilder {
     return this;
   }
 
+  /**
+   * Get action name
+   *
+   * @returns {string} The name of the action e.g. transfer, buyrambytes, delegatebw etc
+   */
   actionName(): string {
     return 'powerup';
   }
 
+  /** @inheritdoc */
   build(builder: EosTxBuilder): EosJs.Serialize.Action {
     const data = this.action.data;
     if (typeof data === 'string') {
@@ -114,6 +120,16 @@ export class PowerUpActionBuilder extends EosActionBuilder {
     }
   }
 
+  /**
+   * Validates whether the required fields are present
+   *
+   * @param {string} payer name of payer
+   * @param {string} receiver name of receiver
+   * @param {number} days days to powerup
+   * @param {string} net_frac network frac to powerup
+   * @param {string} cpu_frac cpu frac to powerup
+   * @param {string} max_payment max payment for powerup
+   */
   private validateMandatoryFields(
     payer: string,
     receiver: string,

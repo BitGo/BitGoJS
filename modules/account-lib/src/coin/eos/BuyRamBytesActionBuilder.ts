@@ -71,11 +71,7 @@ export class BuyRamBytesActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
-      this.validateMandatoryFields(
-        this._payer,
-        this._receiver,
-        this._bytes,
-      );
+      this.validateMandatoryFields(this._payer, this._receiver, this._bytes);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
@@ -90,11 +86,7 @@ export class BuyRamBytesActionBuilder extends EosActionBuilder {
    * @param {string} receiver name of receiver
    * @param {number} bytes bytes
    */
-  private validateMandatoryFields(
-    payer: string,
-    receiver: string,
-    bytes: number
-  ) {
+  private validateMandatoryFields(payer: string, receiver: string, bytes: number) {
     const validationResult = BuyRamBytesActionSchema.validate({
       payer,
       receiver,
@@ -105,5 +97,3 @@ export class BuyRamBytesActionBuilder extends EosActionBuilder {
     }
   }
 }
-
-

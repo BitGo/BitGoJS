@@ -34,6 +34,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig);
   }
 
+  /**
+   * Sets up a new action for a transaction
+   *
+   * @param {string} account sets the account performing the action
+   * @param {string[]} actors sets the actors involved in the action
+   * @returns {Action} the new Action
+   */
   protected action(account: string, actors: string[]): Action {
     this._account = account;
     const auth = actors.map((actor) => {
@@ -96,11 +103,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /**
+   * Set transaction expiration
+   *
+   * @param {string} expiration sets the expiration for the transaction
+   * @returns {this} the transaction builder
+   */
   expiration(expiration: string): this {
     this._expiration = expiration;
     return this;
   }
 
+  /**
+   * Set transaction ref block number
+   *
+   * @param {number} ref_block_num sets the ref_block_num for the transaction
+   * @returns {this} the transaction builder
+   */
   refBlockNum(ref_block_num: number): this {
     if (ref_block_num) {
       this.validateValue(new BigNumber(ref_block_num));
@@ -109,6 +128,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /**
+   * Set transaction ref block prefix
+   *
+   * @param {number} ref_block_prefix sets the ref_block_prefix for the transaction
+   * @returns {this} the transaction builder
+   */
   refBlockPrefix(ref_block_prefix: number): this {
     if (ref_block_prefix) {
       this.validateValue(new BigNumber(ref_block_prefix));
@@ -146,8 +171,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  // region Getters and Setters
-
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
@@ -157,9 +180,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
-  // endregion
 
-  // region Validators
   /** @inheritdoc */
   validateAddress({ address }: BaseAddress, addressFormat?: string): void {
     if (!utils.isValidAddress(address)) {
@@ -193,6 +214,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.validateBaseFields(this._expiration, this._ref_block_num, this._ref_block_prefix, this.actions);
   }
 
+  /**
+   * Validates the base transaction fields format
+   *
+   * @param {string} expiration validates the expiration
+   * @param {number} refBlockNum validates refBlockNum
+   * @param {number} refBlockPrefix validates refBlockPrefix
+   * @param {Action[]} actions validates the actions
+   */
   private validateBaseFields(expiration: string, refBlockNum: number, refBlockPrefix: number, actions: Action[]): void {
     const validationResult = BaseTransactionSchema.validate({
       expiration,

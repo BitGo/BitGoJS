@@ -1,18 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import * as querystring from 'querystring';
+import * as url from 'url';
+import { BigNumber } from 'bignumber.js';
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
-import * as url from 'url';
 import * as _ from 'lodash';
-import * as querystring from 'querystring';
-import { BigNumber } from 'bignumber.js';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
-import { NameValidationError, AddressValidationError } from './errors';
+import { AddressValidationError, NameValidationError } from './errors';
+import { AddressDetails } from './ifaces';
 import OfflineAbiProvider from './OfflineAbiProvider';
-import { AddressDetails } from './ifaces'
 
 const { TextEncoder, TextDecoder } = require('util');
-
 
 export const initApi = (chainId: string): EosJs.Api => {
   // @ts-ignore
@@ -86,8 +85,8 @@ export class Utils implements BaseUtils {
   }
 
   isValidMemo({ value }: { value: string }): boolean {
-  return _.isString(value) && value.length <= 256;
-  } 
+    return _.isString(value) && value.length <= 256;
+  }
 
   isValidMemoId(memoId: string): boolean {
     if (!this.isValidMemo({ value: memoId })) {
@@ -105,10 +104,10 @@ export class Utils implements BaseUtils {
   }
 
   normalizeAddress({ address, memoId }: AddressDetails): string {
-  if (memoId && this.isValidMemoId(memoId)) {
-    return `${address}?memoId=${memoId}`;
-  }
-  return address;
+    if (memoId && this.isValidMemoId(memoId)) {
+      return `${address}?memoId=${memoId}`;
+    }
+    return address;
   }
 
   getAddressDetails(address: string): AddressDetails {
@@ -117,13 +116,13 @@ export class Utils implements BaseUtils {
     const destinationAddress = destinationDetails.pathname;
 
     if (!destinationAddress) {
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
     if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > ADDRESS_LENGTH) {
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     // address doesn't have a memo id
@@ -135,23 +134,23 @@ export class Utils implements BaseUtils {
     }
 
     if (!destinationDetails.query) {
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.memoId) {
       // if there are more properties, the query details need to contain the memoId property
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
       // valid addresses can only contain one memo id
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     const [memoId] = _.castArray(queryDetails.memoId);
     if (!this.isValidMemoId(memoId)) {
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     return {
@@ -161,26 +160,26 @@ export class Utils implements BaseUtils {
   }
 
   verifyAddress({ address, rootAddress }: any): boolean {
-  if (!rootAddress || !_.isString(rootAddress)) {
-    throw new Error('missing required string rootAddress');
-  }
+    if (!rootAddress || !_.isString(rootAddress)) {
+      throw new Error('missing required string rootAddress');
+    }
 
-  if (!this.isValidAddress(address)) {
-    throw new AddressValidationError(address)
-  }
+    if (!this.isValidAddress(address)) {
+      throw new AddressValidationError(address);
+    }
 
-  const addressDetails = this.getAddressDetails(address);
-  const rootAddressDetails = this.getAddressDetails(rootAddress);
+    const addressDetails = this.getAddressDetails(address);
+    const rootAddressDetails = this.getAddressDetails(rootAddress);
 
-  if (!addressDetails || !rootAddressDetails) {
-    return false;
-  }
+    if (!addressDetails || !rootAddressDetails) {
+      return false;
+    }
 
-  if (addressDetails.address !== rootAddressDetails.address) {
-    throw new AddressValidationError(address)
-  }
+    if (addressDetails.address !== rootAddressDetails.address) {
+      throw new AddressValidationError(address);
+    }
 
-  return true;
+    return true;
   }
 }
 

@@ -41,6 +41,9 @@ export class Transaction extends BaseTransaction {
     });
   }
 
+  /**
+   * Loads the inputs and outputs for a given transaction
+   */
   async loadInputsAndOutputs(): Promise<void> {
     const txJson = await this.toJson();
     const actions = txJson.actions;
@@ -219,6 +222,12 @@ export class Transaction extends BaseTransaction {
     });
   }
 
+  /**
+   * Verifies the signatures for a given signed transaction.
+   *
+   * @param {string[]} publicKeys the public keys used to verify the signatures
+   * @returns {boolean} whether the signatures are valid or not
+   */
   verifySignature(publicKeys: string[]): boolean {
     const serializedTransaction = this._signedTransaction?.serializedTransaction;
     if (this._signedTransaction && serializedTransaction) {

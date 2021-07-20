@@ -71,11 +71,7 @@ export class VoteActionBuilder extends EosActionBuilder {
         data: data,
       };
     } else {
-      this.validateMandatoryFields(
-        this._voter,
-        this._proxy,
-        this._producers,
-      );
+      this.validateMandatoryFields(this._voter, this._proxy, this._producers);
       return builder
         .with(this.action.account)
         .as(this.action.authorization)
@@ -90,11 +86,7 @@ export class VoteActionBuilder extends EosActionBuilder {
    * @param {string} proxy name of proxy
    * @param {string[]} producers producers
    */
-  private validateMandatoryFields(
-    voter: string,
-    proxy: string,
-    producers: string[]
-  ) {
+  private validateMandatoryFields(voter: string, proxy: string, producers: string[]) {
     const validationResult = VoteActionSchema.validate({
       voter,
       proxy,
@@ -105,5 +97,3 @@ export class VoteActionBuilder extends EosActionBuilder {
     }
   }
 }
-
-
