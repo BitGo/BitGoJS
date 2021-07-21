@@ -12,6 +12,7 @@ import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
+const ALGORAND_MINIMUM_FEE = 1000;
 
 /**
  * Determines whether the string is a composed of hex chars only.
@@ -172,7 +173,7 @@ export class Utils implements BaseUtils {
       return txInfo.estimateSize();
     }
 
-    const { fee = 1000 } = txInfo;
+    const { fee = 1 } = txInfo;
     const transaction = this.createMultisigTransaction(Object.assign({}, txInfo, { fee }));
     return transaction.estimateSize();
   }
@@ -313,6 +314,61 @@ export class Utils implements BaseUtils {
       throw new Error('Cannot convert Stellar address to an Algorand address via pubkey.');
     }
     throw new Error('Neither an Algorand address nor a stellar pubkey.');
+  }
+  
+  /**
+   * Build correct fee info and fee rate for Algorand transactions.
+   *
+   // eslint-disable-next-line jsdoc/require-param-type
+   * @param tx {Object} required fields or building fee info.
+   * @param feeRate {number} required fee rate for building fee info.
+   * @returns {Object} The fee information for algorand txn.
+   */
+  getFeeData(tx, feeRate: number): any {
+    const size = this.getTransactionByteSize(tx);
+    let feeInfo = this.validateFeeInfo(size, { feeRate: feeRate, fee: undefined, baseFactor: 1 });
+    if (feeInfo.fee < ALGORAND_MINIMUM_FEE) {
+      feeInfo = this.validateFeeInfo(size, { feeRate: undefined, fee: ALGORAND_MINIMUM_FEE, baseFactor: 1 });
+      feeRate = feeInfo.feeRate;
+    }
+    return { feeInfo, feeRate };
+  }
+
+  /**
+   * Check values for feeInfo building
+   *
+   * @param size {number} required size to check.
+   * @param feeData {Object} required fees to check.
+   * @returns {Object} with fee data validated.
+   */
+  protected validateFeeInfo(size: number, { feeRate, fee, baseFactor = 1000 }): any {
+    if (!Number.isSafeInteger(size) || size < 0) {
+      throw new Error('Size must be integer positive number');
+    }
+    if (_.isUndefined(feeRate) && _.isUndefined(fee)) {
+      throw new Error('Fee rate or fee are missed');
+    }
+    let fee_value, fee_rate;
+    if (!_.isUndefined(feeRate)) {
+      if (!Number.isSafeInteger(feeRate) || feeRate < 0) {
+        throw new Error('FeeRate must be integer positive number');
+      }
+      fee_rate = feeRate;
+      fee_value = Math.ceil((fee_rate * size) / baseFactor);
+    } else {
+      if (!Number.isSafeInteger(fee) || fee < 0) {
+        throw new Error('Fee must be integer positive number');
+      }
+      fee_value = fee;
+      fee_rate = Math.round((fee / size) * baseFactor);
+    }
+    const feeObj = {
+      feeRate: fee_rate,
+      fee: fee_value,
+      size: size,
+    };
+
+    return feeObj;
   }
 }
 
