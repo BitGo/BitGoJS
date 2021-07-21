@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.14.0-rc.0",
+  "version": "2.14.0-rc.1",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -34,8 +34,8 @@
   "dependencies": {
     "@bitgo/blake2b": "^3.0.0",
     "@bitgo/bls": "^0.1.0",
-    "@bitgo/statics": "^6.10.0",
-    "@bitgo/utxo-lib": "^1.9.4",
+    "@bitgo/statics": "^6.11.0-rc.0",
+    "@bitgo/utxo-lib": "^1.9.5-rc.0",
     "@celo/contractkit": "0.4.11",
     "@ethereumjs/common": "^2.3.0",
     "@ethereumjs/tx": "^3.2.0",
