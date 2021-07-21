@@ -32,8 +32,11 @@ export class Transaction extends BaseTransaction {
       note: this._algoTransaction.note,
       tokenId: this._algoTransaction?.assetIndex,
       genesisID: this._algoTransaction.genesisID,
-      genesisHash: this._algoTransaction.genesisHash,
+      genesisHash: this._algoTransaction.genesisHash.toString('base64'),
     };
+    if (this._algoTransaction.closeRemainderTo) {
+      result.closeRemainderTo = algosdk.encodeAddress(this._algoTransaction.closeRemainderTo.publicKey);
+    }
     if (this.type === TransactionType.Send) {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
       result.amount = this._algoTransaction.amount.toString();
