@@ -7,6 +7,7 @@ import * as AlgoResources from '../../../resources/algo';
 describe('utils', () => {
   const {
     accounts: { account1, account2, account3 },
+    transactions: { payTxn, nonParticipationTxn, keyregTxn },
   } = AlgoResources;
 
   it('should properly encode an algorand address from an ed25519 public key', () => {
@@ -119,5 +120,49 @@ describe('utils', () => {
       () => Algo.algoUtils.stellarAddressToAlgoAddress(algoAddress),
       'Neither an Algorand address nor a stellar pubkey',
     );
+  });
+
+  it('should build fee data over Pay Txn ,Non Participation Txn and KeyReg Txn', () => {
+    const feeRate = 1;
+    const feeDataKeyRegTxn = utils.getFeeData(payTxn, feeRate);
+    should.equal(feeDataKeyRegTxn.feeInfo.feeRate, 4);
+    should.equal(feeDataKeyRegTxn.feeRate, 4);
+    should.equal(feeDataKeyRegTxn.feeInfo.fee, 1000);
+    should.equal(feeDataKeyRegTxn.feeInfo.size, 240);
+
+    const feeDataNonParticipationTxn = utils.getFeeData(nonParticipationTxn, feeRate);
+    should.equal(feeDataNonParticipationTxn.feeInfo.feeRate, 5);
+    should.equal(feeDataNonParticipationTxn.feeRate, 5);
+    should.equal(feeDataNonParticipationTxn.feeInfo.fee, 1000);
+    should.equal(feeDataNonParticipationTxn.feeInfo.size, 207);
+
+    const feeDataKeyregTxn = utils.getFeeData(keyregTxn, feeRate);
+    should.equal(feeDataKeyregTxn.feeInfo.feeRate, 3);
+    should.equal(feeDataKeyregTxn.feeRate, 3);
+    should.equal(feeDataKeyregTxn.feeInfo.fee, 1000);
+    should.equal(feeDataKeyregTxn.feeInfo.size, 320);
+  });
+
+  it('should build feeData for Keyreg transaction with a high feeRate ', function () {
+    const feeRate = 150;
+    const feeDataKeyregTxn = utils.getFeeData(keyregTxn, feeRate);
+    should.equal(feeDataKeyregTxn.feeInfo.feeRate, 150);
+    should.equal(feeDataKeyregTxn.feeRate, 150);
+    should.equal(feeDataKeyregTxn.feeInfo.fee, 48000);
+    should.equal(feeDataKeyregTxn.feeInfo.size, 320);
+  });
+
+  it('should build feeData for Keyreg transaction with 0 as feeRate ', function () {
+    const feeRate = 0;
+    const feeDataKeyregTxn = utils.getFeeData(keyregTxn, feeRate);
+    should.equal(feeDataKeyregTxn.feeInfo.feeRate, 3);
+    should.equal(feeDataKeyregTxn.feeRate, 3);
+    should.equal(feeDataKeyregTxn.feeInfo.fee, 1000);
+    should.equal(feeDataKeyregTxn.feeInfo.size, 320);
+  });
+
+  it('should fail building fee info because fee is negative', () => {
+    const feeRate = -1;
+    should.throws(() => utils.getFeeData(payTxn, feeRate), 'Error: FeeRate must be integer positive number ');
   });
 });
