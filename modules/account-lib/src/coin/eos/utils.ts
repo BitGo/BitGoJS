@@ -50,7 +50,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    throw new NotImplementedError('isValidBlockId not implemented');
   }
 
   /** @inheritdoc */
@@ -65,15 +65,15 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    throw new NotImplementedError('isValidSignature not implemented');
   }
 
   verifySignature(signature: string, data: string | Buffer, pubkey: string): boolean {
-    return ecc.verify(signature, data, pubkey) === true;
+    return ecc.verify(signature, data, pubkey);
   }
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    throw new NotImplementedError('isValidTransactionId not implemented');
   }
 
   isValidName(s: string): boolean {
@@ -99,30 +99,21 @@ export class Utils implements BaseUtils {
     } catch (e) {
       return false;
     }
-
     return memoIdNumber.gte(0);
   }
 
-  normalizeAddress({ address, memoId }: AddressDetails): string {
-    if (memoId && this.isValidMemoId(memoId)) {
-      return `${address}?memoId=${memoId}`;
-    }
-    return address;
-  }
-
   getAddressDetails(address: string): AddressDetails {
-    const ADDRESS_LENGTH = 12;
     const destinationDetails = url.parse(address);
     const destinationAddress = destinationDetails.pathname;
 
     if (!destinationAddress) {
-      throw new AddressValidationError(address);
+      throw new Error(`failed to parse address: ${address}`);
     }
 
     // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
-    if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > ADDRESS_LENGTH) {
-      throw new AddressValidationError(address);
+    if (!this.isValidAddress(destinationAddress)) {
+      throw new AddressValidationError(address)
     }
 
     // address doesn't have a memo id
@@ -134,23 +125,23 @@ export class Utils implements BaseUtils {
     }
 
     if (!destinationDetails.query) {
-      throw new AddressValidationError(address);
+      throw new Error(`failed to parse query string: ${address}`);
     }
 
     const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.memoId) {
       // if there are more properties, the query details need to contain the memoId property
-      throw new AddressValidationError(address);
+      throw new Error(`invalid property in address: ${address}`)
     }
 
     if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
       // valid addresses can only contain one memo id
-      throw new AddressValidationError(address);
+      throw new Error(`invalid address ${address} must contain exactly one memoId`)
     }
 
     const [memoId] = _.castArray(queryDetails.memoId);
     if (!this.isValidMemoId(memoId)) {
-      throw new AddressValidationError(address);
+      throw new Error(`invalid address: ${address}, memoId is not valid`)
     }
 
     return {
@@ -175,9 +166,9 @@ export class Utils implements BaseUtils {
       return false;
     }
 
-    if (addressDetails.address !== rootAddressDetails.address) {
-      throw new AddressValidationError(address);
-    }
+  if (addressDetails.address !== rootAddressDetails.address) {
+    throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`)
+  }
 
     return true;
   }

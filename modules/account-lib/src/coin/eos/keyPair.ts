@@ -5,6 +5,7 @@ import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { NotImplementedError, NotSupported } from '../baseCoin/errors';
 import { isValidXprv, isValidXpub } from '../../utils/crypto';
+import Utils from './utils';
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
@@ -32,7 +33,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} prv Private key
    */
   recordKeysFromPrivateKey(prv: string): void {
-    if (!isValidXprv(prv) && !ecc.isValidPrivate(prv)) {
+    if (!isValidXprv(prv) && !Utils.isValidPrivateKey(prv)) {
       throw new Error('Unsupported private key');
     }
     if (isValidXprv(prv)) {
@@ -48,7 +49,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} pub Public key
    */
   recordKeysFromPublicKey(pub: string): void {
-    if (!isValidXpub(pub) && !ecc.isValidPublic(pub)) {
+    if (!isValidXpub(pub) && !Utils.isValidPublicKey(pub)) {
       throw new Error('Unsupported public key');
     }
     if (isValidXpub(pub)) {
@@ -61,8 +62,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /** @inheritdoc */
   getKeys(): DefaultKeys {
     if (this.hdNode) {
-      const publicKey = ecc.PublicKey.fromBuffer(this.hdNode.neutered().getPublicKeyBuffer()).toString();
-      const privateKey = this.hdNode.keyPair.toWIF();
+      const { xpub, xprv } = this.getExtendedKeys();
+      const privateKey = xprv
+          ? HDNode.fromBase58(xprv).keyPair.toWIF()
+          : undefined;
+      const publicKey = ecc.PublicKey.fromBuffer(HDNode.fromBase58(xpub).getPublicKeyBuffer()).toString();
       return { pub: publicKey, prv: privateKey };
     } else {
       const result: DefaultKeys = { pub: this.keyPair.pub };

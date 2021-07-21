@@ -232,7 +232,7 @@ export class Transaction extends BaseTransaction {
     const serializedTransaction = this._signedTransaction?.serializedTransaction;
     if (this._signedTransaction && serializedTransaction) {
       this._signedTransaction.signatures.forEach((signature, index) => {
-        ecc.verify(signature, Buffer.from(serializedTransaction), publicKeys[index]);
+        Utils.verifySignature(signature, Buffer.from(serializedTransaction), publicKeys[index])
         return false;
       });
       return true;

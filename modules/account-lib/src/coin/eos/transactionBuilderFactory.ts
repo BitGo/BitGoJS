@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { EosTransactionBuilder } from './eosTransactionBuilder';
+import { WalletInitializationBuilder } from './WalletInitializationBuilder';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 
@@ -31,7 +32,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction): EosTransactionBuilder {
-    return new EosTransactionBuilder(this._coinConfig);
+  getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
+    return new WalletInitializationBuilder(this._coinConfig);
   }
 }

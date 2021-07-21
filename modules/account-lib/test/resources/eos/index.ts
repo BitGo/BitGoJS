@@ -7,6 +7,10 @@ export const keypairAccounts = {
     secretKey: 'KzXKfnQidAh9zusMxPTaHm5Ch7CgQ7vCXHY8dRpnVWgtNiFBc2i6',
     pubKey: 'EOS7iqa3kx1qoV6rVD8B1P7yd8qN8Br91MqMQJfwZdYnmTzEk5AEw',
   },
+  account3: {
+    secretKey: 'xprv9s21ZrQH143K34bdhCWMuiuHfdjQB21gu95NwpeGEEfGMWs7tA5s3PMBBPeJmXn5DQ3vv8Hp8kq1KrsaJJnczW3BMztL2VGTnxVPgVjgq1H',
+    pubKey: 'xpub661MyMwAqRbcFYg6oE3NGrr2DfZtaUjYGMzykD3snaCFEKCGRhQ7bBff2g3CYvyYPQMGSwSe1DH8GXvP6uB3iiWsPGGMbXVZGkrk1UxQVk6',
+  }
 };
 export const accounts = {
   account1: {
