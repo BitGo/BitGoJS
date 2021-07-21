@@ -249,6 +249,14 @@ export interface VerifyUserPublicKeyOptions {
   txParams: TransactionParams;
 }
 
+export interface UnspentParams {
+  id: string;
+  value: number;
+  valueString: string;
+  address: string;
+  blockHeight: number;
+}
+
 export abstract class AbstractUtxoCoin extends BaseCoin {
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
@@ -1688,7 +1696,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       feeInfo: {},
       coin: this.getChain(),
     };
-    _.map(response.txInfo.unspents, function(unspent) {
+    _.map(response.txInfo.unspents, function (unspent) {
       const pathArray = unspent.chainPath.split('/');
       // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
       unspent.index = pathArray[4];
@@ -1705,6 +1713,24 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
       const res = (yield request.get(TX_INFO_URL)) as any;
       return res.body;
+    }).call(this);
+  }
+
+  /**
+   * Fetch unspent transaction outputs using IMS unspents API
+   * @params addresses
+   * @returns {*}
+   */
+  getUnspentInfoForCrossChainRecovery(addresses: string[]): any {
+    const self = this;
+
+    return co(function *getUnspentInfoForCrossChainRecovery() {
+      const ADDRESS_UNSPENTS_URL = self.url(
+          `/public/addressUnspents/${_.uniq(addresses).join(',')}`
+        );
+        const addressRes = (yield request.get(ADDRESS_UNSPENTS_URL)) as any;
+        const unspents = addressRes.body;
+        return unspents;
     }).call(this);
   }
 
@@ -1842,7 +1868,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const queries: any[] = [];
       const addressesById = {};
 
-      _.forEach(Object.keys(Codes.UnspentTypeTcomb.meta.map), function(addressType) {
+      _.forEach(Object.keys(Codes.UnspentTypeTcomb.meta.map), function (addressType) {
         // If we aren't ignoring the address type, we derive the public key and construct the query for the external and
         // internal indices
         if (!_.includes(params.ignoreAddressTypes, addressType)) {
