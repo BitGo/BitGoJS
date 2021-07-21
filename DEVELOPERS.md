@@ -6,7 +6,7 @@ $ yarn install
 ```
 
 # Documentation
-API and SDK documentation can be found at: https://platform.bitgo.com/.
+API and SDK documentation can be found at: https://app.bitgo.com/docs/.
 
 # Pull Requests
 

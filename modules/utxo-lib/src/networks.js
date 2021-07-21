@@ -2,15 +2,16 @@
 
 The values for the various fork coins can be found in these files:
 
-property       filename             varname                           notes
+property       filename                  varname                           notes
 ------------------------------------------------------------------------------------------------------------------------
-messagePrefix  src/validation.cpp   strMessageMagic                   Format `${CoinName} Signed Message`
-bech32_hrp     src/chainparams.cpp  bech32_hrp                        Only for some networks
-bip32.public   src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]    Mainnets have same value, testnets have same value
-bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]    Mainnets have same value, testnets have same value
-pubKeyHash     src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
-scriptHash     src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
-wif            src/chainparams.cpp  base58Prefixes[SECRET_KEY]        Testnets have same value
+messagePrefix  src/validation.cpp        strMessageMagic                   Format `${CoinName} Signed Message`
+bech32_hrp     src/chainparams.cpp       bech32_hrp                        Only for some networks
+bip32.public   src/chainparams.cpp       base58Prefixes[EXT_PUBLIC_KEY]    Mainnets have same value, testnets have same value
+bip32.private  src/chainparams.cpp       base58Prefixes[EXT_SECRET_KEY]    Mainnets have same value, testnets have same value
+pubKeyHash     src/chainparams.cpp       base58Prefixes[PUBKEY_ADDRESS]
+scriptHash     src/chainparams.cpp       base58Prefixes[SCRIPT_ADDRESS]
+wif            src/chainparams.cpp       base58Prefixes[SECRET_KEY]        Testnets have same value
+forkId         src/script/interpreter.h  FORKID_*
 
 */
 
@@ -87,6 +88,7 @@ module.exports = {
 
   // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
   // https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
+  // https://github.com/BTCGPU/BTCGPU/blob/master/src/script/interpreter.h
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
     bech32: 'btg',
@@ -94,10 +96,19 @@ module.exports = {
     pubKeyHash: 0x26,
     scriptHash: 0x17,
     wif: 0x80,
-    coin: coins.BTG,
-    forkId: 0x4F /* 79 */
+    forkId: 79,
+    coin: coins.BTG
   },
-  // bitcoingoldTest: TODO
+  bitcoingoldTestnet: {
+    messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
+    bech32: 'tbtg',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 111,
+    scriptHash: 196,
+    wif: 0xef,
+    forkId: 79,
+    coin: coins.BTG
+  },
 
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp

@@ -34,7 +34,7 @@ function getMainnet (network) {
       return networks.bitcoincash
 
     case networks.bitcoingold:
-    // FIXME(https://github.com/BitGo/bitgo-utxo-lib/issues/50): define bitcoingoldTest
+    case networks.bitcoingoldTestnet:
       return networks.bitcoingold
 
     case networks.bitcoinsv:
