@@ -17,6 +17,7 @@ export interface TxData {
   tokenId?: number;
   genesisID: string;
   genesisHash: string | Buffer;
+  closeRemainderTo?: string;
 }
 
 export interface EncodedTx {
