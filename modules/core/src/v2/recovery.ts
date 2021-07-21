@@ -191,7 +191,6 @@ export class CrossChainRecoveryTool {
       const faultyTxInfo = (yield self.sourceCoin.getTxInfoFromExplorer(faultyTxId)) as any;
 
       self._log('Getting unspents on output addresses..');
-
       // Get output addresses that do not belong to wallet
       // These are where the 'lost coins' live
       const txOutputAddresses = faultyTxInfo.outputs.map((input) => input.address);
@@ -239,10 +238,8 @@ export class CrossChainRecoveryTool {
 
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
-      // Get unspents for addresses
-      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${_.uniq(outputAddresses).join(',')}`);
-      const addressRes = (yield request.get(ADDRESS_UNSPENTS_URL)) as any;
-      const unspents = addressRes.body;
+      // Get unspents for addresses. Calling source coin's method of fetching unspents
+      const unspents = (yield self.sourceCoin.getUnspentInfoForCrossChainRecovery(outputAddresses)) as any;
 
       self.unspents = unspents;
       return unspents;
