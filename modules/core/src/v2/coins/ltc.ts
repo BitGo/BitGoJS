@@ -2,8 +2,9 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as request from 'superagent';
+import * as _ from 'lodash';
 
-import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, UtxoNetwork, UnspentParams } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
@@ -138,6 +139,29 @@ export class Ltc extends AbstractUtxoCoin {
         output.address = output.scriptPubKey.addresses[0];
       });
       return faultyTxInfo;
+    }).call(this);
+  }
+
+  /**
+   * Fetch unspent transaction outputs using litecoin explorer
+   * @param addresses
+   * @returns {{id: string, address: string, value: number, valueString: string, blockHeight: number}}
+   */
+  getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<UnspentParams[]> {
+    return co(function *getUnspentInfoForCrossChainRecovery() {
+      addresses = addresses.map((address) => this.canonicalAddress(address, 2));
+
+      const unspents = (yield request.get(this.recoveryBlockchainExplorerUrl(`/addrs/${_.uniq(addresses).join(',')}/utxo`)).result()) as any;
+
+      return unspents.map(unspent => {
+        return {
+          id: `${unspent.txid}:${unspent.vout}`,
+          address: unspent.address,
+          value: unspent.satoshis,
+          valueString: unspent.satoshis.toString(),
+          blockHeight: unspent.height,
+        };
+      });
     }).call(this);
   }
 }

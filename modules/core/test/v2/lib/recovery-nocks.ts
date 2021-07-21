@@ -2497,7 +2497,20 @@ module.exports.nockLtcRecovery = function (isKrsRecovery) {
       size: 370,
       valueIn: 0.6,
       fees: 0.0004488,
-    });
+    })
+    .get('/addrs/QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP/utxo')
+    .reply(200, [
+      {
+        address: 'QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP',
+        txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
+        vout: 1,
+        scriptPubKey: 'a914ef856a40c6dc109591b7d4fad170986d0bb404af87',
+        amount: 0.4,
+        satoshis: 40000000,
+        height: 476097,
+        confirmations: 1497700,
+      },
+    ]);
 
   if (isKrsRecovery) {
     // unnecessary market data removed
