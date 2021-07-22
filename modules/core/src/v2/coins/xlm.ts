@@ -34,6 +34,7 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
+import {toBitgoRequest} from "../../api";
 
 const co = Bluebird.coroutine;
 
@@ -650,7 +651,7 @@ export class Xlm extends BaseCoin {
 
       let accountData;
       try {
-        accountData = yield request.get(accountDataUrl).result();
+        accountData = yield toBitgoRequest(request.get(accountDataUrl)).result();
       } catch (e) {
         throw new Error('Unable to reach the Stellar network via Horizon.');
       }

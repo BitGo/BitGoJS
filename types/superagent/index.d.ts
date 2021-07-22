@@ -1,8 +1,7 @@
 import 'superagent';
 
 declare module 'superagent' {
-  interface Request<ResultType = any> {
-    result: (optionalField?: string) => Promise<ResultType>;
+  interface Request {
     proxy: (proxyUrl: string) => this;
     forceV1Auth: boolean;
     authenticationToken?: string;

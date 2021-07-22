@@ -8,8 +8,6 @@ import * as superagent from 'superagent';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey, hdPath } from './bitcoin';
 import bitcoinMessage = require('bitcoinjs-message');
-import sanitizeHtml = require('sanitize-html');
-import eol = require('eol');
 import { BaseCoin } from './v2/baseCoin';
 const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
@@ -38,8 +36,15 @@ import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
-import { ApiResponseError } from './errors';
-import { serializeRequestData, setRequestQueryString, verifyResponse } from './api';
+import {
+  BitGoRequest,
+  handleResponseError,
+  handleResponseResult,
+  serializeRequestData,
+  setRequestQueryString,
+  toBitgoRequest,
+  verifyResponse,
+} from './api';
 
 const debug = debugLib('bitgo:index');
 
@@ -47,79 +52,6 @@ const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
 if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
-}
-
-// Handle HTTP errors appropriately, returning the result body, or a named
-// field from the body, if the optionalField parameter is provided.
-function toBitgoRequest<ResponseResultType = any>(req: superagent.SuperAgentRequest): BitGoRequest<ResponseResultType> {
-  req.result = function (optionalField?: string) {
-    return req.then((response) => {
-      return handleResponseResult<ResponseResultType>(optionalField)(response);
-    }, (error) => {
-      return handleResponseError(error);
-    });
-  };
-  return req;
-}
-
-(superagent as any).Request.prototype.result = function<ResponseResultType = any> (optionalField?: string): Promise<ResponseResultType> {
-  return this.then(handleResponseResult(optionalField), handleResponseError);
-};
-
-function handleResponseResult<ResponseResultType>(optionalField?: string): (res: superagent.Response) => ResponseResultType {
-  return function (res: superagent.Response): ResponseResultType {
-    if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
-      return optionalField ? res.body[optionalField] : res.body;
-    }
-    throw errFromResponse(res);
-  };
-}
-
-function errFromResponse<ResponseBodyType>(res: superagent.Response): ApiResponseError {
-  const message = createResponseErrorString(res);
-  const status = res.status;
-  const result = res.body as ResponseBodyType;
-  const invalidToken = _.has(res.header, 'x-auth-required') && (res.header['x-auth-required'] === 'true');
-  const needsOtp = res.body.needsOTP !== undefined;
-  return new ApiResponseError(message, status, result, invalidToken, needsOtp);
-}
-
-function handleResponseError(e: Error & { response?: superagent.Response }): never {
-  if (e.response) {
-    throw errFromResponse(e.response);
-  }
-  throw e;
-}
-
-/**
- * There are many ways a request can fail, and may ways information on that failure can be
- * communicated to the client. This function tries to handle those cases and create a sane error string
- * @param res Response from an HTTP request
- */
-function createResponseErrorString(res: superagent.Response): string {
-  let errString = res.status.toString(); // at the very least we'll have the status code
-  if (res.body.error) {
-    // this is the case we hope for, where the server gives us a nice error from the JSON body
-    errString = res.body.error;
-  } else {
-    if (res.text) {
-      // if the response came back as text, we try to parse it as HTML and remove all tags, leaving us
-      // just the bare text, which we then trim of excessive newlines and limit to a certain length
-      try {
-        let sanitizedText = sanitizeHtml(res.text, { allowedTags: [] });
-        sanitizedText = sanitizedText.trim();
-        sanitizedText = eol.lf(sanitizedText); // use '\n' for all newlines
-        sanitizedText = _.replace(sanitizedText, /\n[ |\t]{1,}\n/g, '\n\n'); // remove the spaces/tabs between newlines
-        sanitizedText = _.replace(sanitizedText, /[\n]{3,}/g, '\n\n'); // have at most 2 consecutive newlines
-        sanitizedText = sanitizedText.substring(0, 5000); // prevent message from getting too large
-        errString = errString + '\n' + sanitizedText; // add it to our existing errString (at this point the more info the better!)
-      } catch (e) {
-        // do nothing, the response's HTML was too wacky to be parsed cleanly
-      }
-    }
-  }
-
-  return errString;
 }
 
 export interface BitGoOptions {
@@ -377,10 +309,6 @@ export interface VerifyPushTokenOptions {
 export interface RegisterPushTokenOptions {
   pushToken: unknown;
   operatingSystem: unknown;
-}
-
-export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest, Promise<superagent.Response> {
-  result: (optionalField?: string) => Promise<ResultType>;
 }
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
@@ -1343,7 +1271,7 @@ export class BitGo {
    * - pushVerificationToken: the token received via push notification to confirm the device's mobility
    * @deprecated
    */
-  verifyPushToken(params: VerifyPushTokenOptions): any {
+  verifyPushToken(params: VerifyPushTokenOptions): Promise<any> {
     if (!_.isObject(params)) {
       throw new Error('required object params');
     }
