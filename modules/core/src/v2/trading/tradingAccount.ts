@@ -178,7 +178,7 @@ export class TradingAccount {
       `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
     );
 
-    return this.bitgo.post(url).send(params).result().asCallback(callback);
+    return Bluebird.resolve(this.bitgo.post(url).send(params).result()).asCallback(callback);
   }
 
   /**
@@ -189,7 +189,7 @@ export class TradingAccount {
    * @param callback
    * @returns hex-encoded signature of the payload
    */
-  signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
+  signPayload(params: SignPayloadParameters, callback?: NodeCallback<string>): Bluebird<string> {
     const self = this;
     return co<string>(function* signPayload() {
       const key = (yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] })) as any;

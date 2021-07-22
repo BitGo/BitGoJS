@@ -67,13 +67,12 @@ Wallets.prototype.list = function(params, callback) {
   }
 
   const self = this;
-  return this.bitgo.get(this.bitgo.url('/wallet' + query))
-  .result()
-  .then(function(body) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/wallet' + query)).result()
+  ).then(function(body) {
     body.wallets = body.wallets.map(function(w) { return new Wallet(self.bitgo, w); });
     return body;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 Wallets.prototype.getWallet = function(params, callback) {
@@ -87,12 +86,11 @@ Wallets.prototype.getWallet = function(params, callback) {
     query = '?gpk=1';
   }
 
-  return this.bitgo.get(this.bitgo.url('/wallet/' + params.id + query))
-  .result()
-  .then(function(wallet) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/wallet/' + params.id + query)).result()
+  ).then(function(wallet) {
     return new Wallet(self.bitgo, wallet);
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -103,9 +101,9 @@ Wallets.prototype.listInvites = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/walletinvite'))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/walletinvite')).result()
+  ).nodeify(callback);
 };
 
 //
@@ -116,9 +114,9 @@ Wallets.prototype.cancelInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], [], callback);
 
-  return this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId)).result()
+  ).nodeify(callback);
 };
 
 //
@@ -129,9 +127,9 @@ Wallets.prototype.listShares = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/walletshare'))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/walletshare')).result()
+  ).nodeify(callback);
 };
 
 //
@@ -161,9 +159,9 @@ Wallets.prototype.getShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId)).result()
+  ).nodeify(callback);
 };
 
 //
@@ -177,10 +175,9 @@ Wallets.prototype.updateShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return this.bitgo.post(this.bitgo.url('/walletshare/' + params.walletShareId))
-  .send(params)
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/walletshare/' + params.walletShareId)).send(params).result()
+  ).nodeify(callback);
 };
 
 //
@@ -193,10 +190,9 @@ Wallets.prototype.cancelShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return this.bitgo.del(this.bitgo.url('/walletshare/' + params.walletShareId))
-  .send()
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.del(this.bitgo.url('/walletshare/' + params.walletShareId)).send().result()
+  ).nodeify(callback);
 };
 
 //
@@ -465,10 +461,9 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
       walletParams.enterprise = params.enterprise;
     }
 
-    return self.bitgo.post(self.bitgo.url('/wallet'))
-    .send(walletParams)
-    .result()
-    .nodeify(callback);
+    return Bluebird.resolve(
+      self.bitgo.post(self.bitgo.url('/wallet')).send(walletParams).result()
+    ).nodeify(callback);
   });
 };
 
@@ -513,13 +508,11 @@ Wallets.prototype.add = function(params, callback) {
     walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
   }
 
-  return this.bitgo.post(this.bitgo.url('/wallet'))
-  .send(walletParams)
-  .result()
-  .then(function(body) {
+  return Bluebird.resolve(
+    this.bitgo.post(this.bitgo.url('/wallet')).send(walletParams).result()
+  ).then(function(body) {
     return new Wallet(self.bitgo, body);
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -542,9 +535,9 @@ Wallets.prototype.remove = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return this.bitgo.del(this.bitgo.url('/wallet/' + params.id))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.del(this.bitgo.url('/wallet/' + params.id)).result()
+  ).nodeify(callback);
 };
 
 module.exports = Wallets;

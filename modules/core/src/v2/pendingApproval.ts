@@ -285,8 +285,10 @@ export class PendingApproval {
             approvalParams.halfSigned = transaction.halfSigned || transaction;
           }
           self.bitgo.setRequestTracer(reqId);
-          return self.bitgo.put(self.url()).send(approvalParams).result().nodeify(callback);
-        }).call(this);
+          return self.bitgo.put(self.url()).send(approvalParams).result();
+        })
+          .call(this)
+          .nodeify(callback);
       }
 
       try {
@@ -314,7 +316,7 @@ export class PendingApproval {
    * @param callback
    */
   reject(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo.put(this.url()).send({ state: 'rejected' }).result().nodeify(callback);
+    return Bluebird.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result()).nodeify(callback);
   }
 
   /**
@@ -324,7 +326,7 @@ export class PendingApproval {
    * @param params
    * @param callback
    */
-  cancel(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  cancel(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.reject(params, callback);
   }
 

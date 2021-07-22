@@ -12,8 +12,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import common = require('./common');
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+
+import * as common from './common';
 
 //
 // Constructor
@@ -34,9 +36,9 @@ Blockchain.prototype.getAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/address/' + params.address))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/address/' + params.address)).result()
+  ).nodeify(callback);
 };
 
 //
@@ -50,9 +52,9 @@ Blockchain.prototype.getAddressTransactions = function(params, callback) {
   common.validateParams(params, ['address'], [], callback);
 
   // TODO: support start and limit params
-  return this.bitgo.get(this.bitgo.url('/address/' + params.address + '/tx'))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/address/' + params.address + '/tx')).result()
+  ).nodeify(callback);
 };
 
 //
@@ -74,12 +76,11 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
     url += '?limit=' + (params.limit * 1e8);
   }
 
-  return this.bitgo.get(url)
-  .result()
-  .then(function(body) {
+  return Bluebird.resolve(
+    this.bitgo.get(url).result()
+  ).then(function(body) {
     return body.unspents;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -93,9 +94,9 @@ Blockchain.prototype.getTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/tx/' + params.id))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/tx/' + params.id)).result()
+  ).nodeify(callback);
 };
 
 //
@@ -112,9 +113,9 @@ Blockchain.prototype.getTransactionByInput = function(params, callback) {
   if (!_.isInteger(params.vout)) {
     throw new Error('invalid vout - number expected');
   }
-  return this.bitgo.get(this.bitgo.url('/tx/input/' + params.txid + '/' + params.vout))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/tx/input/' + params.txid + '/' + params.vout)).result()
+  ).nodeify(callback);
 };
 
 //
@@ -128,9 +129,9 @@ Blockchain.prototype.getBlock = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url('/block/' + params.id))
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(this.bitgo.url('/block/' + params.id)).result()
+  ).nodeify(callback);
 };
 
 module.exports = Blockchain;
