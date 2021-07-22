@@ -198,6 +198,66 @@ export class Utils implements BaseUtils {
   encodeObj(obj: Record<string | number | symbol, any>): Uint8Array {
     return algosdk.encodeObj(obj);
   }
+
+  /**
+   * secretKeyToMnemonic take an Algorant secret key and returns the corressponding mnemonic
+   *
+   * @param sk - Algorant secret key
+   * @return Secret key is associated mnemonic
+   */
+  secretKeyToMnemonic(sk: Buffer) {
+    const skValid = Buffer.from(sk.toString('hex'));
+    if (!this.isValidPrivateKey(skValid.toString('hex'))) {
+      throw new InvalidKey(`The secret key: ${sk.toString('hex')} is invalid`);
+    }
+    const skUnit8Array = Buffer.from(sk);
+    return algosdk.secretKeyToMnemonic(skUnit8Array);
+  }
+
+  /**
+   * seedFromMnemonic converts a mnemonic generated using this library into the source key used to create it
+   * It returns an error if the passed mnemonic has an incorrect checksum, if the number of words is unexpected, or if one
+   * of the passed words is not found in the words list
+   *
+   * @param mnemonic - 25 words mnemonic
+   * @returns 32 bytes long seed
+   */
+  seedFromMnemonic(mnemonic: string) {
+    return algosdk.mnemonicToMasterDerivationKey(mnemonic);
+  }
+
+  /**
+   * keyPairFromSeed generates an object with secretKey and publicKey using the algosdk
+   * @param seed 32 bytes long seed
+   * @returns { sk, pk } object with secretKey and publicKey
+   */
+  keyPairFromSeed(seed: Uint8Array) {
+    const mn = this.mnemonicFromSeed(seed);
+    const base64PrivateKey = algosdk.mnemonicToSecretKey(mn).sk;
+    return this.decodePrivateKey(base64PrivateKey);
+  }
+
+  /**
+   * decodePrivateKey get the secretKey and publicKey.
+   * 
+   * @param base64PrivateKey 64 bytes long privateKey
+   * @returns { sk, pk } object with secretKey and publicKey
+   */
+  protected decodePrivateKey(base64PrivateKey: Uint8Array) {;
+    const sk = base64PrivateKey.slice(0, 32);
+    const pk = base64PrivateKey.slice(32);
+    return { sk, pk };
+  }
+
+  /**
+   * decodePrivateKey generates a seed with a mnemonic and using algosdk.
+   *
+   * @param seed 32 bytes long seed
+   * @returns mnemonic - 25 words mnemonic - 25 words mnemonic
+   */
+  protected mnemonicFromSeed(seed: Uint8Array) {
+    return algosdk.masterDerivationKeyToMnemonic(seed);
+  }
 }
 
 const utils = new Utils();
