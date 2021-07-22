@@ -131,13 +131,12 @@ PendingApproval.prototype.get = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   const self = this;
-  return this.bitgo.get(this.url())
-  .result()
-  .then(function(res) {
+  return Bluebird.resolve(
+    this.bitgo.get(this.url()).result()
+  ).then(function(res) {
     self.pendingApproval = res;
     return self;
-  })
-  .nodeify(callback);
+  }).nodeify(callback);
 };
 
 //
@@ -147,12 +146,12 @@ PendingApproval.prototype.populateWallet = function() {
   const self = this;
   if (!self.wallet) {
     return self.bitgo.wallets().get({ id: self.info().transactionRequest.sourceWallet })
-    .then(function(wallet) {
-      if (!wallet) {
-        throw new Error('unexpected - unable to get wallet using sourcewallet');
-      }
-      self.wallet = wallet;
-    });
+      .then(function(wallet) {
+        if (!wallet) {
+          throw new Error('unexpected - unable to get wallet using sourcewallet');
+        }
+        self.wallet = wallet;
+      });
   }
 
   if (self.wallet.id() !== self.info().transactionRequest.sourceWallet) {
@@ -313,10 +312,9 @@ PendingApproval.prototype.approve = function(params, callback) {
     if (transaction) {
       approvalParams.tx = transaction.tx;
     }
-    return self.bitgo.put(self.url())
-    .send(approvalParams)
-    .result()
-    .nodeify(callback);
+    return Bluebird.resolve(
+      self.bitgo.put(self.url()).send(approvalParams).result()
+    ).nodeify(callback);
   })
   .catch(function(error) {
     if (!canRecreateTransaction &&
@@ -346,10 +344,9 @@ PendingApproval.prototype.reject = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.put(this.url())
-  .send({ state: 'rejected' })
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.put(this.url()).send({ state: 'rejected' }).result()
+  ).nodeify(callback);
 };
 
 //

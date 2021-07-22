@@ -12,8 +12,10 @@
 //
 
 import * as bitcoin from '@bitgo/utxo-lib';
-import * as common from './common';
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+
+import * as common from './common';
 import { getNetwork, makeRandomKey, hdPath } from './bitcoin';
 
 interface DecryptReceivedTravelRuleOptions {
@@ -65,9 +67,9 @@ TravelRule.prototype.getRecipients = function(params, callback) {
   common.validateParams(params, ['txid'], [], callback);
 
   const url = this.url(params.txid + '/recipients');
-  return this.bitgo.get(url)
-  .result('recipients')
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(url).result('recipients')
+  ).nodeify(callback);
 };
 
 TravelRule.prototype.validateTravelInfo = function(info) {
@@ -228,10 +230,9 @@ TravelRule.prototype.send = function(params, callback) {
     throw new Error('invalid outputIndex');
   }
 
-  return this.bitgo.post(this.url(params.txid + '/' + params.outputIndex))
-  .send(params)
-  .result()
-  .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.post(this.url(params.txid + '/' + params.outputIndex)).send(params).result()
+  ).nodeify(callback);
 };
 
 /**
