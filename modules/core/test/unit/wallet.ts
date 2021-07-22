@@ -806,7 +806,7 @@ describe('Wallet Prototype Methods', function() {
         nock.pendingMocks().should.be.empty();
       });
 
-      it('non existant transaction ID', async () => {
+      it('non existent transaction ID', async () => {
         nock(bgUrl)
           .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
           .reply(404, 'transaction not found on this wallet');

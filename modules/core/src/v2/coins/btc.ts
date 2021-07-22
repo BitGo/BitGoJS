@@ -12,6 +12,7 @@ import * as common from '../../common';
 import { BlockstreamApi } from '../recovery/blockstreamApi';
 import { BlockchairApi } from '../recovery/blockchairApi';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
+import { toBitgoRequest } from '../../api';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string,
@@ -59,7 +60,7 @@ export class Btc extends AbstractUtxoCoin {
       publicFeeDataReq.forceV1Auth = true;
       let publicFeeData;
       try {
-        publicFeeData = yield publicFeeDataReq.result();
+        publicFeeData = yield toBitgoRequest(publicFeeDataReq).result();
         if (publicFeeData && publicFeeData.hourFee && _.isInteger(publicFeeData.hourFee)) {
           return publicFeeData.hourFee;
         }
@@ -105,7 +106,7 @@ export class Btc extends AbstractUtxoCoin {
       const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
       let res;
       try {
-        res = yield request.post(smartbitURL)
+        res = yield toBitgoRequest(request.post(smartbitURL))
           .send({ hex: txInfo.transactionHex })
           .result();
       } catch (e) {

@@ -40,6 +40,7 @@ import { promiseProps } from '../promise-utils';
 import { CrossChainRecoveryTool } from '../recovery';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
+import { toBitgoRequest } from '../../api';
 
 const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
@@ -1661,7 +1662,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);
       }
       const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
-      const response = yield request.get(coinGeckoUrl).retry(2).result();
+      const response = yield toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
 
       // An example of response
       // {

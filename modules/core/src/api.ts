@@ -1,15 +1,126 @@
 /**
  * @prettier
  */
+import Debug from 'debug';
+import * as eol from 'eol';
+import * as _ from 'lodash';
+import * as sanitizeHtml from 'sanitize-html';
 import * as superagent from 'superagent';
 import * as urlLib from 'url';
 import * as querystring from 'querystring';
-import Debug from 'debug';
 
 import { ApiResponseError } from './errors';
 import { BitGo, VerifyResponseOptions } from './bitgo';
 
 const debug = Debug('bitgo:api');
+
+export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest {
+  result: (optionalField?: string) => Promise<ResultType>;
+}
+
+/**
+ * Add the bitgo-specific result() function on a superagent request.
+ *
+ * If the server response is successful, the `result()` function will return either the entire response body,
+ * or the field from the response body specified by the `optionalField` parameter if it is provided.
+ *
+ * If the server response with an error, `result()` will handle HTTP errors appropriately by
+ * rethrowing them as an `ApiResponseError` if possible, and otherwise rethrowing the underlying response error.
+ *
+ * @param req
+ */
+export function toBitgoRequest<ResponseResultType = any>(
+  req: superagent.SuperAgentRequest
+): BitGoRequest<ResponseResultType> {
+  return Object.assign(req, {
+    result(optionalField?: string) {
+      return req.then(
+        (response) => handleResponseResult<ResponseResultType>(optionalField)(response),
+        (error) => handleResponseError(error)
+      );
+    },
+  });
+}
+
+/**
+ * Return a function which extracts the specified response body property from the response if successful,
+ * otherwise throw an `ApiErrorResponse` parsed from the response body.
+ * @param optionalField
+ */
+export function handleResponseResult<ResponseResultType>(
+  optionalField?: string
+): (res: superagent.Response) => ResponseResultType {
+  return function (res: superagent.Response): ResponseResultType {
+    if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
+      return optionalField ? res.body[optionalField] : res.body;
+    }
+    throw errFromResponse(res);
+  };
+}
+
+/**
+ * Extract relevant information from a successful response (that is, a response with an HTTP status code
+ * between 200 and 299), but which resulted in an application specific error and use it to construct and
+ * throw an `ApiErrorResponse`.
+ *
+ * @param res
+ */
+function errFromResponse<ResponseBodyType>(res: superagent.Response): ApiResponseError {
+  const message = createResponseErrorString(res);
+  const status = res.status;
+  const result = res.body as ResponseBodyType;
+  const invalidToken = _.has(res.header, 'x-auth-required') && res.header['x-auth-required'] === 'true';
+  const needsOtp = res.body.needsOTP !== undefined;
+  return new ApiResponseError(message, status, result, invalidToken, needsOtp);
+}
+
+/**
+ * Handle an error or an error containing an HTTP response and use it to throw a well-formed error object.
+ *
+ * @param e
+ */
+export function handleResponseError(e: Error & { response?: superagent.Response }): never {
+  if (e.response) {
+    throw errFromResponse(e.response);
+  }
+  throw e;
+}
+
+/**
+ * There are many ways a request can fail, and may ways information on that failure can be
+ * communicated to the client. This function tries to handle those cases and create a sane error string
+ * @param res Response from an HTTP request
+ */
+function createResponseErrorString(res: superagent.Response): string {
+  let errString = res.status.toString(); // at the very least we'll have the status code
+  if (res.body.error) {
+    // this is the case we hope for, where the server gives us a nice error from the JSON body
+    errString = res.body.error;
+  } else {
+    if (res.text) {
+      // if the response came back as text, we try to parse it as HTML and remove all tags, leaving us
+      // just the bare text, which we then trim of excessive newlines and limit to a certain length
+      try {
+        let sanitizedText = sanitizeHtml(res.text, { allowedTags: [] });
+        sanitizedText = sanitizedText.trim();
+        sanitizedText = eol.lf(sanitizedText); // use '\n' for all newlines
+        sanitizedText = _.replace(sanitizedText, /\n[ |\t]{1,}\n/g, '\n\n'); // remove the spaces/tabs between newlines
+        sanitizedText = _.replace(sanitizedText, /[\n]{3,}/g, '\n\n'); // have at most 2 consecutive newlines
+        sanitizedText = sanitizedText.substring(0, 5000); // prevent message from getting too large
+        errString = errString + '\n' + sanitizedText; // add it to our existing errString (at this point the more info the better!)
+      } catch (e) {
+        // do nothing, the response's HTML was too wacky to be parsed cleanly
+        debug(
+          'got error with message "%s" while creating response error string from response: %s',
+          e.message,
+          res.text
+        );
+      }
+    }
+  }
+
+  return errString;
+}
 
 /**
  * Serialize request data based on the request content type
@@ -116,12 +227,11 @@ export function verifyResponse(
       verificationTime: verificationResponse.verificationTime,
     };
     debug('Server response outside response validity time window: %O', errorDetails);
-    const error: any = new Error(
-      'server response outside response validity time window, possible man-in-the-middle-attack'
+    throw new ApiResponseError(
+      'server response outside response validity time window, possible man-in-the-middle-attack',
+      511,
+      errorDetails
     );
-    error.result = errorDetails;
-    error.status = 511;
-    throw error;
   }
   return response;
 }
