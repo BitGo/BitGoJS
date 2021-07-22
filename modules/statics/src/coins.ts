@@ -309,6 +309,7 @@ export const coins = CoinMap.fromCoins([
   erc20('fet1', 'Fet1', 18, '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85', UnderlyingAsset.FET1),
   erc20('ff1', 'Two Prime FF1', 18, '0x59af0356cdebd1fa23ae5dadff9170bbfc31278c', UnderlyingAsset.FF1),
   erc20('fft', 'Fight to Fame Token', 18, '0xdea05e09f5b0e102616bb145a0e4772a9b5ab193', UnderlyingAsset.FFT),
+  erc20('fixed', 'Example Fixed Supply Token', 18, '0xa13de8df4ef9d6016f0826858d48045848429390', UnderlyingAsset.FIXED),
   erc20('fmf', 'Formosa Financial', 18, '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc', UnderlyingAsset.FMF),
   erc20(
     'forth',
@@ -337,6 +338,7 @@ export const coins = CoinMap.fromCoins([
   erc20('grt', 'The Graph', 18, '0xc944e90c64b2c07662a292be6244bdf05cda44a7', UnderlyingAsset.GRT),
   erc20('gto', 'Gifto', 5, '0xc5bbae50781be1669306b9e001eff57a2957b09d', UnderlyingAsset.GTO),
   erc20('gusd', 'Gemini Dollar', 2, '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', UnderlyingAsset.GUSD),
+  erc20('gusdt', 'GUSDT', 18, '0x64d081854fad45e64db52cd28ba78ae1ecfee59b', UnderlyingAsset.GUSDT),
   erc20('gxc', 'Game X Coin', 18, '0x953e22945b416730bad05009af05b420e598e412', UnderlyingAsset.GXC),
   erc20('gyen', 'Gmo JPY', 6, '0xc08512927d12348f6620a698105e1baac6ecd911', UnderlyingAsset.GYEN),
   erc20('hcn', 'Himalaya Coin', 18, '0xb01b22dcd2f4b199a27ec28d8a688dd26f162067', UnderlyingAsset.HCN),
