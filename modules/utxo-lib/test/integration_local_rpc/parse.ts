@@ -3,7 +3,7 @@
  */
 import * as assert from 'assert';
 
-import { isSupportedDepositType, isSupportedSpendType, ScriptType, scriptTypes } from './generate/outputScripts';
+import { isSupportedDepositType, isSupportedSpendType, ScriptType, scriptTypes } from './generate/outputScripts.util';
 import { Network } from './generate/types';
 import { readFixture } from './generate/fixtures';
 
