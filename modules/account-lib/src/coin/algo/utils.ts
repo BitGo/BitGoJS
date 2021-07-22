@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import algosdk from 'algosdk';
+import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
 import base32 from 'hi-base32';
 import _ from 'lodash';
@@ -7,6 +8,7 @@ import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/cr
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
 import { EncodedTx } from './ifaces';
+import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
@@ -205,7 +207,7 @@ export class Utils implements BaseUtils {
    * @param sk - Algorant secret key
    * @return Secret key is associated mnemonic
    */
-  secretKeyToMnemonic(sk: Buffer) {
+  secretKeyToMnemonic(sk: Buffer): string {
     const skValid = Buffer.from(sk.toString('hex'));
     if (!this.isValidPrivateKey(skValid.toString('hex'))) {
       throw new InvalidKey(`The secret key: ${sk.toString('hex')} is invalid`);
@@ -222,31 +224,31 @@ export class Utils implements BaseUtils {
    * @param mnemonic - 25 words mnemonic
    * @returns 32 bytes long seed
    */
-  seedFromMnemonic(mnemonic: string) {
+  seedFromMnemonic(mnemonic: string): Uint8Array {
     return algosdk.mnemonicToMasterDerivationKey(mnemonic);
   }
 
   /**
    * keyPairFromSeed generates an object with secretKey and publicKey using the algosdk
    * @param seed 32 bytes long seed
-   * @returns { sk, pk } object with secretKey and publicKey
+   * @returns KeyPair
    */
-  keyPairFromSeed(seed: Uint8Array) {
+  keyPairFromSeed(seed: Uint8Array): KeyPair {
     const mn = this.mnemonicFromSeed(seed);
     const base64PrivateKey = algosdk.mnemonicToSecretKey(mn).sk;
-    return this.decodePrivateKey(base64PrivateKey);
+    return this.createKeyPair(base64PrivateKey);
   }
 
   /**
-   * decodePrivateKey get the secretKey and publicKey.
-   * 
+   * createKeyPair generet the new objet keyPair.
+   *
    * @param base64PrivateKey 64 bytes long privateKey
-   * @returns { sk, pk } object with secretKey and publicKey
+   * @returns KeyPair
    */
-  protected decodePrivateKey(base64PrivateKey: Uint8Array) {;
+  protected createKeyPair(base64PrivateKey: Uint8Array): KeyPair {
     const sk = base64PrivateKey.slice(0, 32);
-    const pk = base64PrivateKey.slice(32);
-    return { sk, pk };
+    const keyPair = new KeyPair({ prv: Buffer.from(sk).toString('hex') });
+    return keyPair;
   }
 
   /**
@@ -255,8 +257,62 @@ export class Utils implements BaseUtils {
    * @param seed 32 bytes long seed
    * @returns mnemonic - 25 words mnemonic - 25 words mnemonic
    */
-  protected mnemonicFromSeed(seed: Uint8Array) {
+  protected mnemonicFromSeed(seed: Uint8Array): string {
     return algosdk.masterDerivationKeyToMnemonic(seed);
+  }
+
+  /**
+   * isValidEd25519PublicKeyStellar validate the key with the stellar-sdk
+   *
+   * @param publicKey
+   * @returns booldean
+   */
+  protected isValidEd25519PublicKeyStellar(publicKey: string): boolean {
+    return stellar.StrKey.isValidEd25519PublicKey(publicKey);
+  }
+
+  /**
+   * decodeEd25519PublicKeyStellar decode the key with the stellar-sdk
+   *
+   * @param publicKey
+   * @returns booldean
+   */
+  protected decodeEd25519PublicKeyStellar(publicKey: string): Buffer {
+    return stellar.StrKey.decodeEd25519PublicKey(publicKey);
+  }
+
+  /**
+   * encodeAddress return an addres encoding with algosdk
+   *
+   * @param addr
+   * @returns string
+   */
+  encodeAddress(addr: Buffer): string {
+    return algosdk.encodeAddress(addr);
+  }
+
+  /**
+   *stellarAddressToAlgoAddress returns an address algo of algo
+   *if is sent an xmlAddress if it does not return the same address.
+   *
+   * @param addressOrPubKey
+   * @returns address algo string
+   */
+  stellarAddressToAlgoAddress(addressOrPubKey: string): string {
+    // we have an Algorand address
+    if (this.isValidAddress(addressOrPubKey)) {
+      return addressOrPubKey;
+    }
+    // we have a stellar key
+    if (this.isValidEd25519PublicKeyStellar(addressOrPubKey)) {
+      const stellarPub = this.decodeEd25519PublicKeyStellar(addressOrPubKey);
+      const algoAddress = this.encodeAddress(stellarPub);
+      if (this.isValidAddress(algoAddress)) {
+        return algoAddress;
+      }
+      throw new Error('Cannot convert Stellar address to an Algorand address via pubkey.');
+    }
+    throw new Error('Neither an Algorand address nor a stellar pubkey.');
   }
 }
 
