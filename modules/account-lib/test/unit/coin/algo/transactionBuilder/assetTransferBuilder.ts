@@ -64,6 +64,175 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
+    it('should build a valid disable token transaction', async function() {
+      const firstRound = 167;
+      const lastRound = 1167;
+      const fee = 1000;
+      const tokenId = 1;
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
+      const amount = '0';
+      const note = new Uint8Array(Buffer.from("note", 'utf-8'));
+      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+      const closeRemainderTo = 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM';
+
+      const tx = await txnBuilder
+        .fee({ fee: fee.toString() })
+        .isFlatFee(true)
+        .firstRound(firstRound)
+        .lastRound(lastRound)
+        .testnet()
+        .closeRemainderTo({ address: closeRemainderTo })
+        .sender({ address: address })
+        .tokenId(tokenId)
+        .amount(BigInt(amount))
+        .to({ address: address })
+        .note(note)
+        .build();
+
+      const txHex = tx.toBroadcastFormat();
+      const txInfo = tx.toJson();
+
+      should.exists(txHex);
+
+      txInfo.to.should.equal(address);
+      txInfo.from.should.equal(address);
+      txInfo.closeRemainderTo.should.equal(closeRemainderTo);
+      txInfo.amount.should.equal('0');
+      txInfo.firstRound.should.equal(167);
+      txInfo.tokenId.should.equal(1);
+      txInfo.fee.should.equal(1000);
+      txInfo.note.should.equal(note);
+      txInfo.lastRound.should.equal(1167);
+      txInfo.genesisID.should.equal('testnet-v1.0');
+      txInfo.genesisHash.should.equal('SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=');
+    });
+
+    it('should build a valid enable token transaction', async function() {
+      const firstRound = 167;
+      const lastRound = 1167;
+      const fee = 1000;
+      const tokenId = 1;
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
+      const amount = '0';
+      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+
+      const tx = await txnBuilder
+        .fee({ fee: fee.toString() })
+        .isFlatFee(true)
+        .firstRound(firstRound)
+        .lastRound(lastRound)
+        .testnet()
+        .sender({ address: address })
+        .tokenId(tokenId)
+        .amount(BigInt(amount))
+        .to({ address: address })
+        .build();
+
+      const txHex = tx.toBroadcastFormat();
+      const txInfo = tx.toJson();
+
+      should.exists(txHex);
+
+      txInfo.to.should.equal(address);
+      txInfo.from.should.equal(address);
+      txInfo.amount.should.equal('0');
+      txInfo.firstRound.should.equal(167);
+      txInfo.tokenId.should.equal(1);
+      txInfo.fee.should.equal(1000);
+      txInfo.lastRound.should.equal(1167);
+      txInfo.genesisID.should.equal('testnet-v1.0');
+      txInfo.genesisHash.should.equal('SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=');
+    });
+
+    it('should build a valid enable token transaction and re-calcualte minimum fee', async function() {
+      const firstRound = 167;
+      const lastRound = 1167;
+      const fee = 1;
+      const tokenId = 1;
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
+      const amount = '0';
+      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+
+      const tx = await txnBuilder
+        .fee({ fee: fee.toString() })
+        .isFlatFee(true)
+        .firstRound(firstRound)
+        .lastRound(lastRound)
+        .testnet()
+        .sender({ address: address })
+        .tokenId(tokenId)
+        .amount(BigInt(amount))
+        .to({ address: address })
+        .build();
+
+      const txHex = tx.toBroadcastFormat();
+      const txInfo = tx.toJson();
+
+      should.exists(txHex);
+
+      txInfo.to.should.equal(address);
+      txInfo.from.should.equal(address);
+      txInfo.amount.should.equal('0');
+      txInfo.firstRound.should.equal(167);
+      txInfo.tokenId.should.equal(1);
+      txInfo.fee.should.equal(1000);
+      txInfo.lastRound.should.equal(1167);
+      txInfo.genesisID.should.equal('testnet-v1.0');
+      txInfo.genesisHash.should.equal('SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=');
+    });
+
+    it('should build a valid disable token transaction and re-calcualte minimum fee', async function() {
+      const firstRound = 167;
+      const lastRound = 1167;
+      const fee = 1;
+      const tokenId = 1;
+      const closeRemainderTo = 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM';
+      const {
+        networks: { testnet },
+      } = AlgoResources;
+      const { genesisHash, genesisID } = testnet;
+      const amount = '0';
+      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+
+      const tx = await txnBuilder
+        .fee({ fee: fee.toString() })
+        .isFlatFee(true)
+        .firstRound(firstRound)
+        .lastRound(lastRound)
+        .testnet()
+        .closeRemainderTo({ address: closeRemainderTo })
+        .sender({ address: address })
+        .tokenId(tokenId)
+        .amount(BigInt(amount))
+        .to({ address: address })
+        .build();
+
+      const txHex = tx.toBroadcastFormat();
+      const txInfo = tx.toJson();
+
+      should.exists(txHex);
+
+      txInfo.to.should.equal(address);
+      txInfo.from.should.equal(address);
+      txInfo.amount.should.equal('0');
+      txInfo.firstRound.should.equal(167);
+      txInfo.tokenId.should.equal(1);
+      txInfo.fee.should.equal(1000);
+      txInfo.closeRemainderTo.should.equal(closeRemainderTo);
+      txInfo.lastRound.should.equal(1167);
+      txInfo.genesisID.should.equal('testnet-v1.0');
+      txInfo.genesisHash.should.equal('SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=');
+    });
+
     it('should decode an unsigned asset transfer transaction', async () => {
       txnBuilder.from(rawTx.assetTransfer.unsigned);
       const tx = await txnBuilder.build();
