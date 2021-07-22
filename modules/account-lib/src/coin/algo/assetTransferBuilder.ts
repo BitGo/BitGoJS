@@ -61,7 +61,7 @@ export class AssetTransferBuilder extends TransferBuilder {
     return algosdk.makeAssetTransferTxnWithSuggestedParams(
       this._sender,
       this._to,
-      undefined,
+      this._closeRemainderTo,
       undefined,
       this._amount,
       this._note,
