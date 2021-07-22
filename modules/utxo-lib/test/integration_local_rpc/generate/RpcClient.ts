@@ -1,18 +1,15 @@
 /**
  * @prettier
  */
-import * as assert from 'assert';
-
 import axios, { AxiosError } from 'axios';
+import buildDebug from 'debug';
 
 const utxolib = require('../../../src');
 const coins = require('../../../src/coins');
 
 import { Network } from './types';
 
-function debug(...args: unknown[]) {
-  console.log(...args);
-}
+const debug = buildDebug('RpcClient');
 
 function sleep(millis: number): Promise<void> {
   return new Promise((resolve) => {
