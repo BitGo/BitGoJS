@@ -15,7 +15,7 @@ import {
   isSupportedSpendType,
   ScriptType,
   scriptTypes,
-} from './outputScripts';
+} from './outputScripts.util';
 import { Network } from './types';
 import { RpcClient } from './RpcClient';
 import { wipeFixtures, writeFixture } from './fixtures';
