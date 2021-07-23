@@ -1,14 +1,13 @@
+const utxoLib = require('@bitgo/utxo-lib');
+import * as nock from 'nock';
 import * as should from 'should';
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 import * as sinon from 'sinon';
+
 import { BitGo, VerificationOptions } from '../../../../src';
 import { Wallet } from '../../../../src/v2';
 import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 const recoveryNocks = require('../../lib/recovery-nocks');
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as nock from 'nock';
-const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
 import { Btc } from '../../../../src/v2/coins/btc';
 import {
@@ -44,7 +43,7 @@ describe('Abstract UTXO Coin:', () => {
 
     const outputAmount = 0.01 * 1e8;
 
-    it('should classify outputs which spend change back to a v1 wallet base address as internal', async function() {
+    it('should classify outputs which spend change back to a v1 wallet base address as internal', async function () {
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [{
@@ -59,7 +58,7 @@ describe('Abstract UTXO Coin:', () => {
         txParams: {},
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
-        verification: verification as any
+        verification,
       });
 
       should.exist(parsedTransaction.outputs[0]);
@@ -73,7 +72,40 @@ describe('Abstract UTXO Coin:', () => {
       (coin.verifyAddress as any).restore();
     });
 
-    it('should classify outputs which spend to addresses not on the wallet as external', async function() {
+    it('should classify outputs which spend change back to a v1 wallet base address as external ' +
+      'if considerMigratedFromAddressInternal is set and false', async function () {
+      sinon.stub(coin, 'explainTransaction').resolves({
+        outputs: [],
+        changeOutputs: [{
+          address: wallet.migratedFrom(),
+          amount: outputAmount,
+        }],
+      } as any);
+
+      sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
+
+      const parsedTransaction = await coin.parseTransaction({
+        txParams: {},
+        txPrebuild: { txHex: '' },
+        wallet: wallet as any,
+        verification: {
+          ...verification,
+          considerMigratedFromAddressInternal: false,
+        },
+      });
+
+      should.exist(parsedTransaction.outputs[0]);
+      parsedTransaction.outputs[0].should.deepEqual({
+        address: wallet.migratedFrom(),
+        amount: outputAmount,
+        external: true,
+      });
+
+      (coin.explainTransaction as any).restore();
+      (coin.verifyAddress as any).restore();
+    });
+
+    it('should classify outputs which spend to addresses not on the wallet as external', async function () {
       const externalAddress = 'external_address';
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [{
@@ -89,7 +121,7 @@ describe('Abstract UTXO Coin:', () => {
         txParams: {},
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
-        verification: verification as any
+        verification,
       });
 
       should.exist(parsedTransaction.outputs[0]);
@@ -103,7 +135,7 @@ describe('Abstract UTXO Coin:', () => {
       (coin.verifyAddress as any).restore();
     });
 
-    it('should accept a custom change address', async function() {
+    it('should accept a custom change address', async function () {
       const changeAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
       const outputAmount = 10000;
       const recipients = [];
@@ -122,7 +154,7 @@ describe('Abstract UTXO Coin:', () => {
         txParams: { changeAddress, recipients },
         txPrebuild: { txHex: '' },
         wallet: wallet as any,
-        verification: verification as any
+        verification,
       });
 
       should.exist(parsedTransaction.outputs[0]);
@@ -528,7 +560,7 @@ describe('Abstract UTXO Coin:', () => {
       sandbox.restore();
     });
 
-    it('should construct a recovery transaction with segwit unspents', async function() {
+    it('should construct a recovery transaction with segwit unspents', async function () {
       const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
       callBack1.resolves(emptyAddressInfo);
       callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']);
@@ -547,7 +579,7 @@ describe('Abstract UTXO Coin:', () => {
       tx.transactionHex.should.equal(expectedTxHex);
     });
 
-    it('should construct an unsigned recovery transaction for the offline vault', async function() {
+    it('should construct an unsigned recovery transaction for the offline vault', async function () {
       const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
       callBack1.resolves(emptyAddressInfo);
       callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({ txCount: 2, totalBalance: 0 });
@@ -569,7 +601,7 @@ describe('Abstract UTXO Coin:', () => {
       txPrebuild.txInfo.unspents.length.should.equal(2);
     });
 
-    after(function() {
+    after(() => {
       nock.cleanAll();
     });
   });
