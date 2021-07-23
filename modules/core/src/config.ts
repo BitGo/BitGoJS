@@ -4,7 +4,8 @@ import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType } from '@bitgo/statics';
+import { AlgoTokenConfig } from './v2/coins/algoToken';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, AlgoCoin } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -13,6 +14,9 @@ export interface Tokens {
     };
     xlm: {
       tokens: StellarTokenConfig[];
+    };
+    algo: {
+      tokens: AlgoTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -27,6 +31,9 @@ export interface Tokens {
     };
     xlm: {
       tokens: StellarTokenConfig[];
+    };
+    algo: {
+      tokens: AlgoTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -75,6 +82,20 @@ const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) =>
   return acc;
 }, []);
 
+// Get the list of Stellar tokens from statics and format it properly
+const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
+  if (coin instanceof AlgoCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 // Get the list of OFC tokens from statics and format it properly
 const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
   if (coin instanceof OfcCoin) {
@@ -113,6 +134,9 @@ export const tokens: Tokens = {
     xlm: {
       tokens: formattedStellarTokens.filter(token => token.network === 'Mainnet'),
     },
+    algo: {
+      tokens: formattedAlgoTokens.filter(token => token.network === 'Mainnet'),
+    },
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.MAINNET),
     },
@@ -128,6 +152,9 @@ export const tokens: Tokens = {
     xlm: {
       tokens: formattedStellarTokens.filter(token => token.network === 'Testnet'),
     },
+    algo: {
+      tokens: formattedAlgoTokens.filter(token => token.network === 'Testnet'),
+    },
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.TESTNET),
     },
@@ -141,9 +168,9 @@ export const tokens: Tokens = {
  * Verify mainnet or testnet tokens
  * @param tokens
  */
-const verifyTokens = function(tokens) {
+const verifyTokens = function (tokens) {
   const verifiedTokens = {};
-  _.forEach(tokens, function(token) {
+  _.forEach(tokens, function (token) {
     if (verifiedTokens[token.type]) {
       throw new Error('token : ' + token.type + ' duplicated.');
     }
@@ -172,7 +199,7 @@ export const defaults = {
   fallbackFeeRate: 50000,
   minOutputSize: 2730,
   minInstantFeeRate: 10000,
-  bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
+  bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47',
 };
 
 // Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
@@ -181,7 +208,7 @@ export const supportedCrossChainRecoveries = {
   btc: ['bch', 'ltc', 'bsv'],
   bch: ['btc', 'ltc', 'bsv'],
   ltc: ['btc', 'bch', 'bsv'],
-  bsv: ['btc', 'ltc', 'bch']
+  bsv: ['btc', 'ltc', 'bch'],
 };
 
 // KRS providers and their fee structures
@@ -191,19 +218,19 @@ export const krsProviders = {
     feeAmount: 99,
     supportedCoins: ['btc', 'eth'],
     feeAddresses: {
-      btc: '' // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
-    }
+      btc: '', // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
+    },
   },
   bitgoKRSv2: {
     feeType: 'flatUsd',
     feeAmount: 0, // we will receive payments off-chain
-    supportedCoins: ['btc', 'eth']
+    supportedCoins: ['btc', 'eth'],
   },
   dai: {
     feeType: 'flatUsd',
     feeAmount: 0, // dai will receive payments off-chain
-    supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch', 'bsv', 'bcha']
-  }
+    supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch', 'bsv', 'bcha'],
+  },
 };
 
 export const coinGeckoBaseUrl = 'https://api.coingecko.com/api/v3/';
