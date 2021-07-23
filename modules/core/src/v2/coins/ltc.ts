@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
@@ -9,6 +12,7 @@ import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import { InvalidAddressError } from '../../errors';
+import { toBitgoRequest } from '../../api';
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -80,7 +84,7 @@ export class Ltc extends AbstractUtxoCoin {
       // altScriptHash is the old one
       1: this.altScriptHash,
       // by default we're using the new one
-      2: this.network.scriptHash
+      2: this.network.scriptHash,
     };
     const newScriptHash = scriptHashMap[scriptHashVersion];
     return this.getCoinLibrary().address.toBase58Check(addressDetails.hash, newScriptHash);
@@ -97,10 +101,12 @@ export class Ltc extends AbstractUtxoCoin {
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    return co(function *getAddressInfoFromExplorer() {
+    return co(function* getAddressInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`)).result();
+      const addrInfo = yield toBitgoRequest(
+        request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`))
+      ).result();
 
       (addrInfo as any).txCount = (addrInfo as any).txApperances;
       (addrInfo as any).totalBalance = (addrInfo as any).balanceSat;
@@ -110,10 +116,12 @@ export class Ltc extends AbstractUtxoCoin {
   }
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    return co(function *getUnspentInfoFromExplorer() {
+    return co(function* getUnspentInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`)).result();
+      const unspents = yield toBitgoRequest(
+        request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`))
+      ).result();
 
       (unspents as any).forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;
@@ -125,7 +133,7 @@ export class Ltc extends AbstractUtxoCoin {
   }
 
   getTxInfoFromExplorer(faultyTxId: string): any {
-    return co(function *getTxInfoFromExplorer() {
+    return co(function* getTxInfoFromExplorer() {
       const res = (yield request.get(this.recoveryBlockchainExplorerUrl(`/tx/${faultyTxId}`))) as any;
       const faultyTxInfo = res.body;
 
@@ -148,12 +156,18 @@ export class Ltc extends AbstractUtxoCoin {
    * @returns {{id: string, address: string, value: number, valueString: string, blockHeight: number}}
    */
   getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<UnspentParams[]> {
-    return co(function *getUnspentInfoForCrossChainRecovery() {
+    return co(function* getUnspentInfoForCrossChainRecovery() {
       addresses = addresses.map((address) => this.canonicalAddress(address, 2));
 
-      const unspents = (yield request.get(this.recoveryBlockchainExplorerUrl(`/addrs/${_.uniq(addresses).join(',')}/utxo`)).result()) as any;
+      const unspents = yield toBitgoRequest(
+        request.get(this.recoveryBlockchainExplorerUrl(`/addrs/${_.uniq(addresses).join(',')}/utxo`))
+      ).result();
 
-      return unspents.map(unspent => {
+      if (!unspents) {
+        return [];
+      }
+
+      return (unspents as any[]).map((unspent) => {
         return {
           id: `${unspent.txid}:${unspent.vout}`,
           address: unspent.address,

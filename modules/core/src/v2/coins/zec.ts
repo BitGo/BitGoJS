@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
@@ -5,6 +8,7 @@ import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
+import { toBitgoRequest } from '../../api';
 
 const co = Bluebird.coroutine;
 
@@ -67,7 +71,13 @@ export class Zec extends AbstractUtxoCoin {
    * @param hashType
    * @returns {*}
    */
-  calculateSignatureHash(transaction: any, inputIndex: number, pubScript: Buffer, amount: number, hashType: number): Buffer {
+  calculateSignatureHash(
+    transaction: any,
+    inputIndex: number,
+    pubScript: Buffer,
+    amount: number,
+    hashType: number
+  ): Buffer {
     return transaction.hashForZcashSignature(inputIndex, pubScript, amount, hashType);
   }
 
@@ -75,10 +85,12 @@ export class Zec extends AbstractUtxoCoin {
     return common.Environments[this.bitgo.getEnv()].zecExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58: string): Bluebird<{ txCount: number; totalBalance: number; }> {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<{ txCount: number; totalBalance: number }> {
     const self = this;
-    return co<{ txCount: number; totalBalance: number; }>(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+    return co<{ txCount: number; totalBalance: number }>(function* getAddressInfoFromExplorer() {
+      const addrInfo = yield toBitgoRequest(
+        request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`))
+      ).result();
 
       (addrInfo as any).txCount = (addrInfo as any).txApperances;
       (addrInfo as any).totalBalance = (addrInfo as any).balanceSat;
@@ -87,12 +99,18 @@ export class Zec extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<{ address: string; amount: number; n: number; }[]> {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<{ address: string; amount: number; n: number }[]> {
     const self = this;
-    return co<{ address: string; amount: number; n: number; }[]>(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+    return co<{ address: string; amount: number; n: number }[]>(function* getUnspentInfoFromExplorer() {
+      const unspents = yield toBitgoRequest(
+        request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`))
+      ).result();
 
-      (unspents as any).forEach(function processUnspent(unspent) {
+      if (!unspents) {
+        return [];
+      }
+
+      (unspents as any[]).forEach((unspent) => {
         unspent.amount = unspent.satoshis;
         unspent.n = unspent.vout;
       });
