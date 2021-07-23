@@ -1,0 +1,53 @@
+{
+  "txid": "081f8457a9f9dd5814fdb6a4144fa0d9559740eda6f8867bacd2e969d1611b12",
+  "hash": "d063bee4fd3d1e73223965e2780448513fc0b409c3c41e861942ea142a1353d9",
+  "version": 2,
+  "size": 234,
+  "vsize": 153,
+  "weight": 609,
+  "locktime": 300,
+  "vin": [
+    {
+      "txid": "ccadf9d183364e9047d92052e7d6cfde213fb35de61ff1e722bfa5af1293d5b1",
+      "vout": 0,
+      "scriptSig": {
+        "asm": "",
+        "hex": ""
+      },
+      "txinwitness": [
+        "304402201d73eece51b6bcdb866a166625ee22b2c699d4a216cd1c2bc345faef65b386ee022076d3e37e04f41044263eb8f093a4907b0b2d66aa13a6d48fe7cd17719e8eb92701",
+        "037ab108d3929af9021d3e772e8a4100c1d3f27057f7430f2978f8237849dc6b2d"
+      ],
+      "sequence": 4294967294
+    }
+  ],
+  "vout": [
+    {
+      "value": 23.9999847,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "0 40e3e588e33e7f8f2eb36704ba69d9ccfcc5cd0d",
+        "hex": "001440e3e588e33e7f8f2eb36704ba69d9ccfcc5cd0d",
+        "reqSigs": 1,
+        "type": "witness_v0_keyhash",
+        "addresses": [
+          "bcrt1qgr37tz8r8elc7t4nvuzt56ween7vtngdtlnyva"
+        ]
+      }
+    },
+    {
+      "value": 1,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "0 1553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a",
+        "hex": "00201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a",
+        "reqSigs": 1,
+        "type": "witness_v0_scripthash",
+        "addresses": [
+          "bcrt1qz4flxx37yhnhpdaus4ac9yy7sde5m0lyhnd45hn0csvmdysv8x9qr7gzry"
+        ]
+      }
+    }
+  ],
+  "hex": "02000000000101b1d59312afa5bf22e7f11fe65db33f21decfd6e75220d947904e3683d1f9adcc0000000000feffffff0206120d8f0000000016001440e3e588e33e7f8f2eb36704ba69d9ccfcc5cd0d00e1f505000000002200201553f31a3e25e770b7bc857b82909e83734dbfe4bcdb5a5e6fc419b6920c398a0247304402201d73eece51b6bcdb866a166625ee22b2c699d4a216cd1c2bc345faef65b386ee022076d3e37e04f41044263eb8f093a4907b0b2d66aa13a6d48fe7cd17719e8eb9270121037ab108d3929af9021d3e772e8a4100c1d3f27057f7430f2978f8237849dc6b2d2c010000"
+}
