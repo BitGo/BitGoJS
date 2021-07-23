@@ -74,8 +74,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       } = AlgoResources;
       const { genesisHash, genesisID } = testnet;
       const amount = '0';
-      const note = new Uint8Array(Buffer.from("note", 'utf-8'));
-      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+      const note = new Uint8Array(Buffer.from('note', 'utf-8'));
+      const address = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4';
       const closeRemainderTo = 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM';
 
       const tx = await txnBuilder
@@ -110,6 +110,24 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       txInfo.genesisHash.should.equal('SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=');
     });
 
+    it('should not build a token transaction with an invalid sender address', async function() {
+      const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
+      const tx = await txnBuilder.testnet()
+      should.throws(() => tx.sender({ address: wrongAddress }));
+    });
+
+    it('should not build a token transaction with an invalid closeRemainderTo address', async function() {
+      const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
+      const tx = await txnBuilder.testnet()
+      should.throws(() => tx.closeRemainderTo({ address: wrongAddress }));
+    });
+
+    it('should not build a token transaction with an invalid to address', async function() {
+      const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
+      const tx = await txnBuilder.testnet()
+      should.throws(() => tx.to({ address: wrongAddress }));
+    });
+
     it('should build a valid enable token transaction', async function() {
       const firstRound = 167;
       const lastRound = 1167;
@@ -120,7 +138,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       } = AlgoResources;
       const { genesisHash, genesisID } = testnet;
       const amount = '0';
-      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+      const address = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4';
 
       const tx = await txnBuilder
         .fee({ fee: fee.toString() })
@@ -160,7 +178,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       } = AlgoResources;
       const { genesisHash, genesisID } = testnet;
       const amount = '0';
-      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+      const address = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4';
 
       const tx = await txnBuilder
         .fee({ fee: fee.toString() })
@@ -201,7 +219,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       } = AlgoResources;
       const { genesisHash, genesisID } = testnet;
       const amount = '0';
-      const address = "RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4";
+      const address = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ4';
 
       const tx = await txnBuilder
         .fee({ fee: fee.toString() })
