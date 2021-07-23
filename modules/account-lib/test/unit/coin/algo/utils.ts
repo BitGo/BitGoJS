@@ -63,12 +63,11 @@ describe('utils', () => {
     const mnemonic =
       'green office boost casino shoe army peace damp mimic this brand economy second sudden credit give coast match brick add good exact brand about neck';
     const seed = Algo.algoUtils.seedFromMnemonic(mnemonic);
-    const keyPair = Algo.algoUtils.keyPairFromSeed(seed);
-    const { addr, sk } = algosdk.mnemonicToSecretKey(mnemonic);
-    const skOnly = new Uint8Array(Buffer.from(sk.slice(0, 32)));
-    const pk = algosdk.decodeAddress(addr).publicKey;
-    should.deepEqual(keyPair.sk, skOnly);
-    should.deepEqual(keyPair.pk, pk);
+    const keyPairAlgo = Algo.algoUtils.keyPairFromSeed(seed);
+    const { sk } = algosdk.mnemonicToSecretKey(mnemonic);
+    const skOnly = Buffer.from(sk.slice(0, 32)).toString('hex');
+    const keyPair = new Algo.KeyPair({ prv: skOnly });
+    should.deepEqual(keyPairAlgo, keyPair);
   });
 
   it('it should return error if the seed is invalid', () => {
@@ -86,7 +85,39 @@ describe('utils', () => {
       : 'green office boost casino shoe army peace damp mimic this brand economy second sudden credit give coast match brick add good exact brand about neck';
     const seed = Algo.algoUtils.seedFromMnemonic(mnemonic);
     const keyPairAlgo = Algo.algoUtils.keyPairFromSeed(seed);
-    const newKeyPair = new Algo.KeyPair({ prv: Buffer.from(keyPairAlgo.sk).toString('hex') });
-    should.deepEqual(keyPair, newKeyPair);
+    should.deepEqual(keyPair, keyPairAlgo);
+  });
+
+  it('stellarAddressToAlgoAddress should convert a XLM address to ALGO address', () => {
+    const xlmAddress1 = 'GDV4ZW7UBRSQAHLORJPQF4L6OZJBKU3ZIVS2O6C7WWGSNZOV42JDHPMF';
+    const xlmAddress2 = 'GACWEU7LB4D5GGK23BDOAL3D3KWN77Y5FVTH2CTEMY5MC6TQMGGQMZNS';
+    const algoAddress1 = '5PGNX5AMMUAB23UKL4BPC7TWKIKVG6KFMWTXQX5VRUTOLVPGSIZSHUA7HU';
+    const algoAddress2 = 'AVRFH2YPA7JRSWWYI3QC6Y62VTP76HJNMZ6QUZDGHLAXU4DBRUDEGBSW2U';
+
+    const result1 = Algo.algoUtils.stellarAddressToAlgoAddress(xlmAddress1);
+    const result2 = Algo.algoUtils.stellarAddressToAlgoAddress(xlmAddress2);
+
+    should.equal(result1, algoAddress1);
+    should.equal(result2, algoAddress2);
+  });
+
+  it('stellarAddressToAlgoAddress should not change a valid ALGO address', () => {
+    const algoAddress = 'X4GMYVKF6VVNKA4Q4AUSRUYXYCGQSY7DZS7QXVJC33VYQTRUKCU7DDFE2U';
+    const result = Algo.algoUtils.stellarAddressToAlgoAddress(algoAddress);
+
+    should.equal(result, algoAddress);
+  });
+
+  it('stellarAddressToAlgoAddress should return error if the xlm and algoaddress are invalid', () => {
+    const xlmAddress = 'GDV4ZW7UBRSQAHLORJPQF4L6OZJBKU3ZIVS2O6C7WWGSNZOV42JDHPM/';
+    const algoAddress = '5PGNX5AMMUAB23UKL4BPC7TWKIKVG6KFMWTXQX5VRUTOLVPGSIZSHUA7H/';
+    should.throws(
+      () => Algo.algoUtils.stellarAddressToAlgoAddress(xlmAddress),
+      'Neither an Algorand address nor a stellar pubkey',
+    );
+    should.throws(
+      () => Algo.algoUtils.stellarAddressToAlgoAddress(algoAddress),
+      'Neither an Algorand address nor a stellar pubkey',
+    );
   });
 });
