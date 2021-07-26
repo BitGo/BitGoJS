@@ -1719,7 +1719,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * Fetch unspent transaction outputs using IMS unspents API
-   * @params addresses
+   * @param addresses
    * @returns {*}
    */
   getUnspentInfoForCrossChainRecovery(addresses: string[]): any {

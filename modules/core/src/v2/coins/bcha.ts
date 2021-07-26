@@ -26,12 +26,12 @@ export class Bcha extends Bch {
   }
 
   getAddressInfoFromExplorer(addressBase58: string, apiKey: string): Bluebird<AddressInfo> {
-    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-abc', apiKey);
+    const explorer = new BlockchairApi(this.bitgo, 'ecash', apiKey);
     return Bluebird.resolve(explorer.getAccountInfo(addressBase58));
   }
 
   getUnspentInfoFromExplorer(addressBase58: string, apiKey: string): Bluebird<UnspentInfo[]> {
-    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-abc', apiKey);
+    const explorer = new BlockchairApi(this.bitgo, 'ecash', apiKey);
     return Bluebird.resolve(explorer.getUnspents(addressBase58));
   }
 }
