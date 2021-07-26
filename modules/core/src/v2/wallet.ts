@@ -464,6 +464,7 @@ export class Wallet {
   private _wallet: WalletData;
   private readonly _permissions?: string[];
 
+
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
@@ -2059,7 +2060,7 @@ export class Wallet {
           if (amount.isNegative()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
           }
-          if (!coin.valuelessTransferAllowed() && amount.isZero()) {
+          if (!coin.valuelessTransferAllowed(params.type) && amount.isZero()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
           }
         });
