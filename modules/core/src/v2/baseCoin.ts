@@ -276,7 +276,7 @@ export abstract class BaseCoin {
    * Flag for sending value of 0.
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed(): boolean {
+  valuelessTransferAllowed(params?: unknown): boolean {
     return false;
   }
 
