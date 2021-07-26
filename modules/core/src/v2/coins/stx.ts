@@ -183,7 +183,7 @@ export class Stx extends BaseCoin {
       const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
       prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
       if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
-      if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
+      // if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
       const transaction: any = yield txBuilder.build();
 
       if (!transaction) {
@@ -224,6 +224,10 @@ export class Stx extends BaseCoin {
 
       if (params.publicKeys !== undefined) {
         txBuilder.fromPubKey(params.publicKeys);
+        if (params.publicKeys.length === 1) {
+          // definitely a single sig tx
+          txBuilder.numberSignatures(1);
+        }
       }
 
       const tx = (yield txBuilder.build()) as any;
