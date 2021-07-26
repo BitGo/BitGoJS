@@ -35,6 +35,7 @@ describe('Stx Contract call Builder', () => {
         },
       ]);
       builder.fromPubKey(testData.TX_SENDER.pub);
+      builder.numberSignatures(1);
       const tx = await builder.build();
 
       const txJson = tx.toJson();

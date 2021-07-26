@@ -81,7 +81,6 @@ describe('Stx Transfer Builder', () => {
       txBuilder2.sign({ key: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
       txBuilder2.sign({ key: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
       txBuilder.fromPubKey([kp.getKeys().pub, kp1.getKeys().pub, kp2.getKeys().pub]);
-      txBuilder2.numberSignatures(2);
       const signedTx = await txBuilder2.build(); // signed multisig tx
 
       const txBuilder3 = factory.getTransferBuilder();
@@ -109,12 +108,10 @@ describe('Stx Transfer Builder', () => {
       txBuilder.numberSignatures(2);
       txBuilder.memo(memo);
       const tx = await txBuilder.build(); // half signed multisig tx
-
       const txBuilder2 = factory.getTransferBuilder();
       txBuilder2.from(tx.toBroadcastFormat());
       txBuilder2.sign({ key: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
       txBuilder2.fromPubKey([kp.getKeys(true).pub, kp1.getKeys(true).pub, kp2.getKeys(true).pub]);
-      txBuilder2.numberSignatures(2);
       const signedTx = await txBuilder2.build();
       should.deepEqual(
         signedTx.toBroadcastFormat(),
@@ -129,15 +126,14 @@ describe('Stx Transfer Builder', () => {
       builder.sign({ key: testData.prv1 });
       builder.sign({ key: testData.prv2 });
       builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
-      builder.numberSignatures(2);
       const tx = await builder.build();
-      should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SINGED_TRANSACTION);
+      should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
     });
 
     it('a multisig serialized transfer transaction', async () => {
-      const builder = factory.from(testData.MULTI_SIG_SINGED_TRANSACTION);
+      const builder = factory.from(testData.MULTI_SIG_SIGNED_TRANSACTION);
       const tx = await builder.build();
-      should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SINGED_TRANSACTION);
+      should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
     });
 
     it('a transfer transaction signed multiple times', async () => {

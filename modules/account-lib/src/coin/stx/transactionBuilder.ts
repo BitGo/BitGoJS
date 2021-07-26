@@ -46,7 +46,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._fromPubKeys = [];
     this._sigHash = [];
     this._signatures = [];
-    this._numberSignatures = 0;
+    this._numberSignatures = 2;
     this._network = new StacksTestnet();
     this.transaction = new Transaction(_coinConfig);
   }
@@ -83,7 +83,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         if (field.contents.type === StacksMessageType.MessageSignature) {
           const signature = field.contents;
           this._signatures.push(signature);
-          this._numberSignatures++;
           const nextVerify = nextVerification(
             curSignHash,
             authType,
@@ -110,6 +109,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')),
     );
     tx.stxTransaction = stackstransaction;
+    const spendingCondition = stackstransaction.auth.spendingCondition;
+    if (spendingCondition) {
+      if (!isSingleSig(spendingCondition)) {
+        this._numberSignatures = spendingCondition.signaturesRequired;
+      } else {
+        this._numberSignatures = 1;
+      }
+    }
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -147,7 +154,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!this._fromPubKeys.includes(publicKey)) {
       this._fromPubKeys.push(publicKey);
     }
-    this._numberSignatures = this._multiSignerKeyPairs.length;
     return this.transaction;
   }
 
