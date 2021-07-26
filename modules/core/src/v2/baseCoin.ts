@@ -84,6 +84,7 @@ export interface VerificationOptions {
   };
   addresses?: { [address: string]: AddressVerificationData };
   allowPaygoOutput?: boolean;
+  considerMigratedFromAddressInternal?: boolean;
 }
 
 export interface VerifyTransactionOptions {

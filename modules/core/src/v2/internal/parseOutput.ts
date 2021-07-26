@@ -89,6 +89,7 @@ interface HandleVerifyAddressErrorOptions {
   coin: AbstractUtxoCoin;
   addressDetails?: any;
   addressType?: string;
+  considerMigratedFromAddressInternal?: boolean;
 }
 
 function handleVerifyAddressError({
@@ -100,6 +101,7 @@ function handleVerifyAddressError({
   coin,
   addressDetails,
   addressType,
+  considerMigratedFromAddressInternal,
 }: HandleVerifyAddressErrorOptions): { external: boolean; needsCustomChangeKeySignatureVerification?: boolean } {
   // Todo: name server-side errors to avoid message-based checking [BG-5124]
   const walletAddressNotFound = e.message.includes('wallet address not found');
@@ -109,7 +111,7 @@ function handleVerifyAddressError({
       // check to see if this is a migrated v1 bch address - it could be internal
       const isMigrated = isMigratedAddress(wallet, currentAddress);
       if (isMigrated) {
-        return { external: false };
+        return { external: considerMigratedFromAddressInternal === false };
       }
 
       debug('Address %s was found on wallet but could not be reconstructed', currentAddress);
@@ -253,6 +255,7 @@ export async function parseOutput({
         customChangeKeys: customChange && customChange.keys,
         addressDetails: currentAddressDetails,
         addressType: currentAddressType,
+        considerMigratedFromAddressInternal: verification.considerMigratedFromAddressInternal,
       })
     );
   }
