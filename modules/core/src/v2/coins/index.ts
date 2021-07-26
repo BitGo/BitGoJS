@@ -1,5 +1,6 @@
 export { AbstractUtxoCoin } from './abstractUtxoCoin';
 export { Algo } from './algo';
+export { AlgoToken } from './algoToken';
 export { Bch } from './bch';
 export { Bsv } from './bsv';
 export { Btc } from './btc';
