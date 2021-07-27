@@ -5,6 +5,7 @@ import * as nock from 'nock';
 import * as secp256k1 from 'secp256k1';
 import * as common from '../../../../src/common';
 import * as bitGoUtxoLib from '@bitgo/utxo-lib';
+import * as _ from 'lodash';
 
 nock.enableNetConnect();
 
@@ -37,6 +38,44 @@ describe('ETH:', function () {
   after(function () {
     nock.cleanAll();
   });
+
+  describe('EIP1559', function () {
+    it('should sign a transaction with EIP1559 fee params', async function () {
+      const coin = bitgo.coin('teth');
+
+      const userKeychain = {
+        prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
+        pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',
+        rawPub: '023636e68b7b204573abda2616aff6b584910dece2543f1cc6d842caac7d74974b',
+        rawPrv: '7438a50010ce7b1dfd86e68046cc78ba1ebd242d6d85d9904d3fcc08734bc172',
+      };
+
+      const halfSignedTransaction = await coin.signTransaction({
+        txPrebuild: {
+          eip1559: { maxPriorityFeePerGas: 10, maxFeePerGas: 10 },
+          isBatch: false,
+          recipients: [{
+            amount: '42',
+            address: '0xc93b13642d93b4218bb85f67317d6b37286e8028',
+          }],
+          expireTime: 1627949214,
+          contractSequenceId: 12,
+          gasLimit: undefined,
+          gasPrice: undefined,
+          hopTransaction: undefined,
+          backupKeyNonce: undefined,
+          sequenceId: undefined,
+          nextContractSequenceId: 0,
+        },
+        prv: userKeychain.prv,
+      });
+
+      halfSignedTransaction.halfSigned.eip1559.maxPriorityFeePerGas.should.equal(10);
+      halfSignedTransaction.halfSigned.eip1559.maxFeePerGas.should.equal(10);
+
+    });
+  });
+
 
   describe('Transaction Verification', function () {
     it('should verify a normal txPrebuild from the bitgo server that matches the client txParams', async function () {
