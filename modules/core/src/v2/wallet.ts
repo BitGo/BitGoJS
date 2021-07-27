@@ -504,7 +504,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions', 'maxPriorityFeePerGas', 'maxFeePerGas',
+      'stakingOptions', 'maxPriorityFeePerGas', 'maxFeePerGas', 'eip1559',
     ];
   }
 
@@ -1691,6 +1691,8 @@ export class Wallet {
       console.log('/build params');
       console.log(whitelistedParams);
 
+      // throw new Error('STOP');
+
       const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
         .query(queryParams)
         .send(whitelistedParams)
@@ -1698,6 +1700,7 @@ export class Wallet {
 
       console.log('/build response');
       console.log(yield buildQuery);
+
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
       const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
         utxoCoin.getLatestBlockHeight(params.reqId) :
@@ -1826,6 +1829,9 @@ export class Wallet {
 
       const txPrebuild = (yield txPrebuildQuery) as any;
 
+      console.log('txPrebuild');
+      console.log( txPrebuild);
+
       try {
         yield self.baseCoin.verifyTransaction({
           txParams: params,
@@ -1853,6 +1859,9 @@ export class Wallet {
         backupKeychain: (keychains.length > 1) ? keychains[1] : null,
         bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
       });
+
+      console.log('signingParams');
+      console.log(signingParams);
 
       try {
         return yield self.signTransaction(signingParams);
@@ -2059,6 +2068,8 @@ export class Wallet {
       }
 
       const halfSignedTransaction = yield self.prebuildAndSignTransaction(params);
+      console.log('halfSignedTransaction');
+      console.log(halfSignedTransaction);
       const selectParams = _.pick(params, [
         'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
         'enforceMinConfirmsForChange', 'targetWalletUnspents',
@@ -2066,12 +2077,14 @@ export class Wallet {
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
         'instant', 'memo', 'type', 'trustlines', 'transferId',
-        'stakingOptions', 'maxPriorityFeePerGas', 'maxFeePerGas',
+        'stakingOptions',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
       console.log('/send params');
       console.log(finalTxParams);
+
+      throw new Error('BAD');
 
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
