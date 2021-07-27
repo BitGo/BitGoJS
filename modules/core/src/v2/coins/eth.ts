@@ -108,7 +108,8 @@ interface Recipient {
 
 interface SignFinalOptions {
   txPrebuild: {
-    gasPrice: string;
+    eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
+    gasPrice?: string;
     gasLimit: string;
     recipients: Recipient[];
     halfSigned: {
@@ -652,6 +653,7 @@ export class Eth extends BaseCoin {
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       const txParams = {
+        eip1559: params.txPrebuild.eip1559,
         isBatch: params.txPrebuild.isBatch,
         recipients: params.recipients,
         expireTime: expireTime,
