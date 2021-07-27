@@ -1,0 +1,53 @@
+{
+  "txid": "257b6e7d3d29ed064c073d352bde414a85481cc7006b97218d7a54169f867460",
+  "hash": "d37265e16e190ce82f6c16482c2c132c5a5834eed482c53ca09be25d474b6626",
+  "version": 2,
+  "size": 249,
+  "vsize": 168,
+  "weight": 669,
+  "locktime": 300,
+  "vin": [
+    {
+      "txid": "6623db6bae02d9cdb92f3ded2ebfa3e5da1379a47ad0cab82dfb5e40cdb9ce50",
+      "vout": 0,
+      "scriptSig": {
+        "asm": "00148d16a89894ca60e65002ac2874fcceef433ddddf",
+        "hex": "1600148d16a89894ca60e65002ac2874fcceef433ddddf"
+      },
+      "txinwitness": [
+        "3044022016aa6167e1bc7a0a07055d2a22fec6337f807a4b18b56fb202c3e51a3831d389022039b8045fd8d24b4ea4b59b9f3a59bc3651fbe0e53372b1d00e47f707d1b35baf01",
+        "0353c7f0a0cf7d2713b4ac472814aaa20937d0591de979be343e0e0a611cefbd26"
+      ],
+      "sequence": 4294967294
+    }
+  ],
+  "vout": [
+    {
+      "value": 23.9999664,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "OP_HASH160 f9c59b7d4a67f80fb42a64cf799bc9df698a47da OP_EQUAL",
+        "hex": "a914f9c59b7d4a67f80fb42a64cf799bc9df698a47da87",
+        "reqSigs": 1,
+        "type": "scripthash",
+        "addresses": [
+          "2NG1ty3vb87m7CqShyQhLTnobnUjv4xVwhM"
+        ]
+      }
+    },
+    {
+      "value": 1,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 d2eb140d8b7006e7b862827043f9cddd50da9811 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a914d2eb140d8b7006e7b862827043f9cddd50da981188ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "mzkBosFeajZ5KxXp4rPNA8maqoKUFiR7nY"
+        ]
+      }
+    }
+  ],
+  "hex": "0200000000010150ceb9cd405efb2db8cad07aa47913dae5a3bf2eed3d2fb9cdd902ae6bdb236600000000171600148d16a89894ca60e65002ac2874fcceef433ddddffeffffff02e00a0d8f0000000017a914f9c59b7d4a67f80fb42a64cf799bc9df698a47da8700e1f505000000001976a914d2eb140d8b7006e7b862827043f9cddd50da981188ac02473044022016aa6167e1bc7a0a07055d2a22fec6337f807a4b18b56fb202c3e51a3831d389022039b8045fd8d24b4ea4b59b9f3a59bc3651fbe0e53372b1d00e47f707d1b35baf01210353c7f0a0cf7d2713b4ac472814aaa20937d0591de979be343e0e0a611cefbd262c010000"
+}
