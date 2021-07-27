@@ -1,5 +1,4 @@
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './types';
-import * as common from '../../common';
 import * as request from 'superagent';
 import { BitGo } from '../../bitgo';
 
@@ -7,7 +6,7 @@ const BlockchairCoin = [
   'bitcoin',
   'bitcoin-sv',
   'bitcoin-cash',
-  'bitcoin-abc'
+  'ecash',
 ];
 
 const devBase = ['dev', 'latest', 'local', 'localNonSecure', 'adminDev', 'adminLatest'];
@@ -29,7 +28,7 @@ export class BlockchairApi implements RecoveryProvider {
     this.apiToken = apiToken;
   }
 
-   static getBaseUrl(env: string, coin: string): string {
+  static getBaseUrl(env: string, coin: string): string {
     let url;
     if (mainnetBase.includes(env)) {
       url = `https://api.blockchair.com/${coin}`;
@@ -58,7 +57,7 @@ export class BlockchairApi implements RecoveryProvider {
   async getAccountInfo(address: string): Promise<RecoveryAccountData> {
     // we are using blockchair api: https://blockchair.com/api/docs#link_300
     // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
-    if(!address || address.length === 0) {
+    if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
     const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
@@ -74,7 +73,7 @@ export class BlockchairApi implements RecoveryProvider {
     // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
     // example utxo from response:
     // {block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
-    if(!address || address.length === 0) {
+    if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
     const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
