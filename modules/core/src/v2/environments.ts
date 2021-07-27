@@ -157,8 +157,8 @@ export const Environments: Environments = {
     stellarFederationServerUrl: 'https://app.bitgo-test.com/api/v2/txlm/federation',
   }),
   dev: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-dev.com',
-    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
+    uri: 'https://testnet-01-app.bitgo-dev.com',
+    stellarFederationServerUrl: 'https://testnet-01-app.bitgo-dev.com/api/v2/txlm/federation',
   }),
   latest: Object.assign({}, devBase, {
     uri: 'https://app.bitgo-latest.com',

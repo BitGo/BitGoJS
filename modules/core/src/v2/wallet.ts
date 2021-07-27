@@ -504,7 +504,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions'
+      'stakingOptions', 'maxPriorityFeePerGas', 'maxFeePerGas',
     ];
   }
 
@@ -1531,8 +1531,8 @@ export class Wallet {
 
     return Bluebird.resolve(
       this.bitgo.post(this.url('/share'))
-      .send(params)
-      .result()
+        .send(params)
+        .result()
     ).nodeify(callback);
   }
 
@@ -1633,7 +1633,7 @@ export class Wallet {
     const userId = params.userId;
     return Bluebird.resolve(
       this.bitgo.del(this.url('/user/' + userId))
-      .result()
+        .result()
     ).nodeify(callback);
   }
 
@@ -1688,10 +1688,16 @@ export class Wallet {
         offlineVerification: params.offlineVerification ? true : undefined,
       };
 
+      console.log('/build params');
+      console.log(whitelistedParams);
+
       const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
         .query(queryParams)
         .send(whitelistedParams)
         .result();
+
+      console.log('/build response');
+      console.log(yield buildQuery);
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
       const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
         utxoCoin.getLatestBlockHeight(params.reqId) :
@@ -2041,7 +2047,7 @@ export class Wallet {
       params.reqId = reqId;
       const coin = self.baseCoin;
       if (_.isObject(params.recipients)) {
-        params.recipients.map((recipient) => {
+        params.recipients.map(function (recipient) {
           const amount = new BigNumber(recipient.amount);
           if (amount.isNegative()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
@@ -2060,9 +2066,13 @@ export class Wallet {
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
         'instant', 'memo', 'type', 'trustlines', 'transferId',
-        'stakingOptions'
+        'stakingOptions', 'maxPriorityFeePerGas', 'maxFeePerGas',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
+
+      console.log('/send params');
+      console.log(finalTxParams);
+
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
         .send(finalTxParams)
