@@ -1797,6 +1797,12 @@ export class Wallet {
   prebuildAndSignTransaction(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
     const self = this;
     return co<SignedTransaction>(function *() {
+      if (params.eip1559 && params.gasPrice) {
+        const error: any = new Error('Only one of params.eip1559 and params.gasPrice may be specified');
+        error.code = 'both_gasPrice_and_eip1559gasModel_specified';
+        throw error;
+      }
+
       if (params.prebuildTx && params.recipients) {
         const error: any = new Error('Only one of prebuildTx and recipients may be specified');
         error.code = 'both_prebuildtx_and_recipients_specified';
