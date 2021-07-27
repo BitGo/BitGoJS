@@ -108,8 +108,8 @@ interface Recipient {
 
 interface SignFinalOptions {
   txPrebuild: {
-    eip1559: { maxPriorityFeePerGas: number; maxFeePerGas: number };
-    gasPrice: string;
+    eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
+    gasPrice?: string;
     gasLimit: string;
     recipients: Recipient[];
     halfSigned: {

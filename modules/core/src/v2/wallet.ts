@@ -1693,9 +1693,6 @@ export class Wallet {
         .send(whitelistedParams)
         .result();
 
-      console.log('/build response');
-      console.log(yield buildQuery);
-
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
       const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
         utxoCoin.getLatestBlockHeight(params.reqId) :
@@ -2073,11 +2070,6 @@ export class Wallet {
         'stakingOptions',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-
-      console.log('/send params');
-      console.log(finalTxParams);
-
-      throw new Error('BAD');
 
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
