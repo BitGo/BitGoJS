@@ -612,8 +612,6 @@ export class Eth extends BaseCoin {
     return co<SignedTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
 
-      console.log(txPrebuild);
-
       const userPrv = params.prv;
       const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
