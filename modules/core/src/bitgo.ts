@@ -537,20 +537,6 @@ export class BitGo {
       // prevent IE from caching requests
       req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
 
-      if (self._token) {
-        const data = serializeRequestData(req);
-        setRequestQueryString(req);
-
-        const requestProperties = self.calculateRequestHeaders({ url: req.url, token: self._token, method, text: data || '' });
-        req.set('Auth-Timestamp', requestProperties.timestamp.toString());
-
-        // we're not sending the actual token, but only its hash
-        req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
-
-        // set the HMAC
-        req.set('HMAC', requestProperties.hmac);
-      }
-
       if (!(process as any).browser) {
         // If not in the browser, set the User-Agent. Browsers don't allow
         // setting of User-Agent, so we must disable this when run in the
@@ -563,6 +549,25 @@ export class BitGo {
 
       const originalThen = req.then.bind(req);
       req.then = (onfulfilled, onrejected) => {
+        if (self._token) {
+          const data = serializeRequestData(req);
+          setRequestQueryString(req);
+
+          const requestProperties = self.calculateRequestHeaders({
+            url: req.url,
+            token: self._token,
+            method,
+            text: data || '',
+          });
+          req.set('Auth-Timestamp', requestProperties.timestamp.toString());
+
+          // we're not sending the actual token, but only its hash
+          req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+
+          // set the HMAC
+          req.set('HMAC', requestProperties.hmac);
+        }
+
         /**
          * Verify the response before calling the original onfulfilled handler,
          * and make sure onrejected is called if a verification error is encountered

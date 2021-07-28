@@ -452,6 +452,29 @@ describe('BitGo Prototype Methods', function() {
       responseData.isValid.should.equal(true);
     }));
 
+    it('should include request body as part of the hmac', co(function* () {
+      const url = 'https://bitgo.fakeurl';
+      const body = { test: 'test' };
+
+      const fixedUnixTime = 1627374646;
+      const originalDateNow = Date.now;
+      Date.now = () => fixedUnixTime;
+
+      try {
+        nock(url)
+          .post('/', body)
+          .reply(201, undefined, {
+            hmac: '677e0c9a65ca384415945cb19b40ae38eaadfbce3ccce8c5d7bf37c1973b2553',
+            timestamp: String(fixedUnixTime),
+          });
+
+        const resp = (yield bitgo.post(url).send(body)) as any;
+        resp.req.headers['hmac'].should.equal('4425a4004ef2724add25b4dd019d21c66394653a049d82e37df3a2c356b5706d');
+      } finally {
+        Date.now = originalDateNow;
+      }
+    }));
+
     it('should recognize trailing slash inconsistency', () => {
       const verificationParams = {
         url: 'https://google.com/api',
