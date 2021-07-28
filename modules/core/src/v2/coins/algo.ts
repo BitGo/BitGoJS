@@ -371,15 +371,15 @@ export class Algo extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
-    // we need to re-encode our public keys using algosdk's format
-    const keys = [params.txPrebuild.keys[0], params.txPrebuild.keys[1], params.txPrebuild.keys[2]];
-
-    // re-encode sk from our prv (this acts as a seed out of the keychain)
-    const seed = Seed.decode(prv).seed;
-    const pair = generateAccountFromSeed(seed);
-    const sk = pair.sk;
-
-    return { txHex, addressVersion, keys, sk, isHalfSigned };
+    const signers = params.txPrebuild.keys.map((key) => {
+      // if we are receiving addresses do not try to convert them
+      if (!accountLib.Algo.algoUtils.isValidAddress(key)) {
+        return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(accountLib.Algo.algoUtils.toUint8Array(key));
+      }
+      return key;
+    });
+    const numberSigners = signers.length;
+    return { txHex, addressVersion, signers, prv, isHalfSigned, numberSigners };
   }
 
   /**
