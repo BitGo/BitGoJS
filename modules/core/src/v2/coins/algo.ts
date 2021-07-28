@@ -328,9 +328,13 @@ export class Algo extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
-    const signers = params.txPrebuild.keys.map((key) =>
-      accountLib.Algo.algoUtils.publicKeyToAlgoAddress(accountLib.Algo.algoUtils.toUint8Array(key))
-    );
+    const signers = params.txPrebuild.keys.map((key) => {
+      // if we are receiving addresses do not try to convert them
+      if (!accountLib.Algo.algoUtils.isValidAddress(key)) {
+        return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(accountLib.Algo.algoUtils.toUint8Array(key));
+      }
+      return key;
+    });
     const numberSigners = signers.length;
     return { txHex, addressVersion, signers, prv, isHalfSigned, numberSigners };
   }
