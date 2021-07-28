@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx } from './ifaces';
+import { EncodedTx, Address } from './ifaces';
 import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
@@ -293,6 +293,16 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * decodeAddress return an addres decoding with algosdk
+   *
+   * @param addr
+   * @returns Address
+   */
+  decodeAddress(addr: string): Address {
+    return algosdk.decodeAddress(addr);
+  }
+
+  /**
    *stellarAddressToAlgoAddress returns an address algo of algo
    *if is sent an xmlAddress if it does not return the same address.
    *
@@ -315,7 +325,7 @@ export class Utils implements BaseUtils {
     }
     throw new Error('Neither an Algorand address nor a stellar pubkey.');
   }
-  
+
   /**
    * Build correct fee info and fee rate for Algorand transactions.
    *
