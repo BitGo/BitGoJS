@@ -68,7 +68,7 @@ describe('Algo KeyRegistration Builder', () => {
 
   describe('transaction validation', () => {
     beforeEach(() => {
-      builder.sender({ address: sender.address }).fee({ fee: '1000' }).firstRound(1).lastRound(100).testnet();
+      builder.sender({ address: sender.address }).fee({ feeRate: '1000' }).firstRound(1).lastRound(100).testnet();
     });
     it('should validate a normal transaction', () => {
       builder.voteKey(sender.voteKey).selectionKey(sender.selectionKey).voteFirst(1).voteLast(100).voteKeyDilution(9);
@@ -80,7 +80,7 @@ describe('Algo KeyRegistration Builder', () => {
     it('should build a key registration transaction', async () => {
       builder
         .sender({ address: sender.address })
-        .fee({ fee: '1000' })
+        .fee({ feeRate: '1000' })
         .firstRound(1)
         .lastRound(100)
         .voteKey(sender.voteKey)
@@ -110,7 +110,7 @@ describe('Algo KeyRegistration Builder', () => {
     it('should build an unsigned key registration transaction', async () => {
       builder
         .sender({ address: sender.address })
-        .fee({ fee: '1000' })
+        .fee({ feeRate: '1000' })
         .firstRound(1)
         .lastRound(100)
         .voteKey(sender.voteKey)
@@ -180,7 +180,7 @@ describe('Algo KeyRegistration Builder', () => {
       });
       builder
         .sender({ address: sender.address })
-        .fee({ fee: '1000' })
+        .fee({ feeRate: '1000' })
         .firstRound(1)
         .lastRound(100)
         .voteKey(sender.voteKey)
@@ -207,6 +207,116 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.voteKeyDilution, 9);
       should.deepEqual(txJson.genesisID, genesisID.toString());
       should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
+    });
+  });
+
+  describe('fee flow test', () => {
+    it('fee value should be updated when signing and building for the first the first time', async () => {
+      builder
+        .sender({ address: sender.address })
+        .fee({ feeRate: '500' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1)
+        .sign({ key: sender.secretKey.toString('hex') });
+
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
+      should.deepEqual(txJson.selectionKey.toString('base64'), sender.selectionKey);
+      should.deepEqual(txJson.fee, 152000);
+      should.deepEqual(txJson.from, sender.address);
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.voteFirst, 1);
+      should.deepEqual(txJson.voteLast, 100);
+      should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
+    });
+
+    it('fee value should be maintained when building an already signed keyRegistration', async () => {
+      const msigAddress = algosdk.multisigAddress({
+        version: 1,
+        threshold: 3,
+        addrs: [
+          AlgoResources.accounts.account1.address,
+          AlgoResources.accounts.account3.address,
+          AlgoResources.accounts.account4.address,
+        ],
+      });
+
+      builder
+        .sender({ address: sender.address })
+        .fee({ feeRate: '90' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(3)
+        .setSigners([
+          AlgoResources.accounts.account1.address,
+          AlgoResources.accounts.account3.address,
+          AlgoResources.accounts.account4.address,
+        ])
+        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+
+      builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
+      should.deepEqual(txJson.selectionKey.toString('base64'), sender.selectionKey);
+      should.deepEqual(txJson.fee, 27180);
+      should.deepEqual(txJson.from, msigAddress);
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.voteFirst, 1);
+      should.deepEqual(txJson.voteLast, 100);
+      should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
+
+      const builder2 = new KeyRegistrationBuilder(coins.get('algo'));
+      builder2.from(tx.toBroadcastFormat());
+      builder2
+        .numberOfSigners(3)
+        .setSigners([
+          AlgoResources.accounts.account1.address,
+          AlgoResources.accounts.account3.address,
+          AlgoResources.accounts.account4.address,
+        ])
+        .sign({ key: AlgoResources.accounts.account4.secretKey.toString('hex') });
+
+      const tx2 = await builder2.build();
+      const tx2Json = tx2.toJson();
+      should.doesNotThrow(() => builder.validateKey({ key: tx2Json.voteKey }));
+      should.deepEqual(tx2Json.voteKey.toString('base64'), sender.voteKey);
+      should.doesNotThrow(() => builder.validateKey({ key: tx2Json.selectionKey }));
+      should.deepEqual(tx2Json.selectionKey.toString('base64'), sender.selectionKey);
+      should.deepEqual(tx2Json.fee, 27180);
+      should.deepEqual(tx2Json.from, msigAddress);
+      should.deepEqual(tx2Json.firstRound, 1);
+      should.deepEqual(tx2Json.lastRound, 100);
+      should.deepEqual(tx2Json.voteFirst, 1);
+      should.deepEqual(tx2Json.voteLast, 100);
+      should.deepEqual(tx2Json.voteKeyDilution, 9);
+      should.deepEqual(tx2Json.genesisID, genesisID.toString());
+      should.deepEqual(tx2Json.genesisHash.toString('base64'), genesisHash);
     });
   });
 });

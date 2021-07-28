@@ -50,14 +50,15 @@ export class AssetTransferBuilder extends TransferBuilder {
     this.tokenId(tokenId);
     this.sender(userAddress);
     this.to(userAddress);
-    this.isFlatFee(true);
-    this.fee({ fee: '1000' });
+    this.fee({ feeRate: '1000' });
     this.amount(0);
+    this._isFlatFee = true;
 
     return this;
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
+    this._isFlatFee = true;
     return algosdk.makeAssetTransferTxnWithSuggestedParams(
       this._sender,
       this._to,

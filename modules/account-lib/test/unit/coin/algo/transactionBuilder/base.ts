@@ -104,16 +104,6 @@ describe('Algo Transaction Builder', () => {
   });
 
   describe('setter validation', () => {
-    it('should validate fee is not lt 1000 microalgos if flat fee is set to true', () => {
-      txnBuilder.isFlatFee(true);
-
-      should.throws(
-        () => txnBuilder.fee({ fee: '999' }),
-        (e: Error) => e.name === InsufficientFeeError.name,
-      );
-      should.doesNotThrow(() => txnBuilder.fee({ fee: '1000' }));
-    });
-
     it('should validate sender address is a valid algo address', () => {
       const spy = sinon.spy(txnBuilder, 'validateAddress');
       should.throws(
@@ -135,7 +125,7 @@ describe('Algo Transaction Builder', () => {
 
   describe('suggested params verification', () => {
     it('should retrieve the suggested parameters as they have been set', () => {
-      const isFlatFee = true;
+      const defaultIsFlatFee = true;
       const fee = 1000;
       const firstRound = 1;
       const lastRound = 10;
@@ -143,15 +133,14 @@ describe('Algo Transaction Builder', () => {
       const genesisHash = 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=';
 
       txnBuilder
-        .isFlatFee(isFlatFee)
-        .fee({ fee: fee.toString() })
+        .fee({ feeRate: fee.toString() })
         .firstRound(firstRound)
         .lastRound(lastRound)
         .genesisId(genesisId)
         .genesisHash(genesisHash);
 
       const suggestedParams = txnBuilder.getSuggestedParams();
-      should.equal(isFlatFee, suggestedParams.flatFee);
+      should.equal(defaultIsFlatFee, suggestedParams.flatFee);
       should.equal(fee, suggestedParams.fee);
       should.equal(firstRound, suggestedParams.firstRound);
       should.equal(lastRound, suggestedParams.lastRound);
@@ -244,8 +233,7 @@ describe('Algo Transaction Builder', () => {
   describe('transaction validation', () => {
     it('should validate a normal transaction', () => {
       txnBuilder
-        .fee({ fee: '1000' })
-        .isFlatFee(true)
+        .fee({ feeRate: '1000' })
         .firstRound(1)
         .lastRound(10)
         .sender({ address: account1.address })
@@ -257,8 +245,7 @@ describe('Algo Transaction Builder', () => {
 
     it('should validate last round is after first round', () => {
       txnBuilder
-        .fee({ fee: '1000' })
-        .isFlatFee(true)
+        .fee({ feeRate: '1000' })
         .firstRound(10)
         .lastRound(1)
         .sender({ address: account1.address })

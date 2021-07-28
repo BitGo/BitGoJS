@@ -6,12 +6,11 @@ import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/erro
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
-import { AddressValidationError, InsufficientFeeError } from './errors';
+import { AddressValidationError } from './errors';
 import { KeyPair } from './keyPair';
 import { BaseTransactionSchema } from './txnSchema';
 import Utils from './utils';
-
-const MIN_FEE = 1000; // in microalgos
+import { AlgoFee } from './ifaces';
 
 const MAINNET_GENESIS_ID = 'mainnet-v1.0';
 const MAINNET_GENESIS_HASH = 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=';
@@ -44,6 +43,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this._transaction = new Transaction(coinConfig);
     this._keyPairs = [];
+    this._isFlatFee = true;
   }
 
   /**
@@ -56,28 +56,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://developer.algorand.org/docs/reference/transactions/
    */
-  fee(feeObj: BaseFee): this {
-    const fee = new BigNumber(feeObj.fee).toNumber();
-    if (this._isFlatFee && fee < MIN_FEE) {
-      throw new InsufficientFeeError(fee, MIN_FEE);
-    }
-
-    this._fee = fee;
-
-    return this;
-  }
-
-  /**
-   * Sets whether the fee is a flat fee.
-   *
-   * A flat fee is the fee for the entire transaction whereas a normal fee
-   * is a fee for every byte in the transaction.
-   *
-   * @param {boolean} isFlatFee Whether the fee should be specified as a flat fee.
-   * @returns {TransactionBuilder} This transaction builder.
-   */
-  isFlatFee(isFlatFee: boolean): this {
-    this._isFlatFee = isFlatFee;
+  fee(feeObj: AlgoFee): this {
+    this._fee = new BigNumber(feeObj.feeRate).toNumber();
 
     return this;
   }
@@ -267,6 +247,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this._isFlatFee = this._keyPairs.length === 0 || this._transaction.isSigned;
     this.transaction.setAlgoTransaction(this.buildAlgoTxn());
     this.transaction.setTransactionType(this.transactionType);
 
@@ -295,7 +276,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         typeof rawTransaction === 'string' ? Utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
     }
     this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
-    this._isFlatFee = true;
     this._fee = algosdkTxn.fee;
     this._genesisHash = algosdkTxn.genesisHash.toString('base64');
     this._genesisId = algosdkTxn.genesisID;

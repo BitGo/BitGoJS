@@ -24,3 +24,7 @@ export interface EncodedTx {
   txn: algosdk.Transaction;
   signed: boolean;
 }
+
+export interface AlgoFee {
+  feeRate: string;
+}

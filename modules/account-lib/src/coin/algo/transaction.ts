@@ -116,6 +116,10 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = txn;
   }
 
+  get isSigned(): boolean {
+    return !!this._signedTransaction;
+  }
+
   get numberOfRequiredSigners(): number {
     return this._numberOfRequiredSigners;
   }
