@@ -380,6 +380,22 @@ export class Utils implements BaseUtils {
 
     return feeObj;
   }
+
+  /**
+   * multisigAddress takes multisig metadata (preimage) and returns the corresponding human readable Algorand address.
+   *
+   * @param {number} version mutlisig version
+   * @param {number} threshold multisig threshold
+   * @param {string[]} addrs list of Algorand addresses
+   * @returns {string} human readable Algorand address.
+   */
+  multisigAddress(version: number, threshold: number, addrs: string[]): string {
+    return algosdk.multisigAddress({
+      version,
+      threshold,
+      addrs,
+    });
+  }
 }
 
 const utils = new Utils();

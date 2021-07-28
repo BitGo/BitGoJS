@@ -178,4 +178,47 @@ describe('utils', () => {
     should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress1), 'Error: Invalid base32 characters');
     should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress2), 'Error: address seems to be malformed');
   });
+
+  it('multisigAddress should return the same string with accountLib and algosdk', () => {
+    const version = 1;
+    const threshold = 1;
+    const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE'];
+
+    const accountLibResult = Algo.algoUtils.multisigAddress(version, threshold, addrs);
+    const algosdkResult = algosdk.multisigAddress({ version, threshold, addrs });
+
+    should.deepEqual(algosdkResult, accountLibResult);
+  });
+
+  it('multisigAddress should fail when threshold is 2', () => {
+    const version = 1;
+    const threshold = 2;
+    const addrs = ['X4GMYVKF6VVNKA4Q4AUSRUYXYCGQSY7DZS7QXVJC33VYQTRUKCU7DDFE2U'];
+
+    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: bad multisig threshold');
+  });
+
+  it('multisigAddress should fail when  threshold is 3', () => {
+    const version = 1;
+    const threshold = 3;
+    const addrs = ['X4GMYVKF6VVNKA4Q4AUSRUYXYCGQSY7DZS7QXVJC33VYQTRUKCU7DDFE2U'];
+
+    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: bad multisig threshold');
+  });
+
+  it('multisigAddress should fail when  version is 2', () => {
+    const version = 2;
+    const threshold = 1;
+    const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE'];
+
+    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: invalid multisig version');
+  });
+
+  it('multisigAddress should fail when  address is not valid', () => {
+    const version = 1;
+    const threshold = 1;
+    const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QT-'];
+
+    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: Invalid base32 characters');
+  });
 });
