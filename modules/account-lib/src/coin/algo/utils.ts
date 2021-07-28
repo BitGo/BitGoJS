@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx } from './ifaces';
+import { EncodedTx, BaseAddress } from './ifaces';
 import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
@@ -315,7 +315,7 @@ export class Utils implements BaseUtils {
     }
     throw new Error('Neither an Algorand address nor a stellar pubkey.');
   }
-  
+
   /**
    * Build correct fee info and fee rate for Algorand transactions.
    *
@@ -332,6 +332,22 @@ export class Utils implements BaseUtils {
       feeRate = feeInfo.feeRate;
     }
     return { feeInfo, feeRate };
+  }
+
+  /**
+   * multisigAddress takes multisig metadata (preimage) and returns the corresponding human readable Algorand address.
+   *
+   * @param {number} version mutlisig version
+   * @param {number} threshold multisig threshold
+   * @param {string} addrs list of Algorand addresses
+   * @returns {string} human readable Algorand address.
+   */
+  multisigAddress(version: number, threshold: number, addrs: string): string {
+    return algosdk.multisigAddress({
+      version,
+      threshold,
+      addrs,
+    });
   }
 
   /**
