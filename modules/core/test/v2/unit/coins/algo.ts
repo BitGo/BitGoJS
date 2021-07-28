@@ -39,6 +39,37 @@ describe('ALGO:', function () {
     basecoin.isValidAddress(address).should.equal(true);
     basecoin.isValidPub(keyPair.pub).should.equal(true);
     basecoin.isValidPrv(keyPair.prv).should.equal(true);
+    /**
+       * Build a signed account-lib single-signature send transaction
+       * @param sender The senders address
+       * @param destination The destination address of the transaction
+       * @param amount The amount to send to the recipient
+       * @param tokenId The assetIndex for the token
+       */
+    const buildSignedTransaction = async function ({
+      sender,
+      destination,
+      amount = 10000,
+      tokenId,
+    }) {
+      const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
+      txBuilder.numberOfSigners(1);
+      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      return await txBuilder.build();
+    };
+
+    it('should explain an unsigned asset transfer transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.assetTransfer.unsigned,
+        feeInfo: { fee: '1000' },
+      });
+      explain.outputAmount.should.equal('1000');
+      explain.outputs[0].amount.should.equal('1000');
+      explain.outputs[0].address.should.equal(receiver.address);
+      explain.fee.should.equal(1000);
+      explain.changeAmount.should.equal('0');
+      explain.tokenId.should.equal(1);
+    });
 
     // verify regenerated keyPair from seed
     const decodedSeed = algosdk.Seed.decode(keyPair.prv).seed;
@@ -186,5 +217,53 @@ describe('ALGO:', function () {
 
     response.isDone().should.be.true();
     should.deepEqual(preBuiltData, responseData);
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            txHex: AlgoResources.rawTx.transfer.halfSigned,
+          },
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex'), AlgoResources.accounts.account3.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
+    });
+
+    it('should verify sign params if the key array contains addresses', function () {
+      const keys = [
+        AlgoResources.accounts.account1.address,
+        AlgoResources.accounts.account2.address,
+        AlgoResources.accounts.account3.address,
+      ];
+
+      const verifiedParams = basecoin.verifySignTransactionParams({
+        txPrebuild: {
+          txHex: AlgoResources.rawTx.transfer.unsigned,
+          keys,
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account2.secretKey.toString('hex'),
+      });
+      verifiedParams.should.have.properties(['txHex', 'addressVersion', 'signers', 'prv', 'isHalfSigned', 'numberSigners']);
+      const { txHex, signers, isHalfSigned } = verifiedParams;
+      txHex.should.be.equal(AlgoResources.rawTx.transfer.unsigned);
+      signers.should.be.deepEqual(keys);
+      isHalfSigned.should.be.equal(false);
+    });
+
+    it('should sign half signed transaction if the key array contains addresses', async function () {
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            txHex: AlgoResources.rawTx.transfer.halfSigned,
+          },
+          keys: [AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
+    });
   });
 });
