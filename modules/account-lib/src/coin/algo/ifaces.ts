@@ -20,6 +20,11 @@ export interface TxData {
   closeRemainderTo?: string;
 }
 
+export interface Address {
+  publicKey: Uint8Array;
+  checksum: Uint8Array;
+}
+
 export interface EncodedTx {
   txn: algosdk.Transaction;
   signed: boolean;

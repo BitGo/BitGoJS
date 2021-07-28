@@ -165,4 +165,17 @@ describe('utils', () => {
     const feeRate = -1;
     should.throws(() => utils.getFeeData(payTxn, feeRate), 'Error: FeeRate must be integer positive number ');
   });
+
+  it('should decode same address', () => {
+    const address = algosdk.decodeAddress(account1.address);
+    const addressAlgo = Algo.algoUtils.decodeAddress(account1.address);
+    should.deepEqual(address, addressAlgo);
+  });
+
+  it('should returns error when invalid address', () => {
+    const invalidAddress1 = '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QT/';
+    const invalidAddress2 = '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTEF';
+    should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress1), 'Error: Invalid base32 characters');
+    should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress2), 'Error: address seems to be malformed');
+  });
 });
