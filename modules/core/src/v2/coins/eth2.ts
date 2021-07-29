@@ -3,7 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-import { stripHexPrefix } from 'ethereumjs-util';
+import { stripHexPrefix } from 'ethereumjs-utils-old';
 import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
