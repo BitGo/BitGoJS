@@ -3,6 +3,8 @@ import algosdk from 'algosdk';
 import utils from '../../../../src/coin/algo/utils';
 import { Algo } from '../../../../src';
 import * as AlgoResources from '../../../resources/algo';
+import { Account } from '../../../../src/coin/algo/ifaces';
+import { boolean } from 'joi';
 
 describe('utils', () => {
   const {
@@ -220,5 +222,13 @@ describe('utils', () => {
     const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QT-'];
 
     should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: Invalid base32 characters');
+  });
+
+  it('generateAccount should of create a valid addres and valid secretKey', () => {
+    const account = Algo.algoUtils.generateAccount();
+    const isValid = Algo.algoUtils.isValidAddress(account.addr);
+    const isValidSecretKey = Algo.algoUtils.isValidPrivateKey(Buffer.from(account.sk).toString('hex'));
+    should.equal(isValid, true);
+    should.equal(isValidSecretKey, true);
   });
 });
