@@ -1,5 +1,5 @@
 import should from 'should';
-import * as ethUtil from 'ethereumjs-util';
+import * as ethUtil from 'ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Rbtc } from '../../../../../src';

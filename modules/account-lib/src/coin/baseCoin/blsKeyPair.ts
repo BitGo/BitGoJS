@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as BLS from '@bitgo/bls';
-import { stripHexPrefix } from 'ethereumjs-util';
+import { stripHexPrefix } from 'ethereumjs-utils-old';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
