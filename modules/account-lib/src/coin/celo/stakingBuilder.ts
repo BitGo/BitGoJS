@@ -1,4 +1,4 @@
-import ethUtil from 'ethereumjs-util';
+import ethUtil from 'ethereumjs-utils-old';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
 import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';

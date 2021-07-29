@@ -1,6 +1,6 @@
 import { NetworkType } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
-import { recoverTransaction } from '@celo/contractkit/lib/utils/signing-utils';
+import { recoverTransaction } from '@celo/wallet-base';
 import * as ethers from 'ethers';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';

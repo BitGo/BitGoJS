@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Transaction as EthereumTx } from '@ethereumjs/tx';
 import EthereumCommon from '@ethereumjs/common';
-import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-util';
+import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-utils-old';
 import { EthLikeTransactionData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 
