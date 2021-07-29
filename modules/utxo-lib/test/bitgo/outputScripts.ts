@@ -2,7 +2,10 @@
  * @prettier
  */
 import * as assert from 'assert';
-import { createOutputScript2of3, getKeyTriple, scriptTypes2Of3 } from './outputScripts.util';
+
+import { createOutputScript2of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+
+import { getKeyTriple } from '../integration_local_rpc/generate/outputScripts.util';
 
 describe('createOutputScript2of3()', function () {
   const keys = getKeyTriple('utxo');
@@ -17,7 +20,10 @@ describe('createOutputScript2of3()', function () {
 
       const p2wsh = '002095ecaacb606b9ece3821c0111c0a1208dd1d35192809bf8cf6cbad4bbeaca67f';
 
-      const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(keys, scriptType);
+      const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(
+        keys.map((k) => k.getPublicKeyBuffer()),
+        scriptType
+      );
 
       switch (scriptType) {
         case 'p2sh':

@@ -1,18 +1,15 @@
 /**
  * @prettier
  */
-import * as assert from 'assert';
 import * as crypto from 'crypto';
 import { Network, Transaction, Triple } from './types';
+import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
 
 const utxolib = require('../../../src');
 const coins = require('../../../src/coins');
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
-
-export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
-export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
 
 export const scriptTypes = [...scriptTypesSingleSig, ...scriptTypes2Of3];
 export type ScriptType = ScriptType2Of3 | ScriptTypeSingleSig;
@@ -51,50 +48,6 @@ export function isSupportedSpendType(network: Network, scriptType: ScriptType): 
   return isSupportedDepositType(network, scriptType);
 }
 
-type SpendableScript = {
-  scriptPubKey: Buffer;
-  redeemScript?: Buffer;
-  witnessScript?: Buffer;
-};
-
-/**
- * Return a 2-of-3 multisig output
- * @param keys - the key array for multisig
- * @param scriptType
- * @returns {{redeemScript, witnessScript, address}}
- */
-export function createOutputScript2of3(keys: KeyTriple, scriptType: ScriptType): SpendableScript {
-  const pubkeys = keys.map((k) => k.getPublicKeyBuffer());
-  const script2of3 = utxolib.script.multisig.output.encode(2, pubkeys);
-  const p2wshOutputScript = utxolib.script.witnessScriptHash.output.encode(utxolib.crypto.sha256(script2of3));
-  let redeemScript;
-  let witnessScript;
-  switch (scriptType) {
-    case 'p2sh':
-      redeemScript = script2of3;
-      break;
-    case 'p2shP2wsh':
-      witnessScript = script2of3;
-      redeemScript = p2wshOutputScript;
-      break;
-    case 'p2wsh':
-      witnessScript = script2of3;
-      break;
-    default:
-      throw new Error(`unknown multisig script type ${scriptType}`);
-  }
-
-  let scriptPubKey;
-  if (scriptType === 'p2wsh') {
-    scriptPubKey = p2wshOutputScript;
-  } else {
-    const redeemScriptHash = utxolib.crypto.hash160(redeemScript);
-    scriptPubKey = utxolib.script.scriptHash.output.encode(redeemScriptHash);
-  }
-
-  return { redeemScript, witnessScript, scriptPubKey };
-}
-
 /**
  *
  * @param keys - Pubkeys to use for generating the address.
@@ -108,7 +61,10 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
     case 'p2sh':
     case 'p2shP2wsh':
     case 'p2wsh':
-      return createOutputScript2of3(keys, scriptType).scriptPubKey;
+      return createOutputScript2of3(
+        keys.map((k) => k.getPublicKeyBuffer()),
+        scriptType
+      ).scriptPubKey;
   }
 
   const key = keys[0];
@@ -157,7 +113,10 @@ export function createSpendTransaction(
     throw new Error(`invalid scriptType ${scriptType}`);
   }
 
-  const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(keys, scriptType);
+  const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(
+    keys.map((k) => k.getPublicKeyBuffer()),
+    scriptType as ScriptType2Of3
+  );
   const matches = inputTx.outs.map((o, vout) => [o, vout]).filter(([o]) => scriptPubKey.equals(o.script));
   if (!matches.length) {
     throw new Error(`could not find matching outputs in funding transaction`);
