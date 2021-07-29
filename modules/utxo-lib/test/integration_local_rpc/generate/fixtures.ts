@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as fs from 'fs/promises';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import { Network } from './types';
@@ -15,7 +15,7 @@ export function getFixtureDir(network: Network): string {
 
 export async function wipeFixtures(network: Network): Promise<void> {
   try {
-    await fs.rm(getFixtureDir(network), { recursive: true });
+    await fs.remove(getFixtureDir(network));
   } catch (e) {
     if (e.code === 'ENOENT') {
       return;
