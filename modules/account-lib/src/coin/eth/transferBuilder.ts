@@ -1,4 +1,4 @@
-import ethUtil from 'ethereumjs-util';
+import ethUtil from 'ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';

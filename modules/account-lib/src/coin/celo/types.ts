@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { LocalWallet } from '@celo/contractkit/lib/wallets/local-wallet';
+import { LocalWallet } from '@celo/wallet-local';
 import {
   addHexPrefix,
   toBuffer,
@@ -7,10 +7,11 @@ import {
   bufferToInt,
   rlp,
   rlphash,
-  stripZeros,
   ecrecover,
   publicToAddress,
-} from 'ethereumjs-util';
+} from 'ethereumjs-utils-old';
+import { unpad } from 'ethereumjs-util';
+import { CeloTx, EncodedTransaction } from '@celo/connect';
 import { EthLikeTransactionData, TxData } from '../eth/iface';
 import { KeyPair } from '../eth';
 
@@ -49,7 +50,7 @@ export class CeloTransaction {
   }
 
   constructor(tx: TxData) {
-    this.nonce = toBuffer(this.sanitizeHexString(tx.nonce));
+    this.nonce = unpad(toBuffer(tx.nonce));
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
     this.data = toBuffer(tx.data);
@@ -94,11 +95,8 @@ export class CeloTransaction {
     if (includeSignature) {
       items = this.raw;
     } else {
-      items = this.raw
-        .slice(0, 9)
-        .concat([toBuffer(this.getChainId()), stripZeros(toBuffer(0)), stripZeros(toBuffer(0))]);
+      items = this.raw.slice(0, 9).concat([toBuffer(this.getChainId()), unpad(toBuffer(0)), unpad(toBuffer(0))]);
     }
-
     return rlphash(items);
   }
 
@@ -161,7 +159,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));
     return new CeloTransactionData(
       new CeloTransaction({
-        nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
+        nonce: tx.nonce,
         to: tx.to,
         gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
         gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
@@ -179,16 +177,15 @@ export class CeloTransactionData implements EthLikeTransactionData {
   async sign(keyPair: KeyPair) {
     const privateKey = addHexPrefix(keyPair.getKeys().prv as string);
     const data = CeloTransactionData.txJsonToCeloTx(this.toJson(), keyPair.getAddress());
-
     const celoLocalWallet = new LocalWallet();
     celoLocalWallet.addAccount(privateKey);
     const rawTransaction = await celoLocalWallet.signTransaction(data);
 
     const nonceBigNumber = new BigNumber(rawTransaction.tx.nonce);
     rawTransaction.tx.nonce = addHexPrefix(nonceBigNumber.toString(16));
-    rawTransaction.tx.data = data.data;
-    rawTransaction.tx.gasLimit = rawTransaction.tx.gas;
-    this.tx = new CeloTransaction(rawTransaction.tx);
+    rawTransaction.raw = data.data === undefined ? '' : data.data;
+    rawTransaction.tx.gas = rawTransaction.tx.gas;
+    this.tx = new CeloTransaction(CeloTransactionData.encodedTxToJson(rawTransaction));
     this.tx.sign(toBuffer(privateKey));
   }
 
@@ -244,13 +241,20 @@ export class CeloTransactionData implements EthLikeTransactionData {
     return addHexPrefix(this.tx.serialize().toString('hex'));
   }
 
-  private static txJsonToCeloTx(txJson: TxData, signer: string): CeloLibraryTx {
+  private static txJsonToCeloTx(txJson: TxData, signer: string): CeloTx {
     // the celo library requires you to specify the signer address with the from field
-    return Object.assign({}, txJson, { gas: txJson.gasLimit, from: signer });
+    return Object.assign({}, txJson, {
+      chainId: txJson.chainId === undefined ? 0 : parseInt(txJson.chainId, 10),
+      gas: txJson.gasLimit,
+      from: signer,
+    });
   }
-}
 
-// the same as normal txdata but gasLimit is called gas
-interface CeloLibraryTx extends TxData {
-  gas: string;
+  private static encodedTxToJson(encodedTx: EncodedTransaction): TxData {
+    return Object.assign({}, encodedTx.tx, {
+      nonce: parseInt(encodedTx.tx.nonce, 16),
+      gasLimit: encodedTx.tx.gas,
+      data: encodedTx.raw,
+    });
+  }
 }
