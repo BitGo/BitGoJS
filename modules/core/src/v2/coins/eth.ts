@@ -108,7 +108,8 @@ interface Recipient {
 
 interface SignFinalOptions {
   txPrebuild: {
-    gasPrice: string;
+    eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
+    gasPrice?: string;
     gasLimit: string;
     recipients: Recipient[];
     halfSigned: {
@@ -610,6 +611,7 @@ export class Eth extends BaseCoin {
     const self = this;
     return co<SignedTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
+
       const userPrv = params.prv;
       const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
@@ -652,6 +654,7 @@ export class Eth extends BaseCoin {
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       const txParams = {
+        eip1559: params.txPrebuild.eip1559,
         isBatch: params.txPrebuild.isBatch,
         recipients: params.recipients,
         expireTime: expireTime,

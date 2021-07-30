@@ -339,6 +339,7 @@ export interface SendOptions {
   address?: string;
   amount?: number | string;
   data?: string;
+  feeLimit?: string;
   message?: string;
   walletPassphrase?: string;
   prv?: string;
@@ -352,6 +353,7 @@ export interface SendManyOptions {
   recipients?: {
     address: string;
     amount: string | number;
+    feeLimit?: string;
     data?: string;
   }[];
   numBlocks?: number;
@@ -504,7 +506,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions'
+      'stakingOptions', 'eip1559',
     ];
   }
 
@@ -1531,8 +1533,8 @@ export class Wallet {
 
     return Bluebird.resolve(
       this.bitgo.post(this.url('/share'))
-      .send(params)
-      .result()
+        .send(params)
+        .result()
     ).nodeify(callback);
   }
 
@@ -1633,7 +1635,7 @@ export class Wallet {
     const userId = params.userId;
     return Bluebird.resolve(
       this.bitgo.del(this.url('/user/' + userId))
-      .result()
+        .result()
     ).nodeify(callback);
   }
 
@@ -1692,6 +1694,7 @@ export class Wallet {
         .query(queryParams)
         .send(whitelistedParams)
         .result();
+
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
       const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
         utxoCoin.getLatestBlockHeight(params.reqId) :
@@ -1793,6 +1796,12 @@ export class Wallet {
   prebuildAndSignTransaction(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
     const self = this;
     return co<SignedTransaction>(function *() {
+      if (params.eip1559 && params.gasPrice) {
+        const error: any = new Error('Only one of params.eip1559 and params.gasPrice may be specified');
+        error.code = 'both_gasPrice_and_eip1559gasModel_specified';
+        throw error;
+      }
+
       if (params.prebuildTx && params.recipients) {
         const error: any = new Error('Only one of prebuildTx and recipients may be specified');
         error.code = 'both_prebuildtx_and_recipients_specified';
@@ -1993,7 +2002,6 @@ export class Wallet {
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
     }
-
     const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
     return this.sendMany(sendManyOptions).nodeify(callback);
   }
@@ -2041,7 +2049,7 @@ export class Wallet {
       params.reqId = reqId;
       const coin = self.baseCoin;
       if (_.isObject(params.recipients)) {
-        params.recipients.map((recipient) => {
+        params.recipients.map(function (recipient) {
           const amount = new BigNumber(recipient.amount);
           if (amount.isNegative()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
@@ -2060,9 +2068,10 @@ export class Wallet {
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
         'instant', 'memo', 'type', 'trustlines', 'transferId',
-        'stakingOptions'
+        'stakingOptions',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
+
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
         .send(finalTxParams)
