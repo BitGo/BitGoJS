@@ -17,6 +17,12 @@ export interface TxData {
   tokenId?: number;
   genesisID: string;
   genesisHash: string | Buffer;
+  closeRemainderTo?: string;
+}
+
+export interface Address {
+  publicKey: Uint8Array;
+  checksum: Uint8Array;
 }
 
 export interface EncodedTx {

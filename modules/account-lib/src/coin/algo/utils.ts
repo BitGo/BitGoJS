@@ -1,15 +1,18 @@
 import crypto from 'crypto';
 import algosdk from 'algosdk';
+import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
 import base32 from 'hi-base32';
 import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx } from './ifaces';
+import { EncodedTx, Address } from './ifaces';
+import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
+const ALGORAND_MINIMUM_FEE = 1000;
 
 /**
  * Determines whether the string is a composed of hex chars only.
@@ -170,7 +173,7 @@ export class Utils implements BaseUtils {
       return txInfo.estimateSize();
     }
 
-    const { fee = 1000 } = txInfo;
+    const { fee = 1 } = txInfo;
     const transaction = this.createMultisigTransaction(Object.assign({}, txInfo, { fee }));
     return transaction.estimateSize();
   }
@@ -197,6 +200,201 @@ export class Utils implements BaseUtils {
    */
   encodeObj(obj: Record<string | number | symbol, any>): Uint8Array {
     return algosdk.encodeObj(obj);
+  }
+
+  /**
+   * secretKeyToMnemonic take an Algorant secret key and returns the corressponding mnemonic
+   *
+   * @param sk - Algorant secret key
+   * @return Secret key is associated mnemonic
+   */
+  secretKeyToMnemonic(sk: Buffer): string {
+    const skValid = Buffer.from(sk.toString('hex'));
+    if (!this.isValidPrivateKey(skValid.toString('hex'))) {
+      throw new InvalidKey(`The secret key: ${sk.toString('hex')} is invalid`);
+    }
+    const skUnit8Array = Buffer.from(sk);
+    return algosdk.secretKeyToMnemonic(skUnit8Array);
+  }
+
+  /**
+   * seedFromMnemonic converts a mnemonic generated using this library into the source key used to create it
+   * It returns an error if the passed mnemonic has an incorrect checksum, if the number of words is unexpected, or if one
+   * of the passed words is not found in the words list
+   *
+   * @param mnemonic - 25 words mnemonic
+   * @returns 32 bytes long seed
+   */
+  seedFromMnemonic(mnemonic: string): Uint8Array {
+    return algosdk.mnemonicToMasterDerivationKey(mnemonic);
+  }
+
+  /**
+   * keyPairFromSeed generates an object with secretKey and publicKey using the algosdk
+   * @param seed 32 bytes long seed
+   * @returns KeyPair
+   */
+  keyPairFromSeed(seed: Uint8Array): KeyPair {
+    const mn = this.mnemonicFromSeed(seed);
+    const base64PrivateKey = algosdk.mnemonicToSecretKey(mn).sk;
+    return this.createKeyPair(base64PrivateKey);
+  }
+
+  /**
+   * createKeyPair generet the new objet keyPair.
+   *
+   * @param base64PrivateKey 64 bytes long privateKey
+   * @returns KeyPair
+   */
+  protected createKeyPair(base64PrivateKey: Uint8Array): KeyPair {
+    const sk = base64PrivateKey.slice(0, 32);
+    const keyPair = new KeyPair({ prv: Buffer.from(sk).toString('hex') });
+    return keyPair;
+  }
+
+  /**
+   * decodePrivateKey generates a seed with a mnemonic and using algosdk.
+   *
+   * @param seed 32 bytes long seed
+   * @returns mnemonic - 25 words mnemonic - 25 words mnemonic
+   */
+  protected mnemonicFromSeed(seed: Uint8Array): string {
+    return algosdk.masterDerivationKeyToMnemonic(seed);
+  }
+
+  /**
+   * isValidEd25519PublicKeyStellar validate the key with the stellar-sdk
+   *
+   * @param publicKey
+   * @returns booldean
+   */
+  protected isValidEd25519PublicKeyStellar(publicKey: string): boolean {
+    return stellar.StrKey.isValidEd25519PublicKey(publicKey);
+  }
+
+  /**
+   * decodeEd25519PublicKeyStellar decode the key with the stellar-sdk
+   *
+   * @param publicKey
+   * @returns booldean
+   */
+  protected decodeEd25519PublicKeyStellar(publicKey: string): Buffer {
+    return stellar.StrKey.decodeEd25519PublicKey(publicKey);
+  }
+
+  /**
+   * encodeAddress return an addres encoding with algosdk
+   *
+   * @param addr
+   * @returns string
+   */
+  encodeAddress(addr: Buffer): string {
+    return algosdk.encodeAddress(addr);
+  }
+
+  /**
+   * decodeAddress return an addres decoding with algosdk
+   *
+   * @param addr
+   * @returns Address
+   */
+  decodeAddress(addr: string): Address {
+    return algosdk.decodeAddress(addr);
+  }
+
+  /**
+   *stellarAddressToAlgoAddress returns an address algo of algo
+   *if is sent an xmlAddress if it does not return the same address.
+   *
+   * @param addressOrPubKey
+   * @returns address algo string
+   */
+  stellarAddressToAlgoAddress(addressOrPubKey: string): string {
+    // we have an Algorand address
+    if (this.isValidAddress(addressOrPubKey)) {
+      return addressOrPubKey;
+    }
+    // we have a stellar key
+    if (this.isValidEd25519PublicKeyStellar(addressOrPubKey)) {
+      const stellarPub = this.decodeEd25519PublicKeyStellar(addressOrPubKey);
+      const algoAddress = this.encodeAddress(stellarPub);
+      if (this.isValidAddress(algoAddress)) {
+        return algoAddress;
+      }
+      throw new Error('Cannot convert Stellar address to an Algorand address via pubkey.');
+    }
+    throw new Error('Neither an Algorand address nor a stellar pubkey.');
+  }
+
+  /**
+   * Build correct fee info and fee rate for Algorand transactions.
+   *
+   // eslint-disable-next-line jsdoc/require-param-type
+   * @param tx {Object} required fields or building fee info.
+   * @param feeRate {number} required fee rate for building fee info.
+   * @returns {Object} The fee information for algorand txn.
+   */
+  getFeeData(tx, feeRate: number): any {
+    const size = this.getTransactionByteSize(tx);
+    let feeInfo = this.validateFeeInfo(size, { feeRate: feeRate, fee: undefined, baseFactor: 1 });
+    if (feeInfo.fee < ALGORAND_MINIMUM_FEE) {
+      feeInfo = this.validateFeeInfo(size, { feeRate: undefined, fee: ALGORAND_MINIMUM_FEE, baseFactor: 1 });
+      feeRate = feeInfo.feeRate;
+    }
+    return { feeInfo, feeRate };
+  }
+
+  /**
+   * Check values for feeInfo building
+   *
+   * @param size {number} required size to check.
+   * @param feeData {Object} required fees to check.
+   * @returns {Object} with fee data validated.
+   */
+  protected validateFeeInfo(size: number, { feeRate, fee, baseFactor = 1000 }): any {
+    if (!Number.isSafeInteger(size) || size < 0) {
+      throw new Error('Size must be integer positive number');
+    }
+    if (_.isUndefined(feeRate) && _.isUndefined(fee)) {
+      throw new Error('Fee rate or fee are missed');
+    }
+    let fee_value, fee_rate;
+    if (!_.isUndefined(feeRate)) {
+      if (!Number.isSafeInteger(feeRate) || feeRate < 0) {
+        throw new Error('FeeRate must be integer positive number');
+      }
+      fee_rate = feeRate;
+      fee_value = Math.ceil((fee_rate * size) / baseFactor);
+    } else {
+      if (!Number.isSafeInteger(fee) || fee < 0) {
+        throw new Error('Fee must be integer positive number');
+      }
+      fee_value = fee;
+      fee_rate = Math.round((fee / size) * baseFactor);
+    }
+    const feeObj = {
+      feeRate: fee_rate,
+      fee: fee_value,
+      size: size,
+    };
+
+    return feeObj;
+  }
+
+  /**
+   * multisigAddress takes multisig metadata (preimage) and returns the corresponding human readable Algorand address.
+   *
+   * @param {number} version mutlisig version
+   * @param {number} threshold multisig threshold
+   * @param {string[]} addrs list of Algorand addresses
+   * @returns {string} human readable Algorand address.
+   */
+  multisigAddress(version: number, threshold: number, addrs: string[]): string {
+    return algosdk.multisigAddress({
+      version,
+      threshold,
+      addrs,
+    });
   }
 }
 

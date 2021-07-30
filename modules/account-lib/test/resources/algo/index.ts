@@ -73,3 +73,37 @@ export const networks = {
     genesisHash: 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=',
   },
 } as const;
+
+export const transactions = {
+  payTxn: {
+    from: 'YGNUPHXWPHJPUHP5Y4N5FEKHPRGIGGL7G6DR33BF6GLMMW554D53DEHINI',
+    to: 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM',
+    amount: 5000,
+    firstRound: 167,
+    lastRound: 1167,
+    genesisID: 'testnet-v1.0',
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+  },
+  nonParticipationTxn: {
+    type: 'keyreg',
+    from: 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA',
+    firstRound: 167,
+    lastRound: 1167,
+    genesisID: 'testnet-v1.0',
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+    nonParticipation: true,
+  },
+  keyregTxn: {
+    fee: 1000,
+    firstRound: 167,
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+    lastRound: 1167,
+    selectionKey: 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA',
+    from: 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA',
+    type: 'keyreg',
+    voteFirst: 1,
+    voteKeyDilution: 10000,
+    voteKey: 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA',
+    voteLast: 6000001,
+  },
+} as const;
