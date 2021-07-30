@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
 import { VoteActionSchema } from './txnSchema';
 
+/**
+ * Vote Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-vote
+ */
 export class VoteActionBuilder extends EosActionBuilder {
   private _voter: string;
   private _proxy: string;

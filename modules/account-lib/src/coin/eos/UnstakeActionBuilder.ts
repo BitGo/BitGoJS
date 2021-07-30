@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
 import { UnstakeActionSchema } from './txnSchema';
 
+/**
+ * Unstake Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-unstake
+ */
 export class UnstakeActionBuilder extends EosActionBuilder {
   private _from: string;
   private _receiver: string;

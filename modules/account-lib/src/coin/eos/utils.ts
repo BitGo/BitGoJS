@@ -113,7 +113,7 @@ export class Utils implements BaseUtils {
     // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
     if (!this.isValidAddress(destinationAddress)) {
-      throw new AddressValidationError(address)
+      throw new AddressValidationError(address);
     }
 
     // address doesn't have a memo id
@@ -131,17 +131,17 @@ export class Utils implements BaseUtils {
     const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.memoId) {
       // if there are more properties, the query details need to contain the memoId property
-      throw new Error(`invalid property in address: ${address}`)
+      throw new Error(`invalid property in address: ${address}`);
     }
 
     if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
       // valid addresses can only contain one memo id
-      throw new Error(`invalid address ${address} must contain exactly one memoId`)
+      throw new Error(`invalid address ${address} must contain exactly one memoId`);
     }
 
     const [memoId] = _.castArray(queryDetails.memoId);
     if (!this.isValidMemoId(memoId)) {
-      throw new Error(`invalid address: ${address}, memoId is not valid`)
+      throw new Error(`invalid address: ${address}, memoId is not valid`);
     }
 
     return {
@@ -166,9 +166,9 @@ export class Utils implements BaseUtils {
       return false;
     }
 
-  if (addressDetails.address !== rootAddressDetails.address) {
-    throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`)
-  }
+    if (addressDetails.address !== rootAddressDetails.address) {
+      throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
+    }
 
     return true;
   }

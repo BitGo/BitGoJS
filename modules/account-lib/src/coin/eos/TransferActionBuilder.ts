@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
 import { TransferActionSchema } from './txnSchema';
 
+/**
+ * Transfer Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-transfer-an-eosio-token
+ */
 export class TransferActionBuilder extends EosActionBuilder {
   private _from: string;
   private _to: string;

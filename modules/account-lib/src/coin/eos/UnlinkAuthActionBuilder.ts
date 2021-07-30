@@ -6,6 +6,10 @@ import { Action } from './ifaces';
 import { UnlinkAuthActionSchema } from './txnSchema';
 import Utils from './utils';
 
+/**
+ * Unlink Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-unlink-permissions
+ */
 export class UnlinkAuthActionBuilder extends EosActionBuilder {
   private _account: string;
   private _code: string;

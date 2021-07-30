@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
 import { BuyRamBytesActionSchema } from './txnSchema';
 
+/**
+ * Buy Ram bytes
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-submit-a-transaction
+ */
 export class BuyRamBytesActionBuilder extends EosActionBuilder {
   private _payer: string;
   private _receiver: string;

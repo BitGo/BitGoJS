@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action } from './ifaces';
 import { StakeActionSchema } from './txnSchema';
 
+/**
+ * Stake Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-stake
+ */
 export class StakeActionBuilder extends EosActionBuilder {
   private _from: string;
   private _receiver: string;

@@ -5,6 +5,10 @@ import { EosActionBuilder } from './eosActionBuilder';
 import { Action, PublicKey } from './ifaces';
 import { NewAccoutActionSchema } from './txnSchema';
 
+/**
+ * New Account Action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-create-an-account
+ */
 export class NewAccountActionBuilder extends EosActionBuilder {
   private _creator: string;
   private _name: string;

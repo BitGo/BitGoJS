@@ -7,6 +7,10 @@ import { UpdateAuthActionSchema, PermissionAuthSchema } from './txnSchema';
 import Utils from './utils';
 import { PermissionAuthValidationError } from './errors';
 
+/**
+ * Create Permissions
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-create-permissions
+ */
 export class UpdateAuthActionBuilder extends EosActionBuilder {
   private _account: string;
   private _permission_name: string;

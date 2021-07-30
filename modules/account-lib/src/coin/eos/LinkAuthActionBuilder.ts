@@ -6,6 +6,10 @@ import { Action } from './ifaces';
 import { LinkAuthActionSchema } from './txnSchema';
 import Utils from './utils';
 
+/**
+ * Link auth action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-link-permissions
+ */
 export class LinkAuthActionBuilder extends EosActionBuilder {
   private _account: string;
   private _code: string;

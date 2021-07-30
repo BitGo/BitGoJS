@@ -6,6 +6,10 @@ import { Action } from './ifaces';
 import { DeleteAuthActionSchema } from './txnSchema';
 import Utils from './utils';
 
+/**
+ * Delete auth action
+ * https://developers.eos.io/manuals/eosjs/latest/how-to-guides/how-to-delete-permissions
+ */
 export class DeleteAuthActionBuilder extends EosActionBuilder {
   private _account: string;
   private _permission_name: string;
