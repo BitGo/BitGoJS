@@ -110,7 +110,7 @@ export class Utils implements BaseUtils {
     try {
       algosdk.decodeUnsignedTransaction(txn);
       return true;
-    } catch (_: unknown) {
+    } catch (err) {
       return false;
     }
   }
@@ -125,7 +125,7 @@ export class Utils implements BaseUtils {
     try {
       algosdk.decodeSignedTransaction(txn);
       return true;
-    } catch (_: unknown) {
+    } catch (err) {
       return false;
     }
   }
@@ -315,7 +315,7 @@ export class Utils implements BaseUtils {
     }
     throw new Error('Neither an Algorand address nor a stellar pubkey.');
   }
-  
+
   /**
    * Build correct fee info and fee rate for Algorand transactions.
    *
