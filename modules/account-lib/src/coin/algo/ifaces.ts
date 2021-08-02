@@ -31,3 +31,8 @@ export interface EncodedTx {
   txn: algosdk.Transaction;
   signed: boolean;
 }
+
+export interface Account {
+  addr: string;
+  sk: Uint8Array;
+}
