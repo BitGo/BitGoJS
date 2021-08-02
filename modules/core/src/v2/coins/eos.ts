@@ -315,7 +315,7 @@ export class Eos extends BaseCoin {
 
   /**
    * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
-   * to big units (btc, eth, rmg, xrp, xlm)
+   * to big units (btc, eth, xrp, xlm)
    */
   baseUnitsToBigUnits(baseUnits: string | number): string {
     const dividend = this.getBaseFactor();
