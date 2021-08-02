@@ -95,11 +95,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
     if (this.hdNode) {
       const { xpub, xprv } = this.getExtendedKeys();
-      prv = xprv
-        ? HDNode.fromBase58(xprv)
-            .keyPair.getPrivateKeyBuffer()
-            .toString('hex')
-        : undefined;
+      prv = xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex') : undefined;
       prv = prv && compressed ? prv + '01' : prv;
 
       const kp = HDNode.fromBase58(xpub);
