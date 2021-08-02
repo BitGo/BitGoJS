@@ -17,7 +17,6 @@ export { Ltc } from './ltc';
 export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
 export { OfcToken } from './ofcToken';
 export { Rbtc } from './rbtc';
-export { Rmg } from './rmg';
 export { StellarToken } from './stellarToken';
 export { Susd } from './susd';
 export { Talgo } from './talgo';
@@ -33,7 +32,6 @@ export { Teth2 } from './teth2';
 export { Gteth } from './gteth';
 export { Tltc } from './tltc';
 export { Trbtc } from './trbtc';
-export { Trmg } from './trmg';
 export { Trx } from './trx';
 export { Tsusd } from './tsusd';
 export { Ttrx } from './ttrx';

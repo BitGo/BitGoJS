@@ -88,7 +88,7 @@ function getCoinsToExclude(env) {
     return [];
   }
 
-  const allCoins = ['btc', 'bch', 'bsv', 'btg', 'ltc', 'eth', 'rmg', 'xrp', 'xlm', 'dash', 'zec'];
+  const allCoins = ['btc', 'bch', 'bsv', 'btg', 'ltc', 'eth', 'xrp', 'xlm', 'dash', 'zec'];
   const compileCoins = env.coins.split(',').map(coin => coin.trim().toLowerCase());
   const invalidCoins = compileCoins.filter(allCoin => {
     return !allCoins.includes(allCoin);
@@ -120,8 +120,8 @@ function setupPlugins(env) {
     new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/),
     ...excludeCoins,
     // This plugin uses webpack's hooks to perform a post processing step to find + replace unsafe code.
-    // currently, hashgraph protobufs generated code will attempt resolve the global object with: 
-    //   Function("return this")() 
+    // currently, hashgraph protobufs generated code will attempt resolve the global object with:
+    //   Function("return this")()
     // which is not permitted in strict CSP environments. This can safely just be replaced with the *actual* global
     // object, i.e. window
     {

@@ -21,7 +21,6 @@ import {
   Ltc,
   Ofc,
   Rbtc,
-  Rmg,
   Stx,
   Susd,
   Talgo,
@@ -39,7 +38,6 @@ import {
   Thbar,
   Tltc,
   Trbtc,
-  Trmg,
   Trx,
   Tstx,
   Tsusd,
@@ -144,8 +142,6 @@ GlobalCoinFactory.registerCoinConstructor('rbtc', Rbtc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('trbtc', Trbtc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('celo', Celo.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcelo', Tcelo.createInstance);
-GlobalCoinFactory.registerCoinConstructor('rmg', Rmg.createInstance);
-GlobalCoinFactory.registerCoinConstructor('trmg', Trmg.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xrp', Xrp.createInstance);
 GlobalCoinFactory.registerCoinConstructor('txrp', Txrp.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xlm', Xlm.createInstance);

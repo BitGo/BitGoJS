@@ -40,10 +40,6 @@ describe('V2 Wallets:', function() {
           params.enterprise = TestBitGo.TEST_ENTERPRISE;
         }
 
-        if (coin === 'trmg') {
-          params.backupXpubProvider = 'trm';
-        }
-
         const wallet = yield wallets.generateWallet(params);
         const walletObject = wallet.wallet;
         walletObject._wallet.coin.should.equal(coin);
@@ -71,10 +67,6 @@ describe('V2 Wallets:', function() {
 
     it(`should generate a tltc wallet`, co(function *() {
       yield testWalletGeneration('tltc');
-    }));
-
-    it(`should generate a trmg wallet`, co(function *() {
-      yield testWalletGeneration('trmg');
     }));
   });
 

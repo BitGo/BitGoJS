@@ -438,7 +438,6 @@ export class BitGo {
     }
 
     common.setNetwork(common.Environments[env].network);
-    common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
