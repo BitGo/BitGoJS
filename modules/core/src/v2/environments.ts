@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as bitcoin from '@bitgo/utxo-lib';
-import { V1Network, V1RmgNetwork } from './types';
+import { V1Network } from './types';
 
 interface EnvironmentTemplate {
   uri?: string;
@@ -11,7 +11,6 @@ interface EnvironmentTemplate {
     tbtc?: bitcoin.Network;
   };
   network: V1Network;
-  rmgNetwork: V1RmgNetwork;
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
@@ -87,7 +86,6 @@ const mainnetBase: EnvironmentTemplate = {
     btc: bitcoin.networks.bitcoin,
   },
   network: 'bitcoin' as V1Network,
-  rmgNetwork: 'rmg' as V1RmgNetwork,
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
@@ -115,7 +113,6 @@ const testnetBase: EnvironmentTemplate = {
     tbtc: bitcoin.networks.testnet,
   },
   network: 'testnet' as V1Network,
-  rmgNetwork: 'rmgTest' as V1RmgNetwork,
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
@@ -214,7 +211,6 @@ export const Environments: Environments = {
       tbtc: bitcoin.networks.testnet,
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
-    rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK as V1RmgNetwork,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
     smartbitBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'

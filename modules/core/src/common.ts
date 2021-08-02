@@ -2,13 +2,12 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { NodeCallback, V1Network, V1RmgNetwork } from './v2/types';
+import { NodeCallback, V1Network } from './v2/types';
 
 // re-export from here for backwards compatibility reasons
 export { Environments } from './v2/environments';
 
 let bitcoinNetwork: V1Network;
-let rmgNetwork: V1RmgNetwork;
 
 /**
  * Set the global Bitcoin network. Used for v1 only.
@@ -31,24 +30,6 @@ export function setNetwork(network: V1Network): void {
  */
 export function getNetwork(): V1Network {
   return bitcoinNetwork;
-}
-
-/**
- * Get the global RMG network. Used for v1 only.
- *
- * @deprecated
- */
-export function getRmgNetwork(): V1RmgNetwork {
-  return rmgNetwork;
-}
-
-/**
- * Set the global RMG network. Used for v1 only.
- *
- * @deprecated
- */
-export function setRmgNetwork(network: V1RmgNetwork): void {
-  rmgNetwork = network;
 }
 
 /**
