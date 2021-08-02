@@ -171,7 +171,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     it('should build a valid enable token transaction and re-calcualte minimum fee', async function() {
       const firstRound = 167;
       const lastRound = 1167;
-      const fee = 1;
+      const fee = 1000;
       const tokenId = 1;
       const {
         networks: { testnet },
@@ -211,7 +211,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     it('should build a valid disable token transaction and re-calcualte minimum fee', async function() {
       const firstRound = 167;
       const lastRound = 1167;
-      const fee = 1;
+      const fee = 1000;
       const tokenId = 1;
       const closeRemainderTo = 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM';
       const {
