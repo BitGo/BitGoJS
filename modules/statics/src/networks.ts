@@ -113,6 +113,22 @@ class AlgorandTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.algoexplorer.io/tx/';
 }
 
+class AvalancheC extends Mainnet implements AccountNetwork {
+  // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
+  family = CoinFamily.AVAXC;
+  explorerUrl = 'https://cchain.explorer.avax.network/tx/';
+  accountExplorerUrl = 'https://cchain.explorer.avax.network/address/';
+  chainId = 43114;
+}
+
+class AvalancheCTestnet extends Testnet implements AccountNetwork {
+  // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
+  family = CoinFamily.AVAXC;
+  explorerUrl = 'https://cchain.explorer.avax-test.network/tx/';
+  accountExplorerUrl = 'https://cchain.explorer.avax-test.network/address/';
+  chainId = 43113;
+}
+
 class Bitcoin extends BitcoinLikeMainnet {
   family = CoinFamily.BTC;
   explorerUrl = 'https://blockstream.info/tx/';
@@ -419,6 +435,7 @@ class ZCashTestnet extends BitcoinLikeTestnet {
 export const Networks = {
   main: {
     algorand: Object.freeze(new Algorand()),
+    avalancheC: Object.freeze(new AvalancheC()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinABC: Object.freeze(new BitcoinABC()),
@@ -445,6 +462,7 @@ export const Networks = {
   },
   test: {
     algorand: Object.freeze(new AlgorandTestnet()),
+    avalancheC: Object.freeze(new AvalancheCTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinABC: Object.freeze(new BitcoinABCTestnet()),
