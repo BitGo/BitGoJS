@@ -137,7 +137,17 @@ export class Utils implements BaseUtils {
    * @returns {EncodedTx} The decoded transaction.
    */
   decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
+    let buffer;
+    if (typeof txnBytes === 'string') {
+      if (allHexChars(txnBytes)) {
+        buffer = Buffer.from(txnBytes, 'hex');
+      } else {
+        buffer = Buffer.from(txnBytes, 'base64');
+      }
+    } else {
+      buffer = txnBytes;
+    }
+
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {
         txn: algosdk.decodeUnsignedTransaction(buffer),
