@@ -15,6 +15,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteFirst: number;
   protected _voteLast: number;
   protected _voteKeyDilution: number;
+  protected _nonParticipation: boolean;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -91,20 +92,51 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     this.validateValue(new BigNumber(size));
     this._voteKeyDilution = size;
 
+    return this
+  }
+
+  /**
+   * Sets the non participation flag
+   *
+   * @returns {KeyRegistrationBuilder} This Key Registration builder.
+   *
+   * @param {boolean} nonPart. All new Algorand accounts are participating by default.
+   * This means that they earn rewards. Mark an account nonparticipating by setting this value to true and this account
+   * will no longer earn rewards
+   * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
+   */
+  nonParticipation(nonParticipation: boolean): KeyRegistrationBuilder {
+    this._nonParticipation = nonParticipation;
+
     return this;
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
-      this._sender,
-      this._note,
-      this._voteKey,
-      this._selectionKey,
-      this._voteFirst,
-      this._voteLast,
-      this._voteKeyDilution,
-      this.suggestedParams,
-    );
+    if (!this._nonParticipation) {
+      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+        this._sender,
+        this._note,
+        this._voteKey,
+        this._selectionKey,
+        this._voteFirst,
+        this._voteLast,
+        this._voteKeyDilution,
+        this.suggestedParams,
+      );
+    } else {
+      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+        this._sender,
+        this._note,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        this.suggestedParams,
+        this._reKeyTo,
+        this._nonParticipation,
+      );
+    }
   }
 
   protected get transactionType(): TransactionType {
@@ -114,14 +146,18 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    const algoTx = tx.getAlgoTransaction();
+    const algoTxn = tx.getAlgoTransaction();
 
-    if (algoTx) {
-      this.voteKey(algoTx.voteKey.toString('base64'));
-      this.selectionKey(algoTx.selectionKey.toString('base64'));
-      this.voteFirst(algoTx.voteFirst);
-      this.voteLast(algoTx.voteLast);
-      this.voteKeyDilution(algoTx.voteKeyDilution);
+    if (algoTxn) {
+      if (!algoTxn.nonParticipation) {
+        this.voteKey(algoTxn.voteKey.toString('base64'));
+        this.selectionKey(algoTxn.selectionKey.toString('base64'));
+        this.voteFirst(algoTxn.voteFirst);
+        this.voteLast(algoTxn.voteLast);
+        this.voteKeyDilution(algoTxn.voteKeyDilution);
+      } else {
+        this.nonParticipation(algoTxn.nonParticipation);
+      }
     }
     return tx;
   }
@@ -136,19 +172,23 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       );
     }
 
-    this.validateFields(
-      algoTxn.voteKey.toString('base64'),
-      algoTxn.selectionKey.toString('base64'),
-      algoTxn.voteFirst,
-      algoTxn.voteLast,
-      algoTxn.voteKeyDilution,
-    );
+    if (!algoTxn.nonParticipation) {
+      this.validateFields(
+        algoTxn.voteKey.toString('base64'),
+        algoTxn.selectionKey.toString('base64'),
+        algoTxn.voteFirst,
+        algoTxn.voteLast,
+        algoTxn.voteKeyDilution,
+      );
+    }
   }
 
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
+    if (!this._nonParticipation) {
+      this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
+    }
   }
 
   private validateFields(

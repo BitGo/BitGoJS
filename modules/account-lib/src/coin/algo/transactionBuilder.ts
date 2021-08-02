@@ -57,6 +57,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @see https://developer.algorand.org/docs/reference/transactions/
    */
   fee(feeObj: BaseFee): this {
+    this._isFlatFee = true;
     const fee = new BigNumber(feeObj.fee).toNumber();
     if (this._isFlatFee && fee < MIN_FEE) {
       throw new InsufficientFeeError(fee, MIN_FEE);
