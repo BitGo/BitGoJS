@@ -76,19 +76,16 @@ export class Transaction extends BaseTransaction {
       if (isSingleSig(this._stxTransaction.auth.spendingCondition)) {
         return [this._stxTransaction.auth.spendingCondition.signature.data];
       } else {
-        return this._stxTransaction.auth.spendingCondition.fields.map(this.getSignatureFromField);
+        const signatures: string[] = [];
+        this._stxTransaction.auth.spendingCondition.fields.forEach((field) => {
+          if (field.contents.type === StacksMessageType.MessageSignature) {
+            signatures.push(field.contents.data);
+          }
+        });
+        return signatures;
       }
     }
     return [];
-  }
-
-  private getSignatureFromField(field: TransactionAuthField): string {
-    switch (field.contents.type) {
-      case StacksMessageType.PublicKey:
-        return field.contents.data.toString('hex');
-      case StacksMessageType.MessageSignature:
-        return field.contents.data;
-    }
   }
 
   /** @inheritdoc */

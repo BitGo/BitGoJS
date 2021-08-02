@@ -23,6 +23,7 @@ import {
   InvalidParameterValueError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { xprvToRawPrv } from '../../utils/crypto';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
@@ -145,7 +146,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     this.checkDuplicatedKeys(key);
-    const signer = new KeyPair({ prv: key.key });
+    let prv = key.key;
+    if (prv.startsWith('xprv')) {
+      const rawPrv = xprvToRawPrv(prv);
+      prv = new KeyPair({ prv: rawPrv }).getKeys(true).prv;
+    }
+    const signer = new KeyPair({ prv: prv });
 
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
