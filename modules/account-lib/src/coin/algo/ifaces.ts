@@ -2,6 +2,7 @@ import algosdk from 'algosdk';
 
 export interface TxData {
   id: string;
+  type?: string,
   from: string;
   to?: string;
   fee: number;
@@ -18,6 +19,7 @@ export interface TxData {
   genesisID: string;
   genesisHash: string | Buffer;
   closeRemainderTo?: string;
+  nonParticipation?: boolean;
 }
 
 export interface Address {

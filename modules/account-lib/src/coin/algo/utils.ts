@@ -137,7 +137,17 @@ export class Utils implements BaseUtils {
    * @returns {EncodedTx} The decoded transaction.
    */
   decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
+    let buffer;
+    if (typeof txnBytes === 'string') {
+      if (allHexChars(txnBytes)) {
+        buffer = Buffer.from(txnBytes, 'hex');
+      } else {
+        buffer = Buffer.from(txnBytes, 'base64');
+      }
+    } else {
+      buffer = txnBytes;
+    }
+
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {
         txn: algosdk.decodeUnsignedTransaction(buffer),
@@ -398,13 +408,18 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * generateAccount returns a new Algorand address and its corresponding secret key
+   * generateAccount generates un account with a secretKey and an address
    *
    * Function has not params
    * @returns Account
    */
   generateAccount(): Account {
-    return algosdk.generateAccount();
+    const keyPair = new KeyPair();
+    const account = {
+      sk: keyPair.getSigningKey(),
+      addr: keyPair.getAddress(),
+    };
+    return account;
   }
 }
 

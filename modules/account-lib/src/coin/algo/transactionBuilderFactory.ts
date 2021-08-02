@@ -21,6 +21,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new AssetTransferBuilder(this._coinConfig);
   }
 
+  getKeyRegistrationBuilder(): KeyRegistrationBuilder {
+    return new KeyRegistrationBuilder(this._coinConfig);
+  }
+
   from(rawTxn: string | Uint8Array): TransactionBuilder {
     const builder = this.getBuilder(rawTxn);
     builder.from(rawTxn);
