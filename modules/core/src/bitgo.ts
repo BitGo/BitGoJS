@@ -1048,9 +1048,13 @@ export class BitGo {
     const clientDerivedNode = hdPath(clientHDNode).derive(derivationPath);
     const serverDerivedNode = hdPath(serverHDNode).derive(derivationPath);
 
-    // calculating one-time ECDH key
-    const secretPoint = serverDerivedNode.keyPair.__Q.multiply(clientDerivedNode.keyPair.d);
-    const secret = secretPoint.getEncoded().toString('hex');
+    const publicKey = serverDerivedNode.keyPair.getPublicKeyBuffer();
+    const secretKey = clientDerivedNode.keyPair.d.toBuffer(32);
+    const secret = Buffer.from(
+        // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
+        //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
+        secp256k1.publicKeyTweakMul(publicKey, secretKey)
+    ).toString('hex');
 
     // decrypt token with symmetric ECDH key
     let response: TokenIssuance;
