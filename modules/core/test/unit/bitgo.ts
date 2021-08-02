@@ -2,6 +2,7 @@
 // Tests for BitGo Object
 //
 
+import * as crypto from 'crypto';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as Bluebird from 'bluebird';
@@ -279,13 +280,30 @@ describe('BitGo Prototype Methods', function() {
   });
 
   describe('ECDH sharing secret', () => {
+    function getKey(seed: string) {
+      return bitcoin.HDNode.fromSeedBuffer(
+          crypto.createHash('sha256').update(seed).digest()
+      ).keyPair;
+    }
+
     it('should calculate a new ECDH sharing secret correctly', () => {
-      const bitgo = new TestBitGo();
-      const eckey1 = bitcoin.ECPair.makeRandom({ network: bitcoin.networks[common.getNetwork()] });
-      const eckey2 = bitcoin.ECPair.makeRandom({ network: bitcoin.networks[common.getNetwork()] });
-      const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
-      const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
-      sharingKey1.should.equal(sharingKey2);
+      for (let i=0; i<256; i++) {
+        const bitgo = new TestBitGo();
+        const eckey1 = getKey(`${i}.a`);
+        const eckey2 = getKey(`${i}.b`);
+        const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
+        const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
+        sharingKey1.should.equal(sharingKey2);
+
+        switch (i) {
+          case 0:
+            sharingKey1.should.eql('465ffe5745325998b83fb39631347148e24d4f21b3f3b54739c264d5c42db4b8')
+            break;
+          case 1:
+            sharingKey1.should.eql('61ff44fc1af8061a433a314b7b8be8ae352c10f62aac5887047dbaa5643b818d');
+            break;
+        }
+      }
     });
   });
 
