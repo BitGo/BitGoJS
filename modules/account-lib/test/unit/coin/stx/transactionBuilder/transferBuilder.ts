@@ -4,6 +4,7 @@ import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { rawPrvToExtendedKeys } from '../../../../../src/utils/crypto';
 
 describe('Stx Transfer Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
@@ -108,6 +109,7 @@ describe('Stx Transfer Builder', () => {
       txBuilder.numberSignatures(2);
       txBuilder.memo(memo);
       const tx = await txBuilder.build(); // half signed multisig tx
+      should.deepEqual(tx.signature.length, 1);
       const txBuilder2 = factory.getTransferBuilder();
       txBuilder2.from(tx.toBroadcastFormat());
       txBuilder2.sign({ key: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
@@ -117,6 +119,40 @@ describe('Stx Transfer Builder', () => {
         signedTx.toBroadcastFormat(),
         '808000000004012fe507c09dbb23c3b7e5d166c81fc4b87692510b000000000000000100000000000000b4000000030201091538373641a50a4ebd6f653bb7b477489aceec50eff963072a838d2eaf50e4784c7c6d1490f57b899f0f04c215fce9176d9bb4ce19bfb07499c48878675a1f02008074202e04a7c777b4cdd26ad3fd35194311536113666d81a3840148e59eb43f274d88768ef1202d55633bfdcde8c6057932107354f406af6c378b6ea6b75d1a00038e3c4529395611be9abf6fa3b6987e81d402385e3d605a073f42f407565a4a3d000203020000000000051a1ae3f911d8f1d46d7416bfbe4b593fd41eac19cb00000000000003e874657374000000000000000000000000000000000000000000000000000000000000',
       );
+      should.deepEqual(signedTx.signature.length, 2);
+    });
+
+    it('an half signed tx with xprv', async () => {
+      const destination = 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0';
+      const amount = '1000';
+      const memo = 'test';
+      const kp = new KeyPair({ prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
+      const kp1 = new KeyPair({ prv: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
+      const kp2 = new KeyPair({ prv: 'e75dcb66f84287eaf347955e94fa04337298dbd95aa0dbb985771104ef1913db01' });
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.fee({
+        fee: '180',
+      });
+      txBuilder.to(destination);
+      txBuilder.amount(amount);
+      txBuilder.nonce(1);
+      txBuilder.sign({ key: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
+      txBuilder.fromPubKey([kp.getKeys(true).pub, kp1.getKeys(true).pub, kp2.getKeys(true).pub]);
+      txBuilder.numberSignatures(2);
+      txBuilder.memo(memo);
+      const tx = await txBuilder.build(); // half signed multisig tx
+      should.deepEqual(tx.signature.length, 1);
+      const txBuilder2 = factory.getTransferBuilder();
+      txBuilder2.from(tx.toBroadcastFormat());
+      txBuilder2.fromPubKey([kp.getKeys(true).pub, kp1.getKeys(true).pub, kp2.getKeys(true).pub]);
+      const extendedKey = rawPrvToExtendedKeys(kp1.getKeys(false).prv!);
+      txBuilder2.sign({ key: extendedKey.xprv });
+      const signedTx = await txBuilder2.build();
+      should.deepEqual(
+        signedTx.toBroadcastFormat(),
+        '808000000004012fe507c09dbb23c3b7e5d166c81fc4b87692510b000000000000000100000000000000b4000000030201091538373641a50a4ebd6f653bb7b477489aceec50eff963072a838d2eaf50e4784c7c6d1490f57b899f0f04c215fce9176d9bb4ce19bfb07499c48878675a1f02008074202e04a7c777b4cdd26ad3fd35194311536113666d81a3840148e59eb43f274d88768ef1202d55633bfdcde8c6057932107354f406af6c378b6ea6b75d1a00038e3c4529395611be9abf6fa3b6987e81d402385e3d605a073f42f407565a4a3d000203020000000000051a1ae3f911d8f1d46d7416bfbe4b593fd41eac19cb00000000000003e874657374000000000000000000000000000000000000000000000000000000000000',
+      );
+      should.deepEqual(signedTx.signature.length, 2);
     });
 
     it('a multisig transfer transaction', async () => {
@@ -128,6 +164,7 @@ describe('Stx Transfer Builder', () => {
       builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
       const tx = await builder.build();
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
+      should.deepEqual(tx.signature.length, 2);
     });
 
     it('a multisig serialized transfer transaction', async () => {
@@ -145,7 +182,7 @@ describe('Stx Transfer Builder', () => {
       builder.numberSignatures(2);
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(tx.signature.length, 3);
+      should.deepEqual(tx.signature.length, 2);
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
       should.deepEqual(txJson.payload.memo, 'test memo');
