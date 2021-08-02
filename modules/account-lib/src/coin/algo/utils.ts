@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx, Address } from './ifaces';
+import { EncodedTx, Address, Account } from './ifaces';
 import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
@@ -405,6 +405,21 @@ export class Utils implements BaseUtils {
       threshold,
       addrs,
     });
+  }
+
+  /**
+   * generateAccount generates un account with a secretKey and an address
+   *
+   * Function has not params
+   * @returns Account
+   */
+  generateAccount(): Account {
+    const keyPair = new KeyPair();
+    const account = {
+      sk: keyPair.getSigningKey(),
+      addr: keyPair.getAddress(),
+    };
+    return account;
   }
 }
 
