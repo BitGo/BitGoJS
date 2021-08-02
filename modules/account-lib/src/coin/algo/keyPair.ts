@@ -1,8 +1,10 @@
 /* eslint-disable no-unused-vars */
-import { encodeAddress } from 'algosdk';
+import * as nacl from 'tweetnacl';
+import algosdk, { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import { toHex, toUint8Array } from '../hbar/utils';
 import utils from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
@@ -17,12 +19,13 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new NotImplementedError('recordKeysFromPrivateKeyInProtocolFormat not implemented');
+    throw new NotImplementedError('recordKeysFromPublicKeyInProtocolFormat not implemented');
   }
 
   /** @inheritdoc */
-  recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new NotImplementedError('recordKeysFromPublicKeyInProtocolFormat not implemented');
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    const publicKey = algosdk.decodeAddress(pub).publicKey;
+    return { pub: toHex(publicKey) };
   }
 
   /** @inheritdoc */

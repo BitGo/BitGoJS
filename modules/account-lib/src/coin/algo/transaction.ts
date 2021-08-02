@@ -13,6 +13,7 @@ export class Transaction extends BaseTransaction {
   private _numberOfRequiredSigners: number;
   private _sender: string;
   private _signers: string[];
+  private _signedBy: string[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -38,8 +39,12 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  sender(address: string): void {
+  set sender(address: string) {
     this._sender = address;
+  }
+
+  get sender(): string {
+    return this._sender;
   }
 
   /**
@@ -133,6 +138,18 @@ export class Transaction extends BaseTransaction {
     this._signers = addrs;
   }
 
+  get signers(): string[] {
+    return this._signers;
+  }
+
+  set signedBy(signer: string[]) {
+    this._signedBy = signer;
+  }
+
+  get signedBy(): string[] {
+    return this._signedBy;
+  }
+
   /**
    * Sets algo transaction.
    *
@@ -162,12 +179,20 @@ export class Transaction extends BaseTransaction {
     this._type = transactionType;
   }
 
+  estimateSize(): number {
+    if (!this._algoTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+
+    return this._algoTransaction.estimateSize();
+  }
+
   /** @inheritdoc */
   toBroadcastFormat(): Uint8Array {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    if (this._signedTransaction) {
+    if (this._signedTransaction && this._signedTransaction.length > 0) {
       return this._signedTransaction;
     } else {
       return algosdk.encodeUnsignedTransaction(this._algoTransaction);
@@ -181,6 +206,7 @@ export class Transaction extends BaseTransaction {
     }
     const result: TxData = {
       id: this._algoTransaction.txID(),
+      type: this._algoTransaction.type?.toString(),
       from: algosdk.encodeAddress(this._algoTransaction.from.publicKey),
       fee: this._algoTransaction.fee,
       firstRound: this._algoTransaction.firstRound,
@@ -198,11 +224,15 @@ export class Transaction extends BaseTransaction {
       result.amount = this._algoTransaction.amount.toString();
     }
     if (this.type === TransactionType.WalletInitialization) {
-      result.voteKey = this._algoTransaction.voteKey.toString('base64');
-      result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
-      result.voteFirst = this._algoTransaction.voteFirst;
-      result.voteLast = this._algoTransaction.voteLast;
-      result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+      if (!this._algoTransaction.nonParticipation) {
+        result.voteKey = this._algoTransaction.voteKey.toString('base64');
+        result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
+        result.voteFirst = this._algoTransaction.voteFirst;
+        result.voteLast = this._algoTransaction.voteLast;
+        result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+      } else {
+        result.nonParticipation = this._algoTransaction.nonParticipation;
+      }
     }
     return result;
   }

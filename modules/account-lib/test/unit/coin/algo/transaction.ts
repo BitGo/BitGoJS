@@ -38,13 +38,13 @@ describe('Algo Transaction', () => {
 
     it('cannot sign - wrong account secret', () => {
       tx.setNumberOfRequiredSigners(1);
-      tx.sender(AlgoResources.accounts.account1.address);
+      tx.sender = AlgoResources.accounts.account1.address;
       should.deepEqual(tx.canSign({ key: AlgoResources.accounts.account2.secretKey.toString('hex') }), false);
     });
 
     it('can sign', () => {
       tx.setNumberOfRequiredSigners(1);
-      tx.sender(AlgoResources.accounts.account2.address);
+      tx.sender = AlgoResources.accounts.account2.address;
       should.deepEqual(tx.canSign({ key: AlgoResources.accounts.account2.secretKey.toString('hex') }), true);
     });
   });

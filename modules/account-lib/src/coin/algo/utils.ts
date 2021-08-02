@@ -1,17 +1,23 @@
 import crypto from 'crypto';
+import * as nacl from 'tweetnacl';
 import algosdk from 'algosdk';
 import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
 import base32 from 'hi-base32';
+import sha512 from 'js-sha512';
 import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx, Address } from './ifaces';
+import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 
+const ALGORAND_SEED_BYTE_LENGTH = 36;
+const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
+const SEED_BYTES_LENGTH = 32;
+
 const ALGORAND_MINIMUM_FEE = 1000;
 
 /**
@@ -22,6 +28,24 @@ const ALGORAND_MINIMUM_FEE = 1000;
  */
 function allHexChars(maybe: string): boolean {
   return maybe.match(/^[0-9a-f]+$/i) !== null;
+}
+
+function arrayEqual(a, b) {
+  if (a.length !== b.length) {return false;}
+  return a.every((val, i) => val === b[i]);
+}
+
+/**
+ * ConcatArrays takes two array and returns a joint array of both
+ * @param a
+ * @param b
+ * @returns {Uint8Array} [a,b]
+ */
+function concatArrays(a, b) {
+  let c = new Uint8Array(a.length + b.length);
+  c.set(a);
+  c.set(b, a.length);
+  return c;
 }
 
 export class Utils implements BaseUtils {
@@ -59,6 +83,21 @@ export class Utils implements BaseUtils {
     throw new NotImplementedError('hash not implemented.');
   }
 
+  areKeysEqual(key1: Uint8Array, key2: Uint8Array): boolean {
+    return nacl.verify(key1, key2);
+  }
+
+  verifySignature(pub: string, message: Buffer | string, signature: Buffer): boolean {
+    if (!this.isValidAddress(pub)) {
+      throw new Error(`invalid pub: ${pub}`);
+    }
+    if (!Buffer.isBuffer(message)) {
+      message = Buffer.from(message);
+    }
+    const pubk = algosdk.decodeAddress(pub).publicKey;
+    return nacl.sign.detached.verify(message, signature, pubk);
+  }
+
   /**
    * Converts a hex string into a uint8 array object.
    *
@@ -68,6 +107,7 @@ export class Utils implements BaseUtils {
   hexStringToUInt8Array(str: string): Uint8Array {
     return new Uint8Array(Buffer.from(str, 'hex'));
   }
+
   /**
    * Returns a Uint8Array of the given hex string
    *
@@ -76,6 +116,18 @@ export class Utils implements BaseUtils {
    */
   toUint8Array(str: string): Uint8Array {
     return hex.decode(str);
+  }
+
+  generateAccount(): algosdk.Account {
+    return algosdk.generateAccount();
+  }
+
+  generateAccountFromSeed(seed: Uint8Array): algosdk.Account {
+    const keys = nacl.sign.keyPair.fromSeed(seed);
+    return {
+      addr: algosdk.encodeAddress(keys.publicKey),
+      sk: keys.secretKey
+    };
   }
 
   /**
@@ -137,9 +189,20 @@ export class Utils implements BaseUtils {
    * @returns {EncodedTx} The decoded transaction.
    */
   decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    const buffer = typeof txnBytes === 'string' ? Buffer.from(txnBytes, 'hex') : txnBytes;
+    let buffer;
+    if (typeof txnBytes === 'string') {
+      if (allHexChars(txnBytes)) {
+        buffer = Buffer.from(txnBytes, 'hex');
+      } else {
+        buffer = Buffer.from(txnBytes, 'base64');
+      }
+    } else {
+      buffer = txnBytes;
+    }
+
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {
+        rawTransaction: new Uint8Array(buffer),
         txn: algosdk.decodeUnsignedTransaction(buffer),
         signed: false,
       };
@@ -150,9 +213,25 @@ export class Utils implements BaseUtils {
       // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
       // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
       const tx: any = algosdk.decodeSignedTransaction(buffer);
+
+      const signers: string[] = [];
+      const signedBy: string[] = [];
+      if (tx.msig && tx.msig.subsig) {
+        for (const sig of tx.msig.subsig) {
+          const addr = algosdk.encodeAddress(sig.pk);
+          signers.push(addr);
+          if (sig.s) {
+            signedBy.push(addr);
+          }
+        }
+      }
+
       return {
+        rawTransaction: new Uint8Array(buffer),
         txn: tx.txn,
         signed: true,
+        signers: signers,
+        signedBy: signedBy
       };
     } else {
       throw new InvalidTransactionError('Transaction cannot be decoded');
@@ -191,6 +270,7 @@ export class Utils implements BaseUtils {
 
     return new algosdk.Transaction(refinedTx);
   }
+
   /*
    * encodeObj takes a javascript object and returns its msgpack encoding
    * Note that the encoding sorts the fields alphabetically
@@ -200,6 +280,15 @@ export class Utils implements BaseUtils {
    */
   encodeObj(obj: Record<string | number | symbol, any>): Uint8Array {
     return algosdk.encodeObj(obj);
+  }
+
+  /**
+   * decodeObj takes a Uint8Array and returns its javascript obj
+   * @param o - Uint8Array to decode
+   * @returns object
+   */
+  decodeObj(o: ArrayLike<number>) {
+    return algosdk.decodeObj(o);
   }
 
   /**
@@ -283,7 +372,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * encodeAddress return an addres encoding with algosdk
+   * encodeAddress return an address encoding with algosdk
    *
    * @param addr
    * @returns string
@@ -300,6 +389,71 @@ export class Utils implements BaseUtils {
    */
   decodeAddress(addr: string): Address {
     return algosdk.decodeAddress(addr);
+  }
+
+  isValidSeed(seed) {
+    if (typeof seed !== "string") return false;
+
+    if (seed.length !== ALGORAND_SEED_LENGTH) return false;
+
+    // Try to decode
+    let decoded;
+    try {
+      decoded = this.decodeSeed(seed);
+    } catch (e) {
+      return false;
+    }
+
+    // Compute checksum
+    let checksum = sha512.sha512_256.array(decoded.seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH);
+
+    // Check if the checksum and the seed are equal
+    return arrayEqual(checksum, decoded.checksum);
+  }
+
+  /**
+   * encodeSeed decodes an algo seed
+   *
+   * Decoding algo seed is sane as decoding address.
+   * Latest version of algo sdk (1.9, at this writing) does not expose explicit method for decoding seed
+   * hence, this routine uses decodeAddress and changes the return structure
+   *
+   * @param seed
+   * @returns Seed
+   */
+  encodeSeed(secretKey: Buffer): string {
+    // return algosdk.encodeAddress(seed);
+    // get seed
+    const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
+    //compute checksum
+    const checksum = sha512.sha512_256.array(seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH);
+    const encodedSeed = base32.encode(concatArrays(seed, checksum));
+
+    return encodedSeed.toString().slice(0, ALGORAND_SEED_LENGTH); // removing the extra '===='
+  }
+
+
+  /**
+   * decodeSeed decodes an algo seed
+   *
+   * Decoding algo seed is sane as decoding address.
+   * Latest version of algo sdk (1.9, at this writing) does not expose explicit method for decoding seed
+   * hence, this routine uses decodeAddress and changes the return structure
+   *
+   * @param seed
+   * @returns Seed
+   */
+  decodeSeed(seed: string): Seed {
+    //try to decode
+    let decoded = base32.decode.asBytes(seed);
+
+    // Sanity check
+    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw new Error("seed seems to be malformed");
+
+    return {
+      seed: new Uint8Array(decoded.slice(0, ALGORAND_SEED_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)),
+      checksum: new Uint8Array(decoded.slice(SEED_BYTES_LENGTH, ALGORAND_SEED_BYTE_LENGTH))
+    }
   }
 
   /**

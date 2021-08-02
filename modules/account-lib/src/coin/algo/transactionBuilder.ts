@@ -57,6 +57,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @see https://developer.algorand.org/docs/reference/transactions/
    */
   fee(feeObj: BaseFee): this {
+    this._isFlatFee = true;
     const fee = new BigNumber(feeObj.fee).toNumber();
     if (this._isFlatFee && fee < MIN_FEE) {
       throw new InsufficientFeeError(fee, MIN_FEE);
@@ -93,7 +94,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
     this._sender = sender.address;
-    this._transaction.sender(sender.address);
+    this._transaction.sender = sender.address;
 
     return this;
   }
@@ -291,8 +292,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const algosdkTxn = decodedTxn.txn;
 
     if (decodedTxn.signed) {
-      this._transaction.signedTransaction =
-        typeof rawTransaction === 'string' ? Utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
+      this._transaction.signedTransaction = decodedTxn.rawTransaction;
+
+      if (decodedTxn.signers) {
+        this._transaction.signers = decodedTxn.signers;
+      }
+      if (decodedTxn.signedBy) {
+        this._transaction.signedBy = decodedTxn.signedBy;
+      }
     }
     this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
     this._isFlatFee = true;
