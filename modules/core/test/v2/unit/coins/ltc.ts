@@ -1,7 +1,6 @@
 import * as should from 'should';
 import * as _ from 'lodash';
 const bitcoin = require('@bitgo/utxo-lib');
-const prova = require('prova-lib');
 const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
@@ -416,13 +415,13 @@ describe('LTC:', function() {
       isFirstSignatureValid.should.equal(true);
       isSecondSignatureValid.should.equal(true);
 
-      const userNode = prova.HDNode.fromBase58(userKeychain.pub);
-      const backupNode = prova.HDNode.fromBase58(backupKeychain.pub);
-      const bitgoNode = prova.HDNode.fromBase58(bitgoKeychain.pub);
+      const userNode = bitcoin.HDNode.fromBase58(userKeychain.pub);
+      const backupNode = bitcoin.HDNode.fromBase58(backupKeychain.pub);
+      const bitgoNode = bitcoin.HDNode.fromBase58(bitgoKeychain.pub);
       const derivationPath = `m/0/0/${prebuild.txInfo.unspents[0].chain}/${prebuild.txInfo.unspents[0].index}`;
-      const userHex = userNode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer().toString('hex');
-      const backupHex = backupNode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer().toString('hex');
-      const bitgoHex = bitgoNode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer().toString('hex');
+      const userHex = userNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
+      const backupHex = backupNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
+      const bitgoHex = bitgoNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
 
       const isUserSignatureValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value, { publicKey: userHex });
       const isBackupSignatureValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value, { publicKey: backupHex });
@@ -444,11 +443,11 @@ describe('LTC:', function() {
       isFirstSignatureValid.should.equal(true);
       isSecondSignatureValid.should.equal(false);
 
-      const userNode = prova.HDNode.fromBase58(userKeychain.pub);
-      const backupNode = prova.HDNode.fromBase58(backupKeychain.pub);
+      const userNode = bitcoin.HDNode.fromBase58(userKeychain.pub);
+      const backupNode = bitcoin.HDNode.fromBase58(backupKeychain.pub);
       const derivationPath = `m/0/0/${prebuild.txInfo.unspents[0].chain}/${prebuild.txInfo.unspents[0].index}`;
-      const userHex = userNode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer().toString('hex');
-      const backupHex = backupNode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer().toString('hex');
+      const userHex = userNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
+      const backupHex = backupNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
 
       const isUserSignatureValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value, { publicKey: userHex });
       const isBackupSignatureValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value, { publicKey: backupHex });
