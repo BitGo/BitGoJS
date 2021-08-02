@@ -221,4 +221,12 @@ describe('utils', () => {
 
     should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: Invalid base32 characters');
   });
+
+  it('generateAccount should of create a valid addres and valid secretKey', () => {
+    const account = Algo.algoUtils.generateAccount();
+    const isValid = Algo.algoUtils.isValidAddress(account.addr);
+    const isValidSecretKey = Algo.algoUtils.isValidPrivateKey(Buffer.from(account.sk).toString('hex'));
+    should.equal(isValid, true);
+    should.equal(isValidSecretKey, true);
+  });
 });
