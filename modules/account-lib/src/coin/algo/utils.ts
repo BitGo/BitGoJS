@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import algosdk from 'algosdk';
 import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
+import * as nacl from 'tweetnacl';
 import base32 from 'hi-base32';
 import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
@@ -13,6 +14,10 @@ import { KeyPair } from './keyPair';
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
 const ALGORAND_MINIMUM_FEE = 1000;
+const ALGORAND_SEED_LENGTH = 58;
+const ALGORAND_SEED_BYTE_LENGTH = 36;
+const ALGORAND_NACL_SEED_BYTES_LENGTH = 32;
+const ALGORAND_MALFORMED_SEED_ERROR = new Error("seed seems to be malformed");
 
 /**
  * Determines whether the string is a composed of hex chars only.
@@ -77,6 +82,58 @@ export class Utils implements BaseUtils {
   toUint8Array(str: string): Uint8Array {
     return hex.decode(str);
   }
+
+  /**
+   * Determines whether a seed is valid.
+   *
+   * @param {string} seed - the seed to be validated
+   * @returns {boolean} - true if the seed is valid
+   */
+   isValidSeed(seed: string): boolean {
+    if (typeof seed !== "string") return false;
+    if (seed.length !== ALGORAND_SEED_LENGTH) return false; // Try to decode
+
+    let decoded: any = {};
+    try {
+      decoded = this.decodeSeed(seed);
+    } catch (e) {
+      return false;
+    }
+
+    let checksum = crypto.createHash('SHA512-256').update(decoded.seed).digest().slice(ALGORAND_NACL_SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, ALGORAND_NACL_SEED_BYTES_LENGTH);
+    return _.isEqual(decoded.checksum, checksum);
+  }
+
+  /**
+   * Decodes a seed
+   *
+   * @param {string} seed - the seed to decode
+   * @returns {object} - a decoded seed that contains the seed and a checksum
+   */
+  protected decodeSeed(seed: string) {
+    if (typeof seed !== "string") throw ALGORAND_MALFORMED_SEED_ERROR; // try to decode
+
+    const decoded = base32.decode.asBytes(seed); // Sanity check
+
+    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw ALGORAND_MALFORMED_SEED_ERROR;
+    return {
+      seed: new Uint8Array(decoded.slice(0, ALGORAND_SEED_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)),
+      checksum: new Uint8Array(decoded.slice(ALGORAND_NACL_SEED_BYTES_LENGTH, ALGORAND_SEED_BYTE_LENGTH)),
+    }
+  }
+
+  /**
+ * Verifies if signature for message is valid.
+ *
+ * @param pub {Uint8Array} public key
+ * @param message {Uint8Array} signed message
+ * @param signature {Buffer} signature to verify
+ * @returns {Boolean} true if signature is valid.
+ */
+   verifySignature(message: Uint8Array, signature: Buffer, pub: Uint8Array): boolean {
+    return nacl.sign.detached.verify(message, signature, pub);
+  }
+
 
   /**
    * Transforms an Ed25519 public key into an algorand address.
