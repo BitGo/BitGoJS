@@ -898,7 +898,6 @@ exports.signTransaction = function (params) {
   let rootExtKey;
   if (keychain) {
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
-    rootExtKeyPath = hdPath(rootExtKey);
   }
 
   const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
@@ -920,13 +919,13 @@ exports.signTransaction = function (params) {
     }
 
     const chainPath = currentUnspent.chainPath;
-    if (rootExtKeyPath) {
+    if (rootExtKey) {
       let { walletSubPath = '/0/0' } = keychain;
       if (walletSubPath === 'm') {
         walletSubPath = ''
       }
       const path = keychain.path + walletSubPath + chainPath;
-      privKey = rootExtKeyPath.deriveKey(path);
+      privKey = rootExtKey.derivePath(path).keyPair;
     }
 
     privKey.network = network;
