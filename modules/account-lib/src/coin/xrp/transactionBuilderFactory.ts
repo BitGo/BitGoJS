@@ -1,6 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotSupported } from '../baseCoin/errors';
+import RippleBinaryCodec from 'ripple-binary-codec';
+import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
@@ -11,32 +13,33 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     super(_coinConfig);
   }
 
-  /** @inheritdoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  from(rawTxn: string): TransactionBuilder {
+    const builder = this.getBuilder(rawTxn);
+    builder.from(rawTxn);
+
+    return builder;
+  }
+  
+  private getBuilder(rawTxn: string | Uint8Array): TransactionBuilder {
+    const decodedXrpTrx = RippleBinaryCodec.decode(rawTxn) as rippleTypes.TransactionJSON;
+    switch (decodedXrpTrx.TransactionType) {
+      case 'Payment':
+        return this.getTransferBuilder()
+      case 'AccountSet':
+        return this.getWalletInitializationBuilder()
+      default:
+        throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
+
   }
 
   /** @inheritdoc */
   getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+    return new WalletInitializationBuilder(this._coinConfig);
   }
 
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
-  }
-
-  /**
-   * Initialize the builder with the given transaction
-   *
-   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @param {TransactionBuilder} builder - the builder to be initialized
-   * @returns {TransactionBuilder} the builder initialized
-   */
-  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    if (tx) {
-      builder.initBuilder(tx);
-    }
-    return builder;
+    return new TransferBuilder(this._coinConfig);
   }
 }
