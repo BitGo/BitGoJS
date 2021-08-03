@@ -408,7 +408,7 @@ export class Wallets {
       }).call(this);
 
       const backupKeychainPromise = co(function* () {
-        if (params.backupXpubProvider || self.baseCoin.getFamily() === 'rmg') {
+        if (params.backupXpubProvider) {
           // If requested, use a KRS or backup key provider
           return self.baseCoin.keychains().createBackup({
             provider: params.backupXpubProvider || 'defaultRMGBackupProvider',

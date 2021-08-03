@@ -30,7 +30,7 @@ import * as errors from './errors';
 export const Environments = _.cloneDeep(common.Environments);
 export const Errors = errors;
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
-export { V1Network, V1RmgNetwork } from './v2/types';
+export { V1Network } from './v2/types';
 export { EnvironmentName } from './v2/environments';
 export * from './v2';
 

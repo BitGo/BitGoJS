@@ -37,12 +37,6 @@ describe('V2 Base Coin:', function() {
       feeInfo.should.have.properties('feeByBlockTarget', 'confidence', 'multiplier', 'cpfpFeePerKb');
     }));
 
-    it('should fetch fee info for trmg', co(function *() {
-      const coin = bitgo.coin('trmg');
-      const feeInfo = yield testUtxoFeeEstimate(coin);
-      feeInfo.should.have.properties('confidence', 'multiplier');
-    }));
-
     it('should fetch fee info for tltc', co(function *() {
       const coin = bitgo.coin('tltc');
       yield testUtxoFeeEstimate(coin);
