@@ -282,7 +282,7 @@ export const coins = CoinMap.fromCoins([
   erc20('dxgt', 'Dacxi Gold Token', 18, '0x51be9f12dd5095c5b1acf90e7e0aa4aa8023218b', UnderlyingAsset.DXGT),
   erc20('dxpt', 'Dacxi Platinum Token', 18, '0x155ab266b9226525cfd5b1e7d8a80bab65b6b609', UnderlyingAsset.DXPT),
   erc20('dxst', 'Dacxi Silver Token', 18, '0xd71bbf61079d3ea7ea7890356850d4579be304af', UnderlyingAsset.DXST),
-  erc20('dyns', 'DYNS Token', 18, '0x65167e381388bc803aa2f22cd99d093068e98007', UnderlyingAsset.DYN),
+  erc20('dyns', 'DYNS Token', 18, '0x65167e381388bc803aa2f22cd99d093068e98007', UnderlyingAsset.DYNS),
   erc20('easy', 'Easy', 18, '0x913d8adf7ce6986a8cbfee5a54725d9eea4f0729', UnderlyingAsset.EASY),
   erc20('echt', 'eChat', 0, '0x1aadead0d2e0b6d888ae1d73b11db65a8447634a', UnderlyingAsset.ECHT),
   erc20('edison', 'Edison', 8, '0xed58569d516a5bd37427ebd592a6619c0c581953', UnderlyingAsset.EDISON),
