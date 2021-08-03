@@ -1,6 +1,8 @@
+import { RippleAPI } from 'ripple-lib';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 
+export const initApi = (): RippleAPI => new RippleAPI({});
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
@@ -32,3 +34,5 @@ export class Utils implements BaseUtils {
     throw new NotImplementedError('method not implemented');
   }
 }
+
+export default new Utils();
