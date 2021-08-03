@@ -921,8 +921,11 @@ exports.signTransaction = function (params) {
 
     const chainPath = currentUnspent.chainPath;
     if (rootExtKeyPath) {
-      const subPath = keychain.walletSubPath || '/0/0';
-      const path = keychain.path + subPath + chainPath;
+      let { walletSubPath = '/0/0' } = keychain;
+      if (walletSubPath === 'm') {
+        walletSubPath = ''
+      }
+      const path = keychain.path + walletSubPath + chainPath;
       privKey = rootExtKeyPath.deriveKey(path);
     }
 
