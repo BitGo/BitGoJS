@@ -229,4 +229,127 @@ describe('utils', () => {
     should.equal(isValid, true);
     should.equal(isValidSecretKey, true);
   });
+
+  it('should validate a valid seed', () => {
+    const isValid = Algo.algoUtils.isValidSeed('O52I55AZNYPG266JBZSG33G2RKDKFM7UVEBVWJ25UES7MBGP6BQW6467XU');
+    should.equal(isValid, true);
+  });
+
+  it('should not validate an invalid seed', () => {
+    const isValid = Algo.algoUtils.isValidSeed('O52I55AZNYPG266JBZSG33G2RKDKFM7UVEBVWJ25UES7MBGP6BQW6467X$');
+    should.equal(isValid, false);
+  });
+
+  it('should not validate a seed with invalid length', () => {
+    const isValid = Algo.algoUtils.isValidSeed('O52I55AZNYPG266JBZSG33G2RKDKFM7UVEBVWJ25UES7MBGP6BQW6467XUDSFD');
+    should.equal(isValid, false);
+  });
+
+  it('should verify a valid signature', () => {
+    const pub = Buffer.from([
+      23, 105, 203, 242, 76, 245, 135, 179, 225,
+      133, 67, 83, 51, 23, 208, 60, 11, 107, 219,
+      137, 211, 13, 249, 236, 176, 47, 118, 91,
+      96, 208, 98, 255
+    ]);
+    const msg = Buffer.from([
+      85, 71, 70, 77, 53, 53, 76, 51, 82, 68,
+      78, 78, 53, 81, 88, 87, 50, 68, 88, 51,
+      90, 76, 80, 50, 89, 78, 73, 82, 71, 72,
+      87, 50, 85, 73, 69, 89, 84, 54, 84, 85,
+      75, 71, 79, 68, 68, 67, 72, 66, 50, 79,
+      77, 78, 81, 70, 87, 55, 55, 52
+    ]);
+    const sign = Buffer.from([
+      47, 113, 122, 6, 171, 235, 80, 105, 32, 237,
+      94, 174, 5, 30, 228, 73, 5, 211, 245, 51, 187,
+      252, 124, 109, 241, 174, 203, 34, 132, 41, 101,
+      197, 42, 134, 251, 76, 91, 92, 118, 112, 235, 111,
+      208, 234, 163, 203, 149, 160, 233, 95, 210, 253,
+      249, 106, 7, 245, 2, 222, 154, 180, 198, 152, 32, 3,
+    ]);
+    const isValid = Algo.algoUtils.verifySignature(msg, sign, pub);
+    should.equal(isValid, true);
+  });
+
+  it('should not verify a invalid signature', () => {
+    const pub = Buffer.from([
+      23, 105, 203, 242, 76, 245, 135, 179, 225,
+      133, 67, 83, 51, 23, 208, 60, 11, 107, 219,
+      137, 211, 13, 249, 236, 176, 47, 118, 91,
+      96, 208, 98, 255
+    ]);
+    const msg = Buffer.from([
+      85, 71, 70, 77, 53, 53, 76, 51, 82, 68,
+      78, 78, 53, 81, 88, 87, 50, 68, 88, 51,
+      90, 76, 80, 50, 89, 78, 73, 82, 71, 72,
+      87, 50, 85, 73, 69, 89, 84, 54, 84, 85,
+      75, 71, 79, 68, 68, 67, 72, 66, 50, 79,
+      77, 78, 81, 70, 87, 55, 55, 52
+    ]);
+    const invalidSign = Buffer.from([
+      47, 113, 122, 6, 171, 235, 80, 105, 32, 237,
+      94, 174, 5, 30, 228, 73, 5, 211, 245, 51, 187,
+      252, 124, 109, 241, 174, 203, 34, 132, 41, 101,
+      197, 42, 134, 251, 76, 91, 92, 118, 112, 235, 111,
+      208, 234, 163, 203, 149, 160, 233, 95, 210, 253,
+      249, 106, 7, 245, 2, 222, 154, 180, 198, 150, 45, 6
+    ]);
+    const isValid = Algo.algoUtils.verifySignature(msg, invalidSign, pub);
+    should.equal(isValid, false);
+  });
+
+  it('should not verify a valid signature with invalid public key', () => {
+    const invalidPub = Buffer.from([
+      23, 105, 203, 242, 76, 245, 135, 179, 225,
+      133, 67, 83, 51, 23, 208, 60, 11, 107, 219,
+      137, 211, 13, 249, 236, 176, 47, 118, 91,
+      96, 200, 90, 50
+    ]);
+    const msg = Buffer.from([
+      85, 71, 70, 77, 53, 53, 76, 51, 82, 68,
+      78, 78, 53, 81, 88, 87, 50, 68, 88, 51,
+      90, 76, 80, 50, 89, 78, 73, 82, 71, 72,
+      87, 50, 85, 73, 69, 89, 84, 54, 84, 85,
+      75, 71, 79, 68, 68, 67, 72, 66, 50, 79,
+      77, 78, 81, 70, 87, 55, 55, 52
+    ]);
+    const sign = Buffer.from([
+      47, 113, 122, 6, 171, 235, 80, 105, 32, 237,
+      94, 174, 5, 30, 228, 73, 5, 211, 245, 51, 187,
+      252, 124, 109, 241, 174, 203, 34, 132, 41, 101,
+      197, 42, 134, 251, 76, 91, 92, 118, 112, 235, 111,
+      208, 234, 163, 203, 149, 160, 233, 95, 210, 253,
+      249, 106, 7, 245, 2, 222, 154, 180, 198, 152, 32, 3,
+    ]);
+    const isValid = Algo.algoUtils.verifySignature(msg, sign, invalidPub);
+    should.equal(isValid, false);
+  });
+
+  it('should verify a valid signature with invalid message', () => {
+    const pub = Buffer.from([
+      23, 105, 203, 242, 76, 245, 135, 179, 225,
+      133, 67, 83, 51, 23, 208, 60, 11, 107, 219,
+      137, 211, 13, 249, 236, 176, 47, 118, 91,
+      96, 208, 98, 255
+    ]);
+    const invalidMsg = Buffer.from([
+      85, 71, 70, 77, 53, 53, 76, 51, 82, 68,
+      78, 78, 53, 81, 88, 87, 50, 68, 88, 51,
+      90, 76, 80, 50, 89, 78, 73, 82, 71, 72,
+      87, 50, 85, 73, 69, 89, 84, 54, 84, 85,
+      75, 71, 79, 68, 68, 67, 72, 66, 50, 79,
+      77, 78, 81, 70, 87, 50, 50, 50
+    ]);
+    const sign = Buffer.from([
+      47, 113, 122, 6, 171, 235, 80, 105, 32, 237,
+      94, 174, 5, 30, 228, 73, 5, 211, 245, 51, 187,
+      252, 124, 109, 241, 174, 203, 34, 132, 41, 101,
+      197, 42, 134, 251, 76, 91, 92, 118, 112, 235, 111,
+      208, 234, 163, 203, 149, 160, 233, 95, 210, 253,
+      249, 106, 7, 245, 2, 222, 154, 180, 198, 152, 32, 3,
+    ]);
+    const isValid = Algo.algoUtils.verifySignature(invalidMsg, sign, pub);
+    should.equal(isValid, false);
+  });
 });
