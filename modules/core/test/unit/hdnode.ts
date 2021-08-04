@@ -82,7 +82,7 @@ describe('HDNode', function() {
         }
       });
 
-      it('should work for an emptry string as key path', function() {
+      it('should work for an empty string as key path', function() {
         const key =  deriveKeyByPath(baseKey, '');
         key.getAddress().should.equal(baseKey.getAddress());
       });

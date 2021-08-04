@@ -1,0 +1,75 @@
+/**
+ * @prettier
+ */
+import 'should';
+import * as bip32 from 'bip32';
+import { fromLegacyPath } from '../../src/bip32path';
+import { getSeed } from '../lib/keys';
+import { Derivable, hdPath } from '../../src/bitcoin';
+
+const utxolib = require('@bitgo/utxo-lib');
+
+describe('bip32util', function () {
+  const seed = getSeed('bip32test');
+
+  const testKeyBip32Master = bip32.fromSeed(seed);
+  const testKeyBip32Child = testKeyBip32Master.derivePath('m/0');
+
+  const testKeyHDPathMaster = utxolib.HDNode.fromSeedBuffer(seed);
+  const testKeyHDPathChild = testKeyHDPathMaster.derivePath('m/0');
+
+  /**
+   * Asserts that all inputs convert to the same reference path.
+   * Asserts that
+   *    refBIP32.derivePath(refPath) === refHDPath.derive(fromLegacyPath(p))
+   *
+   * @param inputs - array of paths that are equivalent. The first element is the reference path.
+   * @param refBIP32 - bip32 node
+   * @param refHDPath - `hdPath()` helper node
+   */
+  function runTest(inputs: string[], refBIP32: bip32.BIP32Interface, refHDPath: Derivable) {
+    if (!refHDPath) {
+      throw new Error(`invalid state`);
+    }
+
+    if (inputs.length === 0) {
+      throw new Error(`invalid argument`);
+    }
+
+    const refPath = inputs[0];
+
+    fromLegacyPath(refPath).should.eql(refPath);
+
+    inputs.forEach((p) => {
+      // console.log(`legacyPath=${p} path=${refPath}`);
+      fromLegacyPath(p).should.eql(refPath);
+      refBIP32
+        .derivePath(refPath)
+        .toBase58() //
+        .should.eql(refHDPath.derive(p).toBase58());
+    });
+  }
+
+  function runTestDerivePublic(inputs: string[]) {
+    runTest(inputs, testKeyBip32Master.neutered(), hdPath(testKeyHDPathMaster.neutered()));
+    runTest(inputs, testKeyBip32Child.neutered(), hdPath(testKeyHDPathChild.neutered()));
+  }
+
+  function runTestDerivePrivate(inputs: string[]) {
+    runTest(inputs, testKeyBip32Master, hdPath(testKeyHDPathMaster));
+    runTest(inputs, testKeyBip32Child, hdPath(testKeyHDPathChild));
+  }
+
+  it('fromLegacyPath', function () {
+    // public derivation is much too tolerant of invalid segments
+    runTestDerivePublic(['0', '/0', '////m/0', '0m', 'lol', 'm/0', 'm/m', 'm/lol', '0x10']);
+    runTestDerivePublic(['0/0', '/0/0', '0////0', '0/m', '/0/m', '0/0m']);
+    runTestDerivePublic(['0/0/0', '/0//0//0', 'm/m/m/m', '/0/0m/0m']);
+    runTestDerivePublic(['1', '1lol']);
+
+    // private derivation follows a somewhat different codepath that doesn't attempt to cast
+    // every path component to base10
+    runTestDerivePrivate(["0'", "m/0'", "//m//0'"]);
+    runTestDerivePrivate(["1'", "m/1'", "//m//1'"]);
+  });
+});
