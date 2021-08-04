@@ -1,12 +1,43 @@
-import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import BigNumber from 'bignumber.js';
+import algosdk from 'algosdk';
+import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { isValidEd25519Seed } from '../../utils/crypto';
 import { Transaction } from './transaction';
+import { AddressValidationError, InsufficientFeeError } from './errors';
+import { KeyPair } from './keyPair';
+import { BaseTransactionSchema } from './txnSchema';
+import Utils from './utils';
+
+const MIN_FEE = 1000; // in microalgos
+
+const MAINNET_GENESIS_ID = 'mainnet-v1.0';
+const MAINNET_GENESIS_HASH = 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=';
+const TESTNET_GENESIS_ID = 'testnet-v1.0';
+const TESTNET_GENESIS_HASH = 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=';
+const BETANET_GENESIS_ID = 'betanet-v1.0';
+const BETANET_GENESIS_HASH = 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
+  protected _transaction: Transaction;
+  protected _keyPairs: KeyPair[];
+
+  // the fee is specified as a number here instead of a big number because
+  // the algosdk also specifies it as a number.
+  protected _fee: number;
+  protected _isFlatFee: boolean;
+
+  protected _sender: string;
+  protected _genesisHash: string;
+  protected _genesisId: string;
+  protected _firstRound: number;
+  protected _lastRound: number;
+  protected _lease?: Uint8Array;
+  protected _note?: Uint8Array;
+  protected _reKeyTo?: string;
+  protected _suggestedParams: algosdk.SuggestedParams;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -230,31 +261,203 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateAddress({ address }: BaseAddress): void {
-    throw new NotImplementedError('validateAddress not implemented');
+    if (!algosdk.isValidAddress(address)) {
+      throw new AddressValidationError(address);
+    }
   }
 
   /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.transaction.setAlgoTransaction(this.buildAlgoTxn());
+    this.transaction.setTransactionType(this.transactionType);
+
+    this.transaction.sign(this._keyPairs);
+    this._transaction.loadInputsAndOutputs();
+    return this._transaction;
+  }
+
+  /**
+   * Builds the algorand transaction.
+   */
+  protected abstract buildAlgoTxn(): algosdk.Transaction;
+
+  /**
+   * The transaction type.
+   */
+  protected abstract get transactionType(): TransactionType;
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
+    const decodedTxn = Utils.decodeAlgoTxn(rawTransaction);
+    const algosdkTxn = decodedTxn.txn;
+
+    if (decodedTxn.signed) {
+      this._transaction.signedTransaction =
+        typeof rawTransaction === 'string' ? Utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
+    }
+    this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
+    this._isFlatFee = true;
+    this._fee = algosdkTxn.fee;
+    this._genesisHash = algosdkTxn.genesisHash.toString('base64');
+    this._genesisId = algosdkTxn.genesisID;
+    this._firstRound = algosdkTxn.firstRound;
+    this._lastRound = algosdkTxn.lastRound;
+    this._lease = algosdkTxn.lease;
+    this._note = algosdkTxn.note;
+    this._reKeyTo = algosdkTxn.reKeyTo ? algosdk.encodeAddress(algosdkTxn.reKeyTo.publicKey) : undefined;
+
+    this._transaction.setAlgoTransaction(algosdkTxn);
+
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    const keypair = new KeyPair({ prv: key });
+    this._keyPairs.push(keypair);
+
+    return this._transaction;
+  }
+
+  numberOfSigners(num: number): this {
+    this._transaction.setNumberOfRequiredSigners(num);
+
+    return this;
+  }
+
+  setSigners(addrs: string | string[]): this {
+    const signers = addrs instanceof Array ? addrs : [addrs];
+    signers.forEach((address) => this.validateAddress({ address: address }));
+    this._transaction.signers = signers;
+    return this;
+  }
+
+  /**
+   * Sets the number of signers required to sign the transaction.
+   *
+   * The number of signers cannot be set to a negative value.
+   *
+   * @param {number} n The number of signers.
+   * @returns {TransactionBuilder} This transaction builder.
+   */
+  numberOfRequiredSigners(n: number): this {
+    if (n < 0) {
+      throw new BuildTransactionError(`Number of signers: '${n}' cannot be negative`);
+    }
+
+    this._transaction.setNumberOfRequiredSigners(n);
+
+    return this;
+  }
+
+  /**
+   * @inheritdoc
+   * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
+   */
   validateKey({ key }: BaseKey): void {
-    throw new NotImplementedError('validateKey not implemented');
+    const isValidPrivateKeyFromBytes = Buffer.isBuffer(key) && isValidEd25519Seed(key.toString('hex'));
+    const isValidPrivateKeyFromHex = isValidEd25519Seed(key);
+    const isValidPrivateKeyFromBase64 = isValidEd25519Seed(Buffer.from(key, 'base64').toString('hex'));
+
+    if (!isValidPrivateKeyFromBytes && !isValidPrivateKeyFromHex && !isValidPrivateKeyFromBase64) {
+      throw new BuildTransactionError(`Key validation failed`);
+    }
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: any): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+  validateRawTransaction(rawTransaction: Uint8Array | string): void {
+    const decodedTxn = Utils.decodeAlgoTxn(rawTransaction);
+    const algoTxn = decodedTxn.txn;
+
+    const validationResult = BaseTransactionSchema.validate({
+      fee: algoTxn?.fee,
+      firstRound: algoTxn?.firstRound,
+      genesisHash: algoTxn?.genesisHash.toString('base64'),
+      lastRound: algoTxn?.lastRound,
+      sender: algoTxn ? algosdk.encodeAddress(algoTxn.from.publicKey) : undefined,
+      genesisId: algoTxn?.genesisID,
+      lease: algoTxn?.lease,
+      note: algoTxn?.note,
+      reKeyTo: algoTxn?.reKeyTo ? algosdk.encodeAddress(algoTxn.reKeyTo.publicKey) : undefined,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
+  validateTransaction(_: Transaction): void {
+    this.validateBaseFields(
+      this._fee,
+      this._firstRound,
+      this._genesisHash,
+      this._lastRound,
+      this._sender,
+      this._genesisId,
+      this._lease,
+      this._note,
+      this._reKeyTo,
+    );
   }
 
+  private validateBaseFields(
+    fee: number,
+    firstRound: number,
+    genesisHash: string,
+    lastRound: number,
+    sender: string,
+    genesisId: string,
+    lease: Uint8Array | undefined,
+    note: Uint8Array | undefined,
+    reKeyTo: string | undefined,
+  ): void {
+    const validationResult = BaseTransactionSchema.validate({
+      fee,
+      firstRound,
+      genesisHash,
+      lastRound,
+      sender,
+      genesisId,
+      lease,
+      note,
+      reKeyTo,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
-    throw new NotImplementedError('validateValue not implemented');
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
   }
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  /**
+   * Convenience method to retrieve the algosdk suggested parameters.
+   *
+   * @returns {algosdk.SuggestedParams} The algosdk suggested parameters.
+   */
+  protected get suggestedParams(): algosdk.SuggestedParams {
+    return {
+      flatFee: this._isFlatFee,
+      fee: this._fee,
+      firstRound: this._firstRound,
+      lastRound: this._lastRound,
+      genesisID: this._genesisId,
+      genesisHash: this._genesisHash,
+    };
   }
 }
