@@ -5,21 +5,21 @@ const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
 
-describe('LTC:', function () {
+describe('LTC:', function() {
   let bitgo;
   let ltc;
   let tltc;
 
-  before(function () {
+  before(function() {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     ltc = bitgo.coin('ltc');
     tltc = bitgo.coin('tltc');
   });
 
-  describe('Canonicalize address', function () {
+  describe('Canonicalize address', function() {
 
-    it('base58 mainnet address', function () {
+    it('base58 mainnet address', function() {
       const standardBase58Address = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
       const litecoinBase58Address = 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE';
 
@@ -36,7 +36,7 @@ describe('LTC:', function () {
       upgradedAddress.should.equal(litecoinBase58Address);
     });
 
-    it('base58 testnet address', function () {
+    it('base58 testnet address', function() {
       const standardBase58Address = '2MsFGJvxH1kCoRp3XEYvKduAjY6eYz9PJHz';
       const litecoinBase58Address = 'QLc2RwpX2rFtZzoZrexLibcAgV6Nsg74Jn';
 
@@ -53,7 +53,7 @@ describe('LTC:', function () {
       upgradedAddress.should.equal(litecoinBase58Address);
     });
 
-    it('bech32 mainnet address', function () {
+    it('lower case bech32 mainnet address', function() {
       // canonicalAddress will only lower case bech32 addresses - they are already
       // in canonical format, and the script hash version is not relevant
       const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
@@ -63,20 +63,34 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('upper case bech32 mainnet address', function () {
+    it('upper case bech32 mainnet address should fail', function() {
       // bech32 addresses which are all upper case or all lower case are potentially valid,
       // but mixed case is always invalid. Canonical bech32 addresses should be all lower case however
       const bech32Address = 'LTC1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
-      const newAddress = ltc.canonicalAddress(bech32Address);
-      newAddress.should.equal(bech32Address.toLowerCase());
+      try {
+        ltc.canonicalAddress(bech32Address);
+        throw 'Upper case bech32 addresses are not valid';
+      } catch (e) {
+        e.message.should.equal('invalid address');
+      }
     });
 
-    it('bech32 testnet address', function () {
+    it('lower case bech32 testnet address', function() {
       const bech32Address = 'tltc1qu78xur5xnq6fjy83amy0qcjfau8m367defyhms';
       const version1Address = tltc.canonicalAddress(bech32Address, 1);
       version1Address.should.equal(bech32Address);
       const version2Address = tltc.canonicalAddress(bech32Address, 2);
       version2Address.should.equal(bech32Address);
+    });
+
+    it('upper case bech32 testnet address should fail', function () {
+      const bech32Address = 'TLTC1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
+      try {
+        tltc.canonicalAddress(bech32Address);
+        throw 'Upper case bech32 addresses are not valid';
+      } catch (e) {
+        e.message.should.equal('invalid address');
+      }
     });
   });
 
@@ -96,9 +110,9 @@ describe('LTC:', function () {
       ltc.isValidAddress('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7').should.be.true();
       tltc.isValidAddress('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht').should.be.true();
 
-      // all upper case is also valid
-      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.true();
-      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.true();
+      // all upper case is invalid
+      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.false();
+      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.false();
 
       // mixed case is invalid
       ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYg7').should.be.false();
@@ -115,16 +129,16 @@ describe('LTC:', function () {
     const keychains = [
       {
         pub: 'xpub661MyMwAqRbcGiQhVk1J7cD1YodF9tc5Y1B8vpTjjB1pcB1J1m1QX8fMtYP2sYqFmW6J2ra69tNoARKjvTGo9cGUrbPbJdjwrSzGGzPzWWS',
-        prv: 'xprv9s21ZrQH143K4ELEPiUHkUGGzmnkkRtEAnFY8S48AqUqjNg9UDh9yLLt3FcfATyCjbsMB9JCGHAD8MeBTAK1P7trFppkoswu5ZAsHYASfbk',
+        prv: 'xprv9s21ZrQH143K4ELEPiUHkUGGzmnkkRtEAnFY8S48AqUqjNg9UDh9yLLt3FcfATyCjbsMB9JCGHAD8MeBTAK1P7trFppkoswu5ZAsHYASfbk'
       },
       {
         pub: 'xpub661MyMwAqRbcFzLXuganogQvd7MrefQQqCcJP2ZDumnCdQecf5cw1P1nD5qBz8SNS1yCLSC9VqpNUWnQU3V6qmnPt2r21oXhicQFzPA6Lby',
-        prv: 'xprv9s21ZrQH143K3WG4of3nSYUC55XNFCgZTyghae9cMSFDkcKU7YJgTahJMpdTY9CjCcjgSo2TJ635uUVx176BufUMBFpieKYVJD9J3VvrGRm',
+        prv: 'xprv9s21ZrQH143K3WG4of3nSYUC55XNFCgZTyghae9cMSFDkcKU7YJgTahJMpdTY9CjCcjgSo2TJ635uUVx176BufUMBFpieKYVJD9J3VvrGRm'
       },
       {
         pub: 'xpub661MyMwAqRbcFHpwWrzPB61U2CgBmdD21WNVM1JKUn9rEExkoGE4yafUVFbPSd78vdX8tWcEUQWaALFkU9fUbUM4Cc49DKEJSCYGRnbzCym',
-        prv: 'xprv9s21ZrQH143K2okUQqTNox4jUAqhNAVAeHStYcthvScsMSdcFiupRnLzdxzfJithak5Zs92FQJeeJ9Jiya63KfUNxawuMZDCp2cGT9cdMKs',
-      },
+        prv: 'xprv9s21ZrQH143K2okUQqTNox4jUAqhNAVAeHStYcthvScsMSdcFiupRnLzdxzfJithak5Zs92FQJeeJ9Jiya63KfUNxawuMZDCp2cGT9cdMKs'
+      }
     ];
 
     it('should generate p2sh address', () => {
@@ -226,7 +240,7 @@ describe('LTC:', function () {
         threshold: 3,
         addressType,
         chain,
-        index: 756,
+        index: 756
       });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
@@ -253,17 +267,17 @@ describe('LTC:', function () {
       prv: 'xprv9s21ZrQH143K2eBAnP4BbBvdEAEN76jTtvgK5qfmwqNZVR9yr2J4BwkuYRignCKge76RuTBRwB5kzLUKyNzsPxFGmjUWc1bk3jQyJjPNfiQ',
       pub: 'xpub661MyMwAqRbcF8FdtQbBxKsMnC4rWZTKG9butE5PWAuYNDV8PZcJjk5PPiefRF3o1Wc89nTBjXucS7gobapEensmLQPLEMfw6CHoEKJ3cez',
       rawPub: '03a46e1545d607843bdced8766d5acc9ef7015842911488c56608f2589f384928c',
-      rawPrv: 'aa2f1f4a63f0cb1ef71d497b1630965efb9ca863684b362dcb0dfb818d1810b7',
+      rawPrv: 'aa2f1f4a63f0cb1ef71d497b1630965efb9ca863684b362dcb0dfb818d1810b7'
     };
     const backupKeychain = {
       prv: 'xprv9s21ZrQH143K2WWmrYupmGTCQdtcdZYyhvkCxkEvXX11aDYMrnrW4UCxPHHcXr2a3vqnUpg7PzcmE9qeTaRmMocVmHhqchsCmGca14dJL9x',
       pub: 'xpub661MyMwAqRbcEzbExaSq8QPvxfj732Gq59fom8eY5rXzT1sWQLAkcGXSEadoMZ94XQeUawnV1NtiRce59qZMJmwZ69LbbdGfr9D178ZQn8A',
       rawPub: '03d94ed545e6f9f0d5e0fc7aa88e4dbccc4b61daa680ab44b38a8a1a9477808b31',
-      rawPrv: 'a8170fc6e98084c6514f98f7aca0bd5ca025e82470c75270502a0dc634770b07',
+      rawPrv: 'a8170fc6e98084c6514f98f7aca0bd5ca025e82470c75270502a0dc634770b07'
     };
 
     const bitgoKeychain = {
-      pub: 'xpub661MyMwAqRbcH4GuguMES7cpmzp2ZaAd74L8FabMdcfxEfjdNktHNQtaBvWyju5WxRPEnuoKAaPskkK9UrX5eJ8GnnrCmrd2TWyiKKP1bhp',
+      pub: 'xpub661MyMwAqRbcH4GuguMES7cpmzp2ZaAd74L8FabMdcfxEfjdNktHNQtaBvWyju5WxRPEnuoKAaPskkK9UrX5eJ8GnnrCmrd2TWyiKKP1bhp'
     };
 
     const prebuild = {
@@ -280,21 +294,21 @@ describe('LTC:', function () {
             witnessScript: '522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae',
             id: '83b163ec19b007bc1452aae9f1d25a6a03c896fd76fc67f9afb17c388dff26ad:1',
             address: 'QYdqqKeWRZSU1pdZX8obV9CmQtqU8LgVqj',
-            value: 400000000,
-          },
+            value: 400000000
+          }
         ],
         changeAddresses: [
-          'QNPi7N8wS2JbxeygxZJwUUKefNExFekA15',
-        ],
+          'QNPi7N8wS2JbxeygxZJwUUKefNExFekA15'
+        ]
       },
       feeInfo: {
         size: 373,
         fee: 100000,
         feeRate: 100000,
         payGoFee: 0,
-        payGoFeeString: '0',
+        payGoFeeString: '0'
       },
-      walletId: '5a822e7d3df39bcf07121980decdc82c',
+      walletId: '5a822e7d3df39bcf07121980decdc82c'
     };
 
     let basecoin;
@@ -310,9 +324,9 @@ describe('LTC:', function () {
             permissions: [
               'admin',
               'view',
-              'spend',
-            ],
-          },
+              'spend'
+            ]
+          }
         ],
         coin: 'tltc',
         label: 'Litecoin Segwit Test Wallet',
@@ -321,10 +335,10 @@ describe('LTC:', function () {
         keys: [
           '5a822e7db38993f2063dcddc8bcd1936',
           '5a822e7d033389d007fb7369a2ac298f',
-          '5a822e7d524eb4d206a845914ac79f24',
+          '5a822e7d524eb4d206a845914ac79f24'
         ],
         tags: [
-          '5a822e7d3df39bcf07121980decdc82c',
+          '5a822e7d3df39bcf07121980decdc82c'
         ],
         disableTransactionNotifications: false,
         freeze: {},
@@ -338,8 +352,8 @@ describe('LTC:', function () {
             version: 0,
             date: '2018-02-13T00:17:01.373Z',
             mutableUpToDate: '2018-02-15T00:17:01.373Z',
-            rules: [],
-          },
+            rules: []
+          }
         },
         clientFlags: [],
         balance: 400000000,
@@ -356,20 +370,20 @@ describe('LTC:', function () {
           coin: 'tltc',
           wallet: '5a822e7d3df39bcf07121980decdc82c',
           coinSpecific: {
-            redeemScript: '522102aaf588c5c91a2e019661e8090bf69c4a4a87ea55ecb54c1da51c2c3fdf39f72e21020d1b3bb7cc897fec305bbcfedb17b0bf57fe89dda627dfcfcf7b1d29886d2ca82102d2ebf18aa2a0a4813f9dc8f3c34af4aa21d0c583fdce0ab468a607fd3347f4d053ae',
-          },
+            redeemScript: '522102aaf588c5c91a2e019661e8090bf69c4a4a87ea55ecb54c1da51c2c3fdf39f72e21020d1b3bb7cc897fec305bbcfedb17b0bf57fe89dda627dfcfcf7b1d29886d2ca82102d2ebf18aa2a0a4813f9dc8f3c34af4aa21d0c583fdce0ab468a607fd3347f4d053ae'
+          }
         },
-        pendingApprovals: [],
+        pendingApprovals: []
       });
     });
 
-    it('should sign with user key and then with backup key', async function () {
+    it('should sign with user key and then with backup key', async function() {
       prebuild.txHex.should.equal('0100000001ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000000ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab8700000000');
 
       // half-sign the transaction
       const halfSigned = await wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: userKeychain.prv,
+        prv: userKeychain.prv
       });
       const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
       halfSignedPrebuild.txHex.should.equal('01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab870500483045022100a8ae2918d0589bfad341f2d46499c118542537ce22f5cc199d96fc949bdd445302206f56289185e6f5d81a5531632c4985847af1df20f4a078f2290e331411f35f6c01000069522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000');
@@ -378,18 +392,18 @@ describe('LTC:', function () {
       const fullySigned = await wallet.signTransaction({
         txPrebuild: halfSignedPrebuild,
         prv: backupKeychain.prv,
-        isLastSignature: true,
+        isLastSignature: true
       });
       fullySigned.txHex.should.equal('01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab870400483045022100a8ae2918d0589bfad341f2d46499c118542537ce22f5cc199d96fc949bdd445302206f56289185e6f5d81a5531632c4985847af1df20f4a078f2290e331411f35f6c01483045022100b4b6c9e7b300f5362d82a69730983eea9de575106747fd424e179499fb78a74602206546801fb3f0f1fcc090003906020575d7b27c851e7fbea3b917480793180bb00169522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000');
     });
 
-    it('should sign with backup key and then with user key', async function () {
+    it('should sign with backup key and then with user key', async function() {
       prebuild.txHex.should.equal('0100000001ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000000ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab8700000000');
 
       // half-sign the transaction
       const halfSigned = await wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: backupKeychain.prv,
+        prv: backupKeychain.prv
       });
       const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
       halfSignedPrebuild.txHex.should.equal('01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab87050000483045022100b4b6c9e7b300f5362d82a69730983eea9de575106747fd424e179499fb78a74602206546801fb3f0f1fcc090003906020575d7b27c851e7fbea3b917480793180bb0010069522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000');
@@ -398,7 +412,7 @@ describe('LTC:', function () {
       const fullySigned = await wallet.signTransaction({
         txPrebuild: halfSignedPrebuild,
         prv: userKeychain.prv,
-        isLastSignature: true,
+        isLastSignature: true
       });
       // end result should look the same as in the unit test above regardless of signing order
       fullySigned.txHex.should.equal('01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab870400483045022100a8ae2918d0589bfad341f2d46499c118542537ce22f5cc199d96fc949bdd445302206f56289185e6f5d81a5531632c4985847af1df20f4a078f2290e331411f35f6c01483045022100b4b6c9e7b300f5362d82a69730983eea9de575106747fd424e179499fb78a74602206546801fb3f0f1fcc090003906020575d7b27c851e7fbea3b917480793180bb00169522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000');
