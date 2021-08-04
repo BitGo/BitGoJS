@@ -97,6 +97,19 @@ describe('V2 Base Coin:', function() {
       (baseCoinStellarToken instanceof StellarToken).should.equal(true);
       (baseCoinStellarToken instanceof StellarToken).should.equal(true);
     });
+
+    it('Goerli ERC20 Tokens set to gteth and Kovan ERC20 Tokens set to teth', function () {
+      // goerli token
+      const goerliToken = bitgo.coin('gusdt');
+      goerliToken.coin.should.equal('gteth');
+      goerliToken.network.should.equal('Testnet');
+      goerliToken.getFamily().should.equal('eth');
+      // kovan token
+      const kovanToken = bitgo.coin('terc');
+      kovanToken.coin.should.equal('teth');
+      kovanToken.network.should.equal('Testnet');
+      kovanToken.getFamily().should.equal('eth');
+    });
   });
 
   describe('Missing output detection', function() {
