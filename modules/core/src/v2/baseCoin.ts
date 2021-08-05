@@ -4,7 +4,7 @@
 import { BigNumber } from 'bignumber.js';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { hdPath } from '../bitcoin';
-const bitcoinMessage = require('bitcoinjs-message');
+import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 import * as errors from '../errors';
@@ -22,6 +22,7 @@ import { Enterprises } from './enterprises';
 
 // re-export account lib transaction types
 import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
+import { signMessage } from '../bip32util';
 export type TransactionType = AccountLibBasecoin.TransactionType;
 
 export interface TransactionRecipient {
@@ -338,11 +339,7 @@ export abstract class BaseCoin {
    */
   signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
-      const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
-      const privateKeyBuffer = privateKey.d.toBuffer(32);
-      const isCompressed = privateKey.compressed;
-      const prefix = bitcoin.networks.bitcoin.messagePrefix;
-      return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
+      return signMessage(message, bip32.fromBase58(key.prv), bitcoin.networks.bitcoin);
     })
       .call(this)
       .asCallback(callback);
