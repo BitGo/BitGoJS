@@ -352,4 +352,19 @@ describe('utils', () => {
     const isValid = Algo.algoUtils.verifySignature(invalidMsg, sign, pub);
     should.equal(isValid, false);
   });
+
+  it('getTransactionByteSize should generate the size correct para payTxn', () => {
+    const size = Algo.algoUtils.getTransactionByteSize(payTxn);
+    should.equal(size, 240);
+  });
+
+  it('getTransactionByteSize should generate the size correct para nonParticipationTxn', () => {
+    const size = Algo.algoUtils.getTransactionByteSize(nonParticipationTxn);
+    should.equal(size, 207);
+  });
+
+  it('getTransactionByteSize should generate the size correct para keyregTxn', () => {
+    const size = Algo.algoUtils.getTransactionByteSize(keyregTxn);
+    should.equal(size, 320);
+  });
 });
