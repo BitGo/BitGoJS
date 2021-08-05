@@ -38,11 +38,11 @@ describe('bip32util', function () {
 
     const refPath = inputs[0];
 
-    sanitizeLegacyPath(refPath).should.eql(refPath);
-
     inputs.forEach((p) => {
-      // console.log(`legacyPath=${p} path=${refPath}`);
-      sanitizeLegacyPath(p).should.eql(refPath);
+      sanitizeLegacyPath(p).should.eql(
+        refPath,
+        `sanitizeLegacyPath(${p})=${sanitizeLegacyPath(p)}, refPath=${refPath}`
+      );
       refBIP32
         .derivePath(refPath)
         .toBase58() //
