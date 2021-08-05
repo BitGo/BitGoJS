@@ -1,4 +1,5 @@
 import { RippleAPI } from 'ripple-lib';
+import RippleAddressCodec from 'ripple-address-codec';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 
@@ -6,7 +7,10 @@ export const initApi = (): RippleAPI => new RippleAPI({});
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    if (RippleAddressCodec.isValidClassicAddress(address) || RippleAddressCodec.isValidXAddress(address)) {
+      return true;
+    }
+    return false;
   }
 
   /** @inheritdoc */

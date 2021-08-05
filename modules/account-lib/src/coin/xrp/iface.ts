@@ -17,4 +17,10 @@ export interface TxJSON {
   fulfillment?: string;
   amount?: string;
   destination?: string;
+  fee?: string;
+  sequence?: number;
+  lastLedgerSequence?: number;
+  domain?: string;
+  setFlag?: number;
+  messageKey?: string;
 }

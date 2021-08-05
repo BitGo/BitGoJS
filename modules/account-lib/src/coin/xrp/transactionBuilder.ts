@@ -1,20 +1,22 @@
 import BigNumber from 'bignumber.js';
-import RippleAddressCodec from 'ripple-address-codec';
 import RippleBinaryCodec from 'ripple-binary-codec';
 import { ApiMemo } from 'ripple-lib/dist/npm/transaction/utils';
 import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { AddressValidationError } from './errors';
 import { KeyPair } from './keyPair';
+import utils from './utils';
+import { BaseTransactionSchema } from './txnSchema';
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   protected _keyPairs: KeyPair[];
 
-  protected _account: string;
+  protected _sender: string;
+  protected _type: string;
   protected _memos?: { Memo: ApiMemo }[];
   protected _flags?: number;
   protected _fulfillment?: string;
@@ -50,32 +52,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
-    this._account = sender.address;
+    this._sender = sender.address;
     this._transaction.sender(sender.address);
     return this;
   }
 
-  // transactionType(type: string): this {
-  //   this._transactionType = type;
-  //   return this;
-  // }
+  type(type: string): this {
+    this._type = type;
+    return this;
+  }
 
   flags(flags: number): this {
+    this.validateValue(new BigNumber(flags));
     this._flags = flags;
     return this;
   }
 
-  fulfillment(fullfillment: string): this {
-    this._fulfillment = fullfillment;
+  fulfillment(fulfillment: string): this {
+    this._fulfillment = fulfillment;
     return this;
   }
 
   lastLedgerSequence(lastLedgerSeq: number): this {
+    this.validateValue(new BigNumber(lastLedgerSeq));
     this._lastLedgerSequence = lastLedgerSeq;
     return this;
   }
 
   sequence(sequence: number): this {
+    this.validateValue(new BigNumber(sequence));
     this._sequence = sequence;
     return this;
   }
@@ -117,12 +122,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     this.sender({ address: decodedXrpTrx.Account });
+    this.type(decodedXrpTrx.TransactionType);
     if (decodedXrpTrx.Flags) this.flags(decodedXrpTrx.Flags);
     if (decodedXrpTrx.Memos) this.memos(decodedXrpTrx.Memos);
     if (decodedXrpTrx.Fulfillment) this.fulfillment(decodedXrpTrx.Fulfillment);
-    this.fee({ fee: decodedXrpTrx.Fee as string });
-    this.lastLedgerSequence(decodedXrpTrx.LastLedgerSequence as number);
-    this.sequence(decodedXrpTrx.Sequence as number);
+    if (decodedXrpTrx.Fee) this.fee({ fee: decodedXrpTrx.Fee as string });
+    if (decodedXrpTrx.LastLedgerSequence) this.lastLedgerSequence(decodedXrpTrx.LastLedgerSequence as number);
+    if (decodedXrpTrx.Sequence) this.sequence(decodedXrpTrx.Sequence as number);
 
     switch (decodedXrpTrx.TransactionType) {
       case 'Payment':
@@ -139,7 +145,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateAddress({ address }: BaseAddress): void {
-    if (!RippleAddressCodec.isValidClassicAddress(address) || !RippleAddressCodec.isValidXAddress(address)) {
+    if (!utils.isValidAddress(address)) {
       throw new AddressValidationError(address);
     }
   }
@@ -151,17 +157,63 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+    const decodedXrpTrx = RippleBinaryCodec.decode(rawTransaction) as rippleTypes.TransactionJSON;
+    this.validateBaseFields(
+      decodedXrpTrx.Account,
+      decodedXrpTrx.TransactionType,
+      decodedXrpTrx.Flags,
+      decodedXrpTrx.Memos,
+      decodedXrpTrx.Fulfillment,
+      decodedXrpTrx.Fee as string,
+      decodedXrpTrx.LastLedgerSequence as number,
+      decodedXrpTrx.Sequence as number,
+    );
+  }
+
+  private validateBaseFields(
+    sender: string,
+    type: string,
+    flags: number | undefined,
+    memos: { Memo: ApiMemo }[] | undefined,
+    fulfillment: string | undefined,
+    fee: string | undefined,
+    lastLedgerSequence: number | undefined,
+    sequence: number | undefined,
+  ): void {
+    const validationResult = BaseTransactionSchema.validate({
+      sender,
+      type,
+      flags,
+      memos,
+      fulfillment,
+      fee,
+      lastLedgerSequence,
+      sequence,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
+  validateTransaction(_?: Transaction): void {
+    this.validateBaseFields(
+      this._sender,
+      this._type,
+      this._flags,
+      this._memos,
+      this._fulfillment,
+      this._fee,
+      this._lastLedgerSequence,
+      this._sequence,
+    );
   }
 
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
-    throw new NotImplementedError('validateValue not implemented');
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
   }
-  // endregion
 }

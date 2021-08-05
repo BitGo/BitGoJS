@@ -11,14 +11,10 @@ import { initApi } from './utils';
 export class Transaction extends BaseTransaction {
   private _xrpTransaction?: rippleTypes.TransactionJSON;
   private _signedTransaction?: SignedXRPTransaction;
-  private _halfSignedTransactions: string[];
   private _sender: string;
-  private _numberOfRequiredSigners: number;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._numberOfRequiredSigners = 0;
-    this._halfSignedTransactions = [];
   }
 
   sender(address: string): void {
@@ -54,34 +50,14 @@ export class Transaction extends BaseTransaction {
     this._type = transactionType;
   }
 
-  get numberOfRequiredSigners(): number {
-    return this._numberOfRequiredSigners;
-  }
-
-  /**
-   * Sets the number of signers required for signing this transaction.
-   *
-   * @param {number} num Threshold number of signers.
-   */
-  setNumberOfRequiredSigners(num: number): void {
-    this._numberOfRequiredSigners = num;
-  }
-
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
-    if (this._numberOfRequiredSigners === 0) {
-      return false;
-    }
-    if (this._numberOfRequiredSigners === 1) {
-      const kp = new KeyPair({ prv: key });
-      const addr = kp.getAddress();
-      if (addr === this._sender) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
+    const kp = new KeyPair({ prv: key });
+    const addr = kp.getAddress();
+    if (addr === this._sender) {
       return true;
+    } else {
+      return false;
     }
   }
 
@@ -91,32 +67,11 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair Signer keys.
    */
   sign(keyPair: KeyPair[]): void {
-    /**
-     * Step1:
-     * Check if transaction is singleSig or multiSig
-     *
-     * Step2:
-     * If singleSig use the api.sign() method to to sign the tx using
-     * the senders key
-     * OR
-     * If multiSig use the api.sign() method to to sign the tx using
-     * each accounts key, then use api.combine to combine all the halfSigned
-     * txs into one fully signed tx.
-     */
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    if (this._numberOfRequiredSigners === 1) {
-      const txJSON = JSON.stringify(this._xrpTransaction);
-      this._signedTransaction = initApi().sign(txJSON, keyPair[0]);
-    } else if (this._numberOfRequiredSigners > 1) {
-      const txJSON = JSON.stringify(this._xrpTransaction);
-      keyPair.forEach((key) => {
-        const signedTx = initApi().sign(txJSON, key, { signAs: key.getAddress() }).signedTransaction;
-        this._halfSignedTransactions.push(signedTx);
-      });
-      this._signedTransaction = initApi().combine(this._halfSignedTransactions) as SignedXRPTransaction;
-    }
+    const txJSON = JSON.stringify(this._xrpTransaction);
+    this._signedTransaction = initApi().sign(txJSON, keyPair[0]);
   }
 
   /** @inheritdoc */
@@ -142,10 +97,18 @@ export class Transaction extends BaseTransaction {
       memos: this._xrpTransaction.Memos,
       flags: this._xrpTransaction.Flags,
       fulfillment: this._xrpTransaction.Fulfillment,
+      fee: this._xrpTransaction.Fee as string,
+      sequence: this._xrpTransaction.Sequence as number,
+      lastLedgerSequence: this._xrpTransaction.LastLedgerSequence as number,
     };
     if (this.type === TransactionType.Send) {
       result.amount = this._xrpTransaction.amount as string;
       result.destination = this._xrpTransaction.destination as string;
+    }
+    if (this.type === TransactionType.WalletInitialization) {
+      result.domain = this._xrpTransaction.domain as string;
+      result.setFlag = this._xrpTransaction.SetFlag as number;
+      result.messageKey = this._xrpTransaction.MessageKey as string;
     }
     return result;
   }
