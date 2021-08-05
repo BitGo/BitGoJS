@@ -16,7 +16,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _keyPairs: KeyPair[];
 
   protected _sender: string;
-  protected _type: string;
   protected _memos?: { Memo: ApiMemo }[];
   protected _flags?: number;
   protected _fulfillment?: string;
@@ -39,6 +38,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    */
   fee(feeObj: BaseFee): this {
+    this.validateValue(new BigNumber(feeObj.fee));
     this._fee = feeObj.fee;
     return this;
   }
@@ -54,11 +54,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.validateAddress(sender);
     this._sender = sender.address;
     this._transaction.sender(sender.address);
-    return this;
-  }
-
-  type(type: string): this {
-    this._type = type;
     return this;
   }
 
@@ -120,9 +115,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!decodedXrpTrx) {
       throw new InvalidTransactionError('Invalid Raw tx');
     }
-
     this.sender({ address: decodedXrpTrx.Account });
-    this.type(decodedXrpTrx.TransactionType);
     if (decodedXrpTrx.Flags) this.flags(decodedXrpTrx.Flags);
     if (decodedXrpTrx.Memos) this.memos(decodedXrpTrx.Memos);
     if (decodedXrpTrx.Fulfillment) this.fulfillment(decodedXrpTrx.Fulfillment);
@@ -160,7 +153,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const decodedXrpTrx = RippleBinaryCodec.decode(rawTransaction) as rippleTypes.TransactionJSON;
     this.validateBaseFields(
       decodedXrpTrx.Account,
-      decodedXrpTrx.TransactionType,
       decodedXrpTrx.Flags,
       decodedXrpTrx.Memos,
       decodedXrpTrx.Fulfillment,
@@ -172,7 +164,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   private validateBaseFields(
     sender: string,
-    type: string,
     flags: number | undefined,
     memos: { Memo: ApiMemo }[] | undefined,
     fulfillment: string | undefined,
@@ -182,7 +173,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   ): void {
     const validationResult = BaseTransactionSchema.validate({
       sender,
-      type,
       flags,
       memos,
       fulfillment,
@@ -200,7 +190,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   validateTransaction(_?: Transaction): void {
     this.validateBaseFields(
       this._sender,
-      this._type,
       this._flags,
       this._memos,
       this._fulfillment,

@@ -17,6 +17,19 @@ export class Transaction extends BaseTransaction {
     super(coinConfig);
   }
 
+  /**
+   * Get the list of signatures (if any) produced for this transaction.
+   *
+   * @returns {string[]} list of signatures
+   */
+  get signature(): string[] {
+    if (!this._signedTransaction) {
+      return [];
+    }
+    const decodedTx = binaryCodec.decode(this._signedTransaction?.signedTransaction);
+    return [decodedTx.TxnSignature as string];
+  }
+
   sender(address: string): void {
     this._sender = address;
   }
@@ -111,5 +124,31 @@ export class Transaction extends BaseTransaction {
       result.messageKey = this._xrpTransaction.MessageKey as string;
     }
     return result;
+  }
+
+  /**
+   * Load the input and output data on this transaction.
+   */
+  loadInputsAndOutputs(): void {
+    if (!this._xrpTransaction) {
+      return;
+    }
+    if (this.type === TransactionType.Send) {
+      this._outputs = [
+        {
+          address: this._xrpTransaction.Destination as string,
+          value: this._xrpTransaction.Amount as string,
+          coin: this._coinConfig.name,
+        },
+      ];
+
+      this._inputs = [
+        {
+          address: this._xrpTransaction.Account,
+          value: this._xrpTransaction.amount as string,
+          coin: this._coinConfig.name,
+        },
+      ];
+    }
   }
 }
