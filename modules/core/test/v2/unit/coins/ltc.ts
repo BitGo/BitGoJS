@@ -63,16 +63,10 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('upper case bech32 mainnet address should fail', function () {
-      // bech32 addresses which are all upper case or all lower case are potentially valid,
-      // but mixed case is always invalid. Canonical bech32 addresses should be all lower case however
-      const bech32Address = 'LTC1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
-      try {
-        ltc.canonicalAddress(bech32Address);
-        should.fail(null, null, 'Upper case bech32 addresses are not valid');
-      } catch (e) {
-        e.message.should.equal('invalid address');
-      }
+    it('non-lowercase bech32 mainnet address should fail', function () {
+      // bech32 addresses which are non-lowercase are invalid,
+      const bech32Address = 'ltc1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
 
     it('lower case bech32 testnet address', function () {
@@ -83,14 +77,9 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('upper case bech32 testnet address should fail', function () {
-      const bech32Address = 'TLTC1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
-      try {
-        tltc.canonicalAddress(bech32Address);
-        should.fail(null, null, 'Upper case bech32 addresses are not valid');
-      } catch (e) {
-        e.message.should.equal('invalid address');
-      }
+    it('non-lowercase bech32 testnet address should fail', function () {
+      const bech32Address = 'tltc1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
   });
 
