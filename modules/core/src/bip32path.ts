@@ -35,8 +35,6 @@ export function sanitizeLegacyPath(path: string): string {
       return String(v) + (hardened ? "'" : '');
     });
 
-  parts.forEach((p, i) => {});
-
   if (parts.length === 0) {
     throw new Error(`empty path`);
   }
