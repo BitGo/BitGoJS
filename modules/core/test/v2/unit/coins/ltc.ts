@@ -54,7 +54,7 @@ describe('LTC:', function () {
     });
 
     it('lower case bech32 mainnet address', function () {
-      // canonicalAddress will only lower case bech32 addresses - they are already
+      // canonicalAddress will only accept lower case bech32 addresses - they are already
       // in canonical format, and the script hash version is not relevant
       const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
       const version1Address = ltc.canonicalAddress(bech32Address, 1);
@@ -63,8 +63,14 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('non-lowercase bech32 mainnet address should fail', function () {
-      // bech32 addresses which are non-lowercase are invalid,
+    it('uppercase bech32 mainnet address should fail', function () {
+      // canonicalAddress only accepts lower case bech32 addresses, uppercase addresses
+      // are valid according to the spec but will be treated as invalid
+      const bech32Address = 'LTC1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
+    });
+
+    it('mixed-case bech32 mainnet address should fail', function () {
       const bech32Address = 'ltc1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
       (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
@@ -77,7 +83,12 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('non-lowercase bech32 testnet address should fail', function () {
+    it('uppercase bech32 testnet address should fail', function () {
+      const bech32Address = 'TLTC1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
+    });
+
+    it('mixed case bech32 testnet address should fail', function () {
       const bech32Address = 'tltc1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
       (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
