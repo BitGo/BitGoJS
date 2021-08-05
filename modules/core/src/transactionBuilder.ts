@@ -19,6 +19,7 @@ import { getNetwork, hdPath } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
+import { sanitizeLegacyPath } from "./bip32path";
 
 interface BaseOutput {
   amount: number;
@@ -894,7 +895,6 @@ exports.signTransaction = function (params) {
     transaction.ins.map((currentItem, index) => _.extend(currentItem, inputValues[index]));
   }
 
-  let rootExtKeyPath;
   let rootExtKey;
   if (keychain) {
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
@@ -920,11 +920,8 @@ exports.signTransaction = function (params) {
 
     const chainPath = currentUnspent.chainPath;
     if (rootExtKey) {
-      let { walletSubPath = '/0/0' } = keychain;
-      if (walletSubPath === 'm') {
-        walletSubPath = ''
-      }
-      const path = keychain.path + walletSubPath + chainPath;
+      const { walletSubPath = '/0/0' } = keychain;
+      const path = sanitizeLegacyPath(keychain.path + walletSubPath + chainPath);
       privKey = rootExtKey.derivePath(path).keyPair;
     }
 
