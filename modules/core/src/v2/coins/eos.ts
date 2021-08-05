@@ -225,8 +225,8 @@ export class Eos extends BaseCoin {
    */
   isValidPrv(prv: string): boolean {
     try {
-      HDNode.fromBase58(prv);
-      return true;
+      const key = HDNode.fromBase58(prv);
+      return Boolean(key.privateKey);
     } catch (e) {
       return false;
     }
