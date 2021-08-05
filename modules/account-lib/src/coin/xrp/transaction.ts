@@ -91,6 +91,18 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair Signer keys.
    */
   sign(keyPair: KeyPair[]): void {
+    /**
+     * Step1:
+     * Check if transaction is singleSig or multiSig
+     *
+     * Step2:
+     * If singleSig use the api.sign() method to to sign the tx using
+     * the senders key
+     * OR
+     * If multiSig use the api.sign() method to to sign the tx using
+     * each accounts key, then use api.combine to combine all the halfSigned
+     * txs into one fully signed tx.
+     */
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
