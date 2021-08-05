@@ -21,7 +21,7 @@
  * @param path - legacy path
  * @return string - somewhat sanitized path that can be passed to standard bip32 libraries
  */
-export function fromLegacyPath(path: string): string {
+export function sanitizeLegacyPath(path: string): string {
   const parts: string[] = path
     .split('/')
     .filter((p) => p !== '')

@@ -3,7 +3,7 @@
  */
 import 'should';
 import * as bip32 from 'bip32';
-import { fromLegacyPath } from '../../src/bip32path';
+import { sanitizeLegacyPath } from '../../src/bip32path';
 import { getSeed } from '../lib/keys';
 import { Derivable, hdPath } from '../../src/bitcoin';
 
@@ -38,11 +38,11 @@ describe('bip32util', function () {
 
     const refPath = inputs[0];
 
-    fromLegacyPath(refPath).should.eql(refPath);
+    sanitizeLegacyPath(refPath).should.eql(refPath);
 
     inputs.forEach((p) => {
       // console.log(`legacyPath=${p} path=${refPath}`);
-      fromLegacyPath(p).should.eql(refPath);
+      sanitizeLegacyPath(p).should.eql(refPath);
       refBIP32
         .derivePath(refPath)
         .toBase58() //
@@ -60,7 +60,7 @@ describe('bip32util', function () {
     runTest(inputs, testKeyBip32Child, hdPath(testKeyHDPathChild));
   }
 
-  it('fromLegacyPath', function () {
+  it('sanitizeLegacyPath', function () {
     // public derivation is much too tolerant of invalid segments
     runTestDerivePublic(['0', '/0', '////m/0', '0m', 'lol', 'm/0', 'm/m', 'm/lol', '0x10']);
     runTestDerivePublic(['0/0', '/0/0', '0////0', '0/m', '/0/m', '0/0m']);
