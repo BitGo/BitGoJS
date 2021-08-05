@@ -16,7 +16,6 @@ import {
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
-import { HDNode } from '@bitgo/utxo-lib';
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import * as url from 'url';
@@ -28,6 +27,7 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
+import * as bip32 from 'bip32';
 
 interface AddressDetails {
   address: string;
@@ -196,7 +196,7 @@ export class Eos extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
@@ -211,7 +211,7 @@ export class Eos extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      HDNode.fromBase58(pub);
+      bip32.fromBase58(pub);
       return true;
     } catch (e) {
       return false;
@@ -225,8 +225,9 @@ export class Eos extends BaseCoin {
    */
   isValidPrv(prv: string): boolean {
     try {
-      const key = HDNode.fromBase58(prv);
+      const key = bip32.fromBase58(prv);
       return Boolean(key.privateKey);
+      return true;
     } catch (e) {
       return false;
     }
@@ -401,7 +402,10 @@ export class Eos extends BaseCoin {
       const transaction: EosTx = params.txPrebuild.transaction;
 
       const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
+      const privateKeyBuffer = bip32.fromBase58(prv).privateKey;
+      if (!privateKeyBuffer) {
+        throw new Error(`invalid private key`);
+      }
       const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
       transaction.signatures.push(signature);
@@ -615,19 +619,19 @@ export class Eos extends BaseCoin {
    * @param isUnsignedSweep
    * @param isKrsRecovery
    */
-  validateKey({ key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions): HDNode {
+  validateKey({ key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions): bip32.BIP32Interface {
     if (!key.startsWith('xprv') && !isUnsignedSweep) {
       // Try to decrypt the key
       try {
         if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
-          return HDNode.fromBase58(this.bitgo.decrypt({ password: passphrase, input: key }));
+          return bip32.fromBase58(this.bitgo.decrypt({ password: passphrase, input: key }));
         }
       } catch (e) {
         throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
       }
     }
     try {
-      return HDNode.fromBase58(key);
+      return bip32.fromBase58(key);
     } catch (e) {
       throw new Error(`Failed to validate ${source} key - try again!`);
     }
@@ -647,9 +651,9 @@ export class Eos extends BaseCoin {
     recoveryDestination,
     krsProvider,
     walletPassphrase,
-  }: RecoveryOptions): Bluebird<HDNode[]> {
+  }: RecoveryOptions): Bluebird<bip32.BIP32Interface[]> {
     const self = this;
-    return co<HDNode[]>(function* () {
+    return co<bip32.BIP32Interface[]>(function* () {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
