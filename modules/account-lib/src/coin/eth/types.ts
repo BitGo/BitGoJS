@@ -51,7 +51,6 @@ export class EthTransactionData implements EthLikeTransactionData {
    * @param common
    */
   public static fromSerialized(tx: string, common: EthereumCommon): EthTransactionData {
-
     return new EthTransactionData(EthereumTx.fromSerializedTx(toBuffer(tx), { common: common }));
   }
 

@@ -134,16 +134,21 @@ function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
   return hd;
 }
 
+export interface Derivable {
+  derive(path: string): bitcoin.HDNode;
+  deriveKey(path: string): bitcoin.ECPair;
+}
+
 /**
  * Derive a BIP32 path, given a root key
  * We cache keys at each level of hierarchy we derive, to avoid re-deriving (approx 25ms per derivation)
  * @param rootKey key to derive off
  * @returns {*} function which can be used to derive a new HDNode from the root HDNode on a given path
  */
-export function hdPath(rootKey): { derive: (path: string) => bitcoin.HDNode; deriveKey: (path: string) => bitcoin.ECPair; } {
+export function hdPath(rootKey): Derivable {
   const cache = {};
-  const derive = function(path: string): bitcoin.HDNode {
-    const components = path.split('/').filter(function(c) {
+  const derive = function (path: string): bitcoin.HDNode {
+    const components = path.split('/').filter(function (c) {
       return c !== '';
     });
     // strip any extraneous / characters

@@ -9,7 +9,6 @@ import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
 import * as bitgoUtxoLib from '@bitgo/utxo-lib';
-import * as bitcoinMessage from 'bitcoinjs-message';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 
 describe('ETH-like coins', () => {
@@ -213,27 +212,6 @@ describe('ETH-like coins', () => {
         });
       });
 
-      describe('Sign message:', () => {
-        it('should sign and validate a string message', async function () {
-          const keyPair = basecoin.generateKeyPair();
-          const message = 'hello world';
-          const signature = await basecoin.signMessage(keyPair, message);
-          const hdNode = bitgoUtxoLib.HDNode.fromBase58(keyPair.pub);
-
-          bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(true);
-        });
-
-        it('should fail to validate a string message with wrong public key', async function () {
-          const keyPair = basecoin.generateKeyPair();
-          const message = 'hello world';
-          const signature = await basecoin.signMessage(keyPair, message);
-
-          const otherKeyPair = basecoin.generateKeyPair();
-          const hdNode = bitgoUtxoLib.HDNode.fromBase58(otherKeyPair.pub);
-          bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(false);
-        });
-      });
-
       describe('Sign transaction:', () => {
         const xprv =
           'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
@@ -273,10 +251,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -327,10 +304,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -393,10 +369,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -439,7 +414,6 @@ describe('ETH-like coins', () => {
         });
 
         it('explain an unsigned transfer transaction', async function () {
-          const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
 

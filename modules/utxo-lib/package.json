@@ -29,7 +29,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BitGo/bitgo-utxo-lib.git"
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-lib"
   },
   "files": [
     "dist/src"

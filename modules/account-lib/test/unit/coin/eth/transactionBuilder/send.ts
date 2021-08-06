@@ -66,9 +66,13 @@ describe('Eth transaction builder send', () => {
       should.equal(tx.outputs[0].address, recipient);
       should.equal(tx.outputs[0].value, amount);
 
-
       const data = tx.toJson().data;
-      const { to, amount: parsedAmount, expireTime: parsedExpireTime, sequenceId: parsedSequenceId } = decodeTransferData(data);
+      const {
+        to,
+        amount: parsedAmount,
+        expireTime: parsedExpireTime,
+        sequenceId: parsedSequenceId,
+      } = decodeTransferData(data);
       should.equal(to, recipient);
       should.equal(parsedAmount, amount);
       should.equal(parsedExpireTime, expireTime);

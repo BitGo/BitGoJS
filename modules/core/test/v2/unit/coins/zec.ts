@@ -5,10 +5,10 @@ import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
 
-describe('ZEC:', function() {
+describe('ZEC:', function () {
   let bitgo;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
   });
@@ -18,16 +18,16 @@ describe('ZEC:', function() {
     const keychains = [
       {
         pub: 'xpub661MyMwAqRbcGiQhVk1J7cD1YodF9tc5Y1B8vpTjjB1pcB1J1m1QX8fMtYP2sYqFmW6J2ra69tNoARKjvTGo9cGUrbPbJdjwrSzGGzPzWWS',
-        prv: 'xprv9s21ZrQH143K4ELEPiUHkUGGzmnkkRtEAnFY8S48AqUqjNg9UDh9yLLt3FcfATyCjbsMB9JCGHAD8MeBTAK1P7trFppkoswu5ZAsHYASfbk'
+        prv: 'xprv9s21ZrQH143K4ELEPiUHkUGGzmnkkRtEAnFY8S48AqUqjNg9UDh9yLLt3FcfATyCjbsMB9JCGHAD8MeBTAK1P7trFppkoswu5ZAsHYASfbk',
       },
       {
         pub: 'xpub661MyMwAqRbcFzLXuganogQvd7MrefQQqCcJP2ZDumnCdQecf5cw1P1nD5qBz8SNS1yCLSC9VqpNUWnQU3V6qmnPt2r21oXhicQFzPA6Lby',
-        prv: 'xprv9s21ZrQH143K3WG4of3nSYUC55XNFCgZTyghae9cMSFDkcKU7YJgTahJMpdTY9CjCcjgSo2TJ635uUVx176BufUMBFpieKYVJD9J3VvrGRm'
+        prv: 'xprv9s21ZrQH143K3WG4of3nSYUC55XNFCgZTyghae9cMSFDkcKU7YJgTahJMpdTY9CjCcjgSo2TJ635uUVx176BufUMBFpieKYVJD9J3VvrGRm',
       },
       {
         pub: 'xpub661MyMwAqRbcFHpwWrzPB61U2CgBmdD21WNVM1JKUn9rEExkoGE4yafUVFbPSd78vdX8tWcEUQWaALFkU9fUbUM4Cc49DKEJSCYGRnbzCym',
-        prv: 'xprv9s21ZrQH143K2okUQqTNox4jUAqhNAVAeHStYcthvScsMSdcFiupRnLzdxzfJithak5Zs92FQJeeJ9Jiya63KfUNxawuMZDCp2cGT9cdMKs'
-      }
+        prv: 'xprv9s21ZrQH143K2okUQqTNox4jUAqhNAVAeHStYcthvScsMSdcFiupRnLzdxzfJithak5Zs92FQJeeJ9Jiya63KfUNxawuMZDCp2cGT9cdMKs',
+      },
     ];
 
     let coin;
@@ -93,7 +93,7 @@ describe('ZEC:', function() {
     describe('Should test transaction signing', () => {
 
       // TODO(BG-31309): fix this test to not use hard coded tx hex values or update consensus branch id for fixture txs
-      xit('should create local prebuild', async function() {
+      xit('should create local prebuild', async function () {
         const fundingAddress = 't2CgWUKFKRaKzPXQF2cooNFtVZR1gTM8xxM';
         const fundingRedeemScript = '522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae';
 
@@ -104,7 +104,7 @@ describe('ZEC:', function() {
           value: 300000000,
           valueString: '300000000',
           blockHeight: 999999999,
-          date: '2018-05-20T01:44:13.713Z'
+          date: '2018-05-20T01:44:13.713Z',
         };
         const [txHash, vout] = unspent.id.split(':');
 
@@ -129,10 +129,10 @@ describe('ZEC:', function() {
                 chain: 1,
                 index: 113,
                 redeemScript: fundingRedeemScript,
-                value: 300000000
-              }
-            ]
-          }
+                value: 300000000,
+              },
+            ],
+          },
         };
 
         // zcash testnet full node commands used with private keys and unspent above to generate test vectors:
@@ -142,7 +142,7 @@ describe('ZEC:', function() {
         const wallet = new Wallet(bitgo, testCoin, {});
         const halfSigned: any = await wallet.signTransaction({
           txPrebuild: prebuild,
-          prv: keychains[0].prv
+          prv: keychains[0].prv,
         });
         const halfSignedTx = bitGoUtxoLib.Transaction.fromHex(halfSigned.txHex, testCoin.network);
         halfSignedTx.network.coin.should.equal('zec');
@@ -158,7 +158,7 @@ describe('ZEC:', function() {
         const fullySigned: any = await wallet.signTransaction({
           txPrebuild: halfSignedPrebuild,
           prv: keychains[2].prv,
-          isLastSignature: true
+          isLastSignature: true,
         });
         const fullySignedTx = bitGoUtxoLib.Transaction.fromHex(fullySigned.txHex, testCoin.network);
         fullySignedTx.network.coin.should.equal('zec');

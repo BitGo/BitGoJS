@@ -7,7 +7,7 @@
  * consolidation tx needs to occur.
  */
 import { BitGo, Wallet } from 'bitgo';
-import {WalletCoinSpecific} from "../../../src/v2/wallet";
+import { WalletCoinSpecific } from '../../../src/v2/wallet';
 
 // change this to env: 'production' when you are ready for production
 const bitgo = new BitGo({ env: 'test' });

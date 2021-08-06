@@ -18,7 +18,7 @@ import * as common from './common';
 //
 // Constructor
 //
-const Markets = function(bitgo) {
+const Markets = function (bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -29,7 +29,7 @@ const Markets = function(bitgo) {
  * @returns {*} an object containing price and volume data from the
  * current day in a number of currencies
  **/
-Markets.prototype.latest = function(params, callback) {
+Markets.prototype.latest = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -45,7 +45,7 @@ Markets.prototype.latest = function(params, callback) {
  * @returns {*} an object containing price and volume data from the
  * previous day in a number of currencies
  */
-Markets.prototype.yesterday = function(params, callback) {
+Markets.prototype.yesterday = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -60,7 +60,7 @@ Markets.prototype.yesterday = function(params, callback) {
  * @param callback
  * @returns {*} an object containing average prices from a number of previous days
  */
-Markets.prototype.lastDays = function(params, callback) {
+Markets.prototype.lastDays = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['currencyName'], [], callback);
 

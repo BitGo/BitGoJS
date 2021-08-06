@@ -8,7 +8,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 
 import * as nock from 'nock';
 
-describe('XLM:', function() {
+describe('XLM:', function () {
   let bitgo: typeof TestBitGo;
   let basecoin: BaseCoin;
   const uninitializedWallet = '5f24525bf2501a0027c98eaa32ec62b3'; // wallet which has not been initialized on-chain

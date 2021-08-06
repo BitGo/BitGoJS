@@ -952,13 +952,13 @@ export class BitGo {
     const otherKeyPub = Buffer.from(otherPubKeyHex, 'hex');
     const secretPoint = (eckey as bitcoin.ECPair).d.toBuffer(32);
     return Buffer.from(
-        // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-        //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-        secp256k1.publicKeyTweakMul(otherKeyPub, secretPoint)
+      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
+      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
+      secp256k1.publicKeyTweakMul(otherKeyPub, secretPoint)
     )
-        // this implementation does not include the parity byte
-        .slice(1)
-        .toString('hex');
+    // this implementation does not include the parity byte
+      .slice(1)
+      .toString('hex');
   }
 
   /**
@@ -1051,9 +1051,9 @@ export class BitGo {
     const publicKey = serverDerivedNode.keyPair.getPublicKeyBuffer();
     const secretKey = clientDerivedNode.keyPair.d.toBuffer(32);
     const secret = Buffer.from(
-        // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-        //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-        secp256k1.publicKeyTweakMul(publicKey, secretKey)
+      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
+      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
+      secp256k1.publicKeyTweakMul(publicKey, secretKey)
     ).toString('hex');
 
     // decrypt token with symmetric ECDH key
@@ -1603,7 +1603,7 @@ export class BitGo {
       v2_keychains: v2Keychains,
       version: v1KeychainUpdatePWResult.version,
       oldPassword: this.calculateHMAC(user.username, oldPassword),
-      password: this.calculateHMAC(user.username, newPassword)
+      password: this.calculateHMAC(user.username, newPassword),
     };
 
     return this.post(this.url('/user/changepassword'))

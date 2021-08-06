@@ -7,7 +7,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Environments } from '../../../../src/common';
 
-describe('Trading Accounts', function() {
+describe('Trading Accounts', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -24,26 +24,26 @@ describe('Trading Accounts', function() {
     const walletData = {
       id: 'walletId',
       coin: 'tofc',
-      enterprise: enterprise.id
+      enterprise: enterprise.id,
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
   }));
 
-  it('should calculate settlement fees', async function() {
+  it('should calculate settlement fees', async function () {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/calculatefees`, {
         counterpartyAccountId: 'counterpartyId',
         receiveAmount: '100000000',
         receiveCurrency: 'ofctbtc',
         sendAmount: '1000000',
-        sendCurrency: 'ofctusd'
+        sendCurrency: 'ofctusd',
       })
       .reply(200, {
         feeRate: '1',
         feeAmount: '100',
-        feeCurrency: 'ofctusd'
+        feeCurrency: 'ofctusd',
       });
 
     const settlementFees = await tradingAccount.calculateSettlementFees({
@@ -51,7 +51,7 @@ describe('Trading Accounts', function() {
       receiveAmount: '100000000',
       receiveCurrency: 'ofctbtc',
       sendAmount: '1000000',
-      sendCurrency: 'ofctusd'
+      sendCurrency: 'ofctusd',
     });
 
     should.exist(settlementFees);

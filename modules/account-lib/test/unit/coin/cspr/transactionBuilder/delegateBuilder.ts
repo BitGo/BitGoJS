@@ -90,7 +90,7 @@ describe('CSPR Delegate Builder', () => {
       tx.type.should.equal(TransactionType.StakingLock);
     });
 
-    it('a delegate transaction with large amount', async function() {
+    it('a delegate transaction with large amount', async function () {
       const amount = '10000000000000000';
       let txBuilder = initUnsignedDelegateTxBuilder();
       txBuilder = addAmountToBuilder(txBuilder, amount);

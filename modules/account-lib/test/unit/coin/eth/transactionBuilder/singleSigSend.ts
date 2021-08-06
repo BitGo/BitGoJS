@@ -4,7 +4,7 @@ import { getBuilder, Eth } from '../../../../../src';
 import { Transaction } from '../../../../../src/coin/eth';
 import { Fee } from '../../../../../src/coin/eth/iface';
 
-describe('Eth Transaction builder flush tokens', function() {
+describe('Eth Transaction builder flush tokens', function () {
   const sourcePrv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
   const pub1 =
@@ -23,7 +23,7 @@ describe('Eth Transaction builder flush tokens', function() {
     key?: Eth.KeyPair;
   }
 
-  const buildTransaction = async function(details: SingleSigSend): Promise<Transaction> {
+  const buildTransaction = async function (details: SingleSigSend): Promise<Transaction> {
     const txBuilder: any = getBuilder('teth');
     txBuilder.type(TransactionType.SingleSigSend);
 

@@ -110,9 +110,7 @@ export class Transaction extends BaseTransaction {
       throw new ParseTransactionError('Empty transaction');
     }
     const hexBuffer = Buffer.from(this._transaction.raw_data_hex, 'hex');
-    const newTxid = createHash('sha256')
-      .update(hexBuffer)
-      .digest('hex');
+    const newTxid = createHash('sha256').update(hexBuffer).digest('hex');
     this._transaction.txID = newTxid;
     this._id = newTxid;
   }

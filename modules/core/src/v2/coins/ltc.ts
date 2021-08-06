@@ -3,16 +3,17 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 import * as request from 'superagent';
 import * as _ from 'lodash';
 
-import { AbstractUtxoCoin, UtxoNetwork, UnspentParams } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, UnspentParams, UtxoNetwork } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import { InvalidAddressError } from '../../errors';
 import { toBitgoRequest } from '../../api';
+
+const co = Bluebird.coroutine;
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -92,8 +93,7 @@ export class Ltc extends AbstractUtxoCoin {
 
   calculateRecoveryAddress(scriptHashScript: Buffer): string {
     const bitgoAddress = this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
-    const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
-    return blockrAddress;
+    return this.canonicalAddress(bitgoAddress, 1);
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {

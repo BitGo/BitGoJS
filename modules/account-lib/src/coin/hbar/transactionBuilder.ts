@@ -215,7 +215,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!isValidTimeString(time)) {
       throw new InvalidParameterValueError('Invalid value for time parameter');
     }
-    const timeParts = time.split('.').map(v => new BigNumber(v).toNumber());
+    const timeParts = time.split('.').map((v) => new BigNumber(v).toNumber());
     this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
     return this;
   }
@@ -289,7 +289,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {BaseKey} key - The key to check
    */
   private checkDuplicatedKeys(key: BaseKey) {
-    this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
+    this._multiSignerKeyPairs.forEach((_sourceKeyPair) => {
       if (_sourceKeyPair.getKeys().prv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }

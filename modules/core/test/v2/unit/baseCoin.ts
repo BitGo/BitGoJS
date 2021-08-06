@@ -11,7 +11,7 @@ import { StellarToken } from '../../../src/v2/coins/stellarToken';
 
 nock.disableNetConnect();
 
-describe('V2 Base Coin:', function() {
+describe('V2 Base Coin:', function () {
   let bitgo;
   let basecoinEth;
   let basecoinBtc;
@@ -20,7 +20,7 @@ describe('V2 Base Coin:', function() {
   let basecoinErc20TokenWithContractHash;
   let baseCoinStellarToken;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoinEth = bitgo.coin('teth');
@@ -32,8 +32,8 @@ describe('V2 Base Coin:', function() {
     baseCoinStellarToken = bitgo.coin('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
   });
 
-  describe('Currency conversion', function() {
-    it('should convert wei amounts to ETH', function() {
+  describe('Currency conversion', function () {
+    it('should convert wei amounts to ETH', function () {
       // 1 wei
       basecoinEth.baseUnitsToBigUnits(1).should.equal('0.000000000000000001');
       // 100 wei
@@ -44,7 +44,7 @@ describe('V2 Base Coin:', function() {
       basecoinEth.baseUnitsToBigUnits('1000000010000000000').should.equal('1.00000001');
     });
 
-    it('should convert satoshi amounts to BTC', function() {
+    it('should convert satoshi amounts to BTC', function () {
       // 1 satoshi
       basecoinBtc.baseUnitsToBigUnits(1).should.equal('0.00000001');
       // 100 satoshi
@@ -57,7 +57,7 @@ describe('V2 Base Coin:', function() {
       basecoinBtc.baseUnitsToBigUnits(200000397901).should.equal('2000.00397901');
     });
 
-    it('should convert stroop amounts to XLM', function() {
+    it('should convert stroop amounts to XLM', function () {
       // 1 stroop
       basecoinXlm.baseUnitsToBigUnits('1').should.equal('0.0000001');
       // 100 stroops
@@ -69,59 +69,59 @@ describe('V2 Base Coin:', function() {
     });
   });
 
-  describe('supportsBlockTarget', function() {
-    it('should return false', function() {
+  describe('supportsBlockTarget', function () {
+    it('should return false', function () {
       basecoinEth.supportsBlockTarget().should.equal(false);
     });
   });
 
-  describe('Token initialization', function() {
-    it('ERC20 Tokens initialized with name and contract should be instances of Erc20Token', function() {
+  describe('Token initialization', function () {
+    it('ERC20 Tokens initialized with name and contract should be instances of Erc20Token', function () {
       basecoinErc20TokenWithName.should.be.instanceof(Erc20Token);
       basecoinErc20TokenWithContractHash.should.be.instanceof(Erc20Token);
     });
 
-    it('ERC20 Tokens initialized with name and contract should be instances of each others constructor', function() {
+    it('ERC20 Tokens initialized with name and contract should be instances of each others constructor', function () {
       basecoinErc20TokenWithName.should.be.instanceof(basecoinErc20TokenWithContractHash.constructor);
       basecoinErc20TokenWithContractHash.should.be.instanceof(basecoinErc20TokenWithContractHash.constructor);
     });
 
-    it('ERC20 Token comparison', function() {
+    it('ERC20 Token comparison', function () {
       basecoinErc20TokenWithName.getBaseFactor().should.equal(basecoinErc20TokenWithContractHash.getBaseFactor());
       basecoinErc20TokenWithName.getChain().should.equal(basecoinErc20TokenWithContractHash.getChain());
       basecoinErc20TokenWithName.getFamily().should.equal(basecoinErc20TokenWithContractHash.getFamily());
       basecoinErc20TokenWithName.getFullName().should.equal(basecoinErc20TokenWithContractHash.getFullName());
     });
 
-    it('Stellar Tokens should be instances of StellarToken', function() {
+    it('Stellar Tokens should be instances of StellarToken', function () {
       (baseCoinStellarToken instanceof StellarToken).should.equal(true);
       (baseCoinStellarToken instanceof StellarToken).should.equal(true);
     });
   });
 
-  describe('Missing output detection', function() {
+  describe('Missing output detection', function () {
 
-    it('should recognize count mismatch dupes', function() {
+    it('should recognize count mismatch dupes', function () {
       const expectedOutputs = [
         {
           address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
-          amount: '300000'
+          amount: '300000',
         },
         {
           amount: '300000',
-          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ'
-        }
+          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
+        },
       ];
 
       const actualOutputs = [
         {
           address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
-          amount: 300000
+          amount: 300000,
         },
         {
           address: '2N2womedYhTC3YCDtviFte5G7teQczpVcds',
-          amount: 15349374
-        }
+          amount: 15349374,
+        },
       ];
       // missing should be one entry of the two
 
@@ -133,27 +133,27 @@ describe('V2 Base Coin:', function() {
       missingOutputs[0].amount.should.equal('300000');
     });
 
-    it('should be order-agnostic', function() {
+    it('should be order-agnostic', function () {
       const expectedOutputs = [
         {
           address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
-          amount: '300000'
+          amount: '300000',
         },
         {
           amount: '300000',
-          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ'
-        }
+          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
+        },
       ];
 
       const actualOutputs = [
         {
           address: '2N2womedYhTC3YCDtviFte5G7teQczpVcds',
-          amount: 15349374
+          amount: 15349374,
         },
         {
           address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
-          amount: 300000
-        }
+          amount: 300000,
+        },
       ];
       // missing should be one entry of the two
 
@@ -165,23 +165,23 @@ describe('V2 Base Coin:', function() {
       missingOutputs[0].amount.should.equal('300000');
     });
 
-    it('should preserve all dupes', function() {
+    it('should preserve all dupes', function () {
       const expectedOutputs = [
         {
           address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
-          amount: '300000'
+          amount: '300000',
         },
         {
           amount: '300000',
-          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ'
-        }
+          address: '2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ',
+        },
       ];
 
       const actualOutputs = [
         {
           address: '2N2womedYhTC3YCDtviFte5G7teQczpVcds',
-          amount: 15349374
-        }
+          amount: 15349374,
+        },
       ];
       // missing should be one entry of the two
 

@@ -41,7 +41,7 @@ Promise.coroutine(function *() {
     enforceMinConfirmsForChange: false, // enforces minConfirms on change inputs
     feeRate: 10000, // fee rate to use in calculation of maximum spendable in satoshis/kB
     maxFeeRate: 100000, // upper limit for feeRate in satoshis/kB
-    recipientAddress: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df' // recipient address for a more accurate calculation
+    recipientAddress: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df', // recipient address for a more accurate calculation
   };
 
   //

@@ -28,5 +28,5 @@ export const unsignedTxExplainedTransfer = {
   outputAmount: '1000',
   memo: accountLib.Stx.Utils.padMemo(''),
   recipient: 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0',
-  sender: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6'
+  sender: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
 };

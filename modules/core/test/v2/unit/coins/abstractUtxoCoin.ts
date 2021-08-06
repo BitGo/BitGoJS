@@ -16,7 +16,7 @@ import {
   addressInfos,
   emptyAddressInfo,
   recoverBtcUnsignedFixtures,
-  recoverBtcSegwitFixtures
+  recoverBtcSegwitFixtures,
 } from '../../fixtures/coins/recovery';
 
 describe('Abstract UTXO Coin:', () => {

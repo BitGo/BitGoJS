@@ -25,9 +25,9 @@ export default {
           sendAmount: '90000',
           receiveCurrency: 'ofctbtc',
           receiveAmount: '100000000',
-        }
+        },
       ],
-    })
+    }),
   },
   invalidPayload: {
     payload: JSON.stringify({
@@ -56,8 +56,8 @@ export default {
           sendAmount: '90000',
           receiveCurrency: 'ofctbtc',
           receiveAmount: '100000000',
-        }
-      ]
-    })
-  }
+        },
+      ],
+    }),
+  },
 };

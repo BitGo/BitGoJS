@@ -194,7 +194,7 @@ export class Keychains {
             const updatedKeychain = self.updateSingleKeychainPassword({
               keychain: key,
               oldPassword: params.oldPassword,
-              newPassword: params.newPassword
+              newPassword: params.newPassword,
             });
             if (updatedKeychain.encryptedPrv) {
               changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;

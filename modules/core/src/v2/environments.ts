@@ -144,6 +144,7 @@ const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
   hmacVerificationEnforced: false,
 });
 
+// eslint-disable-next-line no-redeclare
 export const Environments: Environments = {
   prod: Object.assign({}, mainnetBase, {
     uri: 'https://app.bitgo.com',

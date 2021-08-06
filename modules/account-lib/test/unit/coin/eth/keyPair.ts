@@ -2,7 +2,7 @@ import should from 'should';
 
 import { Eth } from '../../../../src';
 
-describe('Eth KeyPair', function() {
+describe('Eth KeyPair', function () {
   // these are all encodings of the same key so the test suite will show that they we can interchange between them
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
@@ -14,7 +14,7 @@ describe('Eth KeyPair', function() {
     '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355';
   const address = '0xeb317b9f2e0891d66c061ddc3f5ee7ed42d70a44';
 
-  describe('should create a KeyPair', function() {
+  describe('should create a KeyPair', function () {
     it('from an xpub', () => {
       const keyPair = new Eth.KeyPair({ pub: xpub });
       const defaultKeys = keyPair.getKeys();
@@ -64,7 +64,7 @@ describe('Eth KeyPair', function() {
     });
   });
 
-  describe('should fail to create a KeyPair', function() {
+  describe('should fail to create a KeyPair', function () {
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D',
@@ -80,7 +80,7 @@ describe('Eth KeyPair', function() {
     });
   });
 
-  describe('getAddress', function() {
+  describe('getAddress', function () {
     it('should get an address from xprv', () => {
       const keyPair = new Eth.KeyPair({ prv: xprv });
       const calculatedAddress = keyPair.getAddress();
@@ -112,7 +112,7 @@ describe('Eth KeyPair', function() {
     });
   });
 
-  describe('getExtendedKeys', function() {
+  describe('getExtendedKeys', function () {
     it('should get the keys in extended format from xprv', () => {
       const keyPair = new Eth.KeyPair({ prv: xprv });
       const { xprv: calculatedXprv, xpub: calculatedXpub } = keyPair.getExtendedKeys();

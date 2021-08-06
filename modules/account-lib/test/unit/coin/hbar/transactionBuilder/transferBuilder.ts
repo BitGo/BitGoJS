@@ -175,7 +175,7 @@ describe('HBAR Transfer Builder', () => {
       const builder = initTxBuilder();
       should.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
-        e => e.message === 'Invalid private key',
+        (e) => e.message === 'Invalid private key',
       );
     });
 
@@ -186,7 +186,7 @@ describe('HBAR Transfer Builder', () => {
       builder.sign({ key: testData.ACCOUNT_3.privateKey });
       should.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
-        e => e.message === 'A maximum of 3 can sign the transaction.',
+        (e) => e.message === 'A maximum of 3 can sign the transaction.',
       );
     });
 
@@ -195,7 +195,7 @@ describe('HBAR Transfer Builder', () => {
       builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       should.throws(
         () => builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix }),
-        e =>
+        (e) =>
           e.message ===
           'Repeated sign: 302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
       );
@@ -205,7 +205,7 @@ describe('HBAR Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.to('invalidaddress'),
-        e => e.message === 'Invalid address',
+        (e) => e.message === 'Invalid address',
       );
     });
 
@@ -213,7 +213,7 @@ describe('HBAR Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.amount('invalidamount'),
-        e => e.message === 'Invalid amount',
+        (e) => e.message === 'Invalid amount',
       );
     });
 
@@ -221,7 +221,7 @@ describe('HBAR Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.amount('-5'),
-        e => e.message === 'Invalid amount',
+        (e) => e.message === 'Invalid amount',
       );
     });
 
@@ -232,7 +232,7 @@ describe('HBAR Transfer Builder', () => {
           txBuilder.memo(
             'This sentence has more than 100 bytes allowed for the memo, this should throw error -----------------',
           ),
-        e => e.message === 'Memo must not be longer than 100 bytes',
+        (e) => e.message === 'Memo must not be longer than 100 bytes',
       );
     });
 
@@ -256,11 +256,11 @@ describe('HBAR Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.startTime('invalid start time'),
-        e => e.message === 'Invalid value for time parameter',
+        (e) => e.message === 'Invalid value for time parameter',
       );
       should.throws(
         () => txBuilder.startTime('-5'),
-        e => e.message === 'Invalid value for time parameter',
+        (e) => e.message === 'Invalid value for time parameter',
       );
     });
 
@@ -268,7 +268,7 @@ describe('HBAR Transfer Builder', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.node({ nodeId: 'invalid node' }),
-        e => e.message === 'Invalid Hedera node address',
+        (e) => e.message === 'Invalid Hedera node address',
       );
     });
   });

@@ -11,7 +11,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Environments } from '../../../../src/common';
 
-describe('Trading Partners', function() {
+describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -31,15 +31,15 @@ describe('Trading Partners', function() {
       coin: 'tofc',
       enterprise: enterprise.id,
       keys: [
-        'keyid'
-      ]
+        'keyid',
+      ],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
   }));
 
-  it('should refer check trading partner by code', async function() {
+  it('should refer check trading partner by code', async function () {
     const scope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.addByCodeResponse);
@@ -62,7 +62,7 @@ describe('Trading Partners', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should list all trading partners', async function() {
+  it('should list all trading partners', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.listTradingPartners);
@@ -86,7 +86,7 @@ describe('Trading Partners', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should balance check trading partners', async function() {
+  it('should balance check trading partners', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/tradingpartners`)
       .reply(200, fixtures.listTradingPartners)

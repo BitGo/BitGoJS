@@ -4,10 +4,7 @@
 import { BitGo } from '../../bitgo';
 import { Bcha } from './bcha';
 import * as bitcoin from '@bitgo/utxo-lib';
-import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
-import { UtxoNetwork } from './abstractUtxoCoin';
-const co = Bluebird.coroutine;
 
 export class Tbcha extends Bcha {
   constructor(bitgo: BitGo) {

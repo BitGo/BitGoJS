@@ -4,7 +4,7 @@ import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
 import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';
 import { randomBytes } from 'crypto';
-import * as should from "should";
+import * as should from 'should';
 
 describe('Casper', function () {
   const coinName = 'tcspr';
@@ -401,7 +401,7 @@ describe('Casper', function () {
         'fee',
         'changeOutputs',
         'changeAmount',
-        'operations'
+        'operations',
       ]);
       explainedTx.fee.should.equal(explainTxParams.feeInfo);
       explainedTx.outputs.length.should.equal(0);
@@ -557,8 +557,8 @@ describe('Casper', function () {
     });
   });
 
-  describe('Validation', function() {
-    it('should fail to validate invalid address with payment id', function() {
+  describe('Validation', function () {
+    it('should fail to validate invalid address with payment id', function () {
       const invalidAddresses = [
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=x',
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?memoId=1',
@@ -583,7 +583,7 @@ describe('Casper', function () {
       }
     });
 
-    it('should fail to verify invalid address with payment id', function() {
+    it('should fail to verify invalid address with payment id', function () {
       const invalidAddresses = [
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?transferId=x',
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3?memoId=1',
@@ -612,7 +612,7 @@ describe('Casper', function () {
         {
           address: '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa?transferId=999999999', // ed25519
           rootAddress: '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa',
-        }
+        },
       ];
 
       for (const addressParams of validAddresses) {

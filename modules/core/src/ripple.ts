@@ -24,7 +24,7 @@ function computeSignature(tx, privateKey, signAs) {
  * @param options
  * @returns {{signedTransaction: *, id}}
  */
-const signWithPrivateKey = function(txHex, privateKey, options) {
+const signWithPrivateKey = function (txHex, privateKey, options) {
   let privateKeyBuffer = Buffer.from(privateKey, 'hex');
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);

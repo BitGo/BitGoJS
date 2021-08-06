@@ -8,7 +8,7 @@ import {
 } from '../../../resources/xtz/xtz';
 import { ParsedTransaction } from '../../../../src/coin/xtz/iface';
 
-describe('Tezos transaction', function() {
+describe('Tezos transaction', function () {
   describe('should parse', () => {
     it('unsigned transaction', async () => {
       const tx = new Transaction(coins.get('txtz'));

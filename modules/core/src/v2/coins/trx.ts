@@ -300,16 +300,16 @@ export class Trx extends BaseCoin {
   }
 
   /**
-   * Converts an xpub to a compressed pub
+   * Converts an xpub to a uncompressed pub
    * @param xpub
    */
-  xpubToCompressedPub(xpub: string): string {
+  xpubToUncompressedPub(xpub: string): string {
     if (!this.isValidXpub(xpub)) {
       throw new Error('invalid xpub');
     }
 
     const hdNode = HDNode.fromBase58(xpub, networks.bitcoin);
-    return hdNode.keyPair.__Q.getEncoded(false).toString('hex');
+    return hdNode.keyPair.__Q.getEncoded(false /* compressed */).toString('hex');
   }
 
   /**
@@ -332,7 +332,7 @@ export class Trx extends BaseCoin {
       .asCallback(callback);
   }
 
-  compressedPubToHexAddress(pub: string): string {
+  pubToHexAddress(pub: string): string {
     const byteArrayAddr = bitgoAccountLib.Trx.Utils.getByteArrayFromHexAddress(pub);
     const rawAddress = bitgoAccountLib.Trx.Utils.getRawAddressFromPubKey(byteArrayAddr);
     return bitgoAccountLib.Trx.Utils.getHexAddressFromByteArray(rawAddress);
@@ -477,7 +477,7 @@ export class Trx extends BaseCoin {
       const keys = (yield self.initiateRecovery(params)) as any;
 
       // we need to decode our bitgoKey to a base58 address
-      const bitgoHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
+      const bitgoHexAddr = self.pubToHexAddress(self.xpubToUncompressedPub(params.bitgoKey));
       const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
       // call the node to get our account balance
@@ -498,8 +498,8 @@ export class Trx extends BaseCoin {
       const buildTx = yield self.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
 
       const keyHexAddresses = [
-        self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub)),
-        self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub)),
+        self.pubToHexAddress(self.xpubToUncompressedPub(userXPub)),
+        self.pubToHexAddress(self.xpubToUncompressedPub(backupXPub)),
         bitgoHexAddr,
       ];
 

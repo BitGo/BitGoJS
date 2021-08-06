@@ -7,17 +7,17 @@ import { EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-describe('EOS:', function() {
+describe('EOS:', function () {
   let bitgo;
   let basecoin;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teos');
   });
 
-  it('should get address details', function() {
+  it('should get address details', function () {
     let addressDetails = basecoin.getAddressDetails('i1skda3kso43');
     addressDetails.address.should.equal('i1skda3kso43');
     should.not.exist(addressDetails.memoId);
@@ -30,14 +30,14 @@ describe('EOS:', function() {
     (() => { basecoin.getAddressDetails('ks13k3hdui24?memoId=1&memoId=2'); }).should.throw();
   });
 
-  it('should validate address', function() {
+  it('should validate address', function () {
     basecoin.isValidAddress('i1skda3kso43').should.equal(true);
     basecoin.isValidAddress('ks13kdh245ls').should.equal(true);
     basecoin.isValidAddress('ks13k3hdui24?memoId=1').should.equal(true);
     basecoin.isValidAddress('ks13k3hdui24?memoId=x').should.equal(false);
   });
 
-  it('verifyAddress should work', function() {
+  it('verifyAddress should work', function () {
     basecoin.verifyAddress({
       address: 'i1skda3kso43',
       rootAddress: 'i1skda3kso43',
@@ -75,7 +75,7 @@ describe('EOS:', function() {
     }
   });
 
-  it('isValidMemoId should work', function() {
+  it('isValidMemoId should work', function () {
     basecoin.isValidMemo({ value: '1' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno' }).should.equal(true);
     const string257CharsLong = '4WMNlu0fFU8N94AwukfpfPPQn2Myo80JdmLNF5rgeKAab9XLD93KUQipcT6US0LRwWWIGbUt89fjmdwpg3CBklNi8QIeBI2i8UDJCEuQKYobR5m4ismm1RooTXUnw5OPjmfLuuajYV4e5cS1jpC6hez5X43PZ5SsGaHNYX2YYXY03ir54cWWx5QW5VCPKPKUzfq2UYK5fjAG2Fe3xCUOzqgoR6KaAiuOOnDSyhZygLJyaoJpOXZM9olblNtAW75Ed';
@@ -88,7 +88,7 @@ describe('EOS:', function() {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function() {
+    it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
@@ -97,7 +97,7 @@ describe('EOS:', function() {
       basecoin.isValidPrv(keyPair.prv).should.equal(true);
     });
 
-    it('should generate a keypair from seed', function() {
+    it('should generate a keypair from seed', function () {
       const seed = Buffer.from('c3b09c24731be2851b641d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
@@ -106,7 +106,7 @@ describe('EOS:', function() {
     });
   });
 
-  it('should create unsigned recovery transaction without Bitgo', async function() {
+  it('should create unsigned recovery transaction without Bitgo', async function () {
     const userKey = 'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
     const backupKey = 'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
     const rootAddress = 'i1skda3kso43';
@@ -156,8 +156,8 @@ describe('EOS:', function() {
     sandBox.restore();
   });
 
-  describe('Transactions:', function() {
-    it('should generate a valid transaction signature', async function() {
+  describe('Transactions:', function () {
+    it('should generate a valid transaction signature', async function () {
       const signatureData = 'abcd';
       const tx = {
         txHex: signatureData,
@@ -170,7 +170,7 @@ describe('EOS:', function() {
           packed_trx: signatureData,
           compression: 'none',
         },
-        recipients: [{ }]
+        recipients: [{ }],
       };
 
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
@@ -183,7 +183,7 @@ describe('EOS:', function() {
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
     });
 
-    it('should explain an EOS transaction', async function() {
+    it('should explain an EOS transaction', async function () {
       const explainTransactionParams = {
         headers: {
           ref_block_prefix: 100,

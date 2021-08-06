@@ -34,7 +34,7 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import {toBitgoRequest} from "../../api";
+import { toBitgoRequest } from '../../api';
 
 const co = Bluebird.coroutine;
 

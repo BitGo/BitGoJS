@@ -11,7 +11,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 import { Environments } from '../../../../src';
 
-describe('Affirmations', function() {
+describe('Affirmations', function () {
   const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -34,8 +34,8 @@ describe('Affirmations', function() {
       coin: 'tofc',
       enterprise: enterprise.id,
       keys: [
-        'keyid'
-      ]
+        'keyid',
+      ],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -43,7 +43,7 @@ describe('Affirmations', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  it('should list all affirmations', async function() {
+  it('should list all affirmations', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations`)
       .reply(200, fixtures.listAffirmations);
@@ -56,7 +56,7 @@ describe('Affirmations', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should list all affirmations filtered by status', async function() {
+  it('should list all affirmations filtered by status', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations?status=overdue`)
       .reply(200, fixtures.listOverdueAffirmations);
@@ -70,7 +70,7 @@ describe('Affirmations', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should get a single affirmation', async function() {
+  it('should get a single affirmation', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
       .reply(200, fixtures.singleAffirmation);
@@ -81,7 +81,7 @@ describe('Affirmations', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should affirm an affirmation', async function() {
+  it('should affirm an affirmation', async function () {
     const scope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.affirmAffirmationPayloadRequest)
       .reply(200, fixtures.affirmAffirmationPayloadResponse)
@@ -94,7 +94,7 @@ describe('Affirmations', function() {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
       });
 
     const payload = await tradingAccount.buildPayload(fixtures.affirmAffirmationPayloadRequest);
@@ -106,7 +106,7 @@ describe('Affirmations', function() {
     platformScope.isDone().should.be.true();
   });
 
-  it('should reject an affirmation', async function() {
+  it('should reject an affirmation', async function () {
     const scope = nock(microservicesUri)
       .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
       .reply(200, fixtures.updateAffirmation('rejected'));
@@ -116,7 +116,7 @@ describe('Affirmations', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should cancel an affirmation', async function() {
+  it('should cancel an affirmation', async function () {
     const scope = nock(microservicesUri)
       .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
       .reply(200, fixtures.updateAffirmation('canceled'));

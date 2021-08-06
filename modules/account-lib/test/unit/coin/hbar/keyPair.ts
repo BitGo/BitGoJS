@@ -37,7 +37,7 @@ describe('Hedera Key Pair', () => {
         'GAD2SVW5EZLCH6HDC3VK7UE4DZK7KCIUHVCY2PO7ZEUERSWU6QQ6QIHB',
       ];
 
-      stellarPubs.forEach(stellarPub => {
+      stellarPubs.forEach((stellarPub) => {
         const edPub = convertFromStellarPub(stellarPub);
         const keyPair = new KeyPair({ pub: edPub });
 
@@ -87,7 +87,7 @@ describe('Hedera Key Pair', () => {
       const source = { pub: '01D63D' };
       should.throws(
         () => new KeyPair(source),
-        e => e.message.includes(testData.errorMessageInvalidPublicKey),
+        (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
       );
     });
 
@@ -99,27 +99,27 @@ describe('Hedera Key Pair', () => {
       const prvWithNonHex = { prv: testData.ed25519PrivKeyPrefix + prv + 'GG' };
       should.throws(
         () => new KeyPair(shorterPrv),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair(longerPrv),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair(prvWithPrefix),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair({ prv: prv + pub }),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair(prvWithOddNumber),
-        e => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
+        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
       );
       should.throws(
         () => new KeyPair(prvWithNonHex),
-        e => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
+        (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
       );
     });
   });
@@ -129,7 +129,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ prv: prv });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === testData.errorMessageNotPossibleToDeriveAddress,
+        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
     });
 
@@ -137,7 +137,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === testData.errorMessageNotPossibleToDeriveAddress,
+        (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
     });
   });
@@ -174,7 +174,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       should.throws(
         () => keyPair.signMessage(message),
-        e => e.message === testData.errorMessageMissingPrivateKey,
+        (e) => e.message === testData.errorMessageMissingPrivateKey,
       );
     });
   });

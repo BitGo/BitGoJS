@@ -23,7 +23,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mafintosh/blake2b-wasm.git"
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/blake2b-wasm"
   },
   "author": "Mathias Buus (@mafintosh)",
   "license": "MIT",

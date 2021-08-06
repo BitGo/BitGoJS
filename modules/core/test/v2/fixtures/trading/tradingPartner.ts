@@ -18,7 +18,7 @@ export default {
       requesterAccountId: '5cf940969449412d00f53b4c55fc2139',
       type: 'agency',
       status: 'accepted',
-    }]
+    }],
   },
   addByCodeResponse: {
     id: '01889e6c-d12a-423a-af8d-649b63e2f7a5',
@@ -32,6 +32,6 @@ export default {
   },
   balanceCheckTrueRequest: {
     amount: '24128',
-    currency: 'ofctbtc'
-  }
+    currency: 'ofctbtc',
+  },
 };

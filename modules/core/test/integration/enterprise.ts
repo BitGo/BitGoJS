@@ -12,7 +12,7 @@ const BigNumber = require('bignumber.js');
 
 const TestBitGo = require('../lib/test_bitgo');
 
-describe('Enterprise', function() {
+describe('Enterprise', function () {
 
   let bitgo;
 
@@ -23,7 +23,7 @@ describe('Enterprise', function() {
 
   }));
 
-  describe('Fetch Enterprise', function() {
+  describe('Fetch Enterprise', function () {
 
     it('should fetch an enterprise', co(function *() {
       const enterprises = bitgo.coin('tltc').enterprises();
@@ -68,7 +68,7 @@ describe('Enterprise', function() {
   });
 
   // TODO: remove enterprises after creating them once the functionality is available
-  describe('Modify Enterprise', function() {
+  describe('Modify Enterprise', function () {
 
     // TODO: figure out how to approve the removal request from another user
     it('should add and remove user from enterprise', co(function *() {
@@ -92,7 +92,7 @@ describe('Enterprise', function() {
       const wallet = yield bitgo.coin('tltc').wallets().generateWallet({
         label: 'Enterprise Test Wallet',
         enterprise: enterprise.id,
-        passphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
       });
       const enterpriseWallets = yield enterprise.coinWallets();
       enterpriseWallets.should.have.property('wallets');

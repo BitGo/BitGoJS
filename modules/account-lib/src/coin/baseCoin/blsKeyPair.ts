@@ -115,7 +115,6 @@ export abstract class BlsKeyPair implements BaseKeyPair {
     }
   }
 
-
   /**
    * Verifies the signature for this key pair
    * @param pub The public key with which to verify the signature

@@ -4,10 +4,10 @@ import { BlockstreamApi } from '../../../../src/v2/recovery/blockstreamApi';
 
 nock.disableNetConnect();
 
-describe('Blockstream API:', function() {
+describe('Blockstream API:', function () {
   let bitgo;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     const accountInfoResponse = {
       address: '2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT',
@@ -54,11 +54,11 @@ describe('Blockstream API:', function() {
       .reply(400, invalidBitcoinAddressResponse);
   });
 
-  after(function() {
+  after(function () {
     nock.cleanAll();
   });
 
-  describe('should succeed', function() {
+  describe('should succeed', function () {
     it('to get an account information', async () => {
       const api = new BlockstreamApi(bitgo);
       const response = await api.getAccountInfo('2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT');
@@ -77,7 +77,7 @@ describe('Blockstream API:', function() {
     });
   });
 
-  describe('should fail', function() {
+  describe('should fail', function () {
     it('to get an account information for an invalid address', async () => {
       const api = new BlockstreamApi(bitgo);
       await api.getAccountInfo('invalidAddress')

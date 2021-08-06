@@ -32,7 +32,7 @@ Promise.coroutine(function *() {
 
   const walletOptions = {
     label,
-    passphrase
+    passphrase,
   };
 
   const wallet = yield bitgo.coin(coin).wallets().generateWallet(walletOptions);

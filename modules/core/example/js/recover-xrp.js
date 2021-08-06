@@ -25,18 +25,18 @@ Promise.coroutine(function *() {
     walletPassphrase: 'supersecretpassword',
 
     // Ripple address to send the recovered funds to
-    recoveryDestination: 'rnxYEEB1A3PBik4sTfboxYib6Hv6kKNXQR?dt=3'
+    recoveryDestination: 'rnxYEEB1A3PBik4sTfboxYib6Hv6kKNXQR?dt=3',
   });
 
   console.log(JSON.stringify(response, null, 4));
 
   const submittedTx = yield bitgo.post(basecoin.getRippledUrl())
-  .send({
-    method: 'submit',
-    params: [{
-      tx_blob: response.txHex
-    }]
-  });
+    .send({
+      method: 'submit',
+      params: [{
+        tx_blob: response.txHex,
+      }],
+    });
 
   console.log(JSON.stringify(submittedTx, null, 4));
 

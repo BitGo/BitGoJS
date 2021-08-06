@@ -19,8 +19,8 @@ const generateQuestions = (coin: string) => {
           `The KeyCard contains important information which can be used to recover the ${coin} `,
           'from your wallet in several situations. Each BitGo wallet' +
           ' has its own, unique KeyCard. ',
-          'If you have created multiple wallets, you should retain the KeyCard for each of them.'
-        ]
+          'If you have created multiple wallets, you should retain the KeyCard for each of them.',
+        ],
     },
     {
       q: 'What should I do with it?',
@@ -32,8 +32,8 @@ const generateQuestions = (coin: string) => {
           '',
           'Important: If you haven\'t provided an external backup key, then the original PDF should be ',
           'deleted from any machine where the wallet will be regularly accessed to prevent malware from ',
-          'capturing both the KeyCard and your wallet passcode.'
-        ]
+          'capturing both the KeyCard and your wallet passcode.',
+        ],
     },
     {
       q: 'What should I do if I lose it?',
@@ -42,8 +42,8 @@ const generateQuestions = (coin: string) => {
           `If you have lost or damaged all copies of your KeyCard, your ${coin} is still safe, but this `,
           'wallet should be considered at risk for loss. As soon as is convenient, you should use BitGo ',
           'to empty the wallet into a new wallet',
-          ', and discontinue use of the old wallet.'
-        ]
+          ', and discontinue use of the old wallet.',
+        ],
     },
     {
       q: 'What if someone sees my KeyCard?',
@@ -53,16 +53,16 @@ const generateQuestions = (coin: string) => {
           'key which only BitGo has. But, in general, you should make best efforts to keep your ',
           'KeyCard private. If your KeyCard does get exposed or copied in a way that makes you ',
           'uncomfortable, the best course of action is to empty the corresponding wallet into another ',
-          'wallet and discontinue use of the old wallet.'
-        ]
+          'wallet and discontinue use of the old wallet.',
+        ],
     },
     {
       q: 'What if I forget or lose my wallet password?',
       a:
         [
           'BitGo can use the information in QR Code D to help you recover access to your wallet. ',
-          'Without the KeyCard, BitGo is not able to recover funds from a wallet with a lost password.'
-        ]
+          'Without the KeyCard, BitGo is not able to recover funds from a wallet with a lost password.',
+        ],
     },
     {
       q: 'What if BitGo becomes inaccessible for an extended period?',
@@ -71,8 +71,8 @@ const generateQuestions = (coin: string) => {
           'Your KeyCard and wallet passcode can be used together with BitGo’s published open ',
           `source tools at https://github.com/bitgo to recover your ${coin}. Note: You should never enter `,
           'information from your KeyCard into tools other than the tools BitGo has published, or your ',
-          'funds may be at risk for theft.'
-        ]
+          'funds may be at risk for theft.',
+        ],
     },
     {
       q: 'Should I write my wallet password on my KeyCard?',
@@ -81,9 +81,9 @@ const generateQuestions = (coin: string) => {
           'No! BitGo’s multi-signature approach to security depends on there not being a single point ',
           'of attack. But if your wallet password is on your KeyCard, then anyone who gains access to ',
           `your KeyCard will be able to steal your ${coin}. We recommend keeping your wallet password `,
-          'safe in a secure password manager such as LastPass, 1Password or KeePass.'
-        ]
-    }
+          'safe in a secure password manager such as LastPass, 1Password or KeePass.',
+        ],
+    },
   ];
 };
 
@@ -121,7 +121,7 @@ function getKeyData(options: GetKeyDataOptions): any {
   if (backupKeychain.prv && passphrase) {
     backupKeychain.encryptedPrv = encrypt({
       input: backupKeychain.prv,
-      password: passphrase
+      password: passphrase,
     });
   }
 
@@ -232,14 +232,14 @@ export function drawKeycard(options: DrawKeycardOptions): any {
   const font = {
     header: 24,
     subheader: 15,
-    body: 12
+    body: 12,
   };
 
   const color = {
     black: '#000000',
     darkgray: '#4c4c4c',
     gray: '#9b9b9b',
-    red: '#e21e1e'
+    red: '#e21e1e',
   };
 
   // document details
@@ -319,7 +319,7 @@ export function drawKeycard(options: DrawKeycardOptions): any {
   const qrSize = 130;
 
   // Draw each Box with QR code and description
-  Object.keys(keyData).forEach(function(keyType) {
+  Object.keys(keyData).forEach(function (keyType) {
     const key = keyData[keyType];
     const topY = y;
 
@@ -377,12 +377,12 @@ export function drawKeycard(options: DrawKeycardOptions): any {
 
   // Draw the Q + A data on the second page
   moveDown(30);
-  questions.forEach(function(q) {
+  questions.forEach(function (q) {
     doc.setFontSize(font.subheader).setTextColor(color.black);
     doc.text(q.q, left(0), y);
     moveDown(20);
     doc.setFontSize(font.body).setTextColor(color.darkgray);
-    q.a.forEach(function(line) {
+    q.a.forEach(function (line) {
       doc.text(line, left(0), y);
       moveDown(font.body + 3);
     });

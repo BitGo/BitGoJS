@@ -5,8 +5,7 @@
 //
 
 import { BitGo as BG } from '../../src/bitgo';
-import { KeyIndices } from '../../src/v2/keychains';
-import { Wallet } from '../../src/v2/wallet';
+import { KeyIndices, Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
@@ -20,7 +19,7 @@ nock.enableNetConnect();
 
 try {
   Bluebird.config({
-    longStackTraces: true
+    longStackTraces: true,
   });
 } catch (e) {
   console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
@@ -71,7 +70,7 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
-BitGo.prototype.initializeTestVars = function() {
+BitGo.prototype.initializeTestVars = function () {
 
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
@@ -201,7 +200,7 @@ BitGo.prototype.initializeTestVars = function() {
 // testUserOTP
 // Get an OTP code for the test user.
 //
-BitGo.prototype.testUserOTP = function() {
+BitGo.prototype.testUserOTP = function () {
   return '0000000';
 };
 
@@ -209,7 +208,7 @@ BitGo.prototype.testUserOTP = function() {
 // authenticateTestUser
 // Authenticate the test user.
 //
-BitGo.prototype.authenticateTestUser = function(otp, callback) {
+BitGo.prototype.authenticateTestUser = function (otp, callback) {
   return co(function *() {
     const response = (yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
@@ -217,16 +216,16 @@ BitGo.prototype.authenticateTestUser = function(otp, callback) {
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
+BitGo.prototype.authenticateSharingTestUser = function (otp, callback) {
   return this.authenticate({ username: BitGo.TEST_SHARED_KEY_USER, password: BitGo.TEST_SHARED_KEY_PASSWORD, otp: otp })
-  .then(function(response) {
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  })
-  .nodeify(callback);
+    .then(function (response) {
+      response.should.have.property('access_token');
+      response.should.have.property('user');
+    })
+    .nodeify(callback);
 };
 
-BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
+BitGo.prototype.authenticateKnownBalanceTestUser = function (otp, callback) {
   return co(function *() {
     const response = (yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
@@ -234,7 +233,7 @@ BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) {
+BitGo.prototype.authenticateEnterpriseCreatorTestUser = function (otp, callback) {
   return co(function *coAuthenticateEnterpriseCreatorTestUser() {
     const response = (yield this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
@@ -242,12 +241,12 @@ BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) 
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateChangePWTestUser = function(otp, callback) {
+BitGo.prototype.authenticateChangePWTestUser = function (otp, callback) {
   return co(function *() {
     const params = {
       username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
       password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
-      otp: otp
+      otp: otp,
     };
     let alternatePassword = `${params.password}_new`;
     let response;
@@ -269,7 +268,7 @@ BitGo.prototype.authenticateChangePWTestUser = function(otp, callback) {
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateOfcTestUser = function(otp, callback) {
+BitGo.prototype.authenticateOfcTestUser = function (otp, callback) {
   return co(function *() {
     const response = (yield this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp })) as any;
     response.should.have.property('access_token');
@@ -301,7 +300,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     tethWallet,
     tbtcWallet,
     unspentWallet,
-    sweep1Wallet
+    sweep1Wallet,
   } = (yield Bluebird.props({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
@@ -350,14 +349,14 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
   }
 });
 
-BitGo.prototype.nockEthWallet = function() {
+BitGo.prototype.nockEthWallet = function () {
   const walletData = {
     id: '598f606cd8fc24710d2ebadb1d9459bb',
     users: [
       {
         user: '543c11ed356d00cb7600000b98794503',
-        permissions: [Object]
-      }
+        permissions: [Object],
+      },
     ],
     coin: 'teth',
     label: 'my test ether wallet',
@@ -366,7 +365,7 @@ BitGo.prototype.nockEthWallet = function() {
     keys: [
       '598f606cd8fc24710d2ebad89dce86c2',
       '598f606cc8e43aef09fcb785221d9dd2',
-      '5935d59cf660764331bafcade1855fd7'
+      '5935d59cf660764331bafcade1855fd7',
     ],
     tags: ['598f606cd8fc24710d2ebadb1d9459bb'],
     disableTransactionNotifications: false,
@@ -380,15 +379,15 @@ BitGo.prototype.nockEthWallet = function() {
       lastChainIndex: { 0: 701, 1: -1 },
       baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
       pendingChainInitialization: false,
-      creationFailure: []
+      creationFailure: [],
     },
     admin: {
       policy: {
         id: '598f606cd8fc24710d2ebadda4b955fb',
         version: 0,
         date: '2017-08-12T20:09:16.472Z',
-        rules: []
-      }
+        rules: [],
+      },
     },
     clientFlags: [],
     allowBackupKeySigning: false,
@@ -408,10 +407,10 @@ BitGo.prototype.nockEthWallet = function() {
         updateTime: '2018-02-14T15:20:34.188Z',
         txCount: 0,
         pendingChainInitialization: false,
-        creationFailure: []
-      }
+        creationFailure: [],
+      },
     },
-    pendingApprovals: []
+    pendingApprovals: [],
   };
 
   const wallet = new Wallet(this, this.coin('teth'), walletData);
@@ -419,22 +418,22 @@ BitGo.prototype.nockEthWallet = function() {
   // Nock calls to platform for building transactions and getting user key
   // Should be OK to persist these since they are wallet specific data reads
   nock(this._baseUrl)
-  .persist()
-  .filteringRequestBody(() => '*')
-  .post(`/api/v2/teth/wallet/${wallet.id()}/tx/build`, '*')
-  .reply(200, {
-    gasLimit: 500000,
-    gasPrice: 20000000000,
-    nextContractSequenceId: 101
-  })
-  .get(`/api/v2/teth/key/${wallet.keyIds()[KeyIndices.USER]}`)
-  .reply(200, {
-    id: '598f606cd8fc24710d2ebad89dce86c2',
-    users: ['543c11ed356d00cb7600000b98794503'],
-    pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-    ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
-    encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}'
-  });
+    .persist()
+    .filteringRequestBody(() => '*')
+    .post(`/api/v2/teth/wallet/${wallet.id()}/tx/build`, '*')
+    .reply(200, {
+      gasLimit: 500000,
+      gasPrice: 20000000000,
+      nextContractSequenceId: 101,
+    })
+    .get(`/api/v2/teth/key/${wallet.keyIds()[KeyIndices.USER]}`)
+    .reply(200, {
+      id: '598f606cd8fc24710d2ebad89dce86c2',
+      users: ['543c11ed356d00cb7600000b98794503'],
+      pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+      ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+      encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+    });
 
   const params: any = {
     module: 'account',
@@ -449,18 +448,18 @@ BitGo.prototype.nockEthWallet = function() {
 
   // Nock tokens stuck on the wallet
   nock('https://api-kovan.etherscan.io')
-  .get('/api')
-  .query(params)
-  .reply(200, { status: '1', message: 'OK', result: '2400' });
+    .get('/api')
+    .query(params)
+    .reply(200, { status: '1', message: 'OK', result: '2400' });
 
   return wallet;
 };
 
 const oldFetchConstants = BitGo.prototype.fetchConstants;
-BitGo.prototype.fetchConstants = function() {
+BitGo.prototype.fetchConstants = function () {
   nock(this._baseUrl)
-  .get('/api/v1/client/constants')
-  .reply(200, { ttl: 3600, constants: {} });
+    .get('/api/v1/client/constants')
+    .reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
   BitGo._constants = undefined;

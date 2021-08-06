@@ -15,10 +15,11 @@ import * as Bluebird from 'bluebird';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import { getNetwork, hdPath } from './bitcoin';
+import { getNetwork } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
+import { sanitizeLegacyPath } from './bip32path';
 
 interface BaseOutput {
   amount: number;
@@ -60,7 +61,7 @@ interface BitGoUnspent {
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
 //   unspentsFetchParams: Extra parameters to use for fetching unspents for this transaction
-exports.createTransaction = function(params) {
+exports.createTransaction = function (params) {
   const minConfirms = params.minConfirms || 0;
   const validate = params.validate === undefined ? true : params.validate;
   let recipients: { address: string; amount: number; script?: string; travelInfo?: any; }[] = [];
@@ -148,7 +149,7 @@ exports.createTransaction = function(params) {
   // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
   if (!(params.recipients instanceof Array)) {
     recipients = [];
-    Object.keys(params.recipients).forEach(function(destinationAddress) {
+    Object.keys(params.recipients).forEach(function (destinationAddress) {
       const amount = params.recipients[destinationAddress];
       recipients.push({ address: destinationAddress, amount: amount });
     });
@@ -159,7 +160,7 @@ exports.createTransaction = function(params) {
   if (params.opReturns) {
     if (!(params.opReturns instanceof Array)) {
       opReturns = [];
-      Object.keys(params.opReturns).forEach(function(message) {
+      Object.keys(params.opReturns).forEach(function (message) {
         const amount = params.opReturns[message];
         opReturns.push({ message, amount });
       });
@@ -180,7 +181,7 @@ exports.createTransaction = function(params) {
 
   let totalOutputAmount = 0;
 
-  recipients.forEach(function(recipient) {
+  recipients.forEach(function (recipient) {
     if (_.isString(recipient.address)) {
       try {
         bitcoin.address.fromBase58Check(recipient.address);
@@ -200,7 +201,7 @@ exports.createTransaction = function(params) {
     totalOutputAmount += recipient.amount;
   });
 
-  opReturns.forEach(function(opReturn) {
+  opReturns.forEach(function (opReturn) {
     totalOutputAmount += opReturn.amount;
   });
 
@@ -233,84 +234,84 @@ exports.createTransaction = function(params) {
   // The transaction.
   let transaction = new bitcoin.TransactionBuilder(network);
 
-  const getBitGoFee = function() {
-    return Bluebird.try(function() {
+  const getBitGoFee = function () {
+    return Bluebird.try(function () {
       if (bitgoFeeInfo) {
         return;
       }
       return params.wallet.getBitGoFee({ amount: totalOutputAmount, instant: params.instant })
-      .then(function(result) {
-        if (result && result.fee > 0) {
-          bitgoFeeInfo = {
-            amount: result.fee
-          };
+        .then(function (result) {
+          if (result && result.fee > 0) {
+            bitgoFeeInfo = {
+              amount: result.fee,
+            };
+          }
+        });
+    })
+      .then(function () {
+        if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
+          totalAmount += bitgoFeeInfo.amount;
         }
       });
-    })
-    .then(function() {
-      if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
-        totalAmount += bitgoFeeInfo.amount;
-      }
-    });
   };
 
-  const getBitGoFeeAddress = function() {
-    return Bluebird.try(function() {
+  const getBitGoFeeAddress = function () {
+    return Bluebird.try(function () {
       // If we don't have bitgoFeeInfo, or address is already set, don't get a new one
       if (!bitgoFeeInfo || bitgoFeeInfo.address) {
         return;
       }
       return bitgo.getBitGoFeeAddress()
-      .then(function(result) {
-        bitgoFeeInfo.address = result.address;
-      });
+        .then(function (result) {
+          bitgoFeeInfo.address = result.address;
+        });
     });
   };
 
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget
   // is specified or if no fee-related params are specified
-  const getDynamicFeeRateEstimate = function() {
+  const getDynamicFeeRateEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
       return bitgo.estimateFee({
         numBlocks: params.feeTxConfirmTarget,
         maxFee: params.maxFeeRate,
         inputs: zeroConfUnspentTxIds,
         txSize: estTxSize,
-        cpfpAware: true
+        cpfpAware: true,
       })
-      .then(function(result) {
-        const estimatedFeeRate = result.cpfpFeePerKb;
-        const minimum = params.instant ? Math.max(constants.minFeeRate, constants.minInstantFeeRate) : constants.minFeeRate;
-        // 5 satoshis per byte
-        // it is worth noting that the padding only applies when the threshold is crossed, but not when the delta is less than the padding
-        const padding = 5000;
-        if (estimatedFeeRate < minimum) {
-          console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet.id() + ', it was too low - ' + estimatedFeeRate);
-          feeRate = minimum + padding;
-        } else if (estimatedFeeRate > params.maxFeeRate) {
-          feeRate = params.maxFeeRate - padding;
-        } else {
-          feeRate = estimatedFeeRate;
-        }
-        return feeRate;
-      })
-      .catch(function(e) {
+        .then(function (result) {
+          const estimatedFeeRate = result.cpfpFeePerKb;
+          const minimum = params.instant ? Math.max(constants.minFeeRate, constants.minInstantFeeRate) : constants.minFeeRate;
+          // 5 satoshis per byte
+          // it is worth noting that the padding only applies when the threshold is crossed, but not when the delta is less than the padding
+          const padding = 5000;
+          if (estimatedFeeRate < minimum) {
+            console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet.id() + ', it was too low - ' + estimatedFeeRate);
+            feeRate = minimum + padding;
+          } else if (estimatedFeeRate > params.maxFeeRate) {
+            feeRate = params.maxFeeRate - padding;
+          } else {
+            feeRate = estimatedFeeRate;
+          }
+          return feeRate;
+        })
+        .catch(function (e) {
         // sanity check failed on tx size
-        if (_.includes(e.message, 'invalid txSize')) {
-          return Bluebird.reject(e);
-        } else {
+          if (_.includes(e.message, 'invalid txSize')) {
+            return Bluebird.reject(e);
+          } else {
           // couldn't estimate the fee, proceed using the default
-          feeRate = constants.fallbackFeeRate;
-          console.log('Error estimating fee for send from ' + params.wallet.id() + ': ' + e.message);
-          return Bluebird.resolve();
-        }
-      });
+            feeRate = constants.fallbackFeeRate;
+            console.log('Error estimating fee for send from ' + params.wallet.id() + ': ' + e.message);
+            return Bluebird.resolve();
+          }
+        });
     }
   };
 
 
   // Get the unspents for the sending wallet.
-  const getUnspents = function() {
+  const getUnspents = function () {
 
     if (params.unspents) { // we just wanna use custom unspents
       unspents = params.unspents;
@@ -322,63 +323,63 @@ exports.createTransaction = function(params) {
       target: totalAmount,
       minSize: params.minUnspentSize || 0,
       instant: params.instant, // insist on instant unspents only
-      targetWalletUnspents: params.targetWalletUnspents
+      targetWalletUnspents: params.targetWalletUnspents,
     });
     if (params.instant) {
       options.instant = params.instant; // insist on instant unspents only
     }
 
     return params.wallet.unspentsPaged(options)
-    .then(function(results) {
-      totalUnspentsCount = results.total;
-      fetchedUnspentsCount = results.count;
-      unspents = results.unspents.filter(function(u) {
-        const confirms = u.confirmations || 0;
-        if (!params.enforceMinConfirmsForChange && u.isChange) {
-          return true;
+      .then(function (results) {
+        totalUnspentsCount = results.total;
+        fetchedUnspentsCount = results.count;
+        unspents = results.unspents.filter(function (u) {
+          const confirms = u.confirmations || 0;
+          if (!params.enforceMinConfirmsForChange && u.isChange) {
+            return true;
+          }
+          return confirms >= minConfirms;
+        });
+
+        // abort early if there's no viable unspents, because it won't be possible to create the txn later
+        if (unspents.length === 0) {
+          throw Error('0 unspents available for transaction creation');
         }
-        return confirms >= minConfirms;
-      });
 
-      // abort early if there's no viable unspents, because it won't be possible to create the txn later
-      if (unspents.length === 0) {
-        throw Error('0 unspents available for transaction creation');
-      }
-
-      // create array of unconfirmed unspent ID strings of the form "txHash:outputIndex"
-      zeroConfUnspentTxIds = _(results.unspents).filter(function(u) {
-        return !u.confirmations;
-      }).map(function(u) {
-        return u.tx_hash + ':' + u.tx_output_n;
-      }).value();
-      if (_.isEmpty(zeroConfUnspentTxIds)) {
+        // create array of unconfirmed unspent ID strings of the form "txHash:outputIndex"
+        zeroConfUnspentTxIds = _(results.unspents).filter(function (u) {
+          return !u.confirmations;
+        }).map(function (u) {
+          return u.tx_hash + ':' + u.tx_output_n;
+        }).value();
+        if (_.isEmpty(zeroConfUnspentTxIds)) {
         // we don't want to pass an empty array of inputs to the server, because it assumes if the
         // inputs arguments exists, it contains values
-        zeroConfUnspentTxIds = undefined;
-      }
+          zeroConfUnspentTxIds = undefined;
+        }
 
-      // For backwards compatibility, respect the old splitChangeSize=0 parameter
-      if (!params.noSplitChange && params.splitChangeSize !== 0) {
-        extraChangeAmounts = results.extraChangeAmounts || [];
-      }
-    });
+        // For backwards compatibility, respect the old splitChangeSize=0 parameter
+        if (!params.noSplitChange && params.splitChangeSize !== 0) {
+          extraChangeAmounts = results.extraChangeAmounts || [];
+        }
+      });
   };
 
   // Get the unspents for the single key fee address
   let feeSingleKeyUnspents: BitGoUnspent[] = [];
-  const getUnspentsForSingleKey = function() {
+  const getUnspentsForSingleKey = function () {
     if (feeSingleKeySourceAddress) {
       let feeTarget = 0.01e8;
       if (params.instant) {
         feeTarget += totalAmount * 0.001;
       }
       return bitgo.get(bitgo.url('/address/' + feeSingleKeySourceAddress + '/unspents?target=' + feeTarget))
-      .then(function(response) {
-        if (response.body.total <= 0) {
-          throw new Error('No unspents available in single key fee source');
-        }
-        feeSingleKeyUnspents = response.body.unspents;
-      });
+        .then(function (response) {
+          if (response.body.total <= 0) {
+            throw new Error('No unspents available in single key fee source');
+          }
+          feeSingleKeyUnspents = response.body.unspents;
+        });
     }
   };
 
@@ -389,27 +390,27 @@ exports.createTransaction = function(params) {
   // input amount and final list of inputs to use with the transaction.
   let feeSingleKeyUnspentsUsed: BitGoUnspent[] = [];
 
-  const collectInputs = function() {
+  const collectInputs = function () {
     if (!unspents.length) {
       throw new Error('no unspents available on wallet');
     }
     inputAmount = 0;
 
     // Calculate the cost of spending a single input, i.e. the smallest economical unspent value
-    return Bluebird.try(function() {
+    return Bluebird.try(function () {
 
       if (_.isNumber(params.feeRate) || _.isNumber(params.originalFeeRate)) {
         return (!_.isUndefined(params.feeRate) ? params.feeRate : params.originalFeeRate);
       } else {
         return bitgo.estimateFee({
           numBlocks: params.feeTxConfirmTarget,
-          maxFee: params.maxFeeRate
+          maxFee: params.maxFeeRate,
         })
-        .then(function(feeRateEstimate) {
-          return feeRateEstimate.feePerKb;
-        });
+          .then(function (feeRateEstimate) {
+            return feeRateEstimate.feePerKb;
+          });
       }
-    }).then(function(feeRate) {
+    }).then(function (feeRate) {
       // Don't spend inputs that cannot pay for their own cost.
       let minInputValue = 0;
       if (_.isInteger(params.minUnspentSize)) {
@@ -418,7 +419,7 @@ exports.createTransaction = function(params) {
 
       let prunedUnspentCount = 0;
       const originalUnspentCount = unspents.length;
-      unspents = _.filter(unspents, function(unspent) {
+      unspents = _.filter(unspents, function (unspent) {
         const isSegwitInput = !!unspent.witnessScript;
         const currentInputSize = isSegwitInput ? VirtualSizes.txP2shP2wshInputSize : VirtualSizes.txP2shInputSize;
         const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
@@ -431,7 +432,7 @@ exports.createTransaction = function(params) {
             currentMinInputValue,
             feeRate,
             inputSize: currentInputSize,
-            unspent: unspent
+            unspent: unspent,
           };
           console.log(`pruning unspent: ${JSON.stringify(pruneDetails, null, 4)}`);
           prunedUnspentCount++;
@@ -448,7 +449,7 @@ exports.createTransaction = function(params) {
         throw new Error('insufficient funds');
       }
       let segwitInputCount = 0;
-      unspents.every(function(unspent) {
+      unspents.every(function (unspent) {
         if (unspent.witnessScript) {
           segwitInputCount++;
         }
@@ -463,7 +464,7 @@ exports.createTransaction = function(params) {
         // collect the amount used in the fee inputs so we can get change later
         feeSingleKeyInputAmount = 0;
         feeSingleKeyUnspentsUsed = [];
-        feeSingleKeyUnspents.every(function(unspent) {
+        feeSingleKeyUnspents.every(function (unspent) {
           feeSingleKeyInputAmount += unspent.value;
           inputAmount += unspent.value;
           transaction.addInput(unspent.tx_hash, unspent.tx_output_n);
@@ -482,62 +483,62 @@ exports.createTransaction = function(params) {
         extraChangeAmounts.length + // extra change splitting
         (bitgoFeeInfo && bitgoFeeInfo.amount > 0 ? 1 : 0) + // add output for bitgo fee
         (feeSingleKeySourceAddress ? 1 : 0) // add single key source address change
-        )
+        ),
       };
 
       estTxSize = estimateTransactionSize({
         nP2shInputs: txInfo.nP2shInputs,
         nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
         nP2pkhInputs: txInfo.nP2pkhInputs,
-        nOutputs: txInfo.nOutputs
+        nOutputs: txInfo.nOutputs,
       });
     }).then(getDynamicFeeRateEstimate)
-    .then(function() {
-      minerFeeInfo = exports.calculateMinerFeeInfo({
-        bitgo: params.wallet.bitgo,
-        feeRate: feeRate,
-        nP2shInputs: txInfo.nP2shInputs,
-        nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
-        nP2pkhInputs: txInfo.nP2pkhInputs,
-        nOutputs: txInfo.nOutputs
-      });
+      .then(function () {
+        minerFeeInfo = exports.calculateMinerFeeInfo({
+          bitgo: params.wallet.bitgo,
+          feeRate: feeRate,
+          nP2shInputs: txInfo.nP2shInputs,
+          nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
+          nP2pkhInputs: txInfo.nP2pkhInputs,
+          nOutputs: txInfo.nOutputs,
+        });
 
-      if (shouldComputeBestFee) {
-        const approximateFee = minerFeeInfo.fee;
-        const shouldRecurse = _.isUndefined(fee) || approximateFee > fee;
-        fee = approximateFee;
-        // Recompute totalAmount from scratch
-        totalAmount = fee + totalOutputAmount;
-        if (bitgoFeeInfo) {
-          totalAmount += bitgoFeeInfo.amount;
-        }
-        if (shouldRecurse) {
+        if (shouldComputeBestFee) {
+          const approximateFee = minerFeeInfo.fee;
+          const shouldRecurse = _.isUndefined(fee) || approximateFee > fee;
+          fee = approximateFee;
+          // Recompute totalAmount from scratch
+          totalAmount = fee + totalOutputAmount;
+          if (bitgoFeeInfo) {
+            totalAmount += bitgoFeeInfo.amount;
+          }
+          if (shouldRecurse) {
           // if fee changed, re-collect inputs
-          inputAmount = 0;
-          transaction = new bitcoin.TransactionBuilder(network);
-          return collectInputs();
+            inputAmount = 0;
+            transaction = new bitcoin.TransactionBuilder(network);
+            return collectInputs();
+          }
         }
-      }
 
-      const totalFee = fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0);
+        const totalFee = fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0);
 
-      if (feeSingleKeySourceAddress) {
-        const summedSingleKeyUnspents = _.sumBy(feeSingleKeyUnspents, 'value');
-        if (totalFee > summedSingleKeyUnspents) {
-          const err: any = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
-          err.result = {
-            fee: fee,
-            feeRate: feeRate,
-            estimatedSize: minerFeeInfo.size,
-            available: inputAmount,
-            bitgoFee: bitgoFeeInfo,
-            txInfo: txInfo
-          };
-          return Bluebird.reject(err);
+        if (feeSingleKeySourceAddress) {
+          const summedSingleKeyUnspents = _.sumBy(feeSingleKeyUnspents, 'value');
+          if (totalFee > summedSingleKeyUnspents) {
+            const err: any = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
+            err.result = {
+              fee: fee,
+              feeRate: feeRate,
+              estimatedSize: minerFeeInfo.size,
+              available: inputAmount,
+              bitgoFee: bitgoFeeInfo,
+              txInfo: txInfo,
+            };
+            return Bluebird.reject(err);
+          }
         }
-      }
 
-      if (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount)) {
+        if (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount)) {
         // The unspents we're using for inputs do not have sufficient value on them to
         // satisfy the user's requested spend amount. That may be because the wallet's balance
         // is simply too low, or it might be that the wallet's balance is sufficient but
@@ -545,36 +546,36 @@ exports.createTransaction = function(params) {
         // having many small unspents and we hit our limit on the number of inputs we can use
         // in a txn, or it might have been that the filters the user passed in (like minConfirms)
         // disqualified too many of the unspents
-        let err;
-        if (totalUnspentsCount === fetchedUnspentsCount) {
+          let err;
+          if (totalUnspentsCount === fetchedUnspentsCount) {
           // we fetched every unspent the wallet had, but it still wasn't enough
-          err = new Error('Insufficient funds');
-        } else {
+            err = new Error('Insufficient funds');
+          } else {
           // we weren't able to fetch all the unspents on the wallet
-          err = new Error(`Transaction size too large due to too many unspents. Can send only ${inputAmount} satoshis in this transaction`);
+            err = new Error(`Transaction size too large due to too many unspents. Can send only ${inputAmount} satoshis in this transaction`);
+          }
+          err.result = {
+            fee: fee,
+            feeRate: feeRate,
+            estimatedSize: minerFeeInfo.size,
+            available: inputAmount,
+            bitgoFee: bitgoFeeInfo,
+            txInfo: txInfo,
+          };
+          return Bluebird.reject(err);
         }
-        err.result = {
-          fee: fee,
-          feeRate: feeRate,
-          estimatedSize: minerFeeInfo.size,
-          available: inputAmount,
-          bitgoFee: bitgoFeeInfo,
-          txInfo: txInfo
-        };
-        return Bluebird.reject(err);
-      }
-    });
+      });
   };
 
   // Add the outputs for this transaction.
-  const collectOutputs = function() {
+  const collectOutputs = function () {
     if (minerFeeInfo.size >= 90000) {
       throw new Error('transaction too large: estimated size ' + minerFeeInfo.size + ' bytes');
     }
 
     const outputs: Output[] = [];
 
-    recipients.forEach(function(recipient) {
+    recipients.forEach(function (recipient) {
       let script;
       if (_.isString(recipient.address)) {
         script = bitcoin.address.toOutputScript(recipient.address, network);
@@ -595,16 +596,16 @@ exports.createTransaction = function(params) {
       outputs.push({
         script: script,
         amount: recipient.amount,
-        travelInfo: travelInfo
+        travelInfo: travelInfo,
       });
     });
 
-    opReturns.forEach(function({ message, amount }) {
+    opReturns.forEach(function ({ message, amount }) {
       const script = bitcoin.script.fromASM('OP_RETURN ' + Buffer.from(message).toString('hex'));
       outputs.push({ script, amount });
     });
 
-    const getChangeOutputs = function(changeAmount: number): Output[] | Bluebird<Output[]> {
+    const getChangeOutputs = function (changeAmount: number): Output[] | Bluebird<Output[]> {
       if (changeAmount < 0) {
         throw new Error('negative change amount: ' + changeAmount);
       }
@@ -626,10 +627,10 @@ exports.createTransaction = function(params) {
 
       if (params.wallet.type() === 'safe') {
         return params.wallet.addresses()
-        .then(function(response) {
-          result.push({ address: response.addresses[0].address, amount: changeAmount });
-          return result;
-        });
+          .then(function (response) {
+            result.push({ address: response.addresses[0].address, amount: changeAmount });
+            return result;
+          });
       }
 
       let extraChangeTotal = _.sum(extraChangeAmounts);
@@ -644,12 +645,12 @@ exports.createTransaction = function(params) {
       allChangeAmounts.push(changeAmount - extraChangeTotal);
 
       // Recursive async func to add all change outputs
-      const addChangeOutputs = function(): Output[] | Bluebird<Output[]> {
+      const addChangeOutputs = function (): Output[] | Bluebird<Output[]> {
         const thisAmount = allChangeAmounts.shift();
         if (!thisAmount) {
           return result;
         }
-        return Bluebird.try(function() {
+        return Bluebird.try(function () {
           if (params.changeAddress) {
             // If user passed a change address, use it for all outputs
             return params.changeAddress;
@@ -658,74 +659,74 @@ exports.createTransaction = function(params) {
             // determine if segwit or not
             const changeChain = params.wallet.getChangeChain(params);
             return params.wallet.createAddress({ chain: changeChain, validate: validate })
-            .then(function(result) {
-              return result.address;
-            });
+              .then(function (result) {
+                return result.address;
+              });
           }
         })
-        .then(function(address) {
-          result.push({ address: address, amount: thisAmount });
-          return addChangeOutputs();
-        });
+          .then(function (address) {
+            result.push({ address: address, amount: thisAmount });
+            return addChangeOutputs();
+          });
       };
 
       return addChangeOutputs();
     };
 
     // Add change output(s) and instant fee output if applicable
-    return Bluebird.try(function() {
+    return Bluebird.try(function () {
       return getChangeOutputs(inputAmount - totalAmount);
     })
-    .then(function(result) {
-      changeOutputs = result;
-      const extraOutputs = changeOutputs.concat([]); // copy the array
-      if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
-        extraOutputs.push(bitgoFeeInfo);
-      }
-      extraOutputs.forEach(function(output) {
-        if ((output as AddressOutput).address) {
-          (output as ScriptOutput).script =
+      .then(function (result) {
+        changeOutputs = result;
+        const extraOutputs = changeOutputs.concat([]); // copy the array
+        if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
+          extraOutputs.push(bitgoFeeInfo);
+        }
+        extraOutputs.forEach(function (output) {
+          if ((output as AddressOutput).address) {
+            (output as ScriptOutput).script =
             bitcoin.address.toOutputScript((output as AddressOutput).address, network);
-        }
+          }
 
-        // decide where to put the outputs - default is to randomize unless forced to end
-        const outputIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
-        outputs.splice(outputIndex, 0, output);
+          // decide where to put the outputs - default is to randomize unless forced to end
+          const outputIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
+          outputs.splice(outputIndex, 0, output);
+        });
+
+        // Add all outputs to the transaction
+        outputs.forEach(function (output) {
+          transaction.addOutput((output as ScriptOutput).script, output.amount);
+        });
+
+        travelInfos = _(outputs).map(function (output, index) {
+          const result = output.travelInfo;
+          if (!result) {
+            return undefined;
+          }
+          result.outputIndex = index;
+          return result;
+        })
+          .filter()
+          .value();
       });
-
-      // Add all outputs to the transaction
-      outputs.forEach(function(output) {
-        transaction.addOutput((output as ScriptOutput).script, output.amount);
-      });
-
-      travelInfos = _(outputs).map(function(output, index) {
-        const result = output.travelInfo;
-        if (!result) {
-          return undefined;
-        }
-        result.outputIndex = index;
-        return result;
-      })
-      .filter()
-      .value();
-    });
   };
 
   // Serialize the transaction, returning what is needed to sign it
-  const serialize = function() {
+  const serialize = function () {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
-    const pickedUnspents: any = _.map(unspents, function(unspent) {
+    const pickedUnspents: any = _.map(unspents, function (unspent) {
       return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'script', 'value']);
     });
     const prunedUnspents = _.slice(pickedUnspents, 0, transaction.tx.ins.length - feeSingleKeyUnspentsUsed.length);
-    _.each(feeSingleKeyUnspentsUsed, function(feeUnspent) {
+    _.each(feeSingleKeyUnspentsUsed, function (feeUnspent) {
       prunedUnspents.push({ redeemScript: false, chainPath: false }); // mark as false to signify a non-multisig address
     });
     const result: any = {
       transactionHex: transaction.buildIncomplete().toHex(),
       unspents: prunedUnspents,
       fee: fee,
-      changeAddresses: changeOutputs.map(function(co) {
+      changeAddresses: changeOutputs.map(function (co) {
         return _.pick(co, ['address', 'path', 'amount']);
       }),
       walletId: params.wallet.id(),
@@ -735,7 +736,7 @@ exports.createTransaction = function(params) {
       bitgoFee: bitgoFeeInfo,
       estimatedSize: minerFeeInfo.size,
       txInfo: txInfo,
-      travelInfos: travelInfos
+      travelInfos: travelInfos,
     };
 
     // Add for backwards compatibility
@@ -746,15 +747,15 @@ exports.createTransaction = function(params) {
     return result;
   };
 
-  return Bluebird.try(function() {
+  return Bluebird.try(function () {
     return getBitGoFee();
   })
-  .then(function() {
-    return Bluebird.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
-  })
-  .then(collectInputs)
-  .then(collectOutputs)
-  .then(serialize);
+    .then(function () {
+      return Bluebird.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
+    })
+    .then(collectInputs)
+    .then(collectOutputs)
+    .then(serialize);
 };
 
 
@@ -769,7 +770,7 @@ exports.createTransaction = function(params) {
  *
  * @returns size: estimated size of the transaction in bytes
  */
-const estimateTransactionSize = function(params) {
+const estimateTransactionSize = function (params) {
   if (!_.isInteger(params.nP2shInputs) || params.nP2shInputs < 0) {
     throw new Error('expecting positive nP2shInputs');
   }
@@ -814,14 +815,14 @@ const estimateTransactionSize = function(params) {
  *   feeRate: fee rate that was used to estimate the fee for the transaction
  * }
  */
-exports.calculateMinerFeeInfo = function(params) {
+exports.calculateMinerFeeInfo = function (params) {
   const feeRateToUse = params.feeRate || params.bitgo.getConstants().fallbackFeeRate;
   const estimatedSize = estimateTransactionSize(params);
 
   return {
     size: estimatedSize,
     fee: Math.ceil(estimatedSize * feeRateToUse / 1000),
-    feeRate: feeRateToUse
+    feeRate: feeRateToUse,
   };
 };
 
@@ -841,7 +842,7 @@ exports.calculateMinerFeeInfo = function(params) {
  *  feeSingleKeyWIF Use the address based on this private key to pay fees
  * @returns {*}
  */
-exports.signTransaction = function(params) {
+exports.signTransaction = function (params) {
   let keychain = params.keychain; // duplicate so as to not mutate below
 
   const validate = (params.validate === undefined) ? true : params.validate;
@@ -894,11 +895,9 @@ exports.signTransaction = function(params) {
     transaction.ins.map((currentItem, index) => _.extend(currentItem, inputValues[index]));
   }
 
-  let rootExtKeyPath;
   let rootExtKey;
   if (keychain) {
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
-    rootExtKeyPath = hdPath(rootExtKey);
   }
 
   const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
@@ -920,10 +919,10 @@ exports.signTransaction = function(params) {
     }
 
     const chainPath = currentUnspent.chainPath;
-    if (rootExtKeyPath) {
-      const subPath = keychain.walletSubPath || '/0/0';
-      const path = keychain.path + subPath + chainPath;
-      privKey = rootExtKeyPath.deriveKey(path);
+    if (rootExtKey) {
+      const { walletSubPath = '/0/0' } = keychain;
+      const path = sanitizeLegacyPath(keychain.path + walletSubPath + chainPath);
+      privKey = rootExtKey.derivePath(path).keyPair;
     }
 
     privKey.network = network;
@@ -982,7 +981,7 @@ exports.signTransaction = function(params) {
     } catch (e) {
       // we need to know what's causing this
       e.result = {
-        unspent: currentUnspent
+        unspent: currentUnspent,
       };
       e.message = `Failed to sign input #${index} - ${e.message} - ${JSON.stringify(e.result, null, 4)} - \n${e.stack}`;
       debug('input sign failed: %s', e.message);
@@ -1027,7 +1026,7 @@ exports.signTransaction = function(params) {
   }
 
   return Bluebird.resolve({
-    transactionHex: transaction.toHex()
+    transactionHex: transaction.toHex(),
   });
 };
 
@@ -1043,7 +1042,7 @@ exports.signTransaction = function(params) {
  * @param amount
  * @returns {number}
  */
-exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ignoreKeyIndices, amount, isBCH = false) {
+exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ignoreKeyIndices, amount, isBCH = false) {
   if (inputIndex < 0 || inputIndex >= transaction.ins.length) {
     throw new Error('illegal index');
   }

@@ -67,6 +67,7 @@ export class TradingPartners {
    * @param params.requesterSide side of the requester (primary or secondary) important for agency relationships
    * @param callback
    */
+  // eslint-disable-next-line @typescript-eslint/ban-types
   addByCode(params: TradingPartnerAddByCodeParameters, callback?: NodeCallback<{}>): Bluebird<TradingPartner> {
     const self = this;
     return co<TradingPartner>(function* refer() {

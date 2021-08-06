@@ -17,7 +17,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateAddress({ address: '' });
         },
-        e => e.message === ' is not a valid base58 address.',
+        (e) => e.message === ' is not a valid base58 address.',
       );
     });
 
@@ -26,7 +26,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
         },
-        e => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.',
+        (e) => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.',
       );
     });
 
@@ -35,7 +35,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
         },
-        e => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.',
+        (e) => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.',
       );
     });
 
@@ -50,7 +50,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateValue(value);
         },
-        e => e.message === 'Value cannot be below zero.',
+        (e) => e.message === 'Value cannot be below zero.',
       );
     });
 
@@ -60,7 +60,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateValue(value);
         },
-        e => e.message === 'Value cannot be greater than handled by the javatron node.',
+        (e) => e.message === 'Value cannot be greater than handled by the javatron node.',
       );
     });
   });

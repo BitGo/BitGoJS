@@ -30,7 +30,7 @@ try {
 //
 // Constructor
 //
-const Keychains = function(bitgo) {
+const Keychains = function (bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -38,7 +38,7 @@ const Keychains = function(bitgo) {
 // isValid
 // Tests a xpub or xprv string to see if it is a valid keychain.
 //
-Keychains.prototype.isValid = function(params) {
+Keychains.prototype.isValid = function (params) {
   params = params || {};
   common.validateParams(params, [], []);
 
@@ -73,7 +73,7 @@ Keychains.prototype.isValid = function(params) {
 // If |seed| is provided, used to seed the keychain.  Otherwise,
 // a random keychain is created.
 //
-Keychains.prototype.create = function(params) {
+Keychains.prototype.create = function (params) {
   params = params || {};
   common.validateParams(params, [], []);
 
@@ -100,12 +100,12 @@ Keychains.prototype.create = function(params) {
   return {
     xpub: xpub,
     xprv: extendedKey.toBase58(),
-    ethAddress: ethAddress
+    ethAddress: ethAddress,
   };
 };
 
 // used by deriveLocal
-const apiResponse = function(status, result, message) {
+const apiResponse = function (status, result, message) {
   const err: any = new Error(message);
   err.status = status;
   err.result = result;
@@ -116,7 +116,7 @@ const apiResponse = function(status, result, message) {
 // deriveLocal
 // Locally derives a keychain from a top level BIP32 string, given a path.
 //
-Keychains.prototype.deriveLocal = function(params) {
+Keychains.prototype.deriveLocal = function (params) {
   params = params || {};
   common.validateParams(params, ['path'], ['xprv', 'xpub']);
 
@@ -154,7 +154,7 @@ Keychains.prototype.deriveLocal = function(params) {
     path: params.path,
     xpub: xpub,
     xprv: params.xprv && derivedNode.toBase58(),
-    ethAddress: ethAddress
+    ethAddress: ethAddress,
   };
 };
 
@@ -162,14 +162,14 @@ Keychains.prototype.deriveLocal = function(params) {
 // list
 // List the user's keychains
 //
-Keychains.prototype.list = function(params, callback) {
+Keychains.prototype.list = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   return Bluebird.resolve(
     this.bitgo.get(this.bitgo.url('/keychain')).result('keychains')
-  ).then(function(keychains) {
-    keychains.map(function(keychain) {
+  ).then(function (keychains) {
+    keychains.map(function (keychain) {
       if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
         throw new Error('ethAddress and xpub do not match');
       }
@@ -192,7 +192,7 @@ Keychains.prototype.list = function(params, callback) {
  *  }
  *  @returns result.version {Number}
  */
-Keychains.prototype.updatePassword = function(params, callback) {
+Keychains.prototype.updatePassword = function (params, callback) {
   return co(function *coUpdatePassword() {
     common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
     const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
@@ -216,7 +216,7 @@ Keychains.prototype.updatePassword = function(params, callback) {
 // add
 // Add a new keychain
 //
-Keychains.prototype.add = function(params, callback) {
+Keychains.prototype.add = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv', 'type', 'isLedger'], callback);
 
@@ -230,7 +230,7 @@ Keychains.prototype.add = function(params, callback) {
         isLedger: params.isLedger,
       })
       .result()
-  ).then(function(keychain) {
+  ).then(function (keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
@@ -242,13 +242,13 @@ Keychains.prototype.add = function(params, callback) {
 // createBitGo
 // Add a new BitGo server keychain
 //
-Keychains.prototype.createBitGo = function(params, callback) {
+Keychains.prototype.createBitGo = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   return Bluebird.resolve(
     this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result()
-  ).then(function(keychain) {
+  ).then(function (keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
@@ -260,13 +260,13 @@ Keychains.prototype.createBitGo = function(params, callback) {
 // createBackup
 // Create a new backup keychain through bitgo - often used for creating a keychain on a KRS
 //
-Keychains.prototype.createBackup = function(params, callback) {
+Keychains.prototype.createBackup = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['provider'], [], callback);
 
   return Bluebird.resolve(
     this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result()
-  ).then(function(keychain) {
+  ).then(function (keychain) {
     // not all keychains have an xpub
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
@@ -281,7 +281,7 @@ Keychains.prototype.createBackup = function(params, callback) {
 // Parameters include:
 //   xpub:  the xpub of the key to lookup (required)
 //
-Keychains.prototype.get = function(params, callback) {
+Keychains.prototype.get = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['xpub', 'ethAddress'], callback);
 
@@ -292,7 +292,7 @@ Keychains.prototype.get = function(params, callback) {
   const id = params.xpub || params.ethAddress;
   return Bluebird.resolve(
     this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id))).send({}).result()
-  ).then(function(keychain) {
+  ).then(function (keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
@@ -306,7 +306,7 @@ Keychains.prototype.get = function(params, callback) {
 // Parameters include:
 //   xpub:  the xpub of the key to lookup (required)
 //
-Keychains.prototype.update = function(params, callback) {
+Keychains.prototype.update = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
@@ -316,7 +316,7 @@ Keychains.prototype.update = function(params, callback) {
         encryptedXprv: params.encryptedXprv,
       })
       .result()
-  ).then(function(keychain) {
+  ).then(function (keychain) {
     if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }

@@ -3,7 +3,7 @@ import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Etc } from '../../../../../src';
 import * as testData from '../../../../resources/etc/etc';
 
-describe('Etc wallet initialization', function() {
+describe('Etc wallet initialization', function () {
   let txBuilder: Etc.TransactionBuilder;
   const initTxBuilder = (): void => {
     txBuilder = getBuilder('tetc') as Etc.TransactionBuilder;

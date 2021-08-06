@@ -17,7 +17,6 @@ import * as httpProxy from 'http-proxy';
 import { Environments } from 'bitgo';
 import { coroutine as co } from 'bluebird';
 
-// eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
@@ -31,11 +30,11 @@ import {
   prepareIpc,
 } from '../../src/expressApp';
 
-describe('Bitgo Express', function() {
+describe('Bitgo Express', function () {
 
-  describe('server initialization', function() {
+  describe('server initialization', function () {
 
-    it('should require NODE_ENV to be production when running against prod env', function() {
+    it('should require NODE_ENV to be production when running against prod env', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
 
       try {
@@ -54,7 +53,7 @@ describe('Bitgo Express', function() {
       }
     });
 
-    it('should disable NODE_ENV check if disableenvcheck argument is given', function() {
+    it('should disable NODE_ENV check if disableenvcheck argument is given', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'dev' });
 
       try {
@@ -68,7 +67,7 @@ describe('Bitgo Express', function() {
       }
     });
 
-    it('should require TLS for prod env when listening on external interfaces', function() {
+    it('should require TLS for prod env when listening on external interfaces', function () {
       const args: any = {
         env: 'prod',
         bind: '1',
@@ -100,7 +99,7 @@ describe('Bitgo Express', function() {
       (() => expressApp(args)).should.throw(TlsConfigurationError);
     });
 
-    it('should require both keypath and crtpath when using TLS, but TLS is not required', function() {
+    it('should require both keypath and crtpath when using TLS, but TLS is not required', function () {
       const args: any = {
         env: 'test',
         bind: '1',
