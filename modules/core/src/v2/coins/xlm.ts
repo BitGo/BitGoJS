@@ -39,6 +39,7 @@ import {
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
+import { getStellarKeys } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -573,14 +574,11 @@ export class Xlm extends BaseCoin {
   initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
     const self = this;
     return co<stellar.Keypair[]>(function* () {
-      const keys: stellar.Keypair[] = [];
       let userKey = params.userKey;
       let backupKey = params.backupKey;
 
       // Stellar's Ed25519 public keys start with a G, while private keys start with an S
       const isKrsRecovery = backupKey.startsWith('G') && !userKey.startsWith('G');
-      const isUnsignedSweep = backupKey.startsWith('G') && userKey.startsWith('G');
-
       if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
       }
@@ -599,40 +597,7 @@ export class Xlm extends BaseCoin {
         throw new InvalidAddressError('Invalid destination address!');
       }
 
-      try {
-        if (!userKey.startsWith('S') && !userKey.startsWith('G')) {
-          userKey = self.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        }
-
-        const userKeyPair = isUnsignedSweep
-          ? stellar.Keypair.fromPublicKey(userKey)
-          : stellar.Keypair.fromSecret(userKey);
-        keys.push(userKeyPair);
-      } catch (e) {
-        throw new Error('Failed to decrypt user key with passcode - try again!');
-      }
-
-      try {
-        if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
-          backupKey = this.bitgo.decrypt({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        }
-
-        if (isKrsRecovery || isUnsignedSweep) {
-          keys.push(stellar.Keypair.fromPublicKey(backupKey));
-        } else {
-          keys.push(stellar.Keypair.fromSecret(backupKey));
-        }
-      } catch (e) {
-        throw new Error('Failed to decrypt backup key with passcode - try again!');
-      }
-
-      return keys;
+      return getStellarKeys(self.bitgo, params);
     }).call(this);
   }
 
