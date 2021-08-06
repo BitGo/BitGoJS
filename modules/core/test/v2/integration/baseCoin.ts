@@ -9,8 +9,8 @@ import { TestBitGo } from '../../lib/test_bitgo';
 const bitgo = new TestBitGo({ env: 'test' });
 bitgo.initializeTestVars();
 
-describe('V2 Base Coin:', function() {
-  describe('fee estimate call', function() {
+describe('V2 Base Coin:', function () {
+  describe('fee estimate call', function () {
 
     before(() => restore());
 

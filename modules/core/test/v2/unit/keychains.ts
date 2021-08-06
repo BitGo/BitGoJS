@@ -33,12 +33,12 @@ describe('V2 Keychains', function v2keychains() {
   describe('Add Keychain', function addKeychain() {
     it('should add a keychain', co(function *addKeychain() {
       nock(bgUrl)
-      .post('/api/v2/tltc/key', function(body) {
-        body.pub.should.equal('pub');
-        body.derivedFromParentWithSeed.should.equal('derivedFromParentWithSeed');
-        return true;
-      })
-      .reply(200, {});
+        .post('/api/v2/tltc/key', function (body) {
+          body.pub.should.equal('pub');
+          body.derivedFromParentWithSeed.should.equal('derivedFromParentWithSeed');
+          return true;
+        })
+        .reply(200, {});
       yield keychains.add({ pub: 'pub', derivedFromParentWithSeed: 'derivedFromParentWithSeed' });
     }));
   });
@@ -48,7 +48,7 @@ describe('V2 Keychains', function v2keychains() {
    * for key generation but the keys are treated the same by BitGo down the line. Any SECP256K1 based coins key-pairs can
    * be re-used so need to be the same.
    **/
-  describe('Key generation enforcement for SECP256K1', function() {
+  describe('Key generation enforcement for SECP256K1', function () {
     // iterate over non-fiat crypto secp coins
     const coinFamilyValues = Object.keys(CoinFamily).map(n => n.toLowerCase());
     const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === KeyCurve.Secp256k1
@@ -63,7 +63,7 @@ describe('V2 Keychains', function v2keychains() {
     const seed = Buffer.from('this is some random seed we will use', 'utf-8');
 
     cryptoSecpCoins.forEach((coin) => {
-      it(`should create the same ${coin.name} key with the same seed`, function() {
+      it(`should create the same ${coin.name} key with the same seed`, function () {
         const currentCoin = bitgo.coin(coin.name);
         const keyPair = currentCoin.generateKeyPair(seed);
 
@@ -84,11 +84,11 @@ describe('V2 Keychains', function v2keychains() {
 
     describe('should fail', function describeSuccess() {
       let sandbox;
-      beforeEach(function() {
+      beforeEach(function () {
         sandbox = sinon.createSandbox();
       });
 
-      afterEach(function() {
+      afterEach(function () {
         sandbox.restore();
       });
 
@@ -145,21 +145,21 @@ describe('V2 Keychains', function v2keychains() {
             keys: [
               {
                 pub: 'xpub1',
-                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword })
-              }
-            ]
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+              },
+            ],
           });
 
         sandbox.stub(keychains, 'updateSingleKeychainPassword').throws('error', 'some random error');
 
         yield keychains.updatePassword({ oldPassword, newPassword })
-        .should.be.rejectedWith('some random error');
+          .should.be.rejectedWith('some random error');
       }));
     });
 
     describe('successful password update', function describeSuccess() {
-      const validateKeys = function(keys, newPassword) {
-        _.each(keys, function(encryptedPrv, pub) {
+      const validateKeys = function (keys, newPassword) {
+        _.each(keys, function (encryptedPrv, pub) {
           pub.should.startWith('xpub');
           const decryptedPrv = bitgo.decrypt({ input: encryptedPrv, password: newPassword });
           decryptedPrv.should.startWith('xprv');
@@ -168,20 +168,20 @@ describe('V2 Keychains', function v2keychains() {
 
       it('receive only one page when listing keychains', co(function *coOnePageIt() {
         nock(bgUrl)
-        .get('/api/v2/tltc/key')
-        .query(true)
-        .reply(200, {
-          keys: [
-            {
-              pub: 'xpub1',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword })
-            },
-            {
-              pub: 'xpub2',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword })
-            }
-          ]
-        });
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              {
+                pub: 'xpub1',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+              },
+              {
+                pub: 'xpub2',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+              },
+            ],
+          });
 
         const keys = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword);
@@ -190,39 +190,39 @@ describe('V2 Keychains', function v2keychains() {
       it('receive multiple pages when listing keychains', co(function *coMultiplePageIt() {
         const prevId = 'prevId';
         nock(bgUrl)
-        .get('/api/v2/tltc/key')
-        .query(true)
-        .reply(200, {
-          nextBatchPrevId: prevId,
-          keys: [
-            {
-              pub: 'xpub1',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword })
-            },
-            {
-              pub: 'xpub2',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword })
-            }
-          ]
-        });
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            nextBatchPrevId: prevId,
+            keys: [
+              {
+                pub: 'xpub1',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+              },
+              {
+                pub: 'xpub2',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+              },
+            ],
+          });
 
         nock(bgUrl)
-        .get('/api/v2/tltc/key')
-        .query(function queryNextPageMatch(queryObject) {
-          return queryObject.prevId === prevId;
-        })
-        .reply(200, {
-          keys: [
-            {
-              pub: 'xpub3',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword })
-            },
-            {
-              pub: 'xpub4',
-              encryptedPrv: bitgo.encrypt({ input: 'xprv4', password: otherPassword })
-            }
-          ]
-        });
+          .get('/api/v2/tltc/key')
+          .query(function queryNextPageMatch(queryObject) {
+            return queryObject.prevId === prevId;
+          })
+          .reply(200, {
+            keys: [
+              {
+                pub: 'xpub3',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
+              },
+              {
+                pub: 'xpub4',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv4', password: otherPassword }),
+              },
+            ],
+          });
 
         const keys = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword);
@@ -232,7 +232,7 @@ describe('V2 Keychains', function v2keychains() {
         const prv = 'xprvtest';
         const keychain = {
           xpub: 'xpub123',
-          encryptedPrv: bitgo.encrypt({ input: prv, password: oldPassword })
+          encryptedPrv: bitgo.encrypt({ input: prv, password: oldPassword }),
         };
 
         const newKeychain = keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });

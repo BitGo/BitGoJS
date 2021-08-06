@@ -2,22 +2,22 @@ import 'should';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-describe('OFC:', function() {
+describe('OFC:', function () {
   let bitgo;
   let ofcCoin;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     ofcCoin = bitgo.coin('ofc');
   });
 
-  it('functions that return constants', function() {
+  it('functions that return constants', function () {
     ofcCoin.getChain().should.equal('ofc');
     ofcCoin.getFullName().should.equal('Offchain');
   });
 
-  it('isValidMofNSetup', function() {
+  it('isValidMofNSetup', function () {
     ofcCoin.isValidMofNSetup({ m: 2, n: 3 }).should.be.false();
     ofcCoin.isValidMofNSetup({ m: 1, n: 3 }).should.be.false();
     ofcCoin.isValidMofNSetup({ m: 1, n: 1 }).should.be.true();

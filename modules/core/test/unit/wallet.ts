@@ -19,7 +19,7 @@ import { fixtures } from './fixtures/accelerate-tx';
 
 nock.disableNetConnect();
 
-describe('Wallet Prototype Methods', function() {
+describe('Wallet Prototype Methods', function () {
 
   const bitgo = new TestBitGo({ env: 'test' });
   bitgo.initializeTestVars();
@@ -30,7 +30,7 @@ describe('Wallet Prototype Methods', function() {
     rawPub: '02c103ac74481874b5ef0f385d12725e4f14aedc9e00bc814ce96f47f62ce7adf2',
     rawPrv: '936c5af3f8af81f75cdad1b08f29e7d9c01e598e2db2d7be18b9e5a8646e87c6',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
   const backupKeypair = {
     xprv: 'xprv9s21ZrQH143K47sEkLkykgYmq1xF5ZWrPYhUZcmBpPFMQojvGUmEcr5jFXYGfr8CpFdpTvhQ7L9NN2rLtsBFjSix3BAjwJcBj6U3D5hxTPc',
@@ -38,12 +38,12 @@ describe('Wallet Prototype Methods', function() {
     rawPub: '03bbcb73997977068d9e36666bbd5cd37579acae8e2bd5ce9d0a6e5c150a423bc3',
     rawPrv: '77a15f14796f4001d1092ae84f766bd869e9bee6bffae6547def5045b96fa943',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
   const bitgoKey = {
     xpub: 'xpub661MyMwAqRbcGQcVFiwcrtc7c3vopsX96jsJUYPcFMREcRTqAqsqbv2ZRyCJAPLm5NMHCy85E3ZwpT4EAUw9WGU7vMhG6z83hDeKXBWn6Lf',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
 
   const extraKeypair1 = {
@@ -52,7 +52,7 @@ describe('Wallet Prototype Methods', function() {
     rawPub: '03174291b93b7e95ff070949272136e706be24d4885c47d6cf2203b7f792e26b0d',
     rawPrv: 'a151bd090c47ab339acfdeea680795d0a32408ad73f339412795b45e50ba8e3d',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
 
   const extraKeypair2 = {
@@ -61,17 +61,17 @@ describe('Wallet Prototype Methods', function() {
     rawPub: '02d2e2b63f348772aa7fccd2c21234441c352900eeda6da6d60baeb0d9fe3ce293',
     rawPrv: '11b6dfcea36c06afa337236a016192dc783f1b3c5a946b9a37e070c4a8cab5f3',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
 
   const keychains = [userKeypair, backupKeypair, bitgoKey, extraKeypair1, extraKeypair2];
   const fakeWallet = new Wallet(bitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
 
-  describe('Generate Address', function() {
+  describe('Generate Address', function () {
 
     before(() => nock.pendingMocks().should.be.empty());
 
-    it('generate first address', function() {
+    it('generate first address', function () {
       const idAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false });
       idAddress.address.should.equal(fakeWallet.id());
       idAddress.chain.should.equal(0);
@@ -83,7 +83,7 @@ describe('Wallet Prototype Methods', function() {
       idAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate second address', function() {
+    it('generate second address', function () {
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/1', segwit: false });
       p2shAddress.address.should.equal('2N5y5RLVqdZi7qp5PmzMdPR6YvQzUqBQFWK');
       p2shAddress.chain.should.equal(0);
@@ -95,7 +95,7 @@ describe('Wallet Prototype Methods', function() {
       p2shAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate change address', function() {
+    it('generate change address', function () {
       const p2shAddress = fakeWallet.generateAddress({ path: '/1/0', segwit: false });
       p2shAddress.address.should.equal('2NFj9JrpZc5MyYnCouyREtzNY4eoyKWDfgP');
       p2shAddress.chain.should.equal(1);
@@ -107,7 +107,7 @@ describe('Wallet Prototype Methods', function() {
       p2shAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate segwit address', function() {
+    it('generate segwit address', function () {
       const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true });
       segwitAddress.address.should.equal('2N5EVegRPWnmed2PpqDggZPw7DcNDguRYv8');
       segwitAddress.chain.should.equal(10);
@@ -120,7 +120,7 @@ describe('Wallet Prototype Methods', function() {
       segwitAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate segwit address with custom threshold', function() {
+    it('generate segwit address with custom threshold', function () {
       const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, threshold: 3 });
       segwitAddress.address.should.equal('2NCa6VuAUNenQeZRnQj8PHQwVDgVc97DDcc');
       segwitAddress.chain.should.equal(10);
@@ -133,7 +133,7 @@ describe('Wallet Prototype Methods', function() {
       segwitAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate segwit address with custom keyset', function() {
+    it('generate segwit address with custom keyset', function () {
       const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, keychains: keychains });
       segwitAddress.address.should.equal('2N9p18EKz583H7unBiT19Jt1bfyBHGsyEZX');
       segwitAddress.chain.should.equal(10);
@@ -146,7 +146,7 @@ describe('Wallet Prototype Methods', function() {
       segwitAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate segwit address with custom keyset and threshold', function() {
+    it('generate segwit address with custom keyset and threshold', function () {
       const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, keychains: keychains, threshold: 4 });
       segwitAddress.address.should.equal('2MvQXRwq3AXNMXSKQkJuP81Ye5cah4hytxU');
       segwitAddress.chain.should.equal(10);
@@ -159,7 +159,7 @@ describe('Wallet Prototype Methods', function() {
       segwitAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate p2sh address with custom threshold', function() {
+    it('generate p2sh address with custom threshold', function () {
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, threshold: 3 });
       p2shAddress.address.should.equal('2NFnEZjzUhrFAutNCM9fwvQy53SY4wftoJ1');
       p2shAddress.chain.should.equal(0);
@@ -171,7 +171,7 @@ describe('Wallet Prototype Methods', function() {
       p2shAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate p2sh address with custom keyset', function() {
+    it('generate p2sh address with custom keyset', function () {
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, keychains: keychains });
       p2shAddress.address.should.equal('2MvPfwPEgg2oMRbrBCBqsA34XkpCFARqhbM');
       p2shAddress.chain.should.equal(0);
@@ -183,7 +183,7 @@ describe('Wallet Prototype Methods', function() {
       p2shAddress.wallet.should.equal(fakeWallet.id());
     });
 
-    it('generate p2sh address with custom keyset and threshold', function() {
+    it('generate p2sh address with custom keyset and threshold', function () {
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, keychains: keychains, threshold: 4 });
       p2shAddress.address.should.equal('2MsfbMMnNS198FdzDU9rZiTvHSKcw3PizXq');
       p2shAddress.chain.should.equal(0);
@@ -197,7 +197,7 @@ describe('Wallet Prototype Methods', function() {
 
   });
 
-  describe('Create Transaction', function() {
+  describe('Create Transaction', function () {
 
     let bgUrl;
     let fakeProdWallet;
@@ -216,17 +216,17 @@ describe('Wallet Prototype Methods', function() {
       const sendAmount = 1e5;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: billingAddress });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: billingAddress });
 
       const scope = nock(bgUrl)
-      .get(`/api/v1/wallet/${fakeProdWallet.id()}/unspents`)
-      .query(_.merge(customUnspentsFetchParams, {
-        segwit: true,
-        target: sendAmount,
-        minSize: 0
-      }))
-      .reply(200, { unspents: [] });
+        .get(`/api/v1/wallet/${fakeProdWallet.id()}/unspents`)
+        .query(_.merge(customUnspentsFetchParams, {
+          segwit: true,
+          target: sendAmount,
+          minSize: 0,
+        }))
+        .reply(200, { unspents: [] });
 
       yield fakeProdWallet.createTransaction({
         unspentsFetchParams: customUnspentsFetchParams,
@@ -234,8 +234,8 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
-        }
+          address: '',
+        },
       }).should.be.rejectedWith('0 unspents available for transaction creation');
 
       scope.isDone().should.be.true();
@@ -245,7 +245,7 @@ describe('Wallet Prototype Methods', function() {
       const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
       const unspent: any = {
         addresses: [
-          '2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X'
+          '2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X',
         ],
         value: '0.00504422',
         value_int: 504422,
@@ -253,12 +253,12 @@ describe('Wallet Prototype Methods', function() {
         n: 1,
         script_pub_key: {
           asm: 'OP_HASH160 d039cb3344294a5a384a5508a006444c420cbc11 OP_EQUAL',
-          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187'
+          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 9,
-        id: 61330229
+        id: 61330229,
       };
       _.extend(unspent, p2shAddress);
       unspent.value = unspent.value_int;
@@ -267,8 +267,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -279,9 +279,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo p2sh test': 1000 }
+        opReturns: { 'BitGo p2sh test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
@@ -305,7 +305,7 @@ describe('Wallet Prototype Methods', function() {
       const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
       const unspent: any = {
         addresses: [
-          '2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X'
+          '2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X',
         ],
         value: '0.00504422',
         value_int: 504422,
@@ -313,12 +313,12 @@ describe('Wallet Prototype Methods', function() {
         n: 1,
         script_pub_key: {
           asm: 'OP_HASH160 d039cb3344294a5a384a5508a006444c420cbc11 OP_EQUAL',
-          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187'
+          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 9,
-        id: 61330229
+        id: 61330229,
       };
       _.extend(unspent, p2shAddress);
       unspent.value = unspent.value_int;
@@ -327,8 +327,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -339,9 +339,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo p2sh test': 1000 }
+        opReturns: { 'BitGo p2sh test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f207032736820746573742ca107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
 
@@ -366,7 +366,7 @@ describe('Wallet Prototype Methods', function() {
       const segwitAddress = fakeProdWallet.generateAddress({ path: '/10/13', segwit: true });
       const unspent: any = {
         addresses: [
-          '2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP'
+          '2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP',
         ],
         value: '0.18750000',
         value_int: 18750000,
@@ -374,12 +374,12 @@ describe('Wallet Prototype Methods', function() {
         n: 0,
         script_pub_key: {
           asm: 'OP_HASH160 37b393fce627a0ec634eb543dda1e608e2d1c78a OP_EQUAL',
-          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87'
+          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61331617
+        id: 61331617,
       };
       _.extend(unspent, segwitAddress);
       unspent.value = unspent.value_int;
@@ -388,8 +388,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
@@ -400,9 +400,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo segwit test': 1000 }
+        opReturns: { 'BitGo segwit test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000');
 
@@ -426,7 +426,7 @@ describe('Wallet Prototype Methods', function() {
       const segwitAddress = fakeProdWallet.generateAddress({ path: '/10/13', segwit: true });
       const unspent: any = {
         addresses: [
-          '2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP'
+          '2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP',
         ],
         value: '0.18750000',
         value_int: 18750000,
@@ -434,12 +434,12 @@ describe('Wallet Prototype Methods', function() {
         n: 0,
         script_pub_key: {
           asm: 'OP_HASH160 37b393fce627a0ec634eb543dda1e608e2d1c78a OP_EQUAL',
-          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87'
+          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61331617
+        id: 61331617,
       };
       _.extend(unspent, segwitAddress);
       unspent.value = unspent.value_int;
@@ -448,8 +448,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
@@ -460,9 +460,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo segwit test': 1000 }
+        opReturns: { 'BitGo segwit test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000');
 
@@ -481,7 +481,7 @@ describe('Wallet Prototype Methods', function() {
       const p2shAddress = fakeProdWallet.generateAddress({ path: '/1/13', segwit: false, keychains: keychains, threshold: 3 });
       const unspent: any = {
         addresses: [
-          '2NBK1thw7RpffyyCGa2aePqueJSUA7pENwf'
+          '2NBK1thw7RpffyyCGa2aePqueJSUA7pENwf',
         ],
         value: '0.09375000',
         value_int: 9375000,
@@ -489,12 +489,12 @@ describe('Wallet Prototype Methods', function() {
         n: 0,
         script_pub_key: {
           asm: 'OP_HASH160 c629d4a1640a55e0703726aeb2aabbcfc5b29de4 OP_EQUAL',
-          hex: 'a914c629d4a1640a55e0703726aeb2aabbcfc5b29de487'
+          hex: 'a914c629d4a1640a55e0703726aeb2aabbcfc5b29de487',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61331633
+        id: 61331633,
       };
       _.extend(unspent, p2shAddress);
       unspent.value = unspent.value_int;
@@ -503,8 +503,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -515,9 +515,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo 3/5 p2sh test': 1000 }
+        opReturns: { 'BitGo 3/5 p2sh test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f22110000000000ffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
 
@@ -547,7 +547,7 @@ describe('Wallet Prototype Methods', function() {
       const segwitAddress = fakeProdWallet.generateAddress({ path: '/11/13', segwit: true, keychains: keychains, threshold: 3 });
       const unspent: any = {
         addresses: [
-          '2N2zJWhXvUnRy5KDZKpqkQLGgK8sT6hhyGz'
+          '2N2zJWhXvUnRy5KDZKpqkQLGgK8sT6hhyGz',
         ],
         value: '0.04687500',
         value_int: 4687500,
@@ -555,12 +555,12 @@ describe('Wallet Prototype Methods', function() {
         n: 0,
         script_pub_key: {
           asm: 'OP_HASH160 6adecb920b918a98854914e41f5f1b1628ca166f OP_EQUAL',
-          hex: 'a9146adecb920b918a98854914e41f5f1b1628ca166f87'
+          hex: 'a9146adecb920b918a98854914e41f5f1b1628ca166f87',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61331653
+        id: 61331653,
       };
       _.extend(unspent, segwitAddress);
       unspent.value = unspent.value_int;
@@ -569,8 +569,8 @@ describe('Wallet Prototype Methods', function() {
       unspent.script = unspent.outputScript;
 
       nock(bgUrl)
-      .post('/api/v1/billing/address')
-      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        .post('/api/v1/billing/address')
+        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = (yield fakeProdWallet.createTransaction({
         changeAddress: segwitAddress.address,
@@ -581,9 +581,9 @@ describe('Wallet Prototype Methods', function() {
         feeRate: 10000,
         bitgoFee: {
           amount: 0,
-          address: ''
+          address: '',
         },
-        opReturns: { 'BitGo 3/5 segwit test': 1000 }
+        opReturns: { 'BitGo 3/5 segwit test': 1000 },
       })) as any;
       transaction.transactionHex.should.equal('010000000142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d678520000000000ffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8700000000');
 
@@ -614,7 +614,7 @@ describe('Wallet Prototype Methods', function() {
       const segwitAddress = fakeWallet.generateAddress({ path: '/10/14', segwit: true });
       const p2shUnspent = {
         addresses: [
-          '2N533fqgyPYKVD892nBRaYmFHbbTykhYSEw'
+          '2N533fqgyPYKVD892nBRaYmFHbbTykhYSEw',
         ],
         value: '2.99996610',
         value_int: 299996610,
@@ -622,16 +622,16 @@ describe('Wallet Prototype Methods', function() {
         n: 1,
         script_pub_key: {
           asm: 'OP_HASH160 8153e7a35508088b6cf599226792c7de2dbff252 OP_EQUAL',
-          hex: 'a9148153e7a35508088b6cf599226792c7de2dbff25287'
+          hex: 'a9148153e7a35508088b6cf599226792c7de2dbff25287',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61331263
+        id: 61331263,
       };
       const segwitUnspent = {
         addresses: [
-          '2NBtpXcDruf3zRutmF4AbCMFNQHXsGNP6kT'
+          '2NBtpXcDruf3zRutmF4AbCMFNQHXsGNP6kT',
         ],
         value: '1.50000000',
         value_int: 150000000,
@@ -639,12 +639,12 @@ describe('Wallet Prototype Methods', function() {
         n: 0,
         script_pub_key: {
           asm: 'OP_HASH160 cc8e7cbf481389d3183a590acfa6aa66eb97c8e1 OP_EQUAL',
-          hex: 'a914cc8e7cbf481389d3183a590acfa6aa66eb97c8e187'
+          hex: 'a914cc8e7cbf481389d3183a590acfa6aa66eb97c8e187',
         },
         req_sigs: 1,
         type: 'scripthash',
         confirmations: 0,
-        id: 61330882
+        id: 61330882,
       };
       const addresses = [p2shAddress, segwitAddress];
       const unspents = [p2shUnspent, segwitUnspent].map((unspent: any, index) => {
@@ -668,8 +668,8 @@ describe('Wallet Prototype Methods', function() {
         opReturns: { 'BitGo mixed p2sh & segwit test': 400000000 },
         bitgoFee: {
           amount: 81760,
-          address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb'
-        }
+          address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb',
+        },
       })) as any;
       transaction.transactionHex.should.equal('01000000027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f60100000000ffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a40000000000ffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374ba8ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700000000');
 
@@ -691,36 +691,36 @@ describe('Wallet Prototype Methods', function() {
 
   });
 
-  describe('Send Many', function() {
+  describe('Send Many', function () {
     it('responds with proper fee and fee rate', co(function *() {
       const params = {
         recipients: [{
           address: '2MutpXVYs8Lyk74pVDn3eAG7xnK4Wc2kjTQ',
-          amount: 300000
-        }]
+          amount: 300000,
+        }],
       };
       const unspents = [{
-        value: 8170
+        value: 8170,
       }, {
-        value: 800000
+        value: 800000,
       }];
       const createAndSignResponse = {
         bitgoFee: 0,
         travelInfos: [],
         unspents,
-        tx: 'halfsignedhex'
+        tx: 'halfsignedhex',
       };
       sinon.stub(fakeWallet, 'createAndSignTransaction').returns(Promise.resolve(createAndSignResponse));
       const getSendTxResponse = () => ({
         status: 'accepted',
         tx: '0100000000010228b5c3e2789d4770fc397ec79fa7255f86235297c5a04def678b481b8b09e81b0100000023220020b3bbe067960be39501f365b8999d53f2a8285d8d9836f61fad020e6a4a9e26fdffffffff1510e90411a86c49f2a52546a32a03febde2bc604741f0e85dc47adec33f515900000000fdfd0000483045022100a44bbf97b155c57703862be69d2b20c4b2ab9e94f402595880bf74402ccc87e202200a4aaf98f939b65c98ca08eb96074c222ecb1fc37e359b1d67a05f1c56dedfc001473044022003f3989a14284f132bbb550118c20256d4ea737704123a29955acc1d03ea6eb7022017223da7edcf73076d89875aa33360aa6a12141807f683c6c1b9a5a0d3ff6019014c695221025789857cc8be110ff4cbf354b52dd0e7e9326c6bfe0aee6c30c1ee69660c3dc02102f58f1b1516d05814ae688ca701856695e27050e3e16d3a2351284d7af84498882102385c7bcec3f38c13e87b558aebf2f20a8928e7ecbe11e7c3a47792bc8e33fe8853aeffffffff02e09304000000000017a9141d0c791cec3af1f37808d42f04593095d6fdea268705bc07000000000017a914d8c720f646c7c56c5467248e47c72dc0b2d30bbc87040047304402201eaa1359fffd3bdec5b48268bd2f15193a299c22b1970356f390883473324651022074186232f02245af9c0977031448c2c99e7b7e2b05b2ba4b32c3227d8ca1494e01483045022100bd61b37051c28533ea0b00dda75b1c4f1dee1b683bb7351b2d8dd720f6dfbe1102203acc4cf9d2dd44b294aa25812e99e7d8eb3730e4ff6f889d3cdcd525195750b8016952210219d093c18c27cb547737b4a49dddac9c3412b10e9f880eb30053c3eba81928542103747118892cac1b4da11526fc4ebeebe168dae0907cefb1a1812541cd46b07602210339f73b6750f8f91efd484b5aa2974321a6cc2776d5bd78b9cfb5fe18e3b2d66253ae005a9e1600',
         hash: 'f8df43c2c650b3bb11277aee4531db99a715fa3b9dfd3d45a8d171342c1bf780',
-        instant: false
+        instant: false,
       });
       const expectedResult = Object.assign(
         {
           fee: 1285,
-          feeRate: 2519.607843137255
+          feeRate: 2519.607843137255,
         },
         getSendTxResponse()
       );
@@ -1120,7 +1120,7 @@ describe('Wallet Prototype Methods', function() {
           .post('/api/v1/tx/send', (body) => {
             return !body.ignoreMaxFeeRate;
           })
-          .reply(200, function(_, body) {
+          .reply(200, function (_, body) {
             return {
               transaction: JSON.parse(body).tx,
             };
@@ -1220,7 +1220,7 @@ describe('Wallet Prototype Methods', function() {
           .post('/api/v1/tx/send', (body) => {
             return !body.ignoreMaxFeeRate;
           })
-          .reply(200, function(_, body) {
+          .reply(200, function (_, body) {
             return {
               transaction: JSON.parse(body).tx,
             };
@@ -1339,7 +1339,7 @@ describe('Wallet Prototype Methods', function() {
           .post('/api/v1/tx/send', (body) => {
             return !body.ignoreMaxFeeRate;
           })
-          .reply(200, function(_, body) {
+          .reply(200, function (_, body) {
             return {
               transaction: JSON.parse(body).tx,
             };
@@ -1465,7 +1465,7 @@ describe('Wallet Prototype Methods', function() {
           .post('/api/v1/tx/send', (body) => {
             return !body.ignoreMaxFeeRate;
           })
-          .reply(200, function(_, body) {
+          .reply(200, function (_, body) {
             return {
               transaction: JSON.parse(body).tx,
             };

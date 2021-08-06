@@ -147,8 +147,8 @@ export interface Derivable {
  */
 export function hdPath(rootKey): Derivable {
   const cache = {};
-  const derive = function(path: string): bitcoin.HDNode {
-    const components = path.split('/').filter(function(c) {
+  const derive = function (path: string): bitcoin.HDNode {
+    const components = path.split('/').filter(function (c) {
       return c !== '';
     });
     // strip any extraneous / characters

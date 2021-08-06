@@ -1,27 +1,27 @@
 import * as should from 'should';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-describe('ALGO:', function() {
+describe('ALGO:', function () {
   let bitgo;
   let algocoin;
 
-  before(function() {
+  before(function () {
     bitgo = bitgo = new TestBitGo({ env: 'test' });
     algocoin = bitgo.coin('talgo');
   });
 
-  describe('Algo non partipation key reg transaction', function() {
+  describe('Algo non partipation key reg transaction', function () {
     // TODO: The test currently works against 'testnet-01' environment as the accompanying platform changes are not
     // yet available in 'test' environment.
     // Once the platform updates are available in 'test', this test will be enabled, updated and a separate PR will be submitted
-    xit('should successfully submit non paticipating key reg transaction', async function() {
+    xit('should successfully submit non paticipating key reg transaction', async function () {
       const algoWallet = await algocoin.wallets().getWallet({ id: TestBitGo.V2.TEST_ALGO_WALLET_ID });
 
       // Build and sign the transaction
       const preBuiltSignedTx: any = await algoWallet.prebuildAndSignTransaction({
         type: 'keyreg',
         nonParticipation: true,
-        walletPassphrase: TestBitGo.V2.BITGOJS_TEST_PASSWORD
+        walletPassphrase: TestBitGo.V2.BITGOJS_TEST_PASSWORD,
       });
       preBuiltSignedTx.should.have.property('txHex');
       preBuiltSignedTx.should.have.propertyByPath('txInfo', 'type').eql('keyreg');

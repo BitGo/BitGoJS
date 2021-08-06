@@ -4,7 +4,7 @@ if (!process.env.CHROME_BIN) {
   process.env.CHROME_BIN = require('puppeteer').executablePath();
 }
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -20,7 +20,7 @@ module.exports = function(config) {
     files: [
       'dist/browser/BitGoJS.min.js',
       'test/browser/karmaHelper.js',
-      { pattern: 'test/browser/**/*.ts' }
+      { pattern: 'test/browser/**/*.ts' },
     ],
 
     plugins: [
@@ -37,26 +37,26 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/browser/**/*.ts': ['karma-typescript'] ,
+      'test/browser/**/*.ts': ['karma-typescript'],
     },
     karmaTypescriptConfig: {
       bundlerOptions: {
-          entrypoints: /\.spec\.ts$/,
+        entrypoints: /\.spec\.ts$/,
       },
       compilerOptions: {
-          sourceMap: true,
-          target: 'es6',
-          lib: [
-            "dom",
-            "es6",
-            "es5",
-            "es2017",
-            "es2018"
-          ],
-          types: ['jasmine']
+        sourceMap: true,
+        target: 'es6',
+        lib: [
+          'dom',
+          'es6',
+          'es5',
+          'es2017',
+          'es2018',
+        ],
+        types: ['jasmine'],
       },
-      include: ['test/browser/**/*.ts']
-  },
+      include: ['test/browser/**/*.ts'],
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
@@ -86,8 +86,8 @@ module.exports = function(config) {
     customLaunchers: {
       HeadlessChromeNoSandbox: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
-      }
+        flags: ['--no-sandbox'],
+      },
     },
 
     // Continuous Integration mode
@@ -97,4 +97,4 @@ module.exports = function(config) {
     // browsers: ['Chrome'],
     // singleRun: false
   });
-}
+};

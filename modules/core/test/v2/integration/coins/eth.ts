@@ -7,7 +7,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 nock.restore();
 
-describe('ETH:', function() {
+describe('ETH:', function () {
   let bitgo;
   let wallet;
 
@@ -19,8 +19,8 @@ describe('ETH:', function() {
     wallet = yield bitgo.coin('teth').wallets().getWallet({ id: TestBitGo.V2.TEST_ETH_WALLET_ID });
   }));
 
-  describe('Send Transaction', function() {
-    it('should send to multiple recipients in single transaction', async function() {
+  describe('Send Transaction', function () {
+    it('should send to multiple recipients in single transaction', async function () {
       await bitgo.unlock( { otp: '0000000' });
 
       const transaction = await wallet.sendMany({
@@ -43,16 +43,16 @@ describe('ETH:', function() {
       transaction.should.have.property('tx');
       transaction.status.should.containEql('signed');
       transaction.transfer.entries.should.have.lengthOf(2);
-      transaction.transfer.entries[0].address.should.equal("0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e");
+      transaction.transfer.entries[0].address.should.equal('0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e');
       transaction.transfer.entries[0].value.should.equal(-6);
-      transaction.transfer.entries[1].address.should.equal("0x431745b89e73230b3bc8a19e019194efb4b99efd");
+      transaction.transfer.entries[1].address.should.equal('0x431745b89e73230b3bc8a19e019194efb4b99efd');
       transaction.transfer.entries[1].value.should.equal(6);
       transaction.transfer.value.should.equal(-6);
     });
   });
 
-  describe('Keychains', function() {
-    it('should fail to create a key without an enterprise ID', function() {
+  describe('Keychains', function () {
+    it('should fail to create a key without an enterprise ID', function () {
       const ethKeychains = bitgo.coin('eth').keychains();
       try {
         ethKeychains.createBitGo();
@@ -63,7 +63,7 @@ describe('ETH:', function() {
     });
   });
 
-  describe('Non-BitGo Recovery', function() {
+  describe('Non-BitGo Recovery', function () {
     it('should construct a recovery transaction without BitGo', co(function *() {
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
@@ -77,7 +77,7 @@ describe('ETH:', function() {
           't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       });
 
       // id and tx will always be different because of expireTime
@@ -99,7 +99,7 @@ describe('ETH:', function() {
           'vgLoXYgahArhalzJVlRxcXUz4HOhozRWfv/eK3t5HJfm+25+WBOiW8YgSE7hVEYTbeBRD4="}',
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       }));
 
       should.exist(error);
@@ -107,13 +107,13 @@ describe('ETH:', function() {
     }));
   });
 
-  describe('Token Recovery', function() {
+  describe('Token Recovery', function () {
     it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
       // There should be 42 Potatokens stuck in our test wallet
       const tx = yield wallet.recoverToken({
         tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
         recipient: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
-        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE
+        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE,
       });
 
       should.exist(tx);
@@ -140,7 +140,7 @@ describe('ETH:', function() {
     }));
   });
 
-  describe('Non-BitGo Token Recovery', function() {
+  describe('Non-BitGo Token Recovery', function () {
     it('should construct a token recovery transaction without BitGo', co(function *() {
       const basecoin = yield bitgo.token('0x06d22e6fa60fda26b6ca28f73d2d4a81bd9aa2de');
       const recovery = yield basecoin.recover({
@@ -148,7 +148,7 @@ describe('ETH:', function() {
         backupKey: '{"iv":"asB356ofC7nZtg4NBvQkiQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOtoKDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrIt9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670'
+        recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670',
       });
 
       // id and tx will always be different because of expireTime
@@ -163,7 +163,7 @@ describe('ETH:', function() {
         userKey: 'xpub6BkS6QAreYc5ftRBYdApmdDmqCcMeSyPa9LkKjoipNBoudoDh6rH164izFzS3mvKrZ6MuawQEEdL33wJyb6XsoRuLfrn4pQUHf4BELaxZ1m',
         backupKey: 'xpub6CXBBAHb5xF1ry8BDe2cbY1QB1nuiR6dtXzvVbEGKCz8jiYJrpToJbsjFmHWHY2JY11DWBWoFcUGcT7JoKGirHiQNLZ3AxsE3GaZoZzbXG5',
         walletContractAddress: '0xa5558d6e7c64af892c6e74095bd334a21c13e4c3',
-        recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670'
+        recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670',
       });
 
       // id and tx will always be different because of expireTime
@@ -180,7 +180,7 @@ describe('ETH:', function() {
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        krsProvider: 'keyternal'
+        krsProvider: 'keyternal',
       });
 
       should.exist(recovery);
@@ -193,7 +193,7 @@ describe('ETH:', function() {
     }));
   });
 
-  describe('Token Flush Thresholds', function() {
+  describe('Token Flush Thresholds', function () {
     it('should be updated', co(function *() {
       yield wallet.updateTokenFlushThresholds({ terc: 10 });
       wallet.tokenFlushThresholds().should.match({ terc: '10' });

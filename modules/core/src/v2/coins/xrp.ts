@@ -317,7 +317,7 @@ export class Xrp extends BaseCoin {
             size: txHex.length / 2,
           },
           accountSet: {
-            messageKey: transaction.MessageKey
+            messageKey: transaction.MessageKey,
           },
         };
       }
@@ -593,7 +593,7 @@ export class Xrp extends BaseCoin {
         throw new Error('unknown key recovery service provider');
       }
 
-      const validatePassphraseKey = function(userKey, passphrase): HDNode {
+      const validatePassphraseKey = function (userKey, passphrase): HDNode {
         try {
           if (!userKey.startsWith('xprv') && !isUnsignedSweep) {
             userKey = sjcl.decrypt(passphrase, userKey);

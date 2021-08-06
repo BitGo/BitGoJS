@@ -20,7 +20,7 @@ const PendingApproval = require('./pendingapproval');
 //
 // Constructor
 //
-const PendingApprovals = function(bitgo) {
+const PendingApprovals = function (bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -28,7 +28,7 @@ const PendingApprovals = function(bitgo) {
 // list
 // List the pending approvals available to the user
 //
-PendingApprovals.prototype.list = function(params, callback) {
+PendingApprovals.prototype.list = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
@@ -47,8 +47,8 @@ PendingApprovals.prototype.list = function(params, callback) {
   const self = this;
   return Bluebird.resolve(
     this.bitgo.get(this.bitgo.url('/pendingapprovals')).query(queryParams).result()
-  ).then(function(body) {
-    body.pendingApprovals = body.pendingApprovals.map(function(p) { return new PendingApproval(self.bitgo, p); });
+  ).then(function (body) {
+    body.pendingApprovals = body.pendingApprovals.map(function (p) { return new PendingApproval(self.bitgo, p); });
     return body;
   }).nodeify(callback);
 };
@@ -59,14 +59,14 @@ PendingApprovals.prototype.list = function(params, callback) {
 // Parameters include:
 //   id:  the pending approval id
 //
-PendingApprovals.prototype.get = function(params, callback) {
+PendingApprovals.prototype.get = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
   const self = this;
   return Bluebird.resolve(
     this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id)).result()
-  ).then(function(body) {
+  ).then(function (body) {
     return new PendingApproval(self.bitgo, body);
   }).nodeify(callback);
 };

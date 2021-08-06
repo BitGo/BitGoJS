@@ -8,7 +8,7 @@ const co = Promise.coroutine;
 
 import { TestBitGo } from '../../lib/test_bitgo';
 
-describe('V2 User Webhooks:', function() {
+describe('V2 User Webhooks:', function () {
   let bitgo;
   let basecoin;
   let webhookId;
@@ -25,7 +25,7 @@ describe('V2 User Webhooks:', function() {
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
   }));
 
-  describe('Create', function() {
+  describe('Create', function () {
     it('should fail to create a new webhook with missing params', co(function *() {
       try {
         yield basecoin.webhooks().add({ url });
@@ -53,7 +53,7 @@ describe('V2 User Webhooks:', function() {
     }));
   });
 
-  describe('List', function() {
+  describe('List', function () {
     it('should fetch list of user webhooks', co(function *() {
       const userWebhooks = yield basecoin.webhooks().list();
       userWebhooks.webhooks.length.should.greaterThan(0);
@@ -61,7 +61,7 @@ describe('V2 User Webhooks:', function() {
     }));
   });
 
-  describe('Simulate', function() {
+  describe('Simulate', function () {
     it('should fail to simulate a block webhook with missing params', co(function *() {
       try {
         yield basecoin.webhooks().simulate({ webhookId });
@@ -82,7 +82,7 @@ describe('V2 User Webhooks:', function() {
     }));
   });
 
-  describe('List notifications', function() {
+  describe('List notifications', function () {
     it('should fetch list of webhook notifications', co(function *() {
       const res = yield basecoin.webhooks().listNotifications();
       res.should.have.property('webhookNotifications');
@@ -90,7 +90,7 @@ describe('V2 User Webhooks:', function() {
     }));
   });
 
-  describe('Remove', function() {
+  describe('Remove', function () {
     it('should fail to remove a webhook with missing params', co(function *() {
       try {
         yield basecoin.webhooks().remove({ url });

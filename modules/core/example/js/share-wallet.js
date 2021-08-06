@@ -37,7 +37,7 @@ Promise.coroutine(function *() {
   const shareResult = yield wallet.shareWallet({
     email: recipient,
     walletPassphrase: passphrase,
-    permissions: perms
+    permissions: perms,
   });
 
   console.log('Wallet was shared successfully');

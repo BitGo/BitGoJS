@@ -12,7 +12,7 @@ import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 
-describe('Settlements', function() {
+describe('Settlements', function () {
   const microservicesUri = common.Environments['mock'].uri;
   let bitgo;
   let basecoin;
@@ -33,8 +33,8 @@ describe('Settlements', function() {
       coin: 'tofc',
       enterprise: enterprise.id,
       keys: [
-        'keyid'
-      ]
+        'keyid',
+      ],
     };
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
@@ -42,7 +42,7 @@ describe('Settlements', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  it('should list all settlements', async function() {
+  it('should list all settlements', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/settlements`)
       .reply(200, fixtures.listSettlements);
@@ -63,7 +63,7 @@ describe('Settlements', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should get a single settlement', async function() {
+  it('should get a single settlement', async function () {
     const scope = nock(microservicesUri)
       .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`)
       .reply(200, fixtures.getSingleSettlement);
@@ -75,7 +75,7 @@ describe('Settlements', function() {
     scope.isDone().should.be.true();
   });
 
-  it('should create a new direct settlement', async function() {
+  it('should create a new direct settlement', async function () {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createDirectSettlementPayloadRequest)
       .reply(200, fixtures.createDirectSettlementPayloadResponse)
@@ -88,7 +88,7 @@ describe('Settlements', function() {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
       });
 
     const payload = await tradingAccount.buildPayload(fixtures.createDirectSettlementPayloadRequest);
@@ -110,8 +110,8 @@ describe('Settlements', function() {
         quoteCurrency: 'ofctusd',
         costBasis: '12345',
         costBasisCurrency: 'USD',
-        externalId: 'a4o3ah601etw676okvkvsmizciorxc8v'
-      }]
+        externalId: 'a4o3ah601etw676okvkvsmizciorxc8v',
+      }],
     });
 
     should.exist(settlement);
@@ -121,7 +121,7 @@ describe('Settlements', function() {
     platformScope.isDone().should.be.true();
   });
 
-  it('should create a new agency settlement', async function() {
+  it('should create a new agency settlement', async function () {
     const msScope = nock(microservicesUri)
       .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createAgencySettlementPayloadRequest)
       .reply(200, fixtures.createAgencySettlementPayloadResponse)
@@ -134,7 +134,7 @@ describe('Settlements', function() {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
       });
 
     const payload = await tradingAccount.buildPayload(fixtures.createAgencySettlementPayloadRequest);
@@ -162,7 +162,7 @@ describe('Settlements', function() {
           quoteReceiveCurrency: 'ofctbtc',
           costBasis: '',
           costBasisCurrency: '',
-          externalId: 'xff7vln0eh9hh3rp0derlbunlo1sw6k6'
+          externalId: 'xff7vln0eh9hh3rp0derlbunlo1sw6k6',
         }],
     });
 
