@@ -29,3 +29,8 @@ export const WalletInitializationSchema = joi.object({
   setFlag: joi.number().optional(),
   messageKey: joi.string().optional(),
 });
+
+export const TransferBuilderSchema = joi.object({
+  destination: addressSchema.required(),
+  amount: joi.string().required(),
+});
