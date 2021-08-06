@@ -15,7 +15,8 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BitGo/BitGoJS.git"
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/express"
   },
   "scripts": {
     "test": "yarn unit-test",
