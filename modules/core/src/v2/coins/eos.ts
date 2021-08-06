@@ -29,7 +29,7 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import { getBip32Keys, getIsKrsRecovery, validateKey } from '../recovery/initiate';
+import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -133,13 +133,6 @@ interface RecoveryOptions {
   rootAddress?: string;
 }
 
-interface ValidateKeyOptions {
-  key: string;
-  source: string;
-  passphrase?: string;
-  isUnsignedSweep: boolean;
-  isKrsRecovery: boolean;
-}
 interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   rootAddress: string;
 }
@@ -607,29 +600,10 @@ export class Eos extends BaseCoin {
   }
 
   /**
-   * Prepare and validate all keychains from the keycard for recovery
-   * @param params
+   * @deprecated
    */
-  initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
-    const self = this;
-    return co<HDNode[]>(function* () {
-      const { krsProvider } = params;
-      if (getIsKrsRecovery(params)) {
-        if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
-          throw new Error('unknown key recovery service provider');
-        }
-        const krsProviderConfig = config.krsProviders[krsProvider];
-        if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
-          throw new Error('specified key recovery service does not support recoveries for this coin');
-        }
-      }
-
-      if (!self.isValidAddress(params.recoveryDestination)) {
-        throw new Error('Invalid destination address!');
-      }
-
-      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
-    }).call(this);
+  initiateRecovery(params: RecoveryOptions): never {
+    throw new Error('deprecated method');
   }
 
   /**
@@ -777,10 +751,26 @@ export class Eos extends BaseCoin {
       if (!params.rootAddress) {
         throw new Error('missing required string rootAddress');
       }
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      const keys = (yield self.initiateRecovery(params)) as any;
+      const isKrsRecovery = getIsKrsRecovery(params);
+      const isUnsignedSweep = getIsUnsignedSweep(params);
+
+      const { krsProvider } = params;
+      if (getIsKrsRecovery(params)) {
+        if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
+          throw new Error('unknown key recovery service provider');
+        }
+        const krsProviderConfig = config.krsProviders[krsProvider];
+        if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
+          throw new Error('specified key recovery service does not support recoveries for this coin');
+        }
+      }
+
+      if (!self.isValidAddress(params.recoveryDestination)) {
+        throw new Error('Invalid destination address!');
+      }
+
+      const keys = getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
 
       const rootAddressDetails = self.getAddressDetails(params.rootAddress);
       const account = (yield self.getAccountFromNode({ address: rootAddressDetails.address })) as any;
