@@ -467,6 +467,10 @@ export abstract class BaseCoin {
     return;
   }
 
+  /**
+   * @deprecated - use getBip32Keys() in conjunction with isValidAddress instead
+   * @param params
+   */
   initiateRecovery(params: InitiateRecoveryOptions): Bluebird<any> {
     const self = this;
     return co(function* initiateRecovery() {
