@@ -29,7 +29,7 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import { validateKey } from '../recovery/initiate';
+import { getBip32Keys, getIsKrsRecovery, validateKey } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -608,25 +608,13 @@ export class Eos extends BaseCoin {
 
   /**
    * Prepare and validate all keychains from the keycard for recovery
-   * @param userKey
-   * @param backupKey
-   * @param recoveryDestination
-   * @param krsProvider
-   * @param walletPassphrase
+   * @param params
    */
-  initiateRecovery({
-    userKey,
-    backupKey,
-    recoveryDestination,
-    krsProvider,
-    walletPassphrase,
-  }: RecoveryOptions): Bluebird<HDNode[]> {
+  initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
     return co<HDNode[]>(function* () {
-      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
-      const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
-
-      if (isKrsRecovery) {
+      const { krsProvider } = params;
+      if (getIsKrsRecovery(params)) {
         if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
           throw new Error('unknown key recovery service provider');
         }
@@ -636,26 +624,11 @@ export class Eos extends BaseCoin {
         }
       }
 
-      const keys = [
-        validateKey(self.bitgo, {
-          key: userKey,
-          source: 'user',
-          passphrase: walletPassphrase,
-          isKrsRecovery,
-          isUnsignedSweep,
-        }),
-        validateKey(self.bitgo, {
-          key: backupKey,
-          source: 'backup',
-          passphrase: walletPassphrase,
-          isKrsRecovery,
-          isUnsignedSweep,
-        }),
-      ];
-      if (!self.isValidAddress(recoveryDestination)) {
+      if (!self.isValidAddress(params.recoveryDestination)) {
         throw new Error('Invalid destination address!');
       }
-      return keys;
+
+      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
     }).call(this);
   }
 

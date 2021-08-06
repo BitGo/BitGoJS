@@ -21,11 +21,11 @@ export interface InitiateRecoveryOptions {
   walletPassphrase?: string;
 }
 
-export function getIsKrsRecovery({ backupKey, userKey }: InitiateRecoveryOptions): boolean {
+export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {
   return backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 }
 
-export function getIsUnsignedSweep({ backupKey, userKey }: InitiateRecoveryOptions): boolean {
+export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {
   return backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 }
 
