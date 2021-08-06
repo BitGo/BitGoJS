@@ -17,7 +17,6 @@ import * as rippleKeypairs from 'ripple-keypairs';
 
 import {
   BaseCoin,
-  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
@@ -31,9 +30,13 @@ import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
+import {
+  getBip32Keys,
+  getIsKrsRecovery,
+  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
+} from '../recovery/initiate';
 
 const ripple = require('../../ripple');
-const sjcl = require('../../vendor/sjcl.min.js');
 
 const co = Bluebird.coroutine;
 
@@ -610,60 +613,18 @@ export class Xrp extends BaseCoin {
   initiateRecovery(params: InitiateRecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
     return co<HDNode[]>(function* initiateRecovery() {
-      const keys: HDNode[] = [];
-      const userKey = params.userKey; // Box A
-      let backupKey = params.backupKey; // Box B
-      const bitgoXpub = params.bitgoKey; // Box C
-      const destinationAddress = params.recoveryDestination;
-      const passphrase = params.walletPassphrase;
-
-      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
-      const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
+      const isKrsRecovery = getIsKrsRecovery(params);
 
       if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
       }
 
-      const validatePassphraseKey = function (userKey, passphrase): HDNode {
-        try {
-          if (!userKey.startsWith('xprv') && !isUnsignedSweep) {
-            userKey = sjcl.decrypt(passphrase, userKey);
-          }
-          return HDNode.fromBase58(userKey);
-        } catch (e) {
-          throw new Error('Failed to decrypt user key with passcode - try again!');
-        }
-      };
-
-      const key = validatePassphraseKey(userKey, passphrase);
-
-      keys.push(key);
-
-      // Validate the backup key
-      try {
-        if (!backupKey.startsWith('xprv') && !isKrsRecovery && !isUnsignedSweep) {
-          backupKey = sjcl.decrypt(passphrase, backupKey);
-        }
-        const backupHDNode = HDNode.fromBase58(backupKey);
-        keys.push(backupHDNode);
-      } catch (e) {
-        throw new Error('Failed to decrypt backup key with passcode - try again!');
-      }
-      try {
-        const bitgoHDNode = HDNode.fromBase58(bitgoXpub);
-        keys.push(bitgoHDNode);
-      } catch (e) {
-        if (self.getFamily() !== 'xrp') {
-          // in XRP recoveries, the BitGo xpub is optional
-          throw new Error('Failed to parse bitgo xpub!');
-        }
-      }
       // Validate the destination address
-      if (!self.isValidAddress(destinationAddress)) {
+      if (!self.isValidAddress(params.recoveryDestination)) {
         throw new Error('Invalid destination address!');
       }
 
-      return keys;
+      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
     }).call(this);
   }
 
