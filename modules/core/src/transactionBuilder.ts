@@ -15,11 +15,11 @@ import * as Bluebird from 'bluebird';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import { getNetwork, hdPath } from './bitcoin';
+import { getNetwork } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
-import { sanitizeLegacyPath } from "./bip32path";
+import { sanitizeLegacyPath } from './bip32path';
 
 interface BaseOutput {
   amount: number;
