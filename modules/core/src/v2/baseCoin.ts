@@ -23,6 +23,7 @@ import { Enterprises } from './enterprises';
 import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
 import { signMessage } from '../bip32util';
 import * as crypto from 'crypto';
+import { InitiateRecoveryOptions } from './recovery/initiate';
 export type TransactionType = AccountLibBasecoin.TransactionType;
 
 export interface TransactionRecipient {
@@ -155,14 +156,6 @@ export interface ParsedTransaction {
 // TODO (SDKT-9): reverse engineer and add options
 export interface SignTransactionOptions {
   [index: string]: unknown;
-}
-
-export interface InitiateRecoveryOptions {
-  userKey: string;
-  backupKey: string;
-  bitgoKey?: string; // optional for xrp recoveries
-  recoveryDestination: string;
-  walletPassphrase?: string;
 }
 
 export interface KeychainsTriplet {
@@ -477,58 +470,9 @@ export abstract class BaseCoin {
   initiateRecovery(params: InitiateRecoveryOptions): Bluebird<any> {
     const self = this;
     return co(function* initiateRecovery() {
-      const keys: bitcoin.HDNode[] = [];
-      const userKey = params.userKey; // Box A
-      let backupKey = params.backupKey; // Box B
-      const bitgoXpub = params.bitgoKey; // Box C
-      const destinationAddress = params.recoveryDestination;
-      const passphrase = params.walletPassphrase;
-
-      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
-
-      function validatePassphraseKey(userKey: string, passphrase?: string): bitcoin.HDNode {
-        try {
-          if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
-            userKey = self.bitgo.decrypt({
-              input: userKey,
-              password: passphrase,
-            });
-          }
-          return bitcoin.HDNode.fromBase58(userKey);
-        } catch (e) {
-          throw new Error('Failed to decrypt user key with passcode - try again!');
-        }
-      }
-
-      const key: bitcoin.HDNode = validatePassphraseKey(userKey, passphrase);
-
-      keys.push(key);
-
-      // Validate the backup key
-      try {
-        if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
-          backupKey = self.bitgo.decrypt({
-            input: backupKey,
-            password: passphrase,
-          });
-        }
-        const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
-        keys.push(backupHDNode);
-      } catch (e) {
-        throw new Error('Failed to decrypt backup key with passcode - try again!');
-      }
-      try {
-        const bitgoHDNode = bitcoin.HDNode.fromBase58(bitgoXpub);
-        keys.push(bitgoHDNode);
-      } catch (e) {
-        if (self.getFamily() !== 'xrp') {
-          // in XRP recoveries, the BitGo xpub is optional
-          throw new Error('Failed to parse bitgo xpub!');
-        }
-      }
       // Validate the destination address
       try {
-        if (!self.isValidAddress(destinationAddress)) {
+        if (!self.isValidAddress(params.recoveryDestination)) {
           throw new Error('Invalid destination address!');
         }
       } catch (e) {
@@ -541,7 +485,7 @@ export abstract class BaseCoin {
         }
       }
 
-      return keys;
+      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
     }).call(this);
   }
 
