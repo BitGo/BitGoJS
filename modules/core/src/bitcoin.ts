@@ -43,35 +43,6 @@ function getKey(network?: bitcoin.Network): bitcoin.ECPair {
 bitcoin.HDNode.prototype.getKey = getKey;
 
 /**
- * Given a key and a path, derive the child key.
- * @param {bitcoin.HDNode} userKey
- * @param {string} path
- * @returns {bitcoin.HDNode}
- */
-export function deriveKeyByPath(userKey: bitcoin.HDNode, path: string): bitcoin.HDNode {
-  let key = userKey;
-  let splitPath = path.split('/');
-  // if a key path starts with "m", it is the path for a master node. derivePath() is used specifically for
-  // deriving master node and we can call it directly.
-  if (splitPath[0] === 'm') {
-    key = userKey.derivePath(path);
-  } else {
-    // if the path does not start with "m", it typically looks like "/x/y/...", and the splitPath
-    // would look like ['', 'x', 'y',...], and we need to get ride of the empty string at index 0.
-    // Then we continue deriving the child by calling derive() on the new child at each subsequent level.
-    splitPath = splitPath.slice(1);
-    for (const p of splitPath) {
-      const index = parseInt(p, 10);
-      if (isNaN(index) || index.toString() != p) {
-        throw new InvalidKeyPathError(path);
-      }
-      key = key.derive(index);
-    }
-  }
-  return key;
-}
-
-/**
  * Derive a child HDNode from a parent HDNode and index. Uses secp256k1 to speed
  * up public key derivations by 100x vs. bitcoinjs-lib implementation.
  *

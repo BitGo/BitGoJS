@@ -11,6 +11,7 @@ import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
 import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from '../abstractUtxoCoin';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
+import { sanitizeLegacyPath } from '../../../bip32path';
 
 /**
  * Derive child keys at specific index, from provided parent keys
@@ -147,7 +148,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   let derivedUserKey;
   let baseKeyPath;
   if (params.userKeyPath) {
-    derivedUserKey = deriveKeyByPath(userKey, params.userKeyPath);
+    derivedUserKey = userKey.derivePath(sanitizeLegacyPath(params.userKeyPath));
     const twoKeys = deriveKeys(deriveKeys([backupKey, bitgoKey], 0), 0);
     baseKeyPath = [derivedUserKey, ...twoKeys];
   } else {
