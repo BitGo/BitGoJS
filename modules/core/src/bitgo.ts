@@ -506,49 +506,50 @@ export class BitGo {
         req = req.proxy(self._proxy);
       }
 
-      // intercept a request before it's submitted to the server for v2 authentication (based on token)
-      req.set('BitGo-SDK-Version', self.version());
-
-      if (!_.isUndefined(self._reqId)) {
-        req.set('Request-ID', self._reqId.toString());
-
-        // increment after setting the header so the sequence numbers start at 0
-        self._reqId.inc();
-
-        // request ids must be set before each request instead of being kept
-        // inside the bitgo object. This is to prevent reentrancy issues where
-        // multiple simultaneous requests could cause incorrect reqIds to be used
-        delete self._reqId;
-      }
-
-      // if there is no token, and we're not logged in, the request cannot be v2 authenticated
-      req.isV2Authenticated = true;
-      req.authenticationToken = self._token;
-      // some of the older tokens appear to be only 40 characters long
-      if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
-        // use the old method
-        req.isV2Authenticated = false;
-
-        req.set('Authorization', 'Bearer ' + self._token);
-        return toBitgoRequest(req);
-      }
-
-      req.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
-      // prevent IE from caching requests
-      req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
-
-      if (!(process as any).browser) {
-        // If not in the browser, set the User-Agent. Browsers don't allow
-        // setting of User-Agent, so we must disable this when run in the
-        // browser (browserify sets process.browser).
-        req.set('User-Agent', self._userAgent);
-      }
-
-      // Set the request timeout to just above 5 minutes by default
-      req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
-
       const originalThen = req.then.bind(req);
       req.then = (onfulfilled, onrejected) => {
+        // intercept a request before it's submitted to the server for v2 authentication (based on token)
+        req.set('BitGo-SDK-Version', self.version());
+
+        if (!_.isUndefined(self._reqId)) {
+          req.set('Request-ID', self._reqId.toString());
+
+          // increment after setting the header so the sequence numbers start at 0
+          self._reqId.inc();
+
+          // request ids must be set before each request instead of being kept
+          // inside the bitgo object. This is to prevent reentrancy issues where
+          // multiple simultaneous requests could cause incorrect reqIds to be used
+          delete self._reqId;
+        }
+
+        // prevent IE from caching requests
+        req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
+
+        if (!(process as any).browser) {
+          // If not in the browser, set the User-Agent. Browsers don't allow
+          // setting of User-Agent, so we must disable this when run in the
+          // browser (browserify sets process.browser).
+          req.set('User-Agent', self._userAgent);
+        }
+
+        // Set the request timeout to just above 5 minutes by default
+        req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
+
+        // if there is no token, and we're not logged in, the request cannot be v2 authenticated
+        req.isV2Authenticated = true;
+        req.authenticationToken = self._token;
+        // some of the older tokens appear to be only 40 characters long
+        if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
+          // use the old method
+          req.isV2Authenticated = false;
+
+          req.set('Authorization', 'Bearer ' + self._token);
+          return originalThen(onfulfilled).catch(onrejected);
+        }
+
+        req.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
+
         if (self._token) {
           const data = serializeRequestData(req);
           setRequestQueryString(req);
