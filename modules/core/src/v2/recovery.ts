@@ -2,7 +2,6 @@
  * @prettier
  */
 import { VirtualSizes } from '@bitgo/unspents';
-import * as request from 'superagent';
 import { NodeCallback } from './types';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;

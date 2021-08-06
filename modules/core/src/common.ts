@@ -44,6 +44,7 @@ export function getNetwork(): V1Network {
  * @returns true if validated, throws with reason otherwise
  */
 export function validateParams(
+  // eslint-disable-next-line @typescript-eslint/ban-types
   params: object,
   expectedParams: string[],
   optionalParams: string[] = [],

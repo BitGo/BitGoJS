@@ -50,6 +50,7 @@ export class RequestTracer implements IRequestTracer {
 }
 
 export class Util {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   /**
