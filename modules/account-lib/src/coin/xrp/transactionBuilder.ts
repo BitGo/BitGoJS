@@ -98,6 +98,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
   /**
    * Builds the xrp transaction.
    */
@@ -137,6 +142,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    const keyPair = new KeyPair({ prv: key });
+    this._keyPairs.push(keyPair);
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
   validateAddress({ address }: BaseAddress): void {
     if (!utils.isValidAddress(address)) {
       throw new AddressValidationError(address);
@@ -164,12 +176,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   private validateBaseFields(
     sender: string,
-    flags: number | undefined,
-    memos: { Memo: ApiMemo }[] | undefined,
-    fulfillment: string | undefined,
-    fee: string | undefined,
-    lastLedgerSequence: number | undefined,
-    sequence: number | undefined,
+    flags?: number,
+    memos?: { Memo: ApiMemo }[],
+    fulfillment?: string,
+    fee?: string,
+    lastLedgerSequence?: number,
+    sequence?: number,
   ): void {
     const validationResult = BaseTransactionSchema.validate({
       sender,

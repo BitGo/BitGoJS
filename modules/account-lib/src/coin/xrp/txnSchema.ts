@@ -23,3 +23,9 @@ export const BaseTransactionSchema = joi.object({
   sequence: joi.number().positive().optional(),
   lastLedgerSequence: joi.number().positive().optional(),
 });
+
+export const WalletInitializationSchema = joi.object({
+  domain: joi.string().optional(),
+  setFlag: joi.number().optional(),
+  messageKey: joi.string().optional(),
+});
