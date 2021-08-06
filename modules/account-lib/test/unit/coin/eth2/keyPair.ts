@@ -85,7 +85,7 @@ describe('Eth2 Key Pair', () => {
     it('from a public key', () => {
       should.throws(
         () => new KeyPair().recordKeysFromPublicKey(pub),
-        e => e.message.includes(testData.errorMessageInvalidPublicKey),
+        (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
       );
     });
 
@@ -94,15 +94,15 @@ describe('Eth2 Key Pair', () => {
       const longerPrv = prv + '1';
       should.throws(
         () => new KeyPair().recordKeysFromPrivateKey(shorterPrv),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair().recordKeysFromPrivateKey(longerPrv),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair().recordKeysFromPrivateKey(prv + pub),
-        e => e.message === testData.errorMessageInvalidPrivateKey,
+        (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
     });
   });

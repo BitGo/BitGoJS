@@ -55,7 +55,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   private initOwners(keys: proto.ThresholdKey) {
     if (keys.keys && keys.keys.keys) {
-      keys.keys.keys.forEach(key => {
+      keys.keys.keys.forEach((key) => {
         this.owner(toHex(key.ed25519!));
       });
     }

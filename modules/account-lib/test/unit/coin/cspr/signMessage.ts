@@ -28,7 +28,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     should.throws(
       () => signMessage(keyPair, messageToSign),
-      e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
     );
   });
 
@@ -37,7 +37,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     should.throws(
       () => signMessage(keyPair, messageToSign),
-      e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
     );
   });
 });

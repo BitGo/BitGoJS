@@ -174,9 +174,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     // Validate the transaction ID from the raw data hex
     const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
-    const currTxID = createHash('sha256')
-      .update(hexBuffer)
-      .digest('hex');
+    const currTxID = createHash('sha256').update(hexBuffer).digest('hex');
     if (currTransaction.txID !== currTxID) {
       throw new InvalidTransactionError('Transaction has not have a valid id');
     }
@@ -197,9 +195,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
-    const txId = createHash('sha256')
-      .update(hexBuffer)
-      .digest('hex');
+    const txId = createHash('sha256').update(hexBuffer).digest('hex');
     if (transaction.id !== txId) {
       throw new InvalidTransactionError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
     }

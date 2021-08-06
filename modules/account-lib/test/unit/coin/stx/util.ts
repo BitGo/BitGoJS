@@ -4,9 +4,9 @@ import * as testData from '../../../resources/stx/stx';
 import * as Utils from '../../../../src/coin/stx/utils';
 import { Stx } from '../../../../src';
 
-describe('Stx util library', function() {
-  describe('address', function() {
-    it('should validate addresses', function() {
+describe('Stx util library', function () {
+  describe('address', function () {
+    it('should validate addresses', function () {
       const validAddresses = [
         'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
         'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y',
@@ -21,7 +21,7 @@ describe('Stx util library', function() {
       }
     });
 
-    it('should fail to validate invalid addresses', function() {
+    it('should fail to validate invalid addresses', function () {
       const invalidAddresses = [
         'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
         'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
@@ -38,7 +38,7 @@ describe('Stx util library', function() {
       }
     });
 
-    it('should generate multisig addresses from compressed public keys', function() {
+    it('should generate multisig addresses from compressed public keys', function () {
       const pubKeys = [
         '0263e1f2f322fb74224e210f9d616fce14d10fa89520dcde3d6d02514cdb16846a',
         '02d5de9e1b9c13fc7b67446ebcff4fbb9aa6b1933f907e9aabf32f48d6e0a5064d',
@@ -58,7 +58,7 @@ describe('Stx util library', function() {
       );
     });
 
-    it('should generate multisig addresses from uncompressed public keys', function() {
+    it('should generate multisig addresses from uncompressed public keys', function () {
       const pubKeys = [
         '049742b908579ffd225d5e1d9486471f19a101dd04b7a81d11da882e7ac7f3e042989c311524a3335e15dec9338a07bd21b6e4444b6b7744d314cc926a1f0383db',
         '0464097ccbc22905ec6f678c846346294033e11a216d133abf6af252294695b3538d65f65b188b6e72e1890e7738f9e221944e618dea1178ef749717b35492de6a',
@@ -74,7 +74,7 @@ describe('Stx util library', function() {
       );
     });
 
-    it('should generate multisig addresses from compressed and uncompressed public keys', function() {
+    it('should generate multisig addresses from compressed and uncompressed public keys', function () {
       const pubKeys = [
         '04d6f0f7d97a72979596a17fa2946eaeff3703250a62640271eea59477f5b19f39ad01ce2a53025eba365a4f40dd085234194d1d06aefec2a9d4439be0f3c2df34',
         '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0',
@@ -90,7 +90,7 @@ describe('Stx util library', function() {
       );
     });
 
-    it('should not generate multisig addresses from invalid input', function() {
+    it('should not generate multisig addresses from invalid input', function () {
       should.throws(() => Utils.getSTXAddressFromPubKeys([]), 'Invalid number of public keys');
       should.throws(() => Utils.getSTXAddressFromPubKeys(['badkey', 'badkey2']), 'Invalid public key');
       should.throws(
@@ -104,18 +104,18 @@ describe('Stx util library', function() {
     });
   });
 
-  describe('amount', function() {
-    it('valid amount', function() {
+  describe('amount', function () {
+    it('valid amount', function () {
       Utils.isValidAmount('10').should.be.true();
     });
 
-    it('invalid amount', function() {
+    it('invalid amount', function () {
       Utils.isValidAmount('-10').should.be.false();
     });
   });
 
-  describe('private key', function() {
-    it('should validate proper keys', function() {
+  describe('private key', function () {
+    it('should validate proper keys', function () {
       const keys = [testData.secretKey1, testData.secretKey2, testData.ACCOUNT_1.prv];
 
       for (const key of keys) {
@@ -123,7 +123,7 @@ describe('Stx util library', function() {
       }
     });
 
-    it('should not validate invalid keys', function() {
+    it('should not validate invalid keys', function () {
       const keys = [
         '66c88648116b721bb2f394e0007f9d348ea08017b6e604de51a3a7d957d5852409',
         '688648116b721bb2f394e0007f9d348ea08017b6e604de51a3a7d957d58524',
@@ -140,8 +140,8 @@ describe('Stx util library', function() {
     });
   });
 
-  describe('public key', function() {
-    it('should validate proper keys', function() {
+  describe('public key', function () {
+    it('should validate proper keys', function () {
       const keys = [testData.pubKey1, testData.pubKey2, testData.pubKey2Compressed];
 
       for (const key of keys) {
@@ -149,7 +149,7 @@ describe('Stx util library', function() {
       }
     });
 
-    it('should not validate invalid keys', function() {
+    it('should not validate invalid keys', function () {
       const keys = [
         '0421d6f42c97d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a94a9a7c24a1ccd83792173f475fdb590cc82f94ff615df39142766e759ce6387',
         '0321d6f42c99f7d23ec 2c0dc21208a9c5edfce4e5bc7b63972e68e6e3cea6f41a',
@@ -169,8 +169,8 @@ describe('Stx util library', function() {
     });
   });
 
-  describe('transaction id', function() {
-    it('should validate proper ids', function() {
+  describe('transaction id', function () {
+    it('should validate proper ids', function () {
       const txIds = [
         '0x209a3e196195063b2e5195232087a71fe2329a6dc8d2fca531d48c5a7824f679',
         '6a590378c059f78fb698ec0af1ff610586cb1a52ee79fdae69e56430fde08cf4',
@@ -182,7 +182,7 @@ describe('Stx util library', function() {
       }
     });
 
-    it('should not validate invalid ids', function() {
+    it('should not validate invalid ids', function () {
       const txIds = [
         '',
         'bitgo-stacks',
@@ -199,14 +199,14 @@ describe('Stx util library', function() {
     });
   });
 
-  describe('transaction memo', function() {
-    it('check for valid memo strings', function() {
+  describe('transaction memo', function () {
+    it('check for valid memo strings', function () {
       const memoStrings = ['', 'This is a test.', 'Okay', '!!This is thirty four bytes long!!'];
       for (const memo of memoStrings) {
         Utils.isValidMemo(memo).should.be.true();
       }
     });
-    it('check for valid memo strings', function() {
+    it('check for valid memo strings', function () {
       const memoStrings = ['ꜟꜟThis is thirty four chars long!!', 'It was the best of times, it was the worst of times'];
       for (const memo of memoStrings) {
         Utils.isValidMemo(memo).should.be.false();
@@ -214,16 +214,16 @@ describe('Stx util library', function() {
     });
   });
 
-  describe('sign and verify', function() {
+  describe('sign and verify', function () {
     const keyPair1 = new Stx.KeyPair({ prv: testData.secretKey1 });
     const keyPair2 = new Stx.KeyPair({ prv: testData.secretKey2 });
 
-    it('sign a message', function() {
+    it('sign a message', function () {
       should.equal(Stx.Utils.signMessage(keyPair1, testData.message1), testData.expectedSignature1);
       should.equal(Stx.Utils.signMessage(keyPair2, testData.message2), testData.expectedSignature2);
     });
 
-    it('verify a signature', function() {
+    it('verify a signature', function () {
       Stx.Utils.verifySignature(
         testData.message1,
         testData.expectedSignature1,
@@ -244,7 +244,7 @@ describe('Stx util library', function() {
       ).should.be.true();
     });
 
-    it('should not verify signatures', function() {
+    it('should not verify signatures', function () {
       // empty message
       should.throws(
         () => Stx.Utils.verifySignature('', testData.expectedSignature1, keyPair1.getKeys().pub),

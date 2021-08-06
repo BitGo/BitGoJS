@@ -6,7 +6,7 @@ import { getBuilder, Celo } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
-describe('Send transaction', function() {
+describe('Send transaction', function () {
   let txBuilder: Celo.TransactionBuilder;
   const initTxBuilder = (): void => {
     txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
@@ -19,7 +19,7 @@ describe('Send transaction', function() {
   };
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
 
-  const getOperationHash = function(tx: BaseTransaction): string {
+  const getOperationHash = function (tx: BaseTransaction): string {
     const { data } = tx.toJson();
     const { tokenContractAddress, expireTime, sequenceId, amount, to } = decodeTransferData(data);
     const operationParams = [

@@ -63,7 +63,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {proto.IAccountAmount[]} transfers array of objects which contains accountID and transferred amount
    */
   protected initTransfers(transfers: proto.IAccountAmount[]): void {
-    transfers.forEach(transferData => {
+    transfers.forEach((transferData) => {
       const amount = Long.fromValue(transferData.amount!);
       if (amount.isPositive()) {
         this.to(stringifyAccountId(transferData.accountID!));

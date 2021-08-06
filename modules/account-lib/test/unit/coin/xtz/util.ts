@@ -9,9 +9,9 @@ import {
 } from '../../../resources/xtz/xtz';
 import { HashType } from '../../../../src/coin/xtz/iface';
 
-describe('XTZ util library', function() {
-  describe('address', function() {
-    it('should validate addresses', function() {
+describe('XTZ util library', function () {
+  describe('address', function () {
+    it('should validate addresses', function () {
       const validAddresses = [
         'tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
         'tz2SHdGxFGhs68wYNC4hEqxbWARxp2J4mVxv',
@@ -24,7 +24,7 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should fail to validate invalid addresses', function() {
+    it('should fail to validate invalid addresses', function () {
       const invalidAddresses = [
         'tz4aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
         'xtz2SHdGxFGhs68wYNC4hEqxbWARxp2J4mVxv',
@@ -39,8 +39,8 @@ describe('XTZ util library', function() {
     });
   });
 
-  describe('block hash', function() {
-    it('should validate block hashes', function() {
+  describe('block hash', function () {
+    it('should validate block hashes', function () {
       const validHashes = [
         'BKoifs5gGffAzuRBcg3ygxbLdrCXyDDS1ALvMG8SFYWahzoYMku',
         'BL4oxWAkozJ3mJHwVFQqga5dQMBi8kBCPAQyBKgF78z7SQT1AvN',
@@ -52,7 +52,7 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should fail to validate invalid block hashes', function() {
+    it('should fail to validate invalid block hashes', function () {
       const invalidHashes = [
         'AKoifs5gGffAzuRBcg3ygxbLdrCXyDDS1ALvMG8SFYWahzoYMku',
         'BKoifs5gGffAzuRBcg3ygxbLdrCXyDDS1ALvMG8SFYWahzoYMku1111111111',
@@ -65,8 +65,8 @@ describe('XTZ util library', function() {
     });
   });
 
-  describe('transaction hash', function() {
-    it('should validate tx hashes', function() {
+  describe('transaction hash', function () {
+    it('should validate tx hashes', function () {
       const validHashes = [
         'opUmZNMueryYFxTbzzocS7K4dzs3NmgKqhhr9TkcftszDDnoRVu',
         'ookyzxsYF7vyTeDzsgs58XJ4PXuvBkK8wWqZJ4EoRS6RWQb4Y9P',
@@ -78,7 +78,7 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should fail to validate invalid tx hashes', function() {
+    it('should fail to validate invalid tx hashes', function () {
       const invalidHashes = [
         'lpUmZNMueryYFxTbzzocS7K4dzs3NmgKqhhr9TkcftszDDnoRVu',
         'opUmZNMueryYFxTbzzocS7K4dzs3NmgKqhhr9TkcftszDDnoRVu1111111111',
@@ -90,12 +90,12 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should calculate the transaction hash', async function() {
+    it('should calculate the transaction hash', async function () {
       const operationId = await Utils.calculateTransactionId(signedSerializedOriginationTransaction);
       operationId.should.equal('opPsNbm7EcqPyryBDDR28BjdthnriktK8TbMvpwc9r4NwmvToYP');
     });
 
-    it('should calculate the originated account address', async function() {
+    it('should calculate the originated account address', async function () {
       const accountAddress = await Utils.calculateOriginatedAddress(
         'opPsNbm7EcqPyryBDDR28BjdthnriktK8TbMvpwc9r4NwmvToYP',
         0,
@@ -104,8 +104,8 @@ describe('XTZ util library', function() {
     });
   });
 
-  describe('sign', function() {
-    it('should produce a valid signature', async function() {
+  describe('sign', function () {
+    it('should produce a valid signature', async function () {
       const signatures = await Utils.sign(defaultKeyPairFromPrv, defaultDataToSign);
       signatures.bytes.should.equal(
         '0507070a000000160196369c90625575ba44594b23794832a9337f7a2d0007070000050502000000320320053d036d0743035d0a00000015006b5ddaef3fb5d7c151cfb36fbe43a7a066777394031e0743036a0001034f034d031b',
@@ -121,7 +121,7 @@ describe('XTZ util library', function() {
       );
     });
 
-    it('should produce a valid signature with watermark', async function() {
+    it('should produce a valid signature with watermark', async function () {
       const signatures = await Utils.sign(defaultKeyPairFromPrv, defaultDataToSign, new Uint8Array());
       signatures.bytes.should.equal(
         '0507070a000000160196369c90625575ba44594b23794832a9337f7a2d0007070000050502000000320320053d036d0743035d0a00000015006b5ddaef3fb5d7c151cfb36fbe43a7a066777394031e0743036a0001034f034d031b',
@@ -137,7 +137,7 @@ describe('XTZ util library', function() {
       );
     });
 
-    it('should validate a signature belongs to a public key for a string message', async function() {
+    it('should validate a signature belongs to a public key for a string message', async function () {
       const message = 'helloworld';
       const messageHex = Buffer.from(message).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
@@ -150,7 +150,7 @@ describe('XTZ util library', function() {
       result.should.be.true();
     });
 
-    it('should validate a signature belongs to a public key for dataToSign', async function() {
+    it('should validate a signature belongs to a public key for dataToSign', async function () {
       const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
       const result = await Utils.verifySignature(
@@ -162,7 +162,7 @@ describe('XTZ util library', function() {
       result.should.be.true();
     });
 
-    it('should fail to validate a signature with the wrong watermark', async function() {
+    it('should fail to validate a signature with the wrong watermark', async function () {
       const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
       const result = await Utils.verifySignature(
@@ -174,7 +174,7 @@ describe('XTZ util library', function() {
       result.should.be.false();
     });
 
-    it('should fail to validate a signature with the wrong public key', async function() {
+    it('should fail to validate a signature with the wrong public key', async function () {
       const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
       const result = await Utils.verifySignature(
@@ -185,7 +185,7 @@ describe('XTZ util library', function() {
       result.should.be.false();
     });
 
-    it('should fail to validate a signature with the wrong message', async function() {
+    it('should fail to validate a signature with the wrong message', async function () {
       const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
       const secondMessageHex = Buffer.from('helloWorld').toString('hex');
@@ -193,15 +193,15 @@ describe('XTZ util library', function() {
       result.should.be.false();
     });
 
-    it('should fail if the key pair does not have the private key', async function() {
+    it('should fail if the key pair does not have the private key', async function () {
       await Utils.sign(defaultKeyPairFromPub, defaultDataToSign).should.be.rejectedWith(
         new RegExp('Missing private key'),
       );
     });
   });
 
-  describe('generateDataToSign', function() {
-    it('should build transfer data to sign', function() {
+  describe('generateDataToSign', function () {
+    it('should build transfer data to sign', function () {
       const dataToSign = Utils.generateDataToSign(
         'KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL',
         'tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS',
@@ -211,7 +211,7 @@ describe('XTZ util library', function() {
       JSON.stringify(dataToSign).should.equal(JSON.stringify(validDataToSign));
     });
 
-    it('should fail if the contract address has the wrong format', function() {
+    it('should fail if the contract address has the wrong format', function () {
       should.throws(
         () =>
           Utils.generateDataToSign(
@@ -224,7 +224,7 @@ describe('XTZ util library', function() {
       );
     });
 
-    it('should fail if the destination address has the wrong format', function() {
+    it('should fail if the destination address has the wrong format', function () {
       should.throws(
         () => Utils.generateDataToSign('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL', 'abc', '0', '0'),
         new RegExp('Invalid destination address'),
@@ -232,8 +232,8 @@ describe('XTZ util library', function() {
     });
   });
 
-  describe('signature', function() {
-    it('should validate signature', function() {
+  describe('signature', function () {
+    it('should validate signature', function () {
       const validSignatures = [
         'sigVgnaU2S1L4jhtPaTX2SAxsGpP1dRS89VTSR9FrFuxxPvgA2G67QRuez6o6xP7ekagdZX4ELvh7pbMMdLoBSzvk2AVyQpk',
         'spsig1DWTuXdgUg2t64PLRfaapsYejCoCVVkqy2Zjv41Zirt7MjoqSfBnP38qoAg3SWicfQNiG25yMqGYge4jrfrwv9H8hRKDyY',
@@ -246,7 +246,7 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should fail to validate invalid signature', function() {
+    it('should fail to validate invalid signature', function () {
       const invalidHashes = [
         'sigS9pqYUXiUJcz2Wsx5x98ud9KtgGVg4gCwpBoDBgHrZ',
         'sig',
@@ -260,8 +260,8 @@ describe('XTZ util library', function() {
     });
   });
 
-  describe('decodeKey', function() {
-    it('should decode the key', function() {
+  describe('decodeKey', function () {
+    it('should decode the key', function () {
       const validKeys = [['spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL', Utils.hashTypes.spsk]];
 
       for (const data of validKeys) {
@@ -271,7 +271,7 @@ describe('XTZ util library', function() {
       }
     });
 
-    it('should fail to decode an invalid key', function() {
+    it('should fail to decode an invalid key', function () {
       const invalidKeys = [
         [
           'sigVgnaU2S1L4jhtPaTX2SAxsGpP1dRS89VTSR9FrFuxxPvgA2G67QRuez6o6xP7ekagdZX4ELvh7pbMMdLoBSzvk2AVyQpk',

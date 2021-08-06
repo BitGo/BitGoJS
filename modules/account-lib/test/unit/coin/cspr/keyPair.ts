@@ -99,7 +99,7 @@ describe('Casper Key Pair', () => {
     });
   });
 
-  describe('getExtendedKeys', function() {
+  describe('getExtendedKeys', function () {
     it('should get the keys in extended format from xprv', () => {
       const keyPair = new KeyPair({ prv: xPrvKey });
       const { xprv: calculatedXprv, xpub: calculatedXpub } = keyPair.getExtendedKeys();
@@ -129,24 +129,24 @@ describe('Casper Key Pair', () => {
     it('from an invalid public key', () => {
       should.throws(
         () => new KeyPair({ pub: testData.INVALID_SHORT_KEYPAIR_KEY }),
-        e => e.message.includes(testData.INVALID_PUBLIC_KEY_ERROR_MESSAGE),
+        (e) => e.message.includes(testData.INVALID_PUBLIC_KEY_ERROR_MESSAGE),
       );
     });
 
     it('from an invalid private key', () => {
       should.throws(
         () => new KeyPair({ prv: testData.INVALID_SHORT_KEYPAIR_KEY }),
-        e => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
+        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );
       should.throws(
         () => {
           new KeyPair({ prv: testData.INVALID_LONG_KEYPAIR_PRV });
         },
-        e => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
+        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );
       should.throws(
         () => new KeyPair({ prv: prvKey + pubKey }),
-        e => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
+        (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );
     });
   });

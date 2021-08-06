@@ -91,7 +91,7 @@ describe('CSPR Undelegate Builder', () => {
       tx.type.should.equal(TransactionType.StakingUnlock);
     });
 
-    it('an undelegate transaction with large amount', async function() {
+    it('an undelegate transaction with large amount', async function () {
       const amount = '10000000000000000';
       let txBuilder = initUnsignedUndelegateTxBuilder();
       txBuilder = addAmountToBuilder(txBuilder, amount);

@@ -25,7 +25,7 @@ describe('Hbar Transaction', () => {
   });
 
   describe('should sign if transaction is', () => {
-    it('invalid', function() {
+    it('invalid', function () {
       const tx = getTransaction();
       return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
     });
@@ -63,8 +63,8 @@ describe('Hbar Transaction', () => {
     });
   });
 
-  describe('should return encoded tx', function() {
-    it('valid sign', async function() {
+  describe('should return encoded tx', function () {
+    it('valid sign', async function () {
       const tx = getTransaction();
       tx.bodyBytes(testData.WALLET_TXDATA);
       await tx.sign(testData.KEYPAIR_PRV);

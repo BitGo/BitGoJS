@@ -2,14 +2,13 @@ import should from 'should';
 
 import { Xtz } from '../../../../src';
 
-describe('Xtz KeyPair', function() {
+describe('Xtz KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(32) };
 
-  describe('should create a KeyPair', function() {
+  describe('should create a KeyPair', function () {
     it('from an xpub', () => {
       const source = {
-        pub:
-          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+        pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -25,8 +24,7 @@ describe('Xtz KeyPair', function() {
 
     it('from an xprv', () => {
       const source = {
-        prv:
-          'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -44,8 +42,7 @@ describe('Xtz KeyPair', function() {
 
     it('from an uncompressed public key', () => {
       const source = {
-        pub:
-          '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+        pub: '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -105,7 +102,7 @@ describe('Xtz KeyPair', function() {
     });
   });
 
-  describe('should fail to create a KeyPair', function() {
+  describe('should fail to create a KeyPair', function () {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be at least 128 bits (16 bytes, not 8)
       should.throws(() => new Xtz.KeyPair(seed));
@@ -126,7 +123,7 @@ describe('Xtz KeyPair', function() {
     });
   });
 
-  describe('getAddress', function() {
+  describe('getAddress', function () {
     it('should get an address', () => {
       const keyPair = new Xtz.KeyPair(defaultSeed);
       const address = keyPair.getAddress();
@@ -134,7 +131,7 @@ describe('Xtz KeyPair', function() {
     });
   });
 
-  describe('getKeys', function() {
+  describe('getKeys', function () {
     it('should get private and public keys in the protocol default format', () => {
       const keyPair = new Xtz.KeyPair(defaultSeed);
       const { prv, pub } = keyPair.getKeys();
@@ -150,7 +147,7 @@ describe('Xtz KeyPair', function() {
     });
   });
 
-  describe('getExtendedKeys', function() {
+  describe('getExtendedKeys', function () {
     it('should get the keys in extended format', () => {
       const keyPair = new Xtz.KeyPair(defaultSeed);
       const { xprv, xpub } = keyPair.getExtendedKeys();

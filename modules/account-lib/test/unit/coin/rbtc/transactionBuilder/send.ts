@@ -6,7 +6,7 @@ import { getBuilder, Rbtc } from '../../../../../src';
 import * as testData from '../../../../resources/rbtc/rbtc';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
-describe('Rbtc send transaction', function() {
+describe('Rbtc send transaction', function () {
   let txBuilder: Rbtc.TransactionBuilder;
   const contractAddress = '0xab52bc0aff1b4851a60c1e5e628b1da995445651';
   const initTxBuilder = (): void => {
@@ -20,7 +20,7 @@ describe('Rbtc send transaction', function() {
     txBuilder.contract(contractAddress);
   };
 
-  const getOperationHash = function(tx: BaseTransaction): string {
+  const getOperationHash = function (tx: BaseTransaction): string {
     const { data } = tx.toJson();
     const { tokenContractAddress, expireTime, sequenceId, amount, to } = decodeTransferData(data);
     const operationParams = [
@@ -43,13 +43,7 @@ describe('Rbtc send transaction', function() {
     initTxBuilder();
     const recipient = testData.ACCOUNT_2;
     const amount = '1000000000';
-    txBuilder
-      .transfer()
-      .amount(amount)
-      .to(recipient)
-      .expirationTime(1590066728)
-      .contractSequenceId(5)
-      .key(key);
+    txBuilder.transfer().amount(amount).to(recipient).expirationTime(1590066728).contractSequenceId(5).key(key);
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
     should.equal(tx.toJson().chainId, 31);
@@ -66,13 +60,7 @@ describe('Rbtc send transaction', function() {
 
   it('a send funds with amount 0 transaction', async () => {
     initTxBuilder();
-    txBuilder
-      .transfer()
-      .amount('0')
-      .to(testData.ACCOUNT_2)
-      .expirationTime(1590066728)
-      .contractSequenceId(5)
-      .key(key);
+    txBuilder.transfer().amount('0').to(testData.ACCOUNT_2).expirationTime(1590066728).contractSequenceId(5).key(key);
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
     should.equal(tx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

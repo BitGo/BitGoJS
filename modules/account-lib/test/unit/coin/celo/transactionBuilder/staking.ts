@@ -26,7 +26,7 @@ describe('Celo staking transaction builder', () => {
   const ActivateOperation = getOperationConfig(StakingOperationTypes.ACTIVATE, coin.network.type);
 
   describe('lock', () => {
-    it('should build a lock transaction', async function() {
+    it('should build a lock transaction', async function () {
       txBuilder.lock().amount('100');
       const txJson = (await txBuilder.build()).toJson();
       should.equal(txJson.to, LockOperation.contractAddress);
@@ -34,7 +34,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, LockOperation.methodId);
     });
 
-    it('should build a lock transaction using the previous instance', async function() {
+    it('should build a lock transaction using the previous instance', async function () {
       txBuilder.lock().amount('200');
       txBuilder.lock().amount('100');
       const txJson = (await txBuilder.build()).toJson();
@@ -43,7 +43,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, LockOperation.methodId);
     });
 
-    it('should sign and build a lock transaction from serialized', async function() {
+    it('should sign and build a lock transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.LOCK_SERIALIZED);
       builder.sign({ key: testData.PRIVATE_KEY });
@@ -58,7 +58,7 @@ describe('Celo staking transaction builder', () => {
   });
 
   describe('vote', () => {
-    it('should build a vote transaction', async function() {
+    it('should build a vote transaction', async function () {
       txBuilder.type(TransactionType.StakingVote);
       txBuilder
         .vote()
@@ -73,7 +73,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.VOTE_DATA_2);
     });
 
-    it('should build a vote transaction using the previous instance', async function() {
+    it('should build a vote transaction using the previous instance', async function () {
       txBuilder.type(TransactionType.StakingVote);
       txBuilder
         .vote()
@@ -94,7 +94,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.VOTE_DATA);
     });
 
-    it('should sign and build a vote transaction from serialized', async function() {
+    it('should sign and build a vote transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.VOTE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
@@ -108,7 +108,7 @@ describe('Celo staking transaction builder', () => {
   });
 
   describe('activate', () => {
-    it('should build an activate transaction', async function() {
+    it('should build an activate transaction', async function () {
       txBuilder.type(TransactionType.StakingActivate);
       txBuilder.activate().group(testData.GROUP_ADDRESS);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
@@ -120,7 +120,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(tx.toBroadcastFormat(), testData.ACTIVATE_BROADCAST_TX);
     });
 
-    it('should build an activate transaction from a previous instance', async function() {
+    it('should build an activate transaction from a previous instance', async function () {
       txBuilder.type(TransactionType.StakingActivate);
       txBuilder.activate().group(testData.GROUP_ADDRESS_2);
       txBuilder.activate().group(testData.GROUP_ADDRESS);
@@ -133,7 +133,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(tx.toBroadcastFormat(), testData.ACTIVATE_BROADCAST_TX);
     });
 
-    it('should sign and build an activate transaction from serialized', async function() {
+    it('should sign and build an activate transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.ACTIVATE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
@@ -147,7 +147,7 @@ describe('Celo staking transaction builder', () => {
   });
 
   describe('unvote', () => {
-    it('should build a unvote transaction', async function() {
+    it('should build a unvote transaction', async function () {
       txBuilder.type(TransactionType.StakingUnvote);
       txBuilder
         .unvote()
@@ -163,7 +163,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.UNVOTE_DATA);
     });
 
-    it('should build a unvote transaction using the previous instance', async function() {
+    it('should build a unvote transaction using the previous instance', async function () {
       txBuilder.type(TransactionType.StakingUnvote);
       txBuilder
         .unvote()
@@ -186,7 +186,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.UNVOTE_DATA_2);
     });
 
-    it('should sign and build a unvote transaction from serialized', async function() {
+    it('should sign and build a unvote transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.UNVOTE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
@@ -200,7 +200,7 @@ describe('Celo staking transaction builder', () => {
   });
 
   describe('unlock', () => {
-    it('should build an unlock transaction', async function() {
+    it('should build an unlock transaction', async function () {
       txBuilder.type(TransactionType.StakingUnlock);
       txBuilder.unlock().amount('100');
       const txJson = (await txBuilder.build()).toJson();
@@ -209,7 +209,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.UNLOCK_DATA);
     });
 
-    it('should build an unlock transaction from a previous instance', async function() {
+    it('should build an unlock transaction from a previous instance', async function () {
       txBuilder.type(TransactionType.StakingUnlock);
       txBuilder.unlock().amount('500');
       txBuilder.unlock().amount('100');
@@ -219,7 +219,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.data, testData.UNLOCK_DATA);
     });
 
-    it('should sign and build an unlock transaction from serialized', async function() {
+    it('should sign and build an unlock transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.type(TransactionType.StakingLock);
       builder.from(testData.UNLOCK_BROADCAST_TX);
@@ -235,7 +235,7 @@ describe('Celo staking transaction builder', () => {
   });
 
   describe('withdraw', () => {
-    it('should build a withdraw transaction', async function() {
+    it('should build a withdraw transaction', async function () {
       txBuilder.type(TransactionType.StakingWithdraw);
       txBuilder.withdraw().index(0);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
@@ -247,7 +247,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(tx.toBroadcastFormat(), testData.WITHDRAW_BROADCAST_TX);
     });
 
-    it('should build a withdraw transaction from a previous instance', async function() {
+    it('should build a withdraw transaction from a previous instance', async function () {
       txBuilder.type(TransactionType.StakingWithdraw);
       txBuilder.withdraw().index(2);
       txBuilder.withdraw().index(0);
@@ -261,7 +261,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(tx.toBroadcastFormat(), testData.WITHDRAW_BROADCAST_TX);
     });
 
-    it('should sign and build a withdraw transaction from serialized', async function() {
+    it('should sign and build a withdraw transaction from serialized', async function () {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.type(TransactionType.StakingWithdraw);
       builder.from(testData.WITHDRAW_BROADCAST_TX);
@@ -291,7 +291,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.lock();
         },
-        e => e.message === testData.LOCK_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.LOCK_TRANSACTION_TYPE_ERROR,
       );
     });
 
@@ -301,7 +301,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.vote();
         },
-        e => e.message === testData.VOTE_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.VOTE_TRANSACTION_TYPE_ERROR,
       );
     });
 
@@ -311,7 +311,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.activate();
         },
-        e => e.message === testData.ACTIVATION_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.ACTIVATION_TRANSACTION_TYPE_ERROR,
       );
     });
 
@@ -321,7 +321,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.unlock();
         },
-        e => e.message === testData.UNLOCK_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.UNLOCK_TRANSACTION_TYPE_ERROR,
       );
     });
 
@@ -331,7 +331,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.unvote();
         },
-        e => e.message === testData.UNVOTE_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.UNVOTE_TRANSACTION_TYPE_ERROR,
       );
     });
 
@@ -341,7 +341,7 @@ describe('Celo staking transaction builder', () => {
         () => {
           txBuilder.withdraw();
         },
-        e => e.message === testData.WITHDRAW_TRANSACTION_TYPE_ERROR,
+        (e) => e.message === testData.WITHDRAW_TRANSACTION_TYPE_ERROR,
       );
     });
 

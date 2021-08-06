@@ -45,7 +45,7 @@ export class Transaction extends BaseTransaction {
     }
     if (
       this._deploy.approvals.some(
-        ap => !ap.signer.startsWith(SECP256K1_PREFIX) || !isValidPublicKey(removeAlgoPrefixFromHexValue(ap.signer)),
+        (ap) => !ap.signer.startsWith(SECP256K1_PREFIX) || !isValidPublicKey(removeAlgoPrefixFromHexValue(ap.signer)),
       )
     ) {
       throw new SigningError('Invalid deploy. Already signed with an invalid key');
@@ -160,7 +160,7 @@ export class Transaction extends BaseTransaction {
    */
   loadPreviousSignatures(): void {
     if (this._deploy.approvals && this._deploy.approvals.length > 0) {
-      this._deploy.approvals.forEach(approval => {
+      this._deploy.approvals.forEach((approval) => {
         this._signatures.push(approval.signature);
       });
     }
@@ -183,14 +183,14 @@ export class Transaction extends BaseTransaction {
 
       ownersValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString());
 
-      [owner0, owner1, owner2].forEach(index => {
+      [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
           (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
         );
       });
 
-      txJson['deploy']!['session']['ModuleBytes']['args'].forEach(arg => {
+      txJson['deploy']!['session']['ModuleBytes']['args'].forEach((arg) => {
         if (ownersValues.has(arg[argName])) {
           arg[argValue]['parsed'] = ownersValues.get(arg[argName]);
         }
@@ -220,7 +220,7 @@ export class Transaction extends BaseTransaction {
         transferValues.set('id', transferId.toString());
       }
 
-      txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
+      txJson['deploy']!['session']['Transfer']['args'].forEach((arg) => {
         if (transferValues.has(arg[argName])) {
           arg[argValue]['parsed'] = transferValues.get(arg[argName]);
         }
@@ -250,7 +250,7 @@ export class Transaction extends BaseTransaction {
       delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
       delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));
 
-      txJson.deploy.session.ModuleBytes.args.forEach(arg => {
+      txJson.deploy.session.ModuleBytes.args.forEach((arg) => {
         if (delegateValues.has(arg[argName])) {
           arg[argValue]['parsed'] = delegateValues.get(arg[argName]);
         }

@@ -104,9 +104,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   getAddress(): string {
     const pub = this.keyPair.Q.getEncoded(true);
     const out = Buffer.alloc(20);
-    const b2b = blake2b(out.length)
-      .update(pub)
-      .digest(out);
+    const b2b = blake2b(out.length).update(pub).digest(out);
     return Utils.base58encode(Utils.hashTypes.tz2.prefix, b2b);
   }
 }

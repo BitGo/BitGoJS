@@ -4,7 +4,7 @@ import { getBuilder, Etc } from '../../../../../src';
 import * as testData from '../../../../resources/etc/etc';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
-describe('Etc send transaction', function() {
+describe('Etc send transaction', function () {
   let txBuilder: Etc.TransactionBuilder;
   const contractAddress = '0x7073b82be1d932c70afe505e1fe211916e978c34';
   const initTxBuilder = (): void => {
@@ -46,7 +46,12 @@ describe('Etc send transaction', function() {
     should.equal(tx.outputs[0].value, amount);
 
     const data = tx.toJson().data;
-    const { to, amount: parsedAmount, expireTime: parsedExpireTime, sequenceId: parsedSequenceId } = decodeTransferData(data);
+    const {
+      to,
+      amount: parsedAmount,
+      expireTime: parsedExpireTime,
+      sequenceId: parsedSequenceId,
+    } = decodeTransferData(data);
     should.equal(to, recipient);
     should.equal(parsedAmount, amount);
     should.equal(parsedExpireTime, expireTime);
@@ -55,13 +60,7 @@ describe('Etc send transaction', function() {
 
   it('a send funds with amount 0 transaction', async () => {
     initTxBuilder();
-    txBuilder
-      .transfer()
-      .amount('0')
-      .to(testData.ACCOUNT_2)
-      .expirationTime(1590066728)
-      .contractSequenceId(5)
-      .key(key);
+    txBuilder.transfer().amount('0').to(testData.ACCOUNT_2).expirationTime(1590066728).contractSequenceId(5).key(key);
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
     should.equal(tx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
