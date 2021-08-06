@@ -29,6 +29,7 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
+import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -477,11 +478,15 @@ export class Trx extends BaseCoin {
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
     return co<RecoveryTransaction>(function* () {
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+      const isKrsRecovery = getIsKrsRecovery(params);
+      const isUnsignedSweep = getIsUnsignedSweep(params);
+
+      if (!self.isValidAddress(params.recoveryDestination)) {
+        throw new Error('Invalid destination address!');
+      }
 
       // get our user, backup keys
-      const keys = (yield self.initiateRecovery(params)) as any;
+      const keys = getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
 
       // we need to decode our bitgoKey to a base58 address
       const bitgoHexAddr = self.pubToHexAddress(self.xpubToUncompressedPub(params.bitgoKey));
