@@ -17,7 +17,6 @@ import * as httpProxy from 'http-proxy';
 import { Environments } from 'bitgo';
 import { coroutine as co } from 'bluebird';
 
-// eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
