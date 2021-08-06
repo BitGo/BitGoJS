@@ -545,6 +545,7 @@ export class BitGo {
           req.isV2Authenticated = false;
 
           req.set('Authorization', 'Bearer ' + self._token);
+          debug('sending v1 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
           return originalThen(onfulfilled).catch(onrejected);
         }
 
@@ -564,6 +565,7 @@ export class BitGo {
 
           // we're not sending the actual token, but only its hash
           req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+          debug('sending v2 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
 
           // set the HMAC
           req.set('HMAC', requestProperties.hmac);
@@ -1009,6 +1011,7 @@ export class BitGo {
    * Synchronous method for activating an access token.
    */
   authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
+    debug('now authenticating with access token %s', accessToken.substring(0, 8));
     this._token = accessToken;
   }
 
@@ -1225,6 +1228,7 @@ export class BitGo {
         request.forceV1Auth = true;
         // tell the server that the client was forced to downgrade the authentication protocol
         authParams.forceV1Auth = true;
+        debug('forcing v1 auth for call to authenticate');
       }
       const response: superagent.Response = await request.send(authParams);
       // extract body and user information
@@ -1473,12 +1477,13 @@ export class BitGo {
       if (!this._ecdhXprv) {
         // without a private key, the user cannot decrypt the new access token the server will send
         request.forceV1Auth = true;
+        debug('forcing v1 auth for adding access token using token %s', this._token?.substr(0, 8));
       }
 
       const response = await request.send(params);
       if (request.forceV1Auth) {
         (response as any).body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
-        return response;
+        return handleResponseResult()(response);
       }
 
       // verify the authenticity of the server's response before proceeding any further
