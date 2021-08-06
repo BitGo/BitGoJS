@@ -21,7 +21,8 @@ import * as common from './common';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-import { hdPath, makeRandomKey, getNetwork } from './bitcoin';
+import { makeRandomKey, getNetwork } from './bitcoin';
+import { sanitizeLegacyPath } from './bip32path';
 const request = require('superagent');
 
 //
@@ -289,16 +290,8 @@ Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshol
 
   const derivedKeys = rootKeys.map(function (k) {
     const hdnode = bitcoin.HDNode.fromBase58(k.xpub);
-    let derivationPath = k.path + path;
-    if (k.walletSubPath) {
-      // if a keychain has a wallet subpath, it should be used as an infix
-      derivationPath = k.path + k.walletSubPath + path;
-    }
-    if (!derivationPath.startsWith('m')) {
-      // all derivation paths need to start with m, but k.path may already contain that
-      derivationPath = `m/${derivationPath}`;
-    }
-    return hdPath(hdnode).deriveKey(derivationPath).getPublicKeyBuffer();
+    const derivationPath = k.path + (k.walletSubPath || '') + path;
+    return hdnode.derivePath(sanitizeLegacyPath(derivationPath)).getPublicKeyBuffer();
   });
 
   const pathComponents = path.split('/');
