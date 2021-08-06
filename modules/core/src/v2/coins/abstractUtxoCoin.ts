@@ -1806,16 +1806,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Derive child keys at specific index, from provided parent keys
-   * @param {bitcoin.HDNode[]} keyArray
-   * @param {number} index
-   * @returns {bitcoin.HDNode[]}
-   */
-  deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
-    return keyArray.map((k) => k.derive(index));
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback
