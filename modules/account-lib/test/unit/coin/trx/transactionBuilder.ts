@@ -18,7 +18,7 @@ import {
 import { getBuilder } from '../../../../src';
 import * as Crypto from '../../../../src/utils/crypto';
 
-describe('Tron TransactionBuilder', function() {
+describe('Tron TransactionBuilder', function () {
   let txBuilder;
 
   beforeEach(() => {

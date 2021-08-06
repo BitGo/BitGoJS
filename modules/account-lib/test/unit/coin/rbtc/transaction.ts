@@ -50,7 +50,7 @@ describe('Rbtc Transaction', () => {
   });
 
   describe('should return encoded tx', () => {
-    it('valid sign', async function() {
+    it('valid sign', async function () {
       const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       await tx.sign(testData.KEYPAIR_PRV);

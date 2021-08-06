@@ -57,7 +57,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction('');
         },
-        e => e.message === testData.ERROR_EMPTY_RAW_TRANSACTION,
+        (e) => e.message === testData.ERROR_EMPTY_RAW_TRANSACTION,
       );
     });
 
@@ -67,7 +67,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
-        e => e.message === testData.ERROR_JSON_PARSING,
+        (e) => e.message === testData.ERROR_JSON_PARSING,
       );
     });
 
@@ -77,7 +77,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
-        e => e.message === testData.ERROR_JSON_PARSING,
+        (e) => e.message === testData.ERROR_JSON_PARSING,
       );
     });
 
@@ -127,11 +127,11 @@ describe('Casper Transaction Builder', () => {
       const builder = initWalletBuilder();
       should.throws(
         () => builder.expiration(testData.MAX_TRANSACTION_EXPIRATION + 1),
-        e => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
+        (e) => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
       );
     });
 
-    it('should validate addresses', async function() {
+    it('should validate addresses', async function () {
       // validate secp256k1 address
       const builder = initTransferBuilder();
       let tx = await builder.build();
@@ -151,8 +151,8 @@ describe('Casper Transaction Builder', () => {
     });
   });
 
-  describe('signatures', function() {
-    it('should sign a transaction', async function() {
+  describe('signatures', function () {
+    it('should sign a transaction', async function () {
       const builder = initWalletBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       const tx = (await builder.build()) as Transaction;
@@ -166,7 +166,7 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
-    it('should sign a transaction using extended key', async function() {
+    it('should sign a transaction using extended key', async function () {
       const builder = initWalletBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       const tx = (await builder.build()) as Transaction;
@@ -180,7 +180,7 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
-    it('should process signing only once per signer', async function() {
+    it('should process signing only once per signer', async function () {
       const builder = initWalletBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       let tx = (await builder.build()) as Transaction;
@@ -192,7 +192,7 @@ describe('Casper Transaction Builder', () => {
       should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
     });
 
-    it('should process signing only once per signer with extended key', async function() {
+    it('should process signing only once per signer with extended key', async function () {
       const builder = initWalletBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       let tx = (await builder.build()) as Transaction;
@@ -204,7 +204,7 @@ describe('Casper Transaction Builder', () => {
       should.equal(tx.casperTx.approvals[0].signer, sourceAddress);
     });
 
-    it('should add a signature to a transaction', async function() {
+    it('should add a signature to a transaction', async function () {
       const builder = initWalletBuilder();
       const sig =
         '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
@@ -224,7 +224,7 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
-    it('should add a signature to a transaction using extended key', async function() {
+    it('should add a signature to a transaction using extended key', async function () {
       const builder = initWalletBuilder();
       const sig =
         '0220ade206fc0e7bf19c672aae122e037a7c0ad6c82fb65126735e61f370923f2706114647f9ea1e405fdbf9915c7eaf4325a5ddf9faf24935b20333526cf3b44d';
@@ -245,7 +245,7 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
-    it('should process signing only once per signature added', async function() {
+    it('should process signing only once per signature added', async function () {
       const builder = initWalletBuilder();
       const sig =
         '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
@@ -259,7 +259,7 @@ describe('Casper Transaction Builder', () => {
       tx.casperTx.approvals.length.should.equal(1);
     });
 
-    it('should process signing only once per signature added using extended key', async function() {
+    it('should process signing only once per signature added using extended key', async function () {
       const builder = initWalletBuilder();
       const sig =
         '0220ade206fc0e7bf19c672aae122e037a7c0ad6c82fb65126735e61f370923f2706114647f9ea1e405fdbf9915c7eaf4325a5ddf9faf24935b20333526cf3b44d';
@@ -277,34 +277,34 @@ describe('Casper Transaction Builder', () => {
     });
   });
 
-  describe('chain name', function() {
-    describe('has default value for', function() {
-      it('transfer transaction', function() {
+  describe('chain name', function () {
+    describe('has default value for', function () {
+      it('transfer transaction', function () {
         const txBuilder = initTransferBuilder();
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
       });
 
-      it('wallet initialization transaction', function() {
+      it('wallet initialization transaction', function () {
         const txBuilder = initWalletBuilder();
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
       });
 
-      it('delegation transaction', function() {
+      it('delegation transaction', function () {
         const txBuilder = initDelegateBuilder();
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
       });
 
-      it('undelegation transaction', function() {
+      it('undelegation transaction', function () {
         const txBuilder = initUndelegateBuilder();
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(DEFAULT_CHAIN_NAMES.testnet);
       });
     });
-    describe('can be manually set for', function() {
-      it('transfer transaction', function() {
+    describe('can be manually set for', function () {
+      it('transfer transaction', function () {
         const txBuilder = initTransferBuilder()
           .amount(testData.MIN_MOTES_AMOUNT)
           .nodeChainName(testData.CUSTOM_CHAIN_NAME);
@@ -312,19 +312,19 @@ describe('Casper Transaction Builder', () => {
         txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
       });
 
-      it('wallet initialization transaction', function() {
+      it('wallet initialization transaction', function () {
         const txBuilder = initWalletBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
       });
 
-      it('delegation transaction', function() {
+      it('delegation transaction', function () {
         const txBuilder = initDelegateBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);
       });
 
-      it('undelegation transaction', function() {
+      it('undelegation transaction', function () {
         const txBuilder = initUndelegateBuilder().nodeChainName(testData.CUSTOM_CHAIN_NAME);
         should.doesNotThrow(() => txBuilder.validateMandatoryFields());
         txBuilder.chainName.should.equals(testData.CUSTOM_CHAIN_NAME);

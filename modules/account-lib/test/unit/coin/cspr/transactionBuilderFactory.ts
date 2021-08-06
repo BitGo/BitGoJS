@@ -261,7 +261,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       should.throws(
         () => tx2.sign(keypair),
-        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
     });
 
@@ -279,7 +279,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       should.throws(
         () => tx2.sign(keypair),
-        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
     });
 
@@ -297,7 +297,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       should.throws(
         () => tx2.sign(keypair),
-        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
     });
 
@@ -315,7 +315,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       should.throws(
         () => tx2.sign(keypair),
-        e => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
     });
 
@@ -331,7 +331,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
@@ -347,7 +347,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
@@ -356,16 +356,16 @@ describe('should build ', () => {
         () => {
           factory.from('{}');
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
     it('a transaction with undefined as raw transaction', async () => {
       should.throws(
         () => {
-          factory.from((undefined as unknown) as string);
+          factory.from(undefined as unknown as string);
         },
-        e => e.message.startsWith(testData.INVALID_RAW_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_RAW_TRANSACTION_ERROR),
       );
     });
 
@@ -381,7 +381,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
@@ -397,7 +397,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
@@ -413,7 +413,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
 
@@ -429,7 +429,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        e => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
       );
     });
   });

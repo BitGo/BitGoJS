@@ -2,8 +2,8 @@ import should from 'should';
 
 import * as Crypto from '../../../src/utils/crypto';
 
-describe('Crypto utils', function() {
-  describe('should succeed', function() {
+describe('Crypto utils', function () {
+  describe('should succeed', function () {
     it('to get a valid uncompressed public key from an xpub', () => {
       const pub = Crypto.xpubToUncompressedPub(
         'xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6S598UeKT2DjCgZD5oxriwVyS4t5pz7Ga5xJVNyBPcvJVxaRq5q',
@@ -38,7 +38,7 @@ describe('Crypto utils', function() {
     });
   });
 
-  describe('should fail', function() {
+  describe('should fail', function () {
     it('to get a valid uncompressed public key from an invalid xpub', () => {
       should.throws(() => Crypto.xpubToUncompressedPub('xpub'));
     });

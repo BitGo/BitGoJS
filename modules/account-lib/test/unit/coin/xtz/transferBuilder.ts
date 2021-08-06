@@ -2,16 +2,11 @@ import should from 'should';
 
 import { TransferBuilder } from '../../../../src/coin/xtz/transferBuilder';
 
-describe('Tezos Transfer builder', function() {
+describe('Tezos Transfer builder', function () {
   describe('should build', () => {
     it('a valid transfer with minimum fields', async () => {
       const builder = new TransferBuilder();
-      const transfer = builder
-        .amount('10')
-        .from('a')
-        .to('b')
-        .fee('20')
-        .build();
+      const transfer = builder.amount('10').from('a').to('b').fee('20').build();
       transfer.amount.should.equal('10');
       should.not.exist(transfer.coin);
       transfer.from.should.equal('a');
@@ -68,18 +63,12 @@ describe('Tezos Transfer builder', function() {
     });
 
     it('build a transfer without from address', async () => {
-      const builder = new TransferBuilder()
-        .amount('10')
-        .to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A')
-        .fee('20');
+      const builder = new TransferBuilder().amount('10').to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A').fee('20');
       should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 
     it('build a transfer without destination address', async () => {
-      const builder = new TransferBuilder()
-        .amount('10')
-        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
-        .fee('20');
+      const builder = new TransferBuilder().amount('10').from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL').fee('20');
       should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 

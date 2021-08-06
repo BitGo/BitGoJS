@@ -3,7 +3,7 @@ import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Rbtc } from '../../../../../src';
 import * as testData from '../../../../resources/rbtc/rbtc';
 
-describe('Rbtc wallet initialization', function() {
+describe('Rbtc wallet initialization', function () {
   let txBuilder: Rbtc.TransactionBuilder;
   const initTxBuilder = (): void => {
     txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;

@@ -4,7 +4,7 @@ import { Utils } from '../../../../src/coin/trx/index';
 
 import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
 
-describe('Util library should', function() {
+describe('Util library should', function () {
   // arbitrary text
   const arr = [127, 255, 31, 192, 3, 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const hex = '7FFF1FC0037E0000000000000000000000000000000000000000000000000000';
@@ -66,12 +66,12 @@ describe('Util library should', function() {
 
   it('validate a hex string', () => {
     const hex = ['0xaffd', '0x11'];
-    hex.map(hex => {
+    hex.map((hex) => {
       should(Utils.isValidHex(hex)).ok();
     });
 
     const invalidHex = ['0xa11', '0xFFdYYY', '0x', ''];
-    invalidHex.map(hex => {
+    invalidHex.map((hex) => {
       should(Utils.isValidHex(hex)).equal(false);
     });
   });

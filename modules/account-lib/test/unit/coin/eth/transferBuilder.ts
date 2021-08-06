@@ -3,7 +3,7 @@ import { TransferBuilder } from '../../../../src/coin/eth';
 import { Eth } from '../../../../src';
 import * as testData from '../../../resources/eth/eth';
 
-describe('Eth send multi sig builder', function() {
+describe('Eth send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
@@ -177,26 +177,17 @@ describe('Eth send multi sig builder', function() {
     });
 
     it('should fail if a sequenceId param is missing', () => {
-      const builder = new TransferBuilder()
-        .amount(amount)
-        .to(toAddress)
-        .key(key);
+      const builder = new TransferBuilder().amount(amount).to(toAddress).key(key);
       should.throws(() => builder.signAndBuild());
     });
 
     it('should fail if a destination param is missing', () => {
-      const builder = new TransferBuilder()
-        .amount(amount)
-        .contractSequenceId(2)
-        .key(key);
+      const builder = new TransferBuilder().amount(amount).contractSequenceId(2).key(key);
       should.throws(() => builder.signAndBuild());
     });
 
     it('should fail if a amount param is missing', () => {
-      const builder = new TransferBuilder()
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key);
+      const builder = new TransferBuilder().to(toAddress).contractSequenceId(2).key(key);
       should.throws(() => builder.signAndBuild());
     });
   });

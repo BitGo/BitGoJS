@@ -4,10 +4,9 @@ import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Xtz } from '../../../../src';
 import { KeyPair } from '../../../../src/coin/xtz';
 
-describe('Offline Tezos Transaction builder', function() {
+describe('Offline Tezos Transaction builder', function () {
   const defaultKeyPair = new Xtz.KeyPair({
-    prv:
-      'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+    prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
   });
 
   describe('should build and sign', () => {

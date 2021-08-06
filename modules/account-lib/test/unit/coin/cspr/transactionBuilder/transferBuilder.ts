@@ -22,8 +22,8 @@ describe('Casper Transfer Builder', () => {
     return txBuilder;
   };
 
-  describe('transfer builder environment', function() {
-    it('should select the right chain name', function() {
+  describe('transfer builder environment', function () {
+    it('should select the right chain name', function () {
       should.equal(factory.getTransferBuilder().coinName(), 'tcspr');
       should.equal(factoryProd.getTransferBuilder().coinName(), 'cspr');
 
@@ -34,7 +34,7 @@ describe('Casper Transfer Builder', () => {
 
   describe('should build ', () => {
     describe('non serialized transactions', () => {
-      it('should build a transaction to an address from an ed25519 key', async function() {
+      it('should build a transaction to an address from an ed25519 key', async function () {
         const ed25519Address = '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa';
         const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
         builder.to(ed25519Address);
@@ -218,22 +218,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -242,20 +228,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -270,22 +245,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -294,20 +255,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -327,22 +277,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -351,20 +287,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -385,22 +310,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -409,20 +320,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -443,22 +343,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -467,20 +353,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -501,22 +376,8 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
-            testData.MIN_MOTES_AMOUNT,
-          );
+          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
@@ -525,20 +386,9 @@ describe('Casper Transfer Builder', () => {
 
           should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
           should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
+          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session
-              .getArgByName('id')!
-              .asOption()
-              .getSome()
-              .asBigNumber()
-              .toNumber(),
-            255,
-          );
-          should.equal(
-            tx2.casperTx.session
-              .getArgByName('amount')!
-              .asBigNumber()
-              .toString(),
+            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -565,7 +415,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           builder2.from(tx.toBroadcastFormat());
         },
-        e => e.message === testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM,
+        (e) => e.message === testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM,
       );
     });
   });
@@ -576,7 +426,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().source({ address: testData.INVALID_ADDRESS });
         },
-        e => e.message.startsWith(testData.ERROR_INVALID_ADDRESS),
+        (e) => e.message.startsWith(testData.ERROR_INVALID_ADDRESS),
       );
     });
 
@@ -585,7 +435,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().to(testData.INVALID_ADDRESS);
         },
-        e => e.message === testData.ERROR_INVALID_ADDRESS,
+        (e) => e.message === testData.ERROR_INVALID_ADDRESS,
       );
     });
 
@@ -596,7 +446,7 @@ describe('Casper Transfer Builder', () => {
           txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
           txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
         },
-        e => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
+        (e) => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
       );
     });
 
@@ -607,7 +457,7 @@ describe('Casper Transfer Builder', () => {
           txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
           txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
         },
-        e => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
+        (e) => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
       );
     });
 
@@ -616,7 +466,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().amount('invalid_value');
         },
-        e => e.message === testData.ERROR_INVALID_AMOUNT,
+        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
       );
     });
 
@@ -625,7 +475,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().amount('-1');
         },
-        e => e.message === testData.ERROR_INVALID_AMOUNT,
+        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
       );
     });
 
@@ -634,7 +484,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().amount('0');
         },
-        e => e.message === testData.ERROR_INVALID_AMOUNT,
+        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
       );
     });
 
@@ -644,7 +494,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           initTxTransferBuilder().amount(maxInvalidAmount);
         },
-        e => e.message === testData.ERROR_INVALID_AMOUNT,
+        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
       );
     });
 
@@ -662,7 +512,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           txBuilder.to(testData.INVALID_ADDRESS);
         },
-        e => e.message === testData.ERROR_INVALID_ADDRESS,
+        (e) => e.message === testData.ERROR_INVALID_ADDRESS,
       );
     });
 
@@ -684,7 +534,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           txBuilder.amount('');
         },
-        e => e.message === testData.ERROR_INVALID_AMOUNT,
+        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
       );
     });
 
@@ -694,7 +544,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           txBuilder.transferId(-1);
         },
-        e => e.message === testData.ERROR_INVALID_TRANSFER_ID,
+        (e) => e.message === testData.ERROR_INVALID_TRANSFER_ID,
       );
     });
 
@@ -707,7 +557,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           builder.sign({ key: testData.ACCOUNT_2.privateKey });
         },
-        e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
+        (e) => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
       );
     });
 
@@ -720,7 +570,7 @@ describe('Casper Transfer Builder', () => {
         () => {
           builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
         },
-        e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
+        (e) => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
       );
     });
   });

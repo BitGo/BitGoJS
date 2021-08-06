@@ -247,32 +247,32 @@ describe('Cspr Transaction', () => {
   });
 
   describe('should reject sign if transaction signer is', () => {
-    it('invalid private key', function() {
+    it('invalid private key', function () {
       const tx = getTransaction();
       should.throws(() => tx.sign(testData.INVALID_KEYPAIR_PRV));
     });
 
-    it('public key', function() {
+    it('public key', function () {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
       should.throws(
         () => tx.sign(keypair),
-        e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+        (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
       );
     });
 
-    it('public extended key', function() {
+    it('public extended key', function () {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.xPublicKey });
       should.throws(
         () => tx.sign(keypair),
-        e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+        (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
       );
     });
   });
 
-  describe('should return encoded tx', function() {
-    it('wallet initialization', async function() {
+  describe('should return encoded tx', function () {
+    it('wallet initialization', async function () {
       const walletInitTx = await getWalletInitTransaction();
       const encodedTx = walletInitTx.toBroadcastFormat();
       const walletInitJsonTx = JSON.parse(encodedTx);
@@ -285,24 +285,24 @@ describe('Cspr Transaction', () => {
 
       const ownersValues = new Map();
 
-      [owner0, owner1, owner2].forEach(index => {
+      [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
           (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
         );
       });
 
-      const jsonOwnerArgs = walletInitJsonTx['deploy']['session']['ModuleBytes']['args'].filter(arg =>
+      const jsonOwnerArgs = walletInitJsonTx['deploy']['session']['ModuleBytes']['args'].filter((arg) =>
         ownersValues.has(arg[argName]),
       );
       jsonOwnerArgs.length.should.equal(ownersValues.size);
 
-      jsonOwnerArgs.forEach(arg => {
+      jsonOwnerArgs.forEach((arg) => {
         arg[argValue]['parsed'].should.be.equal(ownersValues.get(arg[argName]));
       });
     });
 
-    it('wallet initialization using extended key', async function() {
+    it('wallet initialization using extended key', async function () {
       const walletInitTx = await getWalletInitTransactionUsignExtendedKey();
       const encodedTx = walletInitTx.toBroadcastFormat();
       const walletInitJsonTx = JSON.parse(encodedTx);
@@ -315,24 +315,24 @@ describe('Cspr Transaction', () => {
 
       const ownersValues = new Map();
 
-      [owner0, owner1, owner2].forEach(index => {
+      [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
           (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
         );
       });
 
-      const jsonOwnerArgs = walletInitJsonTx['deploy']['session']['ModuleBytes']['args'].filter(arg =>
+      const jsonOwnerArgs = walletInitJsonTx['deploy']['session']['ModuleBytes']['args'].filter((arg) =>
         ownersValues.has(arg[argName]),
       );
       jsonOwnerArgs.length.should.equal(ownersValues.size);
 
-      jsonOwnerArgs.forEach(arg => {
+      jsonOwnerArgs.forEach((arg) => {
         arg[argValue]['parsed'].should.be.equal(ownersValues.get(arg[argName]));
       });
     });
 
-    it('transfer', async function() {
+    it('transfer', async function () {
       const transferTx = await getTransferTransaction();
       const encodedTx = transferTx.toBroadcastFormat();
       const transferJsonTx = JSON.parse(encodedTx);
@@ -349,17 +349,17 @@ describe('Cspr Transaction', () => {
         transferValues.set('id', transferId.toString());
       }
 
-      const jsonOwnerArgs = transferJsonTx['deploy']['session']['Transfer']['args'].filter(arg =>
+      const jsonOwnerArgs = transferJsonTx['deploy']['session']['Transfer']['args'].filter((arg) =>
         transferValues.has(arg[argName]),
       );
       jsonOwnerArgs.length.should.equal(transferValues.size);
 
-      jsonOwnerArgs.forEach(arg => {
+      jsonOwnerArgs.forEach((arg) => {
         arg[argValue]['parsed'].should.be.equal(transferValues.get(arg[argName]));
       });
     });
 
-    it('valid sign', async function() {
+    it('valid sign', async function () {
       const tx = getTransaction();
       // TODO STLX-1174: get and decode encoded transaction
     });

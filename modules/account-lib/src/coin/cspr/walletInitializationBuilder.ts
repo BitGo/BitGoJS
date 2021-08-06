@@ -43,8 +43,8 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @returns {WalletInitContractArgs} contracts args to create a session
    */
   private buildWalletParameters(): WalletInitContractArgs {
-    const accounts = this._owners.map(owner => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
-    const weights = this._owners.map(owner => CLTypedAndToBytesHelper.u8(owner.weight));
+    const accounts = this._owners.map((owner) => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
+    const weights = this._owners.map((owner) => CLTypedAndToBytesHelper.u8(owner.weight));
 
     // set source address weight to zero to disable the master private key from signing.
     accounts.push(CLTypedAndToBytesHelper.bytes(PublicKey.fromHex(this._source.address).toAccountHash()));

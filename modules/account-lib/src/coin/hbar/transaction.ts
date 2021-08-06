@@ -89,7 +89,7 @@ export class Transaction extends BaseTransaction {
    */
   private getTransferData(): [string, string] {
     let transferData;
-    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
+    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach((transfer) => {
       const amount = Long.fromValue(transfer.amount!);
       if (amount.isPositive()) {
         transferData = [stringifyAccountId(transfer.accountID!), amount.toString()];
@@ -136,7 +136,7 @@ export class Transaction extends BaseTransaction {
   loadPreviousSignatures(): void {
     if (this._hederaTx.sigMap && this._hederaTx.sigMap.sigPair) {
       const sigPairs = this._hederaTx.sigMap.sigPair;
-      sigPairs.forEach(sigPair => {
+      sigPairs.forEach((sigPair) => {
         const signature = sigPair.ed25519;
         if (signature) {
           this._signatures.push(toHex(signature));

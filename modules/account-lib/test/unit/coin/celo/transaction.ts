@@ -4,7 +4,7 @@ import { Transaction } from '../../../../src/coin/celo';
 import * as testData from '../../../resources/celo/celo';
 import { getCommon } from '../../../../src/coin/celo/utils';
 
-describe('Celo Transaction', function() {
+describe('Celo Transaction', function () {
   const coin = coins.get('celo');
   const common = getCommon(coin.network.type);
 
@@ -15,7 +15,7 @@ describe('Celo Transaction', function() {
     return new Transaction(coin, common);
   }
 
-  it('should throw empty transaction', function() {
+  it('should throw empty transaction', function () {
     const tx = getTransaction();
     should.throws(() => {
       tx.toJson();
@@ -25,28 +25,28 @@ describe('Celo Transaction', function() {
     });
   });
 
-  it('should return valid transaction', function() {
+  it('should return valid transaction', function () {
     const tx = getTransaction();
     tx.setTransactionData(testData.TXDATA);
     should.deepEqual(tx.toJson(), testData.TXDATA);
     should.equal(tx.toBroadcastFormat(), testData.UNSIGNED_TX);
   });
 
-  describe('should sign', function() {
-    it('invalid', function() {
+  describe('should sign', function () {
+    it('invalid', function () {
       const tx = getTransaction();
       return tx.sign(testData.KEYPAIR_PRV).should.be.rejected();
     });
 
-    it('valid', function() {
+    it('valid', function () {
       const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       return tx.sign(testData.KEYPAIR_PRV).should.be.fulfilled();
     });
   });
 
-  describe('should return encoded tx', function() {
-    it('valid sign', async function() {
+  describe('should return encoded tx', function () {
+    it('valid sign', async function () {
       const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       await tx.sign(testData.KEYPAIR_PRV);

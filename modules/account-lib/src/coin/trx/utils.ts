@@ -182,9 +182,7 @@ export function decodeTransaction(hexString: string): RawData {
  * @example
  * @see {@link https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L319}
  */
-export function decodeRawTransaction(
-  hexString: string,
-): {
+export function decodeRawTransaction(hexString: string): {
   expiration: number;
   timestamp: number;
   contracts: Array<any>;
@@ -337,7 +335,7 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   if (accountUpdateContract.witness) {
     witness = createPermission(accountUpdateContract.witness);
   }
-  const activeList = accountUpdateContract.actives.map(active => createPermission(active));
+  const activeList = accountUpdateContract.actives.map((active) => createPermission(active));
 
   return {
     ownerAddress,

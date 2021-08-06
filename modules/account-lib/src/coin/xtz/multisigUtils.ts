@@ -250,7 +250,7 @@ function buildSignatures(signatures: IndexedSignature[], existingSignatures = []
     transactionSignatures.push({ prim: 'None' });
   }
   // Replace the empty signatures for the real ones based on the right index
-  signatures.forEach(s => {
+  signatures.forEach((s) => {
     if (s.index) {
       transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] };
     } else {
@@ -476,7 +476,7 @@ export function genericMultisigOriginationOperation(
   threshold: number = DEFAULT_N,
 ): OriginationOp {
   const walletPublicKeys: any[] = [];
-  pubKeys.forEach(pk => walletPublicKeys.push({ string: pk }));
+  pubKeys.forEach((pk) => walletPublicKeys.push({ string: pk }));
   const originationOp: OriginationOp = {
     kind: 'origination',
     counter,
@@ -523,7 +523,7 @@ export function getOwnersPublicKeys(operation: OriginationOp): string[] {
   if (!ownersArgs) {
     return [];
   }
-  return ownersArgs.map(o => o.string);
+  return ownersArgs.map((o) => o.string);
 }
 
 /**

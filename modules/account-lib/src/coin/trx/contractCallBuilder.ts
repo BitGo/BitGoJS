@@ -62,7 +62,7 @@ export class ContractCallBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    if (this._signingKeys.some(signingKey => signingKey.key === key.key)) {
+    if (this._signingKeys.some((signingKey) => signingKey.key === key.key)) {
       throw new SigningError('Duplicated key');
     }
     this._signingKeys.push(key);
@@ -162,9 +162,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     blockBytes.writeInt32BE(block.number, 4);
     this._refBlockBytes = blockBytes.slice(6, 8).toString('hex');
 
-    this._refBlockHash = Buffer.from(block.hash, 'hex')
-      .slice(8, 16)
-      .toString('hex');
+    this._refBlockHash = Buffer.from(block.hash, 'hex').slice(8, 16).toString('hex');
 
     return this;
   }
@@ -245,9 +243,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     contractParameter.type_url = 'type.googleapis.com/protocol.TriggerSmartContract';
     contract.type = 'TriggerSmartContract';
     const hexBuffer = Buffer.from(rawDataHex, 'hex');
-    const id = createHash('sha256')
-      .update(hexBuffer)
-      .digest('hex');
+    const id = createHash('sha256').update(hexBuffer).digest('hex');
     const txRecip: TransactionReceipt = {
       raw_data: rawData,
       raw_data_hex: rawDataHex,
@@ -288,7 +284,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     if (!this.transaction.inputs) {
       throw new SigningError('Transaction has no inputs');
     }
-    this._signingKeys.forEach(key => this.applySignature(key));
+    this._signingKeys.forEach((key) => this.applySignature(key));
   }
 
   /** @inheritdoc */
