@@ -140,10 +140,7 @@ export interface Derivable {
 }
 
 /**
- * Derive a BIP32 path, given a root key
- * We cache keys at each level of hierarchy we derive, to avoid re-deriving (approx 25ms per derivation)
- * @param rootKey key to derive off
- * @returns {*} function which can be used to derive a new HDNode from the root HDNode on a given path
+ * @deprecated - use `derivePath(p)` or `derivePath(sanitizeLegacyPath(p))` instead
  */
 export function hdPath(rootKey): Derivable {
   const cache = {};

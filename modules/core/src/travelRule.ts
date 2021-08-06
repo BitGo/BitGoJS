@@ -16,7 +16,8 @@ import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
 import * as common from './common';
-import { getNetwork, makeRandomKey, hdPath } from './bitcoin';
+import { getNetwork, makeRandomKey } from './bitcoin';
+import { sanitizeLegacyPath } from './bip32path';
 
 interface DecryptReceivedTravelRuleOptions {
   tx?: {
@@ -139,11 +140,9 @@ TravelRule.prototype.decryptReceivedTravelInfo = function (params: DecryptReceiv
     hdNode = bitcoin.HDNode.fromBase58(keychain.xprv);
   }
 
-  const self = this;
-  const hdPathNode = hdPath(hdNode);
-  tx.receivedTravelInfo.forEach(function (info) {
-    const key = hdPathNode.deriveKey(info.toPubKeyPath);
-    const secret = self.bitgo.getECDHSecret({
+  tx.receivedTravelInfo.forEach((info) => {
+    const key = hdNode.deriveKey(sanitizeLegacyPath(info.toPubKeyPath)).keyPair;
+    const secret = this.bitgo.getECDHSecret({
       eckey: key,
       otherPubKeyHex: info.fromPubKey,
     });

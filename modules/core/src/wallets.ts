@@ -12,10 +12,11 @@
 //
 
 import * as bitcoin from '@bitgo/utxo-lib';
-import { makeRandomKey, hdPath, getNetwork } from './bitcoin';
+import { makeRandomKey, getNetwork } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { sanitizeLegacyPath } from './bip32path';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 
@@ -236,7 +237,7 @@ Wallets.prototype.acceptShare = function (params, callback) {
           const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.xprv);
 
           // Derive key by path (which is used between these 2 users only)
-          const privKey = hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+          const privKey = rootExtKey.derivePath(sanitizeLegacyPath(walletShare.keychain.path)).keyPair;
           const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
           // Yes! We got the secret successfully here, now decrypt the shared wallet xprv

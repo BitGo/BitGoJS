@@ -6,7 +6,7 @@
 
 import * as superagent from 'superagent';
 import * as bitcoin from '@bitgo/utxo-lib';
-import { makeRandomKey, hdPath } from './bitcoin';
+import { makeRandomKey } from './bitcoin';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
 import { BaseCoin } from './v2/baseCoin';
@@ -45,6 +45,7 @@ import {
   toBitgoRequest,
   verifyResponse,
 } from './api';
+import { sanitizeLegacyPath } from './bip32path';
 
 const debug = debugLib('bitgo:index');
 
@@ -1045,8 +1046,8 @@ export class BitGo {
 
     // BIP32 derivation path is applied to both client and server master keys
     const derivationPath = responseBody.derivationPath;
-    const clientDerivedNode = hdPath(clientHDNode).derive(derivationPath);
-    const serverDerivedNode = hdPath(serverHDNode).derive(derivationPath);
+    const clientDerivedNode = clientHDNode.derivePath(sanitizeLegacyPath(derivationPath));
+    const serverDerivedNode = serverHDNode.derivePath(sanitizeLegacyPath(derivationPath));
 
     const publicKey = serverDerivedNode.keyPair.getPublicKeyBuffer();
     const secretKey = clientDerivedNode.keyPair.d.toBuffer(32);
