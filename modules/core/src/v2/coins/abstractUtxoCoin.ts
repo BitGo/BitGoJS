@@ -1821,7 +1821,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(recover(this, params)).asCallback(callback);
+    return Bluebird.resolve(recover(this, this.bitgo, params)).asCallback(callback);
   }
 
   /**
