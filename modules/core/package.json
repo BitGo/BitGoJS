@@ -73,7 +73,7 @@
     "ripple-binary-codec": "^0.2.4",
     "ripple-keypairs": "^0.11.0",
     "ripple-lib": "^1.4.1",
-    "sanitize-html": "^1.27.5",
+    "sanitize-html": "^2.3.2",
     "secp256k1": "^4.0.2",
     "secrets.js-grempe": "^1.1.0",
     "stellar-sdk": "^8.2.5",
