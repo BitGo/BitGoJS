@@ -5,6 +5,14 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BitGo } from '../../bitgo';
 
+interface ValidateKeyOptions {
+  key: string;
+  source: string;
+  passphrase?: string;
+  isUnsignedSweep: boolean;
+  isKrsRecovery: boolean;
+}
+
 export interface InitiateRecoveryOptions {
   userKey: string;
   backupKey: string;
@@ -17,52 +25,60 @@ export function getIsKrsRecovery({ backupKey, userKey }: InitiateRecoveryOptions
   return backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 }
 
+export function getIsUnsignedSweep({ backupKey, userKey }: InitiateRecoveryOptions): boolean {
+  return backupKey.startsWith('xpub') && userKey.startsWith('xpub');
+}
+
+export function validateKey(
+  bitgo: BitGo,
+  { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
+): utxolib.HDNode {
+  if (!key.startsWith('xprv') && !isUnsignedSweep) {
+    // Try to decrypt the key
+    try {
+      if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
+        return utxolib.HDNode.fromBase58(bitgo.decrypt({ password: passphrase, input: key }));
+      }
+    } catch (e) {
+      throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
+    }
+  }
+  try {
+    return utxolib.HDNode.fromBase58(key);
+  } catch (e) {
+    throw new Error(`Failed to validate ${source} key - try again!`);
+  }
+}
+
 export function getBip32Keys(
   bitgo: BitGo,
   params: InitiateRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
 ): utxolib.HDNode[] {
-  const keys: utxolib.HDNode[] = [];
-  const userKey = params.userKey; // Box A
-  let backupKey = params.backupKey; // Box B
-  const bitgoXpub = params.bitgoKey; // Box C
-  const passphrase = params.walletPassphrase;
   const isKrsRecovery = getIsKrsRecovery(params);
+  const isUnsignedSweep = getIsUnsignedSweep(params);
+  const keys = [
+    // Box A
+    validateKey(bitgo, {
+      key: params.userKey,
+      source: 'user',
+      passphrase: params.walletPassphrase,
+      isKrsRecovery,
+      isUnsignedSweep,
+    }),
+    // Box B
+    validateKey(bitgo, {
+      key: params.backupKey,
+      source: 'backup',
+      passphrase: params.walletPassphrase,
+      isKrsRecovery,
+      isUnsignedSweep,
+    }),
+  ];
 
-  const validatePassphraseKey = (userKey: string, passphrase?: string): utxolib.HDNode => {
-    try {
-      if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
-        userKey = bitgo.decrypt({
-          input: userKey,
-          password: passphrase,
-        });
-      }
-      return utxolib.HDNode.fromBase58(userKey);
-    } catch (e) {
-      throw new Error('Failed to decrypt user key with passcode - try again!');
-    }
-  };
-
-  const key: utxolib.HDNode = validatePassphraseKey(userKey, passphrase);
-
-  keys.push(key);
-
-  // Validate the backup key
   try {
-    if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
-      backupKey = bitgo.decrypt({
-        input: backupKey,
-        password: passphrase,
-      });
-    }
-    const backupHDNode = utxolib.HDNode.fromBase58(backupKey);
-    keys.push(backupHDNode);
-  } catch (e) {
-    throw new Error('Failed to decrypt backup key with passcode - try again!');
-  }
-  try {
-    const bitgoHDNode = utxolib.HDNode.fromBase58(bitgoXpub);
-    keys.push(bitgoHDNode);
+    // Box C
+    keys.push(utxolib.HDNode.fromBase58(params.bitgoKey));
   } catch (e) {
     if (requireBitGoXpub) {
       throw new Error('Failed to parse bitgo xpub!');

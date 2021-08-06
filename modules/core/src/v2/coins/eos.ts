@@ -29,6 +29,7 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
+import { validateKey } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -606,33 +607,6 @@ export class Eos extends BaseCoin {
   }
 
   /**
-   * Validate a public or private key
-   * If passphrase is provided, try to decrypt the key with it
-   * @param key
-   * @param source
-   * @param passphrase
-   * @param isUnsignedSweep
-   * @param isKrsRecovery
-   */
-  validateKey({ key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions): HDNode {
-    if (!key.startsWith('xprv') && !isUnsignedSweep) {
-      // Try to decrypt the key
-      try {
-        if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
-          return HDNode.fromBase58(this.bitgo.decrypt({ password: passphrase, input: key }));
-        }
-      } catch (e) {
-        throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
-      }
-    }
-    try {
-      return HDNode.fromBase58(key);
-    } catch (e) {
-      throw new Error(`Failed to validate ${source} key - try again!`);
-    }
-  }
-
-  /**
    * Prepare and validate all keychains from the keycard for recovery
    * @param userKey
    * @param backupKey
@@ -663,14 +637,14 @@ export class Eos extends BaseCoin {
       }
 
       const keys = [
-        self.validateKey({
+        validateKey(self.bitgo, {
           key: userKey,
           source: 'user',
           passphrase: walletPassphrase,
           isKrsRecovery,
           isUnsignedSweep,
         }),
-        self.validateKey({
+        validateKey(self.bitgo, {
           key: backupKey,
           source: 'backup',
           passphrase: walletPassphrase,
