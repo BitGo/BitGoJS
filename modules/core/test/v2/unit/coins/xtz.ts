@@ -7,28 +7,28 @@ import {
   dataToSign,
   fullySignedHex, fullySignedTransactionWithTwoTransfersHex,
   oneSignatureHex, twoSignatureHex, unsignedHex,
-  unsignedTransactionWithTwoTransfersHex
+  unsignedTransactionWithTwoTransfersHex,
 } from '../../fixtures/coins/xtz';
 
-describe('Tezos:', function() {
+describe('Tezos:', function () {
   let bitgo;
   let basecoin;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txtz');
   });
 
-  it('should instantiate the coin', function() {
+  it('should instantiate the coin', function () {
     const basecoin = bitgo.coin('xtz');
     basecoin.should.be.an.instanceof(Xtz);
   });
 
-  it('explain an unsigned transfer transaction', async function() {
+  it('explain an unsigned transfer transaction', async function () {
     const explainParams = {
       halfSigned: {
-        txHex: unsignedTransactionWithTwoTransfersHex
+        txHex: unsignedTransactionWithTwoTransfersHex,
       },
       feeInfo: { fee: 1 },
     };
@@ -45,7 +45,7 @@ describe('Tezos:', function() {
     explanation.fee.fee.should.equal(1);
   });
 
-  it('explain a signed transfer transaction', async function() {
+  it('explain a signed transfer transaction', async function () {
     const explainParams = {
       txHex: fullySignedTransactionWithTwoTransfersHex,
       feeInfo: { fee: 1 },
@@ -63,7 +63,7 @@ describe('Tezos:', function() {
     explanation.fee.fee.should.equal(1);
   });
 
-  it('should sign an unsigned transaction with a Tezos private key', async function() {
+  it('should sign an unsigned transaction with a Tezos private key', async function () {
     const signTxOptions = {
       prv: 'xprv9s21ZrQH143K2vpv9Z5GppJtVsT6nBFWDRnA2PKTHaJobNGbhC9MR7shQCQ79jJNZvcxw6YzFTEiwxg3E6Tjo5RR7nKb2dp8r1zdKDG3w1o',
       txPrebuild: {
@@ -81,7 +81,7 @@ describe('Tezos:', function() {
     tx.halfSigned.txHex.should.equal(oneSignatureHex);
   });
 
-  it('should sign with a half signed transaction with a Tezos private key', async function() {
+  it('should sign with a half signed transaction with a Tezos private key', async function () {
     const signTxOptions = {
       prv: 'xprv9s21ZrQH143K2EHDvGaG86MLjU9bW52eEoqMKakkEYc7rM8KDC28FPMcbiwDYX3jjh2mDjFE4Bm37QqMvm4icdW7CAH7LH8jKDF3LXNbRbz',
       txPrebuild: {
@@ -99,7 +99,7 @@ describe('Tezos:', function() {
     tx.halfSigned.txHex.should.equal(twoSignatureHex);
   });
 
-  it('should sign with a fee account a fully signed transaction', async function() {
+  it('should sign with a fee account a fully signed transaction', async function () {
     const signTxOptions = {
       prv: 'xprv9s21ZrQH143K2dseae8JccdEANb1jSfx7Pr8zpKq9uW1Nyh8LD8Uizn6CttWNwJ9S9xJtP3nWda2RoQjTp75HdSyTPnUgdANo2sgpPrcMwm',
       txPrebuild: {
@@ -116,7 +116,7 @@ describe('Tezos:', function() {
     tx.halfSigned.txHex.should.equal(fullySignedHex);
   });
 
-  it('should check valid addresses', function() {
+  it('should check valid addresses', function () {
     const badAddresses = ['', null, 'xxxx', 'YZ09fd-', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ'];
     const goodAddresses = ['tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A', 'tz29yN7c5zrmK9ZhA1VjYwVokN9ZBn8YbCuE', 'KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL'];
 
@@ -124,7 +124,7 @@ describe('Tezos:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   });
 
-  it('should throw if the params object is missing parameters', async function() {
+  it('should throw if the params object is missing parameters', async function () {
     const explainParams = {
       feeInfo: { fee: 1 },
       txHex: null,
@@ -133,14 +133,14 @@ describe('Tezos:', function() {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function() {
+    it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should generate a keypair from a seed', function() {
+    it('should generate a keypair from a seed', function () {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
@@ -150,7 +150,7 @@ describe('Tezos:', function() {
   });
 
   describe('Sign message:', () => {
-    it('should sign and validate a string message', async function() {
+    it('should sign and validate a string message', async function () {
       const keyPair = basecoin.generateKeyPair();
       const message = 'hello world';
       const signature = await basecoin.signMessage(keyPair, message);
@@ -162,7 +162,7 @@ describe('Tezos:', function() {
       isValid.should.equal(true);
     });
 
-    it('should fail to validate a string message with wrong public key', async function() {
+    it('should fail to validate a string message with wrong public key', async function () {
       const keyPair = basecoin.generateKeyPair();
       const message = 'hello world';
       const signature = await basecoin.signMessage(keyPair, message);

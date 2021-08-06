@@ -27,14 +27,14 @@ Promise.coroutine(function *() {
     recipients: [
       {
         amount: '12341234',
-        address: newReceiveAddress1.address
+        address: newReceiveAddress1.address,
       },
       {
         amount: '13370000',
-        address: newReceiveAddress2.address
-      }
+        address: newReceiveAddress2.address,
+      },
     ],
-    walletPassphrase: walletPassphrase
+    walletPassphrase: walletPassphrase,
   });
   const explanation = yield basecoin.explainTransaction({ txHex: transaction.tx });
 

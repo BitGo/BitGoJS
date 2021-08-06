@@ -20,7 +20,7 @@ import * as common from './common';
 //
 // Constructor
 //
-const Blockchain = function(bitgo) {
+const Blockchain = function (bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -32,7 +32,7 @@ const Blockchain = function(bitgo) {
 // Parameters include:
 //   address: the address to get
 //
-Blockchain.prototype.getAddress = function(params, callback) {
+Blockchain.prototype.getAddress = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
@@ -47,7 +47,7 @@ Blockchain.prototype.getAddress = function(params, callback) {
 // Parameters include:
 //   address: the address to get transactions for
 //
-Blockchain.prototype.getAddressTransactions = function(params, callback) {
+Blockchain.prototype.getAddressTransactions = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
@@ -64,7 +64,7 @@ Blockchain.prototype.getAddressTransactions = function(params, callback) {
 //   address: the address to get unspent transactions
 //   limit: return enough unspents to accumulate to at least this amount (in satoshis).
 //
-Blockchain.prototype.getAddressUnspents = function(params, callback) {
+Blockchain.prototype.getAddressUnspents = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
@@ -78,7 +78,7 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
 
   return Bluebird.resolve(
     this.bitgo.get(url).result()
-  ).then(function(body) {
+  ).then(function (body) {
     return body.unspents;
   }).nodeify(callback);
 };
@@ -90,7 +90,7 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
 // Parameters include:
 //   id: the transaction id to get
 //
-Blockchain.prototype.getTransaction = function(params, callback) {
+Blockchain.prototype.getTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
@@ -107,7 +107,7 @@ Blockchain.prototype.getTransaction = function(params, callback) {
 //   txid: the transaction id of the output
 //   vout: the position of the output on the transaction that created it
 //
-Blockchain.prototype.getTransactionByInput = function(params, callback) {
+Blockchain.prototype.getTransactionByInput = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['txid'], [], callback);
   if (!_.isInteger(params.vout)) {
@@ -125,7 +125,7 @@ Blockchain.prototype.getTransactionByInput = function(params, callback) {
 // Parameters include:
 //   id: the block hash to get, or latest for the latest
 //
-Blockchain.prototype.getBlock = function(params, callback) {
+Blockchain.prototype.getBlock = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 

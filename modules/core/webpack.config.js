@@ -101,13 +101,13 @@ function getCoinsToExclude(env) {
   return allCoins.filter(allCoin => {
     return !compileCoins.includes(allCoin);
   })
-  .map(coin => {
-    return new webpack.DefinePlugin({
-      'process.env': {
-        [`BITGO_EXCLUDE_${coin.toUpperCase()}`]: JSON.stringify('exclude')
-      }
+    .map(coin => {
+      return new webpack.DefinePlugin({
+        'process.env': {
+          [`BITGO_EXCLUDE_${coin.toUpperCase()}`]: JSON.stringify('exclude'),
+        },
+      });
     });
-  });
 }
 
 // Used for extra processing that does not involve transpilation (e.g. minification)
@@ -159,11 +159,11 @@ function getTestConfig(env) {
     // Output everything into browser/tests.js
     output: {
       path: path.join(__dirname, 'browser'),
-      filename: 'tests.js'
+      filename: 'tests.js',
     },
 
     externals: setupExternals(env),
-    plugins: setupPlugins(env)
+    plugins: setupPlugins(env),
   };
 }
 
@@ -186,8 +186,8 @@ module.exports = function setupWebpack(env) {
       extensions: ['.js'],
       alias: {
         // make sure we use the browser bundle and not the NodeJS package
-        '@bitgo/account-lib': path.resolve(`../account-lib/dist/browser/${env.prod ? 'bitgo-account-lib.min.js': 'bitgo-account-lib.js'}`)
-      }
+        '@bitgo/account-lib': path.resolve(`../account-lib/dist/browser/${env.prod ? 'bitgo-account-lib.min.js' : 'bitgo-account-lib.js'}`),
+      },
     },
     // Main project entry point
     entry: path.join(__dirname, 'dist', 'src', 'index.js'),
@@ -198,7 +198,7 @@ module.exports = function setupWebpack(env) {
       path: path.join(__dirname, 'dist', 'browser'),
       filename: env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js',
       library: 'BitGoJS',
-      libraryTarget: 'umd'
+      libraryTarget: 'umd',
     },
 
     // All of our transpilation settings. Should really only need 'loaders' for now
@@ -217,9 +217,9 @@ module.exports = function setupWebpack(env) {
           warnings: true,
           mangle: false,
           keep_classnames: true,
-          keep_fnames: true
-        }
-      })]
+          keep_fnames: true,
+        },
+      })],
     },
 
     // Create a source map for the bundled code (dev and test only)

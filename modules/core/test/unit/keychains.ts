@@ -64,17 +64,17 @@ describe('Keychains', function v2keychains() {
       const otherPassword = 'otherPassword';
 
       nock(bgUrl)
-      .post('/api/v1/user/encrypted')
-      .reply(200, {
-        keychains: {
-          xpub1: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
-          xpub2: bitgo.encrypt({ input: 'xprv2', password: otherPassword })
-        },
-        version: 1
-      });
+        .post('/api/v1/user/encrypted')
+        .reply(200, {
+          keychains: {
+            xpub1: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+            xpub2: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+          },
+          version: 1,
+        });
 
       const result = (yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword })) as any;
-      _.forOwn(result.keychains, function(encryptedXprv, xpub) {
+      _.forOwn(result.keychains, function (encryptedXprv, xpub) {
         xpub.should.startWith('xpub');
         try {
           const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });

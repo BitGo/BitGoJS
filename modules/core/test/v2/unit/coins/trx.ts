@@ -4,22 +4,22 @@ import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-describe('TRON:', function() {
+describe('TRON:', function () {
   let bitgo;
   let basecoin;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ttrx');
   });
 
-  it('should instantiate the coin', function() {
+  it('should instantiate the coin', function () {
     const basecoin = bitgo.coin('trx');
     basecoin.should.be.an.instanceof(Trx);
   });
 
-  it('explain a txHex', async function() {
+  it('explain a txHex', async function () {
     const txHex = JSON.stringify(mockTx);
     const explainParams = {
       txHex,
@@ -40,15 +40,15 @@ describe('TRON:', function() {
     explanation.timestamp.should.equal((mockTx.raw_data.timestamp));
   });
 
-  it('should check valid addresses', function() {
-    const badAddresses = ['', null, 'xxxx', 'YZ09fd-', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ' ];
-    const goodAddresses = ['TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp', 'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7', '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577' ];
+  it('should check valid addresses', function () {
+    const badAddresses = ['', null, 'xxxx', 'YZ09fd-', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ'];
+    const goodAddresses = ['TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp', 'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7', '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577'];
 
     badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   });
 
-  it('should throw if the params object is missing parameters', async function() {
+  it('should throw if the params object is missing parameters', async function () {
     const explainParams = {
       feeInfo: { fee: 1 },
       txID: mockTx.txID,
@@ -57,7 +57,7 @@ describe('TRON:', function() {
     await basecoin.explainTransaction(explainParams).should.be.rejectedWith('missing explain tx parameters');
   });
 
-  it('explain an half-signed/fully signed transaction', async function() {
+  it('explain an half-signed/fully signed transaction', async function () {
     const txHex = JSON.stringify(mockTx);
     const explainParams = {
       halfSigned: { txHex },
@@ -78,7 +78,7 @@ describe('TRON:', function() {
     explanation.timestamp.should.equal((mockTx.raw_data.timestamp));
   });
 
-  it('should sign a half signed tx', async function() {
+  it('should sign a half signed tx', async function () {
     const tx = await basecoin.signTransaction(signTxOptions);
     const unsignedTxJson = JSON.parse(signTxOptions.txPrebuild.txHex);
     const signedTxJson = JSON.parse(tx.halfSigned.txHex);
@@ -90,7 +90,7 @@ describe('TRON:', function() {
     signedTxJson.signature[0].should.equal('0a9944316924ec7fba4895f1ea1e7cc95f9e2b828ae268a48a8dbeddef40c6f5e127170a95aed9f3f5425b13058d0cb6ef1f5c2213190e482e87043691f22e6800');
   });
 
-  it('should sign with an Xprv a half signed tx', async function() {
+  it('should sign with an Xprv a half signed tx', async function () {
     const p = {
       prv: 'xprv9s21ZrQH143K2sg2Cukk5XqLQdrYnMCDah3y1FFVy6Hz9bQfqMSfmUiHPVHKhcUyft3N1emE5FudJVxgFm5N12MAg5o7DTPsDATTkwNgr73',
       txPrebuild: {
@@ -109,14 +109,14 @@ describe('TRON:', function() {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function() {
+    it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should generate a keypair from a seed', function() {
+    it('should generate a keypair from a seed', function () {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);

@@ -8,8 +8,8 @@ import 'should';
 import * as BitGoJS from '../../src';
 import { TestBitGo } from '../lib/test_bitgo';
 
-describe('Constructor', function() {
-  it('arguments', function() {
+describe('Constructor', function () {
+  it('arguments', function () {
     (() => {
       new BitGoJS.BitGo('invalid' as any);
     }).should.throw(/Must pass in parameters dictionary/);
@@ -30,7 +30,7 @@ describe('Constructor', function() {
     }).should.throw(/cannot use useProduction/);
   });
 
-  it('methods', function() {
+  it('methods', function () {
     const bitgo = new TestBitGo();
     bitgo.initializeTestVars();
     bitgo.should.have.property('version');
@@ -44,15 +44,15 @@ describe('Constructor', function() {
   });
 });
 
-describe('BitGo environment', function() {
+describe('BitGo environment', function () {
   let originalBitGoEnv;
 
-  before(function() {
+  before(function () {
     // Save environment variable state, so that we can restore it after tests run.
     originalBitGoEnv = process.env.BITGO_ENV;
   });
 
-  it('should set environment', function() {
+  it('should set environment', function () {
     // Default to test when no env specified.
     let bitgo = new BitGoJS.BitGo();
     bitgo.env.should.equal('test');
@@ -77,7 +77,7 @@ describe('BitGo environment', function() {
     bitgo.env.should.equal('prod');
   });
 
-  after(function() {
+  after(function () {
     if (originalBitGoEnv) {
       process.env.BITGO_ENV = originalBitGoEnv;
     } else {

@@ -10,15 +10,15 @@ import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
 const co = Bluebird.coroutine;
 
-describe('V2 Wallets:', function() {
+describe('V2 Wallets:', function () {
   let wallets;
   let bgUrl;
 
   before(co(function *before() {
     nock('https://bitgo.fakeurl')
-    .persist()
-    .get('/api/v1/client/constants')
-    .reply(200, { ttl: 3600, constants: {} });
+      .persist()
+      .get('/api/v1/client/constants')
+      .reply(200, { ttl: 3600, constants: {} });
 
     const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
@@ -28,20 +28,20 @@ describe('V2 Wallets:', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  after(function() {
+  after(function () {
     nock.cleanAll();
     nock.pendingMocks().length.should.equal(0);
   });
 
-  describe('Add Wallet:', function() {
+  describe('Add Wallet:', function () {
     it('throws on invalid arguments', co(function *() {
       // isCustodial flag is not a boolean
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
-      .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
+        .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
 
       // type is not a string
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
-      .should.be.rejectedWith('Expecting parameter string: type but found number');
+        .should.be.rejectedWith('Expecting parameter string: type but found number');
 
       // Address is an invalid address
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
@@ -62,14 +62,14 @@ describe('V2 Wallets:', function() {
 
     it('creates a paired custodial wallet', co(function *createPairedCustodialWallet() {
       nock(bgUrl)
-      .post('/api/v2/tbtc/wallet', function(body) {
-        body.isCustodial.should.be.true();
-        body.should.have.property('keys');
-        body.m.should.equal(2);
-        body.n.should.equal(3);
-        return true;
-      })
-      .reply(200, {});
+        .post('/api/v2/tbtc/wallet', function (body) {
+          body.isCustodial.should.be.true();
+          body.should.have.property('keys');
+          body.m.should.equal(2);
+          body.n.should.equal(3);
+          return true;
+        })
+        .reply(200, {});
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: true });
     }));
 
@@ -79,7 +79,7 @@ describe('V2 Wallets:', function() {
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';
       nock(bgUrl)
-        .post('/api/v2/teos/wallet', function(body) {
+        .post('/api/v2/teos/wallet', function (body) {
           body.should.have.property('keys');
           body.m.should.equal(2);
           body.n.should.equal(3);
@@ -92,14 +92,14 @@ describe('V2 Wallets:', function() {
 
     it('creates a single custodial wallet', co(function *createSingleCustodialWallet() {
       nock(bgUrl)
-      .post('/api/v2/tbtc/wallet', function(body) {
-        body.type.should.equal('custodial');
-        body.should.not.have.property('keys');
-        body.should.not.have.property('m');
-        body.should.not.have.property('n');
-        return true;
-      })
-      .reply(200, {});
+        .post('/api/v2/tbtc/wallet', function (body) {
+          body.type.should.equal('custodial');
+          body.should.not.have.property('keys');
+          body.should.not.have.property('m');
+          body.should.not.have.property('n');
+          return true;
+        })
+        .reply(200, {});
       yield wallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial' });
     }));
 
@@ -108,7 +108,7 @@ describe('V2 Wallets:', function() {
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
-        .post('/api/v2/teth/wallet', function(body) {
+        .post('/api/v2/teth/wallet', function (body) {
           body.type.should.equal('custodial');
           body.gasPrice.should.equal(20000000000);
           body.should.not.have.property('keys');
@@ -125,7 +125,7 @@ describe('V2 Wallets:', function() {
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
-        .post('/api/v2/teth/wallet', function(body) {
+        .post('/api/v2/teth/wallet', function (body) {
           body.type.should.equal('custodial');
           body.walletVersion.should.equal(1);
           body.should.not.have.property('keys');
@@ -138,7 +138,7 @@ describe('V2 Wallets:', function() {
     }));
   });
 
-  describe('Generate wallet:', function() {
+  describe('Generate wallet:', function () {
     it('should validate parameters', co(function *() {
       let params = {};
       yield wallets.generateWallet(params).should.be.rejectedWith('Missing parameter: label');
@@ -146,40 +146,40 @@ describe('V2 Wallets:', function() {
       params = {
         label: 'abc',
         backupXpub: 'backup',
-        backupXpubProvider: 'provider'
+        backupXpubProvider: 'provider',
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
 
       params = {
         label: 'abc',
-        passcodeEncryptionCode: 123
+        passcodeEncryptionCode: 123,
       };
       yield wallets.generateWallet(params).should.be.rejectedWith('passcodeEncryptionCode must be a string');
 
       params = {
         label: 'abc',
-        enterprise: 1234
+        enterprise: 1234,
       };
       yield wallets.generateWallet(params).should.be.rejectedWith('invalid enterprise argument, expecting string');
 
       params = {
         label: 'abc',
-        disableTransactionNotifications: 'string'
+        disableTransactionNotifications: 'string',
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
 
       params = {
         label: 'abc',
-        gasPrice: 'string'
+        gasPrice: 'string',
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number');
 
       params = {
         label: 'abc',
-        disableKRSEmail: 'string'
+        disableKRSEmail: 'string',
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
@@ -189,10 +189,10 @@ describe('V2 Wallets:', function() {
         krsSpecific: {
           malicious: {
             javascript: {
-              code: 'bad.js'
-            }
-          }
-        }
+              code: 'bad.js',
+            },
+          },
+        },
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
@@ -204,28 +204,28 @@ describe('V2 Wallets:', function() {
         disableKRSEmail: true,
         backupXpubProvider: 'test',
         passphrase: 'test123',
-        userKey: 'xpub123'
+        userKey: 'xpub123',
       };
 
       // bitgo key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200);
 
       // user key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+        .reply(200);
 
       // backup key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, disableKRSEmail: true }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, disableKRSEmail: true }))
+        .reply(200);
 
       // wallet
       nock(bgUrl)
-      .post('/api/v2/tbtc/wallet')
-      .reply(200);
+        .post('/api/v2/tbtc/wallet')
+        .reply(200);
 
       yield wallets.generateWallet(params);
     }));
@@ -236,28 +236,28 @@ describe('V2 Wallets:', function() {
         backupXpubProvider: 'test',
         passphrase: 'test123',
         userKey: 'xpub123',
-        krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 }
+        krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 },
       };
 
       // bitgo key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200);
 
       // user key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+        .reply(200);
 
       // backup key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 } }))
-      .reply(200);
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 } }))
+        .reply(200);
 
       // wallet
       nock(bgUrl)
-      .post('/api/v2/tbtc/wallet')
-      .reply(200);
+        .post('/api/v2/tbtc/wallet')
+        .reply(200);
 
       yield wallets.generateWallet(params);
     }));

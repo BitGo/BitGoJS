@@ -2,18 +2,18 @@ import 'should';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-describe('Stellar Token:', function() {
+describe('Stellar Token:', function () {
   let bitgo;
   let stellarTokenCoin;
   const tokenName = 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L';
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     stellarTokenCoin = bitgo.coin(tokenName);
   });
 
-  it('should return constants', function() {
+  it('should return constants', function () {
     stellarTokenCoin.getChain().should.equal('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
     stellarTokenCoin.getFullName().should.equal('Stellar Token');
     stellarTokenCoin.getBaseFactor().should.equal(1e7);

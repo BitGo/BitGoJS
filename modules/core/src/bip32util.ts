@@ -7,14 +7,14 @@ import * as bip32 from 'bip32';
  * @see {bitcoinMessage.sign}
  */
 export function signMessage(
-    message: string,
-    privateKey: bip32.BIP32Interface | Buffer,
-    network: { messagePrefix: string },
+  message: string,
+  privateKey: bip32.BIP32Interface | Buffer,
+  network: { messagePrefix: string },
 ): Buffer {
   if (!Buffer.isBuffer(privateKey)) {
     privateKey = privateKey.privateKey as Buffer;
     if (!privateKey) {
-      throw new Error(`must provide privateKey`)
+      throw new Error(`must provide privateKey`);
     }
   }
   if (!_.isObject(network) || !_.isString(network.messagePrefix)) {
@@ -29,10 +29,10 @@ export function signMessage(
  * @see {bitcoinMessage.verify}
  */
 export function verifyMessage(
-    message: string,
-    publicKey: bip32.BIP32Interface | Buffer,
-    signature: Buffer,
-    network: { messagePrefix: string },
+  message: string,
+  publicKey: bip32.BIP32Interface | Buffer,
+  signature: Buffer,
+  network: { messagePrefix: string },
 ): boolean {
   if (!Buffer.isBuffer(publicKey)) {
     publicKey = publicKey.publicKey;

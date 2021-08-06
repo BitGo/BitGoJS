@@ -18,7 +18,7 @@ import * as _ from 'lodash';
 //
 // Constructor
 //
-const PendingApproval = function(bitgo, pendingApproval, wallet) {
+const PendingApproval = function (bitgo, pendingApproval, wallet) {
   this.bitgo = bitgo;
   this.pendingApproval = pendingApproval;
   this.wallet = wallet;
@@ -28,7 +28,7 @@ const PendingApproval = function(bitgo, pendingApproval, wallet) {
 // id
 // Get the id of this pending approval.
 //
-PendingApproval.prototype.id = function() {
+PendingApproval.prototype.id = function () {
   return this.pendingApproval.id;
 };
 
@@ -39,7 +39,7 @@ PendingApproval.prototype.id = function() {
 // If a pending approval is owned by a wallet, then it can be approved by administrators of the wallet
 // If a pending approval is owned by an enterprise, then it can be approved by administrators of the enterprise
 //
-PendingApproval.prototype.ownerType = function(params, callback) {
+PendingApproval.prototype.ownerType = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -56,7 +56,7 @@ PendingApproval.prototype.ownerType = function(params, callback) {
 // walletId
 // Get the wallet ID that owns / is associated with the pending approval
 //
-PendingApproval.prototype.walletId = function() {
+PendingApproval.prototype.walletId = function () {
   return this.pendingApproval.walletId;
 };
 
@@ -64,7 +64,7 @@ PendingApproval.prototype.walletId = function() {
 // enterpriseId
 // Get the enterprise ID that owns / is associated with the pending approval
 //
-PendingApproval.prototype.enterpriseId = function() {
+PendingApproval.prototype.enterpriseId = function () {
   return this.pendingApproval.enterprise;
 };
 
@@ -72,7 +72,7 @@ PendingApproval.prototype.enterpriseId = function() {
 // state
 // Get the state of the pending approval
 //
-PendingApproval.prototype.state = function() {
+PendingApproval.prototype.state = function () {
   return this.pendingApproval.state;
 };
 
@@ -80,7 +80,7 @@ PendingApproval.prototype.state = function() {
 // creator
 // Get the id of the user that performed the action resulting in this pending approval
 //
-PendingApproval.prototype.creator = function() {
+PendingApproval.prototype.creator = function () {
   return this.pendingApproval.creator;
 };
 
@@ -89,7 +89,7 @@ PendingApproval.prototype.creator = function() {
 // Get the type of the pending approval (what it approves)
 // Example: transactionRequest, tagUpdateRequest, policyRuleRequest
 //
-PendingApproval.prototype.type = function() {
+PendingApproval.prototype.type = function () {
   if (!this.pendingApproval.info) {
     throw new Error('pending approval info is not available');
   }
@@ -100,7 +100,7 @@ PendingApproval.prototype.type = function() {
 // type
 // Get information about the pending approval
 //
-PendingApproval.prototype.info = function() {
+PendingApproval.prototype.info = function () {
   return this.pendingApproval.info;
 };
 
@@ -109,7 +109,7 @@ PendingApproval.prototype.info = function() {
 // get the number of approvals that are required for this pending approval to be approved.
 // Defaults to 1 if approvalsRequired doesn't exist on the object
 //
-PendingApproval.prototype.approvalsRequired = function() {
+PendingApproval.prototype.approvalsRequired = function () {
   return this.pendingApproval.approvalsRequired || 1;
 };
 
@@ -117,7 +117,7 @@ PendingApproval.prototype.approvalsRequired = function() {
 // url
 // Gets the url for this pending approval
 //
-PendingApproval.prototype.url = function(extra) {
+PendingApproval.prototype.url = function (extra) {
   extra = extra || '';
   return this.bitgo.url('/pendingapprovals/' + this.id() + extra);
 };
@@ -126,14 +126,14 @@ PendingApproval.prototype.url = function(extra) {
 // get
 // Refetches this pending approval and returns it
 //
-PendingApproval.prototype.get = function(params, callback) {
+PendingApproval.prototype.get = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   const self = this;
   return Bluebird.resolve(
     this.bitgo.get(this.url()).result()
-  ).then(function(res) {
+  ).then(function (res) {
     self.pendingApproval = res;
     return self;
   }).nodeify(callback);
@@ -142,11 +142,11 @@ PendingApproval.prototype.get = function(params, callback) {
 //
 // Helper function to ensure that self.wallet is set
 //
-PendingApproval.prototype.populateWallet = function() {
+PendingApproval.prototype.populateWallet = function () {
   const self = this;
   if (!self.wallet) {
     return self.bitgo.wallets().get({ id: self.info().transactionRequest.sourceWallet })
-      .then(function(wallet) {
+      .then(function (wallet) {
         if (!wallet) {
           throw new Error('unexpected - unable to get wallet using sourcewallet');
         }
@@ -165,7 +165,7 @@ PendingApproval.prototype.populateWallet = function() {
 // helper function to recreate and sign a transaction on a wallet
 // we should hopefully be able to move this logic server side soon
 //
-PendingApproval.prototype.recreateAndSignTransaction = function(params, callback) {
+PendingApproval.prototype.recreateAndSignTransaction = function (params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, ['txHex'], [], callback);
 
@@ -179,14 +179,14 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
 
   const self = this;
 
-  return Bluebird.try(function() {
+  return Bluebird.try(function () {
     if (self.info().transactionRequest.recipients) {
       // recipients object found on the pending approvals - use it
       params.recipients = self.info().transactionRequest.recipients;
       return;
     }
     if (transaction.outs.length <= 2) {
-      transaction.outs.forEach(function(out) {
+      transaction.outs.forEach(function (out) {
         const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
@@ -199,27 +199,27 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     // This looks like a sendmany
     // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
     return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 })
-    .then(function(result) {
-      const changeAddresses = _.keyBy(result.addresses, 'address');
-      transaction.outs.forEach(function(out) {
-        const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
-        if (!changeAddresses[outAddress]) {
+      .then(function (result) {
+        const changeAddresses = _.keyBy(result.addresses, 'address');
+        transaction.outs.forEach(function (out) {
+          const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
+          if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
-          params.recipients[outAddress] = out.value;
-        }
+            params.recipients[outAddress] = out.value;
+          }
+        });
       });
-    });
   })
-  .then(function() {
-    return self.wallet.createAndSignTransaction(params);
-  });
+    .then(function () {
+      return self.wallet.createAndSignTransaction(params);
+    });
 };
 
 //
 // constructApprovalTx
 // constructs/signs a transaction for this pending approval, returning the txHex (but not sending it)
 //
-PendingApproval.prototype.constructApprovalTx = function(params, callback) {
+PendingApproval.prototype.constructApprovalTx = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase'], callback);
 
@@ -237,16 +237,16 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function() {
+  return Bluebird.try(function () {
     if (self.type() === 'transactionRequest') {
       const extendParams: any = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
         extendParams.fee = self.info().transactionRequest.fee;
       }
       return self.populateWallet()
-      .then(function() {
-        return self.recreateAndSignTransaction(_.extend(params, extendParams));
-      });
+        .then(function () {
+          return self.recreateAndSignTransaction(_.extend(params, extendParams));
+        });
     }
   });
 };
@@ -255,7 +255,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
 // approve
 // sets the pending approval to an approved state
 //
-PendingApproval.prototype.approve = function(params, callback) {
+PendingApproval.prototype.approve = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
@@ -278,69 +278,69 @@ PendingApproval.prototype.approve = function(params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function() {
+  return Bluebird.try(function () {
     if (self.type() === 'transactionRequest') {
       if (params.tx) {
         // the approval tx was reconstructed and explicitly specified - pass it through
         return {
-          tx: params.tx
+          tx: params.tx,
         };
       }
 
       // this user may not have spending privileges or a passphrase may not have been passed in
       if (!canRecreateTransaction) {
         return {
-          tx: self.info().transactionRequest.transaction
+          tx: self.info().transactionRequest.transaction,
         };
       }
 
       return self.populateWallet()
-      .then(function() {
-        const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
-        // delete the old build params because we want 'recreateAndSign' to recreate the transaction
-        delete recreationParams.fee;
-        delete recreationParams.unspents;
-        delete recreationParams.txInfo;
-        delete recreationParams.estimatedSize;
-        delete recreationParams.changeAddresses;
-        return self.recreateAndSignTransaction(recreationParams);
-      });
+        .then(function () {
+          const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
+          // delete the old build params because we want 'recreateAndSign' to recreate the transaction
+          delete recreationParams.fee;
+          delete recreationParams.unspents;
+          delete recreationParams.txInfo;
+          delete recreationParams.estimatedSize;
+          delete recreationParams.changeAddresses;
+          return self.recreateAndSignTransaction(recreationParams);
+        });
     }
   })
-  .then(function(transaction) {
-    const approvalParams: any = { state: 'approved', otp: params.otp };
-    if (transaction) {
-      approvalParams.tx = transaction.tx;
-    }
-    return Bluebird.resolve(
-      self.bitgo.put(self.url()).send(approvalParams).result()
-    ).nodeify(callback);
-  })
-  .catch(function(error) {
-    if (!canRecreateTransaction &&
+    .then(function (transaction) {
+      const approvalParams: any = { state: 'approved', otp: params.otp };
+      if (transaction) {
+        approvalParams.tx = transaction.tx;
+      }
+      return Bluebird.resolve(
+        self.bitgo.put(self.url()).send(approvalParams).result()
+      ).nodeify(callback);
+    })
+    .catch(function (error) {
+      if (!canRecreateTransaction &&
     (
       error.message.indexOf('could not find unspent output for input') !== -1 ||
       error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
-    ) {
-      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
-    }
-    if (_.isUndefined(params.forceRecreate) && error.message.indexOf('could not find unspent output for input') !== -1 ) {
+      ) {
+        throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
+      }
+      if (_.isUndefined(params.forceRecreate) && error.message.indexOf('could not find unspent output for input') !== -1 ) {
       // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
       // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
-      delete params.tx;
-      params.forceRecreate = true;
-      self.approve(params, callback);
-    } else {
-      throw error;
-    }
-  });
+        delete params.tx;
+        params.forceRecreate = true;
+        self.approve(params, callback);
+      } else {
+        throw error;
+      }
+    });
 };
 
 //
 // rejected
 // sets the pending approval to a rejected state
 //
-PendingApproval.prototype.reject = function(params, callback) {
+PendingApproval.prototype.reject = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -353,7 +353,7 @@ PendingApproval.prototype.reject = function(params, callback) {
 // cancel
 // rejects the pending approval
 //
-PendingApproval.prototype.cancel = function(params, callback) {
+PendingApproval.prototype.cancel = function (params, callback) {
   return this.reject(params, callback);
 };
 

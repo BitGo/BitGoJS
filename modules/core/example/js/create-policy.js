@@ -28,16 +28,16 @@ Promise.coroutine(function *() {
 
   const policy = {
     action: {
-      type: 'getApproval'
+      type: 'getApproval',
     },
     condition: {
       amountString: '100000',
       excludeTags: [],
       groupTags: [':tag'],
-      timeWindow: 60 * 60 * 24
+      timeWindow: 60 * 60 * 24,
     },
     id: 'test_policy',
-    type: 'velocityLimit'
+    type: 'velocityLimit',
   };
 
   const result = yield wallet.createPolicyRule(policy);

@@ -17,11 +17,11 @@ const TEST_TRANSACTION = 'c82775ab4f266573820f085c7a466591dfb96af689f9ccce9eba7f
 
 const TEST_BLOCK = '00000000000000066fff8a67fbb6fac31e9c4ce5b1eabc279ce53218106aa26a';
 
-describe('Address', function() {
+describe('Address', function () {
   let bitgo;
   let blockchain;
 
-  before(function(done) {
+  before(function (done) {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
@@ -30,15 +30,15 @@ describe('Address', function() {
     done();
   });
 
-  describe('Get Address', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getAddress('invalid', function() {}); });
-      assert.throws(function() { blockchain.getAddress({}); });
+  describe('Get Address', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getAddress('invalid', function () {}); });
+      assert.throws(function () { blockchain.getAddress({}); });
       done();
     });
 
-    it('get', function(done) {
-      blockchain.getAddress({ address: TEST_ADDRESS1 }, function(err, address) {
+    it('get', function (done) {
+      blockchain.getAddress({ address: TEST_ADDRESS1 }, function (err, address) {
         assert.equal(err, null);
         address.should.have.property('address');
         address.should.have.property('balance');
@@ -49,16 +49,16 @@ describe('Address', function() {
     });
   });
 
-  describe('Get Address Transactions', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getAddressTransactions('invalid', function() {}); });
-      assert.throws(function() { blockchain.getAddressTransactions({}); });
+  describe('Get Address Transactions', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getAddressTransactions('invalid', function () {}); });
+      assert.throws(function () { blockchain.getAddressTransactions({}); });
       done();
     });
 
-    it('list', function(done) {
+    it('list', function (done) {
       const options = { address: TEST_ADDRESS1 };
-      blockchain.getAddressTransactions(options, function(err, result) {
+      blockchain.getAddressTransactions(options, function (err, result) {
         assert.equal(err, null);
         assert.equal(Array.isArray(result.transactions), true);
         assert.equal(result.start, 0);
@@ -68,9 +68,9 @@ describe('Address', function() {
       });
     });
 
-    it('list_many_transactions', function(done) {
+    it('list_many_transactions', function (done) {
       const options = { address: TEST_MANYTRANSACTIONSADDRESS };
-      blockchain.getAddressTransactions(options, function(err, result) {
+      blockchain.getAddressTransactions(options, function (err, result) {
         assert.equal(err, null);
         assert.equal(Array.isArray(result.transactions), true);
         assert.equal(result.start, 0);
@@ -84,17 +84,17 @@ describe('Address', function() {
     });
   });
 
-  describe('Get Address Unspents', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getAddressUnspents('invalid', function() {}); });
-      assert.throws(function() { blockchain.getAddressUnspents({ limit: 'a string!' }, function() {}); });
-      assert.throws(function() { blockchain.getAddressUnspents({}); });
+  describe('Get Address Unspents', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getAddressUnspents('invalid', function () {}); });
+      assert.throws(function () { blockchain.getAddressUnspents({ limit: 'a string!' }, function () {}); });
+      assert.throws(function () { blockchain.getAddressUnspents({}); });
       done();
     });
 
-    it('list', function(done) {
+    it('list', function (done) {
       const options = { address: TEST_ADDRESS1, limit: 0.5 * 1e8 };
-      blockchain.getAddressUnspents(options, function(err, unspents) {
+      blockchain.getAddressUnspents(options, function (err, unspents) {
         assert.equal(err, null);
         assert.equal(Array.isArray(unspents), true);
         done();
@@ -102,16 +102,16 @@ describe('Address', function() {
     });
   });
 
-  describe('Get Transaction', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getTransaction('invalid', function() {}); });
-      assert.throws(function() { blockchain.getTransaction({}); });
-      assert.throws(function() { blockchain.getTransaction({}, function() {}); });
+  describe('Get Transaction', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getTransaction('invalid', function () {}); });
+      assert.throws(function () { blockchain.getTransaction({}); });
+      assert.throws(function () { blockchain.getTransaction({}, function () {}); });
       done();
     });
 
-    it('get', function(done) {
-      blockchain.getTransaction({ id: TEST_TRANSACTION }, function(err, transaction) {
+    it('get', function (done) {
+      blockchain.getTransaction({ id: TEST_TRANSACTION }, function (err, transaction) {
         assert.equal(err, null);
         transaction.should.have.property('id');
         transaction.should.have.property('date');
@@ -127,19 +127,19 @@ describe('Address', function() {
     });
   });
 
-  describe('Get Transaction By Input', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getTransactionByInput('invalid', function() {}); });
-      assert.throws(function() { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2' }, function() {}); });
-      assert.throws(function() { blockchain.getTransactionByInput({ vout: 999 }, function() {}); });
-      assert.throws(function() { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2', vout: 'asdf' }, function() {}); });
-      assert.throws(function() { blockchain.getTransactionByInput({}); });
-      assert.throws(function() { blockchain.getTransactionByInput({}, function() {}); });
+  describe('Get Transaction By Input', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getTransactionByInput('invalid', function () {}); });
+      assert.throws(function () { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2' }, function () {}); });
+      assert.throws(function () { blockchain.getTransactionByInput({ vout: 999 }, function () {}); });
+      assert.throws(function () { blockchain.getTransactionByInput({ txid: '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2', vout: 'asdf' }, function () {}); });
+      assert.throws(function () { blockchain.getTransactionByInput({}); });
+      assert.throws(function () { blockchain.getTransactionByInput({}, function () {}); });
       done();
     });
 
-    it('get', function(done) {
-      blockchain.getTransactionByInput({ txid: TEST_TRANSACTION, vout: 0 }, function(err, result) {
+    it('get', function (done) {
+      blockchain.getTransactionByInput({ txid: TEST_TRANSACTION, vout: 0 }, function (err, result) {
         assert.equal(err, null);
         result.should.have.property('transactions');
         result.transactions.length.should.eql(1);
@@ -158,16 +158,16 @@ describe('Address', function() {
     });
   });
 
-  describe('Get Block', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { blockchain.getBlock('invalid', function() {}); });
-      assert.throws(function() { blockchain.getBlock({}); });
-      assert.throws(function() { blockchain.getBlock({}, function() {}); });
+  describe('Get Block', function () {
+    it('arguments', function (done) {
+      assert.throws(function () { blockchain.getBlock('invalid', function () {}); });
+      assert.throws(function () { blockchain.getBlock({}); });
+      assert.throws(function () { blockchain.getBlock({}, function () {}); });
       done();
     });
 
-    it('get', function(done) {
-      blockchain.getBlock({ id: TEST_BLOCK }, function(err, block) {
+    it('get', function (done) {
+      blockchain.getBlock({ id: TEST_BLOCK }, function (err, block) {
         assert.equal(err, null);
         block.should.have.property('height');
         block.should.have.property('date');

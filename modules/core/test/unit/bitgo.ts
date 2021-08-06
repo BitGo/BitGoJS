@@ -17,10 +17,10 @@ import * as bitcoin from '@bitgo/utxo-lib';
 
 nock.disableNetConnect();
 
-describe('BitGo Prototype Methods', function() {
+describe('BitGo Prototype Methods', function () {
 
   describe('Version', () => {
-    it('version', function() {
+    it('version', function () {
       const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
       const version = bitgo.version();
@@ -117,7 +117,7 @@ describe('BitGo Prototype Methods', function() {
       otp: '000000',
       extensible: false,
       extensionAddress: 'address',
-      forceSMS: false
+      forceSMS: false,
     };
 
     it('goes to microservices', co(function *() {
@@ -225,7 +225,7 @@ describe('BitGo Prototype Methods', function() {
       (() => bitgo.splitSecret({
         seed,
         passwords: ['abc'],
-        m: 0
+        m: 0,
       })).should.throw('m must be a positive integer greater than or equal to 2');
     });
 
@@ -233,7 +233,7 @@ describe('BitGo Prototype Methods', function() {
       (() => bitgo.splitSecret({
         seed,
         passwords: ['abc'],
-        m: 2
+        m: 2,
       })).should.throw('passwords array length cannot be less than m');
     });
 
@@ -244,7 +244,7 @@ describe('BitGo Prototype Methods', function() {
       (() => bitgo.reconstituteSecret({
         shards,
         passwords: subsetPasswords,
-        xpub
+        xpub,
       })).should.throw(/ccm: tag doesn't match/);
     });
 
@@ -282,12 +282,12 @@ describe('BitGo Prototype Methods', function() {
   describe('ECDH sharing secret', () => {
     function getKey(seed: string) {
       return bitcoin.HDNode.fromSeedBuffer(
-          crypto.createHash('sha256').update(seed).digest()
+        crypto.createHash('sha256').update(seed).digest()
       ).keyPair;
     }
 
     it('should calculate a new ECDH sharing secret correctly', () => {
-      for (let i=0; i<256; i++) {
+      for (let i = 0; i < 256; i++) {
         const bitgo = new TestBitGo();
         const eckey1 = getKey(`${i}.a`);
         const eckey2 = getKey(`${i}.b`);
@@ -297,7 +297,7 @@ describe('BitGo Prototype Methods', function() {
 
         switch (i) {
           case 0:
-            sharingKey1.should.eql('465ffe5745325998b83fb39631347148e24d4f21b3f3b54739c264d5c42db4b8')
+            sharingKey1.should.eql('465ffe5745325998b83fb39631347148e24d4f21b3f3b54739c264d5c42db4b8');
             break;
           case 1:
             sharingKey1.should.eql('61ff44fc1af8061a433a314b7b8be8ae352c10f62aac5887047dbaa5643b818d');
@@ -307,17 +307,17 @@ describe('BitGo Prototype Methods', function() {
     });
   });
 
-  describe('change password', function() {
+  describe('change password', function () {
     let bitgo;
     let bgUrl;
 
     before(co(function *coBeforeChangePassword() {
       nock('https://bitgo.fakeurl')
-      .post('/api/auth/v1/session')
-      .reply(200, {
-        access_token: 'access_token',
-        user: { username: 'update_pw_tester@bitgo.com' }
-      });
+        .post('/api/auth/v1/session')
+        .reply(200, {
+          access_token: 'access_token',
+          user: { username: 'update_pw_tester@bitgo.com' },
+        });
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -342,48 +342,48 @@ describe('BitGo Prototype Methods', function() {
 
       it('incorrect old password', co(function *coIncorrectOldPW() {
         nock(bgUrl)
-        .post('/api/v1/user/verifypassword')
-        .reply(200, { valid: false });
+          .post('/api/v1/user/verifypassword')
+          .reply(200, { valid: false });
         yield bitgo.changePassword({ oldPassword, newPassword }).should.be.rejectedWith('the provided oldPassword is incorrect');
       }));
     });
 
     it('successful password change', co(function *coChangePWSuccess() {
       nock(bgUrl)
-      .post('/api/v1/user/verifypassword')
-      .reply(200, { valid: true });
+        .post('/api/v1/user/verifypassword')
+        .reply(200, { valid: true });
 
       nock(bgUrl)
-      .post('/api/v1/user/encrypted')
-      .reply(200, {
-        version: 1,
-        keychains: {
-          xpub11: bitgo.encrypt({ input: 'xprv11', password: oldPassword }),
-          xpub12: bitgo.encrypt({ input: 'xprv12', password: oldPassword }),
-          xpub13: bitgo.encrypt({ input: 'xprv13', password: otherPassword }),
-          xpub14: bitgo.encrypt({ input: 'xprv14', password: oldPassword })
-        }
-      });
-
-      nock(bgUrl)
-      .get('/api/v2/tbtc/key')
-      .query(true)
-      .reply(200, {
-        keys: [
-          {
-            pub: 'xpub21',
-            encryptedPrv: bitgo.encrypt({ input: 'xprv21', password: oldPassword })
+        .post('/api/v1/user/encrypted')
+        .reply(200, {
+          version: 1,
+          keychains: {
+            xpub11: bitgo.encrypt({ input: 'xprv11', password: oldPassword }),
+            xpub12: bitgo.encrypt({ input: 'xprv12', password: oldPassword }),
+            xpub13: bitgo.encrypt({ input: 'xprv13', password: otherPassword }),
+            xpub14: bitgo.encrypt({ input: 'xprv14', password: oldPassword }),
           },
-          {
-            pub: 'xpub22',
-            encryptedPrv: bitgo.encrypt({ input: 'xprv22', password: otherPassword })
-          }
-        ]
-      });
+        });
 
       nock(bgUrl)
-      .post('/api/v1/user/changepassword')
-      .reply(200, {});
+        .get('/api/v2/tbtc/key')
+        .query(true)
+        .reply(200, {
+          keys: [
+            {
+              pub: 'xpub21',
+              encryptedPrv: bitgo.encrypt({ input: 'xprv21', password: oldPassword }),
+            },
+            {
+              pub: 'xpub22',
+              encryptedPrv: bitgo.encrypt({ input: 'xprv22', password: otherPassword }),
+            },
+          ],
+        });
+
+      nock(bgUrl)
+        .post('/api/v1/user/changepassword')
+        .reply(200, {});
 
       yield bitgo.changePassword({ oldPassword, newPassword });
     }));
@@ -418,7 +418,7 @@ describe('BitGo Prototype Methods', function() {
       const responseJson = {
         encryptedToken: '{"iv":"EqxVaGTLY4naAYkuBaTz0w==","v":1,"iter":1000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4S4dBYcgL4s=","ct":"FgBRJljb8iSYxnAjMi4Qotr7sTKbSmWnlfHZShMSi8YeeE3kiS8bpHNUwAPhY8tgouh3UsEwrJnY+54MvqFD7yd19pG1V4CVssr8"}',
         derivationPath: 'm/999999/104490948/173846667',
-        encryptedECDHXprv: '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}'
+        encryptedECDHXprv: '{"iv":"QKHEF2GNcwOJwy6+pwANRA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"W2sVFvXDlOw=","ct":"8BTCqS25X37kLzmzQdGenhXH6znn9qEmkszAeS8kLnRdqKSiUiC7bTAVgg/Np5yrV7F7Jyiq+MTpVT76EoUT+PMJzArv0gUQKC2JPB3JuVKeAAVWBQmhWfkEwRfyv4hq4WMxwZtocwBqThvd2pJm9HE51GX4/Wo="}',
       };
       const parsedAuthenticationData = bitgo.handleTokenIssuance(responseJson, 'test@bitgo.com');
       parsedAuthenticationData.token.should.equal(token);
@@ -433,16 +433,16 @@ describe('BitGo Prototype Methods', function() {
         'Content-Type': 'application/json',
         'Auth-Timestamp': requestHeaderData.timestamp,
         Authorization: 'Bearer ' + requestHeaderData.tokenHash,
-        HMAC: requestHeaderData.hmac
+        HMAC: requestHeaderData.hmac,
       };
       const responseBody = '{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}';
 
       nock('https://bitgo.fakeurl', { reqheaders: requestHeaders })
-      .get('/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1')
-      .reply(200, responseBody, {
-        hmac: '30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec',
-        timestamp: '1521590532925'
-      });
+        .get('/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1')
+        .reply(200, responseBody, {
+          hmac: '30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec',
+          timestamp: '1521590532925',
+        });
 
       const responseData = (yield rp({
         uri: url,
@@ -460,10 +460,10 @@ describe('BitGo Prototype Methods', function() {
             timestamp,
             token,
             statusCode,
-            text: body
+            text: body,
           };
           return bitgo.verifyResponse(verificationParams);
-        }
+        },
       })) as any;
       responseData.signatureSubject.should.equal('1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}');
       responseData.expectedHmac.should.equal('30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec');
@@ -500,7 +500,7 @@ describe('BitGo Prototype Methods', function() {
         timestamp: '1521590532925',
         token: token,
         statusCode: 200,
-        text: 'fakedata'
+        text: 'fakedata',
       };
       const verificationDetails = bitgo.verifyResponse(verificationParams);
       verificationDetails.signatureSubject.should.equal('1521590532925|/api|200|fakedata');
@@ -516,7 +516,7 @@ describe('BitGo Prototype Methods', function() {
         timestamp: '1521590532925',
         token: token,
         statusCode: 200,
-        text: 'fakedata'
+        text: 'fakedata',
       };
       const verificationDetails = bitgo.verifyResponse(verificationParams);
       verificationDetails.signatureSubject.should.equal('1521590532925|/|200|fakedata');
@@ -544,7 +544,7 @@ describe('BitGo Prototype Methods', function() {
     }));
   });
 
-  describe('Token Definitions at Startup', function() {
+  describe('Token Definitions at Startup', function () {
 
     it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
       const bitgo = new TestBitGo({ env: 'mock' });
@@ -558,7 +558,7 @@ describe('BitGo Prototype Methods', function() {
     });
   });
 
-  describe('superagent wrappers', function() {
+  describe('superagent wrappers', function () {
 
     let bitgo;
     let bgUrl;
@@ -569,8 +569,8 @@ describe('BitGo Prototype Methods', function() {
       bgUrl = common.Environments[bitgo.getEnv()].uri;
 
       nock(bgUrl)
-      .patch('/')
-      .reply(200);
+        .patch('/')
+        .reply(200);
     }));
 
     it('PATCH requests', co(function *() {
@@ -579,7 +579,7 @@ describe('BitGo Prototype Methods', function() {
       res.status.should.equal(200);
     }));
 
-    after(function() {
+    after(function () {
       nock.pendingMocks().should.be.empty();
     });
   });

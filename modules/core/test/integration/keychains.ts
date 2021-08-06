@@ -11,15 +11,15 @@ import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');
 
-describe('Keychains', function() {
+describe('Keychains', function () {
   let bitgo;
   let keychains;
 
-  before(function(done) {
+  before(function (done) {
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
     keychains = bitgo.keychains();
-    bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
+    bitgo.authenticateTestUser(bitgo.testUserOTP(), function (err, response) {
       if (err) {
         throw err;
       }
@@ -27,10 +27,10 @@ describe('Keychains', function() {
     });
   });
 
-  describe('Local', function() {
-    it('isValid', function() {
-      assert.throws(function() { keychains.isValid(''); });
-      assert.throws(function() { keychains.isValid({}); });
+  describe('Local', function () {
+    it('isValid', function () {
+      assert.throws(function () { keychains.isValid(''); });
+      assert.throws(function () { keychains.isValid({}); });
       assert.equal(keychains.isValid({ key: 'hello world' }), false);
       assert.equal(keychains.isValid({ key: 'xpub123123' }), false);
       assert.equal(keychains.isValid({ key: 'xprv123123' }), false);
@@ -39,7 +39,7 @@ describe('Keychains', function() {
       assert.equal(keychains.isValid({ key: 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw' }), true);
     });
 
-    it('create', function() {
+    it('create', function () {
       // must use seed of at least 128 bits
       // standard test vector taken from bip32 spec
       const seed = Buffer.from('000102030405060708090a0b0c0d0e0f', 'hex');
@@ -50,16 +50,16 @@ describe('Keychains', function() {
       assert.notEqual(keychains.create().xprv, keychains.create().xprv);
     });
 
-    it('deriveLocal', function() {
-      assert.throws(function() { keychains.deriveLocal(''); });
-      assert.throws(function() { keychains.deriveLocal({}); });
-      assert.throws(function() { keychains.deriveLocal({ path: 'm/0/1' }); });
-      assert.throws(function() { keychains.deriveLocal({ path: 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }); });
+    it('deriveLocal', function () {
+      assert.throws(function () { keychains.deriveLocal(''); });
+      assert.throws(function () { keychains.deriveLocal({}); });
+      assert.throws(function () { keychains.deriveLocal({ path: 'm/0/1' }); });
+      assert.throws(function () { keychains.deriveLocal({ path: 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }); });
 
       const xprvDerivation = keychains.deriveLocal(
         {
           path: 'm/0/1',
-          xprv: 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73'
+          xprv: 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73',
         }
       );
       assert.equal(xprvDerivation.xprv, 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P');
@@ -68,7 +68,7 @@ describe('Keychains', function() {
       const xpubDerivation = keychains.deriveLocal(
         {
           path: 'm/0/1',
-          xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L'
+          xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L',
         }
       );
       assert.equal(xpubDerivation.xpub, 'xpub6Ee6yTYU8n4jBALmLc7jn88vQkuEUEN4xEyre8Y8f4UeTE9Wv4kQoVBc2EBkDN4bHSf5TrHFEUFM6ZWboxrDXuthejjm61ukBSnM3sEYtM9');
@@ -76,15 +76,15 @@ describe('Keychains', function() {
     });
   });
 
-  describe('List', function() {
-    it('arguments', function() {
-      assert.throws(function() { keychains.list({}, 'invalid'); });
-      assert.throws(function() { keychains.list('invalid'); });
-      assert.throws(function() { keychains.list('invalid', function() {}); });
+  describe('List', function () {
+    it('arguments', function () {
+      assert.throws(function () { keychains.list({}, 'invalid'); });
+      assert.throws(function () { keychains.list('invalid'); });
+      assert.throws(function () { keychains.list('invalid', function () {}); });
     });
 
-    it('all', function(done) {
-      keychains.list({}, function(err, keychains) {
+    it('all', function (done) {
+      keychains.list({}, function (err, keychains) {
         assert.equal(err, null);
         assert.equal(Array.isArray(keychains), true);
         done();
@@ -92,7 +92,7 @@ describe('Keychains', function() {
     });
   });
 
-  describe('Update Password', function() {
+  describe('Update Password', function () {
     let bitgo;
     let keychains;
     let correctPassword;
@@ -109,7 +109,7 @@ describe('Keychains', function() {
     it('successful update the password for all v1 keychains that are encrypted with the old password', co(function *itUpdatePassword() {
       const newPassword = 'newPassword';
       const result = yield keychains.updatePassword({ oldPassword: correctPassword, newPassword });
-      _.forOwn(result.keychains, function(encryptedXprv, xpub) {
+      _.forOwn(result.keychains, function (encryptedXprv, xpub) {
         xpub.should.startWith('xpub');
         try {
           const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
@@ -124,84 +124,84 @@ describe('Keychains', function() {
     }));
   });
 
-  describe('Get', function() {
-    it('arguments', function() {
-      assert.throws(function() { keychains.get('invalid'); });
-      assert.throws(function() { keychains.get({}, function() {}); });
+  describe('Get', function () {
+    it('arguments', function () {
+      assert.throws(function () { keychains.get('invalid'); });
+      assert.throws(function () { keychains.get({}, function () {}); });
     });
 
-    it('non existent keychain', function(done) {
+    it('non existent keychain', function (done) {
       const newKey = keychains.create();
       const options = {
-        xpub: newKey.xpub
+        xpub: newKey.xpub,
       };
-      keychains.get(options, function(err, keychain) {
+      keychains.get(options, function (err, keychain) {
         assert.ok(err);
         done();
       });
     });
   });
 
-  describe('Add', function() {
-    it('arguments', function() {
-      assert.throws(function() { keychains.create('invalid'); });
-      assert.throws(function() { keychains.add(); });
-      assert.throws(function() { keychains.add('invalid'); });
-      assert.throws(function() { keychains.add({}, 0); });
+  describe('Add', function () {
+    it('arguments', function () {
+      assert.throws(function () { keychains.create('invalid'); });
+      assert.throws(function () { keychains.add(); });
+      assert.throws(function () { keychains.add('invalid'); });
+      assert.throws(function () { keychains.add({}, 0); });
     });
 
-    describe('public', function() {
+    describe('public', function () {
       let extendedKey;
 
-      before(function(done) {
+      before(function (done) {
         // Generate a new keychain
         extendedKey = keychains.create();
 
-        bitgo.unlock({ otp: bitgo.testUserOTP() }, function(err) {
+        bitgo.unlock({ otp: bitgo.testUserOTP() }, function (err) {
           assert.equal(err, null);
           done();
         });
       });
 
-      it('add', function(done) {
-        const options = {
-          xpub: extendedKey.xpub
-        };
-        keychains.add(options, function(err, keychain) {
-          assert.equal(err, null);
-          assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.path, 'm');
-          done();
-        });
-      });
-
-      it('get', function(done) {
-        const options = {
-          xpub: extendedKey.xpub
-        };
-        keychains.get(options, function(err, keychain) {
-          assert.equal(err, null);
-          assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.path, 'm');
-          done();
-        });
-      });
-    });
-
-    describe('private', function() {
-      let extendedKey;
-
-      before(function() {
-        // Generate a new keychain
-        extendedKey = keychains.create();
-      });
-
-      it('add', function(done) {
+      it('add', function (done) {
         const options = {
           xpub: extendedKey.xpub,
-          encryptedXprv: 'xyzzy'
         };
-        keychains.add(options, function(err, keychain) {
+        keychains.add(options, function (err, keychain) {
+          assert.equal(err, null);
+          assert.equal(keychain.xpub, extendedKey.xpub);
+          assert.equal(keychain.path, 'm');
+          done();
+        });
+      });
+
+      it('get', function (done) {
+        const options = {
+          xpub: extendedKey.xpub,
+        };
+        keychains.get(options, function (err, keychain) {
+          assert.equal(err, null);
+          assert.equal(keychain.xpub, extendedKey.xpub);
+          assert.equal(keychain.path, 'm');
+          done();
+        });
+      });
+    });
+
+    describe('private', function () {
+      let extendedKey;
+
+      before(function () {
+        // Generate a new keychain
+        extendedKey = keychains.create();
+      });
+
+      it('add', function (done) {
+        const options = {
+          xpub: extendedKey.xpub,
+          encryptedXprv: 'xyzzy',
+        };
+        keychains.add(options, function (err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
           assert.equal(keychain.path, 'm');
@@ -210,11 +210,11 @@ describe('Keychains', function() {
         });
       });
 
-      it('get', function(done) {
+      it('get', function (done) {
         const options = {
-          xpub: extendedKey.xpub
+          xpub: extendedKey.xpub,
         };
-        keychains.get(options, function(err, keychain) {
+        keychains.get(options, function (err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
           assert.equal(keychain.path, 'm');
@@ -225,81 +225,81 @@ describe('Keychains', function() {
     });
   });
 
-  describe('Create Backup', function() {
-    it('arguments', function() {
-      assert.throws(function() {
+  describe('Create Backup', function () {
+    it('arguments', function () {
+      assert.throws(function () {
         keychains.createBackup('invalid');
       });
-      assert.throws(function() {
+      assert.throws(function () {
         keychains.createBackup();
       });
-      assert.throws(function() {
+      assert.throws(function () {
         keychains.createBackup({}, 0);
       });
     });
 
-    describe('prederived key', function() {
+    describe('prederived key', function () {
       let generatedXPub;
-      it('add', function() {
+      it('add', function () {
         const options = {
-          provider: 'bitgo'
+          provider: 'bitgo',
         };
         return keychains.createBackup(options)
-        .then(function(keychain) {
-          keychain.should.have.property('xpub');
-          keychain.should.have.property('path');
-          generatedXPub = keychain.xpub;
-        });
+          .then(function (keychain) {
+            keychain.should.have.property('xpub');
+            keychain.should.have.property('path');
+            generatedXPub = keychain.xpub;
+          });
       });
 
-      it('get', function() {
+      it('get', function () {
         const options = {
-          xpub: generatedXPub
+          xpub: generatedXPub,
         };
         return keychains.get(options)
-        .then(function(keychain) {
-          keychain.should.have.property('xpub');
-          keychain.should.have.property('path');
-          keychain.xpub.should.eql(generatedXPub);
-        });
+          .then(function (keychain) {
+            keychain.should.have.property('xpub');
+            keychain.should.have.property('path');
+            keychain.xpub.should.eql(generatedXPub);
+          });
       });
     });
   });
 
-  describe('Update', function() {
+  describe('Update', function () {
     let newKey;
 
-    before(function() {
+    before(function () {
       newKey = keychains.create();
     });
 
-    it('arguments', function() {
-      assert.throws(function() { keychains.get('invalid'); });
-      assert.throws(function() { keychains.get({}, function() {}); });
+    it('arguments', function () {
+      assert.throws(function () { keychains.get('invalid'); });
+      assert.throws(function () { keychains.get({}, function () {}); });
     });
 
-    it('non existent keychain', function(done) {
+    it('non existent keychain', function (done) {
       const options = {
-        xpub: newKey.xpub
+        xpub: newKey.xpub,
       };
-      keychains.get(options, function(err, keychain) {
+      keychains.get(options, function (err, keychain) {
         assert.ok(err);
         done();
       });
     });
 
-    it('update ', function(done) {
+    it('update ', function (done) {
       const options: any = {
-        xpub: newKey.xpub
+        xpub: newKey.xpub,
       };
-      keychains.add(options, function(err, keychain) {
+      keychains.add(options, function (err, keychain) {
         assert.equal(err, null);
         assert.equal(keychain.xpub, newKey.xpub);
         assert.equal(keychain.path, 'm');
 
         options.label = 'new label';
         options.encryptedXprv = 'abracadabra';
-        keychains.update(options, function(err, keychain) {
+        keychains.update(options, function (err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, newKey.xpub);
           assert.equal(keychain.encryptedXprv, 'abracadabra');

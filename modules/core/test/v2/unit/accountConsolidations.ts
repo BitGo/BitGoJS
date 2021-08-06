@@ -16,7 +16,7 @@ const algoFixtures = require('../fixtures/coins/algo');
 
 nock.disableNetConnect();
 
-describe('Account Consolidations:', function() {
+describe('Account Consolidations:', function () {
   let bitgo;
   let wallet;
   let basecoin;
@@ -24,8 +24,8 @@ describe('Account Consolidations:', function() {
   let fixtures;
 
   for (const coinName of ['talgo', 'txtz']) {
-    describe(coinName + ' Account Consolidations: ', function() {
-      before(function() {
+    describe(coinName + ' Account Consolidations: ', function () {
+      before(function () {
         bitgo = new TestBitGo({ env: 'test' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
@@ -42,14 +42,14 @@ describe('Account Consolidations:', function() {
         }
       });
 
-      describe('Building', function() {
-        it('should not allow a non-account consolidation coin build', async function() {
+      describe('Building', function () {
+        it('should not allow a non-account consolidation coin build', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
           await invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
         });
 
-        it('should build with no params', async function() {
+        it('should build with no params', async function () {
           const scope = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})
@@ -63,33 +63,33 @@ describe('Account Consolidations:', function() {
         });
       });
 
-      describe('Sending', function() {
-        afterEach(function() {
+      describe('Sending', function () {
+        afterEach(function () {
           sinon.restore();
         });
 
-        it('should not allow a non-account consolidation coin send', async function() {
+        it('should not allow a non-account consolidation coin send', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
           await invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
         });
 
-        it('should not allow a non-account consolidation coin send multiples', async function() {
+        it('should not allow a non-account consolidation coin send multiples', async function () {
           const unsupportedCoin = bitgo.coin('tbtc');
           const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
           await invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
         });
 
-        it('should not allow a bad pre-build to be passed', async function() {
+        it('should not allow a bad pre-build to be passed', async function () {
           await wallet.sendAccountConsolidation({ prebuildTx: 'some string' }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
           await wallet.sendAccountConsolidation({ prebuildTx: undefined }).should.be.rejectedWith({ message: 'Invalid build of account consolidation.' });
         });
 
-        it('should require a consolidation id to be passed', async function() {
+        it('should require a consolidation id to be passed', async function () {
           await wallet.sendAccountConsolidation({ prebuildTx: {} }).should.be.rejectedWith({ message: 'Failed to find consolidation id on consolidation transaction.' });
         });
 
-        it('should submit a consolidation transaction', async function() {
+        it('should submit a consolidation transaction', async function () {
           const params = { prebuildTx: fixtures.buildAccountConsolidation[0] };
 
           sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(fixtures.signedAccountConsolidationBuilds[0]);
@@ -103,7 +103,7 @@ describe('Account Consolidations:', function() {
           scope.isDone().should.be.True();
         });
 
-        it('should submit a consolidation account send (build + send) with two successes', async function() {
+        it('should submit a consolidation account send (build + send) with two successes', async function () {
           const scopeBuild = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})
@@ -131,7 +131,7 @@ describe('Account Consolidations:', function() {
           scopeBuild.isDone().should.be.True();
         });
 
-        it('should submit a consolidation account send (build + send) with one success, one failure', async function() {
+        it('should submit a consolidation account send (build + send) with one success, one failure', async function () {
           const scopeBuild = nock(bgUrl)
             .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
             .query({})

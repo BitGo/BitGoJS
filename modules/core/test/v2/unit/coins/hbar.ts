@@ -5,22 +5,22 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
 
-describe('Hedera Hashgraph:', function() {
+describe('Hedera Hashgraph:', function () {
   let bitgo;
   let basecoin;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('thbar');
   });
 
-  it('should instantiate the coin', function() {
+  it('should instantiate the coin', function () {
     const basecoin = bitgo.coin('hbar');
     basecoin.should.be.an.instanceof(Hbar);
   });
 
-  it('should check valid addresses', async function() {
+  it('should check valid addresses', async function () {
     const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd'];
     const goodAddresses = ['0', '0.0.0', '0.0.41098', '0.0.0?memoId=84', '0.0.41098',
       '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1', '0.0.41098?memoId=',
@@ -30,7 +30,7 @@ describe('Hedera Hashgraph:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   });
 
-  it('should get memoId and address', async function() {
+  it('should get memoId and address', async function () {
     const addr = '0.0.41098?memoId=23233';
     const details = basecoin.getAddressDetails(addr);
 
@@ -38,7 +38,7 @@ describe('Hedera Hashgraph:', function() {
     details.memoId.should.equal('23233');
   });
 
-  it('should get memoId and address when memoId=null', async function() {
+  it('should get memoId and address when memoId=null', async function () {
     const addr = '0.0.41098?memoId=';
     const details = basecoin.getAddressDetails(addr);
 
@@ -46,7 +46,7 @@ describe('Hedera Hashgraph:', function() {
     details.memoId.should.equal('');
   });
 
-  it('should build without a memoId if its missing for an address', async function() {
+  it('should build without a memoId if its missing for an address', async function () {
     const address = '0.0.41098';
     let memoId: string | undefined = undefined;
     let norm = basecoin.normalizeAddress({ address, memoId });
@@ -56,7 +56,7 @@ describe('Hedera Hashgraph:', function() {
     norm.should.equal('0.0.41098');
   });
 
-  it('should explain a transaction', async function() {
+  it('should explain a transaction', async function () {
     const tx = JSON.parse(rawTransactionForExplain);
     const explain = await basecoin.explainTransaction(tx);
 
@@ -72,7 +72,7 @@ describe('Hedera Hashgraph:', function() {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function() {
+    it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
@@ -80,7 +80,7 @@ describe('Hedera Hashgraph:', function() {
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should generate a keypair from a seed', function() {
+    it('should generate a keypair from a seed', function () {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
@@ -89,11 +89,11 @@ describe('Hedera Hashgraph:', function() {
       keyPair.pub.should.equal('302a300506032b65700321009cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333');
     });
 
-    it('should validate a stellar seed', function() {
+    it('should validate a stellar seed', function () {
       basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();
     });
 
-    it('should convert a stellar seed to an hbar prv', function() {
+    it('should convert a stellar seed to an hbar prv', function () {
       const seed = basecoin.convertFromStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX');
       seed.should.equal('302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055');
     });
@@ -121,7 +121,7 @@ describe('Hedera Hashgraph:', function() {
      * @param source The account sending thist ransaction
      * @param amount The amount to send to the recipient
      */
-    const buildUnsignedTransaction = async function({
+    const buildUnsignedTransaction = async function ({
       destination,
       source,
       amount = '100000',
@@ -139,7 +139,7 @@ describe('Hedera Hashgraph:', function() {
       return await txBuilder.build();
     };
 
-    it('should sign transaction', async function() {
+    it('should sign transaction', async function () {
       const key = new accountLib.Hbar.KeyPair();
       const destination = '0.0.129369';
       const source = '0.0.1234';

@@ -29,7 +29,7 @@ describe('Sign ETH Transaction', co(function *() {
     ethWallet = coin.newWalletObject(bitgo, coin, {});
     recipients = [{
       address: '0xe59dfe5c67114b39a5662cc856be536c614124c0',
-      amount: '100000'
+      amount: '100000',
     }];
     tx = { recipients, nextContractSequenceId: 0 };
   }));
@@ -135,8 +135,8 @@ describe('Ethereum Hop Transactions', co(function *() {
       buildParams = {
         recipients: [{
           address: finalRecipient,
-          amount: sendAmount
-        }]
+          amount: sendAmount,
+        }],
       };
     }));
 
@@ -222,15 +222,15 @@ describe('Ethereum Hop Transactions', co(function *() {
     let gasLimitEstimate;
     let gasPrice;
 
-    const nockUserKey = function() {
+    const nockUserKey = function () {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
           encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
-          path: userKeypair.path + userKeypair.walletSubPath
+          path: userKeypair.path + userKeypair.walletSubPath,
         });
     };
-    const nockFees = function() {
+    const nockFees = function () {
       const scope = nock(bgUrl)
         .get('/api/v2/teth/tx/fee')
         .query(true)
@@ -241,7 +241,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       return scope;
     };
 
-    const nockBuild = function(walletId) {
+    const nockBuild = function (walletId) {
       nock(bgUrl)
         .post('/api/v2/teth/wallet/' + walletId + '/tx/build')
         .reply(200, { hopTransaction: prebuild, buildParams });
@@ -260,7 +260,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       buildParams = {
         recipients: [{
           address: finalRecipient,
-          amount: sendAmount
+          amount: sendAmount,
         }],
         hop: true,
         walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
@@ -295,10 +295,10 @@ describe('Ethereum Hop Transactions', co(function *() {
   }));
 }));
 
-describe('Add final signature to ETH tx from offline vault', function() {
+describe('Add final signature to ETH tx from offline vault', function () {
 
   let paramsFromVault, expectedResult, bitgo, coin;
-  before(function() {
+  before(function () {
     const vals = fixtures.getHalfSignedTethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
@@ -323,14 +323,14 @@ describe('Add final signature to ETH tx from offline vault', function() {
   }));
 });
 
-describe('prebuildTransaction', function() {
+describe('prebuildTransaction', function () {
   let bitgo;
   let ethWallet;
   let recipients;
   let bgUrl;
   let gasLimit;
 
-  before(function() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
@@ -373,8 +373,8 @@ describe('prebuildTransaction', function() {
   }));
 });
 
-describe('final-sign transaction from WRW', function() {
-  it('should add a second signature to unsigned sweep', (async function() {
+describe('final-sign transaction from WRW', function () {
+  it('should add a second signature to unsigned sweep', (async function () {
     const bitgo = new TestBitGo({ env: 'test' });
     const basecoin = bitgo.coin('teth');
     const gasPrice = 200000000000;

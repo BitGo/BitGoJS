@@ -8,7 +8,7 @@ const co = Promise.coroutine;
 
 const TestBitGo = require('../lib/test_bitgo');
 
-describe('User Webhooks:', function() {
+describe('User Webhooks:', function () {
   let bitgo;
   let webhookId;
   const blockId = '000000000000076966de153d5c776cf8f630222a1c3025bea8543f158cc507d6';
@@ -22,7 +22,7 @@ describe('User Webhooks:', function() {
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
   }));
 
-  describe('Create', function() {
+  describe('Create', function () {
     it('should fail to create a new webhook with missing params', co(function *() {
       try {
         yield bitgo.addWebhook({ url });
@@ -50,7 +50,7 @@ describe('User Webhooks:', function() {
     }));
   });
 
-  describe('List', function() {
+  describe('List', function () {
     it('should fetch list of user webhooks', co(function *() {
       const userWebhooks = yield bitgo.listWebhooks();
       userWebhooks.webhooks.length.should.greaterThan(0);
@@ -58,7 +58,7 @@ describe('User Webhooks:', function() {
     }));
   });
 
-  describe('Simulate', function() {
+  describe('Simulate', function () {
     it('should fail to simulate a block webhook with missing params', co(function *() {
       try {
         yield bitgo.simulateWebhook({ webhookId });
@@ -79,7 +79,7 @@ describe('User Webhooks:', function() {
     }));
   });
 
-  describe('List notifications', function() {
+  describe('List notifications', function () {
     it('should fetch list of webhook notifications', co(function *() {
       const res = yield bitgo.listWebhookNotifications();
       res.should.have.property('webhookNotifications');
@@ -87,7 +87,7 @@ describe('User Webhooks:', function() {
     }));
   });
 
-  describe('Remove', function() {
+  describe('Remove', function () {
     it('should fail to remove a webhook with missing params', co(function *() {
       try {
         yield bitgo.removeWebhook({ url });

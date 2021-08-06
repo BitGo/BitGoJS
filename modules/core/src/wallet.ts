@@ -27,7 +27,7 @@ const request = require('superagent');
 //
 // Constructor
 //
-const Wallet = function(bitgo, wallet) {
+const Wallet = function (bitgo, wallet) {
   (this.bitgo as any) = bitgo;
   this.wallet = wallet;
   this.keychains = [];
@@ -37,7 +37,7 @@ const Wallet = function(bitgo, wallet) {
   }
 };
 
-Wallet.prototype.toJSON = function() {
+Wallet.prototype.toJSON = function () {
   return this.wallet;
 };
 
@@ -45,7 +45,7 @@ Wallet.prototype.toJSON = function() {
 // id
 // Get the id of this wallet.
 //
-Wallet.prototype.id = function() {
+Wallet.prototype.id = function () {
   return this.wallet.id;
 };
 
@@ -53,7 +53,7 @@ Wallet.prototype.id = function() {
 // label
 // Get the label of this wallet.
 //
-Wallet.prototype.label = function() {
+Wallet.prototype.label = function () {
   return this.wallet.label;
 };
 
@@ -61,7 +61,7 @@ Wallet.prototype.label = function() {
 // balance
 // Get the balance of this wallet.
 //
-Wallet.prototype.balance = function() {
+Wallet.prototype.balance = function () {
   return this.wallet.balance;
 };
 
@@ -70,7 +70,7 @@ Wallet.prototype.balance = function() {
 // Get the spendable balance of this wallet.
 // This is the total of all unspents except those that are unconfirmed and external
 //
-Wallet.prototype.spendableBalance = function() {
+Wallet.prototype.spendableBalance = function () {
   return this.wallet.spendableBalance;
 };
 
@@ -78,7 +78,7 @@ Wallet.prototype.spendableBalance = function() {
 // confirmedBalance
 // Get the confirmedBalance of this wallet.
 //
-Wallet.prototype.confirmedBalance = function() {
+Wallet.prototype.confirmedBalance = function () {
   return this.wallet.confirmedBalance;
 };
 
@@ -87,7 +87,7 @@ Wallet.prototype.confirmedBalance = function() {
 // Returns if the wallet can send instant transactions
 // This is impacted by the choice of backup key provider
 //
-Wallet.prototype.canSendInstant = function() {
+Wallet.prototype.canSendInstant = function () {
   return this.wallet && this.wallet.canSendInstant;
 };
 
@@ -96,7 +96,7 @@ Wallet.prototype.canSendInstant = function() {
 // Get the instant balance of this wallet.
 // This is the total of all unspents that may be spent instantly.
 //
-Wallet.prototype.instantBalance = function() {
+Wallet.prototype.instantBalance = function () {
   if (!this.canSendInstant()) {
     throw new Error('not an instant wallet');
   }
@@ -107,7 +107,7 @@ Wallet.prototype.instantBalance = function() {
 // unconfirmedSends
 // Get the balance of unconfirmedSends of this wallet.
 //
-Wallet.prototype.unconfirmedSends = function() {
+Wallet.prototype.unconfirmedSends = function () {
   return this.wallet.unconfirmedSends;
 };
 
@@ -115,7 +115,7 @@ Wallet.prototype.unconfirmedSends = function() {
 // unconfirmedReceives
 // Get the balance of unconfirmedReceives balance of this wallet.
 //
-Wallet.prototype.unconfirmedReceives = function() {
+Wallet.prototype.unconfirmedReceives = function () {
   return this.wallet.unconfirmedReceives;
 };
 
@@ -123,11 +123,11 @@ Wallet.prototype.unconfirmedReceives = function() {
 // type
 // Get the type of this wallet, e.g. 'safehd'
 //
-Wallet.prototype.type = function() {
+Wallet.prototype.type = function () {
   return this.wallet.type;
 };
 
-Wallet.prototype.url = function(extra) {
+Wallet.prototype.url = function (extra) {
   extra = extra || '';
   return this.bitgo.url('/wallet/' + this.id() + extra);
 };
@@ -136,9 +136,9 @@ Wallet.prototype.url = function(extra) {
 // pendingApprovals
 // returns the pending approvals list for this wallet as pending approval objects
 //
-Wallet.prototype.pendingApprovals = function() {
+Wallet.prototype.pendingApprovals = function () {
   const self = this;
-  return this.wallet.pendingApprovals.map(function(p) {
+  return this.wallet.pendingApprovals.map(function (p) {
     return new PendingApproval(self.bitgo, p, self);
   });
 };
@@ -147,7 +147,7 @@ Wallet.prototype.pendingApprovals = function() {
 // approvalsRequired
 // returns the number of approvals required to approve pending approvals involving this wallet
 //
-Wallet.prototype.approvalsRequired = function() {
+Wallet.prototype.approvalsRequired = function () {
   return this.wallet.approvalsRequired || 1;
 };
 
@@ -155,7 +155,7 @@ Wallet.prototype.approvalsRequired = function() {
 // get
 // Refetches this wallet and returns it
 //
-Wallet.prototype.get = function(params, callback): Bluebird<any> {
+Wallet.prototype.get = function (params, callback): Bluebird<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -164,7 +164,7 @@ Wallet.prototype.get = function(params, callback): Bluebird<any> {
   return Bluebird.resolve(
     this.bitgo.get(this.url())
       .result()
-      .then(function(res) {
+      .then(function (res) {
         self.wallet = res;
         return self;
       })
@@ -177,7 +177,7 @@ Wallet.prototype.get = function(params, callback): Bluebird<any> {
 // The approvals required is by default 1, but this function allows you to update the
 // number such that 1 <= approvalsRequired <= walletAdmins.length - 1
 //
-Wallet.prototype.updateApprovalsRequired = function(params, callback): Bluebird<any> {
+Wallet.prototype.updateApprovalsRequired = function (params, callback): Bluebird<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (params.approvalsRequired === undefined ||
@@ -191,7 +191,7 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback): Bluebird<
   const currentApprovalsRequired = this.approvalsRequired();
   if (currentApprovalsRequired === params.approvalsRequired) {
     // no-op, just return the current wallet
-    return Bluebird.try(function() {
+    return Bluebird.try(function () {
       return self.wallet;
     })
       .nodeify(callback);
@@ -207,7 +207,7 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback): Bluebird<
 /**
  * Returns the correct chain for change, taking into consideration segwit
  */
-Wallet.prototype.getChangeChain = function(params) {
+Wallet.prototype.getChangeChain = function (params) {
   let useSegwitChange = !!this.bitgo.getConstants().enableSegwit;
   if (!_.isUndefined(params.segwitChange)) {
     if (!_.isBoolean(params.segwitChange)) {
@@ -224,7 +224,7 @@ Wallet.prototype.getChangeChain = function(params) {
 // createAddress
 // Creates a new address for use with this wallet.
 //
-Wallet.prototype.createAddress = function(params, callback) {
+Wallet.prototype.createAddress = function (params, callback) {
   const self = this;
   params = params || {};
   common.validateParams(params, [], [], callback);
@@ -251,7 +251,7 @@ Wallet.prototype.createAddress = function(params, callback) {
     this.bitgo.post(this.url('/address/' + chain))
       .send(params)
       .result()
-      .then(function(addr) {
+      .then(function (addr) {
         if (shouldValidate) {
           self.validateAddress(addr);
         }
@@ -265,7 +265,7 @@ Wallet.prototype.createAddress = function(params, callback) {
  * @param params
  *
  */
-Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold }) {
+Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshold }) {
   const isSegwit = !!segwit;
   let signatureThreshold = 2;
   if (_.isInteger(threshold)) {
@@ -287,7 +287,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
 
   const network = common.Environments[this.bitgo.getEnv()].network;
 
-  const derivedKeys = rootKeys.map(function(k) {
+  const derivedKeys = rootKeys.map(function (k) {
     const hdnode = bitcoin.HDNode.fromBase58(k.xpub);
     let derivationPath = k.path + path;
     if (k.walletSubPath) {
@@ -342,7 +342,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
 // validateAddress
 // Validates an address and path by calculating it locally from the keychain xpubs
 //
-Wallet.prototype.validateAddress = function(params) {
+Wallet.prototype.validateAddress = function (params) {
   common.validateParams(params, ['address', 'path'], []);
   const isSegwit = !!params.witnessScript && params.witnessScript.length > 0;
 
@@ -358,7 +358,7 @@ Wallet.prototype.validateAddress = function(params) {
 // Options include:
 //  limit: the number of addresses to get
 //
-Wallet.prototype.addresses = function(params, callback) {
+Wallet.prototype.addresses = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -405,7 +405,7 @@ Wallet.prototype.addresses = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.stats = function(params, callback) {
+Wallet.prototype.stats = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   const args: string[] = [];
@@ -432,7 +432,7 @@ Wallet.prototype.stats = function(params, callback) {
  * @param callback
  * @returns {Wallet}
  */
-Wallet.prototype.refresh = function(params, callback) {
+Wallet.prototype.refresh = function (params, callback) {
   return co(function *() {
     // when set to true, gpk returns the private data of safe wallets
     const query = _.extend({}, _.pick(params, ['gpk']));
@@ -449,22 +449,22 @@ Wallet.prototype.refresh = function(params, callback) {
 // Options include:
 //  address: the address on this wallet to get
 //
-Wallet.prototype.address = function(params, callback) {
+Wallet.prototype.address = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
   const url = this.url('/addresses/' + params.address);
 
   return this.bitgo.get(url)
-  .result()
-  .nodeify(callback);
+    .result()
+    .nodeify(callback);
 };
 
 /**
  * Freeze the wallet for a duration of choice, stopping BitGo from signing any transactions.
  * @param {number} limit The duration to freeze the wallet for in seconds, defaults to 3600.
  */
-Wallet.prototype.freeze = function(params, callback) {
+Wallet.prototype.freeze = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -485,7 +485,7 @@ Wallet.prototype.freeze = function(params, callback) {
 // delete
 // Deletes the wallet
 //
-Wallet.prototype.delete = function(params, callback) {
+Wallet.prototype.delete = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -498,7 +498,7 @@ Wallet.prototype.delete = function(params, callback) {
 // labels
 // List the labels for the addresses in a given wallet
 //
-Wallet.prototype.labels = function(params, callback) {
+Wallet.prototype.labels = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -516,7 +516,7 @@ Wallet.prototype.labels = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.setWalletName = function(params, callback) {
+Wallet.prototype.setWalletName = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['label'], [], callback);
 
@@ -532,7 +532,7 @@ Wallet.prototype.setWalletName = function(params, callback) {
 // setLabel
 // Sets a label on the provided address
 //
-Wallet.prototype.setLabel = function(params, callback) {
+Wallet.prototype.setLabel = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address', 'label'], [], callback);
 
@@ -555,7 +555,7 @@ Wallet.prototype.setLabel = function(params, callback) {
 // deleteLabel
 // Deletes the label associated with the provided address
 //
-Wallet.prototype.deleteLabel = function(params, callback) {
+Wallet.prototype.deleteLabel = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
@@ -583,14 +583,14 @@ Wallet.prototype.deleteLabel = function(params, callback) {
 //   target: the amount of btc to find to spend
 //   instant: only find instant transactions (must specify a target)
 //
-Wallet.prototype.unspents = function(params, callback) {
+Wallet.prototype.unspents = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   const allUnspents: any[] = [];
   const self = this;
 
-  const getUnspentsBatch = function(skip, limit?) {
+  const getUnspentsBatch = function (skip, limit?) {
 
     const queryObject = _.cloneDeep(params);
     if (skip > 0) {
@@ -601,40 +601,40 @@ Wallet.prototype.unspents = function(params, callback) {
     }
 
     return self.unspentsPaged(queryObject)
-    .then(function(result) {
+      .then(function (result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
-      for (let i = 0; i < result.unspents.length; i++) {
-        const unspent = result.unspents[i];
-        allUnspents.push(unspent);
-      }
+        for (let i = 0; i < result.unspents.length; i++) {
+          const unspent = result.unspents[i];
+          allUnspents.push(unspent);
+        }
 
-      // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
-      // limit, we hit it precisely
-      if (allUnspents.length >= params.limit) {
-        return allUnspents; // we aren't interested in any further unspents
-      }
+        // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
+        // limit, we hit it precisely
+        if (allUnspents.length >= params.limit) {
+          return allUnspents; // we aren't interested in any further unspents
+        }
 
-      const totalUnspentCount = result.total;
-      // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
-      if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
+        const totalUnspentCount = result.total;
+        // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
+        if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
-        const newSkip = skip + result.count;
-        let newLimit: number | undefined;
-        if (limit > 0) {
+          const newSkip = skip + result.count;
+          let newLimit: number | undefined;
+          if (limit > 0) {
           // we set the new limit to be precisely the number of missing unspents to hit our own limit
-          newLimit = limit - allUnspents.length;
+            newLimit = limit - allUnspents.length;
+          }
+          return getUnspentsBatch(newSkip, newLimit);
         }
-        return getUnspentsBatch(newSkip, newLimit);
-      }
 
-      return allUnspents;
-    });
+        return allUnspents;
+      });
   };
 
   return getUnspentsBatch(0, params.limit)
-  .nodeify(callback);
+    .nodeify(callback);
 };
 
 /**
@@ -653,7 +653,7 @@ Wallet.prototype.unspents = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.unspentsPaged = function(params, callback) {
+Wallet.prototype.unspentsPaged = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -718,7 +718,7 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
 // List the transactions for a given wallet
 // Options include:
 //     TODO:  Add iterators for start/count/etc
-Wallet.prototype.transactions = function(params, callback) {
+Wallet.prototype.transactions = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -774,7 +774,7 @@ Wallet.prototype.transactions = function(params, callback) {
 //
 // transaction
 // Get a transaction by ID for a given wallet
-Wallet.prototype.getTransaction = function(params, callback) {
+Wallet.prototype.getTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
@@ -792,7 +792,7 @@ Wallet.prototype.getTransaction = function(params, callback) {
 //   id: the txid
 //   delay: delay between polls in ms (default: 1000)
 //   timeout: timeout in ms (default: 10000)
-Wallet.prototype.pollForTransaction = function(params, callback) {
+Wallet.prototype.pollForTransaction = function (params, callback) {
   const self = this;
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
@@ -807,20 +807,20 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
 
   const start = new Date();
 
-  const doNextPoll = function() {
+  const doNextPoll = function () {
     return self.getTransaction(params)
-    .then(function(res) {
-      return res;
-    })
-    .catch(function(err) {
-      if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
-        throw err;
-      }
-      return Bluebird.delay(params.delay)
-      .then(function() {
-        return doNextPoll();
+      .then(function (res) {
+        return res;
+      })
+      .catch(function (err) {
+        if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
+          throw err;
+        }
+        return Bluebird.delay(params.delay)
+          .then(function () {
+            return doNextPoll();
+          });
       });
-    });
   };
 
   return doNextPoll();
@@ -829,7 +829,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
 //
 // transaction by sequence id
 // Get a transaction by sequence id for a given wallet
-Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
+Wallet.prototype.getWalletTransactionBySequenceId = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['sequenceId'], [], callback);
 
@@ -845,7 +845,7 @@ Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
 // Gets the user key chain for this wallet
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
 // Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
-Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
+Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], [], callback);
@@ -887,7 +887,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   validate - extra verification of change addresses (which are always verified server-side) (defaults to global config)
 // Returns:
 //   callback(err, { transactionHex: string, unspents: [inputs], fee: satoshis })
-Wallet.prototype.createTransaction = function(params, callback) {
+Wallet.prototype.createTransaction = function (params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, [], [], callback);
 
@@ -909,7 +909,7 @@ Wallet.prototype.createTransaction = function(params, callback) {
   params.wallet = this;
 
   return TransactionBuilder.createTransaction(params)
-  .nodeify(callback);
+    .nodeify(callback);
 };
 
 
@@ -926,7 +926,7 @@ Wallet.prototype.createTransaction = function(params, callback) {
 // validate - extra verification of signatures (which are always verified server-side) (defaults to global config)
 // Returns:
 //   callback(err, transaction)
-Wallet.prototype.signTransaction = function(params, callback) {
+Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, ['transactionHex'], [], callback);
 
@@ -944,12 +944,12 @@ Wallet.prototype.signTransaction = function(params, callback) {
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.bitgo = this.bitgo;
   return TransactionBuilder.signTransaction(params)
-  .then(function(result) {
-    return {
-      tx: result.transactionHex
-    };
-  })
-  .nodeify(callback);
+    .then(function (result) {
+      return {
+        tx: result.transactionHex,
+      };
+    })
+    .nodeify(callback);
 };
 
 //
@@ -960,13 +960,13 @@ Wallet.prototype.signTransaction = function(params, callback) {
 //   tx  - the hex encoded, signed transaction to send
 // Returns:
 //
-Wallet.prototype.sendTransaction = function(params, callback) {
+Wallet.prototype.sendTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
   return Bluebird.resolve(
     this.bitgo.post(this.bitgo.url('/tx/send')).send(params).result()
-  ).then(function(body) {
+  ).then(function (body) {
     if (body.pendingApproval) {
       return _.extend(body, { status: 'pendingApproval' });
     }
@@ -980,10 +980,10 @@ Wallet.prototype.sendTransaction = function(params, callback) {
       tx: body.transaction,
       hash: body.transactionHash,
       instant: body.instant,
-      instantId: body.instantId
+      instantId: body.instantId,
     };
   })
-  .nodeify(callback);
+    .nodeify(callback);
 };
 
 /**
@@ -993,7 +993,7 @@ Wallet.prototype.sendTransaction = function(params, callback) {
  * @param {string} permissions A comma-separated value string that specifies the recipient's permissions if the share is accepted.
  * @param {string} message The message to be used for this share.
  */
-Wallet.prototype.createShare = function(params, callback) {
+Wallet.prototype.createShare = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
@@ -1016,13 +1016,13 @@ Wallet.prototype.createShare = function(params, callback) {
 //   permissions - the recipient's permissions if the share is accepted
 // Returns:
 //
-Wallet.prototype.createInvite = function(params, callback) {
+Wallet.prototype.createInvite = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['message'], callback);
 
   const options: any = {
     toEmail: params.email,
-    permissions: params.permissions
+    permissions: params.permissions,
   };
 
   if (params.message) {
@@ -1043,34 +1043,34 @@ Wallet.prototype.createInvite = function(params, callback) {
 //   walletPassphrase - required if the wallet share success is expected
 // Returns:
 //
-Wallet.prototype.confirmInviteAndShareWallet = function(params, callback) {
+Wallet.prototype.confirmInviteAndShareWallet = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], ['walletPassphrase'], callback);
 
   const self = this;
   return this.bitgo.wallets().listInvites()
-  .then(function(invites) {
-    const outgoing = invites.outgoing;
-    const invite = _.find(outgoing, function(out) {
-      return out.id === params.walletInviteId;
-    });
-    if (!invite) {
-      throw new Error('wallet invite not found');
-    }
+    .then(function (invites) {
+      const outgoing = invites.outgoing;
+      const invite = _.find(outgoing, function (out) {
+        return out.id === params.walletInviteId;
+      });
+      if (!invite) {
+        throw new Error('wallet invite not found');
+      }
 
-    const options = {
-      email: invite.toEmail,
-      permissions: invite.permissions,
-      message: invite.message,
-      walletPassphrase: params.walletPassphrase
-    };
+      const options = {
+        email: invite.toEmail,
+        permissions: invite.permissions,
+        message: invite.message,
+        walletPassphrase: params.walletPassphrase,
+      };
 
-    return self.shareWallet(options);
-  })
-  .then(function() {
-    return this.bitgo.put(this.bitgo.url('/walletinvite/' + params.walletInviteId));
-  })
-  .nodeify(callback);
+      return self.shareWallet(options);
+    })
+    .then(function () {
+      return this.bitgo.put(this.bitgo.url('/walletinvite/' + params.walletInviteId));
+    })
+    .nodeify(callback);
 };
 
 //
@@ -1091,7 +1091,7 @@ Wallet.prototype.confirmInviteAndShareWallet = function(params, callback) {
 //   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
-Wallet.prototype.sendCoins = function(params, callback) {
+Wallet.prototype.sendCoins = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], ['message'], callback);
 
@@ -1103,7 +1103,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
   params.recipients[params.address] = params.amount;
 
   return this.sendMany(params)
-  .nodeify(callback);
+    .nodeify(callback);
 };
 
 //
@@ -1122,7 +1122,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
 //   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
-Wallet.prototype.sendMany = function(params, callback) {
+Wallet.prototype.sendMany = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['message', 'otp'], callback);
   const self = this;
@@ -1151,68 +1151,68 @@ Wallet.prototype.sendMany = function(params, callback) {
   const acceptedBuildParams = [
     'numBlocks', 'feeRate', 'minConfirms', 'enforceMinConfirmsForChange',
     'targetWalletUnspents', 'message', 'minValue', 'maxValue',
-    'noSplitChange', 'comment'
+    'noSplitChange', 'comment',
   ];
   const preservedBuildParams = _.pick(params, acceptedBuildParams);
 
   // Get the user keychain
   const retPromise = this.createAndSignTransaction(params)
-  .then(function(transaction) {
+    .then(function (transaction) {
     // Send the transaction
-    bitgoFee = transaction.bitgoFee;
-    travelInfos = transaction.travelInfos;
-    unspentsUsed = transaction.unspents;
-    return self.sendTransaction({
-      tx: transaction.tx,
-      message: params.message,
-      sequenceId: params.sequenceId,
-      instant: params.instant,
-      otp: params.otp,
-      // The below params are for logging only, and do not impact the API call
-      estimatedSize: transaction.estimatedSize,
-      buildParams: preservedBuildParams
-    });
-  })
-  .then(function(result) {
-    const tx = bitcoin.Transaction.fromHex(result.tx);
-    const inputsSum = _.sumBy(unspentsUsed, 'value');
-    const outputsSum = _.sumBy(tx.outs, 'value');
-    const feeUsed = inputsSum - outputsSum;
-    if (isNaN(feeUsed)) {
-      throw new Error('invalid feeUsed');
-    }
-    result.fee = feeUsed,
-    result.feeRate = feeUsed * 1000 / tx.virtualSize();
-    result.travelInfos = travelInfos;
-    if (bitgoFee) {
-      result.bitgoFee = bitgoFee;
-    }
-    finalResult = result;
-
-    // Handle sending travel infos if they exist, but make sure we never fail here.
-    // Error or result (with possible sub-errors) will be provided in travelResult
-    if (travelInfos && travelInfos.length) {
-      try {
-        return self.pollForTransaction({ id: result.hash })
-        .then(function() {
-          return self.bitgo.travelRule().sendMany(result);
-        })
-        .then(function(res) {
-          finalResult.travelResult = res;
-        })
-        .catch(function(err) {
-          // catch async errors
-          finalResult.travelResult = { error: err.message };
-        });
-      } catch (err) {
-        // catch synchronous errors
-        finalResult.travelResult = { error: err.message };
+      bitgoFee = transaction.bitgoFee;
+      travelInfos = transaction.travelInfos;
+      unspentsUsed = transaction.unspents;
+      return self.sendTransaction({
+        tx: transaction.tx,
+        message: params.message,
+        sequenceId: params.sequenceId,
+        instant: params.instant,
+        otp: params.otp,
+        // The below params are for logging only, and do not impact the API call
+        estimatedSize: transaction.estimatedSize,
+        buildParams: preservedBuildParams,
+      });
+    })
+    .then(function (result) {
+      const tx = bitcoin.Transaction.fromHex(result.tx);
+      const inputsSum = _.sumBy(unspentsUsed, 'value');
+      const outputsSum = _.sumBy(tx.outs, 'value');
+      const feeUsed = inputsSum - outputsSum;
+      if (isNaN(feeUsed)) {
+        throw new Error('invalid feeUsed');
       }
-    }
-  })
-  .then(function() {
-    return finalResult;
-  });
+      result.fee = feeUsed,
+      result.feeRate = feeUsed * 1000 / tx.virtualSize();
+      result.travelInfos = travelInfos;
+      if (bitgoFee) {
+        result.bitgoFee = bitgoFee;
+      }
+      finalResult = result;
+
+      // Handle sending travel infos if they exist, but make sure we never fail here.
+      // Error or result (with possible sub-errors) will be provided in travelResult
+      if (travelInfos && travelInfos.length) {
+        try {
+          return self.pollForTransaction({ id: result.hash })
+            .then(function () {
+              return self.bitgo.travelRule().sendMany(result);
+            })
+            .then(function (res) {
+              finalResult.travelResult = res;
+            })
+            .catch(function (err) {
+              // catch async errors
+              finalResult.travelResult = { error: err.message };
+            });
+        } catch (err) {
+        // catch synchronous errors
+          finalResult.travelResult = { error: err.message };
+        }
+      }
+    })
+    .then(function () {
+      return finalResult;
+    });
   return Bluebird.resolve(retPromise).nodeify(callback);
 };
 
@@ -1253,7 +1253,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       nP2pkhInputs: P2PKH,
       nP2shP2wshInputs: segwit,
       nOutputs: 1,
-      feeRate: 1
+      feeRate: 1,
     });
 
     return childFeeInfo.size;
@@ -1310,7 +1310,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
         const unspents = (yield this.unspents({
           minConfirms: 1,
           target: uncoveredChildFee,
-          limit: maxUnspents - additionalUnspents.length
+          limit: maxUnspents - additionalUnspents.length,
         })) as any;
 
         if (unspents.length === 0) {
@@ -1351,7 +1351,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       return {
         additional: additionalUnspents,
         newChildFee: currentChildFeeEstimate,
-        newInputs: inputs
+        newInputs: inputs,
       };
     }).call(this);
   };
@@ -1483,7 +1483,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       // TODO: The best we can do here is set minSize = maxSize = outputToUse.value
       const unspentsResult = yield this.unspents({
         minSize: outputToUse.value,
-        maxSize: outputToUse.value
+        maxSize: outputToUse.value,
       });
 
       parentUnspentToUse = _.find(unspentsResult, (unspent) => {
@@ -1526,14 +1526,14 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     let childInputs = {
       segwit: isParentOutputSegwit ? 1 : 0,
-      P2SH: isParentOutputSegwit ? 0 : 1
+      P2SH: isParentOutputSegwit ? 0 : 1,
     };
 
     let childFee = estimateChildFee({
       inputs: childInputs,
       parentFee: parentTx.fee,
       feeRate: params.feeRate,
-      parentVSize
+      parentVSize,
     });
 
     const unspentsToUse = [parentUnspentToUse];
@@ -1550,7 +1550,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
         parentOutputValue: outputToUse.value,
         parentFee: parentTx.fee,
         maxUnspents: params.maxAdditionalUnspents,
-        parentVSize
+        parentVSize,
       });
       childFee = newChildFee;
       childInputs = newInputs;
@@ -1584,15 +1584,15 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       unspents: unspentsToUse,
       recipients: [{
         address: changeAddress.address,
-        amount: changeAmount
+        amount: changeAmount,
       }],
       fee: childFee,
       bitgoFee: {
         amount: 0,
-        address: ''
+        address: '',
       },
       xprv: params.xprv,
-      walletPassphrase: params.walletPassphrase
+      walletPassphrase: params.walletPassphrase,
     });
 
 
@@ -1618,7 +1618,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 //   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
-Wallet.prototype.createAndSignTransaction = function(params, callback) {
+Wallet.prototype.createAndSignTransaction = function (params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], [], callback);
@@ -1678,7 +1678,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
       bitgoFee,
       travelInfos,
       estimatedSize,
-      unspents
+      unspents,
     });
   }).call(this).asCallback(callback);
 };
@@ -1698,7 +1698,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
 // Returns:
 //   Keychain object containing xprv, xpub and paths
 //
-Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
+Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
   params = params || {};
 
   // If keychain with xprv is already provided, use it
@@ -1717,15 +1717,15 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   // Caller provided a wallet passphrase
   if (params.walletPassphrase) {
     return self.getEncryptedUserKeychain()
-    .then(function(keychain) {
+      .then(function (keychain) {
       // Decrypt the user key with a passphrase
-      try {
-        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-      } catch (e) {
-        throw new Error('Unable to decrypt user keychain');
-      }
-      return keychain;
-    });
+        try {
+          keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+        } catch (e) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+        return keychain;
+      });
   }
 
   // Caller provided an xprv - validate and construct keychain object
@@ -1747,10 +1747,10 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
 
   // get the keychain object from bitgo to find the path and (potential) wallet structure
   return self.bitgo.keychains().get({ xpub: xpub })
-  .then(function(keychain) {
-    keychain.xprv = params.xprv;
-    return keychain;
-  });
+    .then(function (keychain) {
+      keychain.xprv = params.xprv;
+      return keychain;
+    });
 };
 
 /**
@@ -1763,7 +1763,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.fanOutUnspents = function(params, callback) {
+Wallet.prototype.fanOutUnspents = function (params, callback) {
   const self = this;
   return Bluebird.coroutine(function *() {
     // maximum number of inputs for fanout transaction
@@ -1801,7 +1801,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
      * @param partCount
      * @returns {Array}
      */
-    const splitNumberIntoCloseNaturalNumbers = function(total, partCount) {
+    const splitNumberIntoCloseNaturalNumbers = function (total, partCount) {
       const partSize = Math.floor(total / partCount);
       const remainder = total - partSize * partCount;
       // initialize placeholder array
@@ -1845,7 +1845,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
 
     // create target amount of new addresses for this wallet
     const newAddressPromises = _.range(target)
-    .map(() => self.createAddress({ chain: self.getChangeChain(params), validate: validate }));
+      .map(() => self.createAddress({ chain: self.getChangeChain(params), validate: validate }));
     const newAddresses = yield Bluebird.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
@@ -1907,7 +1907,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
  * @param callback
  * @returns {Request|Promise.<T>|*}
  */
-Wallet.prototype.regroupUnspents = function(params, callback) {
+Wallet.prototype.regroupUnspents = function (params, callback) {
   params = params || {};
   const target = params.target;
   if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
@@ -1925,15 +1925,15 @@ Wallet.prototype.regroupUnspents = function(params, callback) {
 
   const self = this;
   return self.unspents({ minConfirms: minConfirms })
-  .then(function(unspents) {
-    if (unspents.length === target) {
-      return unspents;
-    } else if (unspents.length > target) {
-      return self.consolidateUnspents(params, callback);
-    } else if (unspents.length < target) {
-      return self.fanOutUnspents(params, callback);
-    }
-  });
+    .then(function (unspents) {
+      if (unspents.length === target) {
+        return unspents;
+      } else if (unspents.length > target) {
+        return self.consolidateUnspents(params, callback);
+      } else if (unspents.length < target) {
+        return self.fanOutUnspents(params, callback);
+      }
+    });
 };
 
 /**
@@ -1948,7 +1948,7 @@ Wallet.prototype.regroupUnspents = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.consolidateUnspents = function(params, callback) {
+Wallet.prototype.consolidateUnspents = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
   const validate = params.validate === undefined ? true : params.validate;
@@ -2037,7 +2037,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     const queryParams: any = {
       limit: target + maxInputCount,
       minConfirms: minConfirms,
-      minSize: minSize
+      minSize: minSize,
     };
     if (params.maxSize) {
       queryParams.maxSize = params.maxSize;
@@ -2135,7 +2135,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
         amount: grossAmount,
         fee: sentTx.fee,
         inputCount: inputCount,
-        index: consolidationIndex
+        index: consolidationIndex,
       });
     }
     consolidationIndex++;
@@ -2151,16 +2151,16 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   });
 
   return runNextConsolidation(this, target)
-  .catch(function(err) {
-    if (err.message === 'Done') {
-      return;
-    }
-    throw err;
-  })
-  .nodeify(callback);
+    .catch(function (err) {
+      if (err.message === 'Done') {
+        return;
+      }
+      throw err;
+    })
+    .nodeify(callback);
 };
 
-Wallet.prototype.shareWallet = function(params, callback) {
+Wallet.prototype.shareWallet = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
@@ -2181,39 +2181,39 @@ Wallet.prototype.shareWallet = function(params, callback) {
   let sharing;
   let sharedKeychain;
   return this.bitgo.getSharingKey({ email: params.email.toLowerCase() })
-  .then(function(result) {
-    sharing = result;
+    .then(function (result) {
+      sharing = result;
 
-    if (needsKeychain) {
-      return self.getEncryptedUserKeychain({})
-      .then(function(keychain) {
-        // Decrypt the user key with a passphrase
-        if (keychain.encryptedXprv) {
-          if (!params.walletPassphrase) {
-            throw new Error('Missing walletPassphrase argument');
-          }
-          try {
-            keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-          } catch (e) {
-            throw new Error('Unable to decrypt user keychain');
-          }
+      if (needsKeychain) {
+        return self.getEncryptedUserKeychain({})
+          .then(function (keychain) {
+            // Decrypt the user key with a passphrase
+            if (keychain.encryptedXprv) {
+              if (!params.walletPassphrase) {
+                throw new Error('Missing walletPassphrase argument');
+              }
+              try {
+                keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+              } catch (e) {
+                throw new Error('Unable to decrypt user keychain');
+              }
 
-          const eckey = makeRandomKey();
-          const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-          const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+              const eckey = makeRandomKey();
+              const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+              const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 
-          sharedKeychain = {
-            xpub: keychain.xpub,
-            encryptedXprv: newEncryptedXprv,
-            fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
-            toPubKey: sharing.pubkey,
-            path: sharing.path
-          };
-        }
-      });
-    }
-  })
-  .then(function() {
+              sharedKeychain = {
+                xpub: keychain.xpub,
+                encryptedXprv: newEncryptedXprv,
+                fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
+                toPubKey: sharing.pubkey,
+                path: sharing.path,
+              };
+            }
+          });
+      }
+    })
+    .then(function () {
     interface Options {
       user: any;
       permissions: string;
@@ -2229,7 +2229,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
       permissions: params.permissions,
       reshare: params.reshare,
       message: params.message,
-      disableEmail: params.disableEmail
+      disableEmail: params.disableEmail,
     };
     if (sharedKeychain) {
       options.keychain = sharedKeychain;
@@ -2238,11 +2238,11 @@ Wallet.prototype.shareWallet = function(params, callback) {
     }
 
     return self.createShare(options);
-  })
-  .nodeify(callback);
+    })
+    .nodeify(callback);
 };
 
-Wallet.prototype.removeUser = function(params, callback) {
+Wallet.prototype.removeUser = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['user'], [], callback);
 
@@ -2253,7 +2253,7 @@ Wallet.prototype.removeUser = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.getPolicy = function(params, callback) {
+Wallet.prototype.getPolicy = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -2264,7 +2264,7 @@ Wallet.prototype.getPolicy = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.getPolicyStatus = function(params, callback) {
+Wallet.prototype.getPolicyStatus = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -2275,7 +2275,7 @@ Wallet.prototype.getPolicyStatus = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.setPolicyRule = function(params, callback) {
+Wallet.prototype.setPolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id', 'type'], ['message'], callback);
 
@@ -2294,7 +2294,7 @@ Wallet.prototype.setPolicyRule = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.removePolicyRule = function(params, callback) {
+Wallet.prototype.removePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], ['message'], callback);
 
@@ -2305,7 +2305,7 @@ Wallet.prototype.removePolicyRule = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.listWebhooks = function(params, callback) {
+Wallet.prototype.listWebhooks = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -2325,7 +2325,7 @@ Wallet.prototype.listWebhooks = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.simulateWebhook = function(params, callback) {
+Wallet.prototype.simulateWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['webhookId'], ['txHash', 'pendingApprovalId'], callback);
 
@@ -2350,7 +2350,7 @@ Wallet.prototype.simulateWebhook = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.addWebhook = function(params, callback) {
+Wallet.prototype.addWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
@@ -2361,7 +2361,7 @@ Wallet.prototype.addWebhook = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.removeWebhook = function(params, callback) {
+Wallet.prototype.removeWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
@@ -2372,7 +2372,7 @@ Wallet.prototype.removeWebhook = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.estimateFee = function(params, callback) {
+Wallet.prototype.estimateFee = function (params, callback) {
   common.validateParams(params, [], [], callback);
 
   if (params.amount && params.recipients) {
@@ -2391,7 +2391,7 @@ Wallet.prototype.estimateFee = function(params, callback) {
     // only the amount was passed in, so we need to make a false recipient to run createTransaction with
     recipients.push({
       address: common.Environments[this.bitgo.env].signingAddress, // any address will do
-      amount: params.amount
+      amount: params.amount,
     });
   }
 
@@ -2400,17 +2400,17 @@ Wallet.prototype.estimateFee = function(params, callback) {
   transactionParams.recipients = recipients;
 
   return this.createTransaction(transactionParams)
-  .then(function(tx) {
-    return {
-      estimatedSize: tx.estimatedSize,
-      fee: tx.fee,
-      feeRate: tx.feeRate
-    };
-  });
+    .then(function (tx) {
+      return {
+        estimatedSize: tx.estimatedSize,
+        fee: tx.fee,
+        feeRate: tx.feeRate,
+      };
+    });
 };
 
 // Not fully implemented / released on SDK. Testing for now.
-Wallet.prototype.updatePolicyRule = function(params, callback) {
+Wallet.prototype.updatePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id', 'type'], [], callback);
 
@@ -2421,7 +2421,7 @@ Wallet.prototype.updatePolicyRule = function(params, callback) {
   ).nodeify(callback);
 };
 
-Wallet.prototype.deletePolicyRule = function(params, callback) {
+Wallet.prototype.deletePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
@@ -2436,7 +2436,7 @@ Wallet.prototype.deletePolicyRule = function(params, callback) {
 // getBitGoFee
 // Get the required on-transaction BitGo fee
 //
-Wallet.prototype.getBitGoFee = function(params, callback) {
+Wallet.prototype.getBitGoFee = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (!_.isNumber(params.amount)) {

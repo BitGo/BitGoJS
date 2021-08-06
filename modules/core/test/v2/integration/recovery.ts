@@ -8,8 +8,8 @@ const co = Promise.coroutine;
 
 import { TestBitGo } from '../../lib/test_bitgo';
 
-describe('V2 Recoveries', function() {
-  describe('Wrong Chain Recoveries', function() {
+describe('V2 Recoveries', function () {
+  describe('Wrong Chain Recoveries', function () {
     let bitgo;
 
     before(co(function *() {
@@ -24,7 +24,7 @@ describe('V2 Recoveries', function() {
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
         wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
       });
 
       should.exist(recovery);
@@ -45,7 +45,7 @@ describe('V2 Recoveries', function() {
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
         wallet: '5abace103cddfbb607d8239d806671bf',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
       });
 
       should.exist(recovery);
@@ -66,7 +66,7 @@ describe('V2 Recoveries', function() {
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
         wallet: '5abace103cddfbb607d8239d806671bf',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
       });
 
       should.exist(recovery);
@@ -117,7 +117,7 @@ describe('V2 Recoveries', function() {
         txid: '4bab9c6238f390c113fb10f2e3a4580c90f956a782feab581640516a94918c15',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
         wallet: '5abacf7e3cddfbb607d83d276777f55a',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
       });
 
       should.exist(recovery);

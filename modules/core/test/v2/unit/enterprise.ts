@@ -10,7 +10,7 @@ import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 
-describe('Enterprise:', function() {
+describe('Enterprise:', function () {
   let bitgo;
   let enterprise;
   let baseCoin;
@@ -24,14 +24,14 @@ describe('Enterprise:', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
-  describe('Transaction data', function() {
+  describe('Transaction data', function () {
     it('should search for pending transaction correctly', co(function *() {
       const params = { enterpriseId: enterprise.id };
       const scope =
         nock(bgUrl)
-        .get('/api/v2/tbtc/tx/pending/first')
-        .query(params)
-        .reply(200);
+          .get('/api/v2/tbtc/tx/pending/first')
+          .query(params)
+          .reply(200);
       try {
         yield enterprise.getFirstPendingTransaction();
         throw '';

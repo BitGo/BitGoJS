@@ -141,9 +141,9 @@ export const tokens: Tokens = {
  * Verify mainnet or testnet tokens
  * @param tokens
  */
-const verifyTokens = function(tokens) {
+const verifyTokens = function (tokens) {
   const verifiedTokens = {};
-  _.forEach(tokens, function(token) {
+  _.forEach(tokens, function (token) {
     if (verifiedTokens[token.type]) {
       throw new Error('token : ' + token.type + ' duplicated.');
     }
@@ -172,7 +172,7 @@ export const defaults = {
   fallbackFeeRate: 50000,
   minOutputSize: 2730,
   minInstantFeeRate: 10000,
-  bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
+  bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47',
 };
 
 // Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
@@ -181,7 +181,7 @@ export const supportedCrossChainRecoveries = {
   btc: ['bch', 'ltc', 'bsv'],
   bch: ['btc', 'ltc', 'bsv'],
   ltc: ['btc', 'bch', 'bsv'],
-  bsv: ['btc', 'ltc', 'bch']
+  bsv: ['btc', 'ltc', 'bch'],
 };
 
 // KRS providers and their fee structures
@@ -191,19 +191,19 @@ export const krsProviders = {
     feeAmount: 99,
     supportedCoins: ['btc', 'eth'],
     feeAddresses: {
-      btc: '' // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
-    }
+      btc: '', // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
+    },
   },
   bitgoKRSv2: {
     feeType: 'flatUsd',
     feeAmount: 0, // we will receive payments off-chain
-    supportedCoins: ['btc', 'eth']
+    supportedCoins: ['btc', 'eth'],
   },
   dai: {
     feeType: 'flatUsd',
     feeAmount: 0, // dai will receive payments off-chain
-    supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch', 'bsv', 'bcha']
-  }
+    supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch', 'bsv', 'bcha'],
+  },
 };
 
 export const coinGeckoBaseUrl = 'https://api.coingecko.com/api/v3/';
