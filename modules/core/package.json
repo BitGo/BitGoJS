@@ -30,7 +30,7 @@
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\" \"test/unit/**/*.ts\" \"test/v2/unit/*.ts\" \"test/v2/unit/**/*.ts\"",
     "integration-test": "nyc -- mocha --opts test/mocha.opts \"test/v2/integration/**/*.ts\"",
     "browser-test": "karma start karma.conf.js",
-    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
+    "lint": "eslint --quiet .",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "clean": "rm -r dist/*",
     "build": "tsc && node scripts/copySjcl.js",
