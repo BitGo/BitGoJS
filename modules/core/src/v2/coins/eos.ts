@@ -719,9 +719,9 @@ export class Eos extends BaseCoin {
    * @param signableTx
    * @param signingKey
    */
-  signTx(signableTx: string, signingKey: HDNode): string {
+  signTx(signableTx: string, signingKey: bip32.BIP32Interface): string {
     const signBuffer = Buffer.from(signableTx, 'hex');
-    const privateKeyBuffer = signingKey.getKey().getPrivateKeyBuffer();
+    const privateKeyBuffer = signingKey.privateKey;
     return ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
   }
 
@@ -775,8 +775,8 @@ export class Eos extends BaseCoin {
       if (!account.permissions) {
         throw new Error('Could not find permissions for ' + params.rootAddress);
       }
-      const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
-      const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
+      const userPub = ecc.PublicKey.fromBuffer(keys[0].publicKey).toString();
+      const backupPub = ecc.PublicKey.fromBuffer(keys[1].publicKey).toString();
 
       const activePermission = _.find(account.permissions, { perm_name: 'active' });
       const requiredAuth = _.get(activePermission, 'required_auth');

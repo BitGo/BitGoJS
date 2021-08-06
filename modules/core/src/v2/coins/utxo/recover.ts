@@ -3,11 +3,11 @@
  */
 
 import * as _ from 'lodash';
+import * as bip32 from 'bip32';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../bitgo';
-import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
 import { sanitizeLegacyPath } from '../../../bip32path';
@@ -18,7 +18,7 @@ interface TransactionBuilder {
 
   sign(
     index: number,
-    privateKey: Buffer,
+    privateKey: Buffer | bip32.BIP32Interface,
     redeemScript: Buffer | undefined,
     sigHashType: number,
     inputValue: number,
@@ -31,19 +31,19 @@ interface TransactionBuilder {
 }
 
 interface SignatureAddressInfo extends AddressInfo {
-  backupKey: bitcoin.HDNode;
-  userKey: bitcoin.HDNode;
+  backupKey: bip32.BIP32Interface;
+  userKey: bip32.BIP32Interface;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
 }
 
 /**
  * Derive child keys at specific index, from provided parent keys
- * @param {bitcoin.HDNode[]} keyArray
+ * @param {bip32.BIP32Interface[]} keyArray
  * @param {number} index
- * @returns {bitcoin.HDNode[]}
+ * @returns {bip32.BIP32Interface[]}
  */
-function deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
+function deriveKeys(keyArray: bip32.BIP32Interface[], index: number): bip32.BIP32Interface[] {
   return keyArray.map((k) => k.derive(index));
 }
 
@@ -72,8 +72,8 @@ function signRecoveryTransaction(
   const signatureIssues: SignatureIssue[] = [];
   unspents.forEach((unspent, i) => {
     const address = addressesById[unspent.address];
-    const backupPrivateKey = address.backupKey.keyPair;
-    const userPrivateKey = address.userKey.keyPair;
+    const backupPrivateKey = address.backupKey;
+    const userPrivateKey = address.userKey;
     // force-override networks
     backupPrivateKey.network = txb.network;
     userPrivateKey.network = txb.network;
@@ -128,7 +128,7 @@ export interface RecoverParams {
 async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
-  keyArray: bitcoin.HDNode[],
+  keyArray: bip32.BIP32Interface[],
   basePath: string,
   addressesById
 ) {
@@ -139,7 +139,7 @@ async function queryBlockchainUnspentsPath(
     const derivedKeys = deriveKeys(keyArray, addrIndex);
 
     const chain = Number(basePath.split('/').pop()); // extracts the chain from the basePath
-    const keys = derivedKeys.map((k) => k.getPublicKeyBuffer());
+    const keys = derivedKeys.map((k) => k.publicKey);
     const address: any = coin.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
     const addrInfo: AddressInfo = await coin.getAddressInfoFromExplorer(address.address, params.apiKey);

@@ -95,6 +95,11 @@ export interface UtxoNetwork {
   scriptHash: number;
   altScriptHash?: number;
   bech32: string;
+  wif: number;
+  bip32: {
+    public: number;
+    private: number;
+  };
 }
 
 export interface ParsedSignatureScript {
