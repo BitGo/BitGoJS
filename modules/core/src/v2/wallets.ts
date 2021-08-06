@@ -9,8 +9,8 @@ import { NodeCallback, RequestTracer as IRequestTracer } from './types';
 import { PaginationOptions, Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-import { hdPath } from '../bitcoin';
 import { RequestTracer } from './internal/util';
+import { sanitizeLegacyPath } from '../bip32path';
 
 const co = Bluebird.coroutine;
 
@@ -617,7 +617,7 @@ export class Wallets {
       const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
 
       // Derive key by path (which is used between these 2 users only)
-      const privKey = hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      const privKey = rootExtKey.derivePath(sanitizeLegacyPath(walletShare.keychain.path)).keyPair;
       const secret = self.bitgo.getECDHSecret({
         eckey: privKey,
         otherPubKeyHex: walletShare.keychain.fromPubKey,
