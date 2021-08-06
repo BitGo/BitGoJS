@@ -362,7 +362,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     // address has a potential bech32 prefix, validate that
-    return _.isString(this.network.bech32) && this.network.bech32 === addressPrefix && address === address.toLowerCase();
+    return (
+      _.isString(this.network.bech32) && this.network.bech32 === addressPrefix && address === address.toLowerCase()
+    );
   }
 
   /**
