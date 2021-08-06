@@ -87,7 +87,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setXRPTransaction(this.buildXRPTxn());
+    const tx = this.buildXRPTxn();
+    if (this._memos) tx.Memos = this._memos;
+    if (this._flags) tx.Flags = this._flags;
+    if (this._fulfillment) tx.Fulfillment = this._fulfillment;
+    if (this._sequence) tx.Sequence = this._sequence;
+    if (this._lastLedgerSequence) tx.LastLedgerSequence = this._lastLedgerSequence;
+    if (this._fee) tx.Fee = this._fee;
+    this.transaction.setXRPTransaction(tx);
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.sign(this._keyPairs);
     return this._transaction;
@@ -96,6 +103,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
   }
 
   /**
@@ -137,6 +149,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    const keyPair = new KeyPair({ prv: key });
+    this._keyPairs.push(keyPair);
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
   validateAddress({ address }: BaseAddress): void {
     if (!utils.isValidAddress(address)) {
       throw new AddressValidationError(address);
@@ -164,12 +183,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   private validateBaseFields(
     sender: string,
-    flags: number | undefined,
-    memos: { Memo: ApiMemo }[] | undefined,
-    fulfillment: string | undefined,
-    fee: string | undefined,
-    lastLedgerSequence: number | undefined,
-    sequence: number | undefined,
+    flags?: number,
+    memos?: { Memo: ApiMemo }[],
+    fulfillment?: string,
+    fee?: string,
+    lastLedgerSequence?: number,
+    sequence?: number,
   ): void {
     const validationResult = BaseTransactionSchema.validate({
       sender,
