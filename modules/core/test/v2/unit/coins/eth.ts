@@ -5,7 +5,6 @@ import * as nock from 'nock';
 import * as secp256k1 from 'secp256k1';
 import * as common from '../../../../src/common';
 import * as bitGoUtxoLib from '@bitgo/utxo-lib';
-import * as _ from 'lodash';
 
 nock.enableNetConnect();
 

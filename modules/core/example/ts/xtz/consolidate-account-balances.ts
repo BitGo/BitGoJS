@@ -4,8 +4,7 @@
  * receive addresses into the wallet's base address for sending.
  * @see {@link https://app.bitgo.com/docs/#operation/v2.wallet.consolidateaccount.build}
  */
-import { BitGo } from 'bitgo';
-import { WalletCoinSpecific } from 'bitgo';
+import { BitGo, WalletCoinSpecific } from 'bitgo';
 
 // TODO: change to 'production' for mainnet
 const env = 'test';

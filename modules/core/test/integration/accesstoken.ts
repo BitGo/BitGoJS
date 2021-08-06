@@ -4,6 +4,8 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import { strict as assert } from 'assert';
 import * as should from 'should';
 const moment = require('moment');

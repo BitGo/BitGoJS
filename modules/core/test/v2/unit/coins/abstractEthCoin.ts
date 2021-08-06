@@ -251,10 +251,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -305,10 +304,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -371,10 +369,9 @@ describe('ETH-like coins', () => {
           let data;
           let expireTime;
           let sequenceId;
-          let tokenContractAddress;
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
-            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            [recipient, value /* tokenContractAddress */, , expireTime, sequenceId] = decodedData;
             data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
@@ -417,7 +414,6 @@ describe('ETH-like coins', () => {
         });
 
         it('explain an unsigned transfer transaction', async function () {
-          const key = new Eth.KeyPair({ prv: xprv });
           const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
           const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
 

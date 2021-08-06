@@ -3,6 +3,7 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 import { strict as assert } from 'assert';
 import 'should';
