@@ -1,10 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionJSON } from 'ripple-lib';
 import { BaseKey } from '../baseCoin/iface';
 import { NotImplementedError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 
 export class TransferBuilder extends TransactionBuilder {
+  protected buildXRPTxn(): TransactionJSON {
+    throw new Error('Method not implemented.');
+  }
+  protected get transactionType(): TransactionType {
+    throw new Error('Method not implemented.');
+  }
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
