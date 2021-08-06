@@ -74,7 +74,7 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
-BitGo.prototype.initializeTestVars = function() {
+BitGo.prototype.initializeTestVars = function () {
 
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
@@ -199,7 +199,7 @@ BitGo.prototype.initializeTestVars = function() {
 // testUserOTP
 // Get an OTP code for the test user.
 //
-BitGo.prototype.testUserOTP = function() {
+BitGo.prototype.testUserOTP = function () {
   return '0000000';
 };
 
@@ -207,7 +207,7 @@ BitGo.prototype.testUserOTP = function() {
 // authenticateTestUser
 // Authenticate the test user.
 //
-BitGo.prototype.authenticateTestUser = function(otp, callback) {
+BitGo.prototype.authenticateTestUser = function (otp, callback) {
   return co(function *() {
     const response = yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp });
     response.should.have.property('access_token');
@@ -277,7 +277,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
 });
 
 const oldFetchConstants = BitGo.prototype.fetchConstants;
-BitGo.prototype.fetchConstants = function() {
+BitGo.prototype.fetchConstants = function () {
   nock(this._baseUrl)
   .get('/api/v1/client/constants')
   .reply(200, { ttl: 3600, constants: {} });
