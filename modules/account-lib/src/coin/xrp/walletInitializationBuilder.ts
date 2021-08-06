@@ -40,13 +40,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       TransactionType: 'AccountSet',
     };
 
-    if (this._memos) tx.Memos = this._memos;
-    if (this._flags) tx.Flags = this._flags;
-    if (this._fulfillment) tx.Fulfillment = this._fulfillment;
-    if (this._sequence) tx.Sequence = this._sequence;
-    if (this._lastLedgerSequence) tx.LastLedgerSequence = this._lastLedgerSequence;
-    if (this._fee) tx.Fee = this._fee;
-
     if (this._domain) tx.Domain = this._domain;
     if (this._setFlag) tx.SetFlag = this._setFlag;
     if (this._messageKey) tx.MessageKey = this._messageKey;

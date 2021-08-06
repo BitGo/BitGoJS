@@ -87,7 +87,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setXRPTransaction(this.buildXRPTxn());
+    const tx = this.buildXRPTxn();
+    if (this._memos) tx.Memos = this._memos;
+    if (this._flags) tx.Flags = this._flags;
+    if (this._fulfillment) tx.Fulfillment = this._fulfillment;
+    if (this._sequence) tx.Sequence = this._sequence;
+    if (this._lastLedgerSequence) tx.LastLedgerSequence = this._lastLedgerSequence;
+    if (this._fee) tx.Fee = this._fee;
+    this.transaction.setXRPTransaction(tx);
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.sign(this._keyPairs);
     return this._transaction;
