@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as _ from 'lodash';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
@@ -30,7 +33,8 @@ import {
   ParsedTransaction,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionParams as BaseTransactionParams, ExtraPrebuildParamsOptions,
+  TransactionParams as BaseTransactionParams,
+  ExtraPrebuildParamsOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -87,7 +91,7 @@ interface SignTransactionOptions extends BaseSignTransactionOptions {
 interface HalfSignedTransaction {
   halfSigned: {
     txBase64: string;
-  }
+  };
 }
 
 interface SupplementGenerateWalletOptions {
@@ -267,7 +271,7 @@ export class Xlm extends BaseCoin {
       return false;
     }
 
-    return (memoIdNumber.gte(0) && memoIdNumber.lt(Xlm.maxMemoId));
+    return memoIdNumber.gte(0) && memoIdNumber.lt(Xlm.maxMemoId);
   }
 
   /**
@@ -298,14 +302,10 @@ export class Xlm extends BaseCoin {
    */
   getMinimumReserve(): Bluebird<number> {
     const self = this;
-    return co<number>(function *() {
+    return co<number>(function* () {
       const server = new stellar.Server(self.getHorizonUrl());
 
-      const horizonLedgerInfo = (yield server
-        .ledgers()
-        .order('desc')
-        .limit(1)
-        .call()) as any;
+      const horizonLedgerInfo = (yield server.ledgers().order('desc').limit(1).call()) as any;
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -324,14 +324,10 @@ export class Xlm extends BaseCoin {
    */
   getBaseTransactionFee(): Bluebird<number> {
     const self = this;
-    return co<number>(function *() {
+    return co<number>(function* () {
       const server = new stellar.Server(self.getHorizonUrl());
 
-      const horizonLedgerInfo = (yield server
-        .ledgers()
-        .order('desc')
-        .limit(1)
-        .call()) as any;
+      const horizonLedgerInfo = (yield server.ledgers().order('desc').limit(1).call()) as any;
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -471,9 +467,15 @@ export class Xlm extends BaseCoin {
    * @param {String} [address] - address to look up
    * @param {String} [accountId] - account id to look up
    */
-  private federationLookup({ address, accountId }: { address?: string, accountId?: string }): Bluebird<stellar.FederationServer.Record> {
+  private federationLookup({
+    address,
+    accountId,
+  }: {
+    address?: string;
+    accountId?: string;
+  }): Bluebird<stellar.FederationServer.Record> {
     const self = this;
-    return co<stellar.FederationServer.Record>(function *() {
+    return co<stellar.FederationServer.Record>(function* () {
       try {
         const federationServer = self.getBitGoFederationServer();
         if (address) {
@@ -501,7 +503,7 @@ export class Xlm extends BaseCoin {
    */
   federationLookupByName(address: string): Bluebird<stellar.FederationServer.Record> {
     const self = this;
-    return co<stellar.FederationServer.Record>(function *() {
+    return co<stellar.FederationServer.Record>(function* () {
       if (!address) {
         throw new Error('invalid Stellar address');
       }
@@ -518,7 +520,7 @@ export class Xlm extends BaseCoin {
    */
   federationLookupByAccountId(accountId: string): Bluebird<stellar.FederationServer.Record> {
     const self = this;
-    return co<stellar.FederationServer.Record>(function *() {
+    return co<stellar.FederationServer.Record>(function* () {
       if (!accountId) {
         throw new Error('invalid Stellar account');
       }
@@ -541,7 +543,9 @@ export class Xlm extends BaseCoin {
     const rootAddressDetails = this.getAddressDetails(rootAddress);
 
     if (addressDetails.address !== rootAddressDetails.address) {
-      throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
+      throw new UnexpectedAddressError(
+        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
+      );
     }
 
     return true;
@@ -551,7 +555,10 @@ export class Xlm extends BaseCoin {
    * Get extra parameters for prebuilding a tx
    * Set empty recipients array in trustline txs
    */
-  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
+  getExtraPrebuildParams(
+    buildParams: ExtraPrebuildParamsOptions,
+    callback?: NodeCallback<BuildOptions>
+  ): Bluebird<BuildOptions> {
     const params: { recipients?: Record<string, string>[] } = {};
     if (buildParams.type === 'trustline') {
       params.recipients = [];
@@ -565,7 +572,7 @@ export class Xlm extends BaseCoin {
    */
   initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
     const self = this;
-    return co<stellar.Keypair[]>(function *() {
+    return co<stellar.Keypair[]>(function* () {
       const keys: stellar.Keypair[] = [];
       let userKey = params.userKey;
       let backupKey = params.backupKey;
@@ -574,13 +581,18 @@ export class Xlm extends BaseCoin {
       const isKrsRecovery = backupKey.startsWith('G') && !userKey.startsWith('G');
       const isUnsignedSweep = backupKey.startsWith('G') && userKey.startsWith('G');
 
-
       if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
       }
 
-      if (isKrsRecovery && params.krsProvider && !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())) {
-        throw new KeyRecoveryServiceError(`Specified key recovery service does not support recoveries for ${self.getChain()}`);
+      if (
+        isKrsRecovery &&
+        params.krsProvider &&
+        !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())
+      ) {
+        throw new KeyRecoveryServiceError(
+          `Specified key recovery service does not support recoveries for ${self.getChain()}`
+        );
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {
@@ -595,9 +607,9 @@ export class Xlm extends BaseCoin {
           });
         }
 
-        const userKeyPair = isUnsignedSweep ?
-          stellar.Keypair.fromPublicKey(userKey) :
-          stellar.Keypair.fromSecret(userKey);
+        const userKeyPair = isUnsignedSweep
+          ? stellar.Keypair.fromPublicKey(userKey)
+          : stellar.Keypair.fromSecret(userKey);
         keys.push(userKeyPair);
       } catch (e) {
         throw new Error('Failed to decrypt user key with passcode - try again!');
@@ -637,7 +649,7 @@ export class Xlm extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co<RecoveryTransaction>(function *() {
+    return co<RecoveryTransaction>(function* () {
       const [userKey, backupKey] = (yield self.initiateRecovery(params)) as any;
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
@@ -674,7 +686,7 @@ export class Xlm extends BaseCoin {
       const account = new stellar.Account(params.rootAddress, accountData.sequence);
 
       // Stellar supports multiple assets on chain, we're only interested in the balances entry whose type is "native" (XLM)
-      const nativeBalanceInfo = accountData.balances.find(assetBalance => assetBalance['asset_type'] === 'native');
+      const nativeBalanceInfo = accountData.balances.find((assetBalance) => assetBalance['asset_type'] === 'native');
 
       if (!nativeBalanceInfo) {
         throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
@@ -686,19 +698,22 @@ export class Xlm extends BaseCoin {
       const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
       const formattedRecoveryAmount = self.baseUnitsToBigUnits(recoveryAmount).toString();
 
-      const txBuilder = new stellar.TransactionBuilder(account, { fee: baseTxFee.toFixed(0), networkPassphrase: self.getStellarNetwork() });
-      const operation = unfundedDestination ?
-        // In this case, we need to create the account
-        stellar.Operation.createAccount({
-          destination: params.recoveryDestination,
-          startingBalance: formattedRecoveryAmount,
-        }) :
-        // Otherwise if the account already exists, we do a normal send
-        stellar.Operation.payment({
-          destination: params.recoveryDestination,
-          asset: stellar.Asset.native(),
-          amount: formattedRecoveryAmount,
-        });
+      const txBuilder = new stellar.TransactionBuilder(account, {
+        fee: baseTxFee.toFixed(0),
+        networkPassphrase: self.getStellarNetwork(),
+      });
+      const operation = unfundedDestination
+        ? // In this case, we need to create the account
+          stellar.Operation.createAccount({
+            destination: params.recoveryDestination,
+            startingBalance: formattedRecoveryAmount,
+          })
+        : // Otherwise if the account already exists, we do a normal send
+          stellar.Operation.payment({
+            destination: params.recoveryDestination,
+            asset: stellar.Asset.native(),
+            amount: formattedRecoveryAmount,
+          });
       const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
 
       if (!isUnsignedSweep) {
@@ -720,7 +735,9 @@ export class Xlm extends BaseCoin {
       }
 
       return transaction;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -732,9 +749,12 @@ export class Xlm extends BaseCoin {
    * @param callback
    * @returns {Bluebird<HalfSignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<HalfSignedTransaction>
+  ): Bluebird<HalfSignedTransaction> {
     const self = this;
-    return co<HalfSignedTransaction>(function *() {
+    return co<HalfSignedTransaction>(function* () {
       const { txPrebuild, prv } = params;
 
       if (_.isUndefined(txPrebuild)) {
@@ -774,7 +794,7 @@ export class Xlm extends BaseCoin {
    */
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
     const self = this;
-    return co<SupplementGenerateWalletOptions>(function *() {
+    return co<SupplementGenerateWalletOptions>(function* () {
       let seed;
       const rootPrv = walletParams.rootPrivateKey;
       if (rootPrv) {
@@ -837,9 +857,12 @@ export class Xlm extends BaseCoin {
    * @param params
    * @param callback
    */
-  explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<TransactionExplanation>
+  ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co<TransactionExplanation>(function *() {
+    return co<TransactionExplanation>(function* () {
       const { txBase64 } = params;
       let tx: stellar.Transaction;
 
@@ -852,11 +875,13 @@ export class Xlm extends BaseCoin {
 
       // In a Stellar tx, the _memo property is an object with the methods:
       // value() and arm() that provide memo value and type, respectively.
-      const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
-        {
-          value: (_.result(tx, '_memo.value') as any).toString(),
-          type: _.result(tx, '_memo.arm'),
-        } : {};
+      const memo: TransactionMemo =
+        _.result(tx, '_memo.value') && _.result(tx, '_memo.arm')
+          ? {
+              value: (_.result(tx, '_memo.value') as any).toString(),
+              type: _.result(tx, '_memo.arm'),
+            }
+          : {};
 
       let spendAmount = new BigNumber(0); // amount of XLM used in XLM-only txs
       const spendAmounts = {}; // track both xlm and token amounts
@@ -867,13 +892,11 @@ export class Xlm extends BaseCoin {
       const outputs: TransactionOutput[] = [];
       const operations: TransactionOperation[] = []; // non-payment operations
 
-      _.forEach(tx.operations, op => {
+      _.forEach(tx.operations, (op) => {
         if (op.type === 'createAccount' || op.type === 'payment') {
           // TODO Remove memoId from address
           // Get memo to attach to address, if type is 'id'
-          const memoId = _.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ?
-            `?memoId=${memo.value}` :
-            '';
+          const memoId = _.get(memo, 'type') === 'id' && !_.get(memo, 'value') ? `?memoId=${memo.value}` : '';
           const asset = op.type === 'payment' ? op.asset : stellar.Asset.native();
           const coin = self.getTokenNameFromStellarAsset(asset); // coin or token id
           const output: TransactionOutput = {
@@ -912,7 +935,17 @@ export class Xlm extends BaseCoin {
       };
 
       return {
-        displayOrder: ['id', 'outputAmount', 'outputAmounts', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'operations'],
+        displayOrder: [
+          'id',
+          'outputAmount',
+          'outputAmounts',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+          'operations',
+        ],
         id,
         outputs,
         outputAmount,
@@ -923,7 +956,9 @@ export class Xlm extends BaseCoin {
         fee,
         operations,
       };
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -936,9 +971,9 @@ export class Xlm extends BaseCoin {
     if (trustlineOperations.length !== _.get(txParams, 'trustlines', []).length) {
       throw new Error('transaction prebuild does not match expected trustline operations');
     }
-    _.forEach(trustlineOperations, op => {
+    _.forEach(trustlineOperations, (op) => {
       const opToken = this.getTokenNameFromStellarAsset(op.line);
-      const tokenTrustline = _.find(txParams.trustlines, trustline => {
+      const tokenTrustline = _.find(txParams.trustlines, (trustline) => {
         // trustline params use limits in base units
         const opLimitBaseUnits = this.bigUnitsToBaseUnits(op.limit);
         // Prepare the conditions to check for
@@ -946,9 +981,10 @@ export class Xlm extends BaseCoin {
         // 1. Action is 'add' - limit is set to Xlm.maxTrustlineLimit by default
         // 2. Action is 'remove' - limit is set to '0'
         const noLimit = _.isUndefined(trustline.limit);
-        const addTrustlineWithDefaultLimit = (trustline.action === 'add' && opLimitBaseUnits === Xlm.maxTrustlineLimit);
-        const removeTrustline = (trustline.action === 'remove' && opLimitBaseUnits === '0');
-        return (trustline.token === opToken &&
+        const addTrustlineWithDefaultLimit = trustline.action === 'add' && opLimitBaseUnits === Xlm.maxTrustlineLimit;
+        const removeTrustline = trustline.action === 'remove' && opLimitBaseUnits === '0';
+        return (
+          trustline.token === opToken &&
           (trustline.limit === opLimitBaseUnits || (noLimit && (addTrustlineWithDefaultLimit || removeTrustline)))
         );
       });
@@ -973,13 +1009,8 @@ export class Xlm extends BaseCoin {
   verifyTransaction(options: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     // TODO BG-5600 Add parseTransaction / improve verification
     const self = this;
-    return co<boolean>(function *() {
-      const {
-        txParams,
-        txPrebuild,
-        wallet,
-        verification = {},
-      } = options;
+    return co<boolean>(function* () {
+      const { txParams, txPrebuild, wallet, verification = {} } = options;
       const disableNetworking = !!verification.disableNetworking;
 
       if (!txPrebuild.txBase64) {
@@ -993,8 +1024,9 @@ export class Xlm extends BaseCoin {
       }
 
       // Stellar txs are made up of operations. We only care about Create Account and Payment for sending funds.
-      const outputOperations = _.filter(tx.operations, operation =>
-        operation.type === 'createAccount' || operation.type === 'payment'
+      const outputOperations = _.filter(
+        tx.operations,
+        (operation) => operation.type === 'createAccount' || operation.type === 'payment'
       );
 
       if (txParams.type === 'trustline') {
@@ -1006,14 +1038,14 @@ export class Xlm extends BaseCoin {
 
         _.forEach(txParams.recipients, (expectedOutput, index) => {
           const expectedOutputAddress = self.getAddressDetails(expectedOutput.address);
-          const output = outputOperations[index] as (stellar.Operation.Payment | stellar.Operation.CreateAccount);
+          const output = outputOperations[index] as stellar.Operation.Payment | stellar.Operation.CreateAccount;
           if (output.destination !== expectedOutputAddress.address) {
             throw new Error('transaction prebuild does not match expected recipient');
           }
 
           const expectedOutputAmount = new BigNumber(expectedOutput.amount);
           // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
-          const outputAmountString = (output.type === 'createAccount') ? output.startingBalance : output.amount;
+          const outputAmountString = output.type === 'createAccount' ? output.startingBalance : output.amount;
           const outputAmount = new BigNumber(self.bigUnitsToBaseUnits(outputAmountString));
 
           if (!outputAmount.eq(expectedOutputAmount)) {
@@ -1050,7 +1082,9 @@ export class Xlm extends BaseCoin {
       }
 
       return true;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1069,9 +1103,7 @@ export class Xlm extends BaseCoin {
       parseInt(derivationPathInput.slice(0, 7), 16),
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
-    const derivationPath = 'm/' + derivationPathParts
-      .map((part) => `${part}'`)
-      .join('/');
+    const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
     const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
     const keypair = stellar.Keypair.fromRawEd25519Seed(derivedKey);
     return {
@@ -1085,9 +1117,13 @@ export class Xlm extends BaseCoin {
    * correct one to use, so we have to be very explicit as to which one we want.
    * @param tx transaction to convert
    */
-  protected static txToString = (tx: stellar.Transaction): string => (tx.toEnvelope().toXDR as ((_: string) => string))('base64');
+  protected static txToString = (tx: stellar.Transaction): string =>
+    (tx.toEnvelope().toXDR as (_: string) => string)('base64');
 
-  parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
     return Bluebird.resolve({}).asCallback(callback);
   }
 }
