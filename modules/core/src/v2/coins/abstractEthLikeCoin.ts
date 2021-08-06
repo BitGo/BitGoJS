@@ -4,7 +4,6 @@
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
-import * as bitcoinMessage from 'bitcoinjs-message';
 import * as bitgoUtxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
@@ -170,14 +169,6 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
         expiration: params.txPrebuild.expireTime,
       },
     };
-  }
-
-  async signMessage(key: { prv: string }, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    const privateKey = bitgoUtxoLib.HDNode.fromBase58(key.prv).getKey();
-    const privateKeyBuffer = privateKey.d.toBuffer(32);
-    const isCompressed = privateKey.compressed;
-    const prefix = bitgoUtxoLib.networks.bitcoin.messagePrefix;
-    return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
   }
 
   isValidPub(pub: string): boolean {
