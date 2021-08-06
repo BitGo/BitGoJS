@@ -5,8 +5,7 @@
 //
 
 import { BitGo as BG } from '../../src/bitgo';
-import { KeyIndices } from '../../src/v2/keychains';
-import { Wallet } from '../../src/v2/wallet';
+import { KeyIndices, Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;

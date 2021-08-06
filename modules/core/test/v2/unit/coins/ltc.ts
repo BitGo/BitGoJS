@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 const bitcoin = require('@bitgo/utxo-lib');
 const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Wallet } from '../../../../src/v2/wallet';
+import { Wallet } from '../../../../src';
 
 describe('LTC:', function () {
   let bitgo;
@@ -53,8 +53,8 @@ describe('LTC:', function () {
       upgradedAddress.should.equal(litecoinBase58Address);
     });
 
-    it('bech32 mainnet address', function () {
-      // canonicalAddress will only lower case bech32 addresses - they are already
+    it('lower case bech32 mainnet address', function () {
+      // canonicalAddress will only accept lower case bech32 addresses - they are already
       // in canonical format, and the script hash version is not relevant
       const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
       const version1Address = ltc.canonicalAddress(bech32Address, 1);
@@ -63,20 +63,34 @@ describe('LTC:', function () {
       version2Address.should.equal(bech32Address);
     });
 
-    it('upper case bech32 mainnet address', function () {
-      // bech32 addresses which are all upper case or all lower case are potentially valid,
-      // but mixed case is always invalid. Canonical bech32 addresses should be all lower case however
+    it('uppercase bech32 mainnet address should fail', function () {
+      // canonicalAddress only accepts lower case bech32 addresses, uppercase addresses
+      // are valid according to the spec but will be treated as invalid
       const bech32Address = 'LTC1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
-      const newAddress = ltc.canonicalAddress(bech32Address);
-      newAddress.should.equal(bech32Address.toLowerCase());
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
 
-    it('bech32 testnet address', function () {
+    it('mixed-case bech32 mainnet address should fail', function () {
+      const bech32Address = 'ltc1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
+    });
+
+    it('lower case bech32 testnet address', function () {
       const bech32Address = 'tltc1qu78xur5xnq6fjy83amy0qcjfau8m367defyhms';
       const version1Address = tltc.canonicalAddress(bech32Address, 1);
       version1Address.should.equal(bech32Address);
       const version2Address = tltc.canonicalAddress(bech32Address, 2);
       version2Address.should.equal(bech32Address);
+    });
+
+    it('uppercase bech32 testnet address should fail', function () {
+      const bech32Address = 'TLTC1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
+    });
+
+    it('mixed case bech32 testnet address should fail', function () {
+      const bech32Address = 'tltc1QU78XUR5XNQ6FJY83AMY0QCJFAU8M367DEFYHMS';
+      (() => ltc.canonicalAddress(bech32Address)).should.throw('invalid address');
     });
   });
 
@@ -96,9 +110,9 @@ describe('LTC:', function () {
       ltc.isValidAddress('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7').should.be.true();
       tltc.isValidAddress('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht').should.be.true();
 
-      // all upper case is also valid
-      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.true();
-      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.true();
+      // all upper case is invalid
+      ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYG7').should.be.false();
+      tltc.isValidAddress('TLTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WS2X86HT').should.be.false();
 
       // mixed case is invalid
       ltc.isValidAddress('LTC1QQ7FZT3EK5EGE3V92WH0Q6WZCJR39PQSWLPE36MU28F6YUFARK3WSPFRYg7').should.be.false();
