@@ -10,9 +10,9 @@ const expressApp = require('../../src/expressApp').app;
 import * as nock from 'nock';
 const { Environments } = require('bitgo');
 
-describe('Bitgo Express', function() {
+describe('Bitgo Express', function () {
   let agent;
-  before(function() {
+  before(function () {
     nock.restore();
 
     const args = {
@@ -25,9 +25,9 @@ describe('Bitgo Express', function() {
     agent = request.agent(app);
   });
 
-  describe('verify address', function() {
+  describe('verify address', function () {
 
-    describe('failure', function() {
+    describe('failure', function () {
       it('should mark as invalid bad btc address', co(function *() {
         const res = yield agent.post('/api/v2/btc/verifyaddress')
         .send({ address: '3P14159f73E4gFr7JterCCQh9QjiTjiZrR' });
@@ -78,7 +78,7 @@ describe('Bitgo Express', function() {
 
     });
 
-    describe('success', function() {
+    describe('success', function () {
       it('should verify valid btc address', co(function *() {
         const res = yield agent.post('/api/v2/btc/verifyaddress')
         .send({ address: '3P14159f73E4gFr7JterCCQh9QjiTjiZrG' });
