@@ -27,10 +27,13 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import * as config from '../../config';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { getBip32Keys, InitiateRecoveryOptions as BaseInitiateRecoveryOptions } from '../recovery/initiate';
+import {
+  getBip32Keys,
+  getKrsProvider,
+  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
+} from '../recovery/initiate';
 
 const ripple = require('../../ripple');
 
@@ -459,8 +462,8 @@ export class Xrp extends BaseCoin {
         ],
       };
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
+      if (isKrsRecovery) {
+        getKrsProvider(self, params.krsProvider);
       }
 
       // Validate the destination address

@@ -26,10 +26,9 @@ import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep, getKrsProvider } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -757,13 +756,7 @@ export class Eos extends BaseCoin {
 
       const { krsProvider } = params;
       if (getIsKrsRecovery(params)) {
-        if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
-          throw new Error('unknown key recovery service provider');
-        }
-        const krsProviderConfig = config.krsProviders[krsProvider];
-        if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
-          throw new Error('specified key recovery service does not support recoveries for this coin');
-        }
+        getKrsProvider(self, krsProvider);
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {

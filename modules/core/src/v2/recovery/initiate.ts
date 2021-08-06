@@ -5,6 +5,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BitGo } from '../../bitgo';
 import * as stellar from 'stellar-sdk';
+import { BaseCoin } from '../baseCoin';
+import * as config from '../../config';
 
 interface ValidateKeyOptions {
   key: string;
@@ -20,6 +22,28 @@ export interface InitiateRecoveryOptions {
   bitgoKey?: string; // optional for xrp recoveries
   recoveryDestination: string;
   walletPassphrase?: string;
+}
+
+export function getKrsProvider(
+  coin: BaseCoin,
+  krsProviderName: string | undefined,
+  { checkCoinFamilySupport = true }: { checkCoinFamilySupport?: boolean } = {}
+): config.KrsProvider {
+  if (!krsProviderName) {
+    throw new Error(`no krsProvider name`);
+  }
+
+  const krsProvider = config.krsProviders[krsProviderName];
+
+  if (krsProvider === undefined) {
+    throw new Error('unknown key recovery service provider');
+  }
+
+  if (checkCoinFamilySupport && !krsProvider.supportedCoins.includes(coin.getFamily())) {
+    throw new Error('specified key recovery service does not support recoveries for this coin');
+  }
+
+  return krsProvider;
 }
 
 export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {

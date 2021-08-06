@@ -7,11 +7,10 @@ import * as bitcoin from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../bitgo';
-import * as config from '../../../config';
 import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
 import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from '../abstractUtxoCoin';
-import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
+import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
 
 export interface RecoverParams {
   scan?: number;
@@ -128,15 +127,8 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
 
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
-  const krsProvider = config.krsProviders[params.krsProvider];
 
-  if (isKrsRecovery && _.isUndefined(krsProvider)) {
-    throw new Error('unknown key recovery service provider');
-  }
-
-  if (isKrsRecovery && !krsProvider.supportedCoins.includes(coin.getFamily())) {
-    throw new Error('specified key recovery service does not support recoveries for this coin');
-  }
+  const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
   const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
@@ -246,7 +238,11 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
 
   transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
 
-  if (isKrsRecovery && krsFee > 0) {
+  if (krsProvider && krsFee > 0) {
+    if (!krsProvider.feeAddresses) {
+      throw new Error(`keyProvider must define feeAddresses`);
+    }
+
     const krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
 
     if (!krsFeeAddress) {
