@@ -469,28 +469,9 @@ export abstract class BaseCoin {
 
   /**
    * @deprecated - use getBip32Keys() in conjunction with isValidAddress instead
-   * @param params
    */
-  initiateRecovery(params: InitiateRecoveryOptions): Bluebird<any> {
-    const self = this;
-    return co(function* initiateRecovery() {
-      // Validate the destination address
-      try {
-        if (!self.isValidAddress(params.recoveryDestination)) {
-          throw new Error('Invalid destination address!');
-        }
-      } catch (e) {
-        // if isValidAddress is not implemented, assume the destination
-        // address is valid and let the tx go through. If the destination
-        // is actually invalid (`isValidAddress` returns false and does
-        // not throw), this method will still throw
-        if (!(e instanceof errors.MethodNotImplementedError)) {
-          throw e;
-        }
-      }
-
-      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
-    }).call(this);
+  initiateRecovery(params: InitiateRecoveryOptions): never {
+    throw new Error('deprecated method');
   }
 
   // Some coins can have their tx info verified, if a public tx decoder is available
