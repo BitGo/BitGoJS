@@ -568,17 +568,30 @@ export class Xlm extends BaseCoin {
   }
 
   /**
-   * Generates Stellar keypairs from the user key and backup key
-   * @param params
+   * @deprecated
    */
-  initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
-    const self = this;
-    return co<stellar.Keypair[]>(function* () {
-      let userKey = params.userKey;
-      let backupKey = params.backupKey;
+  initiateRecovery(params: RecoveryOptions): never {
+    throw new Error('deprecated method');
+  }
 
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   * - userKey: [encrypted] Stellar private key
+   * - backupKey: [encrypted] Stellar private key, or public key if the private key is held by a KRS provider
+   * - walletPassphrase: necessary if one of the private keys is encrypted
+   * - rootAddress: base address of the wallet to recover funds from
+   * - krsProvider: necessary if backup key is held by KRS
+   * - recoveryDestination: target address to send recovered funds to
+   * @param callback
+   */
+  recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    const self = this;
+    return co<RecoveryTransaction>(function* () {
       // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-      const isKrsRecovery = backupKey.startsWith('G') && !userKey.startsWith('G');
+      const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
+      const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
+
       if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
       }
@@ -597,27 +610,7 @@ export class Xlm extends BaseCoin {
         throw new InvalidAddressError('Invalid destination address!');
       }
 
-      return getStellarKeys(self.bitgo, params);
-    }).call(this);
-  }
-
-  /**
-   * Builds a funds recovery transaction without BitGo
-   * @param params
-   * - userKey: [encrypted] Stellar private key
-   * - backupKey: [encrypted] Stellar private key, or public key if the private key is held by a KRS provider
-   * - walletPassphrase: necessary if one of the private keys is encrypted
-   * - rootAddress: base address of the wallet to recover funds from
-   * - krsProvider: necessary if backup key is held by KRS
-   * - recoveryDestination: target address to send recovered funds to
-   * @param callback
-   */
-  recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
-    const self = this;
-    return co<RecoveryTransaction>(function* () {
-      const [userKey, backupKey] = (yield self.initiateRecovery(params)) as any;
-      const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
-      const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
+      const [userKey, backupKey] = getStellarKeys(self.bitgo, params);
 
       if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
         throw new Error(`Invalid wallet address: ${params.rootAddress}`);
