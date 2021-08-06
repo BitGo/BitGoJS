@@ -83,8 +83,12 @@ export class Transaction extends BaseTransaction {
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
+    const keys = {
+      privateKey: keyPair[0].getKeys().prv,
+      publicKey: keyPair[0].getKeys().pub,
+    };
     const txJSON = JSON.stringify(this._xrpTransaction);
-    this._signedTransaction = initApi().sign(txJSON, keyPair[0]);
+    this._signedTransaction = initApi().sign(txJSON, keys);
   }
 
   /** @inheritdoc */

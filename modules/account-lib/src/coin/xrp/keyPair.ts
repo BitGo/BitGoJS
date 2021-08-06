@@ -1,5 +1,5 @@
 import { ECPair, HDNode } from '@bitgo/utxo-lib';
-import { deriveAddress, deriveKeypair, generateSeed  } from 'ripple-keypairs';
+import { deriveAddress, deriveKeypair, generateSeed } from 'ripple-keypairs';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { isValidXprv, isValidXpub } from '../../utils/crypto';
@@ -15,11 +15,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     if (!source) {
       const seed = generateSeed();
       const keypair = deriveKeypair(seed);
-      this.keyPair = this.generateECPair(keypair.privateKey)
-    } else if (isSeed(source)){
-      const seed = generateSeed({ entropy:source.seed });
-      const keypair = deriveKeypair(seed)
-      this.keyPair = this.generateECPair(keypair.privateKey)
+      this.keyPair = this.generateECPair(keypair.privateKey);
+    } else if (isSeed(source)) {
+      const seed = generateSeed({ entropy: source.seed });
+      const keypair = deriveKeypair(seed);
+      this.keyPair = this.generateECPair(keypair.privateKey);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -30,11 +30,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
     if (this.hdNode) {
       this.keyPair = this.hdNode.keyPair;
-      this.keyPair.compressed = this.hdNode.compressed
+      this.keyPair.compressed = this.hdNode.compressed;
     }
   }
 
-  generateECPair(prv: string): ECPair{
+  generateECPair(prv: string): ECPair {
     return ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(2), 'hex'));
   }
 
@@ -54,11 +54,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       this.hdNode = HDNode.fromBase58(prv);
       this.hdNode.keyPair.compressed = false;
     } else {
-        try {
-          this.keyPair = this.generateECPair(prv)
-          this.keyPair.compressed = prv.length === 66;
-        }
-        catch(e){
+      try {
+        this.keyPair = this.generateECPair(prv);
+        this.keyPair.compressed = prv.length === 66;
+      } catch (e) {
         throw new Error('Unsupported private key');
       }
     }
@@ -75,18 +74,16 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} pub A raw public key
    */
   recordKeysFromPublicKey(pub: string): void {
-
     if (isValidXpub(pub)) {
       this.hdNode = HDNode.fromBase58(pub);
       this.hdNode.keyPair.compressed = false;
     } else {
-        try {
-          this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
-          this.keyPair.compressed = pub.length === 66;
-        }
-        catch(e) {
-          throw new Error('Unsupported public key');
-        }
+      try {
+        this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
+        this.keyPair.compressed = pub.length === 66;
+      } catch (e) {
+        throw new Error('Unsupported public key');
+      }
     }
   }
 
@@ -99,7 +96,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     let prv;
     if (this.hdNode) {
       const { xprv, xpub } = this.getExtendedKeys();
-      prv = xprv ? '00' + HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex').toUpperCase() : undefined;
+      prv = xprv
+        ? '00' + HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex').toUpperCase()
+        : undefined;
       return {
         pub: HDNode.fromBase58(xpub).keyPair.getPublicKeyBuffer().toString('hex').toUpperCase(),
         prv: prv,
