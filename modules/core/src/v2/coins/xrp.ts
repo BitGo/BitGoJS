@@ -30,11 +30,7 @@ import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import {
-  getBip32Keys,
-  getIsKrsRecovery,
-  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
-} from '../recovery/initiate';
+import { getBip32Keys, InitiateRecoveryOptions as BaseInitiateRecoveryOptions } from '../recovery/initiate';
 
 const ripple = require('../../ripple');
 
@@ -463,8 +459,18 @@ export class Xrp extends BaseCoin {
         ],
       };
 
-      const { keys, addressDetails, feeDetails, serverDetails } = yield Bluebird.props({
-        keys: self.initiateRecovery(params),
+      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
+        throw new Error('unknown key recovery service provider');
+      }
+
+      // Validate the destination address
+      if (!self.isValidAddress(params.recoveryDestination)) {
+        throw new Error('Invalid destination address!');
+      }
+
+      const keys = getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
+
+      const { addressDetails, feeDetails, serverDetails } = yield Bluebird.props({
         addressDetails: self.bitgo.post(rippledUrl).send(accountInfoParams),
         feeDetails: self.bitgo.post(rippledUrl).send({ method: 'fee' }),
         serverDetails: self.bitgo.post(rippledUrl).send({ method: 'server_info' }),
@@ -607,25 +613,8 @@ export class Xrp extends BaseCoin {
       .asCallback(callback);
   }
 
-  /**
-   * Prepare and validate all keychains from the keycard for recovery
-   */
-  initiateRecovery(params: InitiateRecoveryOptions): Bluebird<HDNode[]> {
-    const self = this;
-    return co<HDNode[]>(function* initiateRecovery() {
-      const isKrsRecovery = getIsKrsRecovery(params);
-
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
-      }
-
-      // Validate the destination address
-      if (!self.isValidAddress(params.recoveryDestination)) {
-        throw new Error('Invalid destination address!');
-      }
-
-      return getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
-    }).call(this);
+  initiateRecovery(params: InitiateRecoveryOptions): never {
+    throw new Error('deprecated method');
   }
 
   /**
