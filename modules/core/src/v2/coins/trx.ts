@@ -1,12 +1,14 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
+import * as secp256k1 from 'secp256k1';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { HDNode, networks } from '@bitgo/utxo-lib';
+import { networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import * as common from '../../common';
 
@@ -169,7 +171,7 @@ export class Trx extends BaseCoin {
       // random. 512 bits is therefore the maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const hd = HDNode.fromSeedBuffer(seed);
+    const hd = bip32.fromSeed(seed);
     return {
       pub: hd.neutered().toBase58(),
       prv: hd.toBase58(),
@@ -178,7 +180,7 @@ export class Trx extends BaseCoin {
 
   isValidXpub(xpub: string): boolean {
     try {
-      return HDNode.fromBase58(xpub).isNeutered();
+      return bip32.fromBase58(xpub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -248,8 +250,7 @@ export class Trx extends BaseCoin {
    */
   isValidXprv(prv: string): boolean {
     try {
-      HDNode.fromBase58(prv);
-      return true;
+      return !bip32.fromBase58(prv).isNeutered();
     } catch (e) {
       return false;
     }
@@ -283,11 +284,14 @@ export class Trx extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       const toSign = self.toHexString(message);
 
-      let prv = key.prv;
+      let prv: string | undefined = key.prv;
       if (self.isValidXprv(prv)) {
-        prv = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
+        prv = bip32.fromBase58(prv).privateKey?.toString('hex');
       }
 
+      if (!prv) {
+        throw new Error('no privateKey');
+      }
       let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
 
       // remove the preceding 0x
@@ -308,8 +312,8 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xpub');
     }
 
-    const hdNode = HDNode.fromBase58(xpub, networks.bitcoin);
-    return hdNode.keyPair.__Q.getEncoded(false /* compressed */).toString('hex');
+    const publicKey = bip32.fromBase58(xpub, networks.bitcoin).publicKey;
+    return Buffer.from(secp256k1.publicKeyConvert(publicKey, false /* compressed */)).toString('hex');
   }
 
   /**
@@ -343,8 +347,11 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xprv');
     }
 
-    const hdNode = HDNode.fromBase58(xprv, networks.bitcoin);
-    return hdNode.keyPair.d.toBuffer(32).toString('hex');
+    const hdNode = bip32.fromBase58(xprv, networks.bitcoin);
+    if (!hdNode.privateKey) {
+      throw new Error('no privateKey');
+    }
+    return hdNode.privateKey.toString('hex');
   }
 
   /**
