@@ -9,11 +9,11 @@ import {
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
-} from 'ethereumjs-utils-old';
+  BN,
+} from 'ethereumjs-util';
 import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
-import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
@@ -260,12 +260,12 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
+    to: addHexPrefix(to.toString('hex')),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
-    tokenContractAddress: addHexPrefix(tokenContractAddress),
+    tokenContractAddress: addHexPrefix(tokenContractAddress.toString('hex')),
   };
 }
 
@@ -286,7 +286,7 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
   );
 
   return {
-    to: addHexPrefix(to),
+    to: addHexPrefix(to.toString('hex')),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
@@ -312,8 +312,8 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
   );
 
   return {
-    forwarderAddress: addHexPrefix(forwarderAddress),
-    tokenAddress: addHexPrefix(tokenAddress),
+    forwarderAddress: addHexPrefix(forwarderAddress.toString('hex')),
+    tokenAddress: addHexPrefix(tokenAddress.toString('hex')),
   };
 }
 
@@ -385,7 +385,7 @@ export function hexStringToNumber(hex: string): number {
  * @returns {string} the calculated forwarder contract address
  */
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(contractAddress, contractCounter);
+  const forwarderAddress = generateAddress(toBuffer(contractAddress), toBuffer(contractCounter));
   return addHexPrefix(forwarderAddress.toString('hex'));
 }
 
@@ -396,7 +396,9 @@ export function calculateForwarderAddress(contractAddress: string, contractCount
  * @returns {string} String representation of the signature
  */
 export function toStringSig(sig: SignatureParts): string {
-  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+  return bufferToHex(
+    Buffer.concat([setLengthLeft(toBuffer(sig.r), 32), setLengthLeft(toBuffer(sig.s), 32), toBuffer(sig.v)]),
+  );
 }
 
 /**

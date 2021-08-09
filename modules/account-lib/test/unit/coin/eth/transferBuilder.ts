@@ -143,7 +143,7 @@ describe('Eth send multi sig builder', function () {
         .key('invalidkey');
       should(() => {
         builder.signAndBuild();
-      }).throw('private key length is invalid');
+      }).throw('Expected private key to be an Uint8Array with length 32');
     });
 
     it('should fail with an invalid sequence id', () => {

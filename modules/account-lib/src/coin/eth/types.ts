@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Transaction as EthereumTx } from '@ethereumjs/tx';
 import EthereumCommon from '@ethereumjs/common';
-import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-utils-old';
+import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-util';
 import { EthLikeTransactionData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 
@@ -62,9 +62,9 @@ export class EthTransactionData implements EthLikeTransactionData {
   /** @inheritdoc */
   toJson(): TxData {
     const result: TxData = {
-      nonce: bufferToInt(this.tx.nonce),
-      gasPrice: new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10),
-      gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),
+      nonce: bufferToInt(this.tx.nonce.toBuffer()),
+      gasPrice: new BigNumber(bufferToHex(this.tx.gasPrice.toBuffer()), 16).toString(10),
+      gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit.toBuffer()), 16).toString(10),
       value: this.tx.value.toString(10),
       data: bufferToHex(this.tx.data),
       id: addHexPrefix(bufferToHex(this.tx.hash())),
@@ -76,9 +76,9 @@ export class EthTransactionData implements EthLikeTransactionData {
 
     if (this.tx.verifySignature()) {
       result.from = bufferToHex(this.tx.getSenderAddress().toBuffer());
-      result.v = bufferToHex(this.tx.v);
-      result.r = bufferToHex(this.tx.r);
-      result.s = bufferToHex(this.tx.s);
+      result.v = bufferToHex(toBuffer(this.tx.v))
+      result.r = bufferToHex(toBuffer(this.tx.r));
+      result.s = bufferToHex(toBuffer(this.tx.s));
     }
     result.chainId = addHexPrefix(this.tx.common.chainId().toString(16));
 

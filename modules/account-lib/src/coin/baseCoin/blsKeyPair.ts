@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as BLS from '@bitgo/bls';
-import { stripHexPrefix } from 'ethereumjs-utils-old';
+import { stripHexPrefix } from 'ethereumjs-util';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
@@ -67,6 +67,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
 
   /**
    * Signs bytes using the key pair
+   *
    * @param msg The message bytes to sign
    * @return signature of the bytes using this keypair
    */
@@ -117,6 +118,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
 
   /**
    * Verifies the signature for this key pair
+   *
    * @param pub The public key with which to verify the signature
    * @param msg The message to verify the signature with
    * @param signature the signature to verify

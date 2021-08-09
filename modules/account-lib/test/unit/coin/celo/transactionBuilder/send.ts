@@ -1,5 +1,5 @@
 import should from 'should';
-import * as ethUtil from 'ethereumjs-utils-old';
+import { BN, bufferToHex, ecrecover, fromRpcSig, pubToAddress, toBuffer, unpadHexString } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Celo } from '../../../../../src';
@@ -26,9 +26,9 @@ describe('Send transaction', function () {
       ['string', 'address', 'uint', 'address', 'uint', 'uint'],
       [
         'CELO-ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+        new BN(unpadHexString(to), 16),
         amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+        new BN(unpadHexString(tokenContractAddress || ''), 16),
         expireTime,
         sequenceId,
       ],
@@ -67,11 +67,11 @@ describe('Send transaction', function () {
       const { signature } = decodeTransferData(tx.toJson().data);
       const operationHash = getOperationHash(tx);
 
-      const { v, r, s } = ethUtil.fromRpcSig(signature);
-      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const { v, r, s } = fromRpcSig(signature);
+      const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+      const senderAddress = pubToAddress(senderPubKey);
       const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
-      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+      bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
 
     it('a send token transaction', async () => {
@@ -105,11 +105,11 @@ describe('Send transaction', function () {
       const { signature } = decodeTransferData(tx.toJson().data);
       const operationHash = getOperationHash(tx);
 
-      const { v, r, s } = ethUtil.fromRpcSig(signature);
-      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const { v, r, s } = fromRpcSig(signature);
+      const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+      const senderAddress = pubToAddress(senderPubKey);
       const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
-      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+      bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
 
     it('a send token transactions from serialized', async () => {
@@ -121,11 +121,11 @@ describe('Send transaction', function () {
       const { signature } = decodeTransferData(tx.toJson().data);
       const operationHash = getOperationHash(tx);
 
-      const { v, r, s } = ethUtil.fromRpcSig(signature);
-      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const { v, r, s } = fromRpcSig(signature);
+      const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+      const senderAddress = pubToAddress(senderPubKey);
       const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
-      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+      bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
 
     it('a half signed transaction', async () => {
@@ -137,11 +137,11 @@ describe('Send transaction', function () {
       const { signature } = decodeTransferData(tx.toJson().data);
       const operationHash = getOperationHash(tx);
 
-      const { v, r, s } = ethUtil.fromRpcSig(signature);
-      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const { v, r, s } = fromRpcSig(signature);
+      const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+      const senderAddress = pubToAddress(senderPubKey);
       const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
-      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+      bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
   });
 

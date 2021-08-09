@@ -1,12 +1,13 @@
 import should from 'should';
-import * as ethUtil from 'ethereumjs-utils-old';
+import { BN, bufferToHex, ecrecover, fromRpcSig, pubToAddress, toBuffer, stripHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Rbtc } from '../../../../../src';
 import * as testData from '../../../../resources/rbtc/rbtc';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
-describe('Rbtc send transaction', function () {
+
+describe('Rbtc send transaction', function() {
   let txBuilder: Rbtc.TransactionBuilder;
   const contractAddress = '0xab52bc0aff1b4851a60c1e5e628b1da995445651';
   const initTxBuilder = (): void => {
@@ -27,9 +28,9 @@ describe('Rbtc send transaction', function () {
       ['string', 'address', 'uint', 'address', 'uint', 'uint'],
       [
         'RSK-ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+        new BN(stripHexPrefix(to), 16),
         amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+        new BN(stripHexPrefix(tokenContractAddress!), 16),
         expireTime,
         sequenceId,
       ],
@@ -99,11 +100,11 @@ describe('Rbtc send transaction', function () {
     const { signature } = decodeTransferData(tx.toJson().data);
     const operationHash = getOperationHash(tx);
 
-    const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-    const senderAddress = ethUtil.pubToAddress(senderPubKey);
+    const { v, r, s } = fromRpcSig(signature);
+    const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+    const senderAddress = pubToAddress(senderPubKey);
     const senderKey = new Rbtc.KeyPair({ prv: testData.PRIVATE_KEY_1 });
-    ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+    bufferToHex(senderAddress).should.equal(senderKey.getAddress());
   });
 
   it('a send token transactions from serialized', async () => {
@@ -115,11 +116,11 @@ describe('Rbtc send transaction', function () {
     const { signature } = decodeTransferData(tx.toJson().data);
     const operationHash = getOperationHash(tx);
 
-    const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
-    const senderAddress = ethUtil.pubToAddress(senderPubKey);
+    const { v, r, s } = fromRpcSig(signature);
+    const senderPubKey = ecrecover(toBuffer(operationHash), v, r, s);
+    const senderAddress = pubToAddress(senderPubKey);
     const senderKey = new Rbtc.KeyPair({ prv: testData.PRIVATE_KEY_1 });
-    ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+    bufferToHex(senderAddress).should.equal(senderKey.getAddress());
   });
 });
 

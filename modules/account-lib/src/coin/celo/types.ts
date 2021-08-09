@@ -2,15 +2,15 @@ import BigNumber from 'bignumber.js';
 import { LocalWallet } from '@celo/wallet-local';
 import {
   addHexPrefix,
-  toBuffer,
   bufferToHex,
   bufferToInt,
-  rlp,
-  rlphash,
   ecrecover,
   publicToAddress,
-} from 'ethereumjs-utils-old';
-import { unpad } from 'ethereumjs-util';
+  rlp,
+  rlphash,
+  toBuffer,
+  unpadBuffer,
+} from 'ethereumjs-util';
 import { CeloTx, EncodedTransaction } from '@celo/connect';
 import { EthLikeTransactionData, TxData } from '../eth/iface';
 import { KeyPair } from '../eth';
@@ -50,7 +50,7 @@ export class CeloTransaction {
   }
 
   constructor(tx: TxData) {
-    this.nonce = unpad(toBuffer(tx.nonce));
+    this.nonce = unpadBuffer(toBuffer(tx.nonce));
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
     this.data = toBuffer(tx.data);
@@ -95,7 +95,9 @@ export class CeloTransaction {
     if (includeSignature) {
       items = this.raw;
     } else {
-      items = this.raw.slice(0, 9).concat([toBuffer(this.getChainId()), unpad(toBuffer(0)), unpad(toBuffer(0))]);
+      items = this.raw
+        .slice(0, 9)
+        .concat([toBuffer(this.getChainId()), unpadBuffer(toBuffer(0)), unpadBuffer(toBuffer(0))]);
     }
     return rlphash(items);
   }

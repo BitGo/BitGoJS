@@ -1,4 +1,4 @@
-import ethUtil from 'ethereumjs-utils-old';
+import { addHexPrefix, BN, bufferToHex, ecsign, intToHex, setLengthLeft, stripHexPrefix, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
@@ -131,19 +131,19 @@ export class TransferBuilder {
    */
   private getOperationHash(): string {
     const operationData = this.getOperationData();
-    return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
+    return bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  protected getOperationData(): (string | Buffer)[][] {
+  protected getOperationData(): (string | Buffer)[][] { 
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           this.getTokenOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(stripHexPrefix(this._toAddress), 16),
           this._amount,
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
+          new BN(stripHexPrefix(this._tokenContractAddress), 16),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -153,9 +153,9 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(stripHexPrefix(this._toAddress), 16),
           this._amount,
-          Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
+          Buffer.from(stripHexPrefix(this._data || ''), 'hex'),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -206,18 +206,15 @@ export class TransferBuilder {
 
   protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
-    const signatureInParts = ethUtil.ecsign(
-      Buffer.from(ethUtil.stripHexPrefix(data), 'hex'),
-      Buffer.from(this._signKey, 'hex'),
-    );
+    const signatureInParts = ecsign(Buffer.from(stripHexPrefix(data), 'hex'), Buffer.from(this._signKey, 'hex'));
 
     // Assemble strings from r, s and v
-    const r = ethUtil.setLengthLeft(signatureInParts.r, 32).toString('hex');
-    const s = ethUtil.setLengthLeft(signatureInParts.s, 32).toString('hex');
-    const v = ethUtil.stripHexPrefix(ethUtil.intToHex(signatureInParts.v));
+    const r = setLengthLeft(signatureInParts.r, 32).toString('hex');
+    const s = setLengthLeft(signatureInParts.s, 32).toString('hex');
+    const v = stripHexPrefix(intToHex(signatureInParts.v));
 
     // Concatenate the r, s and v parts to make the signature string
-    return ethUtil.addHexPrefix(r.concat(s, v));
+    return addHexPrefix(r.concat(s, v));
   }
 
   private decodeTransferData(data: string): void {
