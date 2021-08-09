@@ -142,6 +142,10 @@ describe('EOS:', function () {
     unsignedRecoveryTransaction.recoveryAmount.should.equal('5.0000');
     unsignedRecoveryTransaction.transaction.signatures.length.should.equal(0);
 
+    // coin and txHex fields are expected during recovery of unsigned transaction using OVC
+    unsignedRecoveryTransaction.coin.should.equal('teos');
+    unsignedRecoveryTransaction.txHex.should.equal('e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c414738cdcdb60f03cf4a9e53c000000000100a6823403ea3055000000572d3ccdcd013008c5709804717000000000a8ed3232213008c57098047170806321a22538028650c300000000000004454f530000000000000000000000000000000000000000000000000000000000000000000000000000');
+
     // destination address and root address can include memoId
     const unsignedRecoveryTransaction2 = await basecoin.recover({
       userKey,
@@ -152,6 +156,10 @@ describe('EOS:', function () {
     });
     unsignedRecoveryTransaction2.recoveryAmount.should.equal('5.0000');
     unsignedRecoveryTransaction2.transaction.signatures.length.should.equal(0);
+
+    // coin and txHex fields are expected during recovery of unsigned transaction using OVC
+    unsignedRecoveryTransaction.coin.should.equal('teos');
+    unsignedRecoveryTransaction.txHex.should.equal('e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c414738cdcdb60f03cf4a9e53c000000000100a6823403ea3055000000572d3ccdcd013008c5709804717000000000a8ed3232213008c57098047170806321a22538028650c300000000000004454f530000000000000000000000000000000000000000000000000000000000000000000000000000');
 
     sandBox.restore();
   });

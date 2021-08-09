@@ -841,6 +841,8 @@ export class Eos extends BaseCoin {
         },
         txid: (transaction as any).transaction_id,
         recoveryAmount: accountBalance,
+        coin: self.getChain(),
+        txHex: '',
       };
       const signableTx = Buffer.concat([
         Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
@@ -849,6 +851,7 @@ export class Eos extends BaseCoin {
       ]).toString('hex');
 
       if (isUnsignedSweep) {
+        txObject.txHex = signableTx;
         return txObject;
       }
 
