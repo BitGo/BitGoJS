@@ -347,8 +347,7 @@ export class Eth extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      bip32.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
