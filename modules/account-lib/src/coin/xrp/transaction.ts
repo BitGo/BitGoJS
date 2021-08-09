@@ -83,12 +83,14 @@ export class Transaction extends BaseTransaction {
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const keys = {
-      privateKey: keyPair[0].getKeys().prv,
-      publicKey: keyPair[0].getKeys().pub,
-    };
-    const txJSON = JSON.stringify(this._xrpTransaction);
-    this._signedTransaction = initApi().sign(txJSON, keys);
+    if (keyPair.length > 0) {
+      const keys = {
+        privateKey: keyPair[0].getKeys().prv,
+        publicKey: keyPair[0].getKeys().pub,
+      };
+      const txJSON = JSON.stringify(this._xrpTransaction);
+      this._signedTransaction = initApi().sign(txJSON, keys);
+    }
   }
 
   /** @inheritdoc */
@@ -119,11 +121,11 @@ export class Transaction extends BaseTransaction {
       lastLedgerSequence: this._xrpTransaction.LastLedgerSequence as number,
     };
     if (this.type === TransactionType.Send) {
-      result.amount = this._xrpTransaction.amount as string;
-      result.destination = this._xrpTransaction.destination as string;
+      result.amount = this._xrpTransaction.Amount as string;
+      result.destination = this._xrpTransaction.Destination as string;
     }
     if (this.type === TransactionType.WalletInitialization) {
-      result.domain = this._xrpTransaction.domain as string;
+      result.domain = this._xrpTransaction.Domain as string;
       result.setFlag = this._xrpTransaction.SetFlag as number;
       result.messageKey = this._xrpTransaction.MessageKey as string;
     }
