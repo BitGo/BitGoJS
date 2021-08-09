@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { HDNode } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
@@ -153,8 +153,8 @@ export class Erc20Token extends Eth {
       let backupSigningKey;
 
       if (isKrsRecovery || isUnsignedSweep) {
-        const backupHDNode = HDNode.fromBase58(backupKey);
-        backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupKey);
+        backupSigningKey = backupHDNode.publicKey;
         backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         let backupPrv;
@@ -168,8 +168,8 @@ export class Erc20Token extends Eth {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
 
-        const backupHDNode = HDNode.fromBase58(backupPrv);
-        backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupPrv);
+        backupSigningKey = backupHDNode.privateKey;
         backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
