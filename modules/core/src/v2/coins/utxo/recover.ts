@@ -9,9 +9,33 @@ import { Codes, VirtualSizes } from '@bitgo/unspents';
 import { BitGo } from '../../../bitgo';
 import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
-import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from '../abstractUtxoCoin';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
 import { sanitizeLegacyPath } from '../../../bip32path';
+import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo, UtxoNetwork } from '../abstractUtxoCoin';
+
+interface TransactionBuilder {
+  network: UtxoNetwork;
+
+  sign(
+    index: number,
+    privateKey: Buffer,
+    redeemScript: Buffer | undefined,
+    sigHashType: number,
+    inputValue: number,
+    witnessScript: Buffer | undefined
+  );
+
+  build(): {
+    toBuffer(): Buffer;
+  };
+}
+
+interface SignatureAddressInfo extends AddressInfo {
+  backupKey: bitcoin.HDNode;
+  userKey: bitcoin.HDNode;
+  redeemScript?: Buffer;
+  witnessScript?: Buffer;
+}
 
 /**
  * Derive child keys at specific index, from provided parent keys
@@ -21,6 +45,71 @@ import { sanitizeLegacyPath } from '../../../bip32path';
  */
 function deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
   return keyArray.map((k) => k.derive(index));
+}
+
+/**
+ * Apply signatures to a funds recovery transaction using user + backup key
+ * @param txb - a transaction builder object (with inputs and outputs)
+ * @param sigHashType - signature hash type
+ * @param unspents - the unspents to use in the transaction
+ * @param addressesById - the address and redeem script info for the unspents
+ * @param cosign - whether to cosign this transaction with the user's backup key (false if KRS recovery)
+ * @returns transactionBuilder originally passed in as the first argument
+ */
+function signRecoveryTransaction(
+  txb: TransactionBuilder,
+  sigHashType: number,
+  unspents: Output[],
+  addressesById: Record<string, SignatureAddressInfo>,
+  cosign: boolean
+): TransactionBuilder {
+  interface SignatureIssue {
+    inputIndex: number;
+    unspent: Output;
+    error: Error | null;
+  }
+
+  const signatureIssues: SignatureIssue[] = [];
+  unspents.forEach((unspent, i) => {
+    const address = addressesById[unspent.address];
+    const backupPrivateKey = address.backupKey.keyPair;
+    const userPrivateKey = address.userKey.keyPair;
+    // force-override networks
+    backupPrivateKey.network = txb.network;
+    userPrivateKey.network = txb.network;
+
+    const currentSignatureIssue: SignatureIssue = {
+      inputIndex: i,
+      unspent: unspent,
+      error: null,
+    };
+
+    if (cosign) {
+      try {
+        txb.sign(i, backupPrivateKey, address.redeemScript, sigHashType, Number(unspent.amount), address.witnessScript);
+      } catch (e) {
+        currentSignatureIssue.error = e;
+        signatureIssues.push(currentSignatureIssue);
+      }
+    }
+
+    try {
+      txb.sign(i, userPrivateKey, address.redeemScript, sigHashType, Number(unspent.amount), address.witnessScript);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
+  });
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map((currentIssue) => currentIssue.inputIndex);
+    const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
+  }
+
+  return txb;
 }
 
 export interface RecoverParams {
@@ -53,7 +142,7 @@ async function queryBlockchainUnspentsPath(
     const keys = derivedKeys.map((k) => k.getPublicKeyBuffer());
     const address: any = coin.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
-    const addrInfo: AddressInfo = (await coin.getAddressInfoFromExplorer(address.address, params.apiKey)) as any;
+    const addrInfo: AddressInfo = await coin.getAddressInfoFromExplorer(address.address, params.apiKey);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
@@ -69,10 +158,7 @@ async function queryBlockchainUnspentsPath(
         addressesById[address.address] = address;
 
         // Try to find unspents on it.
-        const addressUnspents: UnspentInfo[] = (await coin.getUnspentInfoFromExplorer(
-          address.address,
-          params.apiKey
-        )) as any;
+        const addressUnspents: UnspentInfo[] = await coin.getUnspentInfoFromExplorer(address.address, params.apiKey);
 
         addressUnspents.forEach(function addAddressToUnspent(unspent) {
           unspent.address = address.address;
@@ -267,7 +353,13 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
     const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
     return coin.formatForOfflineVault(txInfo, txHex);
   } else {
-    const signedTx = coin.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+    const signedTx = signRecoveryTransaction(
+      transactionBuilder,
+      coin.defaultSigHashType,
+      unspents,
+      addressesById,
+      !isKrsRecovery
+    );
     txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
     try {
       txInfo.tx = await coin.verifyRecoveryTransaction(txInfo);
