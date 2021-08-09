@@ -1,6 +1,8 @@
 /**
  * @prettier
  */
+import { randomBytes } from 'crypto';
+import * as bip32 from 'bip32';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
@@ -15,8 +17,6 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import * as Bluebird from 'bluebird';
-import { randomBytes } from 'crypto';
-import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -40,7 +40,7 @@ export class Ofc extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = bitGoUtxoLib.HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
@@ -71,8 +71,7 @@ export class Ofc extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      bitGoUtxoLib.HDNode.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }

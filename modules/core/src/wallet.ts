@@ -13,6 +13,7 @@
 
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
+import * as bip32 from 'bip32';
 const TransactionBuilder = require('./transactionBuilder');
 import * as bitcoin from '@bitgo/utxo-lib';
 const PendingApproval = require('./pendingapproval');
@@ -289,9 +290,9 @@ Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshol
   const network = common.Environments[this.bitgo.getEnv()].network;
 
   const derivedKeys = rootKeys.map(function (k) {
-    const hdnode = bitcoin.HDNode.fromBase58(k.xpub);
+    const hdnode = bip32.fromBase58(k.xpub);
     const derivationPath = k.path + (k.walletSubPath || '') + path;
-    return hdnode.derivePath(sanitizeLegacyPath(derivationPath)).getPublicKeyBuffer();
+    return hdnode.derivePath(sanitizeLegacyPath(derivationPath)).publicKey;
   });
 
   const pathComponents = path.split('/');
@@ -1724,7 +1725,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
   // Caller provided an xprv - validate and construct keychain object
   let xpub;
   try {
-    xpub = bitcoin.HDNode.fromBase58(params.xprv).neutered().toBase58();
+    xpub = bip32.fromBase58(params.xprv).neutered().toBase58();
   } catch (e) {
     throw new Error('Unable to parse the xprv');
   }

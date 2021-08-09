@@ -1,3 +1,4 @@
+import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { HDNode, ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
@@ -206,8 +207,7 @@ export class Xrp extends BaseCoin {
    */
   public isValidPub(pub: string): boolean {
     try {
-      HDNode.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }

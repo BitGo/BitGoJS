@@ -1,8 +1,8 @@
 import * as Bluebird from 'bluebird';
 import * as should from 'should';
+import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import * as nock from 'nock';
-import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';
@@ -104,10 +104,12 @@ describe('Ethereum Hop Transactions', co(function *() {
     tx = '0xf86c82015285012a05f200825208945208d8e80c6d1aef9be37b4bd19a9cf75ed93dc886b5e620f480008026a00e13f9e0e11337b2b0227e3412211d3625e43f1083fda399cc361dd4bf89083ba06c801a761e0aa3bc8db0ac2568d575b0fb306a1f04f4d5ba82ba3cc0ea0a83bd';
     txid = '0x0ac669c5fef8294443c75a31e32c44b97bbc9e43a18ea8beabcc2a3b45eb6ffa';
     bitgoKeyXprv = 'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
-    const bitgoKey = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
-    const bitgoPrvBuffer = bitgoKey.getKey().getPrivateKeyBuffer();
+    const bitgoKey = bip32.fromBase58(bitgoKeyXprv);
+    if (!bitgoKey.privateKey) {
+      throw new Error('no privateKey');
+    }
     const bitgoXpub = bitgoKey.neutered().toBase58();
-    bitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(txid.slice(2), 'hex'), bitgoPrvBuffer).signature).toString('hex');
+    bitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(txid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     env = 'test';
     bitgo = new TestBitGo({ env });
@@ -198,9 +200,11 @@ describe('Ethereum Hop Transactions', co(function *() {
       let error: string | undefined = undefined;
       const badTxid = '0xb4b3827a529c9166786e796528017889ac5027255b65b3fa2a3d3ad91244a12b';
       const badTxidBuffer = Buffer.from(badTxid.slice(2), 'hex');
-      const xprvNode = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
-
-      const badSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(badTxidBuffer, xprvNode.getKey().getPrivateKeyBuffer()).signature).toString('hex');
+      const xprvNode = bip32.fromBase58(bitgoKeyXprv);
+      if (!xprvNode.privateKey) {
+        throw new Error('no privateKey');
+      }
+      const badSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(badTxidBuffer, xprvNode.privateKey).signature).toString('hex');
       const badPrebuild = JSON.parse(JSON.stringify(prebuild));
       badPrebuild.signature = badSignature;
 

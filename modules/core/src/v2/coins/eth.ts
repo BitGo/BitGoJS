@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import * as utxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -347,8 +347,7 @@ export class Eth extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      utxoLib.HDNode.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -565,8 +564,8 @@ export class Eth extends BaseCoin {
       throw new Error('params must include walletContractAddress, but got undefined');
     }
 
-    const signingNode = utxoLib.HDNode.fromBase58(params.prv);
-    const signingKey = signingNode.getKey().getPrivateKeyBuffer();
+    const signingNode = bip32.fromBase58(params.prv);
+    const signingKey = signingNode.privateKey;
 
     const txInfo = {
       recipient: txPrebuild.recipients[0],
@@ -762,8 +761,8 @@ export class Eth extends BaseCoin {
   ): Bluebird<OfflineVaultTxInfo> {
     const self = this;
     return co<OfflineVaultTxInfo>(function* (): any {
-      const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
-      const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+      const backupHDNode = bip32.fromBase58(backupKey);
+      const backupSigningKey = backupHDNode.publicKey;
       const response: OfflineVaultTxInfo = {
         tx: ethTx.serialize().toString('hex'),
         userKey,
@@ -889,8 +888,8 @@ export class Eth extends BaseCoin {
       let backupSigningKey;
 
       if (isKrsRecovery || isUnsignedSweep) {
-        const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
-        backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupKey);
+        backupSigningKey = backupHDNode.publicKey;
         backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         // Decrypt backup private key and get address
@@ -905,8 +904,11 @@ export class Eth extends BaseCoin {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
 
-        const backupHDNode = utxoLib.HDNode.fromBase58(backupPrv);
-        backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupPrv);
+        backupSigningKey = backupHDNode.privateKey;
+        if (!backupHDNode) {
+          throw new Error('no private key');
+        }
         backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
@@ -1255,7 +1257,10 @@ export class Eth extends BaseCoin {
 
       const userKeychain = yield self.keychains().get({ id: wallet.keyIds()[0] });
       const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-      const userPrvBuffer = utxoLib.HDNode.fromBase58(userPrv).getKey().getPrivateKeyBuffer();
+      const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
+      if (!userPrvBuffer) {
+        throw new Error('invalid userPrv');
+      }
       if (!recipients || !Array.isArray(recipients)) {
         throw new Error('expecting array of recipients');
       }
@@ -1326,7 +1331,7 @@ export class Eth extends BaseCoin {
 
       // first, validate the HSM signature
       const serverXpub = common.Environments[self.bitgo.getEnv()].hsmXpub;
-      const serverPubkeyBuffer: Buffer = utxoLib.HDNode.fromBase58(serverXpub).getPublicKeyBuffer();
+      const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
       const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
       const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
@@ -1504,7 +1509,7 @@ export class Eth extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,

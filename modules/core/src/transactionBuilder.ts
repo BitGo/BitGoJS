@@ -11,6 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
@@ -897,7 +898,7 @@ exports.signTransaction = function (params) {
 
   let rootExtKey;
   if (keychain) {
-    rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
+    rootExtKey = bip32.fromBase58(keychain.xprv);
   }
 
   const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
@@ -922,7 +923,7 @@ exports.signTransaction = function (params) {
     if (rootExtKey) {
       const { walletSubPath = '/0/0' } = keychain;
       const path = sanitizeLegacyPath(keychain.path + walletSubPath + chainPath);
-      privKey = rootExtKey.derivePath(path).keyPair;
+      privKey = rootExtKey.derivePath(path);
     }
 
     privKey.network = network;
