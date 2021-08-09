@@ -6,7 +6,7 @@
 
 import * as superagent from 'superagent';
 import * as bitcoin from '@bitgo/utxo-lib';
-import { makeRandomKey, hdPath } from './bitcoin';
+import { makeRandomKey } from './bitcoin';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
 import { BaseCoin } from './v2/baseCoin';
@@ -45,6 +45,7 @@ import {
   toBitgoRequest,
   verifyResponse,
 } from './api';
+import { sanitizeLegacyPath } from './bip32path';
 
 const debug = debugLib('bitgo:index');
 
@@ -505,49 +506,51 @@ export class BitGo {
         req = req.proxy(self._proxy);
       }
 
-      // intercept a request before it's submitted to the server for v2 authentication (based on token)
-      req.set('BitGo-SDK-Version', self.version());
-
-      if (!_.isUndefined(self._reqId)) {
-        req.set('Request-ID', self._reqId.toString());
-
-        // increment after setting the header so the sequence numbers start at 0
-        self._reqId.inc();
-
-        // request ids must be set before each request instead of being kept
-        // inside the bitgo object. This is to prevent reentrancy issues where
-        // multiple simultaneous requests could cause incorrect reqIds to be used
-        delete self._reqId;
-      }
-
-      // if there is no token, and we're not logged in, the request cannot be v2 authenticated
-      req.isV2Authenticated = true;
-      req.authenticationToken = self._token;
-      // some of the older tokens appear to be only 40 characters long
-      if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
-        // use the old method
-        req.isV2Authenticated = false;
-
-        req.set('Authorization', 'Bearer ' + self._token);
-        return toBitgoRequest(req);
-      }
-
-      req.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
-      // prevent IE from caching requests
-      req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
-
-      if (!(process as any).browser) {
-        // If not in the browser, set the User-Agent. Browsers don't allow
-        // setting of User-Agent, so we must disable this when run in the
-        // browser (browserify sets process.browser).
-        req.set('User-Agent', self._userAgent);
-      }
-
-      // Set the request timeout to just above 5 minutes by default
-      req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
-
       const originalThen = req.then.bind(req);
       req.then = (onfulfilled, onrejected) => {
+        // intercept a request before it's submitted to the server for v2 authentication (based on token)
+        req.set('BitGo-SDK-Version', self.version());
+
+        if (!_.isUndefined(self._reqId)) {
+          req.set('Request-ID', self._reqId.toString());
+
+          // increment after setting the header so the sequence numbers start at 0
+          self._reqId.inc();
+
+          // request ids must be set before each request instead of being kept
+          // inside the bitgo object. This is to prevent reentrancy issues where
+          // multiple simultaneous requests could cause incorrect reqIds to be used
+          delete self._reqId;
+        }
+
+        // prevent IE from caching requests
+        req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
+
+        if (!(process as any).browser) {
+          // If not in the browser, set the User-Agent. Browsers don't allow
+          // setting of User-Agent, so we must disable this when run in the
+          // browser (browserify sets process.browser).
+          req.set('User-Agent', self._userAgent);
+        }
+
+        // Set the request timeout to just above 5 minutes by default
+        req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
+
+        // if there is no token, and we're not logged in, the request cannot be v2 authenticated
+        req.isV2Authenticated = true;
+        req.authenticationToken = self._token;
+        // some of the older tokens appear to be only 40 characters long
+        if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
+          // use the old method
+          req.isV2Authenticated = false;
+
+          req.set('Authorization', 'Bearer ' + self._token);
+          debug('sending v1 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
+          return originalThen(onfulfilled).catch(onrejected);
+        }
+
+        req.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
+
         if (self._token) {
           const data = serializeRequestData(req);
           setRequestQueryString(req);
@@ -562,6 +565,7 @@ export class BitGo {
 
           // we're not sending the actual token, but only its hash
           req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+          debug('sending v2 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
 
           // set the HMAC
           req.set('HMAC', requestProperties.hmac);
@@ -1007,6 +1011,7 @@ export class BitGo {
    * Synchronous method for activating an access token.
    */
   authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
+    debug('now authenticating with access token %s', accessToken.substring(0, 8));
     this._token = accessToken;
   }
 
@@ -1045,8 +1050,8 @@ export class BitGo {
 
     // BIP32 derivation path is applied to both client and server master keys
     const derivationPath = responseBody.derivationPath;
-    const clientDerivedNode = hdPath(clientHDNode).derive(derivationPath);
-    const serverDerivedNode = hdPath(serverHDNode).derive(derivationPath);
+    const clientDerivedNode = clientHDNode.derivePath(sanitizeLegacyPath(derivationPath));
+    const serverDerivedNode = serverHDNode.derivePath(sanitizeLegacyPath(derivationPath));
 
     const publicKey = serverDerivedNode.keyPair.getPublicKeyBuffer();
     const secretKey = clientDerivedNode.keyPair.d.toBuffer(32);
@@ -1223,6 +1228,7 @@ export class BitGo {
         request.forceV1Auth = true;
         // tell the server that the client was forced to downgrade the authentication protocol
         authParams.forceV1Auth = true;
+        debug('forcing v1 auth for call to authenticate');
       }
       const response: superagent.Response = await request.send(authParams);
       // extract body and user information
@@ -1471,12 +1477,13 @@ export class BitGo {
       if (!this._ecdhXprv) {
         // without a private key, the user cannot decrypt the new access token the server will send
         request.forceV1Auth = true;
+        debug('forcing v1 auth for adding access token using token %s', this._token?.substr(0, 8));
       }
 
       const response = await request.send(params);
       if (request.forceV1Auth) {
         (response as any).body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
-        return response;
+        return handleResponseResult()(response);
       }
 
       // verify the authenticity of the server's response before proceeding any further

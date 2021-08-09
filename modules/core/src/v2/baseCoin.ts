@@ -3,7 +3,6 @@
  */
 import { BigNumber } from 'bignumber.js';
 import * as bitcoin from '@bitgo/utxo-lib';
-import { hdPath } from '../bitcoin';
 import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
@@ -23,6 +22,7 @@ import { Enterprises } from './enterprises';
 // re-export account lib transaction types
 import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
 import { signMessage } from '../bip32util';
+import * as crypto from 'crypto';
 export type TransactionType = AccountLibBasecoin.TransactionType;
 
 export interface TransactionRecipient {
@@ -440,14 +440,17 @@ export abstract class BaseCoin {
    * @returns {{key: string, derivationPath: string}}
    */
   deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { key: string; derivationPath: string } {
-    const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
+    function sha256(input) {
+      return crypto.createHash('sha256').update(input).digest();
+    }
+    const derivationPathInput = sha256(sha256(`${seed}`)).toString('hex');
     const derivationPathParts = [
       parseInt(derivationPathInput.slice(0, 7), 16),
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
     const derivationPath = 'm/999999/' + derivationPathParts.join('/');
     const keyNode = bitcoin.HDNode.fromBase58(key);
-    const derivedKeyNode = hdPath(keyNode).derive(derivationPath);
+    const derivedKeyNode = keyNode.derivePath(derivationPath);
     return {
       key: derivedKeyNode.toBase58(),
       derivationPath: derivationPath,

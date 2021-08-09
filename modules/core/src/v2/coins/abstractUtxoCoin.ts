@@ -11,7 +11,6 @@ import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import * as request from 'superagent';
 
-import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import * as errors from '../../errors';
@@ -1066,9 +1065,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       derivationIndex = index;
     }
 
-    const path = 'm/0/0/' + derivationChain + '/' + derivationIndex;
+    const path = '0/0/' + derivationChain + '/' + derivationIndex;
     const hdNodes = keychains.map(({ pub }) => bitcoin.HDNode.fromBase58(pub));
-    const derivedKeys = hdNodes.map((hdNode) => hdPath(hdNode).deriveKey(path).getPublicKeyBuffer());
+    const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(path).keyPair.getPublicKeyBuffer());
 
     const { outputScript, redeemScript, witnessScript, address } = this.createMultiSigAddress(
       addressType,
@@ -1140,7 +1139,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
-      const keychainHdPath = hdPath(keychain);
       const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, self.network);
       self.prepareTransactionBuilder(txb);
 
@@ -1149,7 +1147,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         return {
           inputIndex: index,
           unspent: currentUnspent,
-          path: 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
+          path: '0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
           isP2wsh: !currentUnspent.redeemScript,
           isBitGoTaintedUnspent: self.isBitGoTaintedUnspent(currentUnspent),
           error: undefined as Error | undefined,
@@ -1169,7 +1167,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           );
           continue;
         }
-        const privKey = keychainHdPath.deriveKey(signatureContext.path);
+        const privKey = keychain.derivePath(signatureContext.path).keyPair;
         privKey.network = self.network;
 
         debug('Input details: %O', signatureContext);
