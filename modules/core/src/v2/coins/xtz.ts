@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
@@ -25,7 +26,6 @@ import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
-import * as bitcoin from '@bitgo/utxo-lib';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -168,7 +168,7 @@ export class Xtz extends BaseCoin {
    * @returns {string} derived private key
    */
   deriveKeyWithPath({ key, path }: { key: string; path: string }): string {
-    const keychain = bitcoin.HDNode.fromBase58(key);
+    const keychain = bip32.fromBase58(key);
     const derivedKeyNode = keychain.derivePath(path);
     return derivedKeyNode.toBase58();
   }
