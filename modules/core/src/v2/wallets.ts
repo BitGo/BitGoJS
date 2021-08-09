@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
@@ -11,6 +11,7 @@ import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 import { sanitizeLegacyPath } from '../bip32path';
+import { getSharedSecret } from '../ecdh';
 
 const co = Bluebird.coroutine;
 
@@ -614,14 +615,11 @@ export class Wallets {
         password: params.userPassword,
         input: sharingKeychain.encryptedXprv,
       });
-      const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
-
-      // Derive key by path (which is used between these 2 users only)
-      const privKey = rootExtKey.derivePath(sanitizeLegacyPath(walletShare.keychain.path)).keyPair;
-      const secret = self.bitgo.getECDHSecret({
-        eckey: privKey,
-        otherPubKeyHex: walletShare.keychain.fromPubKey,
-      });
+      const secret = getSharedSecret(
+        // Derive key by path (which is used between these 2 users only)
+        bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+        Buffer.from(walletShare.keychain.fromPubKey, 'hex')
+      ).toString('hex');
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet prv
       const decryptedSharedWalletPrv = self.bitgo.decrypt({

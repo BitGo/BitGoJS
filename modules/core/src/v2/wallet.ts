@@ -21,6 +21,7 @@ import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
+import { getSharedSecret } from '../ecdh';
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
@@ -1583,7 +1584,7 @@ export class Wallet {
             }
 
             const eckey = makeRandomKey();
-            const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+            const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
             const newEncryptedPrv = self.bitgo.encrypt({ password: secret, input: keychain.prv });
 
             sharedKeychain = {

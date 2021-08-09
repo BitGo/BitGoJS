@@ -138,11 +138,6 @@ export interface VerifyShardsOptions {
   xpub: string;
 }
 
-export interface GetEcdhSecretOptions {
-  otherPubKeyHex: string;
-  eckey: bitcoin.ECPair;
-}
-
 export interface AccessTokenOptions {
   accessToken: string;
 }
@@ -941,29 +936,6 @@ export class BitGo {
     }
 
     return true;
-  }
-
-  /**
-   * Construct an ECDH secret from a private key and other user's public key
-   */
-  getECDHSecret({ otherPubKeyHex, eckey }: GetEcdhSecretOptions): string {
-    if (!_.isString(otherPubKeyHex)) {
-      throw new Error('otherPubKeyHex string required');
-    }
-    if (!_.isObject(eckey)) {
-      throw new Error('eckey object required');
-    }
-
-    const otherKeyPub = Buffer.from(otherPubKeyHex, 'hex');
-    const secretPoint = (eckey as bitcoin.ECPair).d.toBuffer(32);
-    return Buffer.from(
-      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-      secp256k1.publicKeyTweakMul(otherKeyPub, secretPoint)
-    )
-    // this implementation does not include the parity byte
-      .slice(1)
-      .toString('hex');
   }
 
   /**
