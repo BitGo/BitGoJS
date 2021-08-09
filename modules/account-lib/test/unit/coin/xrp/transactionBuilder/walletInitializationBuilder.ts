@@ -1,5 +1,3 @@
-// import crypto from 'crypto';
-// import algosdk from 'algosdk';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
