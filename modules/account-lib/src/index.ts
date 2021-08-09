@@ -3,6 +3,7 @@ import { BuildTransactionError } from './coin/baseCoin/errors';
 
 import * as crypto from './utils/crypto';
 export { crypto };
+
 // coins
 import * as BaseCoin from './coin/baseCoin';
 export { BaseCoin };
@@ -21,6 +22,9 @@ export { Eth2 };
 
 import * as Etc from './coin/etc';
 export { Etc };
+
+import * as AvaxC from './coin/avaxc';
+export { AvaxC };
 
 import * as Rbtc from './coin/rbtc';
 export { Rbtc };
@@ -57,6 +61,8 @@ const coinBuilderMap = {
   trbtc: Rbtc.TransactionBuilder,
   celo: Celo.TransactionBuilder,
   tcelo: Celo.TransactionBuilder,
+  avaxc: AvaxC.TransactionBuilder,
+  tavaxc: AvaxC.TransactionBuilder,
   hbar: Hbar.TransactionBuilderFactory,
   thbar: Hbar.TransactionBuilderFactory,
   cspr: Cspr.TransactionBuilderFactory,
