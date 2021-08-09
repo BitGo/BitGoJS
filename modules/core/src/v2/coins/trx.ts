@@ -325,13 +325,8 @@ export class Trx extends BaseCoin {
   getExtraPrebuildParams(buildParams: any, callback?: NodeCallback<any>): Bluebird<any> {
     return co<any>(function* () {
       if (buildParams.recipients[0].data && buildParams.feeLimit) {
-        const recipients: any[] = [{ ...buildParams.recipients[0] }];
-        recipients[0].feeLimit = buildParams.feeLimit;
-        return {
-          recipients,
-        };
+        buildParams.recipients[0].feeLimit = buildParams.feeLimit;
       }
-      return {};
     })
       .call(this)
       .asCallback(callback);
