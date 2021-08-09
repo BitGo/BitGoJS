@@ -449,7 +449,7 @@ export abstract class BaseCoin {
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
     const derivationPath = 'm/999999/' + derivationPathParts.join('/');
-    const keyNode = bitcoin.HDNode.fromBase58(key);
+    const keyNode = bip32.fromBase58(key);
     const derivedKeyNode = keyNode.derivePath(derivationPath);
     return {
       key: derivedKeyNode.toBase58(),
