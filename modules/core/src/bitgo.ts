@@ -7,6 +7,7 @@
 import * as superagent from 'superagent';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey } from './bitcoin';
+import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
 import { BaseCoin } from './v2/baseCoin';
@@ -827,7 +828,7 @@ export class BitGo {
     const shards = _.zipWith(secrets, passwords, (shard, password) => {
       return this.encrypt({ input: shard, password });
     });
-    const node = bitcoin.HDNode.fromSeedHex(seed);
+    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
     return {
       xpub: node.neutered().toBase58(),
       m,
@@ -857,7 +858,7 @@ export class BitGo {
       return this.decrypt({ input: shard, password });
     });
     const seed: string = shamir.combine(secrets);
-    const node = bitcoin.HDNode.fromSeedHex(seed);
+    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
     return {
       xpub: node.neutered().toBase58() as string,
       xprv: node.toBase58() as string,
@@ -927,7 +928,7 @@ export class BitGo {
       return false;
     }
     const seed = _.first(uniqueSeeds);
-    const node = bitcoin.HDNode.fromSeedHex(seed);
+    const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
     const restoredXpub = node.neutered().toBase58();
 
     if (!_.isUndefined(xpub)) {
@@ -1045,16 +1046,19 @@ export class BitGo {
     }
 
     // construct HDNode objects for client's xprv and server's xpub
-    const clientHDNode = bitcoin.HDNode.fromBase58(ecdhXprv);
-    const serverHDNode = bitcoin.HDNode.fromBase58(serverXpub);
+    const clientHDNode = bip32.fromBase58(ecdhXprv);
+    const serverHDNode = bip32.fromBase58(serverXpub);
 
     // BIP32 derivation path is applied to both client and server master keys
-    const derivationPath = responseBody.derivationPath;
-    const clientDerivedNode = clientHDNode.derivePath(sanitizeLegacyPath(derivationPath));
-    const serverDerivedNode = serverHDNode.derivePath(sanitizeLegacyPath(derivationPath));
+    const derivationPath = sanitizeLegacyPath(responseBody.derivationPath);
+    const clientDerivedNode = clientHDNode.derivePath(derivationPath);
+    const serverDerivedNode = serverHDNode.derivePath(derivationPath);
 
-    const publicKey = serverDerivedNode.keyPair.getPublicKeyBuffer();
-    const secretKey = clientDerivedNode.keyPair.d.toBuffer(32);
+    const publicKey = serverDerivedNode.publicKey;
+    const secretKey = clientDerivedNode.privateKey;
+    if (!secretKey) {
+      throw new Error('no client private Key');
+    }
     const secret = Buffer.from(
       // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
       //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
