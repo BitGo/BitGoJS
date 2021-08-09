@@ -3,7 +3,7 @@ import * as testData from '../../../resources/xrp/xrp';
 
 import { Xrp } from '../../../../src';
 
-describe('Xrp KeyPair', function() {
+describe('Xrp KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(16) };
 
   describe('should create a valid KeyPair', () => {
@@ -40,7 +40,7 @@ describe('Xrp KeyPair', function() {
     });
   });
 
-  describe('should fail to create a KeyPair', function() {
+  describe('should fail to create a KeyPair', function () {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Entropy should be 128 bits (16 bytes)
       should.throws(() => new Xrp.KeyPair(seed));
@@ -61,7 +61,7 @@ describe('Xrp KeyPair', function() {
     });
   });
 
-  describe('getKeys from seed', function() {
+  describe('getKeys from seed', function () {
     it('should get private and public keys', () => {
       const keyPair = new Xrp.KeyPair(defaultSeed);
       const { prv, pub } = keyPair.getKeys();
@@ -70,7 +70,7 @@ describe('Xrp KeyPair', function() {
     });
   });
 
-  describe('getAddress from private key', function() {
+  describe('getAddress from private key', function () {
     it('should get an address', () => {
       const keyPair = new Xrp.KeyPair({ prv: testData.ACCOUNT_1.prv });
       const address = keyPair.getAddress();
@@ -78,7 +78,7 @@ describe('Xrp KeyPair', function() {
     });
   });
 
-  describe('getAddress from public key', function() {
+  describe('getAddress from public key', function () {
     it('should get an address', () => {
       const keyPair = new Xrp.KeyPair({ pub: testData.ACCOUNT_1.pub });
       const address = keyPair.getAddress();
@@ -86,11 +86,11 @@ describe('Xrp KeyPair', function() {
     });
   });
 
-  describe('getAddress from seed', function() {
+  describe('getAddress from seed', function () {
     it('should get an address', () => {
       const keyPair = new Xrp.KeyPair(defaultSeed);
       const address = keyPair.getAddress();
       address.should.equal(testData.defaultSeed.address);
     });
-   });
- });
+  });
+});

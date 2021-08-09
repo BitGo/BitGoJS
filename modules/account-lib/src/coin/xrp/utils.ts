@@ -1,5 +1,5 @@
 import { RippleAPI } from 'ripple-lib';
-import RippleAddressCodec from 'ripple-address-codec';
+import * as RippleAddressCodec from 'ripple-address-codec';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 

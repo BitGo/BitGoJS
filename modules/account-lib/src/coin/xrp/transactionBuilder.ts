@@ -4,7 +4,7 @@ import { ApiMemo } from 'ripple-lib/dist/npm/transaction/utils';
 import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { AddressValidationError } from './errors';
@@ -12,7 +12,7 @@ import { KeyPair } from './keyPair';
 import utils from './utils';
 import { BaseTransactionSchema } from './txnSchema';
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
+  protected _transaction: Transaction;
   protected _keyPairs: KeyPair[];
 
   protected _sender: string;
@@ -164,7 +164,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new NotImplementedError('validateKey not implemented');
+    const keyPair = new KeyPair({ prv: key.key });
+    if (!keyPair.getKeys().prv) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
   /** @inheritdoc */
