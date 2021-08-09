@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoin from '@bitgo/utxo-lib';
@@ -374,8 +375,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   isValidPub(pub: string) {
     try {
-      bitcoin.HDNode.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
