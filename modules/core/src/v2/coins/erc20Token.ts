@@ -10,7 +10,7 @@ import { NodeCallback } from '../types';
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../internal/util';
-import * as config from '../../config';
+import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -121,11 +121,11 @@ export class Erc20Token extends Eth {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+      const isKrsRecovery = getIsKrsRecovery(params);
+      const isUnsignedSweep = getIsUnsignedSweep(params);
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
+      if (isKrsRecovery) {
+        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
       }
 
       // Clean up whitespace from entered values

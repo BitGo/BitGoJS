@@ -26,10 +26,9 @@ import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -720,9 +719,9 @@ export class Eos extends BaseCoin {
    * @param signableTx
    * @param signingKey
    */
-  signTx(signableTx: string, signingKey: HDNode): string {
+  signTx(signableTx: string, signingKey: bip32.BIP32Interface): string {
     const signBuffer = Buffer.from(signableTx, 'hex');
-    const privateKeyBuffer = signingKey.getKey().getPrivateKeyBuffer();
+    const privateKeyBuffer = signingKey.privateKey;
     return ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
   }
 
@@ -757,13 +756,7 @@ export class Eos extends BaseCoin {
 
       const { krsProvider } = params;
       if (getIsKrsRecovery(params)) {
-        if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
-          throw new Error('unknown key recovery service provider');
-        }
-        const krsProviderConfig = config.krsProviders[krsProvider];
-        if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
-          throw new Error('specified key recovery service does not support recoveries for this coin');
-        }
+        checkKrsProvider(self, krsProvider);
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {
@@ -782,8 +775,8 @@ export class Eos extends BaseCoin {
       if (!account.permissions) {
         throw new Error('Could not find permissions for ' + params.rootAddress);
       }
-      const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
-      const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
+      const userPub = ecc.PublicKey.fromBuffer(keys[0].publicKey).toString();
+      const backupPub = ecc.PublicKey.fromBuffer(keys[1].publicKey).toString();
 
       const activePermission = _.find(account.permissions, { perm_name: 'active' });
       const requiredAuth = _.get(activePermission, 'required_auth');

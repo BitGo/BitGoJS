@@ -199,8 +199,15 @@ export const supportedCrossChainRecoveries = {
   bsv: ['btc', 'ltc', 'bch'],
 };
 
+export type KrsProvider = {
+  feeType: 'flatUsd';
+  feeAmount: number;
+  supportedCoins: string[];
+  feeAddresses?: Record<string, string>
+}
+
 // KRS providers and their fee structures
-export const krsProviders = {
+export const krsProviders: Record<string, KrsProvider> = {
   keyternal: {
     feeType: 'flatUsd',
     feeAmount: 99,

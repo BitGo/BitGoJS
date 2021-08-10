@@ -2,9 +2,12 @@
  * @prettier
  */
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { BitGo } from '../../bitgo';
+import * as bip32 from 'bip32';
 import * as stellar from 'stellar-sdk';
+
+import { BitGo } from '../../bitgo';
+import { BaseCoin } from '../baseCoin';
+import * as config from '../../config';
 
 interface ValidateKeyOptions {
   key: string;
@@ -22,6 +25,47 @@ export interface InitiateRecoveryOptions {
   walletPassphrase?: string;
 }
 
+type GetKrsProviderOptions = { checkCoinFamilySupport?: boolean };
+
+/**
+ * @param coin
+ * @param krsProviderName
+ * @param checkCoinFamilySupport - assert that krsProvider explicitly supports coin
+ * @return KrsProvider
+ */
+export function getKrsProvider(
+  coin: BaseCoin,
+  krsProviderName: string | undefined,
+  { checkCoinFamilySupport = true }: GetKrsProviderOptions = {}
+): config.KrsProvider {
+  if (!krsProviderName) {
+    throw new Error(`no krsProvider name`);
+  }
+
+  const krsProvider = config.krsProviders[krsProviderName];
+
+  if (krsProvider === undefined) {
+    throw new Error('unknown key recovery service provider');
+  }
+
+  if (checkCoinFamilySupport && !krsProvider.supportedCoins.includes(coin.getFamily())) {
+    throw new Error('specified key recovery service does not support recoveries for this coin');
+  }
+
+  return krsProvider;
+}
+
+/**
+ * Wrapper for {@see getKrsProvider} returning void
+ */
+export function checkKrsProvider(
+  coin: BaseCoin,
+  krsProviderName: string | undefined,
+  options: GetKrsProviderOptions = {}
+): void {
+  getKrsProvider(coin, krsProviderName, options);
+}
+
 export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {
   return backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 }
@@ -33,19 +77,19 @@ export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; 
 export function validateKey(
   bitgo: BitGo,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
-): utxolib.HDNode {
+): bip32.BIP32Interface {
   if (!key.startsWith('xprv') && !isUnsignedSweep) {
     // Try to decrypt the key
     try {
       if (source === 'user' || (source === 'backup' && !isKrsRecovery)) {
-        return utxolib.HDNode.fromBase58(bitgo.decrypt({ password: passphrase, input: key }));
+        return bip32.fromBase58(bitgo.decrypt({ password: passphrase, input: key }));
       }
     } catch (e) {
       throw new Error(`Failed to decrypt ${source} key with passcode - try again!`);
     }
   }
   try {
-    return utxolib.HDNode.fromBase58(key);
+    return bip32.fromBase58(key);
   } catch (e) {
     throw new Error(`Failed to validate ${source} key - try again!`);
   }
@@ -55,7 +99,7 @@ export function getBip32Keys(
   bitgo: BitGo,
   params: InitiateRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
-): utxolib.HDNode[] {
+): bip32.BIP32Interface[] {
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
   const keys = [
@@ -77,11 +121,14 @@ export function getBip32Keys(
     }),
   ];
 
-  try {
-    // Box C
-    keys.push(utxolib.HDNode.fromBase58(params.bitgoKey));
-  } catch (e) {
-    if (requireBitGoXpub) {
+  if (requireBitGoXpub) {
+    if (!params.bitgoKey) {
+      throw new Error(`BitGo xpub required but not provided`);
+    }
+    try {
+      // Box C
+      keys.push(bip32.fromBase58(params.bitgoKey));
+    } catch (e) {
       throw new Error('Failed to parse bitgo xpub!');
     }
   }

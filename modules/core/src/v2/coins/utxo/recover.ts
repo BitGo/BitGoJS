@@ -3,15 +3,114 @@
  */
 
 import * as _ from 'lodash';
+import * as bip32 from 'bip32';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../bitgo';
-import * as config from '../../../config';
-import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
-import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from '../abstractUtxoCoin';
-import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
+import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
+import { sanitizeLegacyPath } from '../../../bip32path';
+import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo, UtxoNetwork } from '../abstractUtxoCoin';
+
+interface TransactionBuilder {
+  network: UtxoNetwork;
+
+  sign(
+    index: number,
+    privateKey: Buffer | bip32.BIP32Interface,
+    redeemScript: Buffer | undefined,
+    sigHashType: number,
+    inputValue: number,
+    witnessScript: Buffer | undefined
+  );
+
+  build(): {
+    toBuffer(): Buffer;
+  };
+}
+
+interface SignatureAddressInfo extends AddressInfo {
+  backupKey: bip32.BIP32Interface;
+  userKey: bip32.BIP32Interface;
+  redeemScript?: Buffer;
+  witnessScript?: Buffer;
+}
+
+/**
+ * Derive child keys at specific index, from provided parent keys
+ * @param {bip32.BIP32Interface[]} keyArray
+ * @param {number} index
+ * @returns {bip32.BIP32Interface[]}
+ */
+function deriveKeys(keyArray: bip32.BIP32Interface[], index: number): bip32.BIP32Interface[] {
+  return keyArray.map((k) => k.derive(index));
+}
+
+/**
+ * Apply signatures to a funds recovery transaction using user + backup key
+ * @param txb - a transaction builder object (with inputs and outputs)
+ * @param sigHashType - signature hash type
+ * @param unspents - the unspents to use in the transaction
+ * @param addressesById - the address and redeem script info for the unspents
+ * @param cosign - whether to cosign this transaction with the user's backup key (false if KRS recovery)
+ * @returns transactionBuilder originally passed in as the first argument
+ */
+function signRecoveryTransaction(
+  txb: TransactionBuilder,
+  sigHashType: number,
+  unspents: Output[],
+  addressesById: Record<string, SignatureAddressInfo>,
+  cosign: boolean
+): TransactionBuilder {
+  interface SignatureIssue {
+    inputIndex: number;
+    unspent: Output;
+    error: Error | null;
+  }
+
+  const signatureIssues: SignatureIssue[] = [];
+  unspents.forEach((unspent, i) => {
+    const address = addressesById[unspent.address];
+    const backupPrivateKey = address.backupKey;
+    const userPrivateKey = address.userKey;
+    // force-override networks
+    backupPrivateKey.network = txb.network;
+    userPrivateKey.network = txb.network;
+
+    const currentSignatureIssue: SignatureIssue = {
+      inputIndex: i,
+      unspent: unspent,
+      error: null,
+    };
+
+    if (cosign) {
+      try {
+        txb.sign(i, backupPrivateKey, address.redeemScript, sigHashType, Number(unspent.amount), address.witnessScript);
+      } catch (e) {
+        currentSignatureIssue.error = e;
+        signatureIssues.push(currentSignatureIssue);
+      }
+    }
+
+    try {
+      txb.sign(i, userPrivateKey, address.redeemScript, sigHashType, Number(unspent.amount), address.witnessScript);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
+  });
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map((currentIssue) => currentIssue.inputIndex);
+    const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
+  }
+
+  return txb;
+}
 
 export interface RecoverParams {
   scan?: number;
@@ -29,7 +128,7 @@ export interface RecoverParams {
 async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
-  keyArray: bitcoin.HDNode[],
+  keyArray: bip32.BIP32Interface[],
   basePath: string,
   addressesById
 ) {
@@ -37,13 +136,13 @@ async function queryBlockchainUnspentsPath(
   let numSequentialAddressesWithoutTxs = 0;
 
   async function gatherUnspents(addrIndex: number) {
-    const derivedKeys = coin.deriveKeys(keyArray, addrIndex);
+    const derivedKeys = deriveKeys(keyArray, addrIndex);
 
     const chain = Number(basePath.split('/').pop()); // extracts the chain from the basePath
-    const keys = derivedKeys.map((k) => k.getPublicKeyBuffer());
+    const keys = derivedKeys.map((k) => k.publicKey);
     const address: any = coin.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
-    const addrInfo: AddressInfo = (await coin.getAddressInfoFromExplorer(address.address, params.apiKey)) as any;
+    const addrInfo: AddressInfo = await coin.getAddressInfoFromExplorer(address.address, params.apiKey);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
@@ -59,10 +158,7 @@ async function queryBlockchainUnspentsPath(
         addressesById[address.address] = address;
 
         // Try to find unspents on it.
-        const addressUnspents: UnspentInfo[] = (await coin.getUnspentInfoFromExplorer(
-          address.address,
-          params.apiKey
-        )) as any;
+        const addressUnspents: UnspentInfo[] = await coin.getUnspentInfoFromExplorer(address.address, params.apiKey);
 
         addressUnspents.forEach(function addAddressToUnspent(unspent) {
           unspent.address = address.address;
@@ -128,15 +224,8 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
 
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
-  const krsProvider = config.krsProviders[params.krsProvider];
 
-  if (isKrsRecovery && _.isUndefined(krsProvider)) {
-    throw new Error('unknown key recovery service provider');
-  }
-
-  if (isKrsRecovery && !krsProvider.supportedCoins.includes(coin.getFamily())) {
-    throw new Error('specified key recovery service does not support recoveries for this coin');
-  }
+  const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
   const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
@@ -145,11 +234,11 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   let derivedUserKey;
   let baseKeyPath;
   if (params.userKeyPath) {
-    derivedUserKey = deriveKeyByPath(userKey, params.userKeyPath);
-    const twoKeys = coin.deriveKeys(coin.deriveKeys([backupKey, bitgoKey], 0), 0);
+    derivedUserKey = userKey.derivePath(sanitizeLegacyPath(params.userKeyPath));
+    const twoKeys = deriveKeys(deriveKeys([backupKey, bitgoKey], 0), 0);
     baseKeyPath = [derivedUserKey, ...twoKeys];
   } else {
-    baseKeyPath = coin.deriveKeys(coin.deriveKeys(keys, 0), 0);
+    baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
   }
 
   const queries: any[] = [];
@@ -179,8 +268,8 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
       }
       const externalChainCode = codes.external;
       const internalChainCode = codes.internal;
-      const externalKey = coin.deriveKeys(baseKeyPath, externalChainCode);
-      const internalKey = coin.deriveKeys(baseKeyPath, internalChainCode);
+      const externalKey = deriveKeys(baseKeyPath, externalChainCode);
+      const internalKey = deriveKeys(baseKeyPath, internalChainCode);
       queries.push(queryBlockchainUnspentsPath(coin, params, externalKey, '/0/0/' + externalChainCode, addressesById));
       queries.push(queryBlockchainUnspentsPath(coin, params, internalKey, '/0/0/' + internalChainCode, addressesById));
     }
@@ -246,7 +335,11 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
 
   transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
 
-  if (isKrsRecovery && krsFee > 0) {
+  if (krsProvider && krsFee > 0) {
+    if (!krsProvider.feeAddresses) {
+      throw new Error(`keyProvider must define feeAddresses`);
+    }
+
     const krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
 
     if (!krsFeeAddress) {
@@ -260,7 +353,13 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
     const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
     return coin.formatForOfflineVault(txInfo, txHex);
   } else {
-    const signedTx = coin.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+    const signedTx = signRecoveryTransaction(
+      transactionBuilder,
+      coin.defaultSigHashType,
+      unspents,
+      addressesById,
+      !isKrsRecovery
+    );
     txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
     try {
       txInfo.tx = await coin.verifyRecoveryTransaction(txInfo);

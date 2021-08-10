@@ -27,10 +27,13 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import * as config from '../../config';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { getBip32Keys, InitiateRecoveryOptions as BaseInitiateRecoveryOptions } from '../recovery/initiate';
+import {
+  checkKrsProvider,
+  getBip32Keys,
+  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
+} from '../recovery/initiate';
 
 const ripple = require('../../ripple');
 
@@ -459,8 +462,8 @@ export class Xrp extends BaseCoin {
         ],
       };
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
+      if (isKrsRecovery) {
+        checkKrsProvider(self, params.krsProvider);
       }
 
       // Validate the destination address
@@ -495,8 +498,8 @@ export class Xrp extends BaseCoin {
       }
 
       // make sure the signers are user, backup, bitgo
-      const userAddress = rippleKeypairs.deriveAddress(keys[0].getPublicKeyBuffer().toString('hex'));
-      const backupAddress = rippleKeypairs.deriveAddress(keys[1].getPublicKeyBuffer().toString('hex'));
+      const userAddress = rippleKeypairs.deriveAddress(keys[0].publicKey.toString('hex'));
+      const backupAddress = rippleKeypairs.deriveAddress(keys[1].publicKey.toString('hex'));
 
       const signerList = signerLists[0];
       if (signerList.SignerQuorum !== 2) {
@@ -585,7 +588,10 @@ export class Xrp extends BaseCoin {
         return txJSON;
       }
       const rippleLib = ripple();
-      const userKey = keys[0].getKey().getPrivateKeyBuffer().toString('hex');
+      if (!keys[0].privateKey) {
+        throw new Error(`userKey is not a private key`);
+      }
+      const userKey = keys[0].privateKey.toString('hex');
       const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
 
       let signedTransaction;
@@ -593,7 +599,10 @@ export class Xrp extends BaseCoin {
       if (isKrsRecovery) {
         signedTransaction = userSignature;
       } else {
-        const backupKey = keys[1].getKey().getPrivateKeyBuffer().toString('hex');
+        if (!keys[1].privateKey) {
+          throw new Error(`backupKey is not a private key`);
+        }
+        const backupKey = keys[1].privateKey.toString('hex');
         const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
         signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
       }

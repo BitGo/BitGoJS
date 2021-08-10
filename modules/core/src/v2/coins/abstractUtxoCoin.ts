@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoin from '@bitgo/utxo-lib';
@@ -94,6 +95,11 @@ export interface UtxoNetwork {
   scriptHash: number;
   altScriptHash?: number;
   bech32: string;
+  wif: number;
+  bip32: {
+    public: number;
+    private: number;
+  };
 }
 
 export interface ParsedSignatureScript {
@@ -374,8 +380,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   isValidPub(pub: string) {
     try {
-      bitcoin.HDNode.fromBase58(pub);
-      return true;
+      return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -1806,94 +1811,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Derive child keys at specific index, from provided parent keys
-   * @param {bitcoin.HDNode[]} keyArray
-   * @param {number} index
-   * @returns {bitcoin.HDNode[]}
-   */
-  deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
-    return keyArray.map((k) => k.derive(index));
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.resolve(recover(this, this.bitgo, params)).asCallback(callback);
-  }
-
-  /**
-   * Apply signatures to a funds recovery transaction using user + backup key
-   * @param txb {Object} a transaction builder object (with inputs and outputs)
-   * @param unspents {Array} the unspents to use in the transaction
-   * @param addresses {Array} the address and redeem script info for the unspents
-   * @param cosign {Boolean} whether to cosign this transaction with the user's backup key (false if KRS recovery)
-   * @returns the transaction builder originally passed in as the first argument
-   */
-  signRecoveryTransaction(txb: any, unspents: Output[], addresses: any, cosign: boolean): any {
-    interface SignatureIssue {
-      inputIndex: number;
-      unspent: Output;
-      error: Error | null;
-    }
-
-    const signatureIssues: SignatureIssue[] = [];
-    unspents.forEach((unspent, i) => {
-      const address = addresses[unspent.address];
-      const backupPrivateKey = address.backupKey.keyPair;
-      const userPrivateKey = address.userKey.keyPair;
-      // force-override networks
-      backupPrivateKey.network = this.network;
-      userPrivateKey.network = this.network;
-
-      const currentSignatureIssue: SignatureIssue = {
-        inputIndex: i,
-        unspent: unspent,
-        error: null,
-      };
-
-      if (cosign) {
-        try {
-          txb.sign(
-            i,
-            backupPrivateKey,
-            address.redeemScript,
-            this.defaultSigHashType,
-            unspent.amount,
-            address.witnessScript
-          );
-        } catch (e) {
-          currentSignatureIssue.error = e;
-          signatureIssues.push(currentSignatureIssue);
-        }
-      }
-
-      try {
-        txb.sign(
-          i,
-          userPrivateKey,
-          address.redeemScript,
-          this.defaultSigHashType,
-          unspent.amount,
-          address.witnessScript
-        );
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
-      }
-    });
-
-    if (signatureIssues.length > 0) {
-      const failedIndices = signatureIssues.map((currentIssue) => currentIssue.inputIndex);
-      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
-      error.code = 'input_signature_failure';
-      error.signingErrors = signatureIssues;
-      throw error;
-    }
-
-    return txb;
   }
 
   /**

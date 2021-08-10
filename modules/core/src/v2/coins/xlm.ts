@@ -13,12 +13,10 @@ import { BitGo } from '../../bitgo';
 import { KeyIndices } from '../keychains';
 
 import { Ed25519KeyDeriver } from '../internal/keyDeriver';
-import * as config from '../../config';
 import * as common from '../../common';
 import {
   InvalidAddressError,
   InvalidMemoIdError,
-  KeyRecoveryServiceError,
   UnexpectedAddressError,
   StellarFederationUserNotFoundError,
 } from '../../errors';
@@ -39,7 +37,7 @@ import {
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
-import { getStellarKeys } from '../recovery/initiate';
+import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -592,18 +590,8 @@ export class Xlm extends BaseCoin {
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
-      }
-
-      if (
-        isKrsRecovery &&
-        params.krsProvider &&
-        !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())
-      ) {
-        throw new KeyRecoveryServiceError(
-          `Specified key recovery service does not support recoveries for ${self.getChain()}`
-        );
+      if (isKrsRecovery) {
+        checkKrsProvider(self, params.krsProvider);
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {

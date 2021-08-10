@@ -35,6 +35,7 @@ import * as config from '../../config';
 import { Util } from '../internal/util';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
+import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -858,11 +859,11 @@ export class Eth extends BaseCoin {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+      const isKrsRecovery = getIsKrsRecovery(params);
+      const isUnsignedSweep = getIsUnsignedSweep(params);
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
+      if (isKrsRecovery) {
+        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
       }
 
       // Clean up whitespace from entered values
