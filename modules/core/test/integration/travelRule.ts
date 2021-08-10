@@ -4,9 +4,11 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
+import * as bip32 from 'bip32';
 import { strict as assert } from 'assert';
 import 'should';
 import * as _ from 'lodash';
+import { getSharedSecret } from '../../src/ecdh';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;
@@ -100,19 +102,16 @@ describe('Travel Rule API', function () {
     });
 
     it('decrypts successfully', function () {
-      const toPrivate = bitcoin.HDNode.fromSeedHex('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      const toPrivate = bip32.fromSeed(Buffer.from('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'));
       const fromPrivate = bitcoin.makeRandomKey();
       const path = '99/99';
-      const toPubKey = toPrivate.derivePath(path).keyPair.getPublicKeyBuffer().toString('hex');
-      const secret = bitgo.getECDHSecret({
-        eckey: fromPrivate,
-        otherPubKeyHex: toPubKey,
-      });
+      const toPubKey = toPrivate.derivePath(path);
+      const secret = getSharedSecret(fromPrivate, toPubKey).toString('hex');
       const encryptedTravelInfo = sjcl.encrypt(secret, JSON.stringify({ fromUserName: 'frobozz' }));
       const fakeTravelInfo = {
         toPubKey: toPubKey,
         toPubKeyPath: path,
-        fromPubKey: fromPrivate.getPublicKeyBuffer().toString('hex'),
+        fromPubKey: fromPrivate.publicKey.toString('hex'),
         encryptedTravelInfo: encryptedTravelInfo,
       };
       const fakeTx = {

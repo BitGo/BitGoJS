@@ -11,12 +11,14 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import * as bip32 from 'bip32';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey, getNetwork } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { sanitizeLegacyPath } from './bip32path';
+import { getSharedSecret } from './ecdh';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 
@@ -234,11 +236,12 @@ Wallets.prototype.acceptShare = function (params, callback) {
 
           // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
           sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
-          const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.xprv);
 
           // Derive key by path (which is used between these 2 users only)
-          const privKey = rootExtKey.derivePath(sanitizeLegacyPath(walletShare.keychain.path)).keyPair;
-          const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+          const secret = getSharedSecret(
+            bip32.fromBase58(sharingKeychain.xprv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+            Buffer.from(walletShare.keychain.fromPubKey, 'hex')
+          ).toString('hex');
 
           // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
           const decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedXprv });

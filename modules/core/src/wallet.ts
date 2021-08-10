@@ -24,6 +24,7 @@ const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { makeRandomKey, getNetwork } from './bitcoin';
 import { sanitizeLegacyPath } from './bip32path';
+import { getSharedSecret } from './ecdh';
 const request = require('superagent');
 
 //
@@ -2193,7 +2194,7 @@ Wallet.prototype.shareWallet = function (params, callback) {
               }
 
               const eckey = makeRandomKey();
-              const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+              const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
               const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 
               sharedKeychain = {

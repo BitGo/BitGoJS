@@ -47,6 +47,7 @@ import {
   verifyResponse,
 } from './api';
 import { sanitizeLegacyPath } from './bip32path';
+import { getSharedSecret } from './ecdh';
 
 const debug = debugLib('bitgo:index');
 
@@ -944,7 +945,7 @@ export class BitGo {
   }
 
   /**
-   * Construct an ECDH secret from a private key and other user's public key
+   * @deprecated - use `getSharedSecret()`
    */
   getECDHSecret({ otherPubKeyHex, eckey }: GetEcdhSecretOptions): string {
     if (!_.isString(otherPubKeyHex)) {
@@ -954,16 +955,7 @@ export class BitGo {
       throw new Error('eckey object required');
     }
 
-    const otherKeyPub = Buffer.from(otherPubKeyHex, 'hex');
-    const secretPoint = (eckey as bitcoin.ECPair).d.toBuffer(32);
-    return Buffer.from(
-      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-      secp256k1.publicKeyTweakMul(otherKeyPub, secretPoint)
-    )
-    // this implementation does not include the parity byte
-      .slice(1)
-      .toString('hex');
+    return getSharedSecret(eckey, Buffer.from(otherPubKeyHex, 'hex')).toString('hex');
   }
 
   /**
