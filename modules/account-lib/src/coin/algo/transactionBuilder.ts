@@ -292,8 +292,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const algosdkTxn = decodedTxn.txn;
 
     if (decodedTxn.signed) {
-      this._transaction.signedTransaction =
-        typeof rawTransaction === 'string' ? Utils.hexStringToUInt8Array(rawTransaction) : rawTransaction;
+      this._transaction.signedTransaction = decodedTxn.rawTransaction;
+      if (decodedTxn.signers) {
+        this._transaction.signers = decodedTxn.signers;
+      }
+      if (decodedTxn.signedBy) {
+        this._transaction.signedBy = decodedTxn.signedBy;
+      }
     }
     this.sender({ address: algosdk.encodeAddress(algosdkTxn.from.publicKey) });
     this._isFlatFee = true;

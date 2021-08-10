@@ -2,7 +2,7 @@ import algosdk from 'algosdk';
 
 export interface TxData {
   id: string;
-  type?: string,
+  type?: string;
   from: string;
   to?: string;
   fee: number;
@@ -27,9 +27,17 @@ export interface Address {
   checksum: Uint8Array;
 }
 
+export interface Seed {
+  seed: Uint8Array;
+  checksum: Uint8Array;
+}
+
 export interface EncodedTx {
+  rawTransaction: Uint8Array;
   txn: algosdk.Transaction;
   signed: boolean;
+  signers?: string[];
+  signedBy?: string[];
 }
 
 export interface Account {
