@@ -97,7 +97,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.setXRPTransaction(tx);
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.sign(this._keyPairs);
-    return this._transaction;
+    this.transaction.loadInputsAndOutputs();
+    return this.transaction;
   }
 
   /** @inheritdoc */

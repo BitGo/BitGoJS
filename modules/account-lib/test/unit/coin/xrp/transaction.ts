@@ -23,20 +23,4 @@ describe('XRP Transaction', () => {
       should.throws(() => tx.sign([new KeyPair({ prv: XrpResources.accounts.acc1.prv })]), 'Empty transaction');
     });
   });
-
-  describe('sign transaction', () => {
-    it('cannot sign - invalid key', () => {
-      should.throws(() => tx.canSign({ key: 'some' }), 'Unsupported private key');
-    });
-
-    it('cannot sign - wrong account private key', () => {
-      tx.sender(XrpResources.accounts.acc1.address);
-      should.deepEqual(tx.canSign({ key: XrpResources.accounts.acc2.prv }), false);
-    });
-
-    it('can sign', () => {
-      tx.sender(XrpResources.accounts.acc1.address);
-      should.deepEqual(tx.canSign({ key: XrpResources.accounts.acc1.prv }), true);
-    });
-  });
 });

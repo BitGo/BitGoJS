@@ -23,4 +23,11 @@ export interface TxJSON {
   domain?: string;
   setFlag?: number;
   messageKey?: string;
+  destinationTag?: number;
+}
+
+export interface Signer {
+  SigningPubKey: string;
+  TxnSignature: string;
+  Account: string;
 }

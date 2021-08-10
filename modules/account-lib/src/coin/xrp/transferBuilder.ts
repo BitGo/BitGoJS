@@ -13,6 +13,7 @@ import { TransferBuilderSchema } from './txnSchema';
 export class TransferBuilder extends TransactionBuilder {
   protected _destination: string;
   protected _amount: string;
+  protected _destinationTag: number;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -42,6 +43,18 @@ export class TransferBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set destination tag
+   *
+   * @param {number} destinationTag
+   * @returns {TransferBuilder} builder
+   */
+  destinationTag(destinationTag: number): this {
+    this.validateValue(new BigNumber(destinationTag));
+    this._destinationTag = destinationTag;
+    return this;
+  }
+
   /** @inheritdoc */
   protected buildXRPTxn(): TransactionJSON {
     const tx: TransactionJSON = {
@@ -51,6 +64,9 @@ export class TransferBuilder extends TransactionBuilder {
 
     tx.Destination = this._destination;
     tx.Amount = this._amount;
+    if (this._destinationTag) {
+      tx.DestinationTag = this._destinationTag;
+    }
     return tx;
   }
 
@@ -65,6 +81,9 @@ export class TransferBuilder extends TransactionBuilder {
     if (xrpTx) {
       this.destination({ address: xrpTx.Destination as string });
       this.amount(xrpTx.Amount as string);
+      if (xrpTx.DestinationTag) {
+        this.destinationTag(xrpTx.DestinationTag as number);
+      }
     }
     return tx;
   }
@@ -77,7 +96,7 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    this.validateFields(this._destination, this._amount);
+    this.validateFields(this._destination, this._amount, this._destinationTag);
   }
 
   /** @inheritdoc */
@@ -89,12 +108,17 @@ export class TransferBuilder extends TransactionBuilder {
       throw new InvalidTransactionError(`Invalid Transaction Type: ${decodedXrpTrx.TransactionType}. Expected Payment`);
     }
 
-    this.validateFields(decodedXrpTrx.Destination as string, decodedXrpTrx.Amount as string);
+    this.validateFields(
+      decodedXrpTrx.Destination as string,
+      decodedXrpTrx.Amount as string,
+      decodedXrpTrx.DestinationTag as number,
+    );
   }
 
-  private validateFields(destination: string, amount: string): void {
+  private validateFields(destination: string, amount: string, destinationTag: number): void {
     const validationResult = TransferBuilderSchema.validate({
       destination,
+      destinationTag,
       amount,
     });
     if (validationResult.error) {

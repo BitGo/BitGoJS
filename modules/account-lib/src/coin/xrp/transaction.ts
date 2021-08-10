@@ -4,7 +4,7 @@ import binaryCodec from 'ripple-binary-codec';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { SignedXRPTransaction, TxJSON } from './iface';
+import { SignedXRPTransaction, TxJSON, Signer } from './iface';
 import { KeyPair } from './keyPair';
 import { initApi } from './utils';
 
@@ -27,7 +27,11 @@ export class Transaction extends BaseTransaction {
       return [];
     }
     const decodedTx = binaryCodec.decode(this._signedTransaction?.signedTransaction);
-    return [decodedTx.TxnSignature as string];
+    if (decodedTx.Signers) {
+      const signers = decodedTx.Signers as unknown as { Signer: Signer }[];
+      return signers.map(({ Signer }) => Signer.TxnSignature);
+    }
+    return [];
   }
 
   sender(address: string): void {
@@ -64,14 +68,8 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  canSign({ key }: BaseKey): boolean {
-    const kp = new KeyPair({ prv: key });
-    const addr = kp.getAddress();
-    if (addr === this._sender) {
-      return true;
-    } else {
-      return false;
-    }
+  canSign(key: BaseKey): boolean {
+    return true;
   }
 
   /**
@@ -89,7 +87,7 @@ export class Transaction extends BaseTransaction {
         publicKey: keyPair[0].getKeys().pub,
       };
       const txJSON = JSON.stringify(this._xrpTransaction);
-      this._signedTransaction = initApi().sign(txJSON, keys);
+      this._signedTransaction = initApi().sign(txJSON, keys, { signAs: keyPair[0].getAddress() });
     }
   }
 
@@ -123,6 +121,7 @@ export class Transaction extends BaseTransaction {
     if (this.type === TransactionType.Send) {
       result.amount = this._xrpTransaction.Amount as string;
       result.destination = this._xrpTransaction.Destination as string;
+      result.destinationTag = this._xrpTransaction.DestinationTag as number;
     }
     if (this.type === TransactionType.WalletInitialization) {
       result.domain = this._xrpTransaction.Domain as string;

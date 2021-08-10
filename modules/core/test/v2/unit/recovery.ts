@@ -21,6 +21,7 @@ import {
   emptyAddressInfo,
 } from '../fixtures/coins/recovery';
 import { nockCoingecko } from '../lib/recovery-nocks';
+
 nock.disableNetConnect();
 
 describe('Recovery:', function () {
@@ -424,10 +425,9 @@ describe('Recovery:', function () {
       })
         .then(function (recovery) {
           recovery.txHex.should.equal('120000228000000024000000042E00003039201B0015519161400000024E06C0C068400000000000001E7300811439CA010E0E0198150F8DDD5768CCD2B095701D8C8314201276ADC469C4F10D1369E0F5C5A7DEF37B2267F3E0107321026C91974146427889C801BD26CE31CE0E10307A69DFE4139DE45E5E35933A6B037446304402204AA3D2F344729B0BB9075C4AEA07EBB2EAF6D3F36309BCAEF10B2C9734AC943E022032D55EC19E27B2E90E3D9444FD26CC06FD47BB3E3D85B0FCC0CC4DE7038563FD8114ABB5B7C843F3AA8D8EFACC3C5A7D9B0484C17442E1E010732102F4E376133012F5404990C7E1DF83A9F943B30D55F0D856632C8E8378FCEB70D2744630440220568F1D49F5810458E7204A1D2D23B86B694505327E8410A215AB9C9324EA8A3102207A93211ACFB5E9C1441B701A7954B72A3054265BA3FD61965D709E4C4E9080F38114ACEF9F0A2FCEC44A9A213444A9E6C57E2D02856AE1F1');
-          recovery.id.should.equal('F2005B392E9454FF1E8217B816C87866A56770382B8FCAC0AAE2FA8D12A53B98');
           recovery.outputAmount.should.equal('9899000000');
           recovery.outputs.length.should.equal(1);
-          recovery.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345');
+          recovery.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
           recovery.outputs[0].amount.should.equal('9899000000');
           recovery.fee.fee.should.equal('30');
         });
@@ -448,10 +448,9 @@ describe('Recovery:', function () {
       })
         .then(function (recovery) {
           recovery.txHex.should.equal('120000228000000024000000042E00003039201B0015519161400000024E06C0C068400000000000001E7300811439CA010E0E0198150F8DDD5768CCD2B095701D8C8314201276ADC469C4F10D1369E0F5C5A7DEF37B2267F3E010732102F4E376133012F5404990C7E1DF83A9F943B30D55F0D856632C8E8378FCEB70D2744630440220568F1D49F5810458E7204A1D2D23B86B694505327E8410A215AB9C9324EA8A3102207A93211ACFB5E9C1441B701A7954B72A3054265BA3FD61965D709E4C4E9080F38114ACEF9F0A2FCEC44A9A213444A9E6C57E2D02856AE1F1');
-          recovery.id.should.equal('6EA1728B0CC0C047E54AAF578D81822EDE1107908B979868299657E74A8E18C0');
           recovery.outputAmount.should.equal('9899000000');
           recovery.outputs.length.should.equal(1);
-          recovery.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345');
+          recovery.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
           recovery.outputs[0].amount.should.equal('9899000000');
           recovery.fee.fee.should.equal('30');
         });
@@ -459,7 +458,6 @@ describe('Recovery:', function () {
 
     it('should generate an XRP unsigned sweep', function () {
       recoveryNocks.nockXrpRecovery();
-
       const basecoin = bitgo.coin('txrp');
       return basecoin.recover({
         userKey: 'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
@@ -470,16 +468,15 @@ describe('Recovery:', function () {
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
         .then(function (recovery) {
-          const json = JSON.parse(recovery);
-          json.TransactionType.should.equal('Payment');
-          json.Account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
-          json.Destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
-          json.DestinationTag.should.equal(12345);
-          json.Amount.should.equal('9899000000');
-          json.Flags.should.equal(2147483648);
-          json.LastLedgerSequence.should.equal(1397137);
-          json.Fee.should.equal('30');
-          json.Sequence.should.equal(4);
+          recovery.type.should.equal('Payment');
+          recovery.account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
+          recovery.destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
+          recovery.destinationTag.should.equal(12345);
+          recovery.amount.should.equal('9899000000');
+          recovery.flags.should.equal(2147483648);
+          recovery.lastLedgerSequence.should.equal(1397137);
+          recovery.fee.should.equal('30');
+          recovery.sequence.should.equal(4);
         });
     });
   });

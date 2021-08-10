@@ -100,6 +100,7 @@ describe('XRP Transfer Builder', () => {
       should.deepEqual(txJson.sequence, 19964661);
       should.deepEqual(txJson.destination, receiver.address);
       should.deepEqual(txJson.amount, '22000000');
+      should.deepEqual(tx.signature.length, 0);
     });
 
     it('should build from raw signed tx', async () => {
@@ -116,6 +117,10 @@ describe('XRP Transfer Builder', () => {
       should.deepEqual(txJson.sequence, 19964661);
       should.deepEqual(txJson.destination, receiver.address);
       should.deepEqual(txJson.amount, '22000000');
+      should.deepEqual(
+        tx.signature[0],
+        '3044022065E24EF51F5EF837A89E4C7B79CDF0B6CBDFE68377E4119B43A36305C8B8A8B8022003DBF7D334724F54EEA9085A585469C4EF9A0AF5C2D6A1CF5EBBCC8D2A43BC48',
+      );
     });
 
     it('should sign from raw unsigned tx', async () => {

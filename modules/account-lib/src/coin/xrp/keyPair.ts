@@ -1,5 +1,6 @@
+import { randomBytes } from 'crypto';
 import { ECPair, HDNode } from '@bitgo/utxo-lib';
-import { deriveAddress, deriveKeypair, generateSeed } from 'ripple-keypairs';
+import { deriveAddress } from 'ripple-keypairs';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { isValidXprv, isValidXpub } from '../../utils/crypto';
@@ -13,13 +14,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
     if (!source) {
-      const seed = generateSeed();
-      const keypair = deriveKeypair(seed);
-      this.keyPair = this.generateECPair(keypair.privateKey);
+      this.hdNode = HDNode.fromSeedBuffer(randomBytes(512 / 8));
     } else if (isSeed(source)) {
-      const seed = generateSeed({ entropy: source.seed });
-      const keypair = deriveKeypair(seed);
-      this.keyPair = this.generateECPair(keypair.privateKey);
+      this.hdNode = HDNode.fromSeedBuffer(source.seed);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -34,8 +31,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
   }
 
-  generateECPair(prv: string): ECPair {
-    return ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(2), 'hex'));
+  generateECPair(prv: string, compressed: boolean): ECPair {
+    if (compressed) {
+      return ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(2), 'hex'));
+    }
+    return ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
   }
 
   /**
@@ -55,7 +55,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       this.hdNode.keyPair.compressed = false;
     } else {
       try {
-        this.keyPair = this.generateECPair(prv);
+        this.keyPair = this.generateECPair(prv, prv.length === 66);
         this.keyPair.compressed = prv.length === 66;
       } catch (e) {
         throw new Error('Unsupported private key');

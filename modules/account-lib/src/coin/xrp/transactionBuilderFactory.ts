@@ -21,14 +21,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
-    const decodedXrpTrx = RippleBinaryCodec.decode(rawTxn) as rippleTypes.TransactionJSON;
-    switch (decodedXrpTrx.TransactionType) {
-      case 'Payment':
-        return this.getTransferBuilder();
-      case 'AccountSet':
-        return this.getWalletInitializationBuilder();
-      default:
-        throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    try {
+      const decodedXrpTrx = RippleBinaryCodec.decode(rawTxn) as rippleTypes.TransactionJSON;
+      switch (decodedXrpTrx.TransactionType) {
+        case 'Payment':
+          return this.getTransferBuilder();
+        case 'AccountSet':
+          return this.getWalletInitializationBuilder();
+        default:
+          throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+      }
+    } catch (e) {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
   }
 

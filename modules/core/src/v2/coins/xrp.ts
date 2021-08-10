@@ -5,15 +5,10 @@ import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
-import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
-
-import * as rippleAddressCodec from 'ripple-address-codec';
-import * as rippleBinaryCodec from 'ripple-binary-codec';
-import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
-import * as rippleKeypairs from 'ripple-keypairs';
+import * as accountLib from '@bitgo/account-lib';
 
 import {
   BaseCoin,
@@ -137,7 +132,7 @@ export class Xrp extends BaseCoin {
   public getAddressDetails(address: string): Address {
     const destinationDetails = url.parse(address);
     const destinationAddress = destinationDetails.pathname;
-    if (!destinationAddress || !rippleAddressCodec.isValidClassicAddress(destinationAddress)) {
+    if (!destinationAddress || !accountLib.Xrp.Utils.default.isValidAddress(destinationAddress)) {
       throw new InvalidAddressError(`destination address "${destinationAddress}" is not valid`);
     }
     // there are no other properties like destination tags
@@ -253,19 +248,13 @@ export class Xrp extends BaseCoin {
         }
         throw new Error('missing prv parameter to sign transaction');
       }
+      const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Xrp.TransactionBuilderFactory;
 
-      const userKey = bip32.fromBase58(prv);
-      const userPrivateKey = userKey.privateKey;
-      if (!userPrivateKey) {
-        throw new Error(`no privateKey`);
-      }
-      const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
+      const txBuilder = factory.from(txPrebuild.txHex || '');
+      txBuilder.sign({ key: prv });
+      const tx = (yield txBuilder.build()) as unknown as accountLib.Xrp.Transaction;
 
-      const rippleLib = ripple();
-      const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
-        signAs: userAddress,
-      });
-      return { halfSigned: { txHex: halfSigned.signedTransaction } };
+      return { halfSigned: { txHex: tx.toBroadcastFormat() } };
     })
       .call(this)
       .asCallback(callback);
@@ -301,59 +290,48 @@ export class Xrp extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     return co<TransactionExplanation>(function* () {
-      if (!params.txHex) {
+      const txHex = params.txHex;
+      if (!txHex) {
         throw new Error('missing required param txHex');
       }
-      let transaction;
-      let txHex;
-      try {
-        transaction = rippleBinaryCodec.decode(params.txHex);
-        txHex = params.txHex;
-      } catch (e) {
-        try {
-          transaction = JSON.parse(params.txHex);
-          txHex = rippleBinaryCodec.encode(transaction);
-        } catch (e) {
-          throw new Error('txHex needs to be either hex or JSON string for XRP');
-        }
-      }
-      const id = computeBinaryTransactionHash(txHex);
 
-      if (transaction.TransactionType == 'AccountSet') {
+      const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Xrp.TransactionBuilderFactory;
+
+      const txBuilder = factory.from(txHex);
+      const tx = (yield txBuilder.build()) as unknown as accountLib.Xrp.Transaction;
+      const txJson = tx.toJson();
+
+      if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
         return {
-          displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
-          id: id,
+          displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
           changeOutputs: [],
           outputAmount: 0,
           changeAmount: 0,
           outputs: [],
           fee: {
-            fee: transaction.Fee,
+            fee: txJson.fee,
             feeRate: null,
             size: txHex.length / 2,
           },
           accountSet: {
-            messageKey: transaction.MessageKey,
+            messageKey: txJson.messageKey,
           },
         };
       }
 
-      const address =
-        transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
-        id: id,
+        displayOrder: ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
         changeOutputs: [],
-        outputAmount: transaction.Amount,
+        outputAmount: txJson.amount,
         changeAmount: 0,
         outputs: [
           {
-            address,
-            amount: transaction.Amount,
+            address: txJson.destination,
+            amount: txJson.amount,
           },
         ],
         fee: {
-          fee: transaction.Fee,
+          fee: txJson.fee,
           feeRate: null,
           size: txHex.length / 2,
         },
@@ -406,6 +384,7 @@ export class Xrp extends BaseCoin {
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
    */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public verifyAddress({ address, rootAddress }: VerifyAddressOptions) {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
@@ -501,8 +480,8 @@ export class Xrp extends BaseCoin {
       }
 
       // make sure the signers are user, backup, bitgo
-      const userAddress = rippleKeypairs.deriveAddress(keys[0].publicKey.toString('hex'));
-      const backupAddress = rippleKeypairs.deriveAddress(keys[1].publicKey.toString('hex'));
+      const userAddress = new accountLib.Xrp.KeyPair({ pub: keys[0].publicKey.toString('hex') }).getAddress();
+      const backupAddress = new accountLib.Xrp.KeyPair({ pub: keys[1].publicKey.toString('hex') }).getAddress();
 
       const signerList = signerLists[0];
       if (signerList.SignerQuorum !== 2) {
@@ -573,47 +552,54 @@ export class Xrp extends BaseCoin {
           destinationTag = parsedTag;
         }
       }
-
-      const transaction = {
-        TransactionType: 'Payment',
-        Account: params.rootAddress, // source address
-        Destination: destinationAddress,
-        DestinationTag: destinationTag,
-        Amount: recoverableBalance.toFixed(0),
-        Flags: 2147483648,
-        LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
-        Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
-        Sequence: sequenceId,
-      };
-      const txJSON: string = JSON.stringify(transaction);
-
-      if (isUnsignedSweep) {
-        return txJSON;
-      }
       const rippleLib = ripple();
+      const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Xrp.TransactionBuilderFactory;
+      const builder = factory.getTransferBuilder();
+      builder
+        .sender({ address: params.rootAddress })
+        .flags(2147483648)
+        .lastLedgerSequence(currentLedger + 1000000)
+        .fee({ fee: openLedgerFee.times(3).toFixed(0) })
+        .sequence(sequenceId)
+        .amount(recoverableBalance.toFixed(0));
+
+      if (destinationAddress) {
+        builder.destination({ address: destinationAddress });
+      }
+      if (destinationTag) {
+        builder.destinationTag(destinationTag);
+      }
+      const unsignedTx = yield builder.build();
+      if (isUnsignedSweep) {
+        return unsignedTx.toJson();
+      }
+      const signedBuilder = factory.from(unsignedTx.toBroadcastFormat());
       if (!keys[0].privateKey) {
         throw new Error(`userKey is not a private key`);
       }
-      const userKey = keys[0].privateKey.toString('hex');
-      const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
-
+      signedBuilder.sign({ key: keys[0].privateKey.toString('hex') });
+      const tx = yield signedBuilder.build();
       let signedTransaction;
 
       if (isKrsRecovery) {
-        signedTransaction = userSignature;
+        signedTransaction = tx.toBroadcastFormat();
       } else {
         if (!keys[1].privateKey) {
           throw new Error(`backupKey is not a private key`);
         }
         const backupKey = keys[1].privateKey.toString('hex');
-        const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
-        signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+        const backupBuilder = factory.from(unsignedTx.toBroadcastFormat());
+        backupBuilder.sign({ key: backupKey });
+        const backup_tx = yield backupBuilder.build();
+        signedTransaction = rippleLib.combine([
+          tx.toBroadcastFormat(),
+          backup_tx.toBroadcastFormat(),
+        ]).signedTransaction;
       }
-
       const transactionExplanation: RecoveryInfo = yield self.explainTransaction({
-        txHex: signedTransaction.signedTransaction,
+        txHex: signedTransaction,
       });
-      transactionExplanation.txHex = signedTransaction.signedTransaction;
+      transactionExplanation.txHex = signedTransaction;
 
       if (isKrsRecovery) {
         transactionExplanation.backupKey = params.backupKey;
@@ -625,26 +611,20 @@ export class Xrp extends BaseCoin {
       .asCallback(callback);
   }
 
-  initiateRecovery(params: InitiateRecoveryOptions): never {
-    throw new Error('deprecated method');
-  }
-
-  /**
-   * Generate a new keypair for this coin.
-   * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
-   */
+  // /**
+  //  * Generate a new keypair for this coin.
+  //  * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
+  //  */
   public generateKeyPair(seed?: Buffer): KeyPair {
-    if (!seed) {
-      // An extended private key has both a normal 256 bit private key and a 256
-      // bit chain code, both of which must be random. 512 bits is therefore the
-      // maximum entropy and gives us maximum security against cracking.
-      seed = randomBytes(512 / 8);
+    const keyPair = seed ? new accountLib.Xrp.KeyPair({ seed }) : new accountLib.Xrp.KeyPair();
+    const keys = keyPair.getExtendedKeys();
+
+    if (!keys.xprv) {
+      throw new Error('Missing xprv in key generation.');
     }
-    const extendedKey = bip32.fromSeed(seed);
-    const xpub = extendedKey.neutered().toBase58();
     return {
-      pub: xpub,
-      prv: extendedKey.toBase58(),
+      pub: keys.xpub,
+      prv: keys.xprv,
     };
   }
 
