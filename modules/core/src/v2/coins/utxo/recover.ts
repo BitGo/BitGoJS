@@ -6,10 +6,12 @@ import * as _ from 'lodash';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
+import { BitGo } from '../../../bitgo';
 import * as config from '../../../config';
 import { deriveKeyByPath } from '../../../bitcoin';
 import * as errors from '../../../errors';
 import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from '../abstractUtxoCoin';
+import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
 
 export interface RecoverParams {
   scan?: number;
@@ -95,6 +97,7 @@ async function queryBlockchainUnspentsPath(
 /**
  * Builds a funds recovery transaction without BitGo
  * @param coin
+ * @param bitgo
  * @param params
  * - userKey: [encrypted] xprv, or xpub
  * - backupKey: [encrypted] xprv, or xpub if the xprv is held by a KRS provider
@@ -106,7 +109,7 @@ async function queryBlockchainUnspentsPath(
  * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
-export async function recover(coin: AbstractUtxoCoin, params: RecoverParams) {
+export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }
@@ -123,8 +126,8 @@ export async function recover(coin: AbstractUtxoCoin, params: RecoverParams) {
     throw new Error('scan must be a positive integer');
   }
 
-  const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-  const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+  const isKrsRecovery = getIsKrsRecovery(params);
+  const isUnsignedSweep = getIsUnsignedSweep(params);
   const krsProvider = config.krsProviders[params.krsProvider];
 
   if (isKrsRecovery && _.isUndefined(krsProvider)) {
@@ -136,9 +139,9 @@ export async function recover(coin: AbstractUtxoCoin, params: RecoverParams) {
   }
 
   // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
-  const keys = await coin.initiateRecovery(params);
+  const keys = getBip32Keys(bitgo, params, { requireBitGoXpub: true });
 
-  const [userKey, backupKey, bitgoKey] = keys as any;
+  const [userKey, backupKey, bitgoKey] = keys;
   let derivedUserKey;
   let baseKeyPath;
   if (params.userKeyPath) {
@@ -146,7 +149,7 @@ export async function recover(coin: AbstractUtxoCoin, params: RecoverParams) {
     const twoKeys = coin.deriveKeys(coin.deriveKeys([backupKey, bitgoKey], 0), 0);
     baseKeyPath = [derivedUserKey, ...twoKeys];
   } else {
-    baseKeyPath = coin.deriveKeys(coin.deriveKeys(keys as any, 0), 0);
+    baseKeyPath = coin.deriveKeys(coin.deriveKeys(keys, 0), 0);
   }
 
   const queries: any[] = [];
