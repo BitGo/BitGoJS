@@ -1,11 +1,12 @@
 import { TransferBuilder as EthTransferBuilder } from '../eth';
 
-/** AVAXC transfer builder */
+/** Avax C-Chain transfer builder */
 export class TransferBuilder extends EthTransferBuilder {
   /**
    * Get the prefix used in generating an operation hash for sending tokens
+   * See https://github.com/BitGo/eth-multisig-v2/blob/master/contracts/coins/AvaxWalletSimple.sol
    *
-   * @returns the string prefix
+   * @returns {string} the string prefix
    */
   protected getTokenOperationHashPrefix(): string {
     return 'AVAX-ERC20';
@@ -13,8 +14,9 @@ export class TransferBuilder extends EthTransferBuilder {
 
   /**
    * Get the prefix used in generating an operation hash for sending native coins
+   * See https://github.com/BitGo/eth-multisig-v2/blob/master/contracts/coins/AvaxWalletSimple.sol
    *
-   * @returns the string prefix
+   * @returns {string} the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
     return 'AVAX';
