@@ -1,8 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotSupported } from '../baseCoin/errors';
 import RippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
+import { BaseTransactionBuilderFactory } from '../baseCoin';
+import { NotSupported } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
@@ -19,18 +19,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     return builder;
   }
-  
-  private getBuilder(rawTxn: string | Uint8Array): TransactionBuilder {
+
+  private getBuilder(rawTxn: string): TransactionBuilder {
     const decodedXrpTrx = RippleBinaryCodec.decode(rawTxn) as rippleTypes.TransactionJSON;
     switch (decodedXrpTrx.TransactionType) {
       case 'Payment':
-        return this.getTransferBuilder()
+        return this.getTransferBuilder();
       case 'AccountSet':
-        return this.getWalletInitializationBuilder()
+        return this.getWalletInitializationBuilder();
       default:
         throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-
   }
 
   /** @inheritdoc */
