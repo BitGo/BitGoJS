@@ -1,7 +1,7 @@
 import { Trx } from '../../../../src/v2/coins/';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
-
+import * as _ from 'lodash';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('TRON:', function () {
@@ -106,6 +106,29 @@ describe('TRON:', function () {
     JSON.stringify(signedTxJson.raw_data).should.eql(JSON.stringify(unsignedTxJson.raw_data));
     signedTxJson.signature.length.should.equal(1);
     signedTxJson.signature[0].should.equal('65e56f53a458c6f82d1ef39b2cf5be685a906ad22bb02699f907fcb72ef26f1e91cfc2b6a43bf5432faa0b63bdc5aebf1dc2f49a675d28d23fd7e038b3358b0600');
+  });
+
+  it('should add feeLimit to recipient', async function () {
+    const feeLimit = 100;
+    const buildParams = {
+      recipients: [
+        { data: 'test' },
+      ],
+      feeLimit,
+    };
+    basecoin.getExtraPrebuildParams(buildParams);
+    (buildParams as any).recipients[0].feeLimit.should.equal(feeLimit);
+  });
+
+  it('should`t add any new field', async function () {
+    const buildParams = {
+      recipients: [
+        { data: 'test' },
+      ],
+    };
+    const unmodifiedBuildParams = _.cloneDeep(buildParams);
+    await basecoin.getExtraPrebuildParams(buildParams);
+    buildParams.should.eql(unmodifiedBuildParams);
   });
 
   describe('Keypairs:', () => {

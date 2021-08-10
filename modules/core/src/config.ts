@@ -4,7 +4,7 @@ import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType } from '@bitgo/statics';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, Networks } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -40,9 +40,24 @@ export interface Tokens {
 // Get the list of ERC-20 tokens from statics and format it properly
 const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
   if (coin instanceof Erc20Coin) {
+    let baseCoin: string;
+    switch (coin.network) {
+      case Networks.main.ethereum:
+        baseCoin = 'eth';
+        break;
+      case Networks.test.kovan:
+        baseCoin = 'teth';
+        break;
+      case Networks.test.goerli:
+        baseCoin = 'gteth';
+        break;
+      default:
+        throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
+    }
+
     acc.push({
       type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
+      coin: baseCoin,
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
@@ -184,8 +199,15 @@ export const supportedCrossChainRecoveries = {
   bsv: ['btc', 'ltc', 'bch'],
 };
 
+export type KrsProvider = {
+  feeType: 'flatUsd';
+  feeAmount: number;
+  supportedCoins: string[];
+  feeAddresses?: Record<string, string>
+}
+
 // KRS providers and their fee structures
-export const krsProviders = {
+export const krsProviders: Record<string, KrsProvider> = {
   keyternal: {
     feeType: 'flatUsd',
     feeAmount: 99,

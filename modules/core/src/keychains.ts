@@ -11,10 +11,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 import * as common from './common';
 import { Util } from './v2/internal/util';
-import * as bitcoin from '@bitgo/utxo-lib';
 const _ = require('lodash');
 let ethereumUtil;
 import * as Bluebird from 'bluebird';
@@ -55,9 +55,9 @@ Keychains.prototype.isValid = function (params) {
 
   try {
     if (!params.key.path) {
-      bitcoin.HDNode.fromBase58(params.key);
+      bip32.fromBase58(params.key);
     } else {
-      bitcoin.HDNode.fromBase58(params.key.xpub).derivePath(sanitizeLegacyPath(params.key.path));
+      bip32.fromBase58(params.key.xpub).derivePath(sanitizeLegacyPath(params.key.path));
     }
     return true;
   } catch (e) {
@@ -86,7 +86,7 @@ Keychains.prototype.create = function (params) {
     seed = params.seed;
   }
 
-  const extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
+  const extendedKey = bip32.fromSeed(seed);
   const xpub = extendedKey.neutered().toBase58();
 
   let ethAddress;
@@ -128,7 +128,7 @@ Keychains.prototype.deriveLocal = function (params) {
 
   let hdNode;
   try {
-    hdNode = bitcoin.HDNode.fromBase58(params.xprv || params.xpub);
+    hdNode = bip32.fromBase58(params.xprv || params.xpub);
   } catch (e) {
     throw apiResponse(400, {}, 'Unable to parse the xprv or xpub');
   }

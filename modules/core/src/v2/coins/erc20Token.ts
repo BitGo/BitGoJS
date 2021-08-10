@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { HDNode } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
@@ -10,7 +10,7 @@ import { NodeCallback } from '../types';
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../internal/util';
-import * as config from '../../config';
+import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -121,11 +121,11 @@ export class Erc20Token extends Eth {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+      const isKrsRecovery = getIsKrsRecovery(params);
+      const isUnsignedSweep = getIsUnsignedSweep(params);
 
-      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
-        throw new Error('unknown key recovery service provider');
+      if (isKrsRecovery) {
+        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
       }
 
       // Clean up whitespace from entered values
@@ -153,8 +153,8 @@ export class Erc20Token extends Eth {
       let backupSigningKey;
 
       if (isKrsRecovery || isUnsignedSweep) {
-        const backupHDNode = HDNode.fromBase58(backupKey);
-        backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupKey);
+        backupSigningKey = backupHDNode.publicKey;
         backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         let backupPrv;
@@ -168,8 +168,8 @@ export class Erc20Token extends Eth {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
 
-        const backupHDNode = HDNode.fromBase58(backupPrv);
-        backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
+        const backupHDNode = bip32.fromBase58(backupPrv);
+        backupSigningKey = backupHDNode.privateKey;
         backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 

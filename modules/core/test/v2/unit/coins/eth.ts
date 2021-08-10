@@ -2,15 +2,14 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
 
 import * as nock from 'nock';
+import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import * as common from '../../../../src/common';
-import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 nock.enableNetConnect();
 
 describe('ETH:', function () {
   let bitgo;
-  let bitgoPrvBuffer;
   let hopTxBitgoSignature;
 
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
@@ -23,10 +22,12 @@ describe('ETH:', function () {
 
   before(function () {
     const bitgoKeyXprv = 'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
-    const bitgoKey = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
+    const bitgoKey = bip32.fromBase58(bitgoKeyXprv);
+    if (!bitgoKey.privateKey) {
+      throw new Error('no privateKey');
+    }
     const bitgoXpub = bitgoKey.neutered().toBase58();
-    bitgoPrvBuffer = bitgoKey.getKey().getPrivateKeyBuffer();
-    hopTxBitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(hopTxid.slice(2), 'hex'), bitgoPrvBuffer).signature).toString('hex');
+    hopTxBitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(hopTxid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     const env = 'test';
     bitgo = new TestBitGo({ env: 'test' });

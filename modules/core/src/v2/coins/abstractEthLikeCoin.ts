@@ -4,7 +4,7 @@
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
-import * as bitgoUtxoLib from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
 import {
@@ -121,10 +121,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    if (!seed) {
-      seed = randomBytes(512 / 8);
-    }
-    const extendedKey = bitgoUtxoLib.HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed || randomBytes(32));
     const xpub = extendedKey.neutered().toBase58();
 
     return {
