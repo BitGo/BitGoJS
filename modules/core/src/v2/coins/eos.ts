@@ -28,7 +28,7 @@ const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep, getKrsProvider } from '../recovery/initiate';
+import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;
@@ -756,7 +756,7 @@ export class Eos extends BaseCoin {
 
       const { krsProvider } = params;
       if (getIsKrsRecovery(params)) {
-        getKrsProvider(self, krsProvider);
+        checkKrsProvider(self, krsProvider);
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {

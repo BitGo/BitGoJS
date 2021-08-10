@@ -35,7 +35,7 @@ import * as config from '../../config';
 import { Util } from '../internal/util';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
-import { getIsKrsRecovery, getIsUnsignedSweep, getKrsProvider } from '../recovery/initiate';
+import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -863,7 +863,7 @@ export class Eth extends BaseCoin {
       const isUnsignedSweep = getIsUnsignedSweep(params);
 
       if (isKrsRecovery) {
-        getKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
+        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
       }
 
       // Clean up whitespace from entered values

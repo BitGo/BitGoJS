@@ -24,10 +24,18 @@ export interface InitiateRecoveryOptions {
   walletPassphrase?: string;
 }
 
+type GetKrsProviderOptions = { checkCoinFamilySupport?: boolean };
+
+/**
+ * @param coin
+ * @param krsProviderName
+ * @param checkCoinFamilySupport - assert that krsProvider explicitly supports coin
+ * @return KrsProvider
+ */
 export function getKrsProvider(
   coin: BaseCoin,
   krsProviderName: string | undefined,
-  { checkCoinFamilySupport = true }: { checkCoinFamilySupport?: boolean } = {}
+  { checkCoinFamilySupport = true }: GetKrsProviderOptions = {}
 ): config.KrsProvider {
   if (!krsProviderName) {
     throw new Error(`no krsProvider name`);
@@ -44,6 +52,17 @@ export function getKrsProvider(
   }
 
   return krsProvider;
+}
+
+/**
+ * Wrapper for {@see getKrsProvider} returning void
+ */
+export function checkKrsProvider(
+  coin: BaseCoin,
+  krsProviderName: string | undefined,
+  options: GetKrsProviderOptions = {}
+): void {
+  getKrsProvider(coin, krsProviderName, options);
 }
 
 export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; userKey: string }): boolean {

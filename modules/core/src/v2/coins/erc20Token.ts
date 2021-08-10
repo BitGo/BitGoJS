@@ -10,7 +10,7 @@ import { NodeCallback } from '../types';
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../internal/util';
-import { getIsKrsRecovery, getIsUnsignedSweep, getKrsProvider } from '../recovery/initiate';
+import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -125,7 +125,7 @@ export class Erc20Token extends Eth {
       const isUnsignedSweep = getIsUnsignedSweep(params);
 
       if (isKrsRecovery) {
-        getKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
+        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
       }
 
       // Clean up whitespace from entered values

@@ -37,7 +37,7 @@ import {
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
-import { getKrsProvider, getStellarKeys } from '../recovery/initiate';
+import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
@@ -591,7 +591,7 @@ export class Xlm extends BaseCoin {
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
       if (isKrsRecovery) {
-        getKrsProvider(self, params.krsProvider);
+        checkKrsProvider(self, params.krsProvider);
       }
 
       if (!self.isValidAddress(params.recoveryDestination)) {

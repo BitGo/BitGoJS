@@ -30,8 +30,8 @@ import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import {
+  checkKrsProvider,
   getBip32Keys,
-  getKrsProvider,
   InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
 } from '../recovery/initiate';
 
@@ -463,7 +463,7 @@ export class Xrp extends BaseCoin {
       };
 
       if (isKrsRecovery) {
-        getKrsProvider(self, params.krsProvider);
+        checkKrsProvider(self, params.krsProvider);
       }
 
       // Validate the destination address
