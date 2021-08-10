@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { encodeAddress } from 'algosdk';
+import algosdk, { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
@@ -21,8 +21,9 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /** @inheritdoc */
-  recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new NotImplementedError('recordKeysFromPublicKeyInProtocolFormat not implemented');
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    const publicKey = algosdk.decodeAddress(pub).publicKey;
+    return { pub: utils.toHex(publicKey) };
   }
 
   /** @inheritdoc */
