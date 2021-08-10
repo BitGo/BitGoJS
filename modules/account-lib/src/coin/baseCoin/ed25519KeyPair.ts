@@ -7,6 +7,10 @@ import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from '
 
 const DEFAULT_SEED_SIZE_BYTES = 32;
 
+function allHexChars(maybe: string): boolean {
+  return maybe.match(/^[0-9a-f]+$/i) !== null;
+}
+
 export abstract class Ed25519KeyPair implements BaseKeyPair {
   protected keyPair: DefaultKeys;
   protected source?: KeyPairOptions;
@@ -84,7 +88,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * @throws if there is no private key
    */
   signMessage(message: string): Uint8Array {
-    const messageToSign = toUint8Array(Buffer.from(message).toString('hex'));
+    const messageToSign = this.toBuffer(message);
     const { prv } = this.keyPair;
     if (!prv) {
       throw new Error('Missing private key');
@@ -99,9 +103,30 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * @param {Uint8Array} signature to verify
    * @returns {boolean} True if the message was signed with the current key pair
    */
-  verifySignature(message: string, signature: Uint8Array): boolean {
-    const messageToVerify = toUint8Array(Buffer.from(message).toString('hex'));
+  verifySignature(message: Uint8Array | string, signature: Uint8Array): boolean {
+    const messageToVerify = this.toBuffer(message);
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
+  }
+
+  /**
+   * Returns buffer for message
+   *
+   * @param {string | Buffer | Uint8Array} message - any messages
+   * @returns {Buffer | Uint8Array} - message codify as a buffer
+   */
+  toBuffer(message: string | Buffer | Uint8Array): Buffer | Uint8Array {
+    let buffer = message;
+    if (typeof message === 'string') {
+      if (allHexChars(message)) {
+        buffer = Buffer.from(message, 'hex');
+      } else {
+        buffer = Buffer.from(message);
+      }
+    } else {
+      buffer = message;
+    }
+
+    return buffer;
   }
 }

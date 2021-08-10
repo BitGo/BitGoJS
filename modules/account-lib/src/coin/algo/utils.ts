@@ -4,11 +4,12 @@ import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
 import * as nacl from 'tweetnacl';
 import base32 from 'hi-base32';
+import sha512 from 'js-sha512';
 import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx, Address, Account } from './ifaces';
+import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
@@ -16,8 +17,7 @@ const ALGORAND_ADDRESS_LENGTH = 58;
 const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
-const ALGORAND_NACL_SEED_BYTES_LENGTH = 32;
-const ALGORAND_MALFORMED_SEED_ERROR = new Error("seed seems to be malformed");
+const SEED_BYTES_LENGTH = 32;
 
 /**
  * Determines whether the string is a composed of hex chars only.
@@ -27,6 +27,19 @@ const ALGORAND_MALFORMED_SEED_ERROR = new Error("seed seems to be malformed");
  */
 function allHexChars(maybe: string): boolean {
   return maybe.match(/^[0-9a-f]+$/i) !== null;
+}
+
+/**
+ * ConcatArrays takes two array and returns a joint array of both
+ * @param a
+ * @param b
+ * @returns {Uint8Array} [a,b]
+ */
+function concatArrays(a, b) {
+  const c = new Uint8Array(a.length + b.length);
+  c.set(a);
+  c.set(b, a.length);
+  return c;
 }
 
 export class Utils implements BaseUtils {
@@ -54,6 +67,16 @@ export class Utils implements BaseUtils {
     return isValidEd25519SecretKey(key);
   }
 
+  /**
+   * Returns an hex string of the given buffer
+   *
+   * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
+   * @returns {string} - the hex value
+   */
+  toHex(buffer: Buffer | Uint8Array): string {
+    return hex.encode(buffer, true);
+  }
+
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
     throw new NotImplementedError('isValidSignature not implemented.');
@@ -62,6 +85,17 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
     throw new NotImplementedError('hash not implemented.');
+  }
+
+  /**
+   * Compare two Keys
+   *
+   * @param {Uint8Array} key1 - key to be compare
+   * @param {Uint8Array} key2 - key to be compare
+   * @returns {boolean} - returns true if both keys are equal
+   */
+  areKeysEqual(key1: Uint8Array, key2: Uint8Array): boolean {
+    return nacl.verify(key1, key2);
   }
 
   /**
@@ -89,48 +123,77 @@ export class Utils implements BaseUtils {
    * @param {string} seed - the seed to be validated
    * @returns {boolean} - true if the seed is valid
    */
-   isValidSeed(seed: string): boolean {
-    if (typeof seed !== "string") return false;
-    if (seed.length !== ALGORAND_SEED_LENGTH) return false; // Try to decode
+  isValidSeed(seed: string): boolean {
+    if (typeof seed !== 'string') return false;
 
-    let decoded: any = {};
+    if (seed.length !== ALGORAND_SEED_LENGTH) return false;
+
+    // Try to decode
+    let decoded;
     try {
       decoded = this.decodeSeed(seed);
     } catch (e) {
       return false;
     }
 
-    let checksum = crypto.createHash('SHA512-256').update(decoded.seed).digest().slice(ALGORAND_NACL_SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, ALGORAND_NACL_SEED_BYTES_LENGTH);
-    return _.isEqual(decoded.checksum, checksum);
+    // Compute checksum
+    const checksum = new Uint8Array(
+      sha512.sha512_256.array(decoded.seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
+    );
+
+    // Check if the checksum and the seed are equal
+    return _.isEqual(checksum, decoded.checksum);
   }
 
   /**
-   * Decodes a seed
+   * Encode an algo seed
    *
-   * @param {string} seed - the seed to decode
-   * @returns {object} - a decoded seed that contains the seed and a checksum
+   * @param  {Buffer} secretKey - the valid secretKey .
+   * @returns {string} - the seed to be validated.
    */
-  protected decodeSeed(seed: string) {
-    if (typeof seed !== "string") throw ALGORAND_MALFORMED_SEED_ERROR; // try to decode
+  encodeSeed(secretKey: Buffer): string {
+    // get seed
+    const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
+    // compute checksum
+    const checksum = sha512.sha512_256
+      .array(seed)
+      .slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH);
+    const encodedSeed = base32.encode(concatArrays(seed, checksum));
 
-    const decoded = base32.decode.asBytes(seed); // Sanity check
+    return encodedSeed.toString().slice(0, ALGORAND_SEED_LENGTH); // removing the extra '===='
+  }
 
-    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw ALGORAND_MALFORMED_SEED_ERROR;
+  /**
+   * decodeSeed decodes an algo seed
+   *
+   * Decoding algo seed is sane as decoding address.
+   * Latest version of algo sdk (1.9, at this writing) does not expose explicit method for decoding seed
+   * hence, this routine uses decodeAddress and changes the return structure
+   *
+   * @param {string} seed - the seed to be validated.
+   * @returns {Seed} - the object Seed
+   */
+  decodeSeed(seed: string): Seed {
+    // try to decode
+    const decoded = base32.decode.asBytes(seed);
+
+    // Sanity check
+    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw new Error('seed seems to be malformed');
     return {
       seed: new Uint8Array(decoded.slice(0, ALGORAND_SEED_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)),
-      checksum: new Uint8Array(decoded.slice(ALGORAND_NACL_SEED_BYTES_LENGTH, ALGORAND_SEED_BYTE_LENGTH)),
-    }
+      checksum: new Uint8Array(decoded.slice(SEED_BYTES_LENGTH, ALGORAND_SEED_BYTE_LENGTH)),
+    };
   }
 
   /**
- * Verifies if signature for message is valid.
- *
- * @param pub {Uint8Array} public key
- * @param message {Uint8Array} signed message
- * @param signature {Buffer} signature to verify
- * @returns {Boolean} true if signature is valid.
- */
-   verifySignature(message: Uint8Array, signature: Buffer, pub: Uint8Array): boolean {
+   * Verifies if signature for message is valid.
+   *
+   * @param pub {Uint8Array} public key
+   * @param message {Uint8Array} signed message
+   * @param signature {Buffer} signature to verify
+   * @returns {Boolean} true if signature is valid.
+   */
+  verifySignature(message: Uint8Array, signature: Buffer, pub: Uint8Array): boolean {
     return nacl.sign.detached.verify(message, signature, pub);
   }
 
@@ -206,6 +269,7 @@ export class Utils implements BaseUtils {
 
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
       return {
+        rawTransaction: new Uint8Array(buffer),
         txn: algosdk.decodeUnsignedTransaction(buffer),
         signed: false,
       };
@@ -216,9 +280,25 @@ export class Utils implements BaseUtils {
       // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
       // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
       const tx: any = algosdk.decodeSignedTransaction(buffer);
+
+      const signers: string[] = [];
+      const signedBy: string[] = [];
+      if (tx.msig && tx.msig.subsig) {
+        for (const sig of tx.msig.subsig) {
+          const addr = algosdk.encodeAddress(sig.pk);
+          signers.push(addr);
+          if (sig.s) {
+            signedBy.push(addr);
+          }
+        }
+      }
+
       return {
+        rawTransaction: new Uint8Array(buffer),
         txn: tx.txn,
         signed: true,
+        signers: signers,
+        signedBy: signedBy,
       };
     } else {
       throw new InvalidTransactionError('Transaction cannot be decoded');
@@ -266,6 +346,15 @@ export class Utils implements BaseUtils {
    */
   encodeObj(obj: Record<string | number | symbol, any>): Uint8Array {
     return algosdk.encodeObj(obj);
+  }
+
+  /**
+   * decodeObj takes a Uint8Array and returns its javascript obj
+   * @param o - Uint8Array to decode
+   * @returns object
+   */
+  decodeObj(o: ArrayLike<number>) {
+    return algosdk.decodeObj(o);
   }
 
   /**
@@ -469,13 +558,16 @@ export class Utils implements BaseUtils {
    * Function has not params
    * @returns Account
    */
-  generateAccount(): Account {
-    const keyPair = new KeyPair();
-    const account = {
-      sk: keyPair.getSigningKey(),
-      addr: keyPair.getAddress(),
+  generateAccount(): algosdk.Account {
+    return algosdk.generateAccount();
+  }
+
+  generateAccountFromSeed(seed: Uint8Array): algosdk.Account {
+    const keys = nacl.sign.keyPair.fromSeed(seed);
+    return {
+      addr: algosdk.encodeAddress(keys.publicKey),
+      sk: keys.secretKey,
     };
-    return account;
   }
 }
 
