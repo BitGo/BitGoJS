@@ -47,6 +47,7 @@ import {
   verifyResponse,
 } from './api';
 import { sanitizeLegacyPath } from './bip32path';
+import { getSharedSecret } from './ecdh';
 
 const debug = debugLib('bitgo:index');
 
@@ -136,6 +137,11 @@ export interface VerifyShardsOptions {
   passwords: string[];
   m: number;
   xpub: string;
+}
+
+export interface GetEcdhSecretOptions {
+  otherPubKeyHex: string;
+  eckey: bitcoin.ECPair;
 }
 
 export interface AccessTokenOptions {
@@ -936,6 +942,20 @@ export class BitGo {
     }
 
     return true;
+  }
+
+  /**
+   * @deprecated - use `getSharedSecret()`
+   */
+  getECDHSecret({ otherPubKeyHex, eckey }: GetEcdhSecretOptions): string {
+    if (!_.isString(otherPubKeyHex)) {
+      throw new Error('otherPubKeyHex string required');
+    }
+    if (!_.isObject(eckey)) {
+      throw new Error('eckey object required');
+    }
+
+    return getSharedSecret(eckey, Buffer.from(otherPubKeyHex, 'hex')).toString('hex');
   }
 
   /**
