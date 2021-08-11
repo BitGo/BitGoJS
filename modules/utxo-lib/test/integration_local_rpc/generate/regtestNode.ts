@@ -3,10 +3,10 @@
  */
 import * as crypto from 'crypto';
 import { spawn } from 'child_process';
-import { Network } from './types';
+import { Network } from '../../../src/networkTypes';
+import { getNetworkName } from '../../../src/coins';
 
 const utxolib = require('../../../src');
-const coins = require('../../../src/coins');
 
 type DockerImageParams = {
   extraArgsDocker: string[];
@@ -63,7 +63,7 @@ function getDockerParams(network: Network): DockerImageParams {
         [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
       );
   }
-  throw new Error(`unsupported network ${coins.getNetworkName(network)}`);
+  throw new Error(`unsupported network ${getNetworkName(network)}`);
 }
 
 export interface Node {

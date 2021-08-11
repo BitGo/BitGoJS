@@ -1,15 +1,16 @@
 /**
  * @prettier
  */
+import * as assert from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { Network } from './types';
-
-const coins = require('../../../src/coins');
+import { Network } from '../../../src/networkTypes';
+import { getNetworkName } from '../../../src/coins';
 
 export function getFixtureDir(network: Network): string {
-  const networkName = coins.getNetworkName(network);
+  const networkName = getNetworkName(network);
+  assert(networkName);
   return path.join(__dirname, '..', 'fixtures', networkName);
 }
 

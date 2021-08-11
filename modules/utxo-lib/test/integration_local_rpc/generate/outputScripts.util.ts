@@ -2,11 +2,12 @@
  * @prettier
  */
 import * as crypto from 'crypto';
-import { Network, Transaction, Triple } from './types';
+import { Network } from '../../../src/networkTypes';
+import { Transaction, Triple } from './types';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
+import { getMainnet, isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
 const utxolib = require('../../../src');
-const coins = require('../../../src/coins');
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
@@ -33,7 +34,7 @@ export function getKeyTriple(seed: string): KeyTriple {
 }
 
 export function supportsSegwit(network: Network): boolean {
-  return coins.isBitcoin(network) || coins.isLitecoin(network) || coins.isBitcoinGold(network);
+  return isBitcoin(network) || isLitecoin(network) || isBitcoinGold(network);
 }
 
 export function isSupportedDepositType(network: Network, scriptType: ScriptType): boolean {
@@ -81,7 +82,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
 
 export function getTransactionBuilder(network: Network) {
   const txb = new utxolib.TransactionBuilder(network);
-  switch (coins.getMainnet(network)) {
+  switch (getMainnet(network)) {
     case utxolib.networks.zcash:
       txb.setVersion(4);
       txb.setVersionGroupId(0x892f2085);
@@ -136,7 +137,7 @@ export function createSpendTransaction(
   matches.forEach(([output], vin) => {
     keys.slice(0, 2).forEach((key) => {
       let sighash: number;
-      switch (coins.getMainnet(network)) {
+      switch (getMainnet(network)) {
         case utxolib.networks.bitcoincash:
         case utxolib.networks.bitcoinsv:
           sighash = utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
