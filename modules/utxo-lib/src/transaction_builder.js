@@ -15,6 +15,7 @@ var P2SH = SIGNABLE.concat([btemplates.types.P2WPKH, btemplates.types.P2WSH])
 var ECPair = require('./ecpair')
 var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
+const { getMainnet, getNetworkName } = require('./coins')
 
 var debug = require('debug')('bitgo:utxolib:txbuilder')
 
@@ -196,15 +197,15 @@ function fixMultisigOrder (input, transaction, vin, value, network) {
       // TODO: avoid O(n) hashForSignature
       var parsed = ECSignature.parseScriptSignature(signature)
       var hash
-      switch (network.coin) {
-        case coins.BSV:
-        case coins.BCH:
+      switch (getMainnet(network)) {
+        case networks.bitcoinsv:
+        case networks.bitcoincash:
           hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType)
           break
-        case coins.BTG:
+        case networks.bitcoingold:
           hash = transaction.hashForGoldSignature(vin, input.signScript, value, parsed.hashType)
           break
-        case coins.ZEC:
+        case networks.zcash:
           if (value === undefined) {
             return false
           }
@@ -542,8 +543,8 @@ TransactionBuilder.prototype.setConsensusBranchId = function (consensusBranchId)
 
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
-    throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
-      this.network.coin + ', version: ' + this.tx.version)
+    throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network: ' +
+      getNetworkName(this.network) + ', version: ' + this.tx.version)
   }
   typeforce(types.UInt32, versionGroupId)
   this.tx.versionGroupId = versionGroupId
@@ -551,8 +552,8 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
 
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
-    throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
-      this.network.coin + ', version: ' + this.tx.version)
+    throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network: ' +
+      getNetworkName(this.network) + ', version: ' + this.tx.version)
   }
   typeforce(types.UInt32, expiryHeight)
   this.tx.expiryHeight = expiryHeight
@@ -560,8 +561,8 @@ TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
 
 TransactionBuilder.prototype.setJoinSplits = function (transaction) {
   if (!(coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
-    throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network coin: ' +
-      this.network.coin + ', version: ' + this.tx.version)
+    throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network: ' +
+      getNetworkName(this.network) + ', version: ' + this.tx.version)
   }
   if (transaction && transaction.joinsplits) {
     this.tx.joinsplits = transaction.joinsplits.map(function (txJoinsplit) {
@@ -590,7 +591,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   var txbNetwork = network || networks.bitcoin
   var txb = new TransactionBuilder(txbNetwork)
 
-  if (txb.network.coin !== transaction.network.coin) {
+  if (getMainnet(txb.network) !== getMainnet(transaction.network)) {
     throw new Error('This transaction is incompatible with the transaction builder')
   }
 

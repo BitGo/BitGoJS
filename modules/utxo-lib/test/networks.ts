@@ -1,7 +1,6 @@
 /* global describe, it */
-const assert = require('assert')
-
-const { networks, coins } = require('../src')
+import * as assert from 'assert'
+import { coins, networks } from '../src'
 
 describe('networks', function () {
   // Ideally, all properties for all coins should be distinct.
