@@ -38,7 +38,7 @@ export class TransferBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
     const algoTx = tx.getAlgoTransaction();
     if (algoTx) {
-      this.amount(algoTx.amount);
+      this.amount(algoTx.amount || 0);
       this.to({ address: algosdk.encodeAddress(algoTx.to.publicKey) });
       if (algoTx.closeRemainderTo) {
         this.closeRemainderTo({ address: algosdk.encodeAddress(algoTx.closeRemainderTo.publicKey) });

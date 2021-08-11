@@ -92,7 +92,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     this.validateValue(new BigNumber(size));
     this._voteKeyDilution = size;
 
-    return this
+    return this;
   }
 
   /**

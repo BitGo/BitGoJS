@@ -13,6 +13,7 @@ export class Transaction extends BaseTransaction {
   private _numberOfRequiredSigners: number;
   private _sender: string;
   private _signers: string[];
+  private _signedBy: string[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -131,6 +132,18 @@ export class Transaction extends BaseTransaction {
 
   set signers(addrs: string[]) {
     this._signers = addrs;
+  }
+
+  get signers(): string[] {
+    return this._signers;
+  }
+
+  set signedBy(signer: string[]) {
+    this._signedBy = signer;
+  }
+
+  get signedBy(): string[] {
+    return this._signedBy;
   }
 
   /**

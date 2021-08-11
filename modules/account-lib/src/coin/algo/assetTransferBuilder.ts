@@ -5,7 +5,7 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
-import { AssetTransferTxnSchema } from './txnSchema';
+import { AssetTransferTxnSchema, AssetToggleTxnSchema } from './txnSchema';
 import Utils from './utils';
 
 export class AssetTransferBuilder extends TransferBuilder {
@@ -84,7 +84,7 @@ export class AssetTransferBuilder extends TransferBuilder {
     }
 
     this._tokenId = algoTx.assetIndex;
-    this._amount = algoTx.amount;
+    this._amount = algoTx.amount || 0;
     this._to = algosdk.encodeAddress(algoTx.to.publicKey);
 
     return tx;
@@ -108,11 +108,19 @@ export class AssetTransferBuilder extends TransferBuilder {
   }
 
   private validateFields(tokenId: number, assetAmount: number | bigint, receiver: string): void {
-    const validationResult = AssetTransferTxnSchema.validate({
-      tokenId,
-      assetAmount,
-      receiver,
-    });
+    let validationResult;
+    if (this._sender !== this._to) {
+      validationResult = AssetTransferTxnSchema.validate({
+        tokenId,
+        assetAmount,
+        receiver,
+      });
+    } else {
+      validationResult = AssetToggleTxnSchema.validate({
+        tokenId,
+        receiver,
+      });
+    }
 
     if (validationResult.error) {
       throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
