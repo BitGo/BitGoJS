@@ -3,8 +3,8 @@
  */
 import * as assert from 'assert';
 
-import { Network } from '../../../src/networkTypes';
-import { getNetworkName, isTestnet } from '../../../src/coins';
+import { Network, NetworkName } from '../../../src/networkTypes';
+import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
 
 const utxolib = require('../../../src');
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
@@ -113,10 +113,23 @@ async function run(network: Network) {
   }
 }
 
-async function main() {
+async function main(args: string[]) {
+  const allowedNetworks = args.map((name) => {
+    const network = utxolib.networks[name];
+    if (!network) {
+      throw new Error(`invalid network ${name}`);
+    }
+    return getMainnet(network);
+  });
+
   for (const networkName of Object.keys(utxolib.networks)) {
     const network = utxolib.networks[networkName];
     if (!isTestnet(network)) {
+      continue;
+    }
+
+    if (allowedNetworks.length && !allowedNetworks.some((n) => n === getMainnet(network))) {
+      console.log(`skipping ${networkName}`);
       continue;
     }
 
@@ -125,7 +138,7 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((e) => {
+  main(process.argv.slice(2)).catch((e) => {
     console.error(e);
     process.exit(1);
   });
