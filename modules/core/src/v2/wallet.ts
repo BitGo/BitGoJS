@@ -81,7 +81,7 @@ export interface PrebuildTransactionOptions {
     targetWalletUnspents?: number;
     minValue?: number;
     maxValue?: number;
-    sequenceId?: number;
+    sequenceId?: string;
     lastLedgerSequence?: number;
     ledgerSequenceDelta?: string;
     gasPrice?: number;
@@ -366,7 +366,7 @@ export interface SendManyOptions {
   message?: string;
   minValue?: number;
   maxValue?: number;
-  sequenceId?: number;
+  sequenceId?: string;
   lastLedgerSequence?: number;
   ledgerSequenceDelta?: string;
   gasPrice?: number;
