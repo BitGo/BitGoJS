@@ -693,7 +693,6 @@ function prepareBitGo(config: Config) {
     };
 
     req.bitgo = new BitGo(bitgoConstructorParams);
-    (req.bitgo as any)._promise.longStackSupport = true;
 
     next();
   };
