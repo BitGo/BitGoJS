@@ -565,6 +565,41 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
 }
 
 /**
+ * Calculate the hash to verify the signature against
+ * @param inIndex
+ * @param prevoutScript
+ * @param value - The previous output's amount
+ * @param hashType
+ * @param isSegwit
+ * @returns {*}
+ */
+Transaction.prototype.hashForSignatureByNetwork = function (
+  inIndex,
+  prevoutScript,
+  value,
+  hashType,
+  isSegwit,
+) {
+  switch (coins.getMainnet(this.network)) {
+    case networks.bitcoingold:
+      return this.hashForGoldSignature(inIndex, prevoutScript, value, hashType, isSegwit)
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+      return this.hashForCashSignature(inIndex, prevoutScript, value, hashType)
+    case networks.zcash:
+      return this.hashForZcashSignature(inIndex, prevoutScript, value, hashType)
+    default:
+      if (isSegwit) {
+        return this.hashForWitnessV0(inIndex, prevoutScript, value, hashType)
+      } else {
+        return this.hashForSignature(inIndex, prevoutScript, hashType)
+      }
+  }
+
+  throw new Error('invalid state') // eslint-disable-line
+}
+
+/**
  * Blake2b hashing algorithm for Zcash
  * @param bufferToHash
  * @param personalization

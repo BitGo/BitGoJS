@@ -193,32 +193,19 @@ function fixMultisigOrder (input, transaction, vin, value, network) {
     unmatched.some(function (signature, i) {
       // skip if undefined || OP_0
       if (!signature) return false
+      if (coins.isZcash(network) && value === undefined) {
+        return false
+      }
 
       // TODO: avoid O(n) hashForSignature
       var parsed = ECSignature.parseScriptSignature(signature)
-      var hash
-      switch (getMainnet(network)) {
-        case networks.bitcoinsv:
-        case networks.bitcoincash:
-          hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType)
-          break
-        case networks.bitcoingold:
-          hash = transaction.hashForGoldSignature(vin, input.signScript, value, parsed.hashType)
-          break
-        case networks.zcash:
-          if (value === undefined) {
-            return false
-          }
-          hash = transaction.hashForZcashSignature(vin, input.signScript, value, parsed.hashType)
-          break
-        default:
-          if (input.witness) {
-            hash = transaction.hashForWitnessV0(vin, input.signScript, value, parsed.hashType)
-          } else {
-            hash = transaction.hashForSignature(vin, input.signScript, parsed.hashType)
-          }
-          break
-      }
+      var hash = transaction.hashForSignatureByNetwork(
+        vin,
+        input.signScript,
+        value,
+        parsed.hashType,
+        !!input.witness,
+      )
 
       // skip if signature does not match pubKey
       if (!keyPair.verify(hash, parsed.signature)) return false
@@ -821,25 +808,13 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   }
 
   // ready to sign
-  var signatureHash
-  if (coins.isBitcoinGold(this.network)) {
-    signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
-    debug('Calculated BTG sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isBitcoinCash(this.network) || coins.isBitcoinSV(this.network)) {
-    signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
-    debug('Calculated BCH sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isZcash(this.network)) {
-    signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
-    debug('Calculated ZEC sighash (%s)', signatureHash.toString('hex'))
-  } else {
-    if (input.witness) {
-      signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
-      debug('Calculated witnessv0 sighash (%s)', signatureHash.toString('hex'))
-    } else {
-      signatureHash = this.tx.hashForSignature(vin, input.signScript, hashType)
-      debug('Calculated sighash (%s)', signatureHash.toString('hex'))
-    }
-  }
+  var signatureHash = this.tx.hashForSignatureByNetwork(
+    vin,
+    input.signScript,
+    witnessValue,
+    hashType,
+    !!input.witness,
+  )
 
   // enforce in order signing of public keys
   var signed = input.pubKeys.some(function (pubKey, i) {
