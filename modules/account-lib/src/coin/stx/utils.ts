@@ -282,12 +282,14 @@ export function padMemo(memo: string): string {
  * @param {string[]} pubKeys - list of public keys as strings
  * @param {AddressVersion} addressVersion - MainnetMultiSig, TestnetMultiSig
  * @param {AddressHashMode} addressHashMode - SerializeP2SH
+ * @param {number} [signaturesRequired] - number of signatures required, default value its 2
  * @returns {address: string, hash160: string} - a multisig address
  */
 export function getSTXAddressFromPubKeys(
   pubKeys: string[],
   addressVersion: AddressVersion = AddressVersion.MainnetMultiSig,
   addressHashMode: AddressHashMode = AddressHashMode.SerializeP2SH,
+  signaturesRequired: number = 2
 ): { address: string; hash160: string } {
   if (pubKeys.length === 0) {
     throw new Error('Invalid number of public keys');
@@ -295,9 +297,12 @@ export function getSTXAddressFromPubKeys(
   if (!pubKeys.every(isValidPublicKey)) {
     throw new Error('Invalid public keys');
   }
+  if (signaturesRequired > pubKeys.length) {
+    throw new Error('Number of signatures required must be lower or equal to the number of Public Keys');
+  }
 
   const stxPubKeys = pubKeys.map(createStacksPublicKey);
-  const address = addressFromPublicKeys(addressVersion, addressHashMode, stxPubKeys.length, stxPubKeys);
+  const address = addressFromPublicKeys(addressVersion, addressHashMode, signaturesRequired, stxPubKeys);
 
   return { address: addressToString(address), hash160: address.hash160 };
 }

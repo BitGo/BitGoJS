@@ -3,9 +3,10 @@
  */
 import * as assert from 'assert';
 
-const utxolib = require('../../../src');
-const coins = require('../../../src/coins');
+import { Network } from '../../../src/networkTypes';
+import { getNetworkName, isTestnet } from '../../../src/coins';
 
+const utxolib = require('../../../src');
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
   createScriptPubKey,
@@ -16,7 +17,6 @@ import {
   ScriptType,
   scriptTypes,
 } from './outputScripts.util';
-import { Network } from './types';
 import { RpcClient } from './RpcClient';
 import { wipeFixtures, writeFixture } from './fixtures';
 
@@ -36,7 +36,7 @@ async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   }
 }
 
-function toRegtestAddress(network: Network, scriptType: ScriptType, script: Buffer): string {
+function toRegtestAddress(network: { bech32?: string }, scriptType: ScriptType, script: Buffer): string {
   if (scriptType === 'p2wsh' || scriptType === 'p2wkh') {
     switch (network) {
       case utxolib.networks.testnet:
@@ -58,7 +58,7 @@ async function createTransactionsForScriptType(
   scriptType: ScriptType,
   network: Network
 ): Promise<void> {
-  const logTag = `createTransaction ${scriptType} ${coins.getNetworkName(network)}`;
+  const logTag = `createTransaction ${scriptType} ${getNetworkName(network)}`;
   if (!isSupportedDepositType(network, scriptType)) {
     console.log(logTag + ': not supported, skipping');
     return;
@@ -104,7 +104,7 @@ async function run(network: Network) {
     await initBlockchain(rpc, network);
     await createTransactions(rpc, network);
   } catch (e) {
-    console.error(`error for network ${coins.getNetworkName(network)}`);
+    console.error(`error for network ${getNetworkName(network)}`);
     throw e;
   } finally {
     if (node) {
@@ -116,7 +116,7 @@ async function run(network: Network) {
 async function main() {
   for (const networkName of Object.keys(utxolib.networks)) {
     const network = utxolib.networks[networkName];
-    if (!coins.isTestnet(network)) {
+    if (!isTestnet(network)) {
       continue;
     }
 

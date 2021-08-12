@@ -1,5 +1,8 @@
-const BigInteger = require('bigi')
-const ECPair = require('../ecpair')
+/**
+ * @prettier
+ */
+const BigInteger = require('bigi');
+const ECPair = require('../ecpair');
 
 /**
  * Create an ECPair from the raw private key bytes
@@ -7,13 +10,13 @@ const ECPair = require('../ecpair')
  * @param {Object} [network] - Network for the ECPair. Defaults to bitcoin.
  * @return {ECPair}
  */
-export function privateKeyBufferToECPair (buffer, network) {
+export function privateKeyBufferToECPair(buffer, network) {
   if (!Buffer.isBuffer(buffer) || buffer.length !== 32) {
-    throw new Error('invalid private key buffer')
+    throw new Error('invalid private key buffer');
   }
 
-  const d = BigInteger.fromBuffer(buffer)
-  return new ECPair(d, null, { network })
+  const d = BigInteger.fromBuffer(buffer);
+  return new ECPair(d, null, { network });
 }
 
 /**
@@ -21,12 +24,12 @@ export function privateKeyBufferToECPair (buffer, network) {
  * @param {ECPair} ecPair
  * @return {Buffer} 32 bytes
  */
-export function privateKeyBufferFromECPair (ecPair) {
+export function privateKeyBufferFromECPair(ecPair) {
   if (!(ecPair instanceof ECPair)) {
-    throw new TypeError(`invalid argument ecpair`)
+    throw new TypeError(`invalid argument ecpair`);
   }
 
-  if (!ecPair.d) throw new Error('Missing private key')
+  if (!ecPair.d) throw new Error('Missing private key');
 
-  return ecPair.d.toBuffer(32)
+  return ecPair.d.toBuffer(32);
 }

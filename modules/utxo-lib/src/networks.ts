@@ -1,3 +1,7 @@
+/**
+ * @prettier
+ */
+
 /*
 
 The values for the various fork coins can be found in these files:
@@ -15,36 +19,27 @@ forkId         src/script/interpreter.h  FORKID_*
 
 */
 
-const coins = {
-  BCH: 'bch',
-  BSV: 'bsv',
-  BTC: 'btc',
-  BTG: 'btg',
-  LTC: 'ltc',
-  ZEC: 'zec',
-  DASH: 'dash'
-}
+import { coins, Network, NetworkName, ZcashNetwork } from './networkTypes';
 
-function getDefaultBip32Mainnet () {
+function getDefaultBip32Mainnet(): Network['bip32'] {
   return {
     // base58 'xpub'
     public: 0x0488b21e,
     // base58 'xprv'
-    private: 0x0488ade4
-  }
+    private: 0x0488ade4,
+  };
 }
 
-function getDefaultBip32Testnet () {
+function getDefaultBip32Testnet(): Network['bip32'] {
   return {
     // base58 'tpub'
     public: 0x043587cf,
     // base58 'tprv'
-    private: 0x04358394
-  }
+    private: 0x04358394,
+  };
 }
 
-module.exports = {
-
+const networks: Record<NetworkName, Network> & Record<'zcash' | 'zcashTest', ZcashNetwork> = {
   // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
   // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   bitcoin: {
@@ -54,7 +49,7 @@ module.exports = {
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
-    coin: coins.BTC
+    coin: coins.BTC,
   },
   testnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -63,7 +58,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BTC
+    coin: coins.BTC,
   },
 
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
@@ -75,7 +70,7 @@ module.exports = {
     scriptHash: 0x05,
     wif: 0x80,
     coin: coins.BCH,
-    forkId: 0x00
+    forkId: 0x00,
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -83,7 +78,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BCH
+    coin: coins.BCH,
   },
 
   // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
@@ -97,7 +92,7 @@ module.exports = {
     scriptHash: 0x17,
     wif: 0x80,
     forkId: 79,
-    coin: coins.BTG
+    coin: coins.BTG,
   },
   bitcoingoldTestnet: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
@@ -107,7 +102,7 @@ module.exports = {
     scriptHash: 196,
     wif: 0xef,
     forkId: 79,
-    coin: coins.BTG
+    coin: coins.BTG,
   },
 
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
@@ -119,7 +114,7 @@ module.exports = {
     scriptHash: 0x05,
     wif: 0x80,
     coin: coins.BSV,
-    forkId: 0x00
+    forkId: 0x00,
   },
   bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -127,7 +122,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BSV
+    coin: coins.BSV,
   },
 
   // https://github.com/dashpay/dash/blob/master/src/validation.cpp
@@ -138,7 +133,7 @@ module.exports = {
     pubKeyHash: 0x4c,
     scriptHash: 0x10,
     wif: 0xcc,
-    coin: coins.DASH
+    coin: coins.DASH,
   },
   dashTest: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
@@ -146,7 +141,7 @@ module.exports = {
     pubKeyHash: 0x8c,
     scriptHash: 0x13,
     wif: 0xef,
-    coin: coins.DASH
+    coin: coins.DASH,
   },
 
   // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
@@ -158,7 +153,7 @@ module.exports = {
     pubKeyHash: 0x30,
     scriptHash: 0x32,
     wif: 0xb0,
-    coin: coins.LTC
+    coin: coins.LTC,
   },
   litecoinTest: {
     messagePrefix: '\x19Litecoin Signed Message:\n',
@@ -167,7 +162,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0x3a,
     wif: 0xef,
-    coin: coins.LTC
+    coin: coins.LTC,
   },
 
   // https://github.com/zcash/zcash/blob/master/src/validation.cpp
@@ -187,9 +182,9 @@ module.exports = {
       // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
       // 4: 0x2bb40e60
       // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      4: 0xe9ff75a6 // (Canopy branch id, see https://zips.z.cash/zip-0251)
+      4: 0xe9ff75a6, // (Canopy branch id, see https://zips.z.cash/zip-0251)
     },
-    coin: coins.ZEC
+    coin: coins.ZEC,
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
@@ -204,8 +199,10 @@ module.exports = {
       // 4: 0x76b809bb (old Sapling branch id)
       // 4: 0x2bb40e60
       // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      4: 0xe9ff75a6 // (Canopy branch id, see https://zips.z.cash/zip-0251)
+      4: 0xe9ff75a6, // (Canopy branch id, see https://zips.z.cash/zip-0251)
     },
-    coin: coins.ZEC
-  }
-}
+    coin: coins.ZEC,
+  },
+};
+
+export = networks;
