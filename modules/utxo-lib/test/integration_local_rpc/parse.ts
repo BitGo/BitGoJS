@@ -47,13 +47,14 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       assert.strictEqual(parsedTx.toBuffer().toString('hex'), fixture.transaction.hex);
     });
 
-    if (txType === 'deposit') {
-      return;
-    }
-
     it(`parseSignatureScript`, function () {
       parsedTx.ins.forEach((input, i) => {
         const result = parseSignatureScript(input);
+
+        if (txType === 'deposit') {
+          return;
+        }
+
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, 3);
 
@@ -68,6 +69,10 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         }
       });
     });
+
+    if (txType === 'deposit') {
+      return;
+    }
 
     it(`verifySignatures`, function () {
       parsedTx.ins.forEach((input, i) => {
@@ -92,6 +97,8 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
             }),
             true
           );
+
+          assert.strictEqual(verifySignature(parsedTx, i, prevOutput.value * 1e8), true);
         });
       });
     });

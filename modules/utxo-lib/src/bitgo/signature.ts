@@ -86,55 +86,57 @@ export function parseSignatureScript(input: Input): ParsedSignatureScript {
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
   }
 
-  if (inputClassification === script.types.P2SH || inputClassification === script.types.P2WSH) {
-    // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
-    // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
-    // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
-    // entry in the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
-    // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
-    // multisig setup:
-    //
-    // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
-    // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
-    if (decompiledSigScript.length !== 4) {
-      throw new Error(`unexpected decompiledSigScript length`);
-    }
-    const signatures = decompiledSigScript.slice(0, -1);
-    const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
-    const decompiledPubScript = script.decompile(pubScript);
-    if (decompiledPubScript.length !== 6) {
-      throw new Error(`unexpected decompiledPubScript length`);
-    }
-    const publicKeys = decompiledPubScript.slice(1, -2);
+  if (
+    (inputClassification !== script.types.P2SH && inputClassification !== script.types.P2WSH) ||
+    decompiledSigScript.length !== 4
+  ) {
+    return { isSegwitInput, inputClassification };
+  }
+  // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
+  // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
+  // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
+  // entry in the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
+  // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
+  // multisig setup:
+  //
+  // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
+  // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
+  if (decompiledSigScript.length !== 4) {
+    throw new Error(`unexpected decompiledSigScript length`);
+  }
+  const signatures = decompiledSigScript.slice(0, -1);
+  const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
+  const decompiledPubScript = script.decompile(pubScript);
+  if (decompiledPubScript.length !== 6) {
+    throw new Error(`unexpected decompiledPubScript length`);
+  }
+  const publicKeys = decompiledPubScript.slice(1, -2);
 
-    // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
-    // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
-    const len = decompiledPubScript.length;
-    const nSignatures = decompiledPubScript[0] - 80;
-    const nPubKeys = decompiledPubScript[len - 2] - 80;
+  // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
+  // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
+  const len = decompiledPubScript.length;
+  const nSignatures = decompiledPubScript[0] - 80;
+  const nPubKeys = decompiledPubScript[len - 2] - 80;
 
-    // Due to a bug in the implementation of multisignature in the bitcoin protocol, a 0 is added to the signature
-    // script, so we add 1 when asserting the number of signatures matches the number of signatures expected by the
-    // pub script. Also, note that we consider a signature script with the the same number of signatures as public
-    // keys (+1 as noted above) valid because we use placeholder signatures when parsing a half-signed signature
-    // script.
-    if (signatures.length !== nSignatures + 1 && signatures.length !== nPubKeys + 1) {
-      throw new Error(`expected ${nSignatures} or ${nPubKeys} signatures, got ${signatures.length - 1}`);
-    }
-
-    if (publicKeys.length !== nPubKeys) {
-      throw new Error(`expected ${nPubKeys} public keys, got ${publicKeys.length}`);
-    }
-
-    const lastOpCode = decompiledPubScript[len - 1];
-    if (lastOpCode !== opcodes.OP_CHECKMULTISIG) {
-      throw new Error(`expected opcode #${opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
-    }
-
-    return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+  // Due to a bug in the implementation of multisignature in the bitcoin protocol, a 0 is added to the signature
+  // script, so we add 1 when asserting the number of signatures matches the number of signatures expected by the
+  // pub script. Also, note that we consider a signature script with the the same number of signatures as public
+  // keys (+1 as noted above) valid because we use placeholder signatures when parsing a half-signed signature
+  // script.
+  if (signatures.length !== nSignatures + 1 && signatures.length !== nPubKeys + 1) {
+    throw new Error(`expected ${nSignatures} or ${nPubKeys} signatures, got ${signatures.length - 1}`);
   }
 
-  return { isSegwitInput, inputClassification };
+  if (publicKeys.length !== nPubKeys) {
+    throw new Error(`expected ${nPubKeys} public keys, got ${publicKeys.length}`);
+  }
+
+  const lastOpCode = decompiledPubScript[len - 1];
+  if (lastOpCode !== opcodes.OP_CHECKMULTISIG) {
+    throw new Error(`expected opcode #${opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
+  }
+
+  return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
 }
 
 /**
