@@ -798,7 +798,7 @@ Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, i
 /**
  * Hash transaction for signing a specific input for Bitcoin Gold.
  */
-Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, sigVersion) {
+Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, isSegwit) {
   typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
 
   // Bitcoin Gold also implements segregated witness
@@ -812,7 +812,7 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
   }
 
   // BIP143 sighash activated in BitcoinCash via 0x40 bit
-  if (sigVersion || fUseForkId) {
+  if (isSegwit || fUseForkId) {
     if (types.Null(inAmount)) {
       throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
     }
