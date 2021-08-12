@@ -3,7 +3,7 @@
  */
 import * as assert from 'assert';
 
-import { Network, NetworkName } from '../../../src/networkTypes';
+import { Network } from '../../../src/networkTypes';
 import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
 
 const utxolib = require('../../../src');
@@ -18,7 +18,7 @@ import {
   scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
-import { wipeFixtures, writeFixture } from './fixtures';
+import { wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   switch (network) {
@@ -70,7 +70,7 @@ async function createTransactionsForScriptType(
   const address = toRegtestAddress(network, scriptType, script);
   const depositTxid = await rpc.sendToAddress(address, 1);
   const depositTx = await rpc.getRawTransaction(depositTxid);
-  await writeFixture(network, `deposit_${scriptType}.json`, await rpc.getRawTransactionVerbose(depositTxid));
+  await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, depositTxid);
   if (!isSupportedSpendType(network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
@@ -79,7 +79,7 @@ async function createTransactionsForScriptType(
   const spendTx = createSpendTransaction(keys, scriptType, depositTxid, depositTx, script, network);
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
-  await writeFixture(network, `spend_${scriptType}.json`, await rpc.getRawTransactionVerbose(spendTxid));
+  await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);
 }
 
 async function createTransactions(rpc: RpcClient, network: Network) {

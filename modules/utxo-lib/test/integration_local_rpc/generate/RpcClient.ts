@@ -7,6 +7,7 @@ import buildDebug from 'debug';
 
 import { Network } from '../../../src/networkTypes';
 import { getMainnet, getNetworkName, isZcash } from '../../../src/coins';
+import { RpcTransaction } from './RpcTypes';
 
 const utxolib = require('../../../src');
 
@@ -82,7 +83,7 @@ export class RpcClient {
     return Buffer.from(await this.exec<string>('getrawtransaction', txid), 'hex');
   }
 
-  async getRawTransactionVerbose(txid: string): Promise<unknown> {
+  async getRawTransactionVerbose(txid: string): Promise<RpcTransaction> {
     const verbose = isZcash(this.network) ? 1 : true;
     return await this.exec('getrawtransaction', txid, verbose);
   }
