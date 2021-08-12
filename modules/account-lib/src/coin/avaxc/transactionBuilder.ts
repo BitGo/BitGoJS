@@ -1,14 +1,20 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import EthereumAbi from 'ethereumjs-abi';
 import { Eth } from '../../index';
-import { NotImplementedError } from '../baseCoin/errors';
+import { BuildTransactionError } from '../baseCoin/errors';
+import { TransactionType } from '../baseCoin';
+import { Transaction } from '../eth';
+import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { getCommon } from './utils';
 import { TransferBuilder } from './transferBuilder';
 
-export const DEFAULT_M = 3;
-export const DEFAULT_N = 2;
 export class TransactionBuilder extends Eth.TransactionBuilder {
+  protected _transfer: TransferBuilder;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._common = getCommon(this._coinConfig.network.type);
+    this.transaction = new Transaction(this._coinConfig, this._common);
   }
 
   /**
@@ -18,11 +24,21 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
    * @returns {string} - the smart contract encoded data
    */
   protected getContractData(addresses: string[]): string {
-    throw new NotImplementedError('getContractData not implemented');
+    const params = [addresses];
+    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
+      .toString('hex')
+      .replace('0x', '');
+    return walletSimpleByteCode + resultEncodedParameters;
   }
 
   /** @inheritdoc */
   transfer(data?: string): TransferBuilder {
-    throw new NotImplementedError('getContractData not implemented');
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
+    }
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder(data);
+    }
+    return this._transfer;
   }
 }
