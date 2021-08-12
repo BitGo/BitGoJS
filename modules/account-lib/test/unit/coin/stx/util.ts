@@ -47,14 +47,14 @@ describe('Stx util library', function () {
 
       const address = Utils.getSTXAddressFromPubKeys(pubKeys);
 
-      address.address.should.equal('SM30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCP094ZQX');
-      address.hash160.should.equal('c15661b360983b97173e1c6f4cca2941295bf265');
+      address.address.should.equal('SM1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0AN9KDG');
+      address.hash160.should.equal('789b2f7afa939c5577909402e07a07f7e6249668');
 
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SN30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCMHHRC3D',
+        'SN1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0A9GGMZ',
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SM30NCRDKC2C3Q5RQ7RE6YK6A550JJPZJCP094ZQX',
+        'SM1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0AN9KDG',
       );
     });
 
@@ -65,12 +65,12 @@ describe('Stx util library', function () {
         '042c608408352ab41477ad9dd1cabca9e712de2dff3c5c8bfa4b5f7f1a0f74a32402a826d2ce5f3a6b01c16aeebdd304e235791958bbf97a08b5d4e9dd4db399b7',
       ];
 
-      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM2G611SJ5X59SMZTB6APDAFMN8JM2CDNSA0CVBHH');
+      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM2TF8C003JE5YA8B43C2ZAY0K95QFVJNV86FCCQ4');
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SN2G611SJ5X59SMZTB6APDAFMN8JM2CDNSBHW10HX',
+        'SN2TF8C003JE5YA8B43C2ZAY0K95QFVJNV90P7YGS',
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SM2G611SJ5X59SMZTB6APDAFMN8JM2CDNSA0CVBHH',
+        'SM2TF8C003JE5YA8B43C2ZAY0K95QFVJNV86FCCQ4',
       );
     });
 
@@ -81,12 +81,12 @@ describe('Stx util library', function () {
         '034c80f991410082824aee4ca48147082997d44e800da9877e694f9cb64b3cb64a',
       ];
 
-      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVJEVCSST');
+      Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SME8PKRHSCB699FEK59F7T7CBB225KH1MCKM67EV');
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SN3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVH2K9ZYJ',
+        'SNE8PKRHSCB699FEK59F7T7CBB225KH1MDPBVKF9',
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SM3TNQA9N6J72TCWECS7E2AK7MCNE1ZWFVJEVCSST',
+        'SME8PKRHSCB699FEK59F7T7CBB225KH1MCKM67EV',
       );
     });
 
