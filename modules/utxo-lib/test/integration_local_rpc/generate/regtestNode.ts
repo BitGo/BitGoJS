@@ -79,6 +79,7 @@ export async function getRegtestNode(network: Network): Promise<Node> {
     dockerParams.image,
     ...(dockerParams.binary ? [dockerParams.binary] : []),
     '-regtest',
+    '-txindex',
     `-rpcuser=${rpcUser}`,
     `-rpcpassword=${rpcPassword}`,
     `-rpcbind=0.0.0.0:${rpcPort}`,

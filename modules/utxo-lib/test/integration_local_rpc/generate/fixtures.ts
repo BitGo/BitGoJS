@@ -7,6 +7,8 @@ import * as path from 'path';
 
 import { Network } from '../../../src/networkTypes';
 import { getNetworkName } from '../../../src/coins';
+import { RpcClient } from './RpcClient';
+import { RpcTransaction } from './RpcTypes';
 
 export function getFixtureDir(network: Network): string {
   const networkName = getNetworkName(network);
@@ -31,4 +33,27 @@ export async function writeFixture(network: Network, filename: string, content: 
 
 export async function readFixture<T>(network: Network, filename: string): Promise<T> {
   return JSON.parse(await fs.readFile(path.join(getFixtureDir(network), filename), 'utf8'));
+}
+
+export type TransactionFixtureWithInputs = {
+  transaction: RpcTransaction;
+  inputs: RpcTransaction[];
+};
+
+export async function writeTransactionFixtureWithInputs(
+  rpc: RpcClient,
+  network: Network,
+  filename: string,
+  txid: string
+) {
+  const transaction = await rpc.getRawTransactionVerbose(txid);
+  const inputTransactionIds = transaction.vin.reduce(
+    (all: string[], input) => (all.includes(input.txid) ? all : [...all, input.txid]),
+    []
+  );
+  const inputs = await Promise.all(inputTransactionIds.map((inputTxid) => rpc.getRawTransactionVerbose(inputTxid)));
+  await writeFixture(network, filename, {
+    transaction,
+    inputs,
+  });
 }
