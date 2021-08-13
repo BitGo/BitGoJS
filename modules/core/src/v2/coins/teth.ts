@@ -6,6 +6,7 @@ import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 export class Teth extends Eth {
   protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
+    this.sendMethodName = 'sendMultiSig';
   }
 
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
