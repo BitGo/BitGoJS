@@ -83,7 +83,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         }
         const prevOutput = inputTx.vout[input.index];
         if (!prevOutput) {
-          throw new Error(`could not prevOutput`);
+          throw new Error(`could not find prevOutput`);
         }
         const { publicKeys } = parseSignatureScript(input);
         if (!publicKeys) {
