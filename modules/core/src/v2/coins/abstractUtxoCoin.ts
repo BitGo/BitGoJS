@@ -1405,6 +1405,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       publicKey?: string;
     } = {}
   ): boolean {
+    if (transaction.network !== this.network) {
+      throw new Error(`network mismatch`);
+    }
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(
       transaction,
       inputIndex
