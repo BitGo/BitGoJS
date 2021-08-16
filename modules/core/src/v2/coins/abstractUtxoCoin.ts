@@ -4,7 +4,7 @@
 import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
@@ -303,7 +303,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
-    return bitcoin;
+    return utxolib;
   }
 
   /**
@@ -312,7 +312,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected getAddressVersion(address: string): number | undefined {
     // try decoding as base58 first
     try {
-      const { version } = this.getCoinLibrary().address.fromBase58Check(address);
+      const { version } = utxolib.address.fromBase58Check(address);
       return version;
     } catch (e) {
       // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
@@ -323,7 +323,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // otherwise, try decoding as bech32
     try {
-      const { version, prefix } = this.getCoinLibrary().address.fromBech32(address);
+      const { version, prefix } = utxolib.address.fromBech32(address);
       if (_.isString(this.network.bech32) && prefix === this.network.bech32) {
         return version;
       }
@@ -338,7 +338,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected getAddressPrefix(address: string): string | undefined {
     // otherwise, try decoding as bech32
     try {
-      const { prefix } = this.getCoinLibrary().address.fromBech32(address);
+      const { prefix } = utxolib.address.fromBech32(address);
       return prefix;
     } catch (e) {
       // ignore errors, just fall through and return undefined
@@ -418,7 +418,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (_.isUndefined(prebuild.txHex)) {
         throw new Error('missing required txPrebuild property txHex');
       }
-      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, self.network);
+      const transaction = utxolib.Transaction.fromHex(prebuild.txHex, self.network);
       if (_.isUndefined(prebuild.blockHeight)) {
         prebuild.blockHeight = (yield self.getLatestBlockHeight()) as number;
       }
@@ -665,7 +665,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error(errorMessage);
       }
     } else {
-      const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
+      const userPrivateKey = utxolib.HDNode.fromBase58(userPrv);
       if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
         throw new Error('user private key is only public');
       }
@@ -700,7 +700,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     // verify the signature against the user public key
-    const signingAddress = bitcoin.HDNode.fromBase58(userKeychain.pub).keyPair.getAddress();
+    const signingAddress = utxolib.HDNode.fromBase58(userKeychain.pub).keyPair.getAddress();
 
     // BG-5703: use BTC mainnet prefix for all key signature operations
     // (this means do not pass a prefix parameter, and let it use the default prefix instead)
@@ -870,7 +870,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       const allOutputs = parsedTransaction.outputs;
-      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, self.network);
+      const transaction = utxolib.Transaction.fromHex(txPrebuild.txHex, self.network);
       const transactionCache = {};
       const inputs = yield Bluebird.map(
         transaction.ins,
@@ -878,12 +878,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
           const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
           if (txHex) {
-            const localTx = bitcoin.Transaction.fromHex(txHex, self.network);
+            const localTx = utxolib.Transaction.fromHex(txHex, self.network);
             if (localTx.getId() !== transactionId) {
               throw new Error('input transaction hex does not match id');
             }
             const currentOutput = localTx.outs[currentInput.index];
-            const address = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
+            const address = utxolib.address.fromOutputScript(currentOutput.script, self.network);
             return {
               address,
               value: currentOutput.value,
@@ -1071,7 +1071,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     const path = '0/0/' + derivationChain + '/' + derivationIndex;
-    const hdNodes = keychains.map(({ pub }) => bitcoin.HDNode.fromBase58(pub));
+    const hdNodes = keychains.map(({ pub }) => utxolib.HDNode.fromBase58(pub));
     const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(path).keyPair.getPublicKeyBuffer());
 
     const { outputScript, redeemScript, witnessScript, address } = this.createMultiSigAddress(
@@ -1118,7 +1118,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         }
         throw new Error('missing txPrebuild parameter');
       }
-      let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, self.network);
+      let transaction = utxolib.Transaction.fromHex(txPrebuild.txHex, self.network);
 
       if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
         throw new Error('length of unspents array should equal to the number of transaction inputs');
@@ -1137,14 +1137,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('missing prv parameter to sign transaction');
       }
 
-      const keychain = bitcoin.HDNode.fromBase58(userPrv);
+      const keychain = utxolib.HDNode.fromBase58(userPrv);
 
       if (keychain.toBase58() === keychain.neutered().toBase58()) {
         throw new Error('expected user private key but received public key');
       }
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
-      const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, self.network);
+      const txb = utxolib.TransactionBuilder.fromTransaction(transaction, self.network);
       self.prepareTransactionBuilder(txb);
 
       const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
@@ -1182,8 +1182,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           if (signatureContext.isP2wsh) {
             debug('Signing p2wsh input');
             const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
-            const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
-            const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+            const witnessScriptHash = utxolib.crypto.sha256(witnessScript);
+            const prevOutScript = utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
             txb.sign(index, privKey, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
           } else {
             const subscript = Buffer.from(signatureContext.unspent.redeemScript, 'hex');
@@ -1276,7 +1276,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @returns {number}
    */
   get defaultSigHashType(): number {
-    return bitcoin.Transaction.SIGHASH_ALL;
+    return utxolib.Transaction.SIGHASH_ALL;
   }
 
   /**
@@ -1297,25 +1297,25 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
       decompiledSigScript = currentInput.witness;
       if (isNativeSegwitInput) {
-        inputClassification = bitcoin.script.classifyWitness(bitcoin.script.compile(decompiledSigScript), true);
+        inputClassification = utxolib.script.classifyWitness(utxolib.script.compile(decompiledSigScript), true);
       } else {
-        inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
+        inputClassification = utxolib.script.classifyInput(currentInput.script, true);
       }
     } else {
-      inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
-      decompiledSigScript = bitcoin.script.decompile(currentInput.script);
+      inputClassification = utxolib.script.classifyInput(currentInput.script, true);
+      decompiledSigScript = utxolib.script.decompile(currentInput.script);
     }
 
-    if (inputClassification === bitcoin.script.types.P2PKH) {
+    if (inputClassification === utxolib.script.types.P2PKH) {
       const [signature, publicKey] = decompiledSigScript;
       const publicKeys = [publicKey];
       const signatures = [signature];
-      const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
+      const pubScript = utxolib.script.pubKeyHash.output.encode(utxolib.crypto.hash160(publicKey));
 
       return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
     } else if (
-      inputClassification === bitcoin.script.types.P2SH ||
-      inputClassification === bitcoin.script.types.P2WSH
+      inputClassification === utxolib.script.types.P2SH ||
+      inputClassification === utxolib.script.types.P2WSH
     ) {
       // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
       // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
@@ -1328,7 +1328,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
       const signatures = decompiledSigScript.slice(0, -1);
       const pubScript = _.last<Buffer>(decompiledSigScript);
-      const decompiledPubScript = bitcoin.script.decompile(pubScript);
+      const decompiledPubScript = utxolib.script.decompile(pubScript);
       const publicKeys = decompiledPubScript.slice(1, -2);
 
       // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
@@ -1351,8 +1351,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       const lastOpCode = decompiledPubScript[len - 1];
-      if (lastOpCode !== bitcoin.opcodes.OP_CHECKMULTISIG) {
-        throw new Error(`expected opcode #${bitcoin.opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
+      if (lastOpCode !== utxolib.opcodes.OP_CHECKMULTISIG) {
+        throw new Error(`expected opcode #${utxolib.opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
       }
 
       return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
@@ -1411,7 +1411,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     );
 
     if (
-      ![bitcoin.script.types.P2WSH, bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)
+      ![utxolib.script.types.P2WSH, utxolib.script.types.P2SH, utxolib.script.types.P2PKH].includes(inputClassification)
     ) {
       return false;
     }
@@ -1455,7 +1455,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const hasSignatureBuffer = Buffer.isBuffer(signatureBuffer) && signatureBuffer.length > 0;
       if (hasSignatureBuffer && Buffer.isBuffer(pubScript) && pubScript.length > 0) {
         // slice the last byte from the signature hash input because it's the hash type
-        const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
+        const signature = utxolib.ECSignature.fromDER(signatureBuffer.slice(0, -1));
         const hashType = _.last(signatureBuffer);
         if (!hashType) {
           // missing hashType byte - signature cannot be validated
@@ -1482,7 +1482,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             continue;
           }
 
-          const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+          const publicKey = utxolib.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
           if (publicKey.verify(signatureHash, signature)) {
             isSignatureValid = true;
             matchedPublicKeyIndices[publicKeyIndex] = true;
@@ -1525,7 +1525,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       let transaction;
       try {
-        transaction = bitcoin.Transaction.fromHex(txHex, self.network);
+        transaction = utxolib.Transaction.fromHex(txHex, self.network);
       } catch (e) {
         throw new Error('failed to parse transaction hex');
       }
@@ -1546,7 +1546,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       };
 
       transaction.outs.forEach((currentOutput) => {
-        const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
+        const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, self.network);
         const currentAmount = currentOutput.value;
 
         if (changeAddresses.indexOf(currentAddress) !== -1) {
@@ -1650,22 +1650,22 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   createMultiSigAddress(addressType: string, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
     function createWitnessProgram(inputScript) {
-      const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
-      return bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+      const witnessScriptHash = utxolib.crypto.sha256(inputScript);
+      return utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
     }
 
-    const multiSigScript = bitcoin.script.multisig.output.encode(signatureThreshold, keys);
+    const multiSigScript = utxolib.script.multisig.output.encode(signatureThreshold, keys);
     let outputScript, redeemScript, witnessScript;
     switch (addressType) {
       case Codes.UnspentTypeTcomb('p2sh'):
-        const multisigScriptHash = bitcoin.crypto.hash160(multiSigScript);
-        outputScript = bitcoin.script.scriptHash.output.encode(multisigScriptHash);
+        const multisigScriptHash = utxolib.crypto.hash160(multiSigScript);
+        outputScript = utxolib.script.scriptHash.output.encode(multisigScriptHash);
         redeemScript = multiSigScript;
         break;
       case Codes.UnspentTypeTcomb('p2shP2wsh'):
         const witnessProgram = createWitnessProgram(multiSigScript);
-        const witnessProgramHash = bitcoin.crypto.hash160(witnessProgram);
-        outputScript = bitcoin.script.scriptHash.output.encode(witnessProgramHash);
+        const witnessProgramHash = utxolib.crypto.hash160(witnessProgram);
+        outputScript = utxolib.script.scriptHash.output.encode(witnessProgramHash);
         redeemScript = witnessProgram;
         witnessScript = multiSigScript;
         break;
@@ -1681,7 +1681,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       outputScript,
       redeemScript,
       witnessScript,
-      address: bitcoin.address.fromOutputScript(outputScript, this.network),
+      address: utxolib.address.fromOutputScript(outputScript, this.network),
     };
   }
 
@@ -1691,7 +1691,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   // TODO(BG-11638): remove in next SDK major version release
   calculateRecoveryAddress(scriptHashScript: Buffer) {
-    return this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
+    return utxolib.address.fromOutputScript(scriptHashScript, this.network);
   }
 
   /**
@@ -1923,7 +1923,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
+    const extendedKey = utxolib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,

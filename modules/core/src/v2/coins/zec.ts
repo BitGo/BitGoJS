@@ -35,10 +35,6 @@ export class Zec extends AbstractUtxoCoin {
     return 'zec';
   }
 
-  getCoinLibrary() {
-    return bitGoUtxoLib;
-  }
-
   getFullName() {
     return 'ZCash';
   }
