@@ -25,6 +25,7 @@ export interface Erc20TokenConfig {
 
 export class Erc20Token extends Eth {
   public readonly tokenConfig: Erc20TokenConfig;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   constructor(bitgo: BitGo, tokenConfig: Erc20TokenConfig) {
     super(bitgo);

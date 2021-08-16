@@ -283,7 +283,7 @@ interface RecoverTokenTransaction {
 
 export class Eth extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
-  protected sendMethodName: string;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   readonly staticsCoin?: Readonly<StaticsBaseCoin>;
 
