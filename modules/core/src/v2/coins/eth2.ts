@@ -3,7 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-import * as ethUtil from 'ethereumjs-util';
+import { stripHexPrefix } from 'ethereumjs-util';
 import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
@@ -360,7 +360,7 @@ export class Eth2 extends BaseCoin {
         // if we are doing a key signature, we should decode the message as a hex string
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
-        messageToSign = Buffer.from(ethUtil.stripHexPrefix(message), 'hex');
+        messageToSign = Buffer.from(stripHexPrefix(message), 'hex');
       }
 
       return keyPair.sign(messageToSign);

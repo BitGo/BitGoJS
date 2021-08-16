@@ -6,8 +6,7 @@ import { getBuilder, Rbtc } from '../../../../../src';
 import * as testData from '../../../../resources/rbtc/rbtc';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
-
-describe('Rbtc send transaction', function() {
+describe('Rbtc send transaction', function () {
   let txBuilder: Rbtc.TransactionBuilder;
   const contractAddress = '0xab52bc0aff1b4851a60c1e5e628b1da995445651';
   const initTxBuilder = (): void => {

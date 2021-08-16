@@ -8,7 +8,17 @@ import * as bip32 from 'bip32';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
-import * as ethUtil from 'ethereumjs-util';
+import {
+  addHexPrefix,
+  BN,
+  bufferToHex,
+  ecrecover,
+  importPublic,
+  fromRpcSig,
+  pubToAddress,
+  toBuffer,
+  stripHexPrefix,
+} from 'ethereumjs-util';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 
 describe('ETH-like coins', () => {
@@ -50,11 +60,11 @@ describe('ETH-like coins', () => {
                 signatureSaltMap.token[coinName],
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
-                new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+                new BN(stripHexPrefix(to), 16),
                 amount,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
-                new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+                new BN(stripHexPrefix(tokenContractAddress!), 16),
                 expireTime,
                 sequenceId,
               ],
@@ -68,7 +78,7 @@ describe('ETH-like coins', () => {
                 signatureSaltMap.native[coinName],
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
-                new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+                new BN(stripHexPrefix(to), 16),
                 amount,
                 expireTime,
                 sequenceId,
@@ -85,12 +95,12 @@ describe('ETH-like coins', () => {
        */
       const recoverSigner = function (tx: BaseCoin.BaseTransaction) {
         const { signature } = Eth.Utils.decodeTransferData(tx.toJson().data);
-        const { v, r, s } = ethUtil.fromRpcSig(signature);
+        const { v, r, s } = fromRpcSig(signature);
         const operationHash = getOperationHash(tx);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore known compatibility issue with @types/ethereumjs-util
-        const pubKeyBuffer = ethUtil.ecrecover(operationHash, v, r, s);
-        return ethUtil.bufferToHex(ethUtil.pubToAddress(ethUtil.importPublic(pubKeyBuffer)));
+        const pubKeyBuffer = ecrecover(toBuffer(operationHash), v, r, s);
+        return bufferToHex(pubToAddress(importPublic(pubKeyBuffer)));
       };
 
       /**
@@ -231,7 +241,6 @@ describe('ETH-like coins', () => {
             expireTime: inputExpireTime,
             contractSequenceId: inputSequenceId,
           });
-
           const tx = await basecoin.signTransaction({
             prv: key.getKeys().prv,
             txPrebuild: {
@@ -259,7 +268,7 @@ describe('ETH-like coins', () => {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, data, expireTime, sequenceId] = decodedData;
           }
-          ethUtil.addHexPrefix(recipient).should.equal(destination);
+          addHexPrefix(recipient).should.equal(destination);
           value.toString(10).should.equal(amount);
           inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
           inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
@@ -313,7 +322,7 @@ describe('ETH-like coins', () => {
             [recipient, value, data, expireTime, sequenceId] = decodedData;
           }
 
-          ethUtil.addHexPrefix(recipient).should.equal(destination);
+          addHexPrefix(recipient).should.equal(destination);
           value.toString(10).should.equal(amount);
           inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
           inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
@@ -378,7 +387,7 @@ describe('ETH-like coins', () => {
             [recipient, value, data, expireTime, sequenceId] = decodedData;
           }
 
-          ethUtil.addHexPrefix(recipient).should.equal(destination);
+          addHexPrefix(recipient).should.equal(destination);
           value.toString(10).should.equal(amount);
           inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
           inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));

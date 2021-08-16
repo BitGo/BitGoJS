@@ -1278,7 +1278,7 @@ export class Eth extends BaseCoin {
       {
         name: 'data',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || ''),
+        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || '0x'),
       },
       {
         name: 'expireTime',

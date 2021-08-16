@@ -1,4 +1,4 @@
-import { addHexPrefix, BN, bufferToHex, ecsign, intToHex, setLengthLeft, stripHexPrefix, toBuffer } from 'ethereumjs-util';
+import { addHexPrefix, BN, bufferToHex, ecsign, intToHex, setLengthLeft, stripHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
@@ -134,7 +134,7 @@ export class TransferBuilder {
     return bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  protected getOperationData(): (string | Buffer)[][] { 
+  protected getOperationData(): (string | Buffer)[][] {
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
