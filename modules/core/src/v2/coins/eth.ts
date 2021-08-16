@@ -36,6 +36,7 @@ import { Util } from '../internal/util';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import type * as EthTxLib from '@ethereumjs/tx';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -61,9 +62,9 @@ export const optionalDeps = {
     }
   },
 
-  get EthTx() {
+  get EthTx(): typeof EthTxLib {
     try {
-      return require('ethereumjs-tx');
+      return require('@ethereumjs/tx');
     } catch (e) {
       debug('unable to load ethereumjs-tx:');
       debug(e.stack);
@@ -567,6 +568,9 @@ export class Eth extends BaseCoin {
 
     const signingNode = bip32.fromBase58(params.prv);
     const signingKey = signingNode.privateKey;
+    if (_.isUndefined(signingKey)) {
+      throw new Error('missing private key');
+    }
 
     const txInfo = {
       recipient: txPrebuild.recipients[0],
@@ -591,8 +595,7 @@ export class Eth extends BaseCoin {
       spendAmount: params.recipients[0].amount,
     };
 
-    const ethTx = new optionalDeps.EthTx(ethTxParams);
-    ethTx.sign(signingKey);
+    const ethTx = optionalDeps.EthTx.Transaction.fromTxData(ethTxParams).sign(signingKey);
     return { txHex: ethTx.serialize().toString('hex') };
   }
 
@@ -972,8 +975,7 @@ export class Eth extends BaseCoin {
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
-      // Build contract call and sign it
-      const tx = new optionalDeps.EthTx({
+      const txParams = {
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
         value: 0,
@@ -981,7 +983,10 @@ export class Eth extends BaseCoin {
         gasLimit: gasLimit,
         data: sendData,
         spendAmount: txAmount,
-      });
+      };
+
+      // Build contract call and sign it
+      const tx = optionalDeps.EthTx.Transaction.fromTxData(txParams);
 
       if (isUnsignedSweep) {
         return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
@@ -992,7 +997,7 @@ export class Eth extends BaseCoin {
       }
 
       const signedTx: RecoveryInfo = {
-        id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
+        id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
         tx: tx.serialize().toString('hex'),
       };
 
@@ -1342,7 +1347,7 @@ export class Eth extends BaseCoin {
         throw new Error(`Hop txid signature invalid`);
       }
 
-      const builtHopTx = new optionalDeps.EthTx(tx);
+      const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
       // If original params are given, we can check them against the transaction prebuild params
       if (!_.isNil(originalParams)) {
         const { recipients } = originalParams;
@@ -1352,7 +1357,10 @@ export class Eth extends BaseCoin {
         const originalDestination: string = recipients[0].address;
 
         const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
-        const hopDestination: string = optionalDeps.ethUtil.bufferToHex(builtHopTx.to);
+        if (!builtHopTx.to) {
+          throw new Error(`Transaction does not have a destination address`);
+        }
+        const hopDestination = builtHopTx.to.toString();
         if (!hopAmount.eq(originalAmount)) {
           throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
         }
@@ -1563,12 +1571,12 @@ export class Eth extends BaseCoin {
         }
 
         // Check tx sends to hop address
-        const decodedHopTx = new optionalDeps.EthTx(txPrebuild.hopTransaction.tx);
-        const expectedHopAddress = decodedHopTx.getSenderAddress().toString('hex');
-        if (
-          expectedHopAddress.toLowerCase() !==
-          optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address.toLowerCase())
-        ) {
+        const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+          optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+        );
+        const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+        const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
+        if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
           throw new Error('recipient address of txPrebuild does not match hop address');
         }
 
