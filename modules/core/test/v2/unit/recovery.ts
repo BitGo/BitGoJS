@@ -936,6 +936,40 @@ describe('Recovery:', function () {
       txInfo.recipient.should.have.property('amount');
       txInfo.recipient.amount.should.equal('2400');
     });
+
+    it('should successfully generate an ERC20 unsigned sweep', async function () {
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('tdai');
+
+      // There should be 1 TDAI token in our test wallet (based on nock)
+      const transaction = await basecoin.recover({
+        userKey: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        backupKey: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+      });
+      should.exist(transaction);
+      transaction.should.have.property('tx');
+
+      transaction.should.have.property('contractSequenceId');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('20000000000');
+      transaction.should.have.property('tokenContractAddress');
+      transaction.tokenContractAddress.should.equal(TestBitGo.V2.TEST_TDAI_TOKEN_ADDRESS);
+      transaction.should.have.property('walletContractAddress');
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.should.have.property('recipient');
+      transaction.recipient.should.have.property('address');
+      transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      transaction.recipient.should.have.property('amount');
+      transaction.recipient.amount.should.equal('1000000000000000000');
+    });
+
   });
 
   describe('Wrong Chain Recoveries', function () {
@@ -1233,5 +1267,35 @@ describe('Recovery:', function () {
       recoveryNocks.nockEtherscanRateLimitError();
       await basecoin.recover(recoveryParams).should.be.rejectedWith('Etherscan rate limit reached');
     });
+
+    it('should generate an ETH unsigned sweep', async function () {
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+
+      const transaction = await basecoin.recover({
+        userKey: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        backupKey: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        gasPrice: '20000000000',
+        gasLimit: '500000',
+      });
+      should.exist(transaction);
+      transaction.should.have.property('tx');
+      transaction.should.have.property('contractSequenceId');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('20000000000');
+      transaction.should.have.property('walletContractAddress');
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.should.have.property('recipient');
+      transaction.recipient.should.have.property('address');
+      transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      transaction.recipient.should.have.property('amount');
+      transaction.recipient.amount.should.equal('9999999999999999928');
+    });
+    });
   });
-});

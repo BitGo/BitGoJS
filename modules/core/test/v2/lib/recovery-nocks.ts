@@ -2225,6 +2225,124 @@ const nockEthData: any[] = [
       id: 1,
     },
   },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '20000000000000000',
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: [
+        {
+          blockNumber: '26745364',
+          timeStamp: '1628778676',
+          hash: '0x41d589b7b12abfad4975f42e62d3b96de1eb9ca477f62b4d5a49b140c3fb6a21',
+          nonce: '4',
+          blockHash: '0x908c07cc1425e90a0d58e5cc1b109510e14097e04aae741f8de874bfd0f7d87b',
+          transactionIndex: '2',
+          from: '0x1ce43f2185de5734d3004dd0283f58eaec787e4a',
+          to: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+          value: '20000000000000000',
+          gas: '21000',
+          gasPrice: '1000000000',
+          isError: '0',
+          txreceipt_status: '1',
+          input: '0x',
+          contractAddress: '',
+          cumulativeGasUsed: '357536',
+          gasUsed: '21000',
+          confirmations: '959',
+        },
+      ],
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: [
+        {
+          blockNumber: '26745364',
+          timeStamp: '1628778676',
+          hash: '0x41d589b7b12abfad4975f42e62d3b96de1eb9ca477f62b4d5a49b140c3fb6a21',
+          nonce: '4',
+          blockHash: '0x908c07cc1425e90a0d58e5cc1b109510e14097e04aae741f8de874bfd0f7d87b',
+          transactionIndex: '2',
+          from: '0x1ce43f2185de5734d3004dd0283f58eaec787e4a',
+          to: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+          value: '20000000000000000',
+          gas: '21000',
+          gasPrice: '1000000000',
+          isError: '0',
+          txreceipt_status: '1',
+          input: '0x',
+          contractAddress: '',
+          cumulativeGasUsed: '357536',
+          gasUsed: '21000',
+          confirmations: '959',
+        },
+      ],
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'tokenbalance',
+      contractaddress: '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa',
+      address: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+      tag: 'latest',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '1000000000000000000',
+    },
+  },
+  {
+    params: {
+      module: 'proxy',
+      action: 'eth_call',
+      to: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+      data: 'a0b7967b',
+      tag: 'latest',
+    },
+    response: {
+      jsonrpc: '2.0',
+      result: '0x0000000000000000000000000000000000000000000000000000000000002a7f',
+      id: 1,
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '9999999999999999928',
+    },
+  },
 ];
 
 module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {

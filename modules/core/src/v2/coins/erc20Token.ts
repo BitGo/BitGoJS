@@ -25,10 +25,12 @@ export interface Erc20TokenConfig {
 
 export class Erc20Token extends Eth {
   public readonly tokenConfig: Erc20TokenConfig;
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   constructor(bitgo: BitGo, tokenConfig: Erc20TokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
+    this.sendMethodName = 'sendMultiSigToken';
   }
 
   static createTokenConstructor(config: Erc20TokenConfig): CoinConstructor {
@@ -240,7 +242,7 @@ export class Erc20Token extends Eth {
 
       // calculate send data
       const sendMethodArgs = self.getSendMethodArgs(txInfo);
-      const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSigToken', _.map(sendMethodArgs, 'type'));
+      const methodSignature = optionalDeps.ethAbi.methodID(self.sendMethodName, _.map(sendMethodArgs, 'type'));
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 

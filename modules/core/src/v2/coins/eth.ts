@@ -283,12 +283,14 @@ interface RecoverTokenTransaction {
 
 export class Eth extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
   readonly staticsCoin?: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
     this.staticsCoin = staticsCoin;
+    this.sendMethodName = 'sendMultiSig';
   }
 
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
@@ -576,7 +578,7 @@ export class Eth extends BaseCoin {
     };
 
     const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
     const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
     const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
@@ -968,7 +970,7 @@ export class Eth extends BaseCoin {
 
       // calculate send data
       const sendMethodArgs = self.getSendMethodArgs(txInfo);
-      const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+      const methodSignature = optionalDeps.ethAbi.methodID(self.sendMethodName, _.map(sendMethodArgs, 'type'));
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
