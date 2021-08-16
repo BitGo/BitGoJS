@@ -246,8 +246,7 @@ export class Erc20Token extends Eth {
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
-      // Build contract call and sign it
-      const tx = new optionalDeps.EthTx({
+      const txParams = {
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
         value: 0,
@@ -255,7 +254,10 @@ export class Erc20Token extends Eth {
         gasLimit: gasLimit,
         data: sendData,
         spendAmount: txAmount,
-      });
+      };
+
+      // Build contract call and sign it
+      const tx = optionalDeps.EthTx.Transaction.fromTxData(txParams);
 
       if (isUnsignedSweep) {
         return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
@@ -266,7 +268,7 @@ export class Erc20Token extends Eth {
       }
 
       const signedTx: RecoveryInfo = {
-        id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
+        id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
         tx: tx.serialize().toString('hex'),
       };
 

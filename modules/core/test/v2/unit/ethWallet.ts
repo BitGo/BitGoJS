@@ -8,8 +8,8 @@ import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
+import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
-const EthTx = require('ethereumjs-tx');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 const co = Bluebird.coroutine;
 
@@ -312,12 +312,17 @@ describe('Add final signature to ETH tx from offline vault', function () {
 
   it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
     const response = (yield coin.signTransaction(paramsFromVault)) as any;
-    const expectedTx = new EthTx(expectedResult.txHex);
-    const actualTx = new EthTx(response.txHex);
+    const expectedTx = EthTx.fromSerializedTx(Buffer.from(expectedResult.txHex, 'hex'));
+    const actualTx = EthTx.fromSerializedTx(Buffer.from(response.txHex, 'hex'));
     actualTx.nonce.should.deepEqual(expectedTx.nonce);
-    actualTx.to.should.deepEqual(expectedTx.to);
+    should.exist(actualTx.to);
+    actualTx.to?.should.deepEqual(expectedTx.to);
     actualTx.value.should.deepEqual(expectedTx.value);
     actualTx.data.should.deepEqual(expectedTx.data);
+    actualTx.isSigned().should.equal(true);
+    actualTx.supports(Capability.EIP155ReplayProtection).should.equal(true);
+    actualTx.verifySignature().should.equal(true);
+    should.exist(actualTx.v);
     actualTx.v.should.deepEqual(expectedTx.v);
     actualTx.r.should.deepEqual(expectedTx.r);
     actualTx.s.should.deepEqual(expectedTx.s);
