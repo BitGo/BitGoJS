@@ -15,7 +15,7 @@ import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import * as bip32 from 'bip32';
 const TransactionBuilder = require('./transactionBuilder');
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 const PendingApproval = require('./pendingapproval');
 
 import * as common from './common';
@@ -313,22 +313,22 @@ Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshol
   };
 
   // redeem script normally, witness script for segwit
-  const inputScript = bitcoin.script.multisig.output.encode(signatureThreshold, derivedKeys);
-  const inputScriptHash = bitcoin.crypto.hash160(inputScript);
-  let outputScript = bitcoin.script.scriptHash.output.encode(inputScriptHash);
+  const inputScript = utxolib.script.multisig.output.encode(signatureThreshold, derivedKeys);
+  const inputScriptHash = utxolib.crypto.hash160(inputScript);
+  let outputScript = utxolib.script.scriptHash.output.encode(inputScriptHash);
   addressDetails.redeemScript = inputScript.toString('hex');
 
   if (isSegwit) {
-    const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
-    const redeemScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
-    const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-    outputScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+    const witnessScriptHash = utxolib.crypto.sha256(inputScript);
+    const redeemScript = utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
+    const redeemScriptHash = utxolib.crypto.hash160(redeemScript);
+    outputScript = utxolib.script.scriptHash.output.encode(redeemScriptHash);
     addressDetails.witnessScript = inputScript.toString('hex');
     addressDetails.redeemScript = redeemScript.toString('hex');
   }
 
   addressDetails.outputScript = outputScript.toString('hex');
-  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, getNetwork(network));
+  addressDetails.address = utxolib.address.fromOutputScript(outputScript, getNetwork(network));
 
   return addressDetails;
 };
@@ -1169,7 +1169,7 @@ Wallet.prototype.sendMany = function (params, callback) {
       });
     })
     .then(function (result) {
-      const tx = bitcoin.Transaction.fromHex(result.tx);
+      const tx = utxolib.Transaction.fromHex(result.tx);
       const inputsSum = _.sumBy(unspentsUsed, 'value');
       const outputsSum = _.sumBy(tx.outs, 'value');
       const feeUsed = inputsSum - outputsSum;
@@ -1497,7 +1497,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // get the full hex for the parent tx and decode it to get its vsize
     const parentTxHex = yield getParentTxHex({ parentTxId: params.transactionID });
-    const decodedParent = bitcoin.Transaction.fromHex(parentTxHex);
+    const decodedParent = utxolib.Transaction.fromHex(parentTxHex);
     const parentVSize = decodedParent.virtualSize();
 
     // make sure id from decoded tx and given tx id match

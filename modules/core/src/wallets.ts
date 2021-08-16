@@ -12,7 +12,7 @@
 //
 
 import * as bip32 from 'bip32';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { makeRandomKey, getNetwork } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';
@@ -438,7 +438,7 @@ Wallets.prototype.createForwardWallet = function (params, callback) {
   let addressFromPrivKey;
 
   try {
-    const key = bitcoin.ECPair.fromWIF(params.privKey, getNetwork());
+    const key = utxolib.ECPair.fromWIF(params.privKey, getNetwork());
     addressFromPrivKey = key.getAddress();
   } catch (e) {
     throw new Error('expecting a valid privKey');

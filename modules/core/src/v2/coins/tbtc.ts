@@ -4,11 +4,11 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Btc } from './btc';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 
 export class Tbtc extends Btc {
   constructor(bitgo) {
-    super(bitgo, bitcoin.networks.testnet);
+    super(bitgo, utxolib.networks.testnet);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {

@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../src/common';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
@@ -1141,7 +1141,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
         decodedChild.ins.length.should.equal(1);
         decodedChild.outs.length.should.equal(1);
 
@@ -1242,7 +1242,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1361,7 +1361,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1486,7 +1486,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
         decodedChild.ins.length.should.equal(3);
         decodedChild.outs.length.should.equal(1);
 

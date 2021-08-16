@@ -5,7 +5,7 @@
 //
 
 import * as superagent from 'superagent';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { makeRandomKey } from './bitcoin';
 import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
@@ -141,7 +141,7 @@ export interface VerifyShardsOptions {
 
 export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
-  eckey: bitcoin.ECPair;
+  eckey: utxolib.ECPair;
 }
 
 export interface AccessTokenOptions {
@@ -350,7 +350,7 @@ export class BitGo {
   private readonly _proxy?: string;
   private _reqId?: IRequestTracer;
   private _ecdhXprv?: string;
-  private _extensionKey?: bitcoin.ECPair;
+  private _extensionKey?: utxolib.ECPair;
   private _markets?: any;
   private _blockchain?: any;
   private _travelRule?: any;
@@ -700,9 +700,9 @@ export class BitGo {
     this._token = json.token;
     if (json.extensionKey) {
       const network = common.Environments[this.getEnv()].network;
-      this._extensionKey = bitcoin.ECPair.fromWIF(
+      this._extensionKey = utxolib.ECPair.fromWIF(
         json.extensionKey,
-        bitcoin.networks[network]
+        utxolib.networks[network]
       );
     }
   }
@@ -727,13 +727,13 @@ export class BitGo {
 
     let address;
     try {
-      address = bitcoin.address.fromBase58Check(params.address);
+      address = utxolib.address.fromBase58Check(params.address);
     } catch (e) {
       return false;
     }
 
     const networkName = common.Environments[this.getEnv()].network;
-    const network = bitcoin.networks[networkName];
+    const network = utxolib.networks[networkName];
     return address.version === network.pubKeyHash || address.version === network.scriptHash;
   }
 
@@ -1675,7 +1675,7 @@ export class BitGo {
     const message = timestamp + '|' + this._token + '|' + duration;
     const privateKey = this._extensionKey.d.toBuffer(32);
     const isCompressed = this._extensionKey.compressed;
-    const prefix = bitcoin.networks.bitcoin.messagePrefix;
+    const prefix = utxolib.networks.bitcoin.messagePrefix;
     const signature = bitcoinMessage.sign(message, privateKey, isCompressed, prefix).toString('hex');
 
     return this.post(this.url('/user/extendtoken'))
@@ -1868,7 +1868,7 @@ export class BitGo {
     }
     const signingAddress = common.Environments[this.getEnv()].signingAddress;
     const signatureBuffer = Buffer.from(body.signature, 'hex');
-    const prefix = bitcoin.networks[common.Environments[this.getEnv()].network].messagePrefix;
+    const prefix = utxolib.networks[common.Environments[this.getEnv()].network].messagePrefix;
     const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
     if (!isValidSignature) {
       throw new Error('incorrect signature');

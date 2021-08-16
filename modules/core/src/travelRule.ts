@@ -12,7 +12,7 @@
 //
 
 import * as bip32 from 'bip32';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
@@ -35,7 +35,7 @@ interface DecryptReceivedTravelRuleOptions {
   keychain?: {
     xprv?: string;
   };
-  hdnode?: bitcoin.HDNode;
+  hdnode?: utxolib.HDNode;
 }
 
 interface Recipient {
@@ -175,7 +175,7 @@ TravelRule.prototype.prepareParams = function (params) {
   }
 
   // If a key was not provided, create a new random key
-  let fromKey = params.fromKey && bitcoin.ECPair.fromWIF(params.fromKey, getNetwork());
+  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork());
   if (!fromKey) {
     fromKey = makeRandomKey();
   }

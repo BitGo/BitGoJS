@@ -1,4 +1,4 @@
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import * as request from 'superagent';
@@ -20,7 +20,7 @@ export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTran
 
 export class Btc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
-    super(bitgo, network || bitcoin.networks.bitcoin);
+    super(bitgo, network || utxolib.networks.bitcoin);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -127,7 +127,7 @@ export class Btc extends AbstractUtxoCoin {
 
       const transactionDetails = res.transaction;
 
-      const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
+      const tx = utxolib.Transaction.fromHex(txInfo.transactionHex, this.network);
       if (transactionDetails.TxId !== tx.getId()) {
         console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
         console.log('txhash/txid of the transaction bitgo constructed', tx.getId());

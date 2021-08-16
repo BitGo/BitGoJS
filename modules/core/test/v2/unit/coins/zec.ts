@@ -1,6 +1,6 @@
 import 'should';
 import * as _ from 'lodash';
-import * as bitGoUtxoLib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
@@ -108,7 +108,7 @@ describe('ZEC:', function () {
         };
         const [txHash, vout] = unspent.id.split(':');
 
-        const txb = new bitGoUtxoLib.TransactionBuilder(testCoin.network);
+        const txb = new utxolib.TransactionBuilder(testCoin.network);
         txb.addInput(txHash, parseInt(vout, 16), 0xffffffff);
         txb.addOutput(receiveAddress, unspent.value - 50000);
 
@@ -144,7 +144,7 @@ describe('ZEC:', function () {
           txPrebuild: prebuild,
           prv: keychains[0].prv,
         });
-        const halfSignedTx = bitGoUtxoLib.Transaction.fromHex(halfSigned.txHex, testCoin.network);
+        const halfSignedTx = utxolib.Transaction.fromHex(halfSigned.txHex, testCoin.network);
         halfSignedTx.network.coin.should.equal('zec');
         halfSignedTx.version.should.equal(4);
         halfSignedTx.versionGroupId.should.equal(2301567109);
@@ -160,7 +160,7 @@ describe('ZEC:', function () {
           prv: keychains[2].prv,
           isLastSignature: true,
         });
-        const fullySignedTx = bitGoUtxoLib.Transaction.fromHex(fullySigned.txHex, testCoin.network);
+        const fullySignedTx = utxolib.Transaction.fromHex(fullySigned.txHex, testCoin.network);
         fullySignedTx.network.coin.should.equal('zec');
         fullySignedTx.version.should.equal(4);
         fullySignedTx.versionGroupId.should.equal(2301567109);

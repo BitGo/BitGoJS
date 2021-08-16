@@ -11,15 +11,15 @@ import * as common from './common';
 export * from './bitgo';
 
 // Expose bitcoin and sjcl
-import * as utxoLib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { hdPath, makeRandomKey } from './bitcoin';
 
 // can't add types for these since they are part of @bitgo/utxo-lib's default export
 // see https://github.com/Microsoft/TypeScript/issues/14080
-(utxoLib as any).hdPath = hdPath;
-(utxoLib as any).makeRandomKey = makeRandomKey;
+(utxolib as any).hdPath = hdPath;
+(utxolib as any).makeRandomKey = makeRandomKey;
 
-export const bitcoin = utxoLib;
+export const bitcoin = utxolib;
 export const sjcl = require('./vendor/sjcl.min.js');
 export const bs58 = require('bs58');
 
