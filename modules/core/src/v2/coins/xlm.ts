@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as Bluebird from 'bluebird';
@@ -1043,7 +1043,7 @@ export class Xlm extends BaseCoin {
    * @param entropySeed random seed which is hashed to generate the derivation path
    */
   deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
-    const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
+    const derivationPathInput = utxolib.crypto.hash256(`${seed}`).toString('hex');
     const derivationPathParts = [
       999999,
       parseInt(derivationPathInput.slice(0, 7), 16),

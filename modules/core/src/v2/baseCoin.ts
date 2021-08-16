@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
@@ -332,7 +332,7 @@ export abstract class BaseCoin {
    */
   signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
-      return signMessage(message, bip32.fromBase58(key.prv), bitcoin.networks.bitcoin);
+      return signMessage(message, bip32.fromBase58(key.prv), utxolib.networks.bitcoin);
     })
       .call(this)
       .asCallback(callback);

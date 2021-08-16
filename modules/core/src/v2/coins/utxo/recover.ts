@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../bitgo';
@@ -284,7 +284,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   }
 
   // Build the transaction
-  const transactionBuilder = new bitcoin.TransactionBuilder(coin.network);
+  const transactionBuilder = new utxolib.TransactionBuilder(coin.network);
   coin.prepareTransactionBuilder(transactionBuilder);
   const txInfo: any = {};
 

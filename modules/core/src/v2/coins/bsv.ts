@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 
 import { AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
@@ -14,7 +14,7 @@ import { BlockchairApi } from '../recovery/blockchairApi';
 
 export class Bsv extends Bch {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
-    super(bitgo, network || bitcoin.networks.bitcoinsv);
+    super(bitgo, network || utxolib.networks.bitcoinsv);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {

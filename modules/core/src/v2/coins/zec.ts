@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bitGoUtxoLib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
 import { BitGo } from '../../bitgo';
@@ -20,7 +20,7 @@ export interface ZecTransactionBuilder {
 
 export class Zec extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
-    super(bitgo, network || bitGoUtxoLib.networks.zcash);
+    super(bitgo, network || utxolib.networks.zcash);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {

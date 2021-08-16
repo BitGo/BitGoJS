@@ -13,7 +13,7 @@ import { TestBitGo } from '../lib/test_bitgo';
 import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 
 nock.disableNetConnect();
 
@@ -281,7 +281,7 @@ describe('BitGo Prototype Methods', function () {
 
   describe('ECDH sharing secret', () => {
     function getKey(seed: string) {
-      return bitcoin.HDNode.fromSeedBuffer(
+      return utxolib.HDNode.fromSeedBuffer(
         crypto.createHash('sha256').update(seed).digest()
       ).keyPair;
     }

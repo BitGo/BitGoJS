@@ -13,7 +13,7 @@
 
 import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
 import { getNetwork } from './bitcoin';
@@ -104,7 +104,7 @@ exports.createTransaction = function (params) {
   let feeSingleKeyInputAmount = 0;
   if (params.feeSingleKeySourceAddress) {
     try {
-      bitcoin.address.fromBase58Check(params.feeSingleKeySourceAddress);
+      utxolib.address.fromBase58Check(params.feeSingleKeySourceAddress);
       feeSingleKeySourceAddress = params.feeSingleKeySourceAddress;
     } catch (e) {
       throw new Error('invalid bitcoin address: ' + params.feeSingleKeySourceAddress);
@@ -112,7 +112,7 @@ exports.createTransaction = function (params) {
   }
 
   if (params.feeSingleKeyWIF) {
-    const feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, network);
+    const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network);
     feeSingleKeySourceAddress = feeSingleKey.getAddress();
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
@@ -185,13 +185,13 @@ exports.createTransaction = function (params) {
   recipients.forEach(function (recipient) {
     if (_.isString(recipient.address)) {
       try {
-        bitcoin.address.fromBase58Check(recipient.address);
+        utxolib.address.fromBase58Check(recipient.address);
       } catch (e) {
         throw new Error('invalid bitcoin address: ' + recipient.address);
       }
       if (!!recipient.script) {
         // A script was provided as well - validate that the address corresponds to that
-        if (bitcoin.address.toOutputScript(recipient.address, network).toString('hex') !== recipient.script) {
+        if (utxolib.address.toOutputScript(recipient.address, network).toString('hex') !== recipient.script) {
           throw new Error('both script and address provided but they did not match: ' + recipient.address + ' ' + recipient.script);
         }
       }
@@ -233,7 +233,7 @@ exports.createTransaction = function (params) {
   let changeOutputs: Output[] = [];
 
   // The transaction.
-  let transaction = new bitcoin.TransactionBuilder(network);
+  let transaction = new utxolib.TransactionBuilder(network);
 
   const getBitGoFee = function () {
     return Bluebird.try(function () {
@@ -516,7 +516,7 @@ exports.createTransaction = function (params) {
           if (shouldRecurse) {
           // if fee changed, re-collect inputs
             inputAmount = 0;
-            transaction = new bitcoin.TransactionBuilder(network);
+            transaction = new utxolib.TransactionBuilder(network);
             return collectInputs();
           }
         }
@@ -579,7 +579,7 @@ exports.createTransaction = function (params) {
     recipients.forEach(function (recipient) {
       let script;
       if (_.isString(recipient.address)) {
-        script = bitcoin.address.toOutputScript(recipient.address, network);
+        script = utxolib.address.toOutputScript(recipient.address, network);
       } else if (_.isObject(recipient.script)) {
         script = recipient.script;
       } else {
@@ -602,7 +602,7 @@ exports.createTransaction = function (params) {
     });
 
     opReturns.forEach(function ({ message, amount }) {
-      const script = bitcoin.script.fromASM('OP_RETURN ' + Buffer.from(message).toString('hex'));
+      const script = utxolib.script.fromASM('OP_RETURN ' + Buffer.from(message).toString('hex'));
       outputs.push({ script, amount });
     });
 
@@ -687,7 +687,7 @@ exports.createTransaction = function (params) {
         extraOutputs.forEach(function (output) {
           if ((output as AddressOutput).address) {
             (output as ScriptOutput).script =
-            bitcoin.address.toOutputScript((output as AddressOutput).address, network);
+            utxolib.address.toOutputScript((output as AddressOutput).address, network);
           }
 
           // decide where to put the outputs - default is to randomize unless forced to end
@@ -862,7 +862,7 @@ exports.signTransaction = function (params) {
 
   if (!_.isObject(keychain) || !_.isString((keychain as any).xprv)) {
     if (_.isString(params.signingKey)) {
-      privKey = bitcoin.ECPair.fromWIF(params.signingKey, network);
+      privKey = utxolib.ECPair.fromWIF(params.signingKey, network);
       keychain = undefined;
     } else {
       throw new Error('expecting the keychain object with xprv');
@@ -871,18 +871,18 @@ exports.signTransaction = function (params) {
 
   let feeSingleKey;
   if (params.feeSingleKeyWIF) {
-    feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, network);
+    feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network);
   }
 
   debug('Network: %O', network);
 
   if (enableBCH) {
     debug('Enabling BCH…');
-    network = bitcoin.networks.bitcoincash;
+    network = utxolib.networks.bitcoincash;
     debug('New network: %O', network);
   }
 
-  let transaction = bitcoin.Transaction.fromHex(params.transactionHex, network);
+  let transaction = utxolib.Transaction.fromHex(params.transactionHex, network);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
@@ -901,7 +901,7 @@ exports.signTransaction = function (params) {
     rootExtKey = bip32.fromBase58(keychain.xprv);
   }
 
-  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
+  const txb = utxolib.TransactionBuilder.fromTransaction(transaction, network);
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];
@@ -952,7 +952,7 @@ exports.signTransaction = function (params) {
 
         debug('Current unspent value: %d', currentUnspent.value);
 
-        txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
+        txb.sign(index, privKey, subscript, utxolib.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
 
         if (Array.isArray(signatures)) {
           // for segwit inputs, if they are partially signed, bitcoinjs-lib overrides previous signatures
@@ -970,9 +970,9 @@ exports.signTransaction = function (params) {
 
         // only if bitcoin cash is enabled, which should only be in unit tests anyway
         const bchParameter = enableBCH ? currentUnspent.value : undefined;
-        let sigHashType = bitcoin.Transaction.SIGHASH_ALL;
+        let sigHashType = utxolib.Transaction.SIGHASH_ALL;
         if (enableBCH) {
-          sigHashType |= bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+          sigHashType |= utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
         }
         debug('BCH parameter: %d', bchParameter);
         debug('Sighash type: %d', sigHashType);
@@ -1054,25 +1054,25 @@ exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ig
   let sigsNeeded = 1;
   const sigs: string[] = [];
   const pubKeys: string[] = [];
-  let decompiledSigScript = bitcoin.script.decompile(sigScript);
+  let decompiledSigScript = utxolib.script.decompile(sigScript);
 
   const isSegwitInput = currentTransactionInput.witness.length > 0;
   if (isSegwitInput) {
     decompiledSigScript = currentTransactionInput.witness;
-    sigScript = bitcoin.script.compile(decompiledSigScript);
+    sigScript = utxolib.script.compile(decompiledSigScript);
     if (!amount) {
       return 0;
     }
   }
 
   // Check the script type to determine number of signatures, the pub keys, and the script to hash.
-  const inputClassification = bitcoin.script.classifyInput(sigScript, true);
+  const inputClassification = utxolib.script.classifyInput(sigScript, true);
   switch (inputClassification) {
     case 'scripthash':
       // Replace the pubScript with the P2SH Script.
       pubScript = decompiledSigScript[decompiledSigScript.length - 1];
-      const decompiledPubScript = bitcoin.script.decompile(pubScript);
-      sigsNeeded = decompiledPubScript[0] - bitcoin.opcodes.OP_1 + 1;
+      const decompiledPubScript = utxolib.script.decompile(pubScript);
+      sigsNeeded = decompiledPubScript[0] - utxolib.opcodes.OP_1 + 1;
       for (let index = 1; index < decompiledSigScript.length - 1; ++index) {
         sigs.push(decompiledSigScript[index]);
       }
@@ -1097,7 +1097,7 @@ exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ig
   let numVerifiedSignatures = 0;
   for (let sigIndex = 0; sigIndex < sigs.length; ++sigIndex) {
     // If this is an OP_0, then its been left as a placeholder for a future sig.
-    if (sigs[sigIndex] === bitcoin.opcodes.OP_0) {
+    if (sigs[sigIndex] === utxolib.opcodes.OP_0) {
       continue;
     }
 
@@ -1116,8 +1116,8 @@ exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ig
 
     // Enumerate the possible public keys
     for (let pubKeyIndex = 0; pubKeyIndex < pubKeys.length; ++pubKeyIndex) {
-      const pubKey = bitcoin.ECPair.fromPublicKeyBuffer(pubKeys[pubKeyIndex]);
-      const signature = bitcoin.ECSignature.fromDER(sigs[sigIndex]);
+      const pubKey = utxolib.ECPair.fromPublicKeyBuffer(pubKeys[pubKeyIndex]);
+      const signature = utxolib.ECSignature.fromDER(sigs[sigIndex]);
       validSig = pubKey.verify(signatureHash, signature);
       if (validSig) {
         pubKeys.splice(pubKeyIndex, 1);  // remove the pubkey so we can't match 2 sigs against the same pubkey

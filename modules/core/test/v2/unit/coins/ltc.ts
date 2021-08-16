@@ -1,6 +1,6 @@
 import * as should from 'should';
 import * as _ from 'lodash';
-const bitcoin = require('@bitgo/utxo-lib');
+const utxolib = require('@bitgo/utxo-lib');
 const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src';
@@ -420,7 +420,7 @@ describe('LTC:', function () {
 
     it('should verify full signatures correctly', () => {
       const txHex = '01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab870400483045022100a8ae2918d0589bfad341f2d46499c118542537ce22f5cc199d96fc949bdd445302206f56289185e6f5d81a5531632c4985847af1df20f4a078f2290e331411f35f6c01483045022100b4b6c9e7b300f5362d82a69730983eea9de575106747fd424e179499fb78a74602206546801fb3f0f1fcc090003906020575d7b27c851e7fbea3b917480793180bb00169522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000';
-      const tx = bitcoin.Transaction.fromHex(txHex);
+      const tx = utxolib.Transaction.fromHex(txHex);
       const areSignaturesValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value);
       areSignaturesValid.should.equal(true);
 
@@ -429,9 +429,9 @@ describe('LTC:', function () {
       isFirstSignatureValid.should.equal(true);
       isSecondSignatureValid.should.equal(true);
 
-      const userNode = bitcoin.HDNode.fromBase58(userKeychain.pub);
-      const backupNode = bitcoin.HDNode.fromBase58(backupKeychain.pub);
-      const bitgoNode = bitcoin.HDNode.fromBase58(bitgoKeychain.pub);
+      const userNode = utxolib.HDNode.fromBase58(userKeychain.pub);
+      const backupNode = utxolib.HDNode.fromBase58(backupKeychain.pub);
+      const bitgoNode = utxolib.HDNode.fromBase58(bitgoKeychain.pub);
       const derivationPath = `m/0/0/${prebuild.txInfo.unspents[0].chain}/${prebuild.txInfo.unspents[0].index}`;
       const userHex = userNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
       const backupHex = backupNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
@@ -448,7 +448,7 @@ describe('LTC:', function () {
     it('should verify half signatures correctly', () => {
       // signed with the backup key
       const txHex = '01000000000101ad26ff8d387cb1aff967fc76fd96c8036a5ad2f1e9aa5214bc07b019ec63b1830100000023220020c4138370d5d77d8d3ccf3dc7561d0232bc743b8d1c16074881b91556e296a9f8ffffffff0200e1f5050000000017a9144b422c82fef274b72106572af74097773b7dd56587180fe0110000000017a914139de7a47eb613076c790aaaee21d8bbe28942ab87050000483045022100b4b6c9e7b300f5362d82a69730983eea9de575106747fd424e179499fb78a74602206546801fb3f0f1fcc090003906020575d7b27c851e7fbea3b917480793180bb0010069522102b4f2c26870cdd4fd6d93ac0fd89f536beaed2a4c59daeea318f7355d1b3420932102363a336031faf1506ee79c7939a44e3259b35fa25bd5ea7bcf0ce5359d8792c32103d18ae6a34e70400b303ea95cccca3e33a648f63624a52b306e2aedc6a4cfd63753ae00000000';
-      const tx = bitcoin.Transaction.fromHex(txHex);
+      const tx = utxolib.Transaction.fromHex(txHex);
       const areSignaturesValid = basecoin.verifySignature(tx, 0, prebuild.txInfo.unspents[0].value);
       areSignaturesValid.should.equal(true);
 
@@ -457,8 +457,8 @@ describe('LTC:', function () {
       isFirstSignatureValid.should.equal(true);
       isSecondSignatureValid.should.equal(false);
 
-      const userNode = bitcoin.HDNode.fromBase58(userKeychain.pub);
-      const backupNode = bitcoin.HDNode.fromBase58(backupKeychain.pub);
+      const userNode = utxolib.HDNode.fromBase58(userKeychain.pub);
+      const backupNode = utxolib.HDNode.fromBase58(backupKeychain.pub);
       const derivationPath = `m/0/0/${prebuild.txInfo.unspents[0].chain}/${prebuild.txInfo.unspents[0].index}`;
       const userHex = userNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
       const backupHex = backupNode.derivePath(derivationPath).getPublicKeyBuffer().toString('hex');
