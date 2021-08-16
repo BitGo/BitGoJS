@@ -1,4 +1,4 @@
-export interface SignedXRPTransaction {
+export interface SignedTransaction {
   signedTransaction: string;
   id: string;
 }

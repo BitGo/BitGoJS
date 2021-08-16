@@ -4,14 +4,13 @@ import binaryCodec from 'ripple-binary-codec';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { SignedXRPTransaction, TxJSON, Signer } from './iface';
+import { SignedTransaction, TxJSON, Signer } from './iface';
 import { KeyPair } from './keyPair';
 import { initApi } from './utils';
 
 export class Transaction extends BaseTransaction {
   private _xrpTransaction?: rippleTypes.TransactionJSON;
-  private _signedTransaction?: SignedXRPTransaction;
-  private _sender: string;
+  private _signedTransaction?: SignedTransaction;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -32,10 +31,6 @@ export class Transaction extends BaseTransaction {
       return signers.map(({ Signer }) => Signer.TxnSignature);
     }
     return [];
-  }
-
-  sender(address: string): void {
-    this._sender = address;
   }
 
   /**

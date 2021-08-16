@@ -11,6 +11,7 @@ import { AddressValidationError } from './errors';
 import { KeyPair } from './keyPair';
 import utils from './utils';
 import { BaseTransactionSchema } from './txnSchema';
+
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected _keyPairs: KeyPair[];
@@ -30,7 +31,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Sets the fee.
+   * Sets the fee in drops. (1,000,000 drops equals 1 XRP)
    *
    *
    * @param {BaseFee} feeObj The amount to pay to the fee sink
@@ -53,7 +54,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   sender(sender: BaseAddress): this {
     this.validateAddress(sender);
     this._sender = sender.address;
-    this._transaction.sender(sender.address);
     return this;
   }
 
