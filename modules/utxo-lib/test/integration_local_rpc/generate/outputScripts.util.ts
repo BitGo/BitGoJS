@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
 import { Transaction, Triple } from './types';
@@ -19,14 +20,10 @@ export function requiresSegwit(scriptType: ScriptType): boolean {
   return scriptType === 'p2wkh' || scriptType === 'p2wsh' || scriptType === 'p2shP2wsh';
 }
 
-export interface HDNode {
-  getPublicKeyBuffer(): Buffer;
-}
+export type KeyTriple = Triple<bip32.BIP32Interface>;
 
-export type KeyTriple = Triple<HDNode>;
-
-function getKey(seed: string): HDNode {
-  return utxolib.HDNode.fromSeedBuffer(crypto.createHash('sha256').update(seed).digest());
+function getKey(seed: string): bip32.BIP32Interface {
+  return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
 }
 
 export function getKeyTriple(seed: string): KeyTriple {
@@ -63,13 +60,13 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
     case 'p2shP2wsh':
     case 'p2wsh':
       return createOutputScript2of3(
-        keys.map((k) => k.getPublicKeyBuffer()),
+        keys.map((k) => k.publicKey),
         scriptType
       ).scriptPubKey;
   }
 
   const key = keys[0];
-  const pkHash = utxolib.crypto.hash160(key.getPublicKeyBuffer());
+  const pkHash = utxolib.crypto.hash160(key.publicKey);
   switch (scriptType) {
     case 'p2pkh':
       return utxolib.script.pubKeyHash.output.encode(pkHash);
@@ -116,7 +113,7 @@ export function createSpendTransactionFromPrevOutputs(
   txBuilder.addOutput(recipientScript, inputSum - fee);
 
   const { redeemScript, witnessScript } = createOutputScript2of3(
-    keys.map((k) => k.getPublicKeyBuffer()),
+    keys.map((k) => k.publicKey),
     scriptType as ScriptType2Of3
   );
 
@@ -133,7 +130,7 @@ export function createSpendTransactionFromPrevOutputs(
           sighash = utxolib.Transaction.SIGHASH_ALL;
       }
 
-      txBuilder.sign(vin, key, redeemScript, sighash, value, witnessScript);
+      txBuilder.sign(vin, Object.assign(key, { network }), redeemScript, sighash, value, witnessScript);
     });
   });
 
@@ -158,7 +155,7 @@ export function createSpendTransaction(
   }
 
   const { scriptPubKey } = createOutputScript2of3(
-    keys.map((k) => k.getPublicKeyBuffer()),
+    keys.map((k) => k.publicKey),
     scriptType as ScriptType2Of3
   );
   const matches = inputTx.outs.map((o, vout) => [o, vout]).filter(([o]) => scriptPubKey.equals(o.script));
