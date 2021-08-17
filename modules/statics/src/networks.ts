@@ -9,6 +9,7 @@ export abstract class BaseNetwork {
   public abstract readonly type: NetworkType;
   public abstract readonly family: CoinFamily;
   public abstract readonly explorerUrl: string | undefined;
+  public readonly urlParams?: string;
 }
 
 /*
@@ -295,6 +296,8 @@ class Eos extends Mainnet implements AccountNetwork {
 class EosTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.EOS;
   explorerUrl = 'https://local.bloks.io/transaction/';
+  urlParams =
+    '?nodeUrl=http%3A%2F%2Fjungle3.cryptolions.io&systemDomain=eosio&hyperionUrl=https%3A%2F%2Fjungle3history.cryptolions.io';
 }
 
 class Hedera extends Mainnet implements AccountNetwork {
