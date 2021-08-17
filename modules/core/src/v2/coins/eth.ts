@@ -112,7 +112,7 @@ interface SignFinalOptions {
   txPrebuild: {
     eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
     gasPrice?: string;
-    gasLimit: string;
+    gasLimit?: string;
     recipients: Recipient[];
     halfSigned: {
       expireTime: number;
@@ -125,20 +125,20 @@ interface SignFinalOptions {
     backupKeyNonce?: number;
     isBatch?: boolean;
   };
-  signingKeyNonce: number;
+  signingKeyNonce?: number;
   walletContractAddress: string;
   prv: string;
-  recipients: Recipient[];
+  recipients?: Recipient[];
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions, SignFinalOptions {
   isLastSignature?: boolean;
   expireTime: number;
   sequenceId: number;
-  gasLimit: number;
-  gasPrice: number;
+  gasLimit?: number;
+  gasPrice?: number;
+  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
 }
-
 export interface HalfSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: {
     recipients: Recipient[];
@@ -586,17 +586,29 @@ export class Eth extends BaseCoin {
     const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
     const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
-    const ethTxParams = {
+    const baseParams = {
       to: params.walletContractAddress,
       nonce:
         params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned.backupKeyNonce,
       value: 0,
-      gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
-      gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
     };
 
-    const ethTx = optionalDeps.EthTx.Transaction.fromTxData(ethTxParams).sign(signingKey);
+    /* eslint-disable indent */
+    const unsignedEthTx = !!params.txPrebuild.eip1559
+      ? optionalDeps.EthTx.FeeMarketEIP1559Transaction.fromTxData({
+        ...baseParams,
+        maxFeePerGas: new optionalDeps.ethUtil.BN(params.txPrebuild.eip1559.maxFeePerGas),
+        maxPriorityFeePerGas: new optionalDeps.ethUtil.BN(params.txPrebuild.eip1559.maxPriorityFeePerGas),
+      })
+      : optionalDeps.EthTx.Transaction.fromTxData({
+        ...baseParams,
+        gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
+        gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
+      });
+    /* eslint-enable indent */
+    const ethTx = unsignedEthTx.sign(signingKey);
+
     return { txHex: ethTx.serialize().toString('hex') };
   }
 
@@ -1287,6 +1299,8 @@ export class Eth extends BaseCoin {
       };
       const feeEstimate: FeeEstimate = yield self.feeEstimate(feeEstimateParams);
 
+      console.log('createHopTransactionParams BUILD PARAMS', buildParams);
+
       const gasLimit = feeEstimate.gasLimitEstimate;
       const gasPrice = Math.round(feeEstimate.feeEstimate / gasLimit);
       const gasPriceMax = gasPrice * 5;
@@ -1337,6 +1351,8 @@ export class Eth extends BaseCoin {
     const self = this;
     return co<void>(function* () {
       const { tx, id, signature } = hopPrebuild;
+
+      console.log('HOP PREBUILD', hopPrebuild);
 
       // first, validate the HSM signature
       const serverXpub = common.Environments[self.bitgo.getEnv()].hsmXpub;

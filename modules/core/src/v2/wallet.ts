@@ -1691,6 +1691,8 @@ export class Wallet {
         offlineVerification: params.offlineVerification ? true : undefined,
       };
 
+      console.log('WHITELISTED PARAMS', whitelistedParams);
+
       const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
         .query(queryParams)
         .send(whitelistedParams)
@@ -2072,6 +2074,8 @@ export class Wallet {
         'stakingOptions',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
+
+      console.log('final txn params', finalTxParams);
 
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
