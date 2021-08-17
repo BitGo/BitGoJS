@@ -1,6 +1,6 @@
 import * as should from 'should';
 import * as ecc from 'eosjs-ecc';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
 import { EosResponses } from '../../fixtures/coins/eos';
@@ -186,8 +186,8 @@ describe('EOS:', function () {
 
       const { halfSigned } = await basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
       const signature = halfSigned.transaction.signatures[0];
-      const hdNode = utxolib.HDNode.fromBase58(keyPair.pub);
-      const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.getPublicKeyBuffer()).toString();
+      const hdNode = bip32.fromBase58(keyPair.pub);
+      const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.publicKey).toString();
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
     });
 
