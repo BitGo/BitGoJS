@@ -301,7 +301,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Get an instance of the library which can be used to perform low-level operations for this coin
+   * @deprecated
    */
   getCoinLibrary() {
     return utxolib;
