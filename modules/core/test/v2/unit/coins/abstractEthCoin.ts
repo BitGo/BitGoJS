@@ -8,7 +8,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
-import * as bitgoUtxoLib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 
 describe('ETH-like coins', () => {
@@ -199,7 +199,7 @@ describe('ETH-like coins', () => {
         it('Should generate valid keypair without seed', () => {
           const { pub, prv } = basecoin.generateKeyPair();
           basecoin.isValidPub(pub).should.equal(true);
-          const bitgoKey = bitgoUtxoLib.HDNode.fromBase58(prv);
+          const bitgoKey = utxolib.HDNode.fromBase58(prv);
           basecoin.isValidPub(bitgoKey.neutered().toBase58()).should.equal(true);
         });
 
@@ -207,7 +207,7 @@ describe('ETH-like coins', () => {
           const seed = Buffer.from('c3b09c24731be2851b641d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
           const { pub, prv } = basecoin.generateKeyPair(seed);
           basecoin.isValidPub(pub).should.equal(true);
-          const bitgoKey = bitgoUtxoLib.HDNode.fromBase58(prv);
+          const bitgoKey = utxolib.HDNode.fromBase58(prv);
           basecoin.isValidPub(bitgoKey.neutered().toBase58()).should.equal(true);
         });
       });

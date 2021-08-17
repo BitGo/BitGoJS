@@ -11,7 +11,7 @@ import 'should';
 const Q = require('q');
 
 const TestBitGo = require('../lib/test_bitgo');
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { getNetwork } from '../../src/bitcoin';
 import * as common from '../../src/common';
 import * as nock from 'nock';
@@ -356,7 +356,7 @@ describe('Wallets', function () {
     let key;
     let sourceAddress;
     before(() => {
-      key = bitcoin.ECPair.makeRandom({ network: getNetwork(common.Environments[bitgo.getEnv()].network) });
+      key = utxolib.ECPair.makeRandom({ network: getNetwork(common.Environments[bitgo.getEnv()].network) });
       sourceAddress = key.getAddress();
     });
 

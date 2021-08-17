@@ -151,7 +151,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   async signTransaction(
     params: EthSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedEthLikeTransaction> {
+  ): Promise<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
@@ -199,7 +199,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   async explainTransaction(
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
+  ): Promise<TransactionExplanation> {
     const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');

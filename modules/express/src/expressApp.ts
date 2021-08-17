@@ -4,7 +4,6 @@
 import * as express from 'express';
 import * as httpProxy from 'http-proxy';
 import * as url from 'url';
-import * as Bluebird from 'bluebird';
 import * as path from 'path';
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
@@ -324,7 +323,7 @@ export async function prepareIpc(ipcSocketFilePath: string) {
   }
 }
 
-export async function init(): Bluebird<void> {
+export async function init(): Promise<void> {
   const cfg = config();
   const expressApp = app(cfg);
 

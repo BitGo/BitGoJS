@@ -4,7 +4,7 @@
 import * as assert from 'assert';
 
 import { Network } from '../../../src/networkTypes';
-import { getNetworkName, isTestnet } from '../../../src/coins';
+import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
 
 const utxolib = require('../../../src');
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
@@ -18,7 +18,7 @@ import {
   scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
-import { wipeFixtures, writeFixture } from './fixtures';
+import { wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   switch (network) {
@@ -70,7 +70,7 @@ async function createTransactionsForScriptType(
   const address = toRegtestAddress(network, scriptType, script);
   const depositTxid = await rpc.sendToAddress(address, 1);
   const depositTx = await rpc.getRawTransaction(depositTxid);
-  await writeFixture(network, `deposit_${scriptType}.json`, await rpc.getRawTransactionVerbose(depositTxid));
+  await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, depositTxid);
   if (!isSupportedSpendType(network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
@@ -79,7 +79,7 @@ async function createTransactionsForScriptType(
   const spendTx = createSpendTransaction(keys, scriptType, depositTxid, depositTx, script, network);
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
-  await writeFixture(network, `spend_${scriptType}.json`, await rpc.getRawTransactionVerbose(spendTxid));
+  await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);
 }
 
 async function createTransactions(rpc: RpcClient, network: Network) {
@@ -113,10 +113,23 @@ async function run(network: Network) {
   }
 }
 
-async function main() {
+async function main(args: string[]) {
+  const allowedNetworks = args.map((name) => {
+    const network = utxolib.networks[name];
+    if (!network) {
+      throw new Error(`invalid network ${name}`);
+    }
+    return getMainnet(network);
+  });
+
   for (const networkName of Object.keys(utxolib.networks)) {
     const network = utxolib.networks[networkName];
     if (!isTestnet(network)) {
+      continue;
+    }
+
+    if (allowedNetworks.length && !allowedNetworks.some((n) => n === getMainnet(network))) {
+      console.log(`skipping ${networkName}`);
       continue;
     }
 
@@ -125,7 +138,7 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((e) => {
+  main(process.argv.slice(2)).catch((e) => {
     console.error(e);
     process.exit(1);
   });

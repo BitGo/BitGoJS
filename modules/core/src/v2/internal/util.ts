@@ -5,7 +5,7 @@
 
 /**
  */
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';
@@ -87,9 +87,9 @@ export class Util {
    * @deprecated
    */
   static p2shMultisigOutputScript(m: number, pubKeys: Buffer[]) {
-    const redeemScript = bitcoin.script.multisig.output.encode(m, pubKeys);
-    const hash = bitcoin.crypto.hash160(redeemScript);
-    return bitcoin.script.scriptHash.output.encode(hash);
+    const redeemScript = utxolib.script.multisig.output.encode(m, pubKeys);
+    const hash = utxolib.crypto.hash160(redeemScript);
+    return utxolib.script.scriptHash.output.encode(hash);
   }
 
   /**
@@ -130,7 +130,7 @@ export class Util {
     if (!isEthAvailable) {
       throw new EthereumLibraryUnavailableError(ethImport);
     }
-    const hdNode = bitcoin.HDNode.fromBase58(xpub);
+    const hdNode = utxolib.HDNode.fromBase58(xpub);
     const ethPublicKey = hdNode.keyPair.__Q.getEncoded(false).slice(1);
     return ethUtil.bufferToHex(ethUtil.publicToAddress(ethPublicKey, false));
   }
@@ -141,7 +141,7 @@ export class Util {
    * @deprecated
    */
   static xprvToEthPrivateKey(xprv: string): string {
-    const hdNode = bitcoin.HDNode.fromBase58(xprv);
+    const hdNode = utxolib.HDNode.fromBase58(xprv);
     const ethPrivateKey: Buffer = hdNode.keyPair.d.toBuffer(32);
     return ethPrivateKey.toString('hex');
   }

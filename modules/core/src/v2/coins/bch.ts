@@ -1,4 +1,4 @@
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const cashaddress = require('cashaddress');
 import * as _ from 'lodash';
@@ -23,7 +23,7 @@ const containsMixedCaseCharacters = (str) => {
 export class Bch extends AbstractUtxoCoin {
 
   protected constructor(bitgo: BitGo, network?: UtxoNetwork) {
-    super(bitgo, network || bitcoin.networks.bitcoincash);
+    super(bitgo, network || utxolib.networks.bitcoincash);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -122,7 +122,7 @@ export class Bch extends AbstractUtxoCoin {
         // no conversion needed
         return address;
       }
-      const addressDetails = bitcoin.address.fromBase58Check(address);
+      const addressDetails = utxolib.address.fromBase58Check(address);
 
       // JS annoyingly converts JSON Object variable keys to Strings, so we have to do so as well
       const addressVersionString = String(addressDetails.version);
@@ -140,7 +140,7 @@ export class Bch extends AbstractUtxoCoin {
     }
 
     const rawBytes = cashaddress.decode(address);
-    return bitcoin.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]]);
+    return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]]);
   }
 
   /**
@@ -181,7 +181,7 @@ export class Bch extends AbstractUtxoCoin {
    * @returns {number}
    */
   public get defaultSigHashType() {
-    return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+    return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
   recoveryBlockchainExplorerUrl(url) {

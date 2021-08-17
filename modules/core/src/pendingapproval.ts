@@ -10,7 +10,7 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 import * as common from './common';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
@@ -169,12 +169,12 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
   params = _.extend({}, params);
   common.validateParams(params, ['txHex'], [], callback);
 
-  const transaction = bitcoin.Transaction.fromHex(params.txHex);
+  const transaction = utxolib.Transaction.fromHex(params.txHex);
   if (!transaction.outs) {
     throw new Error('transaction had no outputs or failed to parse successfully');
   }
 
-  const network = bitcoin.networks[common.Environments[this.bitgo.getEnv()].network];
+  const network = utxolib.networks[common.Environments[this.bitgo.getEnv()].network];
   params.recipients = {};
 
   const self = this;
@@ -187,7 +187,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
     }
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
-        const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
+        const outAddress = utxolib.address.fromOutputScript(out.script, network).toBase58Check();
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
           params.recipients[outAddress] = out.value;
@@ -202,7 +202,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
       .then(function (result) {
         const changeAddresses = _.keyBy(result.addresses, 'address');
         transaction.outs.forEach(function (out) {
-          const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
+          const outAddress = utxolib.address.fromOutputScript(out.script, network).toBase58Check();
           if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
             params.recipients[outAddress] = out.value;

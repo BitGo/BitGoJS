@@ -8,8 +8,8 @@ import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
+import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
-const EthTx = require('ethereumjs-tx');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 const co = Bluebird.coroutine;
 
@@ -312,12 +312,17 @@ describe('Add final signature to ETH tx from offline vault', function () {
 
   it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
     const response = (yield coin.signTransaction(paramsFromVault)) as any;
-    const expectedTx = new EthTx(expectedResult.txHex);
-    const actualTx = new EthTx(response.txHex);
+    const expectedTx = EthTx.fromSerializedTx(Buffer.from(expectedResult.txHex, 'hex'));
+    const actualTx = EthTx.fromSerializedTx(Buffer.from(response.txHex, 'hex'));
     actualTx.nonce.should.deepEqual(expectedTx.nonce);
-    actualTx.to.should.deepEqual(expectedTx.to);
+    should.exist(actualTx.to);
+    actualTx.to?.should.deepEqual(expectedTx.to);
     actualTx.value.should.deepEqual(expectedTx.value);
     actualTx.data.should.deepEqual(expectedTx.data);
+    actualTx.isSigned().should.equal(true);
+    actualTx.supports(Capability.EIP155ReplayProtection).should.equal(true);
+    actualTx.verifySignature().should.equal(true);
+    should.exist(actualTx.v);
     actualTx.v.should.deepEqual(expectedTx.v);
     actualTx.r.should.deepEqual(expectedTx.r);
     actualTx.s.should.deepEqual(expectedTx.s);
@@ -378,7 +383,7 @@ describe('prebuildTransaction', function () {
 });
 
 describe('final-sign transaction from WRW', function () {
-  it('should add a second signature to unsigned sweep', (async function () {
+  it('should add a second signature to unsigned sweep for teth', (async function () {
     const bitgo = new TestBitGo({ env: 'test' });
     const basecoin = bitgo.coin('teth');
     const gasPrice = 200000000000;
@@ -417,4 +422,45 @@ describe('final-sign transaction from WRW', function () {
     outputs[0].address.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.address);
     outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.amount);
   }));
+
+  it('should add a second signature to unsigned sweep for erc20 token', (async function () {
+    const bitgo = new TestBitGo({ env: 'test' });
+    const basecoin = bitgo.coin('tdai');
+    const gasPrice = 200000000000;
+    const gasLimit = 500000;
+    const prv = 'xprv9s21ZrQH143K3399QBVvbmhs4RB5QzXD8XiW3NwtaeTem93QGd5VNjukUnwJQ94nUgugHSVzSVVe3RP16Urv1ZyijpYdyDamsxf2Shbq4w1'; // placeholder test prv
+    const tx = {
+      txPrebuild: fixtures.WRWUnsignedSweepERC20Tx,
+      prv,
+    };
+    // sign transaction once
+    const halfSigned = await basecoin.signTransaction(tx);
+
+    const wrapper = {} as SignTransactionOptions;
+    wrapper.txPrebuild = halfSigned;
+    wrapper.txPrebuild.recipients = halfSigned.halfSigned.recipients;
+    wrapper.txPrebuild.gasPrice = gasPrice.toString();
+    wrapper.txPrebuild.gasLimit = gasLimit.toString();
+    wrapper.isLastSignature = true;
+    wrapper.walletContractAddress = fixtures.WRWUnsignedSweepERC20Tx.walletContractAddress;
+    wrapper.prv = prv;
+
+    // sign transaction twice with the "isLastSignature" flag
+    const finalSignedTx = await basecoin.signTransaction(wrapper);
+    finalSignedTx.should.have.property('txHex');
+    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    txBuilder.from('0x' + finalSignedTx.txHex); // add a 0x in front of this txhex
+    const rebuiltTx = await txBuilder.build();
+    const outputs = rebuiltTx.outputs.map(output => {
+      return {
+        address: output.address,
+        amount: output.value,
+      };
+    });
+    rebuiltTx.signature.length.should.equal(2);
+    outputs.length.should.equal(1);
+    outputs[0].address.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.address);
+    outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.amount);
+  }));
+
 });

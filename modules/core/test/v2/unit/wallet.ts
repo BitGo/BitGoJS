@@ -8,7 +8,7 @@ require('should-sinon');
 import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
-const bitcoin = require('@bitgo/utxo-lib');
+const utxolib = require('@bitgo/utxo-lib');
 import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
 
@@ -351,12 +351,12 @@ describe('V2 Wallet:', function () {
 
     it('should verify a signed transaction', async function () {
       const unspent = prebuild.txInfo.unspents[0];
-      const signedTransaction = bitcoin.Transaction.fromHex(signedTxHex);
+      const signedTransaction = utxolib.Transaction.fromHex(signedTxHex);
       const areSignaturesValid = basecoin.verifySignature(signedTransaction, 0, unspent.value);
       areSignaturesValid.should.equal(true);
 
       // mangle first signature
-      const sigScript = bitcoin.script.decompile(signedTransaction.ins[0].script);
+      const sigScript = utxolib.script.decompile(signedTransaction.ins[0].script);
       sigScript.length.should.equal(5);
       const firstSignature = sigScript[1];
       const secondSignature = sigScript[2];
@@ -366,7 +366,7 @@ describe('V2 Wallet:', function () {
       // mangle random byte of first signature (modifying too much could make the sig script become misclassified)
       firstSignature[10] = 54;
       sigScript[1] = firstSignature;
-      signedTransaction.ins[0].script = bitcoin.script.compile(sigScript);
+      signedTransaction.ins[0].script = utxolib.script.compile(sigScript);
 
       const areMangledSignaturesValid = basecoin.verifySignature(signedTransaction, 0, unspent.value);
       areMangledSignaturesValid.should.equal(false);

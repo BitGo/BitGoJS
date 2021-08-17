@@ -565,6 +565,41 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
 }
 
 /**
+ * Calculate the hash to verify the signature against
+ * @param inIndex
+ * @param prevoutScript
+ * @param value - The previous output's amount
+ * @param hashType
+ * @param isSegwit
+ * @returns {*}
+ */
+Transaction.prototype.hashForSignatureByNetwork = function (
+  inIndex,
+  prevoutScript,
+  value,
+  hashType,
+  isSegwit,
+) {
+  switch (coins.getMainnet(this.network)) {
+    case networks.bitcoingold:
+      return this.hashForGoldSignature(inIndex, prevoutScript, value, hashType, isSegwit)
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+      return this.hashForCashSignature(inIndex, prevoutScript, value, hashType)
+    case networks.zcash:
+      return this.hashForZcashSignature(inIndex, prevoutScript, value, hashType)
+    default:
+      if (isSegwit) {
+        return this.hashForWitnessV0(inIndex, prevoutScript, value, hashType)
+      } else {
+        return this.hashForSignature(inIndex, prevoutScript, hashType)
+      }
+  }
+
+  throw new Error('invalid state') // eslint-disable-line
+}
+
+/**
  * Blake2b hashing algorithm for Zcash
  * @param bufferToHash
  * @param personalization
@@ -798,7 +833,7 @@ Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, i
 /**
  * Hash transaction for signing a specific input for Bitcoin Gold.
  */
-Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, sigVersion) {
+Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, isSegwit) {
   typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
 
   // Bitcoin Gold also implements segregated witness
@@ -812,7 +847,7 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
   }
 
   // BIP143 sighash activated in BitcoinCash via 0x40 bit
-  if (sigVersion || fUseForkId) {
+  if (isSegwit || fUseForkId) {
     if (types.Null(inAmount)) {
       throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
     }

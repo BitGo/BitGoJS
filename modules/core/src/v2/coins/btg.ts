@@ -1,7 +1,7 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin, VerifyRecoveryTransactionOptions } from '../baseCoin';
 import { Btc } from './btc';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
@@ -10,7 +10,7 @@ const request = require('superagent');
 
 export class Btg extends Btc {
   constructor(bitgo: BitGo, network?: any) {
-    super(bitgo, network || bitcoin.networks.bitcoingold);
+    super(bitgo, network || utxolib.networks.bitcoingold);
   }
 
   static createInstance(bitgo): BaseCoin {
@@ -56,7 +56,7 @@ export class Btg extends Btc {
    * @returns {number}
    */
   get defaultSigHashType(): number {
-    return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+    return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
   /**
