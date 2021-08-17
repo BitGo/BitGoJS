@@ -96,12 +96,17 @@ export function getTransactionBuilder(network: Network) {
 }
 
 export function createSpendTransactionFromPrevOutputs(
-  keys: KeyTriple,
+  keys: bip32.BIP32Interface[],
   scriptType: ScriptType,
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
-  network: Network
+  network: Network,
+  { signKeys = keys.slice(0, 2) } = {}
 ): Transaction {
+  if (signKeys.length !== 1 && signKeys.length !== 2) {
+    throw new Error(`signKeys length must be 1 or 2`);
+  }
+
   const txBuilder = getTransactionBuilder(network);
 
   prevOutputs.forEach(([txid, vout]) => {
@@ -119,7 +124,7 @@ export function createSpendTransactionFromPrevOutputs(
   );
 
   prevOutputs.forEach(([, , value], vin) => {
-    keys.slice(0, 2).forEach((key) => {
+    signKeys.forEach((key) => {
       txBuilder.sign(
         vin,
         Object.assign(key, { network }),
@@ -131,6 +136,9 @@ export function createSpendTransactionFromPrevOutputs(
     });
   });
 
+  if (signKeys.length === 1) {
+    return txBuilder.buildIncomplete();
+  }
   return txBuilder.build();
 }
 

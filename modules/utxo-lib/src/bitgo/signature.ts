@@ -92,12 +92,6 @@ export function parseSignatureScript(input: Input): ParsedSignatureScript {
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
   }
 
-  if (
-    (inputClassification !== script.types.P2SH && inputClassification !== script.types.P2WSH) ||
-    decompiledSigScript.length !== 4
-  ) {
-    return { isSegwitInput, inputClassification };
-  }
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
   // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
   // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
@@ -105,11 +99,17 @@ export function parseSignatureScript(input: Input): ParsedSignatureScript {
   // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
   // multisig setup:
   //
-  // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
+  // decompiledSigScript = 0 <sig1> [<sig2>] <pubScript>
   // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
-  if (decompiledSigScript.length !== 4) {
-    throw new Error(`unexpected decompiledSigScript length`);
+  const expectedScriptType = inputClassification === script.types.P2SH || inputClassification === script.types.P2WSH;
+  const expectedScriptLength =
+    decompiledSigScript.length === 4 || // single signature
+    decompiledSigScript.length === 5; // double signature
+
+  if (!expectedScriptType || !expectedScriptLength) {
+    return { isSegwitInput, inputClassification };
   }
+
   const signatures = decompiledSigScript.slice(0, -1);
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
   const decompiledPubScript = script.decompile(pubScript);
