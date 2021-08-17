@@ -18,14 +18,6 @@ export interface Input {
   signScript: Buffer;
 }
 
-export interface Transaction {
-  network: Network;
-
-  ins: Input[];
-
-  hashForSignatureByNetwork(index: number, pubScript: Buffer, amount: number, hashType: number, isSegwit: boolean);
-}
-
 const inputTypes = [
   'multisig',
   'nonstandard',

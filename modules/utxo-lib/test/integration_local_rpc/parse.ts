@@ -5,22 +5,37 @@ import * as assert from 'assert';
 
 import { Network } from '../../src/networkTypes';
 import { isTestnet } from '../../src/coins';
-import {
-  verifySignature,
-  Transaction as TransactionVerifySignature,
-  parseSignatureScript,
-} from '../../src/bitgo/signature';
+import { verifySignature, parseSignatureScript, Input } from '../../src/bitgo/signature';
 
-import { isSupportedDepositType, isSupportedSpendType, ScriptType, scriptTypes } from './generate/outputScripts.util';
-import { readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
+import {
+  createSpendTransactionFromPrevOutputs,
+  isSupportedDepositType,
+  isSupportedSpendType,
+  ScriptType,
+  scriptTypes,
+} from './generate/outputScripts.util';
+import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 
 const utxolib = require('../../src');
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
-interface Transaction extends TransactionVerifySignature {
+type Output = {
+  value: number;
+  script: Buffer;
+};
+
+interface Transaction {
+  network: Network;
+  ins: Input[];
+  outs: Output[];
+  hashForSignatureByNetwork(index: number, pubScript: Buffer, amount: number, hashType: number, isSegwit: boolean);
   toBuffer(): Buffer;
+}
+
+function getTxidFromHash(buf: Buffer): string {
+  return Buffer.from(buf).reverse().toString('hex');
 }
 
 function runTestParse(network: Network, txType: FixtureTxType, scriptType: ScriptType) {
@@ -74,17 +89,28 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       return;
     }
 
+    function getPrevOutput(input: { txid?: string; hash?: Buffer; index: number }) {
+      if (input.hash) {
+        input = {
+          ...input,
+          txid: getTxidFromHash(input.hash),
+        };
+      }
+
+      const inputTx = fixture.inputs.find((tx) => tx.txid === input.txid);
+      if (!inputTx) {
+        throw new Error(`could not find inputTx`);
+      }
+      const prevOutput = inputTx.vout[input.index];
+      if (!prevOutput) {
+        throw new Error(`could not prevOutput`);
+      }
+      return prevOutput;
+    }
+
     it(`verifySignatures`, function () {
       parsedTx.ins.forEach((input, i) => {
-        const inputTxid = Buffer.from(input.hash).reverse().toString('hex');
-        const inputTx = fixture.inputs.find((tx) => tx.txid === inputTxid);
-        if (!inputTx) {
-          throw new Error(`could not find inputTx`);
-        }
-        const prevOutput = inputTx.vout[input.index];
-        if (!prevOutput) {
-          throw new Error(`could not find prevOutput`);
-        }
+        const prevOutput = getPrevOutput(input);
         const { publicKeys } = parseSignatureScript(input);
         if (!publicKeys) {
           throw new Error(`expected publicKeys`);
@@ -101,6 +127,21 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
           assert.strictEqual(verifySignature(parsedTx, i, prevOutput.value * 1e8), true);
         });
       });
+    });
+
+    it('createSpendTransaction match', function () {
+      // Since we use fixed keys and use deterministic signing, we can create the exact same
+      // transaction from the same inputs.
+      assert.strict(parsedTx.outs.length === 1);
+      const recipientScript = parsedTx.outs[0].script;
+      const rebuiltTx = createSpendTransactionFromPrevOutputs(
+        fixtureKeys,
+        scriptType,
+        parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutput(i).value * 1e8]),
+        recipientScript,
+        network
+      );
+      assert.strictEqual(rebuiltTx.toBuffer().toString('hex'), fixture.transaction.hex);
     });
   });
 }
