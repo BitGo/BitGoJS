@@ -1,3 +1,4 @@
+
 export { AbstractUtxoCoin } from './abstractUtxoCoin';
 export { Algo } from './algo';
 export { Bch } from './bch';
@@ -48,3 +49,5 @@ export { Cspr } from './cspr';
 export { Tcspr } from './tcspr';
 export { Stx } from './stx';
 export { Tstx } from './tstx';
+export { AvaxC } from './avaxc';
+export { TavaxC } from './tavaxc';
