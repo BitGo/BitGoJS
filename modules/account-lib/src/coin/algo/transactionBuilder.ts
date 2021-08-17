@@ -318,7 +318,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {
-    const keypair = new KeyPair({ prv: key });
+    const buffKey = Utils.decodeSeed(key);
+    const keypair = new KeyPair({ prv: Buffer.from(buffKey.seed).toString('hex') });
     this._keyPairs.push(keypair);
 
     return this._transaction;
@@ -360,9 +361,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
    */
   validateKey({ key }: BaseKey): void {
-    const isValidPrivateKeyFromBytes = Buffer.isBuffer(key) && isValidEd25519Seed(key.toString('hex'));
+    let isValidPrivateKeyFromBytes;
     const isValidPrivateKeyFromHex = isValidEd25519Seed(key);
     const isValidPrivateKeyFromBase64 = isValidEd25519Seed(Buffer.from(key, 'base64').toString('hex'));
+    try {
+      const decodedSeed = Utils.decodeSeed(key);
+      isValidPrivateKeyFromBytes = isValidEd25519Seed(Buffer.from(decodedSeed.seed).toString('hex'));
+    } catch (err) {
+      isValidPrivateKeyFromBytes = false;
+    }
 
     if (!isValidPrivateKeyFromBytes && !isValidPrivateKeyFromHex && !isValidPrivateKeyFromBase64) {
       throw new BuildTransactionError(`Key validation failed`);

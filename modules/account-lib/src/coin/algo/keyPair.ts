@@ -17,7 +17,10 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new NotImplementedError('recordKeysFromPrivateKeyInProtocolFormat not implemented');
+    const decodedSeed = utils.decodeSeed(prv);
+    const hexSecretKey = Buffer.from(decodedSeed.seed);
+
+    return utils.keyPairFromSeed(hexSecretKey).keyPair;
   }
 
   /** @inheritdoc */
@@ -33,6 +36,8 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getKeys(): DefaultKeys {
+    // TODO(https://bitgoinc.atlassian.net/browse/STLX-6062): refactor this method
+    // should return the pub and prv in the Algorand encoded format
     const result: DefaultKeys = { pub: this.keyPair.pub };
 
     if (this.keyPair.prv) {

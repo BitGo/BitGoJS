@@ -90,7 +90,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
         .testnet()
         .numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
@@ -109,19 +109,19 @@ describe('Algo KeyRegistration Builder', () => {
 
     it('should build a key registration transaction with non participation', async () => {
       builder
-          .sender({ address: sender.address })
-          .fee({ fee: '1000' })
-          .firstRound(1)
-          .lastRound(100)
-          .voteKey(sender.voteKey)
-          .selectionKey(sender.selectionKey)
-          .voteFirst(1)
-          .voteLast(100)
-          .voteKeyDilution(9)
-          .testnet()
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.voteKey, undefined);
@@ -139,82 +139,82 @@ describe('Algo KeyRegistration Builder', () => {
 
     it('build a key registration transaction with non participation should thrown an error when does not have fee', async () => {
       builder
-          .sender({ address: sender.address })
-          .firstRound(1)
-          .lastRound(100)
-          .voteKey(sender.voteKey)
-          .selectionKey(sender.selectionKey)
-          .voteFirst(1)
-          .voteLast(100)
-          .voteKeyDilution(9)
-          .testnet()
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       await builder.build().should.be.rejectedWith('Transaction validation failed: "fee" is required');
     });
 
     it('build a key registration transaction with non participation should thrown an error when does not have first round', async () => {
       builder
-          .sender({ address: sender.address })
-          .fee({ fee: '1000' })
-          .lastRound(100)
-          .voteKey(sender.voteKey)
-          .selectionKey(sender.selectionKey)
-          .voteFirst(1)
-          .voteLast(100)
-          .voteKeyDilution(9)
-          .testnet()
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       await builder.build().should.be.rejectedWith('Transaction validation failed: "firstRound" is required');
     });
 
     it('build a key registration transaction with non participation should thrown an error when does not have last round', async () => {
       builder
-          .sender({ address: sender.address })
-          .fee({ fee: '1000' })
-          .firstRound(1)
-          .voteKey(sender.voteKey)
-          .selectionKey(sender.selectionKey)
-          .voteFirst(1)
-          .voteLast(100)
-          .voteKeyDilution(9)
-          .testnet()
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       await builder.build().should.be.rejectedWith('Transaction validation failed: "lastRound" is required');
     });
 
     it('build a key registration transaction with non participation should thrown an error when does not have testnet set', async () => {
       builder
-          .sender({ address: sender.address })
-          .fee({ fee: '1000' })
-          .firstRound(1)
-          .lastRound(100)
-          .voteKey(sender.voteKey)
-          .selectionKey(sender.selectionKey)
-          .voteFirst(1)
-          .voteLast(100)
-          .voteKeyDilution(9)
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       await builder.build().should.be.rejectedWith('Transaction validation failed: "genesisHash" is required');
     });
 
     it('should build a key registration transaction with non participation without vote parameters', async () => {
       builder
-          .sender({ address: sender.address })
-          .fee({ fee: '1000' })
-          .firstRound(1)
-          .lastRound(100)
-          .testnet()
-          .numberOfSigners(1)
-          .nonParticipation(true);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet()
+        .numberOfSigners(1)
+        .nonParticipation(true);
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.voteKey, undefined);
@@ -277,7 +277,7 @@ describe('Algo KeyRegistration Builder', () => {
     it('should sign from raw unsigned tx', async () => {
       builder.from(rawTx.keyReg.unsigned);
       builder.numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
       const txJson = tx.toJson();
@@ -314,8 +314,8 @@ describe('Algo KeyRegistration Builder', () => {
         .testnet()
         .numberOfSigners(2)
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
-      builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account1.prvKey });
+      builder.sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
