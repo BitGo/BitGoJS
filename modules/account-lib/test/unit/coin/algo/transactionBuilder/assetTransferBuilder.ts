@@ -255,7 +255,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     it('should decode a signed asset transfer transaction', async () => {
       txnBuilder.from(rawTx.assetTransfer.signed);
 
-      txnBuilder.numberOfSigners(1).sign({ key: account1.secretKey.toString('hex') });
+      txnBuilder.numberOfSigners(1).sign({ key: account1.prvKey });
       const tx = await txnBuilder.build();
       const txJson = tx.toJson();
 
@@ -294,7 +294,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
         .testnet()
         .numberOfRequiredSigners(1);
 
-      txnBuilder.sign({ key: account1.secretKey.toString('hex') });
+      txnBuilder.sign({ key: account1.prvKey });
 
       const tx = await txnBuilder.build();
       const txJson = tx.toJson();
