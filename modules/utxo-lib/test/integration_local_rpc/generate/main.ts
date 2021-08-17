@@ -3,10 +3,11 @@
  */
 import * as assert from 'assert';
 
+const utxolib = require('../../../src');
+
 import { Network } from '../../../src/networkTypes';
 import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
 
-const utxolib = require('../../../src');
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
   createScriptPubKey,
@@ -18,7 +19,7 @@ import {
   scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
-import { wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
+import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
@@ -72,8 +73,7 @@ async function createTransactionsForScriptType(
   }
   console.log(logTag);
 
-  const keys = getKeyTriple('rpctest');
-  const script = createScriptPubKey(keys, scriptType, network);
+  const script = createScriptPubKey(fixtureKeys, scriptType, network);
   const address = toRegtestAddress(network, scriptType, script);
   const depositTxid = await rpc.sendToAddress(address, 1);
   const depositTx = await rpc.getRawTransaction(depositTxid);
@@ -83,7 +83,7 @@ async function createTransactionsForScriptType(
     return;
   }
 
-  const spendTx = createSpendTransaction(keys, scriptType, depositTxid, depositTx, script, network);
+  const spendTx = createSpendTransaction(fixtureKeys, scriptType, depositTxid, depositTx, script, network);
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
   await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);
