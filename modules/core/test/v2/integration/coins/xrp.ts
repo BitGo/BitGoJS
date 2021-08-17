@@ -1,11 +1,12 @@
-const crypto = require('crypto');
+import * as crypto from 'crypto';
+import * as bip32 from 'bip32';
 import 'should';
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
-import { HDNode } from '@bitgo/utxo-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
+
 
 const nock = require('nock');
 nock.enableNetConnect();
@@ -29,12 +30,15 @@ describe('XRP:', function () {
   });
 
   it('Should generate wallet with custom root address', function () {
-    const hdNode = HDNode.fromSeedBuffer(crypto.randomBytes(32));
+    const hdNode = bip32.fromSeed(crypto.randomBytes(32));
+    if (!hdNode.privateKey) {
+      throw new Error('no privateKey');
+    }
     const params = {
       passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Ripple Root Address Test',
       disableTransactionNotifications: true,
-      rootPrivateKey: hdNode.getKey().getPrivateKeyBuffer().toString('hex'),
+      rootPrivateKey: hdNode.privateKey.toString('hex'),
     };
 
     return basecoin.wallets().generateWallet(params)
