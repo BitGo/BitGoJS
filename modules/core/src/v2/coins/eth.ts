@@ -758,7 +758,7 @@ export class Eth extends BaseCoin {
    */
   formatForOfflineVault(
     txInfo: UnformattedTxInfo,
-    ethTx: any,
+    ethTx: EthTxLib.Transaction,
     userKey: string,
     backupKey: string,
     gasPrice: Buffer,
@@ -767,6 +767,9 @@ export class Eth extends BaseCoin {
   ): Bluebird<OfflineVaultTxInfo> {
     const self = this;
     return co<OfflineVaultTxInfo>(function* (): any {
+      if (!ethTx.to) {
+        throw new Error('Eth tx must have a `to` address');
+      }
       const backupHDNode = bip32.fromBase58(backupKey);
       const backupSigningKey = backupHDNode.publicKey;
       const response: OfflineVaultTxInfo = {
@@ -777,7 +780,7 @@ export class Eth extends BaseCoin {
         gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
         gasLimit,
         recipients: [txInfo.recipient],
-        walletContractAddress: '0x' + ethTx.to.toString('hex'),
+        walletContractAddress: ethTx.to.toString(),
         amount: txInfo.recipient.amount,
         backupKeyNonce: yield self.getAddressNonce(
           `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
