@@ -7,6 +7,7 @@ import { Network } from '../../../src/networkTypes';
 import { Transaction, Triple } from './types';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
 import { getMainnet, isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
+import { getDefaultSigHash } from '../../../src/bitgo/signature';
 
 const utxolib = require('../../../src');
 
@@ -119,18 +120,14 @@ export function createSpendTransactionFromPrevOutputs(
 
   prevOutputs.forEach(([, , value], vin) => {
     keys.slice(0, 2).forEach((key) => {
-      let sighash: number;
-      switch (getMainnet(network)) {
-        case utxolib.networks.bitcoincash:
-        case utxolib.networks.bitcoinsv:
-        case utxolib.networks.bitcoingold:
-          sighash = utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-          break;
-        default:
-          sighash = utxolib.Transaction.SIGHASH_ALL;
-      }
-
-      txBuilder.sign(vin, Object.assign(key, { network }), redeemScript, sighash, value, witnessScript);
+      txBuilder.sign(
+        vin,
+        Object.assign(key, { network }),
+        redeemScript,
+        getDefaultSigHash(network),
+        value,
+        witnessScript
+      );
     });
   });
 

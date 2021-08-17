@@ -6,8 +6,11 @@ import * as opcodes from 'bitcoin-ops';
 import * as script from '../script';
 import * as crypto from '../crypto';
 import * as ECPair from '../ecpair';
+import * as Transaction from '../transaction';
 import * as ECSignature from '../ecsignature';
 import { Network } from '../networkTypes';
+import * as networks from '../networks';
+import { getMainnet } from '../coins';
 
 export interface Input {
   hash: Buffer;
@@ -38,6 +41,17 @@ export interface ParsedSignatureScript {
   signatures?: Buffer[];
   publicKeys?: Buffer[];
   pubScript?: Buffer;
+}
+
+export function getDefaultSigHash(network: Network): number {
+  switch (getMainnet(network)) {
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+      return Transaction.SIGHASH_ALL | Transaction.SIGHASH_BITCOINCASHBIP143;
+    default:
+      return Transaction.SIGHASH_ALL;
+  }
 }
 
 /**
