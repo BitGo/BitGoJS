@@ -546,34 +546,6 @@ TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
   this.tx.expiryHeight = expiryHeight
 }
 
-TransactionBuilder.prototype.setJoinSplits = function (transaction) {
-  if (!(coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
-    throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network: ' +
-      getNetworkName(this.network) + ', version: ' + this.tx.version)
-  }
-  if (transaction && transaction.joinsplits) {
-    this.tx.joinsplits = transaction.joinsplits.map(function (txJoinsplit) {
-      return {
-        vpubOld: txJoinsplit.vpubOld,
-        vpubNew: txJoinsplit.vpubNew,
-        anchor: txJoinsplit.anchor,
-        nullifiers: txJoinsplit.nullifiers,
-        commitments: txJoinsplit.commitments,
-        ephemeralKey: txJoinsplit.ephemeralKey,
-        randomSeed: txJoinsplit.randomSeed,
-        macs: txJoinsplit.macs,
-        zproof: txJoinsplit.zproof,
-        ciphertexts: txJoinsplit.ciphertexts
-      }
-    })
-
-    this.tx.joinsplitPubkey = transaction.joinsplitPubkey
-    this.tx.joinsplitSig = transaction.joinsplitSig
-    return
-  }
-  throw new Error('Invalid transaction with joinsplits')
-}
-
 TransactionBuilder.fromTransaction = function (transaction, network) {
   var txbNetwork = network || networks.bitcoin
   var txb = new TransactionBuilder(txbNetwork)
@@ -593,11 +565,6 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
       txb.setExpiryHeight(transaction.expiryHeight)
     }
 
-    // We don't support protected transactions but we copy the joinsplits for consistency. However, the transaction
-    // builder will fail when we try to sign one of these transactions
-    if (txb.tx.supportsJoinSplits()) {
-      txb.setJoinSplits(transaction)
-    }
     txb.setConsensusBranchId(transaction.consensusBranchId)
   }
 

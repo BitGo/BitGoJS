@@ -2,7 +2,6 @@ var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var { BufferReader, BufferWriter } = require('./bufferutils')
-var { ZcashBufferReader, ZcashBufferWriter } = require('./forks/zcash/bufferutils')
 var coins = require('./coins')
 var opcodes = require('bitcoin-ops')
 var networks = require('./networks')
@@ -35,19 +34,10 @@ function Transaction (network = networks.bitcoin) {
   this.outs = []
   this.network = network
   if (coins.isZcash(network)) {
-    // ZCash version >= 2
-    this.joinsplits = []
-    this.joinsplitPubkey = []
-    this.joinsplitSig = []
     // ZCash version >= 3
     this.overwintered = 0  // 1 if the transaction is post overwinter upgrade, 0 otherwise
     this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter and 0x892F2085 (2301567109) for sapling
     this.expiryHeight = 0  // Block height after which this transactions will expire, or 0 to disable expiry
-    // ZCash version >= 4
-    this.valueBalance = 0
-    this.vShieldedSpend = []
-    this.vShieldedOutput = []
-    this.bindingSig = 0
     // Must be updated along with version
     this.consensusBranchId = network.consensusBranchId[this.version]
   }
@@ -79,6 +69,7 @@ var ZERO = Buffer.from('00000000000000000000000000000000000000000000000000000000
 var ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
 // Used to represent the absence of a value
 var VALUE_UINT64_MAX = Buffer.from('ffffffffffffffff', 'hex')
+var VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex')
 var BLANK_OUTPUT = {
   script: EMPTY_SCRIPT,
   valueBuffer: VALUE_UINT64_MAX
@@ -102,15 +93,10 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     // Split the header into fOverwintered and nVersion
     tx.overwintered = tx.version >>> 31  // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07FFFFFFF  // 3 for overwinter
-    if (!network.consensusBranchId.hasOwnProperty(tx.version)) {
+    if (tx.overwintered && !network.consensusBranchId.hasOwnProperty(tx.version)) {
       throw new Error('Unsupported Zcash transaction')
     }
     tx.consensusBranchId = network.consensusBranchId[tx.version]
-    bufferReader = new ZcashBufferReader(
-      bufferReader.buffer,
-      bufferReader.offset,
-      tx.version
-    )
   }
 
   if (coins.isDash(network)) {
@@ -173,32 +159,27 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
 
     if (tx.isSaplingCompatible()) {
-      tx.valueBalance = bufferReader.readInt64()
+      tx.valueBalance = bufferReader.readSlice(8)
+      if (!tx.valueBalance.equals(VALUE_INT64_ZERO)) {
+        throw new Error(`unsupported valueBalance`)
+      }
+
       var nShieldedSpend = bufferReader.readVarInt()
-      for (i = 0; i < nShieldedSpend; ++i) {
-        tx.vShieldedSpend.push(bufferReader.readShieldedSpend())
+      if (nShieldedSpend !== 0) {
+        throw new Error(`shielded spend not supported`)
       }
 
       var nShieldedOutput = bufferReader.readVarInt()
-      for (i = 0; i < nShieldedOutput; ++i) {
-        tx.vShieldedOutput.push(bufferReader.readShieldedOutput())
+      if (nShieldedOutput !== 0) {
+        throw new Error(`shielded output not supported`)
       }
     }
 
     if (tx.supportsJoinSplits()) {
       var joinSplitsLen = bufferReader.readVarInt()
-      for (i = 0; i < joinSplitsLen; ++i) {
-        tx.joinsplits.push(bufferReader.readJoinSplit())
+      if (joinSplitsLen !== 0) {
+        throw new Error(`joinSplits not supported`)
       }
-      if (joinSplitsLen > 0) {
-        tx.joinsplitPubkey = bufferReader.readSlice(32)
-        tx.joinsplitSig = bufferReader.readSlice(64)
-      }
-    }
-
-    if (tx.isSaplingCompatible() &&
-      tx.vShieldedSpend.length + tx.vShieldedOutput.length > 0) {
-      tx.bindingSig = bufferReader.readSlice(64)
     }
   }
 
@@ -227,15 +208,15 @@ Transaction.isCoinbaseHash = function (buffer) {
 }
 
 Transaction.prototype.isSaplingCompatible = function () {
-  return coins.isZcash(this.network) && this.version >= zcashVersion.SAPLING
+  return coins.isZcash(this.network) && this.overwintered && this.version >= zcashVersion.SAPLING
 }
 
 Transaction.prototype.isOverwinterCompatible = function () {
-  return coins.isZcash(this.network) && this.version >= zcashVersion.OVERWINTER
+  return coins.isZcash(this.network) && this.overwintered && this.version >= zcashVersion.OVERWINTER
 }
 
 Transaction.prototype.supportsJoinSplits = function () {
-  return coins.isZcash(this.network) && this.version >= zcashVersion.JOINSPLITS_SUPPORT
+  return coins.isZcash(this.network) && this.overwintered && this.version >= zcashVersion.JOINSPLITS_SUPPORT
 }
 
 Transaction.prototype.versionSupportsDashSpecialTransactions = function () {
@@ -302,51 +283,6 @@ Transaction.prototype.byteLength = function () {
   return this.__byteLength(true)
 }
 
-Transaction.prototype.getShieldedSpendByteLength = function () {
-  if (!this.isSaplingCompatible()) {
-    return 0
-  }
-
-  var byteLength = 0
-  byteLength += varuint.encodingLength(this.vShieldedSpend.length)  // nShieldedSpend
-  byteLength += (384 * this.vShieldedSpend.length)  // vShieldedSpend
-  return byteLength
-}
-
-Transaction.prototype.getShieldedOutputByteLength = function () {
-  if (!this.isSaplingCompatible()) {
-    return 0
-  }
-  var byteLength = 0
-  byteLength += varuint.encodingLength(this.vShieldedOutput.length)  // nShieldedOutput
-  byteLength += (948 * this.vShieldedOutput.length)  // vShieldedOutput
-  return byteLength
-}
-
-Transaction.prototype.getJoinSplitByteLength = function () {
-  if (!this.supportsJoinSplits()) {
-    return 0
-  }
-  var joinSplitsLen = this.joinsplits.length
-  var byteLength = 0
-  byteLength += varuint.encodingLength(joinSplitsLen)  // vJoinSplit
-
-  if (joinSplitsLen > 0) {
-    // Both pre and post Sapling JoinSplits are encoded with the following data:
-    // 8 vpub_old, 8 vpub_new, 32 anchor, joinSplitsLen * 32 nullifiers, joinSplitsLen * 32 commitments, 32 ephemeralKey
-    // 32 ephemeralKey, 32 randomSeed, joinsplit.macs.length * 32 vmacs
-    if (this.isSaplingCompatible()) {
-      byteLength += 1698 * joinSplitsLen  // vJoinSplit using JSDescriptionGroth16
-    } else {
-      byteLength += 1802 * joinSplitsLen  // vJoinSplit using JSDescriptionPHGR13
-    }
-    byteLength += 32  // joinSplitPubKey
-    byteLength += 64  // joinSplitSig
-  }
-
-  return byteLength
-}
-
 Transaction.prototype.zcashTransactionByteLength = function () {
   if (!coins.isZcash(this.network)) {
     throw new Error('zcashTransactionByteLength can only be called when using Zcash network')
@@ -366,15 +302,11 @@ Transaction.prototype.zcashTransactionByteLength = function () {
   }
   if (this.isSaplingCompatible()) {
     byteLength += 8  // valueBalance
-    byteLength += this.getShieldedSpendByteLength()
-    byteLength += this.getShieldedOutputByteLength()
+    byteLength += varuint.encodingLength(0) // inputs
+    byteLength += varuint.encodingLength(0) // outputs
   }
   if (this.supportsJoinSplits()) {
-    byteLength += this.getJoinSplitByteLength()
-  }
-  if (this.isSaplingCompatible() &&
-    this.vShieldedSpend.length + this.vShieldedOutput.length > 0) {
-    byteLength += 64  // bindingSig
+    byteLength += varuint.encodingLength(0) // joinsplits
   }
   return byteLength
 }
@@ -436,53 +368,6 @@ Transaction.prototype.clone = function () {
       value: txOut.value
     }
   })
-  if (this.isSaplingCompatible()) {
-    newTx.vShieldedSpend = this.vShieldedSpend.map(function (shieldedSpend) {
-      return {
-        cv: shieldedSpend.cv,
-        anchor: shieldedSpend.anchor,
-        nullifier: shieldedSpend.nullifier,
-        rk: shieldedSpend.rk,
-        zkproof: shieldedSpend.zkproof,
-        spendAuthSig: shieldedSpend.spendAuthSig
-      }
-    })
-
-    newTx.vShieldedOutput = this.vShieldedOutput.map(function (shieldedOutput) {
-      return {
-        cv: shieldedOutput.cv,
-        cmu: shieldedOutput.cmu,
-        ephemeralKey: shieldedOutput.ephemeralKey,
-        encCiphertext: shieldedOutput.encCiphertext,
-        outCiphertext: shieldedOutput.outCiphertext,
-        zkproof: shieldedOutput.zkproof
-      }
-    })
-  }
-
-  if (this.supportsJoinSplits()) {
-    newTx.joinsplits = this.joinsplits.map(function (txJoinsplit) {
-      return {
-        vpubOld: txJoinsplit.vpubOld,
-        vpubNew: txJoinsplit.vpubNew,
-        anchor: txJoinsplit.anchor,
-        nullifiers: txJoinsplit.nullifiers,
-        commitments: txJoinsplit.commitments,
-        ephemeralKey: txJoinsplit.ephemeralKey,
-        randomSeed: txJoinsplit.randomSeed,
-        macs: txJoinsplit.macs,
-        zkproof: txJoinsplit.zkproof,
-        ciphertexts: txJoinsplit.ciphertexts
-      }
-    })
-
-    newTx.joinsplitPubkey = this.joinsplitPubkey
-    newTx.joinsplitSig = this.joinsplitSig
-  }
-
-  if (this.isSaplingCompatible() && this.vShieldedSpend.length + this.vShieldedOutput.length > 0) {
-    newTx.bindingSig = this.bindingSig
-  }
 
   return newTx
 }
@@ -751,9 +636,6 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
   if (!coins.isZcash(this.network)) {
     throw new Error('hashForZcashSignature can only be called when using Zcash network')
   }
-  if (this.joinsplits.length > 0) {
-    throw new Error('Hash signature for Zcash protected transactions is not supported')
-  }
 
   if (inIndex >= this.ins.length && inIndex !== VALUE_UINT64_MAX) {
     throw new Error('Input index is out of range')
@@ -797,7 +679,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     bufferWriter.writeUInt32(this.locktime)
     bufferWriter.writeUInt32(this.expiryHeight)
     if (this.isSaplingCompatible()) {
-      bufferWriter.writeUInt64(this.valueBalance)
+      bufferWriter.writeSlice(VALUE_INT64_ZERO)
     }
     bufferWriter.writeUInt32(hashType)
 
@@ -822,6 +704,8 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     return this.getBlake2bHash(bufferWriter.buffer, personalization)
   }
   // TODO: support non overwinter transactions
+
+  throw new Error(`unsupported version`)
 }
 
 Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
@@ -863,9 +747,7 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset) {
 Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitness) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.__byteLength(__allowWitness))
 
-  const bufferWriter = coins.isZcash(this.network)
-    ? new ZcashBufferWriter(buffer, initialOffset || 0)
-    : new BufferWriter(buffer, initialOffset || 0)
+  const bufferWriter = new BufferWriter(buffer, initialOffset || 0)
 
   function writeUInt16 (i) {
     bufferWriter.offset = bufferWriter.buffer.writeUInt16LE(i, bufferWriter.offset)
@@ -922,75 +804,13 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   }
 
   if (this.isSaplingCompatible()) {
-    bufferWriter.writeUInt64(this.valueBalance)
-
-    bufferWriter.writeVarInt(this.vShieldedSpend.length)
-    this.vShieldedSpend.forEach(function (shieldedSpend) {
-      bufferWriter.writeSlice(shieldedSpend.cv)
-      bufferWriter.writeSlice(shieldedSpend.anchor)
-      bufferWriter.writeSlice(shieldedSpend.nullifier)
-      bufferWriter.writeSlice(shieldedSpend.rk)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sA)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sB)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sC)
-      bufferWriter.writeSlice(shieldedSpend.spendAuthSig)
-    })
-    bufferWriter.writeVarInt(this.vShieldedOutput.length)
-    this.vShieldedOutput.forEach(function (shieldedOutput) {
-      bufferWriter.writeSlice(shieldedOutput.cv)
-      bufferWriter.writeSlice(shieldedOutput.cmu)
-      bufferWriter.writeSlice(shieldedOutput.ephemeralKey)
-      bufferWriter.writeSlice(shieldedOutput.encCiphertext)
-      bufferWriter.writeSlice(shieldedOutput.outCiphertext)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sA)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sB)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sC)
-    })
+    bufferWriter.writeSlice(VALUE_INT64_ZERO)
+    bufferWriter.writeVarInt(0) // vShieldedSpendLength
+    bufferWriter.writeVarInt(0) // vShieldedOutputLength
   }
 
   if (this.supportsJoinSplits()) {
-    bufferWriter.writeVarInt(this.joinsplits.length)
-    this.joinsplits.forEach(function (joinsplit) {
-      bufferWriter.writeUInt64(joinsplit.vpubOld)
-      bufferWriter.writeUInt64(joinsplit.vpubNew)
-      bufferWriter.writeSlice(joinsplit.anchor)
-      joinsplit.nullifiers.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      joinsplit.commitments.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      bufferWriter.writeSlice(joinsplit.ephemeralKey)
-      bufferWriter.writeSlice(joinsplit.randomSeed)
-      joinsplit.macs.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      if (this.isSaplingCompatible()) {
-        bufferWriter.writeSlice(joinsplit.zkproof.sA)
-        bufferWriter.writeSlice(joinsplit.zkproof.sB)
-        bufferWriter.writeSlice(joinsplit.zkproof.sC)
-      } else {
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gA)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gAPrime)
-        bufferWriter.writeCompressedG2(joinsplit.zkproof.gB)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gBPrime)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gC)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gCPrime)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gK)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gH)
-      }
-      joinsplit.ciphertexts.forEach(function (ciphertext) {
-        bufferWriter.writeSlice(ciphertext)
-      })
-    }, this)
-    if (this.joinsplits.length > 0) {
-      bufferWriter.writeSlice(this.joinsplitPubkey)
-      bufferWriter.writeSlice(this.joinsplitSig)
-    }
-  }
-
-  if (this.isSaplingCompatible() && this.vShieldedSpend.length + this.vShieldedOutput.length > 0) {
-    bufferWriter.writeSlice(this.bindingSig)
+    bufferWriter.writeVarInt(0) // joinsSplits length
   }
 
   if (this.isDashSpecialTransaction()) {

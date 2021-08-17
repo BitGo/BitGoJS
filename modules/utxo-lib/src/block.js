@@ -12,6 +12,9 @@ var Transaction = require('./transaction')
 
 function Block (network) {
   typeforce(types.maybe(types.Network), network)
+  if (coins.isZcash(network)) {
+    throw new Error('unsupported network')
+  }
   network = network || networks.bitcoin
   this.version = 1
   this.prevHash = null
@@ -20,15 +23,9 @@ function Block (network) {
   this.bits = 0
   this.nonce = 0
   this.network = network
-  if (coins.isZcash(network)) {
-    this.finalSaplingRoot = null
-    this.solutionSize = 0
-    this.solution = null
-  }
 }
 
 Block.HEADER_BYTE_SIZE = 80
-Block.ZCASH_HEADER_BYTE_SIZE = 1487
 
 Block.fromBuffer = function (buffer, network) {
   if (buffer.length < 80) throw new Error('Buffer too small (< 80 bytes)')
@@ -40,19 +37,10 @@ Block.fromBuffer = function (buffer, network) {
   block.version = bufferReader.readInt32()
   block.prevHash = bufferReader.readSlice(32)
   block.merkleRoot = bufferReader.readSlice(32)
-  if (coins.isZcash(network)) {
-    block.finalSaplingRoot = bufferReader.readSlice(32)
-  }
   block.timestamp = bufferReader.readUInt32()
   block.bits = bufferReader.readUInt32()
-  if (coins.isZcash(network)) {
-    block.nonce = bufferReader.readSlice(32)
-    block.solutionSize = bufferReader.readVarInt()
-    block.solution = bufferReader.readSlice(1344)
-  } else {
-    // Not sure sure why the nonce is read as UInt 32 and not as a slice
-    block.nonce = bufferReader.readUInt32()
-  }
+  // Not sure sure why the nonce is read as UInt 32 and not as a slice
+  block.nonce = bufferReader.readUInt32()
 
   if (bufferReader.buffer.length === 80) return block
 
@@ -74,16 +62,6 @@ Block.fromBuffer = function (buffer, network) {
 }
 
 Block.prototype.byteLength = function (headersOnly) {
-  if (coins.isZcash(this.network)) {
-    if (headersOnly) {
-      return Block.ZCASH_HEADER_BYTE_SIZE
-    }
-    return Block.ZCASH_HEADER_BYTE_SIZE +
-      varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
-        return a + x.byteLength()
-      }, 0)
-  }
-
   if (headersOnly || !this.transactions) return Block.HEADER_BYTE_SIZE
 
   return Block.HEADER_BYTE_SIZE +
@@ -119,21 +97,10 @@ Block.prototype.toBuffer = function (headersOnly) {
   bufferWriter.writeInt32(this.version)
   bufferWriter.writeSlice(this.prevHash)
   bufferWriter.writeSlice(this.merkleRoot)
-  if (coins.isZcash(this.network)) {
-    bufferWriter.writeSlice(this.finalSaplingRoot)
-  }
   bufferWriter.writeUInt32(this.timestamp)
   bufferWriter.writeUInt32(this.bits)
-  if (coins.isZcash(this.network)) {
-    bufferWriter.writeSlice(this.nonce)
-    // TODO: use writeVarInt
-    varuint.encode(this.solutionSize, bufferWriter.buffer, bufferWriter.offset)
-    bufferWriter.offset += varuint.encode.bytes
-    bufferWriter.writeSlice(this.solution)
-  } else {
-    // Not sure sure why the nonce is interpreted as UInt 32 and not a slice in bitcoin
-    bufferWriter.writeUInt32(this.nonce)
-  }
+  // Not sure sure why the nonce is interpreted as UInt 32 and not a slice in bitcoin
+  bufferWriter.writeUInt32(this.nonce)
 
   if (headersOnly || !this.transactions) return buffer
 
