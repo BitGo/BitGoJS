@@ -151,9 +151,10 @@ export class Algo extends BaseCoin {
     if (!keys.prv) {
       throw new Error('Missing prv in key generation.');
     }
+
     return {
-      pub: keys.pub,
-      prv: keys.prv,
+      pub: keyPair.getAddress(),
+      prv: accountLib.Algo.algoUtils.encodeSeed(Buffer.from(keyPair.getSigningKey())),
     };
   }
 
@@ -164,7 +165,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Algo.algoUtils.isValidPublicKey(pub);
+    return accountLib.Algo.algoUtils.isValidAddress(pub);
   }
 
   /**
@@ -176,7 +177,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Algo.algoUtils.isValidPrivateKey(prv);
+    return accountLib.Algo.algoUtils.isValidSeed(prv);
   }
 
   /**
@@ -199,7 +200,7 @@ export class Algo extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       const algoKeypair = new accountLib.Algo.KeyPair({ prv: key.prv });
       if (Buffer.isBuffer(message)) {
-        message = message.toString('hex');
+        message = message.toString('base64');
       }
       return algoKeypair.signMessage(message);
     })
@@ -342,7 +343,9 @@ export class Algo extends BaseCoin {
       }
       return key;
     });
-    const numberSigners = signers.length;
+    // TODO(https://bitgoinc.atlassian.net/browse/STLX-6067): fix the number of signers using
+    // should be similar to other coins implementation
+    const numberSigners = Math.trunc(signers.length / 2) + 1;
     return { txHex, addressVersion, signers, prv, isHalfSigned, numberSigners };
   }
 
@@ -371,7 +374,7 @@ export class Algo extends BaseCoin {
       if (!transaction) {
         throw new Error('Invalid transaction');
       }
-      const signedTxHex = Buffer.from(transaction.toBroadcastFormat()).toString('hex');
+      const signedTxHex = Buffer.from(transaction.toBroadcastFormat()).toString('base64');
       if (numberSigners === 1) {
         return { txHex: signedTxHex };
       } else if (isHalfSigned) {

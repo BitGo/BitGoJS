@@ -99,7 +99,7 @@ describe('ALGO:', function () {
     }) {
       const txBuilder = buildBaseTransferTransaction({ sender, destination, amount, memo });
       txBuilder.numberOfSigners(1);
-      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
       return await txBuilder.build();
     };
 
@@ -119,8 +119,8 @@ describe('ALGO:', function () {
       const txBuilder = buildBaseTransferTransaction({ sender: senders[0], destination, amount, memo });
       txBuilder.numberOfSigners(2);
       txBuilder.setSigners(senders);
-      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
-      txBuilder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+      txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
+      txBuilder.sign({ key: AlgoResources.accounts.account3.prvKey });
       return await txBuilder.build();
     };
 
@@ -299,7 +299,7 @@ describe('ALGO:', function () {
     }) {
       const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
       txBuilder.numberOfSigners(1);
-      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
       return await txBuilder.build();
     };
 
@@ -424,7 +424,7 @@ describe('ALGO:', function () {
     }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender, memo });
       txBuilder.numberOfSigners(1);
-      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+      txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
       return await txBuilder.build();
     };
 
@@ -440,8 +440,8 @@ describe('ALGO:', function () {
       const txBuilder = buildBaseKeyRegTransaction({ sender: senders[0], memo });
       txBuilder.numberOfSigners(2);
       txBuilder.setSigners(senders.map(({ address }) => address));
-      txBuilder.sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
-      txBuilder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+      txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
+      txBuilder.sign({ key: AlgoResources.accounts.account3.prvKey });
       return await txBuilder.build();
     };
 
@@ -581,7 +581,7 @@ describe('ALGO:', function () {
           keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
           addressVersion: 1,
         },
-        prv: AlgoResources.accounts.account1.secretKey.toString('hex'),
+        prv: AlgoResources.accounts.account1.prvKey,
       });
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.signed);
     });
@@ -596,7 +596,7 @@ describe('ALGO:', function () {
           keys: [AlgoResources.accounts.account1.pubKey.toString('hex'), AlgoResources.accounts.account3.pubKey.toString('hex')],
           addressVersion: 1,
         },
-        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+        prv: AlgoResources.accounts.account3.prvKey,
       });
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
     });
@@ -632,9 +632,24 @@ describe('ALGO:', function () {
           keys: [AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address],
           addressVersion: 1,
         },
-        prv: AlgoResources.accounts.account3.secretKey.toString('hex'),
+        prv: AlgoResources.accounts.account3.prvKey,
       });
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
+    });
+  });
+
+  describe('Generate wallet key pair: ', () => {
+    it('should generate key pair', () => {
+      const kp = basecoin.generateKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+
+    it('should generate key pair from seed', () => {
+      const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+      const kp = basecoin.generateKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
     });
   });
 });
