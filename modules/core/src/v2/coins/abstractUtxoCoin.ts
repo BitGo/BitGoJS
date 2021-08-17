@@ -1362,31 +1362,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Calculate the hash to verify the signature against
-   * @param transaction Transaction object
-   * @param inputIndex
-   * @param pubScript
-   * @param amount The previous output's amount
-   * @param hashType
-   * @param isSegwitInput
-   * @returns {*}
-   */
-  calculateSignatureHash(
-    transaction: any,
-    inputIndex: number,
-    pubScript: Buffer,
-    amount: number,
-    hashType: number,
-    isSegwitInput: boolean
-  ): Buffer {
-    if (isSegwitInput) {
-      return transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
-    } else {
-      return transaction.hashForSignature(inputIndex, pubScript, hashType);
-    }
-  }
-
-  /**
    * Verify the signature on a (half-signed) transaction
    * @param transaction bitcoinjs-lib tx object
    * @param inputIndex The input whererfore to check the signature
@@ -1405,6 +1380,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       publicKey?: string;
     } = {}
   ): boolean {
+    if (transaction.network !== this.network) {
+      throw new Error(`network mismatch`);
+    }
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(
       transaction,
       inputIndex
@@ -1461,8 +1439,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           // missing hashType byte - signature cannot be validated
           return false;
         }
-        const signatureHash = this.calculateSignatureHash(
-          transaction,
+        const signatureHash = transaction.hashForSignatureByNetwork(
           inputIndex,
           pubScript,
           amount,

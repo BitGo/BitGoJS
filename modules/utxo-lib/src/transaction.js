@@ -63,7 +63,13 @@ Transaction.SIGHASH_ALL = 0x01
 Transaction.SIGHASH_NONE = 0x02
 Transaction.SIGHASH_SINGLE = 0x03
 Transaction.SIGHASH_ANYONECANPAY = 0x80
-Transaction.SIGHASH_BITCOINCASHBIP143 = 0x40
+/**
+ * Enable BIP143 hashing with custom forkID
+ * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
+ */
+Transaction.SIGHASH_FORKID = 0x40
+/** @deprecated use SIGHASH_FORKID */
+Transaction.SIGHASH_BITCOINCASHBIP143 = Transaction.SIGHASH_FORKID
 Transaction.ADVANCED_TRANSACTION_MARKER = 0x00
 Transaction.ADVANCED_TRANSACTION_FLAG = 0x01
 
@@ -581,22 +587,58 @@ Transaction.prototype.hashForSignatureByNetwork = function (
   isSegwit,
 ) {
   switch (coins.getMainnet(this.network)) {
-    case networks.bitcoingold:
-      return this.hashForGoldSignature(inIndex, prevoutScript, value, hashType, isSegwit)
-    case networks.bitcoincash:
-    case networks.bitcoinsv:
-      return this.hashForCashSignature(inIndex, prevoutScript, value, hashType)
     case networks.zcash:
       return this.hashForZcashSignature(inIndex, prevoutScript, value, hashType)
-    default:
-      if (isSegwit) {
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+      /*
+        Bitcoin Cash supports a FORKID flag. When set, we hash using hashing algorithm
+         that is used for segregated witness transactions (defined in BIP143).
+
+        The flag is also used by BitcoinSV and BitcoinGold
+
+        https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
+       */
+      var addForkId = hashType & Transaction.SIGHASH_FORKID > 0
+
+      if (addForkId) {
+        /*
+          ``The sighash type is altered to include a 24-bit fork id in its most significant bits.''
+          We also use unsigned right shift operator `>>>` to cast to UInt32
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
+         */
+        hashType = (hashType | this.network.forkId << 8) >>> 0
         return this.hashForWitnessV0(inIndex, prevoutScript, value, hashType)
-      } else {
-        return this.hashForSignature(inIndex, prevoutScript, hashType)
       }
   }
 
-  throw new Error('invalid state') // eslint-disable-line
+  if (isSegwit) {
+    return this.hashForWitnessV0(inIndex, prevoutScript, value, hashType)
+  } else {
+    return this.hashForSignature(inIndex, prevoutScript, hashType)
+  }
+}
+
+/** @deprecated use hashForSignatureByNetwork */
+/* istanbul ignore next */
+Transaction.prototype.hashForCashSignature = function (...args) {
+  if (
+    coins.getMainnet(this.network) !== networks.bitcoincash &&
+    coins.getMainnet(this.network) !== networks.bitcoinsv
+  ) {
+    throw new Error(`called hashForCashSignature on transaction with network ${coins.getNetworkName(this.network)}`)
+  }
+  return this.hashForSignatureByNetwork(...args)
+}
+
+/** @deprecated use hashForSignatureByNetwork */
+/* istanbul ignore next */
+Transaction.prototype.hashForGoldSignature = function (...args) {
+  if (coins.getMainnet(this.network) !== networks.bitcoingold) {
+    throw new Error(`called hashForGoldSignature on transaction with network ${coins.getNetworkName(this.network)}`)
+  }
+  return this.hashForSignatureByNetwork(...args)
 }
 
 /**
@@ -803,58 +845,6 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   bufferWriter.writeUInt32(this.locktime)
   bufferWriter.writeUInt32(hashType)
   return bcrypto.hash256(bufferWriter.buffer)
-}
-
-/**
- * Hash transaction for signing a specific input for Bitcoin Cash.
- */
-Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, inAmount, hashType) {
-  typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
-
-  // This function works the way it does because Bitcoin Cash
-  // uses BIP143 as their replay protection, AND their algo
-  // includes `forkId | hashType`, AND since their forkId=0,
-  // this is a NOP, and has no difference to segwit. To support
-  // other forks, another parameter is required, and a new parameter
-  // would be required in the hashForWitnessV0 function, or
-  // it could be broken into two..
-
-  // BIP143 sighash activated in BitcoinCash via 0x40 bit
-  if (hashType & Transaction.SIGHASH_BITCOINCASHBIP143) {
-    if (types.Null(inAmount)) {
-      throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
-    }
-    return this.hashForWitnessV0(inIndex, prevOutScript, inAmount, hashType)
-  } else {
-    return this.hashForSignature(inIndex, prevOutScript, hashType)
-  }
-}
-
-/**
- * Hash transaction for signing a specific input for Bitcoin Gold.
- */
-Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, isSegwit) {
-  typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
-
-  // Bitcoin Gold also implements segregated witness
-  // therefore we can pull out the setting of nForkHashType
-  // and pass it into the functions.
-
-  var nForkHashType = hashType
-  var fUseForkId = (hashType & Transaction.SIGHASH_BITCOINCASHBIP143) > 0
-  if (fUseForkId) {
-    nForkHashType |= this.network.forkId << 8
-  }
-
-  // BIP143 sighash activated in BitcoinCash via 0x40 bit
-  if (isSegwit || fUseForkId) {
-    if (types.Null(inAmount)) {
-      throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
-    }
-    return this.hashForWitnessV0(inIndex, prevOutScript, inAmount, nForkHashType)
-  } else {
-    return this.hashForSignature(inIndex, prevOutScript, nForkHashType)
-  }
 }
 
 Transaction.prototype.getHash = function () {
