@@ -63,6 +63,10 @@ Transaction.SIGHASH_ALL = 0x01
 Transaction.SIGHASH_NONE = 0x02
 Transaction.SIGHASH_SINGLE = 0x03
 Transaction.SIGHASH_ANYONECANPAY = 0x80
+/**
+ * Enable BIP143 hashing with custom forkID
+ * https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
+ */
 Transaction.SIGHASH_FORKID = 0x40
 /** @deprecated use SIGHASH_FORKID */
 Transaction.SIGHASH_BITCOINCASHBIP143 = Transaction.SIGHASH_FORKID
@@ -585,17 +589,27 @@ Transaction.prototype.hashForSignatureByNetwork = function (
   switch (coins.getMainnet(this.network)) {
     case networks.zcash:
       return this.hashForZcashSignature(inIndex, prevoutScript, value, hashType)
-    case networks.bitcoingold:
-    case networks.bitcoinsv:
     case networks.bitcoincash:
-      if (hashType & Transaction.SIGHASH_FORKID) {
-        // https://github.com/BTCGPU/BTCGPU/blob/71894be/src/script/interpreter.h#L31-L36
-        return this.hashForWitnessV0(
-          inIndex, prevoutScript, value,
-          // use unsigned right shift operator `>>>` to cast to UInt32
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
-          (hashType | (this.network.forkId << 8)) >>> 0
-        )
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+      /*
+        Bitcoin Cash supports a FORKID flag. When set, we hash using hashing algorithm
+         that is used for segregated witness transactions (defined in BIP143).
+
+        The flag is also used by BitcoinSV and BitcoinGold
+
+        https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
+       */
+      var addForkId = hashType & Transaction.SIGHASH_FORKID > 0
+
+      if (addForkId) {
+        /*
+          ``The sighash type is altered to include a 24-bit fork id in its most significant bits.''
+          We also use unsigned right shift operator `>>>` to cast to UInt32
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
+         */
+        hashType = (hashType | this.network.forkId << 8) >>> 0
+        return this.hashForWitnessV0(inIndex, prevoutScript, value, hashType)
       }
   }
 
