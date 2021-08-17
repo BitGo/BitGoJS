@@ -509,6 +509,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 
   if (coins.isZcash(this.network)) {
     if (!this.network.consensusBranchId.hasOwnProperty(this.tx.version)) {
+      /* istanbul ignore next */
       throw new Error('Unsupported Zcash transaction')
     }
     this.tx.overwintered = (overwinter ? 1 : 0)
@@ -519,9 +520,11 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 
 TransactionBuilder.prototype.setConsensusBranchId = function (consensusBranchId) {
   if (!coins.isZcash(this.network)) {
+    /* istanbul ignore next */
     throw new Error('consensusBranchId can only be set for Zcash transactions')
   }
   if (!this.inputs.every(function (input) { return input.signatures === undefined })) {
+    /* istanbul ignore next */
     throw new Error('Changing the consensusBranchId for a partially signed transaction would invalidate signatures')
   }
   typeforce(types.UInt32, consensusBranchId)
@@ -530,6 +533,7 @@ TransactionBuilder.prototype.setConsensusBranchId = function (consensusBranchId)
 
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+    /* istanbul ignore next */
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network: ' +
       getNetworkName(this.network) + ', version: ' + this.tx.version)
   }
@@ -539,6 +543,7 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
 
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+    /* istanbul ignore next */
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network: ' +
       getNetworkName(this.network) + ', version: ' + this.tx.version)
   }

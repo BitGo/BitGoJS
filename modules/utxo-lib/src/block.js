@@ -13,6 +13,7 @@ var Transaction = require('./transaction')
 function Block (network) {
   typeforce(types.maybe(types.Network), network)
   if (coins.isZcash(network)) {
+    /* istanbul ignore next */
     throw new Error('unsupported network')
   }
   network = network || networks.bitcoin

@@ -161,16 +161,19 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     if (tx.isSaplingCompatible()) {
       tx.valueBalance = bufferReader.readSlice(8)
       if (!tx.valueBalance.equals(VALUE_INT64_ZERO)) {
+        /* istanbul ignore next */
         throw new Error(`unsupported valueBalance`)
       }
 
       var nShieldedSpend = bufferReader.readVarInt()
       if (nShieldedSpend !== 0) {
+        /* istanbul ignore next */
         throw new Error(`shielded spend not supported`)
       }
 
       var nShieldedOutput = bufferReader.readVarInt()
       if (nShieldedOutput !== 0) {
+        /* istanbul ignore next */
         throw new Error(`shielded output not supported`)
       }
     }
@@ -178,6 +181,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     if (tx.supportsJoinSplits()) {
       var joinSplitsLen = bufferReader.readVarInt()
       if (joinSplitsLen !== 0) {
+        /* istanbul ignore next */
         throw new Error(`joinSplits not supported`)
       }
     }
@@ -285,6 +289,7 @@ Transaction.prototype.byteLength = function () {
 
 Transaction.prototype.zcashTransactionByteLength = function () {
   if (!coins.isZcash(this.network)) {
+    /* istanbul ignore next */
     throw new Error('zcashTransactionByteLength can only be called when using Zcash network')
   }
   var byteLength = 0
@@ -634,10 +639,12 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
 Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType) {
   typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
   if (!coins.isZcash(this.network)) {
+    /* istanbul ignore next */
     throw new Error('hashForZcashSignature can only be called when using Zcash network')
   }
 
   if (inIndex >= this.ins.length && inIndex !== VALUE_UINT64_MAX) {
+    /* istanbul ignore next */
     throw new Error('Input index is out of range')
   }
 
@@ -703,8 +710,8 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
 
     return this.getBlake2bHash(bufferWriter.buffer, personalization)
   }
-  // TODO: support non overwinter transactions
 
+  /* istanbul ignore next */
   throw new Error(`unsupported version`)
 }
 
