@@ -1633,33 +1633,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param keys
    */
   createMultiSigAddress(addressType: string, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
-    function createWitnessProgram(inputScript) {
-      const witnessScriptHash = utxolib.crypto.sha256(inputScript);
-      return utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
+    if (signatureThreshold !== 2) {
+      throw new Error(`signatureThreshold must be 2, got ${signatureThreshold}`);
     }
-
-    const multiSigScript = utxolib.script.multisig.output.encode(signatureThreshold, keys);
-    let outputScript, redeemScript, witnessScript;
-    switch (addressType) {
-      case Codes.UnspentTypeTcomb('p2sh'):
-        const multisigScriptHash = utxolib.crypto.hash160(multiSigScript);
-        outputScript = utxolib.script.scriptHash.output.encode(multisigScriptHash);
-        redeemScript = multiSigScript;
-        break;
-      case Codes.UnspentTypeTcomb('p2shP2wsh'):
-        const witnessProgram = createWitnessProgram(multiSigScript);
-        const witnessProgramHash = utxolib.crypto.hash160(witnessProgram);
-        outputScript = utxolib.script.scriptHash.output.encode(witnessProgramHash);
-        redeemScript = witnessProgram;
-        witnessScript = multiSigScript;
-        break;
-      case Codes.UnspentTypeTcomb('p2wsh'):
-        outputScript = createWitnessProgram(multiSigScript);
-        witnessScript = multiSigScript;
-        break;
-      default:
-        throw new Error(`unexpected addressType ${addressType}`);
+    if (keys.length !== 3) {
+      throw new Error(`key array length must be 3, got ${keys.length}`);
     }
+    const {
+      scriptPubKey: outputScript,
+      redeemScript,
+      witnessScript,
+    } = utxolib.bitgo.outputScripts.createOutputScript2of3(keys, addressType);
 
     return {
       outputScript,
