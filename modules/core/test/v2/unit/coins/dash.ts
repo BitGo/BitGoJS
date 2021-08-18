@@ -68,21 +68,6 @@ describe('DASH:', function () {
         generatedTestAddress.address.should.equal('8kZACpu5XKRHhFipWKf6UaQx1LCdh4iRMu');
       });
 
-      it('should generate 3/3 non-segwit address', () => {
-        const generatedAddress = coin.generateAddress({ keychains, threshold: 3 });
-        const generatedTestAddress = testCoin.generateAddress({ keychains, threshold: 3 });
-
-        [generatedAddress, generatedTestAddress].map((currentAddress) => {
-          currentAddress.chain.should.equal(0);
-          currentAddress.index.should.equal(0);
-          currentAddress.coinSpecific.outputScript.should.equal('a91476dce7beb23d0e0d53edf5895716d4c80dce609387');
-          currentAddress.coinSpecific.redeemScript.should.equal('5321037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-        });
-
-        generatedAddress.address.should.equal('7dF9896EVYHzc6K76Go3D8yQj6i2yy4SvW');
-        generatedTestAddress.address.should.equal('8qFx5Tz6d5gd4PjNAXnzfWnmccUs9YmxqR');
-      });
-
       it('should validate pub key', () => {
         const { pub } = coin.keychains().create();
         coin.isValidPub(pub).should.equal(true);

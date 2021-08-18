@@ -216,45 +216,6 @@ describe('LTC:', function () {
       tltc.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
-    it('should generate 3/3 p2sh address', () => {
-      const generatedAddress = ltc.generateAddress({ keychains, threshold: 3 });
-      const generatedTestAddress = tltc.generateAddress({ keychains, threshold: 3 });
-
-      [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(0);
-        currentAddress.index.should.equal(0);
-        currentAddress.coinSpecific.outputScript.should.equal('a91476dce7beb23d0e0d53edf5895716d4c80dce609387');
-        currentAddress.coinSpecific.redeemScript.should.equal('5321037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-      });
-
-      generatedAddress.address.should.equal('MJjebqE2dg3nQq43vY7shQEA8FU79jWWUS');
-      generatedTestAddress.address.should.equal('QXSUUhcLK7knxJAk7tnRaQQTAHXerpdjV3');
-    });
-
-    it('should generate 3/3 custom chain p2sh-wrapped segwit address', () => {
-      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
-      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
-      const generatedAddress = ltc.generateAddress({ keychains, threshold: 3, addressType, chain, index: 756 });
-      const generatedTestAddress = tltc.generateAddress({
-        keychains,
-        threshold: 3,
-        addressType,
-        chain,
-        index: 756,
-      });
-
-      [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(chain);
-        currentAddress.index.should.equal(756);
-        currentAddress.coinSpecific.outputScript.should.equal('a914ad395d176042ce737e4f5b65c0eb5de703a4e80087');
-        currentAddress.coinSpecific.redeemScript.should.equal('0020d15d8d124adb4c213905ebb2cec8517faf38ae0ec4f7b4f1cfa358e6cc06a93d');
-        currentAddress.coinSpecific.witnessScript.should.equal('532102bb8096d5c12e8b0ee50dd2b14f63dd09c8494b5a0a730794a0e392a6f2a3b2a8210366dbf2135105dc65eed5173c1acf1a902fc2e9dd366b9a6fa0e682c0fb4c21a32102bf998121d4d09d4305b025b5d2de8a7e954fe96179a1dfc076ad11ad4751c99e53ae');
-      });
-
-      generatedAddress.address.should.equal('MPh5rK4numViA9uYa2soZzfeNBEA6rFUPj');
-      generatedTestAddress.address.should.equal('QcPujBT6bDCihd2EmPYMSzqwQDHhpjb96x');
-    });
-
     it('should validate pub key', () => {
       const { pub } = ltc.keychains().create();
       ltc.isValidPub(pub).should.equal(true);
