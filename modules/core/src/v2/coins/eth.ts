@@ -290,6 +290,7 @@ interface EthTransactionParams extends TransactionParams {
   gasPrice?: number;
   gasLimit?: number;
   hopParams?: HopParams;
+  hop?: boolean;
 }
 
 interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
@@ -1641,13 +1642,13 @@ export class Eth extends BaseCoin {
       if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
         throw new Error(`missing params`);
       }
-      if (txPrebuild.hopTransaction && txPrebuild.isBatch) {
+      if (txParams.hop && txParams.recipients.length > 1) {
         throw new Error(`tx cannot be both a batch and hop transaction`);
       }
       if (txPrebuild.recipients.length !== 1) {
         throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
       }
-      if (txPrebuild.hopTransaction) {
+      if (txParams.hop && txPrebuild.hopTransaction) {
         // Check recipient amount for hop transaction
         if (txParams.recipients.length !== 1) {
           throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
@@ -1673,7 +1674,7 @@ export class Eth extends BaseCoin {
 
         // Check destination address and amount
         yield self.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
-      } else if (txPrebuild.isBatch) {
+      } else if (txParams.recipients.length > 1) {
         // Check total amount for batch transaction
         let expectedTotalAmount = new BigNumber(0);
         for (let i = 0; i < txParams.recipients.length; i++) {
