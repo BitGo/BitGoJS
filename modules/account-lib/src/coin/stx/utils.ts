@@ -353,7 +353,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
 /**
  * Process address into address and memo id
  *
- * @param {String} address the address to process
+ * @param {string} address the address to process
  * @returns {Object} object containing address and memo id
  */
 export function getAddressDetails(address: string): AddressDetails {
@@ -410,8 +410,8 @@ export function normalizeAddress({ address, memoId }: AddressDetails): string {
 /**
  * Return boolean indicating whether input is a valid address with memo id
  *
- * @param {String} address address in the form <address>?memoId=<memoId>
- * @returns {Boolean} true is input is a valid address
+ * @param {string} address address in the form <address>?memoId=<memoId>
+ * @returns {boolean} true is input is a valid address
  */
 export function isValidAddressWithPaymentId(address: string): boolean {
   try {

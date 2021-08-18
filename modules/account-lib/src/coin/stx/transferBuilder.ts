@@ -17,9 +17,11 @@ export class TransferBuilder extends TransactionBuilder {
   private _options: UnsignedTokenTransferOptions | UnsignedMultiSigTokenTransferOptions;
   private _toAddress: string;
   private _amount: BigNum;
+  private _anchorMode: number;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._anchorMode = 3;
   }
 
   initBuilder(tx: Transaction): void {
@@ -52,6 +54,7 @@ export class TransferBuilder extends TransactionBuilder {
       recipient: this._toAddress,
       amount: this._amount,
       memo: this._memo,
+      anchorMode: this._anchorMode,
       network: this._network,
       fee: new BigNum(this._fee.fee),
       nonce: new BigNum(this._nonce),

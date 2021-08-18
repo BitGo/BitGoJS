@@ -11,6 +11,8 @@ export interface TxData {
 export interface SignatureData {
   type: number;
   data: string;
+  index: number;
+  sigHash: string;
 }
 
 export interface StacksTransactionPayload {
