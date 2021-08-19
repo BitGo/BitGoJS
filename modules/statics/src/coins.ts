@@ -754,6 +754,28 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'HDO',
+    'Himalayan Dollar',
+    18,
+    '0x5426635915740813092eeff72158bc492799da5f',
+    UnderlyingAsset.HDO,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'HCN',
+    'Himalayan Coin',
+    18,
+    '0xa05e3efe2771cd04191f3eadb9a99ba3b4bf9d26',
+    UnderlyingAsset.HCN,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     'gusdt',
     'Goerli USDT',
     18,
