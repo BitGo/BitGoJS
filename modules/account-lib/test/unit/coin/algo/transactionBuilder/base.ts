@@ -8,12 +8,14 @@ import {
   InsufficientFeeError,
   KeyPair,
   TransactionBuilder,
+  algoUtils,
 } from '../../../../../src/coin/algo';
 import { Transaction } from '../../../../../src/coin/algo/transaction';
 import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 
 import * as AlgoResources from '../../../../resources/algo';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { EncodedTx } from '../../../../../src/coin/algo/ifaces';
 
 const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;
 
@@ -228,6 +230,44 @@ describe('Algo Transaction Builder', () => {
       should(txnBuilder.getTransaction().getAlgoTransaction()).not.be.undefined();
     });
 
+    it('should assign signers into transaction builder', () => {
+      sinon.stub(algoUtils, 'decodeAlgoTxn').callsFake((txnBytes: Uint8Array | string): EncodedTx => {
+        return {
+          rawTransaction: Buffer.from([]),
+          signed: true,
+          signers: [
+            '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
+            '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+          ],
+          txn: algoTxn,
+        };
+      });
+      txnBuilder.fromImplementation(algosdk.encodeUnsignedTransaction(algoTxn));
+      should(txnBuilder.getTransaction().signers).deepEqual([
+        '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
+        '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+      ]);
+      sinon.restore();
+    });
+
+    it('transaction builder should fail when signers are incorrect', () => {
+      sinon.stub(algoUtils, 'decodeAlgoTxn').callsFake((txnBytes: Uint8Array | string): EncodedTx => {
+        return {
+          rawTransaction: Buffer.from([]),
+          signed: true,
+          signers: [
+            '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA',
+            '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+          ],
+          txn: algoTxn,
+        };
+      });
+      should(() => txnBuilder.fromImplementation(algosdk.encodeUnsignedTransaction(algoTxn))).throw(
+        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address",
+      );
+      sinon.restore();
+    });
+
     // TODO: uncomment after recordKeysFromPrivateKeyInProtocolFormat is implemented
     // in keypair
     /*  it('should sign the transaction', () => {
@@ -266,6 +306,44 @@ describe('Algo Transaction Builder', () => {
         .genesisHash(testnet.genesisHash);
 
       should.throws(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+    });
+
+    it('should build a normal transaction with correct signers', () => {
+      txnBuilder
+        .fee({ fee: '1000' })
+        .isFlatFee(true)
+        .firstRound(1)
+        .lastRound(10)
+        .sender({ address: account1.address })
+        .setSigners([
+          '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
+          '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+        ])
+        .genesisId(testnet.genesisID)
+        .genesisHash(testnet.genesisHash);
+      should(txnBuilder.getTransaction().signers).deepEqual([
+        '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
+        '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+      ]);
+    });
+
+    it('should not build a normal transaction with incorrect signers', () => {
+      should(() =>
+        txnBuilder
+          .fee({ fee: '1000' })
+          .isFlatFee(true)
+          .firstRound(1)
+          .lastRound(10)
+          .sender({ address: account1.address })
+          .setSigners([
+            '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA',
+            '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
+          ])
+          .genesisId(testnet.genesisID)
+          .genesisHash(testnet.genesisHash),
+      ).throw(
+        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address",
+      );
     });
   });
 });

@@ -294,7 +294,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (decodedTxn.signed) {
       this._transaction.signedTransaction = decodedTxn.rawTransaction;
       if (decodedTxn.signers) {
-        this._transaction.signers = decodedTxn.signers;
+        this.setSigners(decodedTxn.signers);
       }
       if (decodedTxn.signedBy) {
         this._transaction.signedBy = decodedTxn.signedBy;
