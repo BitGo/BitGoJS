@@ -5,6 +5,7 @@ import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx'
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { rawPrvToExtendedKeys } from '../../../../../src/utils/crypto';
+import { padMemo } from "../../../../../src/coin/stx/utils";
 
 describe('Stx Transfer Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
@@ -202,6 +203,62 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(txJson.fee.toString(), '180');
     });
 
+    it('get pubkey of a transfer transaction signed 1', async () => {
+      const txBuilder2: any = factory.getTransferBuilder();
+      txBuilder2.from(testData.SIGNED_TRANSACTION_PK_1_3);
+      should.deepEqual(txBuilder2._fromPubKeys, [testData.pub1, testData.pub2, testData.pub3]);
+    });
+
+    it('get pubkey of a transfer transaction signed 2', async () => {
+      const txBuilder2: any = factory.getTransferBuilder();
+      txBuilder2.from(testData.SIGNED_TRANSACTION_PK_2_3);
+      should.deepEqual(txBuilder2._fromPubKeys, [testData.pub1, testData.pub2, testData.pub3]);
+    });
+
+    it('a transfer transaction signed multiple times with mid key no signer', async () => {
+      const builder = initTxBuilder();
+      builder.memo('test');
+      builder.sign({ key: testData.prv1 });
+      builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
+      builder.numberSignatures(2);
+      const tx = await builder.build();
+      const txBuilder2 = factory.getTransferBuilder();
+      txBuilder2.from(tx.toBroadcastFormat());
+      txBuilder2.sign({ key: testData.prv3 });
+      const signedTx = await txBuilder2.build();
+
+      const txJson = signedTx.toJson();
+      should.deepEqual(signedTx.toBroadcastFormat(), testData.SIGNED_TRANSACTION_PK_1_3);
+
+      should.deepEqual(signedTx.signature.length, 2);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
+      should.deepEqual(txJson.payload.memo, padMemo('test'));
+      should.deepEqual(txJson.payload.amount, '1000');
+    });
+
+    it('a transfer transaction signed multiple times with first key no signer', async () => {
+      const builder = initTxBuilder();
+      builder.memo('test');
+      builder.sign({ key: testData.prv2 });
+      builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
+      builder.numberSignatures(2);
+      const tx = await builder.build();
+      const txBuilder2 = factory.getTransferBuilder();
+      txBuilder2.from(tx.toBroadcastFormat());
+      txBuilder2.sign({ key: testData.prv3 });
+      const signedTx = await txBuilder2.build();
+
+      const txJson = signedTx.toJson();
+      should.deepEqual(signedTx.toBroadcastFormat(), testData.SIGNED_TRANSACTION_PK_2_3);
+
+      should.deepEqual(signedTx.signature.length, 2);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
+      should.deepEqual(txJson.payload.memo, padMemo('test'));
+      should.deepEqual(txJson.payload.amount, '1000');
+    });
+
     describe('serialized transactions', () => {
       it('a non signed transfer transaction from serialized', async () => {
         const builder = factory.from(testData.RAW_TX_UNSIGNED);
@@ -211,10 +268,24 @@ describe('Stx Transfer Builder', () => {
         tx2.type.should.equal(TransactionType.Send);
       });
 
-      it('a signed transfer transaction from serilaized', async () => {
+      it('a signed transfer transaction from serialized', async () => {
         const txBuilder = factory.from(testData.SIGNED_TRANSACTION);
         const tx = await txBuilder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION);
+        tx.type.should.equal(TransactionType.Send);
+      });
+
+      it('a signed transfer transaction from serilaized 1', async () => {
+        const txBuilder = factory.from(testData.SIGNED_TRANSACTION_PK_2_3);
+        const tx = await txBuilder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION_PK_2_3);
+        tx.type.should.equal(TransactionType.Send);
+      });
+
+      it('a signed transfer transaction from serilaized 2', async () => {
+        const txBuilder = factory.from(testData.SIGNED_TRANSACTION_PK_1_3);
+        const tx = await txBuilder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION_PK_1_3);
         tx.type.should.equal(TransactionType.Send);
       });
     });
