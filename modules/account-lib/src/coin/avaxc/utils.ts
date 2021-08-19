@@ -24,6 +24,7 @@ const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumC
 
 /**
  * @param {NetworkType} network either mainnet or testnet
+ * @returns {EthereumCommon} Ethereum common configuration object
  */
 export function getCommon(network: NetworkType): EthereumCommon {
   const common = commons.get(network);
@@ -66,6 +67,3 @@ export function isValidEthPublicKey(publicKey: string): boolean {
   const publicKeyBuffer = Buffer.from(publicKeyWithoutPrefix, 'hex');
   return isValidPublic(publicKeyBuffer);
 }
-
-// TODO: add walletSimpleByteCode
-export const walletSimpleByteCode = '';
