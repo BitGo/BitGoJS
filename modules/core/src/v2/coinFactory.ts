@@ -6,6 +6,7 @@ import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
 import {
   Algo,
+  AvaxC,
   Bch,
   Bsv,
   Btc,
@@ -24,6 +25,7 @@ import {
   Stx,
   Susd,
   Talgo,
+  TavaxC,
   Tbch,
   Tbsv,
   Tbtc,
@@ -141,6 +143,8 @@ GlobalCoinFactory.registerCoinConstructor('rbtc', Rbtc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('trbtc', Trbtc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('celo', Celo.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcelo', Tcelo.createInstance);
+GlobalCoinFactory.registerCoinConstructor('avaxc', AvaxC.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tavaxc', TavaxC.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xrp', Xrp.createInstance);
 GlobalCoinFactory.registerCoinConstructor('txrp', Txrp.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xlm', Xlm.createInstance);
