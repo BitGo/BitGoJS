@@ -32,14 +32,13 @@ export interface StacksContractPayload {
 
 export interface ClarityValueJson {
   type: string;
-  val: any | TupleData[];
+  val?: any | TupleData[] | ClarityValueJson;
 }
 
-export interface TupleData {
-  type: string;
-  val: any;
+export interface TupleData extends ClarityValueJson {
   key: string;
 }
+
 export interface SignResponse {
   signature: string;
   recid: number;
