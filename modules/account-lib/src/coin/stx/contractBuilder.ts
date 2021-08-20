@@ -1,20 +1,24 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNum from 'bn.js';
 import {
-  makeUnsignedContractCall,
-  UnsignedContractCallOptions,
-  PayloadType,
-  ContractCallOptions,
-  UnsignedMultiSigContractCallOptions,
-  ClarityValue,
-  ClarityAbiType,
-  encodeClarityValue,
-  tupleCV,
   bufferCV,
+  bufferCVFromString,
+  ClarityAbiType,
+  ClarityType,
+  ClarityValue,
+  ContractCallOptions,
+  encodeClarityValue,
+  makeUnsignedContractCall,
   noneCV,
+  PayloadType,
+  someCV,
+  tupleCV,
+  uintCV,
+  UnsignedContractCallOptions,
+  UnsignedMultiSigContractCallOptions,
 } from '@stacks/transactions';
 import { TransactionType } from '../baseCoin';
-import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAddress } from './utils';
@@ -139,7 +143,7 @@ export class ContractBuilder extends TransactionBuilder {
 
   functionArgs(args: ClarityValueJson[] | ClarityValue[]): this {
     this._functionArgs = args.map((arg) => {
-      if (arg.val) {
+      if (!ClarityType[arg.type]) {
         return this.parseCv(arg);
       } else {
         // got direct clarity value after deserialization in fromImplementation
@@ -149,25 +153,37 @@ export class ContractBuilder extends TransactionBuilder {
     return this;
   }
 
-  private parseCv(arg: ClarityValueJson): ClarityValue | undefined {
-    if (arg.val === 'none') {
-      return noneCV();
-    } else if (arg.type === 'buffer') {
-      return bufferCV(arg.val);
-    } else if (arg.type === 'tuple') {
-      if (arg.val instanceof Array) {
-        const data = {};
-        arg.val.forEach((a) => {
-          data[a.key] = this.parseCv({ type: a.type, val: a.val });
-        });
-        return tupleCV(data);
-      } else {
-        return noneCV();
-      }
-    } else if (typeof arg.val === 'string') {
-      return encodeClarityValue(arg.type as ClarityAbiType, arg.val);
-    } else {
-      return noneCV();
+  private parseCv(arg: ClarityValueJson): ClarityValue {
+    switch (arg.type) {
+      case 'optional':
+        if (arg.val === undefined) {
+          return noneCV();
+        } else {
+          return someCV(this.parseCv(arg.val));
+        }
+      case 'tuple':
+        if (arg.val instanceof Array) {
+          const data = {};
+          arg.val.forEach((a) => {
+            data[a.key] = this.parseCv({ type: a.type, val: a.val });
+          });
+          return tupleCV(data);
+        }
+        throw new InvalidParameterValueError('tuple require Array val');
+
+      case 'buffer':
+        if (typeof arg.val === 'string') {
+          const nval = Number(arg.val);
+          if (nval) {
+            return bufferCV(Buffer.of(nval));
+          }
+          return bufferCVFromString(arg.val);
+        } else if (arg.val instanceof Buffer) {
+          return bufferCV(arg.val);
+        }
+        throw new InvalidParameterValueError('buffer require string or Buffer val');
+      default:
+        return encodeClarityValue(arg.type as ClarityAbiType, arg.val);
     }
   }
 }
