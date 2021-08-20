@@ -594,7 +594,6 @@ export class Eth extends BaseCoin {
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
-      spendAmount: params.recipients[0].amount,
     };
 
     const ethTx = optionalDeps.EthTx.Transaction.fromTxData(ethTxParams).sign(signingKey);
@@ -987,7 +986,6 @@ export class Eth extends BaseCoin {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-        spendAmount: txAmount,
       };
 
       // Build contract call and sign it

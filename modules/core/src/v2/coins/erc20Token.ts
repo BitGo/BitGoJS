@@ -253,7 +253,6 @@ export class Erc20Token extends Eth {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-        spendAmount: txAmount,
       };
 
       // Build contract call and sign it
