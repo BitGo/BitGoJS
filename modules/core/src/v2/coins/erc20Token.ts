@@ -246,24 +246,22 @@ export class Erc20Token extends Eth {
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
-      const txParams = {
+      let tx = Eth.buildTransaction({
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
         value: 0,
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-      };
-
-      // Build contract call and sign it
-      const tx = optionalDeps.EthTx.Transaction.fromTxData(txParams);
+        replayProtectionOptions: params.replayProtectionOptions,
+      });
 
       if (isUnsignedSweep) {
         return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
       }
 
       if (!isKrsRecovery) {
-        tx.sign(backupSigningKey);
+        tx = tx.sign(backupSigningKey);
       }
 
       const signedTx: RecoveryInfo = {
