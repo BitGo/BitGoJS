@@ -9,7 +9,6 @@ import {
   StacksMessageType,
   createStacksPublicKey,
   isSingleSig,
-  TransactionAuthField,
   MultiSigSpendingCondition,
   createTransactionAuthField,
   PubKeyEncoding,

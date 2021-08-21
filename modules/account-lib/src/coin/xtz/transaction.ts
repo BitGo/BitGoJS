@@ -12,7 +12,7 @@ import {
   updateMultisigTransferSignatures,
 } from './multisigUtils';
 import { KeyPair } from './keyPair';
-import { IndexedSignature, Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
+import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
 
 /**

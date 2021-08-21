@@ -13,7 +13,6 @@ import {
   PayloadType,
   someCV,
   tupleCV,
-  uintCV,
   UnsignedContractCallOptions,
   UnsignedMultiSigContractCallOptions,
 } from '@stacks/transactions';

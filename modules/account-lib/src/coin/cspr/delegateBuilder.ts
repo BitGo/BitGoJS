@@ -1,6 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
-import BigNumber from 'bignumber.js';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType, StakingOperationTypes } from '../baseCoin';
@@ -20,7 +19,6 @@ import {
   getTransferAmount,
   getValidatorAddress,
   casperContractHexCode,
-  isValidEd25519Address,
 } from './utils';
 import { DelegateUndelegateContractArgs } from './ifaces';
 

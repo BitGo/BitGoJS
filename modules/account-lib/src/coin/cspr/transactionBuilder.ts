@@ -48,7 +48,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const deployParams = this.getDeployParams();
     const session = this.getSession();
 
-    // @ts-ignore Added because standardPayment expect an external library BigNumber implementation.
     const payment = DeployUtil.standardPayment(_.parseInt(this._fee.gasLimit));
 
     let cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);

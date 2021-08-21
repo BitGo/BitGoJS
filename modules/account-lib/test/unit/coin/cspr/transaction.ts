@@ -60,13 +60,13 @@ describe('Cspr Transaction', () => {
 
   // Creates a deploy instance, required to test signing.
   const getTransferDeploy = (): DeployUtil.Deploy | undefined => {
-    const gasPrice = testData.FEE.gasPrice ? parseInt(testData.FEE.gasPrice) : undefined;
+    const gasPrice = testData.FEE.gasPrice ? parseInt(testData.FEE.gasPrice, 10) : undefined;
     const sourcePublicKey = PublicKey.fromHex(testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
     const deployParams = new DeployUtil.DeployParams(sourcePublicKey, DEFAULT_CHAIN_NAMES.testnet, gasPrice);
 
     const session = DeployUtil.ExecutableDeployItem.newTransfer(1, sourcePublicKey, undefined, 123);
 
-    const payment = DeployUtil.standardPayment(parseInt(testData.FEE.gasLimit));
+    const payment = DeployUtil.standardPayment(parseInt(testData.FEE.gasLimit, 10));
 
     return DeployUtil.makeDeploy(deployParams, session, payment);
   };
@@ -359,9 +359,7 @@ describe('Cspr Transaction', () => {
       });
     });
 
-    it('valid sign', async function () {
-      const tx = getTransaction();
-      // TODO STLX-1174: get and decode encoded transaction
-    });
+    // TODO STLX-1174: get and decode encoded transaction
+    it('valid sign');
   });
 });

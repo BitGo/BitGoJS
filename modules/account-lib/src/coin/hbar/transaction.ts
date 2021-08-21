@@ -224,7 +224,10 @@ export class Transaction extends BaseTransaction {
    * @param encoder - Object encoder
    * @returns {Uint8Array} - encoded object byte array
    */
-  private encode<T extends { constructor: Function }>(obj: T, encoder?: { encode(arg: T): Writer }): Uint8Array {
+  private encode<CtorFn extends { new (): T }, T extends { constructor: CtorFn }>(
+    obj: T,
+    encoder?: { encode(arg: T): Writer },
+  ): Uint8Array {
     if (encoder) {
       return encoder.encode(obj).finish();
     }

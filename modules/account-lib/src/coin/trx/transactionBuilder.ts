@@ -7,7 +7,6 @@ import {
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
-  NotImplementedError,
 } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder } from '../baseCoin';
