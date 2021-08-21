@@ -7,7 +7,6 @@
       "es2016"
     ],
     "declaration": true,
-    "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
