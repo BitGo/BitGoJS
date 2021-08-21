@@ -94,7 +94,7 @@ export class UndelegateBuilder extends TransactionBuilder {
     };
   }
 
-  //region Transfer fields
+  // region Transfer fields
   /**
    * Set the destination address where the funds will be sent,
    *
@@ -123,9 +123,9 @@ export class UndelegateBuilder extends TransactionBuilder {
     return this;
   }
 
-  //endregion
+  // endregion
 
-  //region Validators
+  // region Validators
 
   /**
    * Validate mandatory fields in the class
@@ -141,5 +141,5 @@ export class UndelegateBuilder extends TransactionBuilder {
     }
     super.validateMandatoryFields();
   }
-  //endregion
+  // endregion
 }

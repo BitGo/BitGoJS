@@ -89,7 +89,7 @@ export class ContractBuilder extends TransactionBuilder {
     }
   }
 
-  //region Contract fields
+  // region Contract fields
   /**
    * Set the contract address
    *

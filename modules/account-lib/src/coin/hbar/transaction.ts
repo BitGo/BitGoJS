@@ -99,7 +99,7 @@ export class Transaction extends BaseTransaction {
     return transferData;
   }
 
-  //region getters & setters
+  // region getters & setters
   get txBody(): proto.TransactionBody {
     return this._txBody;
   }
@@ -179,9 +179,9 @@ export class Transaction extends BaseTransaction {
   bodyBytes(bytes: Uint8Array) {
     this.body(proto.Transaction.decode(bytes));
   }
-  //endregion
+  // endregion
 
-  //region helpers
+  // region helpers
   /**
    * Returns this hedera transaction id components in a readable format
    *
@@ -250,5 +250,5 @@ export class Transaction extends BaseTransaction {
   private getHashOf<T>(obj: T): string {
     return this.sha(this.encode(obj));
   }
-  //endregion
+  // endregion
 }

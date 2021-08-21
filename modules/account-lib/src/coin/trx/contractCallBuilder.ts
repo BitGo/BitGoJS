@@ -112,7 +112,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     }
   }
 
-  //region Contract Call fields
+  // region Contract Call fields
   /**
    * Set the source address,
    *
@@ -230,7 +230,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     return this;
   }
 
-  //endregion
+  // endregion
 
   private createTransaction(): void {
     const rawDataHex = this.getRawDataHex();
