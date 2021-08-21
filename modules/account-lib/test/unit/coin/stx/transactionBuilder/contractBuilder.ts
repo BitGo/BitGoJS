@@ -141,7 +141,7 @@ describe('Stx Contract call Builder', () => {
     describe('ParseCV test', () => {
       it('Optional with out value', () => {
         const amount = '400000000';
-        const builder: any = initTxBuilder();
+        const builder = initTxBuilder();
         builder.functionArgs([
           { type: 'uint128', val: amount },
           { type: 'principal', val: testData.ACCOUNT_2.address },
@@ -157,21 +157,22 @@ describe('Stx Contract call Builder', () => {
             },
           },
         ]);
-        should.deepEqual(builder._functionArgs, [
+        should.deepEqual((builder as any)._functionArgs, [
           uintCV(amount),
-            standardPrincipalCV(testData.ACCOUNT_2.address),
-            noneCV(),
-            someCV(tupleCV({
+          standardPrincipalCV(testData.ACCOUNT_2.address),
+          noneCV(),
+          someCV(
+            tupleCV({
               hashbytes: bufferCV(Buffer.from('some-hash')),
-              version: bufferCV(new BigNum(1).toBuffer()) })
-            ),
-          ]
-        );
+              version: bufferCV(new BigNum(1).toBuffer()),
+            }),
+          ),
+        ]);
       });
 
       it('use ClarityValue', () => {
         const amount = '400000000';
-        const builder: any = initTxBuilder();
+        const builder = initTxBuilder();
         builder.functionArgs([
           uintCV(amount),
           standardPrincipalCV(testData.ACCOUNT_2.address),
@@ -183,34 +184,33 @@ describe('Stx Contract call Builder', () => {
             }),
           ),
         ]);
-        should.deepEqual(builder._functionArgs, [
-          [uintCV(amount),
+        should.deepEqual((builder as any)._functionArgs, [
+          uintCV(amount),
           standardPrincipalCV(testData.ACCOUNT_2.address),
-            noneCV(),
-            someCV(tupleCV({
+          noneCV(),
+          someCV(
+            tupleCV({
               hashbytes: bufferCV(Buffer.from('some-hash')),
-              version: bufferCV(new BigNum(1).toBuffer()) })
-            ),
-          ]
-        );
+              version: bufferCV(new BigNum(1).toBuffer()),
+            }),
+          ),
+        ]);
       });
- 
 
       it('Buffer as string', () => {
-        const builder: any = initTxBuilder();
+        const builder = initTxBuilder();
         builder.functionArgs([
           { type: 'buffer', val: 'some-hash' },
-          { type: 'buffer', val: '1'},
+          { type: 'buffer', val: '1' },
         ]);
-        should.deepEqual(builder._functionArgs, [
-          [bufferCV(Buffer.from('some-hash')),
-            bufferCV(new BigNum(1).toBuffer()),
-          ]
-        );
+        should.deepEqual((builder as any)._functionArgs, [
+          bufferCV(Buffer.from('some-hash')),
+          bufferCV(new BigNum(1).toBuffer()),
+        ]);
       });
 
       it('Buffer invalid', () => {
-        const builder: any = initTxBuilder();
+        const builder = initTxBuilder();
 
         should.throws(
           () => builder.functionArgs([{ type: 'buffer', val: 1 }]),
@@ -219,7 +219,7 @@ describe('Stx Contract call Builder', () => {
       });
 
       it('invalid type', () => {
-        const builder: any = initTxBuilder();
+        const builder = initTxBuilder();
 
         should.throws(
           () => builder.functionArgs([{ type: 'unknow', val: 'any-val' }]),
