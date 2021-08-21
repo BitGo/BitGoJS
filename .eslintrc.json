@@ -21,7 +21,6 @@
     "ecmaVersion": 6
   },
   "rules": {
-    //"@typescript-eslint/camelcase": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
     "@typescript-eslint/no-this-alias": "warn",
@@ -77,7 +76,6 @@
     "require-yield": "off",
     "semi": ["error", "always"],
     "space-before-blocks": ["error"],
-    "space-before-function-paren": ["error", { "named": "never", "anonymous": "always", "asyncArrow": "always" }],
     "space-infix-ops": ["error"],
     "spaced-comment": ["error", "always"],
     "switch-colon-spacing": ["error", {"before": false, "after": true}],
