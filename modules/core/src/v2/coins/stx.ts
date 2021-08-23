@@ -200,7 +200,7 @@ export class Stx extends BaseCoin {
   }
 
   parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    throw new Error('Method not implemented.');
+    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**
