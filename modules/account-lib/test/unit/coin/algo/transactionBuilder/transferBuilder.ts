@@ -54,7 +54,7 @@ describe('Algo Transfer Builder', () => {
         .lastRound(100)
         .testnet()
         .numberOfSigners(1)
-        .sign({ key: sender.secretKey.toString('hex') });
+        .sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.from, sender.address);
@@ -108,7 +108,7 @@ describe('Algo Transfer Builder', () => {
     it('should build from raw signed tx', async () => {
       builder.from(AlgoResources.rawTx.transfer.signed);
       builder.numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
@@ -122,7 +122,7 @@ describe('Algo Transfer Builder', () => {
     it('should sign from raw unsigned tx', async () => {
       builder.from(AlgoResources.rawTx.transfer.unsigned);
       builder.numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
       const txJson = tx.toJson();
@@ -152,8 +152,8 @@ describe('Algo Transfer Builder', () => {
         .testnet()
         .numberOfSigners(2)
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
-      builder.sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account1.prvKey });
+      builder.sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.from, msigAddress);
@@ -182,7 +182,7 @@ describe('Algo Transfer Builder', () => {
         .testnet()
         .numberOfSigners(2)
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account1.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.from, msigAddress);
@@ -204,7 +204,7 @@ describe('Algo Transfer Builder', () => {
       builder
         .numberOfSigners(2)
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
-        .sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx = await builder.build();
       should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
       const txJson = tx.toJson();
@@ -239,21 +239,22 @@ describe('Algo Transfer Builder', () => {
         .testnet()
         .numberOfSigners(numberOfSigners)
         .setSigners(addresses)
-        .sign({ key: AlgoResources.accounts.account1.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account1.prvKey });
       const tx1 = await builder.build();
       const builder2 = new TransferBuilder(coins.get('algo'));
       builder2.from(tx1.toBroadcastFormat());
       builder2
         .numberOfSigners(numberOfSigners)
         .setSigners(addresses)
-        .sign({ key: AlgoResources.accounts.account3.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx2 = await builder2.build();
       const builder3 = new TransferBuilder(coins.get('algo'));
       builder3.from(tx2.toBroadcastFormat());
+
       builder3
         .numberOfSigners(numberOfSigners)
         .setSigners(addresses)
-        .sign({ key: AlgoResources.accounts.account4.secretKey.toString('hex') });
+        .sign({ key: AlgoResources.accounts.account4.prvKey });
       const tx3 = await builder3.build();
       const txJson = tx3.toJson();
       should.deepEqual(txJson.from, msigAddress);

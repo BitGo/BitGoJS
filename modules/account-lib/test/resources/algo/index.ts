@@ -7,6 +7,7 @@ export const accounts = {
   account1: {
     secretKey: Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex'),
     pubKey: Buffer.from('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a', 'hex'),
+    prvKey: 'TVQ3DHPP7VNGBOUEJL2JF3BMYRCETRLJPMZGSGLQHOWAGHFOP5QEYTZH2Q',
     address: '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
     voteKey: 'O0lMKXAaqN4h7jVJr8LHY0hvEbK62OJLJkN1soxp9Bg=',
     selectionKey: 'wXjfzAoZhls/zrhgAn8zas/WTktvRuxeps6fkv2au+c=',
@@ -19,11 +20,13 @@ export const accounts = {
   account3: {
     secretKey: Buffer.from('c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b4458f7', 'hex'),
     pubKey: Buffer.from('fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025', 'hex'),
+    prvKey: 'YWVI35B7T6BXX3NXIQXTDXFXWFTNHBJVA5XQSS4FZY5C4C2ELD3YWYSZLU',
     address: '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
   },
   account4: {
     secretKey: Buffer.from('9a78040f4889eac1878793757c54b85705638fad51996dd9135652ff8902d924', 'hex'),
     pubKey: Buffer.from('e8248c0ce9cf48ef41b5648220ac84caf7ef49988503b2ef036fa16ecae7fe1c', 'hex'),
+    prvKey: 'TJ4AID2IRHVMDB4HSN2XYVFYK4CWHD5NKGMW3WITKZJP7CIC3ESKBVGXNA',
     address: '5ASIYDHJZ5EO6QNVMSBCBLEEZL366SMYQUB3F3YDN6QW5SXH7YOLUE3ZIY',
   },
   default: {
