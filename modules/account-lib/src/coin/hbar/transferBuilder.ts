@@ -80,7 +80,7 @@ export class TransferBuilder extends TransactionBuilder {
     return super.signImplementation(key);
   }
 
-  //region Transfer fields
+  // region Transfer fields
   /**
    * Set the destination address where the funds will be sent,
    * it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`
@@ -110,9 +110,9 @@ export class TransferBuilder extends TransactionBuilder {
     return this;
   }
 
-  //endregion
+  // endregion
 
-  //region Validators
+  // region Validators
   validateMandatoryFields(): void {
     if (this._toAddress === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing to');
@@ -122,5 +122,5 @@ export class TransferBuilder extends TransactionBuilder {
     }
     super.validateMandatoryFields();
   }
-  //endregion
+  // endregion
 }

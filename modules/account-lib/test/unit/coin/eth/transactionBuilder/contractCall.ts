@@ -27,7 +27,6 @@ describe('Eth contract call transaction builder', () => {
     txBuilder.sign({ key: '064A3BF8B08A3426E8A719AE5E4115228A75E7A1449CB1B734E51C7DC8A867BE' });
     const tx = await txBuilder.build();
     should.exist(tx);
-    const json = tx.toJson();
     should.equal(tx.toBroadcastFormat(), rawTx);
   });
 

@@ -1,5 +1,4 @@
 import { AddressFormat } from './enum';
-import { KeyPairOptions } from './iface';
 
 /**
  * Base keys and address management.

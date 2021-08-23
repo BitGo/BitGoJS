@@ -21,7 +21,6 @@
     "ecmaVersion": 6
   },
   "rules": {
-    //"@typescript-eslint/camelcase": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
     "@typescript-eslint/no-this-alias": "warn",
@@ -77,10 +76,20 @@
     "require-yield": "off",
     "semi": ["error", "always"],
     "space-before-blocks": ["error"],
-    "space-before-function-paren": ["error", { "named": "never", "anonymous": "always", "asyncArrow": "always" }],
     "space-infix-ops": ["error"],
     "spaced-comment": ["error", "always"],
     "switch-colon-spacing": ["error", {"before": false, "after": true}],
     "yield-star-spacing": ["error", {"before": true, "after": false}]
-  }
+  },
+  "overrides": [
+    {
+      // tsc already checks for usage of undefined variables better than eslint can,
+      // so there's no need to enable this rule for typescript files.
+      // https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/FAQ.md#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+      "files": ["*.ts"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
 }

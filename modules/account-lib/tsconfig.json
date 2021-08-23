@@ -1,12 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
     "outDir": "./dist",
     "rootDir": ".",
-    "esModuleInterop": true,
+    "target": "es5",
     "strictPropertyInitialization": false,
+    "esModuleInterop": true,
     "typeRoots": [
       "./types",
       "../../types",

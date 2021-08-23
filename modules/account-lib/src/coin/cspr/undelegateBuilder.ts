@@ -1,6 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
-import BigNumber from 'bignumber.js';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType, StakingOperationTypes } from '../baseCoin';
@@ -20,7 +19,6 @@ import {
   getTransferAmount,
   getValidatorAddress,
   casperContractHexCode,
-  isValidEd25519Address,
 } from './utils';
 import { DelegateUndelegateContractArgs } from './ifaces';
 
@@ -94,7 +92,7 @@ export class UndelegateBuilder extends TransactionBuilder {
     };
   }
 
-  //region Transfer fields
+  // region Transfer fields
   /**
    * Set the destination address where the funds will be sent,
    *
@@ -123,9 +121,9 @@ export class UndelegateBuilder extends TransactionBuilder {
     return this;
   }
 
-  //endregion
+  // endregion
 
-  //region Validators
+  // region Validators
 
   /**
    * Validate mandatory fields in the class
@@ -141,5 +139,5 @@ export class UndelegateBuilder extends TransactionBuilder {
     }
     super.validateMandatoryFields();
   }
-  //endregion
+  // endregion
 }

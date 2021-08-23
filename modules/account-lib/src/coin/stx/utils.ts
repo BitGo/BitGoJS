@@ -289,7 +289,7 @@ export function getSTXAddressFromPubKeys(
   pubKeys: string[],
   addressVersion: AddressVersion = AddressVersion.MainnetMultiSig,
   addressHashMode: AddressHashMode = AddressHashMode.SerializeP2SH,
-  signaturesRequired: number = 2
+  signaturesRequired = 2,
 ): { address: string; hash160: string } {
   if (pubKeys.length === 0) {
     throw new Error('Invalid number of public keys');

@@ -77,7 +77,7 @@ export class TransferBuilder extends TransactionBuilder {
     }
   }
 
-  //region Transfer fields
+  // region Transfer fields
   /**
    * Set the destination address where the funds will be sent,
    * it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`

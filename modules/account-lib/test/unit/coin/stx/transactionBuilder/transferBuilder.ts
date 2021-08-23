@@ -5,7 +5,7 @@ import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx'
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { rawPrvToExtendedKeys } from '../../../../../src/utils/crypto';
-import { padMemo } from "../../../../../src/coin/stx/utils";
+import { padMemo } from '../../../../../src/coin/stx/utils';
 
 describe('Stx Transfer Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);

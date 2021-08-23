@@ -258,10 +258,6 @@ describe('Eth Transaction builder wallet initialization', function () {
         fee: '10',
         gasLimit: '1000',
       });
-      const source = {
-        prv: sourcePrv,
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.counter(1);
       should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
@@ -273,10 +269,6 @@ describe('Eth Transaction builder wallet initialization', function () {
         fee: '10',
         gasLimit: '1000',
       });
-      const source = {
-        prv: sourcePrv,
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.counter(1);
       txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
       txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());

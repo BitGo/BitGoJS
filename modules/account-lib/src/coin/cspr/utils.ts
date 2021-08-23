@@ -35,8 +35,7 @@ const MIN_MOTES_AMOUNT = new BigNumber(2500000000);
  */
 export function getAccountHash(keys: DefaultKeys): Uint8Array {
   const publicKey = Buffer.from(keys.pub, 'hex'); // first two characters identify a public key
-  const privateKey = keys.prv ? Buffer.from(keys.prv, 'hex') : undefined;
-  return new Keys.Secp256K1(publicKey, privateKey!).accountHash();
+  return Keys.Secp256K1.accountHash(publicKey);
 }
 
 /**
@@ -130,7 +129,7 @@ export function getAddressDetails(address: string): AddressDetails {
     throw new UtilsError(`invalid address with transfer id: ${address}`);
   }
   const transferId = <string>queryDetails.transferId;
-  if (isNaN(parseInt(transferId))) {
+  if (isNaN(parseInt(transferId, 10))) {
     throw new UtilsError(`invalid transfer id: ${transferId}`);
   }
 
@@ -151,7 +150,7 @@ export function normalizeAddress({ address, transferId }: AddressDetails): strin
     throw new UtilsError(`invalid address: ${address}`);
   }
   if (!_.isUndefined(transferId)) {
-    if (isNaN(parseInt(transferId))) {
+    if (isNaN(parseInt(transferId, 10))) {
       throw new Error(`invalid transfer id: ${transferId}`);
     }
     return `${address}?transferId=${transferId}`;

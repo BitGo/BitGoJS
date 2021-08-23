@@ -9,7 +9,8 @@
       "./node_modules/@types",
       "../../node_modules/@types"
     ],
-    "declarationDir": "./dist/types"
+    "declarationDir": "./dist/types",
+    "esModuleInterop": false
   },
   "include": [
     "src/**/*",
