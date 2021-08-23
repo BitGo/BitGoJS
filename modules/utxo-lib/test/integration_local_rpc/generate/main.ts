@@ -20,6 +20,7 @@ import {
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
+import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
@@ -78,7 +79,7 @@ async function createTransactionsForScriptType(
   const depositTxid = await rpc.sendToAddress(address, 1);
   const depositTx = await rpc.getRawTransaction(depositTxid);
   await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, depositTxid);
-  if (!isSupportedSpendType(network, scriptType)) {
+  if (!isScriptType2Of3(scriptType) || !isSupportedSpendType(network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
   }

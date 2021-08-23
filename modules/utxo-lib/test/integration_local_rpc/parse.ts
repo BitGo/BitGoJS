@@ -16,6 +16,7 @@ import {
   scriptTypes,
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
+import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
 const utxolib = require('../../src');
 
@@ -132,6 +133,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
     function getRebuiltTransaction(signKeys?: bip32.BIP32Interface[]) {
       assert.strict(parsedTx.outs.length === 1);
+      assert.strict(isScriptType2Of3(scriptType));
       const recipientScript = parsedTx.outs[0].script;
       return createSpendTransactionFromPrevOutputs(
         fixtureKeys,

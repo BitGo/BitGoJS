@@ -7,6 +7,10 @@ import * as crypto from '../crypto';
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
 
+export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
+  return scriptTypes2Of3.includes(t as ScriptType2Of3);
+}
+
 export type SpendableScript = {
   scriptPubKey: Buffer;
   redeemScript?: Buffer;

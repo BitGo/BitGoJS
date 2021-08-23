@@ -97,7 +97,7 @@ export function getTransactionBuilder(network: Network) {
 
 export function createSpendTransactionFromPrevOutputs(
   keys: bip32.BIP32Interface[],
-  scriptType: ScriptType,
+  scriptType: ScriptType2Of3,
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
   network: Network,
@@ -120,7 +120,7 @@ export function createSpendTransactionFromPrevOutputs(
 
   const { redeemScript, witnessScript } = createOutputScript2of3(
     keys.map((k) => k.publicKey),
-    scriptType as ScriptType2Of3
+    scriptType
   );
 
   prevOutputs.forEach(([, , value], vin) => {
@@ -144,7 +144,7 @@ export function createSpendTransactionFromPrevOutputs(
 
 export function createSpendTransaction(
   keys: KeyTriple,
-  scriptType: ScriptType,
+  scriptType: ScriptType2Of3,
   inputTxid: string,
   inputTxBuffer: Buffer,
   recipientScript: Buffer,
@@ -153,10 +153,6 @@ export function createSpendTransaction(
   const inputTx = utxolib.Transaction.fromBuffer(inputTxBuffer, network);
   if (inputTx.getId() !== inputTxid) {
     throw new Error(`txid mismatch ${inputTx.get()} ${inputTxid}`);
-  }
-
-  if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
-    throw new Error(`invalid scriptType ${scriptType}`);
   }
 
   const { scriptPubKey } = createOutputScript2of3(
