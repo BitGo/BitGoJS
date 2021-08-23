@@ -310,7 +310,7 @@ export abstract class BaseCoin {
   }
 
   /**
-   * Convert a currency amount represented in big units (btc, eth, rmg, xrp, xlm)
+   * Convert a currency amount represented in big units (btc, eth, xrp, xlm)
    * to base units (satoshi, wei, atoms, drops, stroops)
    * @param bigUnits
    */

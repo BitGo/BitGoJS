@@ -32,7 +32,6 @@ export enum CoinFamily {
   HBAR = 'hbar',
   LTC = 'ltc',
   OFC = 'ofc',
-  RMG = 'rmg',
   RBTC = 'rbtc',
   STX = 'stx',
   SUSD = 'susd',
