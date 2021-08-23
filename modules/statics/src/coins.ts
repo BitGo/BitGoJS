@@ -277,7 +277,7 @@ export const coins = CoinMap.fromCoins([
   erc20('dgx', 'Digix', 9, '0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf', UnderlyingAsset.DGX),
   erc20('digg', 'Digg', 9, '0x798d1be841a82a273720ce31c822c61a67a601c3', UnderlyingAsset.DIGG),
   erc20('dmt', 'DMarket', 8, '0x2ccbff3a042c68716ed2a2cb0c544a9f1d1935e1', UnderlyingAsset.DMT),
-  erc20('dodo', 'DMarket', 18, '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd', UnderlyingAsset.DODO),
+  erc20('dodo', 'DODO', 18, '0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd', UnderlyingAsset.DODO),
   erc20('dpi', 'DeFi Pulse Index', 18, '0x1494ca1f11d487c2bbe4543e90080aeba4ba3c2b', UnderlyingAsset.DPI),
   erc20('drpu', 'DRP Utility', 8, '0xe30e02f049957e2a5907589e06ba646fb2c321ba', UnderlyingAsset.DRPU),
   erc20('drv', 'Drive', 18, '0x0b9d89a71bdabd231d4d497b7b7b879740d739c4', UnderlyingAsset.DRV),
@@ -339,7 +339,7 @@ export const coins = CoinMap.fromCoins([
   erc20('gno', 'Gnosis', 18, '0x6810e776880c02933d47db1b9fc05908e5386b96', UnderlyingAsset.GNO),
   erc20('gnt', 'Golem', 18, '0xa74476443119a942de498590fe1f2454d7d4ac0d', UnderlyingAsset.GNT),
   erc20('gods', 'Gods Unchained', 18, '0xccc8cb5229b0ac8069c51fd58367fd1e622afd97', UnderlyingAsset.GODS),
-  erc20('gog', 'Gods Unchained', 18, '0xfba8dc72d0e1f5067d3b52a1f2cbb27cf6aa673c', UnderlyingAsset.GOG),
+  erc20('gog', 'Guild of Guardians', 18, '0xfba8dc72d0e1f5067d3b52a1f2cbb27cf6aa673c', UnderlyingAsset.GOG),
   erc20('gold', 'XBullion Token', 8, '0x0e573fdd3c5acf3a74f1775b0f9823a1a0e2b86b', UnderlyingAsset.GOLD),
   erc20('got', 'GOExchange', 18, '0xf11f2550769dac4226731b7732dd4e17e72b1b01', UnderlyingAsset.GOT),
   erc20('grt', 'The Graph', 18, '0xc944e90c64b2c07662a292be6244bdf05cda44a7', UnderlyingAsset.GRT),
@@ -754,7 +754,7 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
-    'HDO',
+    'hdo',
     'Himalayan Dollar',
     18,
     '0x5426635915740813092eeff72158bc492799da5f',
@@ -765,7 +765,7 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
-    'HCN',
+    'hcn',
     'Himalayan Coin',
     18,
     '0xa05e3efe2771cd04191f3eadb9a99ba3b4bf9d26',
