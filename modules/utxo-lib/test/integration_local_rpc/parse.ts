@@ -17,24 +17,12 @@ import {
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
+import { Transaction } from './generate/types';
 
 const utxolib = require('../../src');
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
-
-type Output = {
-  value: number;
-  script: Buffer;
-};
-
-interface Transaction {
-  network: Network;
-  ins: Input[];
-  outs: Output[];
-  hashForSignatureByNetwork(index: number, pubScript: Buffer, amount: number, hashType: number, isSegwit: boolean);
-  toBuffer(): Buffer;
-}
 
 function getTxidFromHash(buf: Buffer): string {
   return Buffer.from(buf).reverse().toString('hex');
