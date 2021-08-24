@@ -302,6 +302,7 @@ export enum UnderlyingAsset {
   EFI = 'efi',
   EGL = 'egl',
   EGLD = 'egld',
+  EGOLD = 'egold',
   ELF = 'elf',
   EMX = 'emx',
   ENG = 'eng',
