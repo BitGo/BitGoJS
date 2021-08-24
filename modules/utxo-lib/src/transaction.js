@@ -490,7 +490,7 @@ Transaction.prototype.hashForSignatureByNetwork = function (
 
         https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
        */
-      var addForkId = hashType & Transaction.SIGHASH_FORKID > 0
+      var addForkId = (hashType & Transaction.SIGHASH_FORKID) > 0
 
       if (addForkId) {
         /*
