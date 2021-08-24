@@ -32,8 +32,6 @@ any errant files. Avoid using npm commands and stick with yarn.
 
 BitGoJS checks all commits against the [Conventional Commit Standard](https://www.conventionalcommits.org/en/v1.0.0/), and this is checked by CI when creating new pull requests using commitlint.
 
-To assist with creating valid commit messages, an interactive tool called [Commitizen](https://github.com/commitizen/cz-cli) is set up to run as a `prepare-commit-msg` hook (that is, it will run just before writing a new commit message). Please note that using commitizen is optional, and can be disabled by running `rm .git/hooks/prepare-commit-msg` from the root of the repository. This can be useful if you are using other tools to author commit messages, and can't use the tool interactively. Commits will still be checked by drone, so creating standard compliant commits is up to the developer if commitizen is not used.
-
 # Running tests
 
 Modules typically provide both unit and integration tests.

@@ -6,8 +6,6 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
-    "commitizen": "^4.2.1",
-    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -51,8 +49,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lerna run --stream --parallel precommit",
-      "prepare-commit-msg": "exec < /dev/tty && cz --hook || true"
+      "pre-commit": "lerna run --stream --parallel precommit"
     }
   },
   "resolutions": {
@@ -60,10 +57,5 @@
     "underscore": "^1.12.1",
     "trim-newlines": "^3.0.0",
     "normalize-url": "^6.0.1"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
   }
 }
