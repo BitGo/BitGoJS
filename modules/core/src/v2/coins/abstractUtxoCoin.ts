@@ -78,16 +78,19 @@ export interface TransactionExplanation {
   outputAmount: string;
   changeAmount: number;
   fee: TransactionFee;
+
+  inputSignatures: number[];
+  signatures: number | false;
 }
 
 export interface Unspent {
   id: string;
-  value: string;
+  value: number;
 }
 
 export interface ExplainTransactionOptions {
   txHex: string;
-  txInfo?: { changeAddresses: string[]; unspents: Unspent[] };
+  txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
   feeInfo?: string;
 }
 
