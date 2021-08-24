@@ -1,11 +1,13 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
 import { Transaction, Triple } from './types';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
 import { getMainnet, isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
+import { getDefaultSigHash } from '../../../src/bitgo/signature';
 
 const utxolib = require('../../../src');
 
@@ -19,14 +21,10 @@ export function requiresSegwit(scriptType: ScriptType): boolean {
   return scriptType === 'p2wkh' || scriptType === 'p2wsh' || scriptType === 'p2shP2wsh';
 }
 
-export interface HDNode {
-  getPublicKeyBuffer(): Buffer;
-}
+export type KeyTriple = Triple<bip32.BIP32Interface>;
 
-export type KeyTriple = Triple<HDNode>;
-
-function getKey(seed: string): HDNode {
-  return utxolib.HDNode.fromSeedBuffer(crypto.createHash('sha256').update(seed).digest());
+function getKey(seed: string): bip32.BIP32Interface {
+  return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
 }
 
 export function getKeyTriple(seed: string): KeyTriple {
@@ -63,13 +61,13 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
     case 'p2shP2wsh':
     case 'p2wsh':
       return createOutputScript2of3(
-        keys.map((k) => k.getPublicKeyBuffer()),
+        keys.map((k) => k.publicKey),
         scriptType
       ).scriptPubKey;
   }
 
   const key = keys[0];
-  const pkHash = utxolib.crypto.hash160(key.getPublicKeyBuffer());
+  const pkHash = utxolib.crypto.hash160(key.publicKey);
   switch (scriptType) {
     case 'p2pkh':
       return utxolib.script.pubKeyHash.output.encode(pkHash);
@@ -97,9 +95,56 @@ export function getTransactionBuilder(network: Network) {
   return txb;
 }
 
+export function createSpendTransactionFromPrevOutputs(
+  keys: bip32.BIP32Interface[],
+  scriptType: ScriptType2Of3,
+  prevOutputs: [txid: string, index: number, value: number][],
+  recipientScript: Buffer,
+  network: Network,
+  { signKeys = keys.slice(0, 2) } = {}
+): Transaction {
+  if (signKeys.length !== 1 && signKeys.length !== 2) {
+    throw new Error(`signKeys length must be 1 or 2`);
+  }
+
+  const txBuilder = getTransactionBuilder(network);
+
+  prevOutputs.forEach(([txid, vout]) => {
+    txBuilder.addInput(txid, vout);
+  });
+
+  const inputSum = prevOutputs.reduce((sum, [, , value]) => sum + value, 0);
+  const fee = 1000;
+
+  txBuilder.addOutput(recipientScript, inputSum - fee);
+
+  const { redeemScript, witnessScript } = createOutputScript2of3(
+    keys.map((k) => k.publicKey),
+    scriptType
+  );
+
+  prevOutputs.forEach(([, , value], vin) => {
+    signKeys.forEach((key) => {
+      txBuilder.sign(
+        vin,
+        Object.assign(key, { network }),
+        redeemScript,
+        getDefaultSigHash(network),
+        value,
+        witnessScript
+      );
+    });
+  });
+
+  if (signKeys.length === 1) {
+    return txBuilder.buildIncomplete();
+  }
+  return txBuilder.build();
+}
+
 export function createSpendTransaction(
   keys: KeyTriple,
-  scriptType: ScriptType,
+  scriptType: ScriptType2Of3,
   inputTxid: string,
   inputTxBuffer: Buffer,
   recipientScript: Buffer,
@@ -110,12 +155,8 @@ export function createSpendTransaction(
     throw new Error(`txid mismatch ${inputTx.get()} ${inputTxid}`);
   }
 
-  if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
-    throw new Error(`invalid scriptType ${scriptType}`);
-  }
-
-  const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(
-    keys.map((k) => k.getPublicKeyBuffer()),
+  const { scriptPubKey } = createOutputScript2of3(
+    keys.map((k) => k.publicKey),
     scriptType as ScriptType2Of3
   );
   const matches = inputTx.outs.map((o, vout) => [o, vout]).filter(([o]) => scriptPubKey.equals(o.script));
@@ -123,33 +164,11 @@ export function createSpendTransaction(
     throw new Error(`could not find matching outputs in funding transaction`);
   }
 
-  const txBuilder = getTransactionBuilder(network);
-
-  matches.forEach(([{}, vout]) => {
-    txBuilder.addInput(inputTxid, vout);
-  });
-
-  const inputSum = matches.reduce((sum, [o]) => sum + o.value, 0);
-  const fee = 1000;
-
-  txBuilder.addOutput(recipientScript, inputSum - fee);
-
-  matches.forEach(([output], vin) => {
-    keys.slice(0, 2).forEach((key) => {
-      let sighash: number;
-      switch (getMainnet(network)) {
-        case utxolib.networks.bitcoincash:
-        case utxolib.networks.bitcoinsv:
-        case utxolib.networks.bitcoingold:
-          sighash = utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-          break;
-        default:
-          sighash = utxolib.Transaction.SIGHASH_ALL;
-      }
-
-      txBuilder.sign(vin, key, redeemScript, sighash, output.value, witnessScript);
-    });
-  });
-
-  return txBuilder.build();
+  return createSpendTransactionFromPrevOutputs(
+    keys,
+    scriptType,
+    matches.map(([output, index]) => [inputTxid, index, output.value]),
+    recipientScript,
+    network
+  );
 }
