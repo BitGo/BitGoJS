@@ -491,6 +491,7 @@ export const coins = CoinMap.fromCoins([
   erc20('ringx', 'Ringx Token', 18, '0x7f86c782ec802ac402e0369d2e6d500256f7abc5', UnderlyingAsset.RINGX),
   erc20('rlc', 'Iexec Rlc', 9, '0x607f4c5bb672230e8672085532f7e901544a7375', UnderlyingAsset.RLC),
   erc20('rly', 'Rally', 18, '0xf1f955016ecbcd7321c7266bccfb96c68ea5e49b', UnderlyingAsset.RLY),
+  erc20('rndr', 'Render Token', 18, '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24', UnderlyingAsset.RNDR),
   erc20('ronc', 'RONCoin', 18, '0xf1b819fdb689f43afc161db789800ed799f18388', UnderlyingAsset.RONC),
   erc20('roobee', 'ROOBEE', 18, '0xa31b1767e09f842ecfd4bc471fe44f830e3891aa', UnderlyingAsset.ROOBEE),
   erc20('rubx', 'eToro Russian Ruble', 18, '0xd6d69a3d5e51dbc2636dc332338765fcca71d5d5', UnderlyingAsset.RUBX),

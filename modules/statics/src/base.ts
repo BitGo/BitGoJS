@@ -497,6 +497,7 @@ export enum UnderlyingAsset {
   RINGX = 'ringx',
   RLC = 'rlc',
   RLY = 'rly',
+  RNDR = 'rndr',
   RONC = 'ronc',
   ROOBEE = 'roobee',
   RUBX = 'rubx',
