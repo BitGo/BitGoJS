@@ -10,7 +10,6 @@ const BitGoJS = require('../../../src/index');
 
 describe('Market', function () {
 
-  // Note we are testing all coins except rmg (don't have rmg market data)
   // We start with supported coins, then add 't' to the front of each to get testnet coins
   // We will check whether a coin is in supportedCoins to test whether it is a test or mainnet coin
   // bitcoinaverage gives back different sets of data for each (real coins have more data)

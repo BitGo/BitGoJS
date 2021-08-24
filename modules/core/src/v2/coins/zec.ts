@@ -58,25 +58,6 @@ export class Zec extends AbstractUtxoCoin {
     return txBuilder;
   }
 
-  /**
-   * Calculate the hash to verify the signature against
-   * @param transaction Transaction object
-   * @param inputIndex
-   * @param pubScript
-   * @param amount The previous output's amount
-   * @param hashType
-   * @returns {*}
-   */
-  calculateSignatureHash(
-    transaction: any,
-    inputIndex: number,
-    pubScript: Buffer,
-    amount: number,
-    hashType: number
-  ): Buffer {
-    return transaction.hashForZcashSignature(inputIndex, pubScript, amount, hashType);
-  }
-
   recoveryBlockchainExplorerUrl(url: string) {
     return common.Environments[this.bitgo.getEnv()].zecExplorerBaseUrl + url;
   }

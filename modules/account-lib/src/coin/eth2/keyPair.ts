@@ -1,6 +1,5 @@
 import { BlsKeyPair } from '../baseCoin/blsKeyPair';
 import { DefaultKeys } from '../baseCoin/iface';
-import * as testData from '../../../test/resources/eth2/eth2';
 
 /**
  * Ethereum keys and address management.

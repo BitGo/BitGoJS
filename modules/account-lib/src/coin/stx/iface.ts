@@ -11,6 +11,8 @@ export interface TxData {
 export interface SignatureData {
   type: number;
   data: string;
+  index: number;
+  sigHash: string;
 }
 
 export interface StacksTransactionPayload {
@@ -30,14 +32,13 @@ export interface StacksContractPayload {
 
 export interface ClarityValueJson {
   type: string;
-  val: any | TupleData[];
+  val?: any | TupleData[] | ClarityValueJson;
 }
 
-export interface TupleData {
-  type: string;
-  val: any;
+export interface TupleData extends ClarityValueJson {
   key: string;
 }
+
 export interface SignResponse {
   signature: string;
   recid: number;

@@ -163,20 +163,6 @@ export class Bch extends AbstractUtxoCoin {
   }
 
   /**
-   * Calculate the hash to verify the signature against
-   * @param transaction Transaction object
-   * @param inputIndex
-   * @param pubScript
-   * @param amount The previous output's amount
-   * @param hashType
-   * @param isSegwitInput
-   * @returns {*}
-   */
-  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
-    return transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
-  }
-
-  /**
    *
    * @returns {number}
    */

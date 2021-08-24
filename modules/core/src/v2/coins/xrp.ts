@@ -3,7 +3,7 @@
  */
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import { HDNode, ECPair } from '@bitgo/utxo-lib';
+import { ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
@@ -254,9 +254,12 @@ export class Xrp extends BaseCoin {
         throw new Error('missing prv parameter to sign transaction');
       }
 
-      const userKey = HDNode.fromBase58(prv).getKey();
-      const userPrivateKey: Buffer = userKey.getPrivateKeyBuffer();
-      const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
+      const userKey = bip32.fromBase58(prv);
+      const userPrivateKey = userKey.privateKey;
+      if (!userPrivateKey) {
+        throw new Error(`no privateKey`);
+      }
+      const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
 
       const rippleLib = ripple();
       const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
@@ -637,7 +640,7 @@ export class Xrp extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,

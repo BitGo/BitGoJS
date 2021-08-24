@@ -1,6 +1,17 @@
 import should from 'should';
-import { TEST_ACCOUNT } from '../../../resources/avaxc/avaxc';
-import { isValidEthAddress, isValidEthPrivateKey, isValidEthPublicKey } from '../../../../src/coin/avaxc/utils';
+import { NetworkType } from '@bitgo/statics';
+import { TEST_ACCOUNT, TEST_ACCOUNT_2 } from '../../../resources/avaxc/avaxc';
+import {
+  isValidEthAddress,
+  isValidEthPrivateKey,
+  isValidEthPublicKey,
+  sign,
+  getCommon,
+} from '../../../../src/coin/avaxc/utils';
+import { AvaxC, getBuilder } from '../../../../src/';
+import { TransactionType } from '../../../../src/coin/baseCoin';
+import { KeyPair, TransactionBuilder } from '../../../../src/coin/avaxc';
+import { TxData } from '../../../../src/coin/eth/iface';
 
 describe('AVAX util library', () => {
   describe('keys validations success cases', () => {
@@ -52,6 +63,196 @@ describe('AVAX util library', () => {
 
     it('validate eth address too long', () => {
       should.equal(isValidEthAddress(TEST_ACCOUNT.ethAddress + '00'), false);
+    });
+  });
+
+  describe('sign success cases', () => {
+    let txBuilder: AvaxC.TransactionBuilder;
+    const contractAddress = TEST_ACCOUNT.ethAddress;
+    const initTxBuilder = (): void => {
+      txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+      txBuilder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+      });
+      txBuilder.counter(1);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract(contractAddress);
+      txBuilder.transfer().amount('10000').to(TEST_ACCOUNT_2.ethAddress).contractSequenceId(1);
+    };
+
+    beforeEach(() => {
+      initTxBuilder();
+    });
+
+    it('sign a valid txData with valid KeyPair', async () => {
+      const tx = await txBuilder.build();
+      const txData = tx.toJson();
+
+      should.not.exists(txData.r);
+      should.not.exists(txData.s);
+      should.not.exists(txData.v);
+
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      const signedTx = await sign(txData, keyPair);
+      const txBuilder2 = getBuilder('tavaxc') as TransactionBuilder;
+      txBuilder2.from(signedTx);
+      const tx2 = await txBuilder2.build();
+      const tx2Data = tx2.toJson();
+
+      should.exists(tx2Data.r);
+      should.exists(tx2Data.s);
+      should.exists(tx2Data.v);
+      tx2Data.r.length.should.be.above(0);
+      tx2Data.s.length.should.be.above(0);
+      tx2Data.v.length.should.be.above(0);
+    });
+
+    it('sign txData with gasLimit set as number', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '1',
+        gasPrice: '0x0',
+        nonce: 1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+
+    it('sign txData with gasPrice set as number', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x1',
+        gasPrice: '1',
+        nonce: 1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+
+    it('sign txData with hex gasLimit and gasPrice values', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x1',
+        gasPrice: '0x1',
+        nonce: 1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+
+    it('sign txData with nonce zero', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x1',
+        gasPrice: '0x1',
+        nonce: 0,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+
+    it('sign txData with value set as number', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x1',
+        gasPrice: '0x1',
+        nonce: 0,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+
+    it('sign txData with value set as hex', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x1',
+        gasPrice: '0x1',
+        nonce: 0,
+        value: '0x0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.fulfilled();
+    });
+  });
+
+  describe('sign failure cases', () => {
+    it('sign txData with invalid gasLimit', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '',
+        gasPrice: '0x0',
+        nonce: 1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.rejectedWith(new RegExp('Cannot convert string to buffer.+'));
+    });
+
+    it('sign txData with invalid gasPrice', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x0',
+        gasPrice: '',
+        nonce: 1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.rejectedWith(new RegExp('Cannot convert string to buffer.+'));
+    });
+
+    it('sign txData with invalid nonce', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x0',
+        gasPrice: '0x0',
+        nonce: -1,
+        value: '0',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.rejectedWith(new RegExp('Cannot convert string to buffer.+'));
+    });
+
+    it('sign txData with invalid value', async () => {
+      const txData: TxData = {
+        data: '',
+        gasLimit: '0x0',
+        gasPrice: '0x0',
+        nonce: 1,
+        value: '',
+      };
+      const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
+      sign(txData, keyPair).should.be.rejectedWith(new RegExp('Cannot convert string to buffer.+'));
+    });
+  });
+
+  describe('network common configuration', () => {
+    it('getCommon for mainnet', () => {
+      const common = getCommon(NetworkType.MAINNET);
+      should.equal(common.chainName(), 'mainnet');
+      should.equal(common.hardfork(), 'petersburg');
+      should.equal(common.chainIdBN().toString(), '43114');
+      should.equal(common.networkIdBN().toString(), '1');
+    });
+
+    it('getCommon for testnet', () => {
+      const common = getCommon(NetworkType.TESTNET);
+      should.equal(common.chainName(), 'fuji');
+      should.equal(common.hardfork(), 'petersburg');
+      should.equal(common.chainIdBN().toString(), '43113');
+      should.equal(common.networkIdBN().toString(), '1');
+    });
+
+    it('getCommon for invalid network', () => {
+      should.throws(
+        () => getCommon('invalidNetwork' as NetworkType),
+        (e) => e.message === 'Missing network common configuration',
+      );
     });
   });
 });

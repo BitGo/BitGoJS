@@ -17,7 +17,6 @@ import {
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
-import { HDNode } from '@bitgo/utxo-lib';
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import * as url from 'url';
@@ -190,7 +189,7 @@ export class Eos extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = randomBytes(512 / 8);
     }
-    const extendedKey = HDNode.fromSeedBuffer(seed);
+    const extendedKey = bip32.fromSeed(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
@@ -393,7 +392,10 @@ export class Eos extends BaseCoin {
       const transaction: EosTx = params.txPrebuild.transaction;
 
       const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
+      const privateKeyBuffer = bip32.fromBase58(prv).privateKey;
+      if (!privateKeyBuffer) {
+        throw new Error('no privateKey');
+      }
       const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
       transaction.signatures.push(signature);

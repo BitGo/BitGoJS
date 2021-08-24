@@ -59,20 +59,6 @@ export class Btg extends Btc {
     return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
-  /**
-   * Calculate the hash to verify the signature against
-   * @param transaction Transaction object
-   * @param inputIndex
-   * @param pubScript
-   * @param amount The previous output's amount
-   * @param hashType
-   * @param isSegwitInput
-   * @returns {*}
-   */
-  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput): Buffer {
-    return transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
-  }
-
   recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl;
 

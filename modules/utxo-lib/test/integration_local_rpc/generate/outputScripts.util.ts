@@ -140,6 +140,7 @@ export function createSpendTransaction(
       switch (getMainnet(network)) {
         case utxolib.networks.bitcoincash:
         case utxolib.networks.bitcoinsv:
+        case utxolib.networks.bitcoingold:
           sighash = utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
           break;
         default:

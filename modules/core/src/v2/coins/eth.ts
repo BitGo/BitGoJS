@@ -37,6 +37,7 @@ import { EthereumLibraryUnavailableError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import type * as EthTxLib from '@ethereumjs/tx';
+import type * as EthCommon from '@ethereumjs/common';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -66,9 +67,19 @@ export const optionalDeps = {
     try {
       return require('@ethereumjs/tx');
     } catch (e) {
-      debug('unable to load ethereumjs-tx:');
+      debug('unable to load @ethereumjs/tx');
       debug(e.stack);
-      throw new EthereumLibraryUnavailableError(`ethereumjs-tx`);
+      throw new EthereumLibraryUnavailableError(`@ethereumjs/tx`);
+    }
+  },
+
+  get EthCommon(): typeof EthCommon {
+    try {
+      return require('@ethereumjs/common');
+    } catch (e) {
+      debug('unable to load @ethereumjs/common:');
+      debug(e.stack);
+      throw new EthereumLibraryUnavailableError(`@ethereumjs/common`);
     }
   },
 };
@@ -111,6 +122,10 @@ interface Recipient {
 interface SignFinalOptions {
   txPrebuild: {
     eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
+    replayProtectionOptions?: {
+      chain: string | number;
+      hardfork: string;
+    };
     gasPrice?: string;
     gasLimit: string;
     recipients: Recipient[];
@@ -188,6 +203,24 @@ export interface RecoverOptions {
   krsProvider?: string;
   gasPrice?: number;
   gasLimit?: number;
+  replayProtectionOptions?: {
+    chain: string | number;
+    hardfork: string;
+  };
+}
+
+interface BuildTransactionParams {
+  to: string;
+  nonce?: number;
+  value: number;
+  data?: Buffer;
+  gasPrice?: number;
+  gasLimit?: number;
+  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
+  replayProtectionOptions?: {
+    chain: string | number;
+    hardfork: string;
+  };
 }
 
 export interface RecoveryInfo {
@@ -296,6 +329,46 @@ export class Eth extends BaseCoin {
 
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Eth(bitgo, staticsCoin);
+  }
+
+  static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+    const ethCommon = params.replayProtectionOptions
+      ? new optionalDeps.EthCommon.default({
+          chain: params.replayProtectionOptions.chain,
+          hardfork: params.replayProtectionOptions.hardfork,
+        })
+      : // default to a pre EIP155 hardfork so the chain id is not included in the transaction
+        new optionalDeps.EthCommon.default({
+          chain: optionalDeps.EthCommon.Chain.Mainnet,
+          hardfork: optionalDeps.EthCommon.Hardfork.TangerineWhistle,
+        });
+
+    const baseParams = {
+      to: params.to,
+      nonce: params.nonce,
+      value: params.value,
+      data: params.data,
+    };
+
+    const unsignedEthTx = !!params.eip1559
+      ? optionalDeps.EthTx.FeeMarketEIP1559Transaction.fromTxData(
+          {
+            ...baseParams,
+            maxFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas),
+            maxPriorityFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxPriorityFeePerGas),
+          },
+          { common: ethCommon }
+        )
+      : optionalDeps.EthTx.Transaction.fromTxData(
+          {
+            ...baseParams,
+            gasPrice: new optionalDeps.ethUtil.BN(params.gasPrice),
+            gasLimit: new optionalDeps.ethUtil.BN(params.gasLimit),
+          },
+          { common: ethCommon }
+        );
+
+    return unsignedEthTx;
   }
 
   /**
@@ -594,10 +667,16 @@ export class Eth extends BaseCoin {
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
-      spendAmount: params.recipients[0].amount,
     };
 
-    const ethTx = optionalDeps.EthTx.Transaction.fromTxData(ethTxParams).sign(signingKey);
+    const unsignedEthTx = Eth.buildTransaction({
+      ...ethTxParams,
+      eip1559: params.txPrebuild.eip1559,
+      replayProtectionOptions: params.txPrebuild.replayProtectionOptions,
+    });
+
+    const ethTx = unsignedEthTx.sign(signingKey);
+
     return { txHex: ethTx.serialize().toString('hex') };
   }
 
@@ -758,7 +837,7 @@ export class Eth extends BaseCoin {
    */
   formatForOfflineVault(
     txInfo: UnformattedTxInfo,
-    ethTx: EthTxLib.Transaction,
+    ethTx: EthTxLib.Transaction | EthTxLib.FeeMarketEIP1559Transaction,
     userKey: string,
     backupKey: string,
     gasPrice: Buffer,
@@ -987,7 +1066,6 @@ export class Eth extends BaseCoin {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-        spendAmount: txAmount,
       };
 
       // Build contract call and sign it

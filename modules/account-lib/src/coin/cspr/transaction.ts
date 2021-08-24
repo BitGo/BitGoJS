@@ -266,5 +266,5 @@ export class Transaction extends BaseTransaction {
     this._deploy = deploy;
   }
 
-  //endregion
+  // endregion
 }

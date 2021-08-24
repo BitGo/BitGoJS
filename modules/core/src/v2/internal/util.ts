@@ -5,7 +5,7 @@
 
 /**
  */
-import * as utxolib from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';
@@ -81,18 +81,6 @@ export class Util {
   }
 
   /**
-   * Generate the output script for a BTC P2SH multisig address
-   * @param m
-   * @param pubKeys
-   * @deprecated
-   */
-  static p2shMultisigOutputScript(m: number, pubKeys: Buffer[]) {
-    const redeemScript = utxolib.script.multisig.output.encode(m, pubKeys);
-    const hash = utxolib.crypto.hash160(redeemScript);
-    return utxolib.script.scriptHash.output.encode(hash);
-  }
-
-  /**
    * Utility method for handling arguments of pageable queries
    * @param params
    * @deprecated
@@ -122,7 +110,7 @@ export class Util {
   }
 
   /**
-   * Convert a BTC xpub to an Ethereum address (with 0x) prefix
+   * Convert a BTC xpub to an Ethereum address (with 0x prefix)
    * @param xpub
    * @deprecated
    */
@@ -130,9 +118,7 @@ export class Util {
     if (!isEthAvailable) {
       throw new EthereumLibraryUnavailableError(ethImport);
     }
-    const hdNode = utxolib.HDNode.fromBase58(xpub);
-    const ethPublicKey = hdNode.keyPair.__Q.getEncoded(false).slice(1);
-    return ethUtil.bufferToHex(ethUtil.publicToAddress(ethPublicKey, false));
+    return ethUtil.bufferToHex(ethUtil.publicToAddress(bip32.fromBase58(xpub).publicKey, false));
   }
 
   /**
@@ -141,9 +127,11 @@ export class Util {
    * @deprecated
    */
   static xprvToEthPrivateKey(xprv: string): string {
-    const hdNode = utxolib.HDNode.fromBase58(xprv);
-    const ethPrivateKey: Buffer = hdNode.keyPair.d.toBuffer(32);
-    return ethPrivateKey.toString('hex');
+    const node = bip32.fromBase58(xprv);
+    if (!node.privateKey) {
+      throw new Error(`no privateKey`);
+    }
+    return node.privateKey.toString('hex');
   }
 
   /**

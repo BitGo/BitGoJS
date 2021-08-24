@@ -1103,14 +1103,13 @@ exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ig
 
     const hashType = sigs[sigIndex][sigs[sigIndex].length - 1];
     sigs[sigIndex] = sigs[sigIndex].slice(0, sigs[sigIndex].length - 1); // pop hash type from end
-    let signatureHash;
-    if (isSegwitInput) {
-      signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
-    } else if (isBCH) {
-      signatureHash = transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
-    } else {
-      signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
-    }
+    const signatureHash = transaction.hashForSignatureByNetwork(
+      inputIndex,
+      pubScript,
+      amount,
+      hashType,
+      isSegwitInput
+    );
 
     let validSig = false;
 

@@ -233,7 +233,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  private getTransactionBuilder(): Eth.TransactionBuilder {
+  protected getTransactionBuilder(): Eth.TransactionBuilder {
     return getBuilder(this.getBaseChain()) as Eth.TransactionBuilder;
   }
 }

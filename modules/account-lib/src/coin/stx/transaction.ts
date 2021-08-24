@@ -9,7 +9,6 @@ import {
   StacksMessageType,
   createStacksPublicKey,
   isSingleSig,
-  TransactionAuthField,
   MultiSigSpendingCondition,
   createTransactionAuthField,
   PubKeyEncoding,
@@ -25,6 +24,7 @@ import { KeyPair } from './keyPair';
 export class Transaction extends BaseTransaction {
   private _stxTransaction: StacksTransaction;
   protected _type: TransactionType;
+  private _sigHash: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -38,7 +38,8 @@ export class Transaction extends BaseTransaction {
   async sign(keyPair: KeyPair[] | KeyPair, sigHash?: string): Promise<void> {
     const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
     const signer = new TransactionSigner(this._stxTransaction);
-    if (sigHash) signer.sigHash = sigHash;
+    signer.checkOversign = false;
+    signer.sigHash = sigHash ?? this._sigHash ?? this._stxTransaction.verifyBegin();
     for (const kp of keyPairs) {
       const keys = kp.getKeys(kp.getCompressed());
       if (!keys.prv) {
@@ -46,28 +47,34 @@ export class Transaction extends BaseTransaction {
       }
       const privKey = createStacksPrivateKey(keys.prv);
       signer.signOrigin(privKey);
+      this._sigHash = signer.sigHash;
     }
-    this._stxTransaction = signer.getTxInComplete();
   }
 
-  async appendOrigin(pubKeyString: string[]): Promise<void> {
-    const signer = new TransactionSigner(this._stxTransaction);
-    pubKeyString.forEach((pubKey) => {
+  async appendOrigin(pubKeyString: string[] | string): Promise<void> {
+    const pubKeyStrings = pubKeyString instanceof Array ? pubKeyString : [pubKeyString];
+    const signer: TransactionSigner = new TransactionSigner(this._stxTransaction);
+    pubKeyStrings.forEach((pubKey) => {
       signer.appendOrigin(createStacksPublicKey(pubKey));
     });
   }
 
-  async signWithSignatures(signature: SignatureData[], publicKey: string[]): Promise<void> {
+  async signWithSignatures(signature: SignatureData[] | SignatureData, isMultiSig: boolean): Promise<void> {
     if (!signature) {
       throw new SigningError('Missing signatures');
     }
-    if (publicKey.length === 1) {
-      this._stxTransaction = this._stxTransaction.createTxWithSignature(signature[0].data);
+    const signatures = signature instanceof Array ? signature : [signature];
+
+    if (!isMultiSig) {
+      this._stxTransaction = this._stxTransaction.createTxWithSignature(signatures[0].data);
     } else {
-      const authFields = signature.map((sig) => createTransactionAuthField(PubKeyEncoding.Compressed, sig));
+      const authFields = signatures.map((sig) => createTransactionAuthField(PubKeyEncoding.Compressed, sig));
       (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = (
         this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition
       ).fields.concat(authFields);
+    }
+    if (signatures.length > 0) {
+      this._sigHash = signatures[signatures.length - 1].sigHash;
     }
   }
 
@@ -161,7 +168,7 @@ export class Transaction extends BaseTransaction {
 
   private getNonce(): number {
     if (this._stxTransaction.auth.spendingCondition) {
-      return this._stxTransaction.auth.spendingCondition.nonce.toNumber();
+      return Number(this._stxTransaction.auth.spendingCondition.nonce);
     } else {
       throw new InvalidTransactionError('spending condition is null');
     }

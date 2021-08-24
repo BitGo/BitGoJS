@@ -63,7 +63,7 @@ export class TransferBuilder extends TransactionBuilder {
     return super.signImplementation(key);
   }
 
-  //region Transfer fields
+  // region Transfer fields
   /**
    * Set the destination address where the funds will be sent,
    *
@@ -106,9 +106,9 @@ export class TransferBuilder extends TransactionBuilder {
     return this;
   }
 
-  //endregion
+  // endregion
 
-  //region Validators
+  // region Validators
   validateMandatoryFields(): void {
     if (!this._toAddress) {
       throw new BuildTransactionError('Invalid transaction: missing to');
@@ -124,5 +124,5 @@ export class TransferBuilder extends TransactionBuilder {
     }
     super.validateMandatoryFields();
   }
-  //endregion
+  // endregion
 }

@@ -21,12 +21,19 @@ import { RpcClient } from './RpcClient';
 import { wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
+  let minBlocks = 300;
   switch (network) {
     case utxolib.networks.testnet:
       await rpc.createWallet('utxolibtest');
+      break;
+    case utxolib.networks.bitcoingoldTestnet:
+      // The actual BTC/BTG fork flag only gets activated at this height.
+      // On mainnet the height was at 491407 (Around 10/25/2017 12:00 UTC)
+      // Prior to that, signatures that use the BIP143 sighash flag are invalid.
+      // https://github.com/BTCGPU/BTCGPU/blob/71894be9/src/chainparams.cpp#L371
+      minBlocks = 2001;
   }
 
-  const minBlocks = 300;
   const diff = minBlocks - (await rpc.getBlockCount());
 
   if (diff > 0) {

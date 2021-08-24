@@ -29,6 +29,7 @@ export function makeRandomKey(): utxolib.ECPair {
   return utxolib.ECPair.makeRandom({ network: getNetwork() });
 }
 
+/** @deprecated - use bip32 package instead */
 function getKey(network?: utxolib.Network): utxolib.ECPair {
   network = network || getNetwork();
   const k = this.keyPair;
@@ -40,16 +41,10 @@ function getKey(network?: utxolib.Network): utxolib.ECPair {
   return result;
 }
 
+/** @deprecated - use bip32 package instead */
 utxolib.HDNode.prototype.getKey = getKey;
 
-/**
- * Derive a child HDNode from a parent HDNode and index. Uses secp256k1 to speed
- * up public key derivations by 100x vs. bitcoinjs-lib implementation.
- *
- * @param   {HDNode} hdnode  parent HDNode
- * @param   {Number} index   child index
- * @returns {HDNode}         derived HDNode
- */
+/** @deprecated - use bip32 package instead */
 function deriveFast(hdnode: utxolib.HDNode, index: number): utxolib.HDNode {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
