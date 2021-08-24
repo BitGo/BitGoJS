@@ -21,7 +21,7 @@ describe('createOutputScript2of3()', function () {
       const p2wsh = '002095ecaacb606b9ece3821c0111c0a1208dd1d35192809bf8cf6cbad4bbeaca67f';
 
       const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(
-        keys.map((k) => k.getPublicKeyBuffer()),
+        keys.map((k) => k.publicKey),
         scriptType
       );
 

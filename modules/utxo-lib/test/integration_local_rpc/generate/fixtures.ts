@@ -9,6 +9,7 @@ import { Network } from '../../../src/networkTypes';
 import { getNetworkName } from '../../../src/coins';
 import { RpcClient } from './RpcClient';
 import { RpcTransaction } from './RpcTypes';
+import { getKeyTriple } from './outputScripts.util';
 
 export function getFixtureDir(network: Network): string {
   const networkName = getNetworkName(network);
@@ -57,3 +58,5 @@ export async function writeTransactionFixtureWithInputs(
     inputs,
   });
 }
+
+export const fixtureKeys = getKeyTriple('rpctest');
