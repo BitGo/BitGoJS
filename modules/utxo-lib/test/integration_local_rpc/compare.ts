@@ -51,6 +51,10 @@ export function normalizeParsedTransaction(tx, network: Network): NormalizedObje
       break;
     case networks.dash:
       normalizedTx.type = tx.type;
+      if (tx.extraPayload && tx.extraPayload.length) {
+        normalizedTx.extraPayload = tx.extraPayload.toString('hex');
+        normalizedTx.extraPayloadSize = tx.extraPayload.length;
+      }
       break;
     case networks.zcash:
       normalizedTx.overwintered = !!tx.overwintered;
@@ -101,6 +105,10 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       delete normalizedTx.chainlock;
       delete normalizedTx.instantlock;
       delete normalizedTx.instantlock_internal;
+      delete normalizedTx.proRegTx;
+      delete normalizedTx.proUpServTx;
+      delete normalizedTx.proUpRevTx;
+      delete normalizedTx.proUpRegTx;
       break;
     case networks.zcash:
       delete normalizedTx.valueBalanceZat;
