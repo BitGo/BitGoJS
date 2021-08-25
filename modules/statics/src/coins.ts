@@ -761,6 +761,28 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+  terc20(
+    'goerli:hdo',
+    'Himalayan Dollar',
+    18,
+    '0x5426635915740813092eeff72158bc492799da5f',
+    UnderlyingAsset.HDO,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'goerli:hcn',
+    'Himalayan Coin',
+    18,
+    '0xa05e3efe2771cd04191f3eadb9a99ba3b4bf9d26',
+    UnderlyingAsset.HCN,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
   terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
