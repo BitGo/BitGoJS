@@ -26,7 +26,8 @@ describe('Third-Party Fixtures', function () {
           hashType,
           signatureHash,
         ]: SigHashTestVector) {
-          if (isBitcoinGold(network) && hashType & Transaction.SIGHASH_FORKID) {
+          const usesForkId = (hashType & Transaction.SIGHASH_FORKID) > 0;
+          if (isBitcoinGold(network) && usesForkId) {
             // Bitcoin Gold does not test transactions where FORKID is set 🤷
             // https://github.com/BTCGPU/BTCGPU/blob/163928af05/src/test/sighash_tests.cpp#L194-L195
             return;
@@ -49,11 +50,7 @@ describe('Third-Party Fixtures', function () {
             return this.skip();
           }
           vectors.forEach((v) => {
-            try {
-              runCheckHashForSignature(v);
-            } catch (e) {
-              throw e;
-            }
+            runCheckHashForSignature(v);
           });
         });
 
