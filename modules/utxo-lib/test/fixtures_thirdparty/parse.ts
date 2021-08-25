@@ -5,6 +5,8 @@ import * as assert from 'assert';
 import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash } from '../../src/coins';
 import { sigHashTestFile, SigHashTestVector, testFixtureArray, txValidTestFile, TxValidVector } from './fixtures';
 
+import { parseTransactionRoundTrip } from '../transaction_util';
+
 const Transaction = require('../../src/transaction');
 
 describe('Third-Party Fixtures', function () {
@@ -12,13 +14,6 @@ describe('Third-Party Fixtures', function () {
     .filter(isMainnet)
     .forEach((network) => {
       describe(`parse ${getNetworkName(network)}`, function () {
-        function roundTripTest(buf: Buffer) {
-          const tx = Transaction.fromBuffer(buf, network);
-          assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
-          assert.strictEqual(tx.clone().toBuffer().toString('hex'), buf.toString('hex'));
-          return tx;
-        }
-
         function runCheckHashForSignature([
           rawTransaction,
           script,
@@ -33,7 +28,7 @@ describe('Third-Party Fixtures', function () {
             return;
           }
           const buffer = Buffer.from(rawTransaction, 'hex');
-          const transaction = roundTripTest(buffer);
+          const transaction = parseTransactionRoundTrip(buffer, network);
           const hash = transaction.hashForSignatureByNetwork(
             inputIndex,
             Buffer.from(script, 'hex'),
@@ -57,7 +52,7 @@ describe('Third-Party Fixtures', function () {
         testFixtureArray(network, txValidTestFile, function (vectors: TxValidVector[]) {
           vectors.forEach((v: TxValidVector, i) => {
             const [inputs, txHex, verifyFlags] = v;
-            roundTripTest(Buffer.from(txHex, 'hex'));
+            parseTransactionRoundTrip(Buffer.from(txHex, 'hex'), network);
           });
         });
       });

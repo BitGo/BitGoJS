@@ -18,6 +18,7 @@ import {
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
 import { Transaction } from './generate/types';
+import { parseTransactionRoundTrip } from '../transaction_util';
 
 const utxolib = require('../../src');
 
@@ -48,8 +49,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     });
 
     it(`round-trip`, function () {
-      assert.strictEqual(typeof fixture.transaction.hex, 'string');
-      assert.strictEqual(parsedTx.toBuffer().toString('hex'), fixture.transaction.hex);
+      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network);
     });
 
     it(`parseSignatureScript`, function () {
