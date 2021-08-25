@@ -8,6 +8,8 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransferTransactionSchema } from './txnSchema';
 import Utils from './utils';
+import crypto from 'crypto';
+import _ from 'lodash';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _to: string;
@@ -19,7 +21,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    return algosdk.makePaymentTxnWithSuggestedParams(
+    const txnObject = algosdk.makePaymentTxnWithSuggestedParams(
       this._sender,
       this._to,
       this._amount,
@@ -28,6 +30,12 @@ export class TransferBuilder extends TransactionBuilder {
       this.suggestedParams,
       this._reKeyTo,
     );
+    if (!_.isUndefined(this._lease)) {
+      txnObject.addLease(this._lease);
+    } else {
+      txnObject.addLease(new Uint8Array(crypto.randomBytes(32)));
+    }
+    return txnObject;
   }
 
   protected get transactionType(): TransactionType {

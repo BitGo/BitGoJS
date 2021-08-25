@@ -11,6 +11,7 @@ describe('Algo Transfer Builder', () => {
 
   const sender = AlgoResources.accounts.account1;
   const receiver = AlgoResources.accounts.account2;
+  const ALGOTXNLENGTH = 52;
   const {
     networks: { testnet },
   } = AlgoResources;
@@ -97,7 +98,7 @@ describe('Algo Transfer Builder', () => {
       builder.from(AlgoResources.rawTx.transfer.unsigned);
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.unsigned);
+      should.equal(txJson.id.toString().length, ALGOTXNLENGTH);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
@@ -111,7 +112,7 @@ describe('Algo Transfer Builder', () => {
       builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
+      should.equal(txJson.id.toString().length, ALGOTXNLENGTH);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
@@ -124,8 +125,8 @@ describe('Algo Transfer Builder', () => {
       builder.numberOfSigners(1);
       builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
       const txJson = tx.toJson();
+      should.equal(txJson.id.toString().length, ALGOTXNLENGTH);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
@@ -206,7 +207,7 @@ describe('Algo Transfer Builder', () => {
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
         .sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx = await builder.build();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.multisig);
       const txJson = tx.toJson();
       should.deepEqual(txJson.from, msigAddress);
       should.deepEqual(txJson.to, receiver.address);

@@ -243,7 +243,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const sender = AlgoResources.accounts.account1;
       const receiver = AlgoResources.accounts.account2;
 
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.assetTransfer.unsigned);
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.assetTransfer.unsigned);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '1000');
@@ -262,7 +262,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const sender = AlgoResources.accounts.account1;
       const receiver = AlgoResources.accounts.account2;
 
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.assetTransfer.signed);
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.assetTransfer.signed);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000000000000000000');

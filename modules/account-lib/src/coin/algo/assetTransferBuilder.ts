@@ -7,6 +7,8 @@ import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
 import { AssetTransferTxnSchema, AssetToggleTxnSchema } from './txnSchema';
 import Utils from './utils';
+import _ from 'lodash';
+import crypto from 'crypto';
 
 export class AssetTransferBuilder extends TransferBuilder {
   private _tokenId: number;
@@ -58,7 +60,7 @@ export class AssetTransferBuilder extends TransferBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    return algosdk.makeAssetTransferTxnWithSuggestedParams(
+    const txnObject = algosdk.makeAssetTransferTxnWithSuggestedParams(
       this._sender,
       this._to,
       this._closeRemainderTo,
@@ -69,6 +71,12 @@ export class AssetTransferBuilder extends TransferBuilder {
       this.suggestedParams,
       this._reKeyTo,
     );
+    if (!_.isUndefined(this._lease)) {
+      txnObject.addLease(this._lease);
+    } else {
+      txnObject.addLease(new Uint8Array(crypto.randomBytes(32)));
+    }
+    return txnObject;
   }
 
   protected get transactionType(): TransactionType {

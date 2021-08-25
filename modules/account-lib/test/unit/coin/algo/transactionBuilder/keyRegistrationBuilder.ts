@@ -107,6 +107,41 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
+    it('should build two key reg transactions with equal params but different txn IDs', async ()=>{
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1);
+      builder.sign({ key: sender.secretKey.toString('hex') });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .testnet()
+        .numberOfSigners(1);
+      builder.sign({ key: sender.secretKey.toString('hex') });
+      const tx2 = await builder.build();
+      const txJson2 = tx2.toJson();
+      txJson.id.should.not.equal(txJson2.id);
+    });
+
     it('should build a key registration transaction with non participation', async () => {
       builder
         .sender({ address: sender.address })
@@ -279,7 +314,7 @@ describe('Algo KeyRegistration Builder', () => {
       builder.numberOfSigners(1);
       builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.keyReg.signed);
       const txJson = tx.toJson();
       should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
       should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);

@@ -28,27 +28,27 @@ describe('Algo Transaction Builder Factory', () => {
       builder.numberOfRequiredSigners(1).sign({ key: AlgoResources.accounts.account1.prvKey });
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.WalletInitialization);
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.keyReg.signed);
     });
 
     it('a signed keyreg transaction from serialized', async () => {
       const builder = factory.from(AlgoResources.rawTx.keyReg.signed);
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.WalletInitialization);
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.keyReg.signed);
     });
 
     it('a multisigned transfer transaction from serialized', async () => {
       const builder = factory.from(AlgoResources.rawTx.transfer.multisig);
       const tx = await builder.build();
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.multisig);
       should.equal(tx.type, TransactionType.Send);
     });
 
     it('a signed transfer transaction from serialized', async () => {
       const builder = factory.from(AlgoResources.rawTx.transfer.signed);
       const tx = await builder.build();
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.signed);
       should.equal(tx.type, TransactionType.Send);
     });
 
@@ -60,7 +60,7 @@ describe('Algo Transaction Builder Factory', () => {
         .sign({ key: AlgoResources.accounts.account3.prvKey });
 
       const tx = await builder.build();
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.multisig);
       should.equal(tx.type, TransactionType.Send);
     });
 
@@ -68,20 +68,20 @@ describe('Algo Transaction Builder Factory', () => {
       const builder = factory.from(AlgoResources.rawTx.transfer.unsigned);
       builder.numberOfRequiredSigners(1).sign({ key: AlgoResources.accounts.account1.prvKey });
       const tx = await builder.build();
-      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
+      should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.signed);
       should.equal(tx.type, TransactionType.Send);
     });
   });
   it('an unsigned transfer transaction from serialized', async () => {
     const builder = factory.from(AlgoResources.rawTx.assetTransfer.unsigned);
     const tx = await builder.build();
-    should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.assetTransfer.unsigned);
+    should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.assetTransfer.unsigned);
     should.equal(tx.type, TransactionType.Send);
   });
   it('a signed asset transfer transaction from serialized', async () => {
     const builder = factory.from(AlgoResources.rawTx.assetTransfer.signed);
     const tx = await builder.build();
-    should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.assetTransfer.signed);
+    should.equal(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.assetTransfer.signed);
     should.equal(tx.type, TransactionType.Send);
   });
 });

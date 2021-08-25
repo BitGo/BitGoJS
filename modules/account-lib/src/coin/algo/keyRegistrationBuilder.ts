@@ -8,6 +8,8 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { KeyRegTxnSchema } from './txnSchema';
 import Utils from './utils';
+import crypto from 'crypto';
+import _ from 'lodash';
 
 export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteKey: string;
@@ -113,7 +115,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   protected buildAlgoTxn(): algosdk.Transaction {
     if (!this._nonParticipation) {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      const txnObject = algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
         this._voteKey,
@@ -123,8 +125,14 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._voteKeyDilution,
         this.suggestedParams,
       );
+      if (!_.isUndefined(this._lease)) {
+        txnObject.addLease(this._lease);
+      } else {
+        txnObject.addLease(new Uint8Array(crypto.randomBytes(32)));
+      }
+      return txnObject;
     } else {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      const txnObject = algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
         undefined,
@@ -136,6 +144,12 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._reKeyTo,
         this._nonParticipation,
       );
+      if (!_.isUndefined(this._lease)) {
+        txnObject.addLease(this._lease);
+      } else {
+        txnObject.addLease(new Uint8Array(crypto.randomBytes(32)));
+      }
+      return txnObject;
     }
   }
 
