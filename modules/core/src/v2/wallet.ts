@@ -332,7 +332,11 @@ export interface AccelerateTransactionOptions {
 export interface SubmitTransactionOptions {
   otp?: string;
   txHex?: string;
-  halfSigned?: string;
+  halfSigned?: {
+    txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
+    payload?: string;
+    txBase64?: string;
+  };
   comment?: string;
 }
 
