@@ -171,9 +171,18 @@ export function verifySignature(
     });
   }
 
-  const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = parseSignatureScript(
-    transaction.ins[inputIndex]
-  );
+  /* istanbul ignore next */
+  if (!transaction.ins) {
+    throw new Error(`invalid transaction`);
+  }
+
+  const input = transaction.ins[inputIndex];
+  /* istanbul ignore next */
+  if (!input) {
+    throw new Error(`no input at index ${inputIndex}`);
+  }
+
+  const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = parseSignatureScript(input);
 
   if (![script.types.P2WSH, script.types.P2SH, script.types.P2PKH].includes(inputClassification)) {
     return false;

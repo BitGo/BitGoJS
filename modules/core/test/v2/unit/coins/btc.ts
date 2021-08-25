@@ -3,6 +3,7 @@ const { Codes } = require('@bitgo/unspents');
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
+import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 
 describe('BTC:', function () {
   let bitgo;
@@ -320,20 +321,20 @@ describe('BTC:', function () {
         },
       };
 
-      let coin;
+      let coin: AbstractUtxoCoin;
       before(() => {
         coin = bitgo.coin('btc');
       });
 
       describe('failure', () => {
         it('should fail for invalid transaction hexes', async function () {
-          await coin.explainTransaction().should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
+          await (coin as any).explainTransaction().should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
           await coin.explainTransaction({ txHex: '' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
           await coin.explainTransaction({ txHex: 'nonsense' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          await coin.explainTransaction({ txHex: 1234 }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
+          await (coin as any).explainTransaction({ txHex: 1234 }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
           await coin.explainTransaction({ txHex: '1234a' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
