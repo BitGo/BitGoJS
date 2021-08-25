@@ -19,6 +19,7 @@ import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './genera
 import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
 import { Transaction } from './generate/types';
 import { parseTransactionRoundTrip } from '../transaction_util';
+import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 
 const utxolib = require('../../src');
 
@@ -50,6 +51,14 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
     it(`round-trip`, function () {
       parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network);
+    });
+
+    it('compare against RPC data', function () {
+      const tx = parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network);
+      assert.deepStrictEqual(
+        normalizeRpcTransaction(fixture.transaction, network),
+        normalizeParsedTransaction(tx, network)
+      );
     });
 
     it(`parseSignatureScript`, function () {
