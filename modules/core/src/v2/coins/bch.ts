@@ -154,16 +154,6 @@ export class Bch extends AbstractUtxoCoin {
 
   /**
    *
-   * @param txBuilder
-   * @returns {*}
-   */
-  prepareTransactionBuilder(txBuilder) {
-    txBuilder.setVersion(2);
-    return txBuilder;
-  }
-
-  /**
-   *
    * @returns {number}
    */
   public get defaultSigHashType() {

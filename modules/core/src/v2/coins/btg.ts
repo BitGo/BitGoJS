@@ -43,16 +43,6 @@ export class Btg extends Btc {
 
   /**
    *
-   * @param txBuilder
-   * @returns {*}
-   */
-  prepareTransactionBuilder(txBuilder: any): any {
-    txBuilder.setVersion(2);
-    return txBuilder;
-  }
-
-  /**
-   *
    * @returns {number}
    */
   get defaultSigHashType(): number {

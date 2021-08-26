@@ -1155,7 +1155,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
       const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, self.network);
-      self.prepareTransactionBuilder(txb);
+      utxolib.bitgo.setTransactionBuilderDefaults(txb, self.network);
 
       const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
         const currentUnspent = txPrebuild.txInfo.unspents[index];
@@ -1270,15 +1270,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   isBitGoTaintedUnspent(unspent: Unspent) {
     return false;
-  }
-
-  /**
-   * Modify the transaction builder to comply with the specific coin's requirements such as version and branch id
-   * @param txBuilder
-   * @returns {*}
-   */
-  prepareTransactionBuilder(txBuilder: any): any {
-    return txBuilder;
   }
 
   /**
