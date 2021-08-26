@@ -56,3 +56,11 @@ export type Network = {
 export type ZcashNetwork = Network & {
   consensusBranchId: Record<number, number>;
 };
+
+export type BitcoinCashNetwork = Network & {
+  cashAddr: {
+    prefix: string;
+    pubKeyHash: number;
+    scriptHash: number;
+  };
+};
