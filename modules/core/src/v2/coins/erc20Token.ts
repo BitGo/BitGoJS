@@ -253,6 +253,7 @@ export class Erc20Token extends Eth {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
+        eip1559: params.eip1559,
         replayProtectionOptions: params.replayProtectionOptions,
       });
 

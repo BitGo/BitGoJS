@@ -203,6 +203,7 @@ export interface RecoverOptions {
   krsProvider?: string;
   gasPrice?: number;
   gasLimit?: number;
+  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
   replayProtectionOptions?: {
     chain: string | number;
     hardfork: string;
@@ -961,7 +962,9 @@ export class Eth extends BaseCoin {
       // Set new eth tx fees (using default config values from platform)
 
       const gasLimit = new optionalDeps.ethUtil.BN(self.setGasLimit(params.gasLimit));
-      const gasPrice = new optionalDeps.ethUtil.BN(self.setGasPrice(params.gasPrice));
+      const gasPrice = params.eip1559
+        ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+        : new optionalDeps.ethUtil.BN(self.setGasPrice(params.gasPrice));
       if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
         try {
           userKey = self.bitgo.decrypt({
@@ -1067,10 +1070,12 @@ export class Eth extends BaseCoin {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
+        eip1559: params.eip1559,
+        replayProtectionOptions: params.replayProtectionOptions,
       };
 
       // Build contract call and sign it
-      const tx = optionalDeps.EthTx.Transaction.fromTxData(txParams);
+      const tx = Eth.buildTransaction(txParams);
 
       if (isUnsignedSweep) {
         return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
