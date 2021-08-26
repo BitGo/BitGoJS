@@ -21,6 +21,8 @@ describe('V2 Wallet:', function () {
   let wallet;
   let bgUrl;
   let basecoin;
+  const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+  const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
 
   before(async function () {
     bitgo = new TestBitGo({ env: 'test' });
@@ -798,6 +800,21 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Transaction prebuilds', function () {
+    let ethWallet;
+
+    before(async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+    });
+
     it('should pass offlineVerification=true query param if passed truthy value', async function () {
       const params = { offlineVerification: true };
       const scope = nock(bgUrl)
@@ -883,6 +900,70 @@ describe('V2 Wallet:', function () {
         });
         postProcessStub.restore();
       });
+    });
+
+    it('should have isBatch = true in the txPrebuild if txParams has more than one recipient', async function () {
+
+      const txParams = {
+        recipients: [{ amount: '1000000000000000', address: address1 }, { amount: '1000000000000000', address: address2 }],
+        walletContractAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        walletPassphrase: 'moon',
+      };
+
+      const totalAmount = '2000000000000000';
+
+      nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, _.matches({ recipients: txParams.recipients }))
+        .reply(200, {
+          recipients: [
+            {
+              address: '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478',
+              amount: '2000000000000000',
+              data: '0xc00c4e9e000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000174cfd823af8ce27ed0afee3fcf3c3ba259116be0000000000000000000000007e85bdc27c050e3905ebf4b8e634d9ad6edd0de6000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000000000000000000000000000000038d7ea4c68000',
+            },
+          ],
+          nextContractSequenceId: 10896,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: true,
+          coin: 'teth',
+        });
+
+      const txPrebuild = await ethWallet.prebuildTransaction(txParams);
+      txPrebuild.isBatch.should.equal(true);
+      txPrebuild.recipients[0].address.should.equal(bitgo.coin('teth').staticsCoin.network.batcherContractAddress);
+      txPrebuild.recipients[0].amount.should.equal(totalAmount);
+    });
+
+    it('should have isBatch = false and hopTransaction field should not be there in the txPrebuild  for normal eth tx', async function () {
+
+      const txParams = {
+        recipients: [{ amount: '1000000000000000', address: address1 }],
+        walletContractAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        walletPassphrase: 'moon',
+      };
+
+      nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, _.matches({ recipients: txParams.recipients }))
+        .reply(200, {
+          recipients: [
+            {
+              amount: '1000000000000000',
+              address: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+            },
+          ],
+          nextContractSequenceId: 10897,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: false,
+          coin: 'teth',
+        });
+
+      const txPrebuild = await ethWallet.prebuildTransaction(txParams);
+      txPrebuild.isBatch.should.equal(false);
+      txPrebuild.should.not.have.property('hopTransaction');
+      txPrebuild.recipients[0].address.should.equal(address1);
+      txPrebuild.recipients[0].amount.should.equal('1000000000000000');
     });
 
     it('should pass unspent reservation parameter through when building transactions', async function () {
