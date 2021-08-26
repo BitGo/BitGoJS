@@ -490,7 +490,7 @@ Transaction.prototype.hashForSignatureByNetwork = function (
 
         https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/replay-protected-sighash.md
        */
-      var addForkId = hashType & Transaction.SIGHASH_FORKID > 0
+      var addForkId = (hashType & Transaction.SIGHASH_FORKID) > 0
 
       if (addForkId) {
         /*
@@ -724,7 +724,7 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
 
   var bufferWriter = new BufferWriter(Buffer.allocUnsafe(156 + varSliceSize(prevOutScript)))
   var input = this.ins[inIndex]
-  bufferWriter.writeUInt32(this.version)
+  bufferWriter.writeInt32(this.version)
   bufferWriter.writeSlice(hashPrevouts)
   bufferWriter.writeSlice(hashSequence)
   bufferWriter.writeSlice(input.hash)

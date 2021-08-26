@@ -12,9 +12,58 @@ export const walletSimpleByteCode =
 export const walletSimpleConstructor = ['address[]'];
 export const flushTokensTypes = ['address', 'address'];
 export const flushCoinsTypes = [];
+/*
+The steps used to obtain the ABI of the contract were:
 
-// TODO STLX-5726: add walletSimpleAbi
-export const walletSimpleAbi = [];
+1. Go to: https://remix.ethereum.org/
+2. Copy the content of the contract AvaxWalletSimple.sol into the IDE
+    The content of the contracts: Forwarder.sol and ERC20Interface.sol also need to be present to replicate the imports structure of AvaxWalletSimple.sol
+3. Compile the contract with the compiler version 0.4.26+commit.4563c3fc and then get the generated ABI
+ */
+export const walletSimpleAbi = [
+  {
+    constant: true,
+    inputs: [
+      {
+        name: '_owner',
+        type: 'address',
+      },
+    ],
+    name: 'balanceOf',
+    outputs: [
+      {
+        name: 'balance',
+        type: 'uint256',
+      },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: '_to',
+        type: 'address',
+      },
+      {
+        name: '_value',
+        type: 'uint256',
+      },
+    ],
+    name: 'transfer',
+    outputs: [
+      {
+        name: 'success',
+        type: 'bool',
+      },
+    ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+];
 
 export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
 
