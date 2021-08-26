@@ -120,7 +120,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
         .testnet()
         .numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
 
@@ -136,7 +136,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteKeyDilution(9)
         .testnet()
         .numberOfSigners(1);
-      builder.sign({ key: sender.secretKey.toString('hex') });
+      builder.sign({ key: sender.prvKey });
       const tx2 = await builder.build();
       const txJson2 = tx2.toJson();
       txJson.id.should.not.equal(txJson2.id);
