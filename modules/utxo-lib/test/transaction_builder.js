@@ -12,12 +12,13 @@ var ECPair = require('../src/ecpair')
 var Transaction = require('../src/transaction')
 var TransactionBuilder = require('../src/transaction_builder')
 var NETWORKS = require('../src/networks')
+var { createTransactionForNetwork, createTransactionBuilderForNetwork, createTransactionBuilderFromTransaction } = require('../src/bitgo/transaction')
 
 var fixtures = require('./fixtures').combine('transaction_builder', ['dash', 'zcash'])
 
 function construct (f, dontSign) {
-  var network = NETWORKS[f.network]
-  var txb = new TransactionBuilder(network)
+  var network = NETWORKS[f.network] || NETWORKS.bitcoin
+  var txb = createTransactionBuilderForNetwork(network)
 
   if (f.version !== undefined) txb.setVersion(f.version)
   if (f.locktime !== undefined) txb.setLockTime(f.locktime)
@@ -165,10 +166,7 @@ describe('TransactionBuilder', function () {
       var txb
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
-        txb = new TransactionBuilder(testNetwork)
-        if (coins.isZcash(testNetwork)) {
-          txb.setVersion(3)
-        }
+        txb = createTransactionBuilderForNetwork(testNetwork)
       })
 
       it('accepts a txHash, index [and sequence number]', function () {
@@ -194,7 +192,7 @@ describe('TransactionBuilder', function () {
       })
 
       it('accepts a prevTx, index [and sequence number]', function () {
-        var prevTx = new Transaction(testNetwork)
+        var prevTx = createTransactionForNetwork(testNetwork)
         prevTx.addOutput(scripts[0], 0)
         prevTx.addOutput(scripts[1], 1)
 
@@ -230,7 +228,7 @@ describe('TransactionBuilder', function () {
       var txb
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
-        txb = new TransactionBuilder(testNetwork)
+        txb = createTransactionBuilderForNetwork(testNetwork)
         if (coins.isZcash(testNetwork)) {
           txb.setVersion(3)
         }
@@ -458,7 +456,7 @@ describe('TransactionBuilder', function () {
       it(`${f.description} network=${f.network}`, function () {
         var txb = construct(f, true)
         var tx
-        var network = NETWORKS[f.network]
+        var network = NETWORKS[f.network] || NETWORKS.bitcoin
 
         f.inputs.forEach(function (input, i) {
           var redeemScript
@@ -485,7 +483,7 @@ describe('TransactionBuilder', function () {
                 tx.ins[i].script = replacement
               }
               // now import it
-              txb = TransactionBuilder.fromTransaction(tx, network)
+              txb = createTransactionBuilderFromTransaction(tx)
             }
 
             var keyPair2 = ECPair.fromWIF(sign.keyPair, network)
