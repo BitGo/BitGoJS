@@ -5,6 +5,8 @@ import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { isValidXprv, isValidXpub } from '../../utils/crypto';
 
+const DEFAULT_SEED_SIZE_BYTES = 64;
+
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
@@ -14,7 +16,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
     if (!source) {
-      this.hdNode = HDNode.fromSeedBuffer(randomBytes(512 / 8));
+      this.hdNode = HDNode.fromSeedBuffer(randomBytes(DEFAULT_SEED_SIZE_BYTES));
     } else if (isSeed(source)) {
       this.hdNode = HDNode.fromSeedBuffer(source.seed);
     } else if (isPrivateKey(source)) {
