@@ -12,6 +12,22 @@ type Transaction = any;
 
 type TransactionBuilder = any;
 
+export function createTransactionForNetwork(network: Network): Transaction {
+  switch (getMainnet(network)) {
+    case networks.bitcoin:
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+    case networks.dash:
+    case networks.litecoin:
+    case networks.zcash:
+      return new Transaction(network);
+  }
+
+  /* istanbul ignore next */
+  throw new Error(`invalid network`);
+}
+
 export function createTransactionFromBuffer(buf: Buffer, network: Network): Transaction {
   switch (getMainnet(network)) {
     case networks.bitcoin:
@@ -72,22 +88,6 @@ export function createTransactionBuilderFromTransaction(tx: Transaction): Transa
     case networks.litecoin:
     case networks.zcash:
       return TransactionBuilder.fromTransaction(tx, tx.network);
-  }
-
-  /* istanbul ignore next */
-  throw new Error(`invalid network`);
-}
-
-export function createTransactionForNetwork(network: Network): Transaction {
-  switch (getMainnet(network)) {
-    case networks.bitcoin:
-    case networks.bitcoincash:
-    case networks.bitcoinsv:
-    case networks.bitcoingold:
-    case networks.dash:
-    case networks.litecoin:
-    case networks.zcash:
-      return new Transaction(network);
   }
 
   /* istanbul ignore next */
