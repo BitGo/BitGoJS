@@ -5,7 +5,6 @@
 //
 
 import 'should';
-import { coroutine as co } from 'bluebird';
 const BitGoJS = require('../../../src/index');
 
 describe('Market', function () {
@@ -18,7 +17,7 @@ describe('Market', function () {
   const isMainnet = (coinName) => supportedCoins.includes(coinName);
 
   for (const coin of coinsToUse) {
-    describe(`${coin} market data`, co(function *() {
+    describe(`${coin} market data`, async function() {
       let bitgo;
       before(function () {
         if (isMainnet(coin)) {
@@ -28,13 +27,13 @@ describe('Market', function () {
         }
       });
 
-      it('lastDays arguments', co(function *() {
-        yield bitgo.coin(coin).markets().lastDays({ currencyName: '' }).should.be.rejected();
-        yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: -1 }).should.be.rejected();
-      }));
+      it('lastDays arguments', async function() {
+        await bitgo.coin(coin).markets().lastDays({ currencyName: '' }).should.be.rejected();
+        await bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: -1 }).should.be.rejected();
+      });
 
-      xit('latest', co(function *() {
-        const marketData = yield bitgo.coin(coin).markets().latest({});
+      xit('latest', async function() {
+        const marketData = await bitgo.coin(coin).markets().latest({});
 
         marketData.should.have.property('latest');
 
@@ -59,10 +58,10 @@ describe('Market', function () {
           marketData.latest.currencies.USD.should.have.property('lastHourLow');
           marketData.latest.currencies.USD.should.have.property('lastHourHigh');
         }
-      }));
+      });
 
-      it('lastDays 90 days', co(function *() {
-        const marketData = yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 90 });
+      it('lastDays 90 days', async function() {
+        const marketData = await bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 90 });
 
         if (isMainnet(coin)) {
           marketData.length.should.equal(90);
@@ -74,23 +73,23 @@ describe('Market', function () {
 
         const data = marketData[0];
         data.length.should.equal(2);
-      }));
+      });
 
-      it('lastDays 5 days', co(function *() {
-        const marketData = yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 5 });
+      it('lastDays 5 days', async function() {
+        const marketData = await bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 5 });
         marketData.length.should.equal(5);
-      }));
+      });
 
       // Only bitcoin works with non-usd tickers (see process.config.market.coins)
       if (coin === 'btc' || coin === 'tbtc') {
-        it('lastDays ZAR currency and 45 days', co(function *() {
-          const marketData = yield bitgo.coin(coin).markets().lastDays({ currencyName: 'ZAR', days: 45 });
+        it('lastDays ZAR currency and 45 days', async function() {
+          const marketData = await bitgo.coin(coin).markets().lastDays({ currencyName: 'ZAR', days: 45 });
           marketData.length.should.equal(45);
-        }));
+        });
       }
 
-      it('lastDays over 90', co(function *() {
-        const marketData = yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 9001 });
+      it('lastDays over 90', async function() {
+        const marketData = await bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: 9001 });
 
         if (isMainnet(coin)) {
           marketData.length.should.equal(90);
@@ -99,7 +98,7 @@ describe('Market', function () {
           // timestamped, so it is hard to tell what days we are missing
           marketData.length.should.be.within(80, 90);
         }
-      }));
-    }));
+      });
+    });
   }
 });

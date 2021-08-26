@@ -2,7 +2,6 @@
 // Tests for basecoin
 //
 import 'should';
-import { coroutine as co } from 'bluebird';
 import { restore } from 'nock';
 
 import { TestBitGo } from '../../lib/test_bitgo';
@@ -15,47 +14,47 @@ describe('V2 Base Coin:', function () {
     before(() => restore());
 
     function testAccountFeeEstimate(coin) {
-      return co(function *() {
-        const feeInfo = yield coin.feeEstimate();
+      return async function() {
+        const feeInfo = await coin.feeEstimate();
         feeInfo.should.have.property('feeEstimate');
         return feeInfo;
-      }).call(this);
+      }.call(this);
     }
 
     function testUtxoFeeEstimate(coin) {
-      return co(function *() {
-        const feeInfo = yield coin.feeEstimate();
+      return async function() {
+        const feeInfo = await coin.feeEstimate();
         feeInfo.should.have.property('numBlocks');
         feeInfo.should.have.property('feePerKb');
         return feeInfo;
-      }).call(this);
+      }.call(this);
     }
 
-    it('should fetch fee info for tbtc', co(function *() {
+    it('should fetch fee info for tbtc', async function() {
       const coin = bitgo.coin('tbtc');
-      const feeInfo = yield testUtxoFeeEstimate(coin);
+      const feeInfo = await testUtxoFeeEstimate(coin);
       feeInfo.should.have.properties('feeByBlockTarget', 'confidence', 'multiplier', 'cpfpFeePerKb');
-    }));
+    });
 
-    it('should fetch fee info for tltc', co(function *() {
+    it('should fetch fee info for tltc', async function() {
       const coin = bitgo.coin('tltc');
-      yield testUtxoFeeEstimate(coin);
-    }));
+      await testUtxoFeeEstimate(coin);
+    });
 
-    it('should fetch fee info for tbch', co(function *() {
+    it('should fetch fee info for tbch', async function() {
       const coin = bitgo.coin('tbch');
-      yield testUtxoFeeEstimate(coin);
-    }));
+      await testUtxoFeeEstimate(coin);
+    });
 
-    it('should fetch fee info for teth coin', co(function *() {
+    it('should fetch fee info for teth coin', async function() {
       const coin = bitgo.coin('teth');
-      const feeEstimate = yield testAccountFeeEstimate(coin);
+      const feeEstimate = await testAccountFeeEstimate(coin);
       feeEstimate.should.have.properties('minGasPrice', 'minGasLimit', 'maxGasLimit');
-    }));
+    });
 
-    it('should fetch fee info for txrp coin', co(function *() {
+    it('should fetch fee info for txrp coin', async function() {
       const coin = bitgo.coin('txrp');
-      yield testAccountFeeEstimate(coin);
-    }));
+      await testAccountFeeEstimate(coin);
+    });
   });
 });

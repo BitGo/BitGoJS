@@ -3,8 +3,6 @@
 //
 
 import * as should from 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 
 import { TestBitGo } from '../../lib/test_bitgo';
 
@@ -12,14 +10,14 @@ describe('V2 Recoveries', function () {
   describe('Wrong Chain Recoveries', function () {
     let bitgo;
 
-    before(co(function *() {
+    before(async function () {
       bitgo = new TestBitGo({ env: 'test' });
       bitgo.initializeTestVars();
-      yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-    }));
+      await bitgo.authenticateTestUser(bitgo.testUserOTP());
+    });
 
-    it('should recover BTC sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
+    it('should recover BTC sent to the wrong chain', async function () {
+      const recovery = await bitgo.coin('tbtc').recoverFromWrongChain({
         coin: bitgo.coin('tltc'),
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
@@ -37,10 +35,10 @@ describe('V2 Recoveries', function () {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should recover LTC sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tltc').recoverFromWrongChain({
+    it('should recover LTC sent to the wrong chain', async function () {
+      const recovery = await bitgo.coin('tltc').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -58,10 +56,10 @@ describe('V2 Recoveries', function () {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
-    it('should recover BCH sent to the wrong chain', co(function *() {
-      const recovery = yield bitgo.coin('tbch').recoverFromWrongChain({
+    it('should recover BCH sent to the wrong chain', async function () {
+      const recovery = await bitgo.coin('tbch').recoverFromWrongChain({
         coin: bitgo.coin('tbtc'),
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
@@ -79,7 +77,7 @@ describe('V2 Recoveries', function () {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
 
     /*
     NOTE: The TBCH indexer is offline since the May 2018 hardfork (as of June 1, 2018). This test will not succeed
@@ -111,8 +109,8 @@ describe('V2 Recoveries', function () {
     }));
     */
 
-    it('should recover LTC sent to BCH', co(function *() {
-      const recovery = yield bitgo.coin('tltc').recoverFromWrongChain({
+    it('should recover LTC sent to BCH', async function () {
+      const recovery = await bitgo.coin('tltc').recoverFromWrongChain({
         coin: bitgo.coin('tbch'),
         txid: '4bab9c6238f390c113fb10f2e3a4580c90f956a782feab581640516a94918c15',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -130,6 +128,6 @@ describe('V2 Recoveries', function () {
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
-    }));
+    });
   });
 });

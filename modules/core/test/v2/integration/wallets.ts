@@ -3,7 +3,6 @@
 //
 
 import * as should from 'should';
-import { coroutine as co } from 'bluebird';
 import { TestBitGo } from '../../lib/test_bitgo';
 import { restore } from 'nock';
 const Q = require('q');
@@ -28,7 +27,7 @@ describe('V2 Wallets:', function () {
   describe('Per-coin tests', function () {
 
     function testWalletGeneration(coin) {
-      return co(function *() {
+      return async function() {
         const basecoin = bitgo.coin(coin);
         const wallets = basecoin.wallets();
         const params: any = {
@@ -40,56 +39,56 @@ describe('V2 Wallets:', function () {
           params.enterprise = TestBitGo.TEST_ENTERPRISE;
         }
 
-        const wallet = yield wallets.generateWallet(params);
+        const wallet = await wallets.generateWallet(params);
         const walletObject = wallet.wallet;
         walletObject._wallet.coin.should.equal(coin);
-        const removal = yield wallet.wallet.remove();
+        const removal = await wallet.wallet.remove();
         removal.deleted.should.equal(true);
-      }).call(this);
+      }.call(this);
     }
 
     // TODO enable add txlm when it's supported by the platform and IMS in test
-    it(`should generate a tbtc wallet`, co(function *() {
-      yield testWalletGeneration('tbtc');
-    }));
+    it(`should generate a tbtc wallet`, async function() {
+      await testWalletGeneration('tbtc');
+    });
 
-    it(`should generate a tbch wallet`, co(function *() {
-      yield testWalletGeneration('tbch');
-    }));
+    it(`should generate a tbch wallet`, async function() {
+      await testWalletGeneration('tbch');
+    });
 
-    it(`should generate a txrp wallet`, co(function *() {
-      yield testWalletGeneration('txrp');
-    }));
+    it(`should generate a txrp wallet`, async function() {
+      await testWalletGeneration('txrp');
+    });
 
-    it(`should generate a teth wallet`, co(function *() {
-      yield testWalletGeneration('teth');
-    }));
+    it(`should generate a teth wallet`, async function() {
+      await testWalletGeneration('teth');
+    });
 
-    it(`should generate a tltc wallet`, co(function *() {
-      yield testWalletGeneration('tltc');
-    }));
+    it(`should generate a tltc wallet`, async function() {
+      await testWalletGeneration('tltc');
+    });
   });
 
   describe('Generate Wallet', function () {
     const passphrase = 'yoplait';
     const label = 'v2 wallet';
 
-    it('arguments', co(function *() {
-      yield wallets.generateWallet().should.be.rejected();
-      yield wallets.generateWallet('invalid').should.be.rejected();
-      yield wallets.generateWallet({}, 0).should.be.rejected();
-      yield wallets.generateWallet({
+    it('arguments', async function() {
+      await wallets.generateWallet().should.be.rejected();
+      await wallets.generateWallet('invalid').should.be.rejected();
+      await wallets.generateWallet({}, 0).should.be.rejected();
+      await wallets.generateWallet({
         passphrase: passphrase,
         label: label,
         backupXpub: 'xpub',
         backupXpubProvider: 'krs',
       }).should.be.rejected();
-      yield wallets.generateWallet({
+      await wallets.generateWallet({
         passphrase: passphrase,
         label: label,
         disableTransactionNotifications: 'blah',
       }).should.be.rejected();
-    }));
+    });
 
     it('should make wallet with client-generated user and backup key', function () {
       const params = {
@@ -236,37 +235,37 @@ describe('V2 Wallets:', function () {
     let backupKeychainId;
     let bitgoKeychainId;
 
-    it('arguments', co(function *() {
-      yield wallets.add().should.be.rejected();
-      yield wallets.add('invalid').should.be.rejected();
-      yield wallets.add({}, 0).should.be.rejected();
-      yield wallets.add({
+    it('arguments', async function() {
+      await wallets.add().should.be.rejected();
+      await wallets.add('invalid').should.be.rejected();
+      await wallets.add({}, 0).should.be.rejected();
+      await wallets.add({
         keys: [],
         m: 'bad',
         n: 3,
       }, 0).should.be.rejected();
 
-      yield wallets.add({
+      await wallets.add({
         keys: [],
         m: 1,
         n: 3,
       }, 0).should.be.rejected();
 
-      yield wallets.add({
+      await wallets.add({
         keys: [],
         m: 2,
         n: 3,
         tags: 'bad arg',
       }, 0).should.be.rejected();
 
-      yield wallets.add({
+      await wallets.add({
         keys: [],
         m: 2,
         n: 3,
         tags: [],
         clientFlags: 'bad arg',
       }, 0).should.be.rejected();
-    }));
+    });
 
     it('should add a wallet with pre generated keys', function () {
 
@@ -425,16 +424,16 @@ describe('V2 Wallets:', function () {
     let knownBalanceBasecoin;
     let knownBalanceWallets;
 
-    before(co(function *() {
+    before(async function() {
       knownBalanceBitgo = new TestBitGo({ env: 'test' });
       knownBalanceBitgo.initializeTestVars();
       knownBalanceBasecoin = knownBalanceBitgo.coin('tltc');
       knownBalanceWallets = knownBalanceBasecoin.wallets();
       return knownBalanceBitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
-    }));
+    });
 
-    it('should get total balance across all wallets', co(function *() {
-      const result = yield knownBalanceWallets.getTotalBalances({});
+    it('should get total balance across all wallets', async function() {
+      const result = await knownBalanceWallets.getTotalBalances({});
 
       // make sure result looks structurally correct
       should.exist(result);
@@ -460,6 +459,6 @@ describe('V2 Wallets:', function () {
       result.balanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
       result.confirmedBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
       result.spendableBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
-    }));
+    });
   });
 });
