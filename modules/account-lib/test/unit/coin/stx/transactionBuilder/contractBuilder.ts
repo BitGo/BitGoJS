@@ -5,7 +5,8 @@ import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV } from '@stacks/transactions';
+import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
+import { stringifyCv } from '../../../../../src/coin/stx/utils';
 
 describe('Stx Contract call Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
@@ -91,8 +92,9 @@ describe('Stx Contract call Builder', () => {
     });
 
     it('a signed contract call transaction', async () => {
+      const amount = 123;
       const builder = initTxBuilder();
-      builder.functionArgs([{ type: 'int128', val: '123' }]);
+      builder.functionArgs([{ type: 'int128', val: amount }]);
       builder.sign({ key: testData.TX_SENDER.prv });
       const tx = await builder.build();
 
@@ -102,6 +104,7 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(intCV(amount))]);
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
     });
@@ -115,6 +118,7 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(intCV('123'))]);
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
       tx.outputs.length.should.equal(1);
@@ -135,6 +139,7 @@ describe('Stx Contract call Builder', () => {
       builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
       builder.numberSignatures(2);
       const tx = await builder.build();
+      JSON.stringify(tx.toJson());
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_CONTRACT_CALL);
     });
 
@@ -209,13 +214,16 @@ describe('Stx Contract call Builder', () => {
         ]);
       });
 
-      it('Buffer invalid', () => {
+      it('Buffer as number', () => {
         const builder = initTxBuilder();
-
-        should.throws(
-          () => builder.functionArgs([{ type: 'buffer', val: 1 }]),
-          (e) => e.message === 'buffer require string or Buffer val',
-        );
+        builder.functionArgs([
+          { type: 'buffer', val: '1' },
+          { type: 'buffer', val: 1 },
+        ]);
+        should.deepEqual((builder as any)._functionArgs, [
+          bufferCV(new BigNum(1).toBuffer()),
+          bufferCV(new BigNum(1).toBuffer()),
+        ]);
       });
 
       it('invalid type', () => {

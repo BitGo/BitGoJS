@@ -169,18 +169,15 @@ export class ContractBuilder extends TransactionBuilder {
           return tupleCV(data);
         }
         throw new InvalidParameterValueError('tuple require Array val');
-
       case 'buffer':
-        if (typeof arg.val === 'string') {
-          const nval = Number(arg.val);
-          if (nval) {
-            return bufferCV(Buffer.of(nval));
-          }
-          return bufferCVFromString(arg.val);
-        } else if (arg.val instanceof Buffer) {
+        if (arg.val instanceof Buffer) {
           return bufferCV(arg.val);
         }
-        throw new InvalidParameterValueError('buffer require string or Buffer val');
+        const nval = Number(arg.val);
+        if (nval) {
+          return bufferCV(Buffer.of(nval));
+        }
+        return bufferCVFromString(arg.val);
       default:
         return encodeClarityValue(arg.type as ClarityAbiType, arg.val);
     }

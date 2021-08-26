@@ -18,7 +18,7 @@ import { SigningError, ParseTransactionError, InvalidTransactionError, NotSuppor
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
-import { getTxSenderAddress, removeHexPrefix } from './utils';
+import { getTxSenderAddress, removeHexPrefix, stringifyCv } from './utils';
 import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
@@ -133,7 +133,7 @@ export class Transaction extends BaseTransaction {
         contractAddress: addressToString(payload.contractAddress),
         contractName: payload.contractName.content,
         functionName: payload.functionName.content,
-        functionArgs: payload.functionArgs,
+        functionArgs: payload.functionArgs.map(stringifyCv),
       };
       return contractPayload;
     } else {
