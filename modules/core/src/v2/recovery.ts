@@ -104,7 +104,7 @@ export class CrossChainRecoveryTool {
       tltc: 100,
     };
 
-    this.recoveryTx = new utxolib.TransactionBuilder(this.sourceCoin.network);
+    this.recoveryTx = utxolib.bitgo.createTransactionBuilderForNetwork(this.sourceCoin.network);
   }
 
   /**

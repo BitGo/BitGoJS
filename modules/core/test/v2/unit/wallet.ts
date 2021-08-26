@@ -353,7 +353,7 @@ describe('V2 Wallet:', function () {
 
     it('should verify a signed transaction', async function () {
       const unspent = prebuild.txInfo.unspents[0];
-      const signedTransaction = utxolib.Transaction.fromHex(signedTxHex, basecoin.network);
+      const signedTransaction = utxolib.bitgo.createTransactionFromHex(signedTxHex, basecoin.network);
       const areSignaturesValid = basecoin.verifySignature(signedTransaction, 0, unspent.value);
       areSignaturesValid.should.equal(true);
 

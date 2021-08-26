@@ -1141,7 +1141,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(1);
         decodedChild.outs.length.should.equal(1);
 
@@ -1242,7 +1242,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1361,7 +1361,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1486,7 +1486,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(3);
         decodedChild.outs.length.should.equal(1);
 

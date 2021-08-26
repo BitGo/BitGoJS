@@ -127,7 +127,7 @@ export class Btc extends AbstractUtxoCoin {
 
       const transactionDetails = res.transaction;
 
-      const tx = utxolib.Transaction.fromHex(txInfo.transactionHex, this.network);
+      const tx = this.createTransactionFromHex(txInfo.transactionHex);
       if (transactionDetails.TxId !== tx.getId()) {
         console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
         console.log('txhash/txid of the transaction bitgo constructed', tx.getId());
