@@ -22,6 +22,8 @@ import {
   PubKeyEncoding,
   publicKeyFromSignature,
   createMessageSignature,
+  ClarityValue,
+  ClarityType,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import { StacksNetwork } from '@stacks/network';
@@ -419,5 +421,21 @@ export function isValidAddressWithPaymentId(address: string): boolean {
     return address === normalizeAddress(addressDetails);
   } catch (e) {
     return false;
+  }
+}
+
+/**
+ * Return string representation of clarity value input
+ *
+ * @param {ClarityValue} cv clarity value function argument
+ * @returns {String} stringified clarity value
+ */
+export function stringifyCv(cv: ClarityValue): any {
+  switch (cv.type) {
+    case ClarityType.Int:
+    case ClarityType.UInt:
+      return { type: cv.type, value: cv.value.toString() };
+    default:
+      return cv;
   }
 }
