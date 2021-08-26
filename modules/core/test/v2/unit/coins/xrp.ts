@@ -130,7 +130,11 @@ describe('XRP:', function () {
       .flags(2147483648)
       .lastLedgerSequence(19964671)
       .fee({ fee: '12' })
-      .sequence(19964661)
+      .sequence({
+        name: 'Sequence',
+        keyword: 'sequence',
+        value: '19964661',
+      })
       .destination({ address: 'rGCkuB7PBr5tNy68tPEABEtcdno4hE6Y7f' })
       .amount('22000000')
       .sign({ key: '007A85695CDE5EEA44D7971B25320AD4E353CCC749B03E0E5A88C15ECE42D82439' });

@@ -33,7 +33,11 @@ describe('XRP Wallet Initialization Builder', () => {
         .flags(2147483648)
         .lastLedgerSequence(19964671)
         .fee({ fee: '12' })
-        .sequence(19964661)
+        .sequence({
+          name: 'Sequence',
+          keyword: 'sequence',
+          value: '19964661',
+        })
         .domain('6578616D706C652E636F6D')
         .setFlag(5)
         .messageKey('03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB')
@@ -57,7 +61,11 @@ describe('XRP Wallet Initialization Builder', () => {
         .flags(2147483648)
         .lastLedgerSequence(19964671)
         .fee({ fee: '12' })
-        .sequence(19964661)
+        .sequence({
+          name: 'Sequence',
+          keyword: 'sequence',
+          value: '19964661',
+        })
         .domain('6578616D706C652E636F6D')
         .setFlag(5)
         .messageKey('03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB');

@@ -43,7 +43,11 @@ describe('XRP Transfer Builder', () => {
         .flags(2147483648)
         .lastLedgerSequence(19964671)
         .fee({ fee: '12' })
-        .sequence(19964661)
+        .sequence({
+          name: 'Sequence',
+          keyword: 'sequence',
+          value: '19964661',
+        })
         .destination(receiver)
         .amount(22000000)
         .sign({ key: sender.prv });
@@ -65,7 +69,11 @@ describe('XRP Transfer Builder', () => {
         .flags(2147483648)
         .lastLedgerSequence(19964671)
         .fee({ fee: '12' })
-        .sequence(19964661)
+        .sequence({
+          name: 'Sequence',
+          keyword: 'sequence',
+          value: '19964661',
+        })
         .destination(receiver)
         .amount('22000000');
       const tx = await builder.build();

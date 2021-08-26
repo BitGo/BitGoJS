@@ -87,3 +87,21 @@ export interface Entry extends BaseAddress {
 export interface BaseFee {
   fee: string;
 }
+
+/**
+ * Common field across transactions “Nonce”, “Sequence”, “Counter”
+ */
+export interface SequenceId {
+  name: 'Nonce' | 'Sequence' | 'Counter';
+  keyword: 'nonce' | 'sequence' | 'counter';
+  value: string;
+}
+
+/**
+ * Common field across transactions "Destination Tag", "Memo Id", "Transfer Id"
+ */
+export interface PaymentId {
+  name: 'Destination Tag' | 'Memo Id' | 'Transfer Id';
+  keyword: 'dt' | 'memoId' | 'transferId';
+  value: string;
+}

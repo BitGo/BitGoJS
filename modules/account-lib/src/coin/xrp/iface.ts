@@ -23,7 +23,7 @@ export interface TxJSON {
   domain?: string;
   setFlag?: number;
   messageKey?: string;
-  destinationTag?: number;
+  destinationTag?: string;
 }
 
 export interface Signer {

@@ -89,7 +89,11 @@ describe('Xrp Transaction Builder', () => {
           .flags(2147483648)
           .lastLedgerSequence(19964671)
           .fee({ fee: '12' })
-          .sequence(19964661)
+          .sequence({
+            name: 'Sequence',
+            keyword: 'sequence',
+            value: '19964661',
+          })
           .fulfillment('A0228020D280D1A02BAD0D2EBC0528B92E9BF37AC3E2530832C2C52620307135156F1048')
           .memos([
             {

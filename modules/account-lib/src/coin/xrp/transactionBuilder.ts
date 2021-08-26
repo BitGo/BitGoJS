@@ -5,7 +5,7 @@ import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseFee, BaseKey, SequenceId } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { AddressValidationError } from './errors';
 import { KeyPair } from './keyPair';
@@ -22,7 +22,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fulfillment?: string;
   protected _lastLedgerSequence?: number;
   protected _fee?: string;
-  protected _sequence?: number;
+  protected _sequence?: SequenceId;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -39,7 +39,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    */
   fee(feeObj: BaseFee): this {
-    this.validateValue(new BigNumber(feeObj.fee));
+    this.validateBigNumber(new BigNumber(feeObj.fee));
     this._fee = feeObj.fee;
     return this;
   }
@@ -58,7 +58,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   flags(flags: number): this {
-    this.validateValue(new BigNumber(flags));
+    this.validateBigNumber(new BigNumber(flags));
     this._flags = flags;
     return this;
   }
@@ -69,13 +69,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   lastLedgerSequence(lastLedgerSeq: number): this {
-    this.validateValue(new BigNumber(lastLedgerSeq));
+    this.validateBigNumber(new BigNumber(lastLedgerSeq));
     this._lastLedgerSequence = lastLedgerSeq;
     return this;
   }
 
-  sequence(sequence: number): this {
-    this.validateValue(new BigNumber(sequence));
+  sequence(sequence: SequenceId): this {
+    this.validateBigNumber(new BigNumber(sequence.value));
     this._sequence = sequence;
     return this;
   }
@@ -91,7 +91,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._memos) tx.Memos = this._memos;
     if (this._flags) tx.Flags = this._flags;
     if (this._fulfillment) tx.Fulfillment = this._fulfillment;
-    if (this._sequence) tx.Sequence = this._sequence;
+    if (this._sequence) tx.Sequence = parseInt(this._sequence.value, 10);
     if (this._lastLedgerSequence) tx.LastLedgerSequence = this._lastLedgerSequence;
     if (this._fee) tx.Fee = this._fee;
     this.transaction.setXRPTransaction(tx);
@@ -134,7 +134,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (decodedXrpTrx.Fulfillment) this.fulfillment(decodedXrpTrx.Fulfillment);
     if (decodedXrpTrx.Fee) this.fee({ fee: decodedXrpTrx.Fee as string });
     if (decodedXrpTrx.LastLedgerSequence) this.lastLedgerSequence(decodedXrpTrx.LastLedgerSequence as number);
-    if (decodedXrpTrx.Sequence) this.sequence(decodedXrpTrx.Sequence as number);
+    if (decodedXrpTrx.Sequence) {
+      this.sequence({
+        name: 'Sequence',
+        keyword: 'sequence',
+        value: `${decodedXrpTrx.Sequence}`,
+      });
+    }
 
     switch (decodedXrpTrx.TransactionType) {
       case 'Payment':
@@ -218,11 +224,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._fulfillment,
       this._fee,
       this._lastLedgerSequence,
-      this._sequence,
+      this._sequence && parseInt(this._sequence.value, 10),
     );
   }
 
-  /** @inheritdoc */
+  /**
+   * Validates whether the value is greater than 0
+   *
+   * @param {BigNumber} value the value to test
+   */
+  validateBigNumber(value: BigNumber): void {
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
+  }
+
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');

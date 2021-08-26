@@ -560,14 +560,22 @@ export class Xrp extends BaseCoin {
         .flags(2147483648)
         .lastLedgerSequence(currentLedger + 1000000)
         .fee({ fee: openLedgerFee.times(3).toFixed(0) })
-        .sequence(sequenceId)
+        .sequence({
+          name: 'Sequence',
+          keyword: 'sequence',
+          value: sequenceId,
+        })
         .amount(recoverableBalance.toFixed(0));
 
       if (destinationAddress) {
         builder.destination({ address: destinationAddress });
       }
       if (destinationTag) {
-        builder.destinationTag(destinationTag);
+        builder.destinationTag({
+          name: 'Destination Tag',
+          keyword: 'dt',
+          value: `${destinationTag}`,
+        });
       }
       const unsignedTx = yield builder.build();
       if (isUnsignedSweep) {

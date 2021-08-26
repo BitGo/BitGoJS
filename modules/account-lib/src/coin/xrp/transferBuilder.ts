@@ -3,7 +3,7 @@ import RippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import BigNumber from 'bignumber.js';
 import { TransactionJSON } from 'ripple-lib';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, PaymentId } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
@@ -13,7 +13,7 @@ import { TransferBuilderSchema } from './txnSchema';
 export class TransferBuilder extends TransactionBuilder {
   protected _destination: string;
   protected _amount: string;
-  protected _destinationTag: number;
+  protected _destinationTag: PaymentId;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -49,8 +49,8 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {number} destinationTag
    * @returns {TransferBuilder} builder
    */
-  destinationTag(destinationTag: number): this {
-    this.validateValue(new BigNumber(destinationTag));
+  destinationTag(destinationTag: PaymentId): this {
+    this.validateValue(new BigNumber(destinationTag.value));
     this._destinationTag = destinationTag;
     return this;
   }
@@ -65,7 +65,7 @@ export class TransferBuilder extends TransactionBuilder {
     tx.Destination = this._destination;
     tx.Amount = this._amount;
     if (this._destinationTag) {
-      tx.DestinationTag = this._destinationTag;
+      tx.DestinationTag = this._destinationTag.value;
     }
     return tx;
   }
@@ -82,7 +82,11 @@ export class TransferBuilder extends TransactionBuilder {
       this.destination({ address: xrpTx.Destination as string });
       this.amount(xrpTx.Amount as string);
       if (xrpTx.DestinationTag) {
-        this.destinationTag(xrpTx.DestinationTag as number);
+        this.destinationTag({
+          name: 'Destination Tag',
+          keyword: 'dt',
+          value: xrpTx.DestinationTag as string,
+        });
       }
     }
     return tx;
@@ -96,7 +100,7 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    this.validateFields(this._destination, this._amount, this._destinationTag);
+    this.validateFields(this._destination, this._amount, this._destinationTag?.value);
   }
 
   /** @inheritdoc */
@@ -115,7 +119,7 @@ export class TransferBuilder extends TransactionBuilder {
     );
   }
 
-  private validateFields(destination: string, amount: string, destinationTag: number): void {
+  private validateFields(destination: string, amount: string, destinationTag: number | string): void {
     const validationResult = TransferBuilderSchema.validate({
       destination,
       destinationTag,

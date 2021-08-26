@@ -116,7 +116,7 @@ export class Transaction extends BaseTransaction {
     if (this.type === TransactionType.Send) {
       result.amount = this._xrpTransaction.Amount as string;
       result.destination = this._xrpTransaction.Destination as string;
-      result.destinationTag = this._xrpTransaction.DestinationTag as number;
+      result.destinationTag = this._xrpTransaction.DestinationTag as string;
     }
     if (this.type === TransactionType.WalletInitialization) {
       result.domain = this._xrpTransaction.Domain as string;
