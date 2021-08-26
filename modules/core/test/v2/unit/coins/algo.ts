@@ -372,7 +372,6 @@ describe('ALGO:', function () {
     });
   });
 
-
   describe('Wallet Init Builder: ', () => {
     const buildBaseKeyRegTransaction = ({
       sender,
@@ -650,6 +649,28 @@ describe('ALGO:', function () {
       const kp = basecoin.generateKeyPair(seed);
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+  });
+
+  describe('Enable and disable tokens', () => {
+    it('should explain an enable token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.enableToken,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('enableToken');
+      explain.operations[0].coin.should.equals('talgo:16026728');
+    });
+
+    it('should explain an disable token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.disableToken,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('disableToken');
+      explain.operations[0].coin.should.equals('talgo:16026728');
     });
   });
 });

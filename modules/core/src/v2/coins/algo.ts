@@ -32,6 +32,12 @@ export interface AlgoTransactionExplanation extends TransactionExplanation {
   voteLast?: number;
   voteKeyDilution?: number;
   tokenId?: number;
+  operations?: TransactionOperation[];
+}
+
+export interface TransactionOperation {
+  type: string;
+  coin: string;
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -244,7 +250,26 @@ export class Algo extends BaseCoin {
             memo: txJson.note,
           },
         ];
-        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
+        const operations: TransactionOperation[] = []
+        const isTokenTx = txJson.amount === '0' && txJson.type === 'axfer' && txJson.from === txJson.to;
+        if (isTokenTx) {
+          operations.push({
+            type: !txJson.closeRemainderTo ? 'enableToken' : 'disableToken',
+            coin: `${this.getChain()}:${txJson.tokenId}`,
+          });
+        }
+
+        const displayOrder = [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+          'type',
+          'operations',
+        ];
 
         const explanationResult: AlgoTransactionExplanation = {
           displayOrder,
@@ -256,6 +281,7 @@ export class Algo extends BaseCoin {
           fee: txJson.fee,
           memo: txJson.note,
           type: tx.type,
+          operations,
         };
 
         if (txJson.tokenId) explanationResult.tokenId = txJson.tokenId;
