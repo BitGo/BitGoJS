@@ -21,10 +21,11 @@ import {
   PresignTransactionOptions as BasePresignTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyAddressOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionParams,
   TransactionRecipient,
+  AddressCoinSpecific,
 } from '../baseCoin';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
@@ -33,7 +34,12 @@ import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
 import { Util } from '../internal/util';
-import { EthereumLibraryUnavailableError } from '../../errors';
+import {
+  EthereumLibraryUnavailableError,
+  InvalidAddressError,
+  InvalidAddressVerificationObjectPropertyError,
+  UnexpectedAddressError,
+} from '../../errors';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import type * as EthTxLib from '@ethereumjs/tx';
@@ -315,6 +321,16 @@ interface RecoverTokenTransaction {
     tokenContractAddress: string;
     walletId: string;
   };
+}
+
+interface EthAddressCoinSpecifics extends AddressCoinSpecific {
+  forwarderVersion: number;
+  salt?: string;
+}
+
+interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
+  baseAddress: string;
+  coinSpecific: EthAddressCoinSpecifics;
 }
 
 export class Eth extends BaseCoin {
@@ -1284,7 +1300,7 @@ export class Eth extends BaseCoin {
       {
         name: 'data',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || ''),
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.recipient.data || '')),
       },
       {
         name: 'expireTime',
@@ -1299,7 +1315,7 @@ export class Eth extends BaseCoin {
       {
         name: 'signature',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.signature),
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
       },
     ];
   }
@@ -1622,7 +1638,59 @@ export class Eth extends BaseCoin {
     return Bluebird.resolve({}).asCallback(callback);
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
+  /**
+   * Make sure an address is valid and throw an error if it's not.
+   * @param {Object} params
+   * @param {String} params.address The derived address string on the network
+   * @param {Object} params.coinSpecific Coin-specific details for the address such as a forwarderVersion
+   * @param {String} params.baseAddress The base address of the wallet on the network
+   * @throws {InvalidAddressError}
+   * @throws {InvalidAddressVerificationObjectPropertyError}
+   * @throws {UnexpectedAddressError}
+   * @returns {Boolean} True if address is valid
+   */
+  verifyAddress(params: VerifyEthAddressOptions): boolean {
+    const self = this;
+    let expectedAddress;
+    let actualAddress;
+
+    const { address, coinSpecific, baseAddress } = params;
+
+    if (address && !self.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    // base address is required to calculate the salt which is used in calculateEthAddress2 method
+    if (_.isUndefined(baseAddress) || !self.isValidAddress(baseAddress)) {
+      throw new InvalidAddressError('invalid base address');
+    }
+
+    if (!_.isObject(coinSpecific)) {
+      throw new InvalidAddressVerificationObjectPropertyError(
+        'address validation failure: coinSpecific field must be an object'
+      );
+    }
+
+    if (coinSpecific.forwarderVersion === 0) {
+      return true;
+    } else {
+      const forwarderFactoryAddress = config.defaults[self.getChain()].forwarderFactoryAddress;
+      const initcode = Util.getProxyInitcode(config.defaults[self.getChain()].forwarderImplementationAddress);
+      const saltBuffer = optionalDeps.ethUtil.setLengthLeft(coinSpecific.salt, 32);
+
+      // Hash the wallet base address with the given salt, so the address directly relies on the base address
+      const calculationSalt = optionalDeps.ethUtil.bufferToHex(
+        optionalDeps.ethAbi.soliditySHA3(['address', 'bytes32'], [baseAddress, saltBuffer])
+      );
+
+      expectedAddress = Util.calculateEthAddress2(forwarderFactoryAddress, calculationSalt, initcode);
+      actualAddress = address;
+    }
+
+    if (expectedAddress !== actualAddress) {
+      throw new UnexpectedAddressError(`address validation failure: expected ${expectedAddress} but got ${address}`);
+    }
+
     return true;
   }
 

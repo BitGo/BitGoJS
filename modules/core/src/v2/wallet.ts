@@ -1312,6 +1312,8 @@ export class Wallet {
         }
 
         newAddress.keychains = keychains;
+        newAddress.baseAddress = _.get(self._wallet, 'coinSpecific.baseAddress');
+
         const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 
         if (verificationData.error) {

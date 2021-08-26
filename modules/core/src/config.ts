@@ -215,6 +215,20 @@ export const defaults = {
   minOutputSize: 2730,
   minInstantFeeRate: 10000,
   bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47',
+
+  // TODO (BG-35734): move forwarderFactoryAddress and forwarderImplementationAddress to statics
+  teth: {
+    forwarderFactoryAddress: '0xa79a485294d226075ee65410bc94ea454f3e409d',
+    forwarderImplementationAddress: '0xa946e748f25a5ec6878eb1a9f2e902028174c0b3',
+  },
+  gteth: {
+    forwarderFactoryAddress: '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917',
+    forwarderImplementationAddress: '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999',
+  },
+  eth: {
+    forwarderFactoryAddress: '0xffa397285ce46fb78c588a9e993286aac68c37cd',
+    forwarderImplementationAddress: '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded',
+  },
 };
 
 // Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
