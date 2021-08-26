@@ -32,6 +32,12 @@ export interface AlgoTransactionExplanation extends TransactionExplanation {
   voteLast?: number;
   voteKeyDilution?: number;
   tokenId?: number;
+  operations?: TransactionOperation[];
+}
+
+export interface TransactionOperation {
+  type: string;
+  coin: string;
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -244,7 +250,27 @@ export class Algo extends BaseCoin {
             memo: txJson.note,
           },
         ];
-        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
+        const operations: TransactionOperation[] = [];
+
+        const isTokenTx = this.isTokenTx(txJson.type);
+        if (isTokenTx) {
+          operations.push({
+            type: this.getTokenTxType(txJson),
+            coin: `${this.getChain()}:${txJson.tokenId}`,
+          });
+        }
+
+        const displayOrder = [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+          'type',
+          'operations',
+        ];
 
         const explanationResult: AlgoTransactionExplanation = {
           displayOrder,
@@ -256,6 +282,7 @@ export class Algo extends BaseCoin {
           fee: txJson.fee,
           memo: txJson.note,
           type: tx.type,
+          operations,
         };
 
         if (txJson.tokenId) explanationResult.tokenId = txJson.tokenId;
@@ -297,6 +324,28 @@ export class Algo extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
+  }
+
+  /**
+   * returns if a tx is an enable or disable token tx
+   * @param tx - tx in JSON format
+   * @returns true if it's a token tx
+   */
+  getTokenTxType(tx: { amount: string; closeRemainderTo: string; from: string; to: string }): string {
+    let type = 'transferToken';
+    if (tx.amount === '0' && tx.from === tx.to) {
+      type = !tx.closeRemainderTo ? 'enableToken' : 'disableToken';
+    }
+    return type;
+  }
+
+  /**
+   * returns if a tx is a token tx
+   * @param tx - tx in JSON format
+   * @returns true if it's a token tx
+   */
+  isTokenTx(type: string): boolean {
+    return type === 'axfer';
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
