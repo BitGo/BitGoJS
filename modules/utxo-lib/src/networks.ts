@@ -19,7 +19,7 @@ forkId         src/script/interpreter.h  FORKID_*
 
 */
 
-import { coins, Network, NetworkName, ZcashNetwork } from './networkTypes';
+import { coins, BitcoinCashNetwork, Network, NetworkName, ZcashNetwork } from './networkTypes';
 
 function getDefaultBip32Mainnet(): Network['bip32'] {
   return {
@@ -39,7 +39,9 @@ function getDefaultBip32Testnet(): Network['bip32'] {
   };
 }
 
-const networks: Record<NetworkName, Network> & Record<'zcash' | 'zcashTest', ZcashNetwork> = {
+const networks: Record<NetworkName, Network> &
+  Record<'zcash' | 'zcashTest', ZcashNetwork> &
+  Record<'bitcoincash' | 'bitcoincashTestnet', BitcoinCashNetwork> = {
   // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
   // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   bitcoin: {
@@ -63,6 +65,7 @@ const networks: Record<NetworkName, Network> & Record<'zcash' | 'zcashTest', Zca
 
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
+  // https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: getDefaultBip32Mainnet(),
@@ -71,6 +74,11 @@ const networks: Record<NetworkName, Network> & Record<'zcash' | 'zcashTest', Zca
     wif: 0x80,
     coin: coins.BCH,
     forkId: 0x00,
+    cashAddr: {
+      prefix: 'bitcoincash',
+      pubKeyHash: 0x00,
+      scriptHash: 0x08,
+    },
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -79,6 +87,11 @@ const networks: Record<NetworkName, Network> & Record<'zcash' | 'zcashTest', Zca
     scriptHash: 0xc4,
     wif: 0xef,
     coin: coins.BCH,
+    cashAddr: {
+      prefix: 'bchtest',
+      pubKeyHash: 0x00,
+      scriptHash: 0x08,
+    },
   },
 
   // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
