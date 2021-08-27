@@ -52,6 +52,7 @@ export function setTransactionBuilderDefaults(txb: TransactionBuilder, network: 
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
+    case networks.bitcoingold:
       txb.setVersion(2);
       break;
     case networks.zcash:
