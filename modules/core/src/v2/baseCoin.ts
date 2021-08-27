@@ -184,6 +184,10 @@ export interface FullySignedTransaction {
   txHex: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
 }
 
+export interface HalfSignedUtxoTransaction {
+  txHex: string;
+}
+
 export interface HalfSignedAccountTransaction {
   halfSigned?: {
     txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
@@ -192,7 +196,7 @@ export interface HalfSignedAccountTransaction {
   };
 }
 
-export type SignedTransaction = HalfSignedAccountTransaction | FullySignedTransaction;
+export type SignedTransaction = HalfSignedAccountTransaction | HalfSignedUtxoTransaction | FullySignedTransaction;
 
 export abstract class BaseCoin {
   protected readonly bitgo: BitGo;

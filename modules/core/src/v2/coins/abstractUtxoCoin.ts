@@ -38,6 +38,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
+  HalfSignedUtxoTransaction,
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
@@ -1112,10 +1113,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   signTransaction(
     params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
+    callback?: NodeCallback<SignedTransaction | HalfSignedUtxoTransaction>
+  ): Bluebird<SignedTransaction | HalfSignedUtxoTransaction> {
     const self = this;
-    return co<SignedTransaction>(function* () {
+    return co<SignedTransaction | HalfSignedUtxoTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
       const userPrv = params.prv;
 
