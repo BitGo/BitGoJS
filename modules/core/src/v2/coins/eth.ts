@@ -14,7 +14,7 @@ import * as request from 'superagent';
 import {
   BaseCoin,
   FeeEstimateOptions,
-  HalfSignedTransaction as BaseHalfSignedTransaction,
+  HalfSignedAccountTransaction,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
@@ -154,7 +154,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
   gasPrice: number;
 }
 
-export interface HalfSignedTransaction extends BaseHalfSignedTransaction {
+export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
   halfSigned: {
     recipients: Recipient[];
     expireTime: number;

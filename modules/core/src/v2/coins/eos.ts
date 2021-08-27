@@ -11,7 +11,7 @@ import {
   ParsedTransaction,
   VerifyTransactionOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
-  HalfSignedTransaction as BaseHalfSignedTransaction,
+  HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
