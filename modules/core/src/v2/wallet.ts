@@ -157,8 +157,8 @@ export interface TransfersOptions extends PaginationOptions {
   address?: string[] | string;
   dateGte?: string;
   dateLt?: string;
-  valueGte?: string;
-  valueLt?: string;
+  valueGte?: number;
+  valueLt?: number;
   includeHex?: boolean;
   state?: string[] | string;
   type?: string;
