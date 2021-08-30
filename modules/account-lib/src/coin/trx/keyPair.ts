@@ -43,14 +43,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {DefaultKeys} The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
-    const result: DefaultKeys = {
-      pub: this.keyPair.Q.getEncoded(false).toString('hex').toUpperCase(),
+    return {
+      pub: this.getPublicKey({ compressed: false }).toString('hex').toUpperCase(),
+      prv: this.getPrivateKey()?.toString('hex').toUpperCase(),
     };
-
-    if (this.keyPair.d) {
-      result.prv = this.keyPair.d.toBuffer(32).toString('hex').toUpperCase();
-    }
-    return result;
   }
 
   /**

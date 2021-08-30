@@ -37,18 +37,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys() {
-    if (this.hdNode) {
-      const { xpub, xprv } = this.getExtendedKeys();
-      return {
-        pub: HDNode.fromBase58(xpub).getPublicKeyBuffer().toString('hex'),
-        prv: xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex') : undefined,
-      };
-    } else {
-      return {
-        pub: this.keyPair.Q.getEncoded(true).toString('hex'),
-        prv: this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined,
-      };
-    }
+    return {
+      pub: this.getPublicKey({ compressed: true }).toString('hex'),
+      prv: this.getPrivateKey()?.toString('hex'),
+    };
   }
 
   /** @inheritdoc */

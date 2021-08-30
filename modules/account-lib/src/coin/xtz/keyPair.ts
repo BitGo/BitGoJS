@@ -83,15 +83,12 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   getKeys(): DefaultKeys {
     // Always use the compressed version to be consistent
-    const pub = this.keyPair.Q.getEncoded(true);
-
     const result: DefaultKeys = {
-      pub: Utils.base58encode(Utils.hashTypes.sppk.prefix, pub),
+      pub: Utils.base58encode(Utils.hashTypes.sppk.prefix, this.getPublicKey({ compressed: true })),
     };
-
-    if (this.keyPair.d) {
-      const prv = this.keyPair.getPrivateKeyBuffer();
-      result.prv = Utils.base58encode(Utils.hashTypes.spsk.prefix, prv);
+    const prvBuffer: Buffer | undefined = this.getPrivateKey();
+    if (prvBuffer) {
+      result.prv = Utils.base58encode(Utils.hashTypes.spsk.prefix, prvBuffer);
     }
     return result;
   }
@@ -102,7 +99,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {string} The public address
    */
   getAddress(): string {
-    const pub = this.keyPair.Q.getEncoded(true);
+    const pub = this.getPublicKey({ compressed: true });
     const out = Buffer.alloc(20);
     const b2b = blake2b(out.length).update(pub).digest(out);
     return Utils.base58encode(Utils.hashTypes.tz2.prefix, b2b);

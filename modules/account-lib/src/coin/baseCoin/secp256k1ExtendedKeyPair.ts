@@ -24,6 +24,14 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
     this.source = source;
   }
 
+  getPublicKey({ compressed }: { compressed: boolean }): Buffer {
+    return this.keyPair.Q.getEncoded(compressed);
+  }
+
+  getPrivateKey(): Buffer | undefined {
+    return this.keyPair.d?.toBuffer(32);
+  }
+
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a private key.
    *
