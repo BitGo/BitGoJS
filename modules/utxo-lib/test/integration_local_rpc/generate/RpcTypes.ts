@@ -8,6 +8,9 @@ export type RpcOutput = {
 
 export type RpcTransaction = {
   txid: string;
+  version: number;
+  locktime: number;
+  size: number;
   hex: string;
   vin: RpcInput[];
   vout: RpcOutput[];
