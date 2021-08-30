@@ -33,5 +33,5 @@ export const WalletInitializationSchema = joi.object({
 export const TransferBuilderSchema = joi.object({
   destination: addressSchema.required(),
   amount: joi.string().required(),
-  destinationTag: joi.number().optional(),
+  destinationTag: joi.string().optional(),
 });

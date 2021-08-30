@@ -3,9 +3,10 @@ import RippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleTypes from 'ripple-lib/dist/npm/transaction/types';
 import BigNumber from 'bignumber.js';
 import { TransactionJSON } from 'ripple-lib';
+import _ from 'lodash';
 import { BaseAddress, BaseKey, PaymentId } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransferBuilderSchema } from './txnSchema';
@@ -49,9 +50,15 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {number} destinationTag
    * @returns {TransferBuilder} builder
    */
-  destinationTag(destinationTag: PaymentId): this {
-    this.validateValue(new BigNumber(destinationTag.value));
-    this._destinationTag = destinationTag;
+  destinationTag(destinationTag: number): this {
+    if (!_.isInteger(destinationTag)) {
+      throw new BuildTransactionError('Destination tag must be an integer value');
+    }
+    this._destinationTag = {
+      name: 'Destination Tag',
+      keyword: 'dt',
+      value: `${destinationTag}`,
+    };
     return this;
   }
 
@@ -65,7 +72,7 @@ export class TransferBuilder extends TransactionBuilder {
     tx.Destination = this._destination;
     tx.Amount = this._amount;
     if (this._destinationTag) {
-      tx.DestinationTag = this._destinationTag.value;
+      tx.DestinationTag = new BigNumber(this._destinationTag.value).toNumber();
     }
     return tx;
   }
@@ -82,11 +89,7 @@ export class TransferBuilder extends TransactionBuilder {
       this.destination({ address: xrpTx.Destination as string });
       this.amount(xrpTx.Amount as string);
       if (xrpTx.DestinationTag) {
-        this.destinationTag({
-          name: 'Destination Tag',
-          keyword: 'dt',
-          value: xrpTx.DestinationTag as string,
-        });
+        this.destinationTag(xrpTx.DestinationTag as number);
       }
     }
     return tx;
@@ -115,11 +118,11 @@ export class TransferBuilder extends TransactionBuilder {
     this.validateFields(
       decodedXrpTrx.Destination as string,
       decodedXrpTrx.Amount as string,
-      decodedXrpTrx.DestinationTag as number,
+      decodedXrpTrx.DestinationTag?.toString(),
     );
   }
 
-  private validateFields(destination: string, amount: string, destinationTag: number | string): void {
+  private validateFields(destination: string, amount: string, destinationTag?: string): void {
     const validationResult = TransferBuilderSchema.validate({
       destination,
       destinationTag,

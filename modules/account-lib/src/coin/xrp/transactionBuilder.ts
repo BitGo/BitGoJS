@@ -20,7 +20,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memos?: { Memo: ApiMemo }[];
   protected _flags?: number;
   protected _fulfillment?: string;
-  protected _lastLedgerSequence?: number;
+  protected _lastLedgerSequence?: SequenceId;
   protected _fee?: string;
   protected _sequence?: SequenceId;
 
@@ -68,15 +68,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  lastLedgerSequence(lastLedgerSeq: number): this {
+  lastLedgerSequence(lastLedgerSeq: string): this {
     this.validateBigNumber(new BigNumber(lastLedgerSeq));
-    this._lastLedgerSequence = lastLedgerSeq;
+    this._lastLedgerSequence = {
+      name: 'Last Ledger Sequence',
+      keyword: 'lastLedgerSequence',
+      value: lastLedgerSeq,
+    };
     return this;
   }
 
-  sequence(sequence: SequenceId): this {
-    this.validateBigNumber(new BigNumber(sequence.value));
-    this._sequence = sequence;
+  sequence(sequence: string): this {
+    this.validateBigNumber(new BigNumber(sequence));
+    this._sequence = {
+      name: 'Sequence',
+      keyword: 'sequence',
+      value: `${sequence}`,
+    };
     return this;
   }
 
@@ -91,8 +99,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._memos) tx.Memos = this._memos;
     if (this._flags) tx.Flags = this._flags;
     if (this._fulfillment) tx.Fulfillment = this._fulfillment;
-    if (this._sequence) tx.Sequence = parseInt(this._sequence.value, 10);
-    if (this._lastLedgerSequence) tx.LastLedgerSequence = this._lastLedgerSequence;
+    if (this._sequence) tx.Sequence = new BigNumber(this._sequence.value).toNumber();
+    if (this._lastLedgerSequence) tx.LastLedgerSequence = new BigNumber(this._lastLedgerSequence.value).toNumber();
     if (this._fee) tx.Fee = this._fee;
     this.transaction.setXRPTransaction(tx);
     this.transaction.setTransactionType(this.transactionType);
@@ -133,13 +141,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (decodedXrpTrx.Memos) this.memos(decodedXrpTrx.Memos);
     if (decodedXrpTrx.Fulfillment) this.fulfillment(decodedXrpTrx.Fulfillment);
     if (decodedXrpTrx.Fee) this.fee({ fee: decodedXrpTrx.Fee as string });
-    if (decodedXrpTrx.LastLedgerSequence) this.lastLedgerSequence(decodedXrpTrx.LastLedgerSequence as number);
+    if (decodedXrpTrx.LastLedgerSequence) this.lastLedgerSequence(decodedXrpTrx.LastLedgerSequence as string);
     if (decodedXrpTrx.Sequence) {
-      this.sequence({
-        name: 'Sequence',
-        keyword: 'sequence',
-        value: `${decodedXrpTrx.Sequence}`,
-      });
+      this.sequence(decodedXrpTrx.Sequence as string);
     }
 
     switch (decodedXrpTrx.TransactionType) {
@@ -223,8 +227,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._memos,
       this._fulfillment,
       this._fee,
-      this._lastLedgerSequence,
-      this._sequence && parseInt(this._sequence.value, 10),
+      this._lastLedgerSequence && new BigNumber(this._lastLedgerSequence.value).toNumber(),
+      this._sequence && new BigNumber(this._sequence.value).toNumber(),
     );
   }
 

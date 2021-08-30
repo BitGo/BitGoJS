@@ -471,7 +471,7 @@ describe('Recovery:', function () {
           recovery.type.should.equal('Payment');
           recovery.account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
           recovery.destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
-          recovery.destinationTag.should.equal('12345');
+          recovery.destinationTag.should.equal(12345);
           recovery.amount.should.equal('9899000000');
           recovery.flags.should.equal(2147483648);
           recovery.lastLedgerSequence.should.equal(1397137);

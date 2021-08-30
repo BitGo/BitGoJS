@@ -41,15 +41,12 @@ describe('XRP Transfer Builder', () => {
       builder
         .sender({ address: sender.address })
         .flags(2147483648)
-        .lastLedgerSequence(19964671)
+        .lastLedgerSequence('19964671')
         .fee({ fee: '12' })
-        .sequence({
-          name: 'Sequence',
-          keyword: 'sequence',
-          value: '19964661',
-        })
+        .sequence('19964661')
         .destination(receiver)
         .amount(22000000)
+        .destinationTag(12345)
         .sign({ key: sender.prv });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -61,19 +58,16 @@ describe('XRP Transfer Builder', () => {
       should.deepEqual(txJson.sequence, 19964661);
       should.deepEqual(txJson.destination, receiver.address);
       should.deepEqual(txJson.amount, '22000000');
+      should.deepEqual(txJson.destinationTag, 12345);
     });
 
     it('should build an unsigned transfer transaction', async () => {
       builder
         .sender({ address: sender.address })
         .flags(2147483648)
-        .lastLedgerSequence(19964671)
+        .lastLedgerSequence('19964671')
         .fee({ fee: '12' })
-        .sequence({
-          name: 'Sequence',
-          keyword: 'sequence',
-          value: '19964661',
-        })
+        .sequence('19964661')
         .destination(receiver)
         .amount('22000000');
       const tx = await builder.build();
