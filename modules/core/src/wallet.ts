@@ -1169,7 +1169,7 @@ Wallet.prototype.sendMany = function (params, callback) {
       });
     })
     .then(function (result) {
-      const tx = utxolib.Transaction.fromHex(result.tx);
+      const tx = utxolib.bitgo.createTransactionFromHex(result.tx, utxolib.networks.bitcoin);
       const inputsSum = _.sumBy(unspentsUsed, 'value');
       const outputsSum = _.sumBy(tx.outs, 'value');
       const feeUsed = inputsSum - outputsSum;
@@ -1497,7 +1497,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // get the full hex for the parent tx and decode it to get its vsize
     const parentTxHex = yield getParentTxHex({ parentTxId: params.transactionID });
-    const decodedParent = utxolib.Transaction.fromHex(parentTxHex);
+    const decodedParent = utxolib.bitgo.createTransactionFromHex(parentTxHex, utxolib.networks.bitcoin);
     const parentVSize = decodedParent.virtualSize();
 
     // make sure id from decoded tx and given tx id match

@@ -284,7 +284,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   }
 
   // Build the transaction
-  const transactionBuilder = new utxolib.TransactionBuilder(coin.network);
+  const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(coin.network);
   coin.prepareTransactionBuilder(transactionBuilder);
   const txInfo: any = {};
 

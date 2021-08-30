@@ -28,6 +28,10 @@ export function createTransactionFromBuffer(buf: Buffer, network: Network): Tran
   throw new Error(`invalid network`);
 }
 
+export function createTransactionFromHex(hex: string, network: Network): Transaction {
+  return createTransactionFromBuffer(Buffer.from(hex, 'hex'), network);
+}
+
 export function createTransactionBuilderForNetwork(network: Network): TransactionBuilder {
   switch (getMainnet(network)) {
     case networks.bitcoin:

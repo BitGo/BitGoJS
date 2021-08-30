@@ -1812,7 +1812,7 @@ describe('Wallet API', function () {
             result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
 
             // parse tx to make sure the single key address was used to pay the fee
-            const transaction = bitcoin.Transaction.fromHex(result.transactionHex);
+            const transaction = bitcoin.bitgo.createTransactionFromHex(result.transactionHex, utxolib.networks.bitcoin);
             const singleKeyInput = transaction.ins[transaction.ins.length - 1];
             const inputTxHash = Buffer.from(singleKeyInput.hash).reverse().toString('hex');
 
