@@ -19,10 +19,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
       this.hdNode = HDNode.fromSeedBuffer(seed);
-      this.hdNode.keyPair.compressed = false;
     } else if (isSeed(source)) {
       this.hdNode = HDNode.fromSeedBuffer(source.seed);
-      this.hdNode.keyPair.compressed = false;
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -53,10 +51,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
     if (isValidXprv(prv)) {
       this.hdNode = HDNode.fromBase58(prv);
-      this.hdNode.keyPair.compressed = false;
     } else {
       this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(0, 64), 'hex'));
-      this.keyPair.compressed = prv.length === 66;
     }
   }
 
@@ -91,29 +87,15 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {DefaultKeys} The keys in the protocol default key format
    */
   getKeys(compressed = false): DefaultKeys {
-    let prv;
-
-    if (this.hdNode) {
-      const { xpub, xprv } = this.getExtendedKeys();
-      prv = xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex') : undefined;
-      prv = prv && compressed ? prv + '01' : prv;
-
-      const kp = HDNode.fromBase58(xpub);
-      kp.keyPair.compressed = compressed;
-
-      return {
-        pub: kp.getPublicKeyBuffer().toString('hex'),
-        prv: prv,
-      };
-    } else {
-      prv = this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined;
-      prv = prv && compressed ? prv + '01' : prv;
-
-      return {
-        pub: this.keyPair.Q.getEncoded(compressed).toString('hex'),
-        prv: prv,
-      };
+    let prv = this.getPrivateKey()?.toString('hex');
+    if (prv && compressed) {
+      prv += '01';
     }
+
+    return {
+      pub: this.getPublicKey({ compressed }).toString('hex'),
+      prv,
+    };
   }
 
   getCompressed(): boolean {
