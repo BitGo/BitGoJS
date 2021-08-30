@@ -49,15 +49,37 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       parsedTx = utxolib.Transaction.fromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), network);
     });
 
+    function getPrevOutputValue(input: { txid?: string; hash?: Buffer; index: number }) {
+      if (input.hash) {
+        input = {
+          ...input,
+          txid: getTxidFromHash(input.hash),
+        };
+      }
+
+      const inputTx = fixture.inputs.find((tx) => tx.txid === input.txid);
+      if (!inputTx) {
+        throw new Error(`could not find inputTx`);
+      }
+      const prevOutput = inputTx.vout[input.index];
+      if (!prevOutput) {
+        throw new Error(`could not prevOutput`);
+      }
+      return prevOutput.value * 1e8;
+    }
+
+    function getPrevOutputs(): [txid: string, index: number, value: number][] {
+      return parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutputValue(i)]);
+    }
+
     it(`round-trip`, function () {
-      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network);
+      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network, getPrevOutputs());
     });
 
     it('compare against RPC data', function () {
-      const tx = parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network);
       assert.deepStrictEqual(
         normalizeRpcTransaction(fixture.transaction, network),
-        normalizeParsedTransaction(tx, network)
+        normalizeParsedTransaction(parsedTx, network)
       );
     });
 
@@ -88,25 +110,6 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       return;
     }
 
-    function getPrevOutputValue(input: { txid?: string; hash?: Buffer; index: number }) {
-      if (input.hash) {
-        input = {
-          ...input,
-          txid: getTxidFromHash(input.hash),
-        };
-      }
-
-      const inputTx = fixture.inputs.find((tx) => tx.txid === input.txid);
-      if (!inputTx) {
-        throw new Error(`could not find inputTx`);
-      }
-      const prevOutput = inputTx.vout[input.index];
-      if (!prevOutput) {
-        throw new Error(`could not prevOutput`);
-      }
-      return prevOutput.value * 1e8;
-    }
-
     it(`verifySignatures for original transaction`, function () {
       parsedTx.ins.forEach((input, i) => {
         const prevOutValue = getPrevOutputValue(input);
@@ -135,7 +138,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       return createSpendTransactionFromPrevOutputs(
         fixtureKeys,
         scriptType,
-        parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutputValue(i)]),
+        getPrevOutputs(),
         recipientScript,
         network,
         { signKeys }
