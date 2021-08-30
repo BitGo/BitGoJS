@@ -30,7 +30,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
       this.compressed = true;
     }
   }

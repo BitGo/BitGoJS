@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { HDNode } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
@@ -20,9 +20,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     super(source);
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
-      this.hdNode = HDNode.fromSeedBuffer(seed);
+      this.hdNode = bip32.fromSeed(seed);
     } else if (isSeed(source)) {
-      this.hdNode = HDNode.fromSeedBuffer(source.seed);
+      this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -32,7 +32,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
     }
   }
 

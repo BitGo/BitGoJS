@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
+import * as bip32 from 'bip32';
 import blake2b from '@bitgo/blake2b';
-import { HDNode, ECPair } from '@bitgo/utxo-lib';
+import { ECPair } from 'bitcoinjs-lib';
 import * as CryptoUtils from '../../utils/crypto';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
@@ -22,9 +23,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     super(source);
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
-      this.hdNode = HDNode.fromSeedBuffer(seed);
+      this.hdNode = bip32.fromSeed(seed);
     } else if (isSeed(source)) {
-      this.hdNode = HDNode.fromSeedBuffer(source.seed);
+      this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -34,7 +35,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
     }
   }
 
@@ -46,12 +47,12 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   recordKeysFromPrivateKey(prv: string): void {
     if (CryptoUtils.isValidXprv(prv)) {
-      this.hdNode = HDNode.fromBase58(prv);
+      this.hdNode = bip32.fromBase58(prv);
     } else if (CryptoUtils.isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
+      this.keyPair = ECPair.fromPrivateKey(Buffer.from(prv, 'hex'));
     } else if (Utils.isValidKey(prv, Utils.hashTypes.spsk)) {
-      this.keyPair = ECPair.fromPrivateKeyBuffer(Utils.decodeKey(prv, Utils.hashTypes.spsk));
+      this.keyPair = ECPair.fromPrivateKey(Utils.decodeKey(prv, Utils.hashTypes.spsk));
     } else {
       throw new Error('Unsupported private key');
     }
@@ -65,12 +66,12 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   recordKeysFromPublicKey(pub: string): void {
     if (CryptoUtils.isValidXpub(pub)) {
-      this.hdNode = HDNode.fromBase58(pub);
+      this.hdNode = bip32.fromBase58(pub);
     } else if (CryptoUtils.isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
+      this.keyPair = ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
     } else if (Utils.isValidKey(pub, Utils.hashTypes.sppk)) {
-      this.keyPair = ECPair.fromPublicKeyBuffer(Utils.decodeKey(pub, Utils.hashTypes.sppk));
+      this.keyPair = ECPair.fromPublicKey(Utils.decodeKey(pub, Utils.hashTypes.sppk));
     } else {
       throw new Error('Unsupported public key: ' + pub);
     }
