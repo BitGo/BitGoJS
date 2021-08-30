@@ -152,7 +152,7 @@ export interface GetTransactionOptions extends PaginationOptions {
 
 export interface TransfersOptions extends PaginationOptions {
   txHash?: string;
-  allTokens?: string;
+  allTokens?: boolean;
   searchLabel?: string;
   address?: string[] | string;
   dateGte?: string;
