@@ -7,11 +7,11 @@
 import { strict as assert } from 'assert';
 import 'should';
 
+const utxolib = require('@bitgo/utxo-lib');
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
 const TestUtil = require('./testutil');
 
-const bitcoin = BitGoJS.bitcoin;
 import * as _ from 'lodash';
 const Q = require('q');
 
@@ -291,12 +291,12 @@ describe('PendingApproval', function () {
 
           // Parse the completed tx hex and make sure it was built with proper outputs
           const completedTxHex = result.info.transactionRequest.validTransaction;
-          const transaction = bitcoin.Transaction.fromHex(completedTxHex);
+          const transaction = utxolib.bitgo.createTransactionFromHex(completedTxHex, utxolib.networks.bitcoin);
           if (!transaction || !transaction.outs) {
             throw new Error('transaction had no outputs or failed to parse successfully');
           }
           const outputAddresses = _.map(transaction.outs, function (out) {
-            return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
+            return utxolib.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
           });
 
           // Output addresses should contain the 2 destinations, but not the change address
@@ -324,12 +324,12 @@ describe('PendingApproval', function () {
 
           // Parse the completed tx hex and make sure it was built with proper outputs
           const completedTxHex = result.info.transactionRequest.validTransaction;
-          const transaction = bitcoin.Transaction.fromHex(completedTxHex);
+          const transaction = utxolib.bitgo.createTransactionFromHex(completedTxHex, utxolib.networks.bitcoin);
           if (!transaction || !transaction.outs) {
             throw new Error('transaction had no outputs or failed to parse successfully');
           }
           const outputAddresses = _.map(transaction.outs, function (out) {
-            return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
+            return utxolib.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
           });
 
           // Output addresses should contain the 2 destinations, but not the change address

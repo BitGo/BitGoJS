@@ -233,7 +233,7 @@ exports.createTransaction = function (params) {
   let changeOutputs: Output[] = [];
 
   // The transaction.
-  let transaction = new utxolib.TransactionBuilder(network);
+  let transaction = utxolib.bitgo.createTransactionBuilderForNetwork(network);
 
   const getBitGoFee = function () {
     return Bluebird.try(function () {
@@ -516,7 +516,7 @@ exports.createTransaction = function (params) {
           if (shouldRecurse) {
           // if fee changed, re-collect inputs
             inputAmount = 0;
-            transaction = new utxolib.TransactionBuilder(network);
+            transaction = utxolib.bitgo.createTransactionBuilderForNetwork(network);
             return collectInputs();
           }
         }
@@ -882,7 +882,7 @@ exports.signTransaction = function (params) {
     debug('New network: %O', network);
   }
 
-  let transaction = utxolib.Transaction.fromHex(params.transactionHex, network);
+  let transaction = utxolib.bitgo.createTransactionFromHex(params.transactionHex, network);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
@@ -901,7 +901,7 @@ exports.signTransaction = function (params) {
     rootExtKey = bip32.fromBase58(keychain.xprv);
   }
 
-  const txb = utxolib.TransactionBuilder.fromTransaction(transaction, network);
+  const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, network);
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];

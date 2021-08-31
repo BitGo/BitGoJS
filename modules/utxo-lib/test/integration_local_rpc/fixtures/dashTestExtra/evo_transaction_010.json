@@ -1,0 +1,58 @@
+{
+    "txid": "2c1fe38a166781c2e35f2768c866c4abccbe1c94770cb6f345fb92d0cd0da02a",
+    "version": 3,
+    "type": 1,
+    "size": 480,
+    "locktime": 0,
+    "vin": [
+        {
+            "txid": "56f0814437b5c203ce375e893d62f09d21157fd5590318d79575e0e3bf42d811",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3044022034599d3939a43f30da58509f01ecc38d8f9243aaf54c9d46bb57be7c05046149022010da9a52847152c06ebf0cdb80567a8c30ff53cc8feb4dac298c6e28f6161a97[ALL]",
+                "hex": "473044022034599d3939a43f30da58509f01ecc38d8f9243aaf54c9d46bb57be7c05046149022010da9a52847152c06ebf0cdb80567a8c30ff53cc8feb4dac298c6e28f6161a9701"
+            },
+            "sequence": 4294967295
+        },
+        {
+            "txid": "bd3eea2d956d0197100b5011b4c4d1b1f2b8ecd15a4d399b6e2ead82acf11612",
+            "vout": 0,
+            "scriptSig": {
+                "asm": "3044022064ba8b0b41b5d0a57e421ba8afb7a08fc6e441b252a9765ace84d8297dcee2a402205cf9fe625fda0590a189f8aab2125795482fd32001fa58ecb4ef571e91ad403a[ALL]",
+                "hex": "473044022064ba8b0b41b5d0a57e421ba8afb7a08fc6e441b252a9765ace84d8297dcee2a402205cf9fe625fda0590a189f8aab2125795482fd32001fa58ecb4ef571e91ad403a01"
+            },
+            "sequence": 4294967295
+        }
+    ],
+    "vout": [
+        {
+            "value": 1000.00000000,
+            "valueSat": 100000000000,
+            "n": 0,
+            "scriptPubKey": {
+                "asm": "OP_DUP OP_HASH160 6a42d1656156afd6c9d6e05b1a1579cedcedb2cc OP_EQUALVERIFY OP_CHECKSIG",
+                "hex": "76a9146a42d1656156afd6c9d6e05b1a1579cedcedb2cc88ac",
+                "reqSigs": 1,
+                "type": "pubkeyhash",
+                "addresses": [
+                    "yW1JX8V6dk4KkdyiucvSEetEbUkZneBDHY"
+                ]
+            }
+        }
+    ],
+    "extraPayloadSize": 209,
+    "extraPayload": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff01010101000a9af8b0d8f2b8a237680f894f043aaa150bf504320a34a3ad2774463c6f1d52cde5029380995579aadebd2706a3a4ec87888741d7a254a15b7d1706b476640e4af7884ce79af8b0d8f2b8a237680f894f043aaa150bf5043200001976a9146a42d1656156afd6c9d6e05b1a1579cedcedb2cc88ac5b0b94832e84f2ce21817d69f16d4c14668ceff2b28aae2771baed423b5ac3c000",
+    "proRegTx": {
+        "version": 1,
+        "collateralHash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "collateralIndex": 0,
+        "service": "1.1.1.1:10",
+        "ownerAddress": "yaSrq5uSqzvRLRn9gv28vRt99wYAzFbcVq",
+        "votingAddress": "yaSrq5uSqzvRLRn9gv28vRt99wYAzFbcVq",
+        "payoutAddress": "yW1JX8V6dk4KkdyiucvSEetEbUkZneBDHY",
+        "pubKeyOperator": "0a34a3ad2774463c6f1d52cde5029380995579aadebd2706a3a4ec87888741d7a254a15b7d1706b476640e4af7884ce7",
+        "operatorReward": 0,
+        "inputsHash": "c0c35a3b42edba7127ae8ab2f2ef8c66144c6df1697d8121cef2842e83940b5b"
+    },
+    "hex": "030001000211d842bfe3e07595d7180359d57f15219df0623d895e37ce03c2b5374481f0560000000048473044022034599d3939a43f30da58509f01ecc38d8f9243aaf54c9d46bb57be7c05046149022010da9a52847152c06ebf0cdb80567a8c30ff53cc8feb4dac298c6e28f6161a9701ffffffff1216f1ac82ad2e6e9b394d5ad1ecb8f2b1d1c4b411500b1097016d952dea3ebd0000000048473044022064ba8b0b41b5d0a57e421ba8afb7a08fc6e441b252a9765ace84d8297dcee2a402205cf9fe625fda0590a189f8aab2125795482fd32001fa58ecb4ef571e91ad403a01ffffffff0100e87648170000001976a9146a42d1656156afd6c9d6e05b1a1579cedcedb2cc88ac00000000d101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff01010101000a9af8b0d8f2b8a237680f894f043aaa150bf504320a34a3ad2774463c6f1d52cde5029380995579aadebd2706a3a4ec87888741d7a254a15b7d1706b476640e4af7884ce79af8b0d8f2b8a237680f894f043aaa150bf5043200001976a9146a42d1656156afd6c9d6e05b1a1579cedcedb2cc88ac5b0b94832e84f2ce21817d69f16d4c14668ceff2b28aae2771baed423b5ac3c000"
+}

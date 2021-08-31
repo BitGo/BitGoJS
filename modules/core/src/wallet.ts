@@ -312,21 +312,14 @@ Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshol
     wallet: this.id(),
   };
 
-  // redeem script normally, witness script for segwit
-  const inputScript = utxolib.script.multisig.output.encode(signatureThreshold, derivedKeys);
-  const inputScriptHash = utxolib.crypto.hash160(inputScript);
-  let outputScript = utxolib.script.scriptHash.output.encode(inputScriptHash);
-  addressDetails.redeemScript = inputScript.toString('hex');
+  const {
+    scriptPubKey: outputScript,
+    redeemScript,
+    witnessScript,
+  } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, isSegwit ? 'p2shP2wsh' : 'p2sh');
 
-  if (isSegwit) {
-    const witnessScriptHash = utxolib.crypto.sha256(inputScript);
-    const redeemScript = utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
-    const redeemScriptHash = utxolib.crypto.hash160(redeemScript);
-    outputScript = utxolib.script.scriptHash.output.encode(redeemScriptHash);
-    addressDetails.witnessScript = inputScript.toString('hex');
-    addressDetails.redeemScript = redeemScript.toString('hex');
-  }
-
+  addressDetails.witnessScript = witnessScript?.toString('hex');
+  addressDetails.redeemScript = redeemScript.toString('hex');
   addressDetails.outputScript = outputScript.toString('hex');
   addressDetails.address = utxolib.address.fromOutputScript(outputScript, getNetwork(network));
 
@@ -1169,7 +1162,7 @@ Wallet.prototype.sendMany = function (params, callback) {
       });
     })
     .then(function (result) {
-      const tx = utxolib.Transaction.fromHex(result.tx);
+      const tx = utxolib.bitgo.createTransactionFromHex(result.tx, utxolib.networks.bitcoin);
       const inputsSum = _.sumBy(unspentsUsed, 'value');
       const outputsSum = _.sumBy(tx.outs, 'value');
       const feeUsed = inputsSum - outputsSum;
@@ -1497,7 +1490,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // get the full hex for the parent tx and decode it to get its vsize
     const parentTxHex = yield getParentTxHex({ parentTxId: params.transactionID });
-    const decodedParent = utxolib.Transaction.fromHex(parentTxHex);
+    const decodedParent = utxolib.bitgo.createTransactionFromHex(parentTxHex, utxolib.networks.bitcoin);
     const parentVSize = decodedParent.virtualSize();
 
     // make sure id from decoded tx and given tx id match

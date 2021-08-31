@@ -169,7 +169,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
   params = _.extend({}, params);
   common.validateParams(params, ['txHex'], [], callback);
 
-  const transaction = utxolib.Transaction.fromHex(params.txHex);
+  const transaction = utxolib.bitgo.createTransactionFromHex(params.txHex, utxolib.networks.bitcoin);
   if (!transaction.outs) {
     throw new Error('transaction had no outputs or failed to parse successfully');
   }

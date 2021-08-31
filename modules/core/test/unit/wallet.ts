@@ -46,25 +46,6 @@ describe('Wallet Prototype Methods', function () {
     walletSubPath: '/0/0',
   };
 
-  const extraKeypair1 = {
-    xprv: 'xprv9s21ZrQH143K4QBfbn1EUu6C3T2sWxuLcmJq7aEVWPK76VXA5xVZKhp42UPwEgNiW76i3Pr3XmUyipj1WQnmqVZ2eLovfPXJCJHKyGBqepP',
-    xpub: 'xpub661MyMwAqRbcGtG8hoYEr32vbUsMvRdByzERuxe74ir5yHrJdVoosW8XskKeKKp2HZGtc28sPtp3CZUdYb59yq9SjhQ1FSMqWfQLQU5cA3o',
-    rawPub: '03174291b93b7e95ff070949272136e706be24d4885c47d6cf2203b7f792e26b0d',
-    rawPrv: 'a151bd090c47ab339acfdeea680795d0a32408ad73f339412795b45e50ba8e3d',
-    path: 'm',
-    walletSubPath: '/0/0',
-  };
-
-  const extraKeypair2 = {
-    xprv: 'xprv9s21ZrQH143K3B1ZejZg5dJdfbAjrdZNCqofurao3msbSckfk2vho7tHmsvPgxKFJB3Q34UCL39HyJjqW7GiNT3ecM7ryYCQ7Mp4uhicB5f',
-    xpub: 'xpub661MyMwAqRbcFf62km6gSmFNDd1EG6HDa4jGiEzQc7QaKR5pHaExLvCmdARERzquG8hfEJq6wwWTrCr2KWYQzCY1rfnhpnGm2R2A3Tyv8Wm',
-    rawPub: '02d2e2b63f348772aa7fccd2c21234441c352900eeda6da6d60baeb0d9fe3ce293',
-    rawPrv: '11b6dfcea36c06afa337236a016192dc783f1b3c5a946b9a37e070c4a8cab5f3',
-    path: 'm',
-    walletSubPath: '/0/0',
-  };
-
-  const keychains = [userKeypair, backupKeypair, bitgoKey, extraKeypair1, extraKeypair2];
   const fakeWallet = new Wallet(bitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
 
   describe('Generate Address', function () {
@@ -119,82 +100,6 @@ describe('Wallet Prototype Methods', function () {
       segwitAddress.witnessScript.should.equal('5221027b30505777a4ed8947b069fcb0116e287995d97278d84da4db6c613270649d3d21034c30e51f1e614cad667815c91d041404c18225d0b2f79e2c0bcb63fd2604316b2103b65ddfc06159b691693390761e75a0b8cc7a65b6ff305d094f3ad972f17953fe53ae');
       segwitAddress.wallet.should.equal(fakeWallet.id());
     });
-
-    it('generate segwit address with custom threshold', function () {
-      const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, threshold: 3 });
-      segwitAddress.address.should.equal('2NCa6VuAUNenQeZRnQj8PHQwVDgVc97DDcc');
-      segwitAddress.chain.should.equal(10);
-      segwitAddress.index.should.equal(0);
-      segwitAddress.chainPath.should.equal('/10/0');
-      segwitAddress.path.should.equal('/10/0');
-      segwitAddress.outputScript.should.equal('a914d3fc0a95eb85047626d1b64dde10252b945138b187');
-      segwitAddress.redeemScript.should.equal('00209ee0c2623c8c050afce517c9ce7cba38c64625e1e97cd402e928d789553c3538');
-      segwitAddress.witnessScript.should.equal('5321027b30505777a4ed8947b069fcb0116e287995d97278d84da4db6c613270649d3d21034c30e51f1e614cad667815c91d041404c18225d0b2f79e2c0bcb63fd2604316b2103b65ddfc06159b691693390761e75a0b8cc7a65b6ff305d094f3ad972f17953fe53ae');
-      segwitAddress.wallet.should.equal(fakeWallet.id());
-    });
-
-    it('generate segwit address with custom keyset', function () {
-      const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, keychains: keychains });
-      segwitAddress.address.should.equal('2N9p18EKz583H7unBiT19Jt1bfyBHGsyEZX');
-      segwitAddress.chain.should.equal(10);
-      segwitAddress.index.should.equal(0);
-      segwitAddress.chainPath.should.equal('/10/0');
-      segwitAddress.path.should.equal('/10/0');
-      segwitAddress.outputScript.should.equal('a914b5b50075c69779f3daffdccd2dfa0f0fc11213ac87');
-      segwitAddress.redeemScript.should.equal('0020448e0457c42eca18e19dfb00a6a73ecb44b5b2a0dcb48baef32b64d8eccaffff');
-      segwitAddress.witnessScript.should.equal('5221027b30505777a4ed8947b069fcb0116e287995d97278d84da4db6c613270649d3d21034c30e51f1e614cad667815c91d041404c18225d0b2f79e2c0bcb63fd2604316b2103b65ddfc06159b691693390761e75a0b8cc7a65b6ff305d094f3ad972f17953fe2102e6ee6da95e1e96f41285cba9c0b05a03518995da5f35909b219fcfed734b75a2210272b67ddf56f8b7447e5b0bb6b5bc04edbe20a75652595986131de24ea63d473355ae');
-      segwitAddress.wallet.should.equal(fakeWallet.id());
-    });
-
-    it('generate segwit address with custom keyset and threshold', function () {
-      const segwitAddress = fakeWallet.generateAddress({ path: '/10/0', segwit: true, keychains: keychains, threshold: 4 });
-      segwitAddress.address.should.equal('2MvQXRwq3AXNMXSKQkJuP81Ye5cah4hytxU');
-      segwitAddress.chain.should.equal(10);
-      segwitAddress.index.should.equal(0);
-      segwitAddress.chainPath.should.equal('/10/0');
-      segwitAddress.path.should.equal('/10/0');
-      segwitAddress.outputScript.should.equal('a91422aaae654226e45a5d526e5100cd837c1ea62ad487');
-      segwitAddress.redeemScript.should.equal('002064b7e9639cd8f454012132644c7a445db88c783ad751a9b9bd40ee8e271464a1');
-      segwitAddress.witnessScript.should.equal('5421027b30505777a4ed8947b069fcb0116e287995d97278d84da4db6c613270649d3d21034c30e51f1e614cad667815c91d041404c18225d0b2f79e2c0bcb63fd2604316b2103b65ddfc06159b691693390761e75a0b8cc7a65b6ff305d094f3ad972f17953fe2102e6ee6da95e1e96f41285cba9c0b05a03518995da5f35909b219fcfed734b75a2210272b67ddf56f8b7447e5b0bb6b5bc04edbe20a75652595986131de24ea63d473355ae');
-      segwitAddress.wallet.should.equal(fakeWallet.id());
-    });
-
-    it('generate p2sh address with custom threshold', function () {
-      const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, threshold: 3 });
-      p2shAddress.address.should.equal('2NFnEZjzUhrFAutNCM9fwvQy53SY4wftoJ1');
-      p2shAddress.chain.should.equal(0);
-      p2shAddress.index.should.equal(0);
-      p2shAddress.chainPath.should.equal('/0/0');
-      p2shAddress.path.should.equal('/0/0');
-      p2shAddress.outputScript.should.equal('a914f73024c2f917b82ae5cd4233069fe71b2103d0d987');
-      p2shAddress.redeemScript.should.equal('532102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae');
-      p2shAddress.wallet.should.equal(fakeWallet.id());
-    });
-
-    it('generate p2sh address with custom keyset', function () {
-      const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, keychains: keychains });
-      p2shAddress.address.should.equal('2MvPfwPEgg2oMRbrBCBqsA34XkpCFARqhbM');
-      p2shAddress.chain.should.equal(0);
-      p2shAddress.index.should.equal(0);
-      p2shAddress.chainPath.should.equal('/0/0');
-      p2shAddress.path.should.equal('/0/0');
-      p2shAddress.outputScript.should.equal('a91422815df4e86b71600c5cc3f37bcc8b026c97801f87');
-      p2shAddress.redeemScript.should.equal('522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc21038c80e64d61f7e9a6d36a9dbb86e40288e9aac60f1a33bb47bff9c3a1336a510121032c64677912d511571907444c82fd1abd4807ebef327e2f7bfe41f1951ca8190d55ae');
-      p2shAddress.wallet.should.equal(fakeWallet.id());
-    });
-
-    it('generate p2sh address with custom keyset and threshold', function () {
-      const p2shAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false, keychains: keychains, threshold: 4 });
-      p2shAddress.address.should.equal('2MsfbMMnNS198FdzDU9rZiTvHSKcw3PizXq');
-      p2shAddress.chain.should.equal(0);
-      p2shAddress.index.should.equal(0);
-      p2shAddress.chainPath.should.equal('/0/0');
-      p2shAddress.path.should.equal('/0/0');
-      p2shAddress.outputScript.should.equal('a914049bd0fa7c1a009070989af606084b720d519b2e87');
-      p2shAddress.redeemScript.should.equal('542102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc21038c80e64d61f7e9a6d36a9dbb86e40288e9aac60f1a33bb47bff9c3a1336a510121032c64677912d511571907444c82fd1abd4807ebef327e2f7bfe41f1951ca8190d55ae');
-      p2shAddress.wallet.should.equal(fakeWallet.id());
-    });
-
   });
 
   describe('Create Transaction', function () {
@@ -475,138 +380,6 @@ describe('Wallet Prototype Methods', function () {
       } catch (e) {
         e.message.should.containEql('BCH does not support segwit inputs');
       }
-    }));
-
-    it('3/5 p2sh', co(function *() {
-      const p2shAddress = fakeProdWallet.generateAddress({ path: '/1/13', segwit: false, keychains: keychains, threshold: 3 });
-      const unspent: any = {
-        addresses: [
-          '2NBK1thw7RpffyyCGa2aePqueJSUA7pENwf',
-        ],
-        value: '0.09375000',
-        value_int: 9375000,
-        txid: '11226fdef22b4d87241dc2e01b1ef39bcbfdfbe8352bfc0c8295a6e7fc5d1545',
-        n: 0,
-        script_pub_key: {
-          asm: 'OP_HASH160 c629d4a1640a55e0703726aeb2aabbcfc5b29de4 OP_EQUAL',
-          hex: 'a914c629d4a1640a55e0703726aeb2aabbcfc5b29de487',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 0,
-        id: 61331633,
-      };
-      _.extend(unspent, p2shAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      nock(bgUrl)
-        .post('/api/v1/billing/address')
-        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-
-      const transaction = (yield fakeProdWallet.createTransaction({
-        changeAddress: p2shAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo 3/5 p2sh test': 1000 },
-      })) as any;
-      transaction.transactionHex.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f22110000000000ffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
-
-      // add first signature
-      transaction.keychain = userKeypair;
-      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      signature1.tx.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f221100000000f80047304402203bae1eebe209698af658b091d10f9a625255d15d378b3b81846ff22bd8b6b8f0022043c43737ac29dd57c68dbc82941fd4b712bb9fe5f2c2f2d4fb36022196856c39014cad5321032b3bb7da8cd35f2b31387a32411eb1b4ecbc97f88f413ef3afafdd6251ebe7782103bf401f8a9204bf331217c67042978426d498070f998d923f5974f603663cf0ff21024bbfbc82267c0096fbcf1b3aef443a3ace227a7279016600a100373ecfa7b38021037a0d7a56f5a91d285bea86b332e2bcab7795e32fc2165afaa989fb5fe441d8d72103b78ab4a0c4c00190585b91be57fb54c9aac17dc9516e319399d9104af0052c1d55aeffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
-
-      // add second signature
-      transaction.transactionHex = signature1.tx;
-      transaction.keychain = backupKeypair;
-      transaction.fullLocalSigning = true;
-      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      signature2.tx.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f221100000000fd40010047304402203bae1eebe209698af658b091d10f9a625255d15d378b3b81846ff22bd8b6b8f0022043c43737ac29dd57c68dbc82941fd4b712bb9fe5f2c2f2d4fb36022196856c390147304402204e13599b3550ad747501a58e76523cea5b3b075800546850b744457f4ec8a143022029b7ff0fec247cd80b7213f7910947f5df811f2b8d97b39d650fd901868907c7014cad5321032b3bb7da8cd35f2b31387a32411eb1b4ecbc97f88f413ef3afafdd6251ebe7782103bf401f8a9204bf331217c67042978426d498070f998d923f5974f603663cf0ff21024bbfbc82267c0096fbcf1b3aef443a3ace227a7279016600a100373ecfa7b38021037a0d7a56f5a91d285bea86b332e2bcab7795e32fc2165afaa989fb5fe441d8d72103b78ab4a0c4c00190585b91be57fb54c9aac17dc9516e319399d9104af0052c1d55aeffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
-
-      // add third signature
-      transaction.transactionHex = signature2.tx;
-      transaction.keychain = extraKeypair1;
-      const signature3 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      // this transaction has actually worked: https://testnet.smartbit.com.au/tx/aefe61fdf292e52ff94235e64d08d617a6670bc4ab17b18f499a62194a52c180
-      // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
-      // changed, changing the output amounts and thus the tx hex.
-      signature3.tx.should.equal('010000000145155dfce7a695820cfc2b35e8fbfdcb9bf31e1be0c21d24874d2bf2de6f221100000000fd88010047304402203bae1eebe209698af658b091d10f9a625255d15d378b3b81846ff22bd8b6b8f0022043c43737ac29dd57c68dbc82941fd4b712bb9fe5f2c2f2d4fb36022196856c390147304402204e13599b3550ad747501a58e76523cea5b3b075800546850b744457f4ec8a143022029b7ff0fec247cd80b7213f7910947f5df811f2b8d97b39d650fd901868907c701473044022072931497a704686fac462a25c32ceaca70aa9a360b1d98cc4e1ef4c3581d2ee5022043459cc059fd3a8b7406575a9f8b8b3f0ee57044537f8f5a12f715441e90a8ec014cad5321032b3bb7da8cd35f2b31387a32411eb1b4ecbc97f88f413ef3afafdd6251ebe7782103bf401f8a9204bf331217c67042978426d498070f998d923f5974f603663cf0ff21024bbfbc82267c0096fbcf1b3aef443a3ace227a7279016600a100373ecfa7b38021037a0d7a56f5a91d285bea86b332e2bcab7795e32fc2165afaa989fb5fe441d8d72103b78ab4a0c4c00190585b91be57fb54c9aac17dc9516e319399d9104af0052c1d55aeffffffff02e803000000000000156a13426974476f20332f3520703273682074657374defb8e000000000017a914c629d4a1640a55e0703726aeb2aabbcfc5b29de48700000000');
-    }));
-
-    it('3/5 segwit', co(function *() {
-      const segwitAddress = fakeProdWallet.generateAddress({ path: '/11/13', segwit: true, keychains: keychains, threshold: 3 });
-      const unspent: any = {
-        addresses: [
-          '2N2zJWhXvUnRy5KDZKpqkQLGgK8sT6hhyGz',
-        ],
-        value: '0.04687500',
-        value_int: 4687500,
-        txid: '5278d64090a8dc62f88e09c88845bd8b1b523b85dd6bd236bcea1cc99a3ac342',
-        n: 0,
-        script_pub_key: {
-          asm: 'OP_HASH160 6adecb920b918a98854914e41f5f1b1628ca166f OP_EQUAL',
-          hex: 'a9146adecb920b918a98854914e41f5f1b1628ca166f87',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 0,
-        id: 61331653,
-      };
-      _.extend(unspent, segwitAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      nock(bgUrl)
-        .post('/api/v1/billing/address')
-        .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-
-      const transaction = (yield fakeProdWallet.createTransaction({
-        changeAddress: segwitAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo 3/5 segwit test': 1000 },
-      })) as any;
-      transaction.transactionHex.should.equal('010000000142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d678520000000000ffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8700000000');
-
-      // add first signature
-      transaction.keychain = userKeypair;
-      const signature1 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      signature1.tx.should.equal('0100000000010142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d67852000000002322002054e45638b45b5b81045c63a75a9e5436d59c11c1a4912b1a82b28cd947e2217bffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8703004830450221008675a5cffe586d0470af387961a56198001e4368c4b24242fa4d50bf5f5608a002203cb988f17cc6b958c9045cb294a17fa0580c3784ca556784b8a7d5cbc938d9b401ad5321032ca600eb36dbe41d265d030e8be0d8a28e8eda40ff45689e66a26e48c3180e9c21023ae2eaab9b7ad991fd3bb23b528b336d33959370c49ac73c05c54d787f174b872103fef2b09781b432232afcd009a66bfee17b54720b5d90b0edfc63e4d8709e1d1a21037c5c9e990362ed1253e6c018a56203eba988d2697baeeedf05fc0f9881305c97210243c099c5fbc97cc5855b881e128b985d79bec7639041ea82a7c9b67a2701bcc355ae00000000');
-
-      // add second signature
-      transaction.transactionHex = signature1.tx;
-      transaction.keychain = backupKeypair;
-      transaction.fullLocalSigning = true;
-      const signature2 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      signature2.tx.should.equal('0100000000010142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d67852000000002322002054e45638b45b5b81045c63a75a9e5436d59c11c1a4912b1a82b28cd947e2217bffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8704004830450221008675a5cffe586d0470af387961a56198001e4368c4b24242fa4d50bf5f5608a002203cb988f17cc6b958c9045cb294a17fa0580c3784ca556784b8a7d5cbc938d9b40148304502210094d0bf6a4fc0d5d951b4a752e6a58785afa4d5b6d3b63a3d2938f1b439e5d431022068270bb1aae86c89c9ac42de4293fb33e27e8b4842c3ea0ff02e571890fb39e101ad5321032ca600eb36dbe41d265d030e8be0d8a28e8eda40ff45689e66a26e48c3180e9c21023ae2eaab9b7ad991fd3bb23b528b336d33959370c49ac73c05c54d787f174b872103fef2b09781b432232afcd009a66bfee17b54720b5d90b0edfc63e4d8709e1d1a21037c5c9e990362ed1253e6c018a56203eba988d2697baeeedf05fc0f9881305c97210243c099c5fbc97cc5855b881e128b985d79bec7639041ea82a7c9b67a2701bcc355ae00000000');
-
-      // add third signature
-      transaction.transactionHex = signature2.tx;
-      transaction.keychain = extraKeypair2;
-      const signature3 = (yield fakeProdWallet.signTransaction(transaction)) as any;
-      // this transaction has actually worked: https://testnet.smartbit.com.au/tx/d0afa363519c5fad3db24a59293bf39a50d00c60753ddbade79e92f64c46d2f8
-      // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
-      // changed, changing the output amounts and thus the tx hex.
-      signature3.tx.should.equal('0100000000010142c33a9ac91ceabc36d26bdd853b521b8bbd4588c8098ef862dca89040d67852000000002322002054e45638b45b5b81045c63a75a9e5436d59c11c1a4912b1a82b28cd947e2217bffffffff02e803000000000000176a15426974476f20332f352073656777697420746573746a7b47000000000017a9146adecb920b918a98854914e41f5f1b1628ca166f8705004830450221008675a5cffe586d0470af387961a56198001e4368c4b24242fa4d50bf5f5608a002203cb988f17cc6b958c9045cb294a17fa0580c3784ca556784b8a7d5cbc938d9b40148304502210094d0bf6a4fc0d5d951b4a752e6a58785afa4d5b6d3b63a3d2938f1b439e5d431022068270bb1aae86c89c9ac42de4293fb33e27e8b4842c3ea0ff02e571890fb39e10147304402205bba409391a7b2fd7c0689a162cf7a72c12995d58d1851e51bb0dacda44f676f02200c79dc0d6dee4239a8349660209f93870195fffbee70edfb0f737105c398216201ad5321032ca600eb36dbe41d265d030e8be0d8a28e8eda40ff45689e66a26e48c3180e9c21023ae2eaab9b7ad991fd3bb23b528b336d33959370c49ac73c05c54d787f174b872103fef2b09781b432232afcd009a66bfee17b54720b5d90b0edfc63e4d8709e1d1a21037c5c9e990362ed1253e6c018a56203eba988d2697baeeedf05fc0f9881305c97210243c099c5fbc97cc5855b881e128b985d79bec7639041ea82a7c9b67a2701bcc355ae00000000');
     }));
 
     it('mixed p2sh & segwit', co(function *() {
@@ -1141,7 +914,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(1);
         decodedChild.outs.length.should.equal(1);
 
@@ -1242,7 +1015,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1361,7 +1134,7 @@ describe('Wallet Prototype Methods', function () {
         // 2) The additional unspent output is an input
         // 3) The child tx has exactly one output
         // 4) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
@@ -1486,7 +1259,7 @@ describe('Wallet Prototype Methods', function () {
         // 1) The parent tx output is an input
         // 2) The child tx has exactly one output
         // 3) The child tx output meets the minimum change threshold
-        const decodedChild = utxolib.Transaction.fromHex(childTx.tx);
+        const decodedChild = utxolib.bitgo.createTransactionFromHex(childTx.tx, utxolib.networks.bitcoin);
         decodedChild.ins.length.should.equal(3);
         decodedChild.outs.length.should.equal(1);
 

@@ -414,7 +414,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (_.isUndefined(prebuild.txHex)) {
         throw new Error('missing required txPrebuild property txHex');
       }
-      const transaction = utxolib.Transaction.fromHex(prebuild.txHex, self.network);
+      const transaction = self.createTransactionFromHex(prebuild.txHex);
       if (_.isUndefined(prebuild.blockHeight)) {
         prebuild.blockHeight = (yield self.getLatestBlockHeight()) as number;
       }
@@ -465,6 +465,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
     }
     return null;
+  }
+
+  createTransactionFromHex(hex: string) {
+    return utxolib.bitgo.createTransactionFromHex(hex, this.network);
   }
 
   /**
@@ -870,7 +874,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       const allOutputs = parsedTransaction.outputs;
-      const transaction = utxolib.Transaction.fromHex(txPrebuild.txHex, self.network);
+      if (!txPrebuild.txHex) {
+        throw new Error(`txPrebuild.txHex not set`);
+      }
+      const transaction = self.createTransactionFromHex(txPrebuild.txHex);
       const transactionCache = {};
       const inputs = yield Bluebird.map(
         transaction.ins,
@@ -878,7 +885,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
           const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
           if (txHex) {
-            const localTx = utxolib.Transaction.fromHex(txHex, self.network);
+            const localTx = self.createTransactionFromHex(txHex);
             if (localTx.getId() !== transactionId) {
               throw new Error('input transaction hex does not match id');
             }
@@ -1118,7 +1125,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         }
         throw new Error('missing txPrebuild parameter');
       }
-      let transaction = utxolib.Transaction.fromHex(txPrebuild.txHex, self.network);
+      let transaction = self.createTransactionFromHex(txPrebuild.txHex);
 
       if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
         throw new Error('length of unspents array should equal to the number of transaction inputs');
@@ -1146,7 +1153,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
-      const txb = utxolib.TransactionBuilder.fromTransaction(transaction, self.network);
+      const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, self.network);
       self.prepareTransactionBuilder(txb);
 
       const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
@@ -1318,7 +1325,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       let transaction;
       try {
-        transaction = utxolib.Transaction.fromHex(txHex, self.network);
+        transaction = self.createTransactionFromHex(txHex);
       } catch (e) {
         throw new Error('failed to parse transaction hex');
       }

@@ -85,6 +85,7 @@ export interface BitGoJson {
   user?: User;
   token?: string;
   extensionKey?: string;
+  ecdhXprv?: string;
 }
 
 /**
@@ -684,6 +685,7 @@ export class BitGo {
       user: this._user,
       token: this._token,
       extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
+      ecdhXprv: this._ecdhXprv,
     };
   }
 
@@ -698,6 +700,7 @@ export class BitGo {
   fromJSON(json: BitGoJson): void {
     this._user = json.user;
     this._token = json.token;
+    this._ecdhXprv = json.ecdhXprv;
     if (json.extensionKey) {
       const network = common.Environments[this.getEnv()].network;
       this._extensionKey = utxolib.ECPair.fromWIF(
