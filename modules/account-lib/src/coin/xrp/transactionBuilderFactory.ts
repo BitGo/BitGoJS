@@ -7,6 +7,7 @@ import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { MultiSigBuilder } from './multiSigBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -16,7 +17,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   from(rawTxn: string): TransactionBuilder {
     const builder = this.getBuilder(rawTxn);
     builder.from(rawTxn);
-
     return builder;
   }
 
@@ -28,6 +28,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder();
         case 'AccountSet':
           return this.getWalletInitializationBuilder();
+        case 'SignerListSet':
+          return this.getMultiSigBuilder();
         default:
           throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
       }
@@ -44,5 +46,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return new TransferBuilder(this._coinConfig);
+  }
+
+  /** @inheritdoc */
+  getMultiSigBuilder(tx?: Transaction): MultiSigBuilder {
+    return new MultiSigBuilder(this._coinConfig);
   }
 }
