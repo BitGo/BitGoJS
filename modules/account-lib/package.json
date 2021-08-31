@@ -83,8 +83,8 @@
     "prettier": "^1.19.1",
     "should": "^13.1.3",
     "sinon": "^7.5.0",
-    "terser-webpack-plugin": "^1.2.3",
-    "webpack": "^4.29.6",
+    "terser-webpack-plugin": "^4.2.3",
+    "webpack": "^4.46.0",
     "webpack-cli": "^3.2.3"
   },
   "nyc": {
