@@ -33,10 +33,17 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
     this.source = source;
   }
 
+  /**
+   * @param compressed
+   * @return Buffer 33 bytes if `compressed` is set, 65 bytes otherwise. Standard libsecp256k1 format.
+   */
   getPublicKey({ compressed }: { compressed: boolean }): Buffer {
     return ECPair.fromPublicKey(this.keyPair.publicKey, { compressed }).publicKey;
   }
 
+  /**
+   * @return Buffer 32 bytes in standard libsecp256k1 format
+   */
   getPrivateKey(): Buffer | undefined {
     return this.keyPair.privateKey;
   }
