@@ -13,6 +13,7 @@ export interface AccountConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  feeLimit?: string;
 }
 
 /**
@@ -225,6 +226,7 @@ export class AlgoCoin extends AccountCoinToken {
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param feeLimit? Optional max fee for transactions
  */
 export function account(
   name: string,
@@ -236,7 +238,8 @@ export function account(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  isToken: boolean = false
+  isToken: boolean = false,
+  feeLimit?: string
 ) {
   return Object.freeze(
     new AccountCoin({
@@ -250,6 +253,7 @@ export function account(
       isToken,
       asset,
       primaryKeyCurve,
+      feeLimit,
     })
   );
 }
@@ -522,6 +526,7 @@ export function tstellarToken(
  * @param network? Optional token network. Defaults to TRON main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param feeLimit Max fee for transactions
  */
 export function tronToken(
   name: string,
@@ -533,7 +538,8 @@ export function tronToken(
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.trx,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  feeLimit: string
 ) {
   return Object.freeze(
     new TronErc20Coin({
@@ -548,6 +554,7 @@ export function tronToken(
       asset,
       isToken: true,
       primaryKeyCurve,
+      feeLimit,
     })
   );
 }
@@ -564,6 +571,8 @@ export function tronToken(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the testnet TRON network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param feeLimit Max fee for transactions
  */
 export function ttronToken(
   name: string,
@@ -574,9 +583,23 @@ export function ttronToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.trx
+  network: AccountNetwork = Networks.test.trx,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  feeLimit: string
 ) {
-  return tronToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return tronToken(
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve,
+    feeLimit
+  );
 }
 
 /**
