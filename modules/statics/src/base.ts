@@ -293,7 +293,7 @@ export enum UnderlyingAsset {
   DXGT = 'dxgt',
   DXPT = 'dxpt',
   DXST = 'dxst',
-  DYNS = 'dyns',
+  DYN = 'dyn',
   EASY = 'easy',
   ECHT = 'echt',
   EDISON = 'edison',
