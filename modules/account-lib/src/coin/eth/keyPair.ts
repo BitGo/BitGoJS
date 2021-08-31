@@ -6,9 +6,6 @@ import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
  * Ethereum keys and address management.
  */
 export class KeyPair extends Secp256k1ExtendedKeyPair {
-  // We only compress when initialized from an extended key
-  private compressed?: boolean = false;
-
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
@@ -31,7 +28,6 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
 
     if (this.hdNode) {
       this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
-      this.compressed = true;
     }
   }
 
@@ -42,7 +38,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   getKeys(): DefaultKeys {
     return {
-      pub: this.getPublicKey({ compressed: this.compressed ?? false })
+      pub: this.getPublicKey({ compressed: this.hdNode !== undefined })
         .toString('hex')
         .toUpperCase(),
       prv: this.getPrivateKey()?.toString('hex').toUpperCase(),
