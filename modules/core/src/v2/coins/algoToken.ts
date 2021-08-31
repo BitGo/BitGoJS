@@ -6,7 +6,6 @@ import { BitGo } from '../../bitgo';
 import { Algo } from './algo';
 import { CoinConstructor } from '../coinFactory';
 import { BitGoJsError } from '../../errors';
-import { coins } from '@bitgo/statics';
 
 export interface AlgoTokenConfig {
   name: string;
