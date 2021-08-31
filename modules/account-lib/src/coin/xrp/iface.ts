@@ -24,10 +24,19 @@ export interface TxJSON {
   setFlag?: number;
   messageKey?: string;
   destinationTag?: string;
+  signerQuorum?: number;
+  signerEntries?: SignerEntry[];
 }
 
 export interface Signer {
   SigningPubKey: string;
   TxnSignature: string;
   Account: string;
+}
+
+export interface SignerEntry {
+  SignerEntry: {
+    Account: string;
+    SignerWeight: number;
+  };
 }

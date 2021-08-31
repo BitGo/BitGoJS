@@ -4,7 +4,7 @@ import binaryCodec from 'ripple-binary-codec';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { SignedTransaction, TxJSON, Signer } from './iface';
+import { SignedTransaction, TxJSON, Signer, SignerEntry } from './iface';
 import { KeyPair } from './keyPair';
 import { initApi } from './utils';
 
@@ -122,6 +122,10 @@ export class Transaction extends BaseTransaction {
       result.domain = this._xrpTransaction.Domain as string;
       result.setFlag = this._xrpTransaction.SetFlag as number;
       result.messageKey = this._xrpTransaction.MessageKey as string;
+    }
+    if (this.type === TransactionType.MultiSigSetup) {
+      result.signerQuorum = this._xrpTransaction.SignerQuorum as number;
+      result.signerEntries = this._xrpTransaction.SignerEntries as SignerEntry[];
     }
     return result;
   }

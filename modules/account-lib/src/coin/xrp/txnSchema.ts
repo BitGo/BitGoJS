@@ -35,3 +35,15 @@ export const TransferBuilderSchema = joi.object({
   amount: joi.string().required(),
   destinationTag: joi.string().optional(),
 });
+
+export const MultiSigBuilderSchema = joi.object({
+  signerQuorum: joi.number().required(),
+  signerEntries: joi.array().items(
+    joi.object({
+      SignerEntry: joi.object({
+        Account: joi.string().required(),
+        SignerWeight: joi.number().required(),
+      }),
+    }),
+  ),
+});
