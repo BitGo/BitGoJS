@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+
 //
 // index.js - Module definition for BitGoJS
 //
