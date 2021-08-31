@@ -38,9 +38,18 @@ type InputType = typeof inputTypes[number];
 export interface ParsedSignatureScript {
   isSegwitInput: boolean;
   inputClassification: InputType;
-  signatures?: Buffer[];
-  publicKeys?: Buffer[];
-  pubScript?: Buffer;
+}
+
+export interface ParsedSignatureP2PKH extends ParsedSignatureScript {
+  signatures: [Buffer];
+  publicKeys: [Buffer];
+  pubScript: Buffer;
+}
+
+export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
+  signatures: Buffer[];
+  publicKeys: [Buffer, Buffer, Buffer];
+  pubScript: Buffer;
 }
 
 export function getDefaultSigHash(network: Network): number {
@@ -63,7 +72,9 @@ export function getDefaultSigHash(network: Network): number {
  * @param input
  * @returns ParsedSignatureScript
  */
-export function parseSignatureScript(input: Input): ParsedSignatureScript {
+export function parseSignatureScript(
+  input: Input
+): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
   let decompiledSigScript, inputClassification;
@@ -85,9 +96,9 @@ export function parseSignatureScript(input: Input): ParsedSignatureScript {
 
   if (inputClassification === script.types.P2PKH) {
     const [signature, publicKey] = decompiledSigScript;
-    const publicKeys = [publicKey];
-    const signatures = [signature];
-    const pubScript = script.pubKeyHash.output.encode(crypto.hash160(publicKey));
+    const publicKeys: [Buffer] = [publicKey];
+    const signatures: [Buffer] = [signature];
+    const pubScript: Buffer = script.pubKeyHash.output.encode(crypto.hash160(publicKey));
 
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
   }
@@ -145,32 +156,63 @@ export function parseSignatureScript(input: Input): ParsedSignatureScript {
   return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
 }
 
+export function parseSignatureScript2Of3(input: Input): ParsedSignatureScript2Of3 {
+  const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
+
+  if (![script.types.P2WSH, script.types.P2SH, script.types.P2PKH].includes(result.inputClassification)) {
+    throw new Error(`unexpected inputClassification ${result.inputClassification}`);
+  }
+  if (!result.signatures) {
+    throw new Error(`missing signatures`);
+  }
+  if (result.publicKeys.length !== 3) {
+    throw new Error(`unexpected pubkey count`);
+  }
+  if (!result.pubScript || result.pubScript.length === 0) {
+    throw new Error(`pubScript missing or empty`);
+  }
+
+  return result;
+}
+
 /**
- * Verify the signature on a (half-signed) transaction
- * @param transaction bitcoinjs-lib tx object
- * @param inputIndex The input whererfore to check the signature
- * @param amount For segwit and BCH, the input amount needs to be known for signature verification
- * @param verificationSettings
- * @param verificationSettings.signatureIndex The index of the signature to verify (only iterates over non-empty signatures)
- * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
- * @returns {boolean}
+ * Constraints for signature verifications.
+ * Parameters are conjunctive: if multiple parameters are set, a verification for an individual
+ * signature must satisfy all of them.
  */
-export function verifySignature(
+export type VerificationSettings = {
+  /**
+   * The index of the signature to verify. Only iterates over non-empty signatures.
+   */
+  signatureIndex?: number;
+  /**
+   * The hex of the public key to verify.
+   */
+  publicKey?: Buffer;
+};
+
+/**
+ * Result for a individual signature verification
+ */
+export type SignatureVerification = {
+  /** Set to the public key that signed for the signature */
+  signedBy: Buffer | undefined;
+};
+
+/**
+ * Get signature verifications for multsig transaction
+ * @param transaction
+ * @param inputIndex
+ * @param amount - must be set for segwit transactions and BIP143 transactions
+ * @param verificationSettings
+ * @returns SignatureVerification[] - in order of parsed non-empty signatures
+ */
+export function getSignatureVerifications(
   transaction: Transaction,
   inputIndex: number,
   amount: number,
-  verificationSettings: {
-    signatureIndex?: number;
-    publicKey?: Buffer | string;
-  } = {}
-): boolean {
-  if (typeof verificationSettings.publicKey === 'string') {
-    return verifySignature(transaction, inputIndex, amount, {
-      signatureIndex: verificationSettings.signatureIndex,
-      publicKey: Buffer.from(verificationSettings.publicKey, 'hex'),
-    });
-  }
-
+  verificationSettings: VerificationSettings = {}
+): SignatureVerification[] {
   /* istanbul ignore next */
   if (!transaction.ins) {
     throw new Error(`invalid transaction`);
@@ -182,100 +224,65 @@ export function verifySignature(
     throw new Error(`no input at index ${inputIndex}`);
   }
 
-  const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = parseSignatureScript(input);
+  const parsedScript = parseSignatureScript2Of3(input);
 
-  if (![script.types.P2WSH, script.types.P2SH, script.types.P2PKH].includes(inputClassification)) {
-    return false;
-  }
+  const signatures = parsedScript.signatures
+    .filter((s) => s && s.length)
+    .filter((s, i) => verificationSettings.signatureIndex === undefined || verificationSettings.signatureIndex === i);
 
-  if (!publicKeys || publicKeys.length === 0) {
-    return false;
-  }
+  const publicKeys = parsedScript.publicKeys.filter(
+    (buf) => verificationSettings.publicKey === undefined || verificationSettings.publicKey.equals(buf)
+  );
 
-  if (isSegwitInput && !amount) {
-    return false;
-  }
+  return signatures.map((signatureBuffer) => {
+    // slice the last byte from the signature hash input because it's the hash type
+    const signature = ECSignature.fromDER(signatureBuffer.slice(0, -1));
+    const hashType = signatureBuffer[signatureBuffer.length - 1];
+    const transactionHash = transaction.hashForSignatureByNetwork(
+      inputIndex,
+      parsedScript.pubScript,
+      amount,
+      hashType,
+      parsedScript.isSegwitInput
+    );
+    const signedBy = publicKeys.filter((publicKey) =>
+      ECPair.fromPublicKeyBuffer(publicKey).verify(transactionHash, signature)
+    );
 
-  if (!signatures) {
-    return false;
-  }
-
-  // get the first non-empty signature and verify it against all public keys
-  const nonEmptySignatures = signatures.filter((s) => s.length > 0);
-
-  /*
-  We either want to verify all signature/pubkey combinations, or do an explicit combination
-
-  If a signature index is specified, only that signature is checked. It's verified against all public keys.
-  If a single public key is found to be valid, the function returns true.
-
-  If a public key is specified, we iterate over all signatures. If a single one matches the public key, the function
-  returns true.
-
-  If neither is specified, all signatures are checked against all public keys. Each signature must have its own distinct
-  public key that it matches for the function to return true.
-   */
-  let signaturesToCheck = nonEmptySignatures;
-  if (verificationSettings.signatureIndex !== undefined) {
-    signaturesToCheck = [nonEmptySignatures[verificationSettings.signatureIndex]];
-  }
-
-  const matchedPublicKeyIndices = {};
-  let areAllSignaturesValid = true;
-
-  // go over all signatures
-  for (const signatureBuffer of signaturesToCheck) {
-    let isSignatureValid = false;
-
-    const hasSignatureBuffer = Buffer.isBuffer(signatureBuffer) && signatureBuffer.length > 0;
-    if (hasSignatureBuffer && Buffer.isBuffer(pubScript) && pubScript.length > 0) {
-      // slice the last byte from the signature hash input because it's the hash type
-      const signature = ECSignature.fromDER(signatureBuffer.slice(0, -1));
-      const hashType = signatureBuffer[signatureBuffer.length - 1];
-      if (!hashType) {
-        // missing hashType byte - signature cannot be validated
-        return false;
-      }
-      const signatureHash = transaction.hashForSignatureByNetwork(
-        inputIndex,
-        pubScript,
-        amount,
-        hashType,
-        isSegwitInput
-      );
-
-      for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
-        const publicKeyBuffer = publicKeys[publicKeyIndex];
-        if (verificationSettings.publicKey !== undefined && !publicKeyBuffer.equals(verificationSettings.publicKey)) {
-          // we are only looking to verify one specific public key's signature (publicKeyHex)
-          // this particular public key is not the one whose signature we're trying to verify
-          continue;
-        }
-
-        if (matchedPublicKeyIndices[publicKeyIndex]) {
-          continue;
-        }
-
-        const publicKey = ECPair.fromPublicKeyBuffer(publicKeyBuffer);
-        if (publicKey.verify(signatureHash, signature)) {
-          isSignatureValid = true;
-          matchedPublicKeyIndices[publicKeyIndex] = true;
-          break;
-        }
-      }
+    if (signedBy.length === 0) {
+      return { signedBy: undefined };
     }
-
-    if (verificationSettings.publicKey !== undefined && isSignatureValid) {
-      // We were trying to see if any of the signatures was valid for the given public key. Evidently yes.
-      return true;
+    if (signedBy.length === 1) {
+      return { signedBy: signedBy[0] };
     }
+    throw new Error(`illegal state: signed by multiple public keys`);
+  });
+}
 
-    if (!isSignatureValid && verificationSettings.publicKey === undefined) {
-      return false;
-    }
+/**
+ * @param transaction
+ * @param inputIndex
+ * @param amount
+ * @param verificationSettings - if publicKey is specified, returns true iff any signature is signed by publicKey.
+ */
+export function verifySignature(
+  transaction: Transaction,
+  inputIndex: number,
+  amount: number,
+  verificationSettings: VerificationSettings = {}
+): boolean {
+  const signatureVerifications = getSignatureVerifications(
+    transaction,
+    inputIndex,
+    amount,
+    verificationSettings
+  ).filter(
+    (v) =>
+      // If a publicKey constraint is set, a single valid signature by the specified pubkey is sufficient.
+      // Otherwise, all signatures must be valid.
+      verificationSettings.publicKey === undefined ||
+      (v.signedBy !== undefined && verificationSettings.publicKey.equals(v.signedBy))
+  );
 
-    areAllSignaturesValid = isSignatureValid && areAllSignaturesValid;
-  }
-
-  return areAllSignaturesValid;
+  return signatureVerifications.length > 0 && signatureVerifications.every((v) => v.signedBy !== undefined);
 }
