@@ -1011,7 +1011,7 @@ exports.signTransaction = function (params) {
     // the signature validation is optional and can be disabled by setting:
     // validate = false
     if (validate) {
-      const signatureCount = exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, false, currentUnspent.value, enableBCH);
+      const signatureCount = exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, currentUnspent.value);
       // TODO: figure out something smarter for half-signed
 
       // if params.fullLocalSigning is set to true, we allow custom non-zero values
@@ -1043,12 +1043,11 @@ exports.signTransaction = function (params) {
  * @param amount
  * @returns {number}
  */
-exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ignoreKeyIndices, amount, isBCH = false) {
+exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, amount) {
   if (inputIndex < 0 || inputIndex >= transaction.ins.length) {
     throw new Error('illegal index');
   }
 
-  ignoreKeyIndices = ignoreKeyIndices || [];
   const currentTransactionInput = transaction.ins[inputIndex];
   let sigScript = currentTransactionInput.script;
   let sigsNeeded = 1;
@@ -1077,11 +1076,6 @@ exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, ig
         sigs.push(decompiledSigScript[index]);
       }
       for (let index = 1; index < decompiledPubScript.length - 2; ++index) {
-        // we minus 1 because the key indexes start from the second chunk (first chunk is used for total keys)
-        if (_.includes(ignoreKeyIndices, index - 1)) {
-          // ignore this public key (do not treat it as valid for a signature)
-          continue;
-        }
         pubKeys.push(decompiledPubScript[index]);
       }
       break;
