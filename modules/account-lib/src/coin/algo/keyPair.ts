@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import algosdk, { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
 import utils from './utils';
 
