@@ -17,6 +17,13 @@ export class MultiSigBuilder extends TransactionBuilder {
     super(_coinConfig);
   }
 
+  /**
+   * Sets array of SignerEntry objects, indicating the addresses and weights of signers in this list.
+   * https://xrpl.org/signerlistset.html#signerlistset-fields
+   *
+   * @param {SignerEntry[]} signerEntries the number of signers, set 0 for removal
+   * @returns {MultiSigBuilder} builder
+   */
   signerEntries(signerEntries: SignerEntry[]): this {
     if (this._signerQuorum > 0) {
       if (signerEntries.length < 1 || signerEntries.length > 8) {
@@ -27,6 +34,13 @@ export class MultiSigBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Sets signer quorum
+   * https://xrpl.org/signerlistset.html#signerlistset-fields
+   *
+   * @param {number} signerQuorum the number of signers, set 0 for removal
+   * @returns {MultiSigBuilder} builder
+   */
   signerQuorum(signerQuorum: number): this {
     if (signerQuorum < 0) {
       throw new InvalidTransactionError('Signer Quorum must be greater than or equal to 0');
