@@ -3237,9 +3237,9 @@ algo-msgpack-with-bigint@^2.1.1:
   integrity sha512-F1tGh056XczEaEAqu7s+hlZUDWwOBT70Eq0lfMpBP2YguSQVyxRbprLq5rELXKQOyOaixTWYhMeMQMzP0U5FoQ==
 
 algosdk@^1.9.1:
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/algosdk/-/algosdk-1.11.0.tgz#05a3cd75fd24cfbdc1a9621f8feac2c8973120b1"
-  integrity sha512-rXOyMWZFAAhEaiV6s+YjCTv6jt5FPzD0G1lYRVrmwgcu4VbRgxbTHrt39MTjBTgKW9293cHFbOrONuDmuSHAzg==
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/algosdk/-/algosdk-1.11.1.tgz#58bfc8e85de3624de0fb5f51c9f7408f96d841c0"
+  integrity sha512-2B7Tz8NSaME1aQDrzvhAuTm67c/2KCXTeuzgKvB61YXUU3pe0zyDzEw7bgv1sC6lbbD6BihroiUtidP+Fdh+cQ==
   dependencies:
     algo-msgpack-with-bigint "^2.1.1"
     buffer "^6.0.2"
@@ -4276,7 +4276,7 @@ buffer@^5.0.2, buffer@^5.0.5, buffer@^5.1.0, buffer@^5.4.3, buffer@^5.5.0, buffe
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
 
-buffer@^6.0.3:
+buffer@^6.0.2, buffer@^6.0.3:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
   integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
@@ -15373,9 +15373,9 @@ typescript@^3.6.4:
   integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
 
 typescript@^4.2.4:
-  version "4.3.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.5.tgz#4d1c37cc16e893973c45a06886b7113234f119f4"
-  integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.2.tgz#6d618640d430e3569a1dfb44f7d7e600ced3ee86"
+  integrity sha512-gzP+t5W4hdy4c+68bfcv0t400HVJMMd2+H9B7gae1nQlBzCqvrXX+6GL/b3GAgyTH966pzrZ70/fRjwAtZksSQ==
 
 typescript@~4.2.4:
   version "4.2.4"
