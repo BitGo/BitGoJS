@@ -118,16 +118,17 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
           throw new Error(`expected publicKeys`);
         }
         assert.strictEqual(publicKeys.length, 3);
-        publicKeys.slice(0, 2).forEach((publicKey) => {
+
+        publicKeys.forEach((publicKey, publicKeyIndex) => {
           assert.strictEqual(
             verifySignature(parsedTx, i, prevOutValue, {
               publicKey,
             }),
-            true
+            publicKeyIndex === 0 || publicKeyIndex === 1
           );
-
-          assert.strictEqual(verifySignature(parsedTx, i, prevOutValue), true);
         });
+
+        assert.strictEqual(verifySignature(parsedTx, i, prevOutValue), true);
       });
     });
 
