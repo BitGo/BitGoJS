@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import algosdk from 'algosdk';
 import { coins } from '@bitgo/statics';
-import should from 'should';
+import should, { throws } from 'should';
 import sinon, { assert } from 'sinon';
 import { AddressValidationError, TransferBuilder } from '../../../../../src/coin/algo';
 import * as AlgoResources from '../../../../resources/algo';
@@ -11,6 +11,7 @@ describe('Algo Transfer Builder', () => {
 
   const sender = AlgoResources.accounts.account1;
   const receiver = AlgoResources.accounts.account2;
+  const ALGOTXNLENGTH = 52;
   const {
     networks: { testnet },
   } = AlgoResources;
@@ -97,12 +98,22 @@ describe('Algo Transfer Builder', () => {
       builder.from(AlgoResources.rawTx.transfer.unsigned);
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.unsigned);
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.unsigned);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
       should.deepEqual(txJson.firstRound, 1);
       should.deepEqual(txJson.lastRound, 100);
+    });
+    it('should fail building from raw unsigned tx, due this has lease = 0', async () => {
+      const unsignedTxnWithLeaseZero =
+        '8ba3616d74cd2710a5636c6f7365c420fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025a3666565cd55f0a2667601a367656eac746573746e65742d76312e30a26768c4204863b518a4b3c84ec810f22d4f1081cb0f71f059a7ac20dec62f7f70e5093a22a26c7664a46e6f7465c4046e6f7465a3726376c4203d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660ca3736e64c420d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511aa474797065a3706179';
+      builder.from(unsignedTxnWithLeaseZero);
+      try {
+        await builder.build();
+      } catch (e) {
+        throws(e, 'lease must be of length 32');
+      }
     });
 
     it('should build from raw signed tx', async () => {
@@ -111,7 +122,7 @@ describe('Algo Transfer Builder', () => {
       builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
+      should.equal(txJson.id.toString().length, ALGOTXNLENGTH);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
@@ -124,8 +135,8 @@ describe('Algo Transfer Builder', () => {
       builder.numberOfSigners(1);
       builder.sign({ key: sender.prvKey });
       const tx = await builder.build();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.signed);
       const txJson = tx.toJson();
+      should.equal(txJson.id.toString().length, ALGOTXNLENGTH);
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.amount, '10000');
@@ -206,8 +217,8 @@ describe('Algo Transfer Builder', () => {
         .setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address])
         .sign({ key: AlgoResources.accounts.account3.prvKey });
       const tx = await builder.build();
-      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.transfer.multisig);
       const txJson = tx.toJson();
+      should.deepEqual(Buffer.from(tx.toBroadcastFormat()).toString('base64'), AlgoResources.rawTx.transfer.multisig);
       should.deepEqual(txJson.from, msigAddress);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.fee, 22000);

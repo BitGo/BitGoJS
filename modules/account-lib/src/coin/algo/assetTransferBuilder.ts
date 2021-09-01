@@ -58,7 +58,7 @@ export class AssetTransferBuilder extends TransferBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    return algosdk.makeAssetTransferTxnWithSuggestedParams(
+    const txnObject = algosdk.makeAssetTransferTxnWithSuggestedParams(
       this._sender,
       this._to,
       this._closeRemainderTo,
@@ -69,6 +69,7 @@ export class AssetTransferBuilder extends TransferBuilder {
       this.suggestedParams,
       this._reKeyTo,
     );
+    return this.addLeaseParam(this._lease, txnObject);
   }
 
   protected get transactionType(): TransactionType {

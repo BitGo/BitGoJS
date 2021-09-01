@@ -113,7 +113,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   protected buildAlgoTxn(): algosdk.Transaction {
     if (!this._nonParticipation) {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      const txnObject = algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
         this._voteKey,
@@ -123,8 +123,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._voteKeyDilution,
         this.suggestedParams,
       );
+      return this.addLeaseParam(this._lease, txnObject);
     } else {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      const txnObject = algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
         undefined,
@@ -136,6 +137,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._reKeyTo,
         this._nonParticipation,
       );
+      return this.addLeaseParam(this._lease, txnObject);
     }
   }
 

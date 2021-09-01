@@ -10,6 +10,8 @@ import { AddressValidationError, InsufficientFeeError } from './errors';
 import { KeyPair } from './keyPair';
 import { BaseTransactionSchema } from './txnSchema';
 import Utils from './utils';
+import _ from 'lodash';
+import crypto from 'crypto';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -471,5 +473,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       genesisID: this._genesisId,
       genesisHash: this._genesisHash,
     };
+  }
+
+  /**
+   * Method for adding lease param into transaction .
+   *
+   * @returns {algosdk.Transaction} The transaction with needed lease.
+   */
+  protected addLeaseParam(currentLease: Uint8Array | undefined, txn: algosdk.Transaction): algosdk.Transaction {
+    if (!_.isUndefined(currentLease)) {
+      txn.addLease(currentLease);
+    } else {
+      txn.addLease(new Uint8Array(crypto.randomBytes(32)));
+    }
+    return txn;
   }
 }

@@ -19,7 +19,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    return algosdk.makePaymentTxnWithSuggestedParams(
+    const txnObject = algosdk.makePaymentTxnWithSuggestedParams(
       this._sender,
       this._to,
       this._amount,
@@ -28,6 +28,7 @@ export class TransferBuilder extends TransactionBuilder {
       this.suggestedParams,
       this._reKeyTo,
     );
+    return this.addLeaseParam(this._lease, txnObject);
   }
 
   protected get transactionType(): TransactionType {

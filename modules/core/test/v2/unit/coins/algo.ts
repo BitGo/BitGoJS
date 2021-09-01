@@ -2,7 +2,7 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as AlgoResources from '../../fixtures/coins/algo';
 import { randomBytes } from 'crypto';
-// import should from 'should';
+import { throws } from 'should';
 
 describe('ALGO:', function () {
   let bitgo;
@@ -135,6 +135,18 @@ describe('ALGO:', function () {
       Buffer.from(explain.outputs[0].memo).toString().should.equal(AlgoResources.explainRawTx.transfer.note);
       explain.fee.should.equal(1000);
       explain.changeAmount.should.equal('0');
+    });
+
+    it('should fail on explain unsigned Transfer txn hex due the tx has lease = 0', async function () {
+      const unsignedTransferTxnWithZeroLease = '8aa3616d74cd2710a3666565cd03e8a26676ce00065e82a367656eaa73616e646e65742d7631a26768c42006bc7a0900052696118c2b0fe5dd2eb2519f88acc553d326b276aa1a5e2f2db0a26c76ce0006626aa46e6f7465c40c48656c6c6f20776f726c6421a3726376c4203d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660ca3736e64c420d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511aa474797065a3706179';
+      try {
+        await basecoin.explainTransaction({
+          txHex: unsignedTransferTxnWithZeroLease,
+          feeInfo: { fee: '1000' },
+        });
+      } catch (e) {
+        throws(e, 'lease must be of length 32');
+      }
     });
 
     it('should explain a signed transfer transaction hex', async function () {
