@@ -41,14 +41,6 @@ export class Btg extends Btc {
     return true;
   }
 
-  /**
-   *
-   * @returns {number}
-   */
-  get defaultSigHashType(): number {
-    return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-  }
-
   recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl;
 

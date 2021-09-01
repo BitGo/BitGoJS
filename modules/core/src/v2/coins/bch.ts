@@ -152,14 +152,6 @@ export class Bch extends AbstractUtxoCoin {
     return unspent.address === '33p1q7mTGyeM5UnZERGiMcVUkY12SCsatA';
   }
 
-  /**
-   *
-   * @returns {number}
-   */
-  public get defaultSigHashType() {
-    return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-  }
-
   recoveryBlockchainExplorerUrl(url) {
     return common.Environments[this.bitgo.env].bchExplorerBaseUrl + url;
   }

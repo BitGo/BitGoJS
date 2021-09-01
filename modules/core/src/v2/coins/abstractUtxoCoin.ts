@@ -1187,7 +1187,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
         debug('Input details: %O', signatureContext);
 
-        const sigHashType = self.defaultSigHashType;
+        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
         try {
           if (signatureContext.isP2wsh) {
             debug('Signing p2wsh input');
@@ -1273,11 +1273,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Get the default sighash type to be used when signing transactions
+   * @deprecated - use utxolib.bitgo.getDefaultSigHash(network) instead
    * @returns {number}
    */
   get defaultSigHashType(): number {
-    return utxolib.Transaction.SIGHASH_ALL;
+    return utxolib.bitgo.getDefaultSigHash(this.network);
   }
 
   /**

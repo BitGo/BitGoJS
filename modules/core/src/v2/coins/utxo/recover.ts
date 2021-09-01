@@ -354,7 +354,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   } else {
     const signedTx = signRecoveryTransaction(
       transactionBuilder,
-      coin.defaultSigHashType,
+      utxolib.bitgo.getDefaultSigHash(coin.network),
       unspents,
       addressesById,
       !isKrsRecovery
