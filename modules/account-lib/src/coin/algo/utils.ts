@@ -11,6 +11,7 @@ import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
 import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
+import { DefaultKeys } from '../baseCoin/iface';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
@@ -567,6 +568,27 @@ export class Utils implements BaseUtils {
     return {
       addr: algosdk.encodeAddress(keys.publicKey),
       sk: keys.secretKey,
+    };
+  }
+
+  /**
+   * decodeKeys decode the keys of keyPair
+   *
+   * @param keyPair {KeyPair}
+   * @returns DefaultKeys
+   */
+  decodeKeys(keyPair: KeyPair): DefaultKeys {
+    const { prv, pub } = keyPair.getKeys();
+    let prvDecode;
+    let prvHex;
+    if (prv) {
+      prvDecode = this.decodeAddress(prv).publicKey;
+      prvHex = this.toHex(prvDecode);
+    }
+    const pubDecode = this.decodeAddress(pub).publicKey;
+    return {
+      prv: prvHex,
+      pub: this.toHex(pubDecode),
     };
   }
 }

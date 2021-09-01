@@ -37,10 +37,10 @@ export class KeyPair extends Ed25519KeyPair {
   getKeys(): DefaultKeys {
     // TODO(https://bitgoinc.atlassian.net/browse/STLX-6062): refactor this method
     // should return the pub and prv in the Algorand encoded format
-    const result: DefaultKeys = { pub: this.keyPair.pub };
+    const result: DefaultKeys = { pub: utils.encodeAddress(Buffer.from(this.keyPair.pub, 'hex')) };
 
     if (this.keyPair.prv) {
-      result.prv = this.keyPair.prv;
+      result.prv = utils.encodeAddress(Buffer.from(this.keyPair.prv, 'hex'));
     }
 
     return result;

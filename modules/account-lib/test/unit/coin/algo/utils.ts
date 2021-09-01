@@ -25,7 +25,7 @@ describe('utils', () => {
 
   it('should return a mnemonic from a secret key ', () => {
     const keyPair = new Algo.KeyPair();
-    const keys = keyPair.getKeys();
+    const keys = Algo.algoUtils.decodeKeys(keyPair);
     let mn;
     let mnAlgo;
     if (keys.prv) {
@@ -80,7 +80,7 @@ describe('utils', () => {
 
   it('should generate the same keyPair with which it started', () => {
     const keyPair = new Algo.KeyPair();
-    const keys = keyPair.getKeys();
+    const keys = Algo.algoUtils.decodeKeys(keyPair);
     const mnemonic = keys.prv
       ? Algo.algoUtils.secretKeyToMnemonic(Buffer.from(keys.prv, 'hex'))
       : 'green office boost casino shoe army peace damp mimic this brand economy second sudden credit give coast match brick add good exact brand about neck';
@@ -334,5 +334,19 @@ describe('utils', () => {
   it('getTransactionByteSize should generate the size correct para keyregTxn', () => {
     const size = Algo.algoUtils.getTransactionByteSize(keyregTxn);
     should.equal(size, 320);
+  });
+
+  it('decodeKeys should returns the keys decode', () => {
+    const keyPair = new Algo.KeyPair({ prv: account1.secretKey.toString('hex') });
+    const keys = Algo.algoUtils.decodeKeys(keyPair);
+    should.equal(keys.prv, account1.secretKey.toString('hex'));
+    should.equal(keys.pub, account1.pubKey.toString('hex'));
+  });
+
+  it('decodeKeys should returns also pubKey', () => {
+    const keyPair = new Algo.KeyPair({ pub: account1.pubKey.toString('hex') });
+    const keys = Algo.algoUtils.decodeKeys(keyPair);
+    should.equal(keys.prv, undefined);
+    should.equal(keys.pub, account1.pubKey.toString('hex'));
   });
 });

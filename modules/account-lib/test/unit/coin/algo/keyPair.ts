@@ -16,23 +16,26 @@ describe('Algo KeyPair', () => {
       const keyPair = new Algo.KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
-      should.equal(keyPair.getKeys().prv!.length, 64);
-      should.equal(keyPair.getKeys().pub.length, 64);
+      should.equal(keyPair.getKeys().prv!.length, 58);
+      should.equal(keyPair.getKeys().pub.length, 58);
     });
 
     test('initialization from private key', () => {
       let keyPair = new Algo.KeyPair({ prv: account1.secretKey.toString('hex') });
-      should.equal(keyPair.getKeys().prv, account1.secretKey.toString('hex'));
-      should.equal(keyPair.getKeys().pub, account1.pubKey.toString('hex'));
+      let keysDecode = Algo.algoUtils.decodeKeys(keyPair);
+      should.equal(keysDecode.prv, account1.secretKey.toString('hex'));
+      should.equal(keysDecode.pub, account1.pubKey.toString('hex'));
 
       keyPair = new Algo.KeyPair({ prv: account2.secretKey.toString('hex') });
-      should.equal(keyPair.getKeys().prv, account2.secretKey.toString('hex'));
-      should.equal(keyPair.getKeys().pub, account2.pubKey.toString('hex'));
+      keysDecode = Algo.algoUtils.decodeKeys(keyPair);
+      should.equal(keysDecode.prv, account2.secretKey.toString('hex'));
+      should.equal(keysDecode.pub, account2.pubKey.toString('hex'));
     });
 
     test('initialization from public key', () => {
       const keyPair = new Algo.KeyPair({ pub: account3.pubKey.toString('hex') });
-      should.equal(keyPair.getKeys().pub, account3.pubKey.toString('hex'));
+      const { pub } = Algo.algoUtils.decodeKeys(keyPair);
+      should.equal(pub, account3.pubKey.toString('hex'));
     });
   });
 
@@ -72,8 +75,8 @@ describe('Algo KeyPair', () => {
   describe('getKeys', () => {
     it('should get private and public keys in the protocol default format', () => {
       const keyPair = new Algo.KeyPair(defaultSeed);
-      const { prv, pub } = keyPair.getKeys();
-      prv!.should.equal(defaultAccount.secretKey.toString('hex'));
+      const { prv, pub } = Algo.algoUtils.decodeKeys(keyPair);
+      prv?.should.equal(defaultAccount.secretKey.toString('hex'));
       pub.should.equal(defaultAccount.pubKey.toString('hex'));
     });
 

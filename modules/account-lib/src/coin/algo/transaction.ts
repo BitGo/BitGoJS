@@ -68,7 +68,8 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signKey = keyPair.getKeys().prv + keyPair.getKeys().pub;
+    const { prv, pub } = utils.decodeKeys(keyPair);
+    const signKey = prv + pub;
     if (signKey) {
       this._signedTransaction = algosdk.signTransaction(this._algoTransaction, utils.toUint8Array(signKey)).blob;
     } else {
