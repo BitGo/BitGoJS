@@ -643,7 +643,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     throw new Error('hashForZcashSignature can only be called when using Zcash network')
   }
 
-  if (inIndex >= this.ins.length && inIndex !== VALUE_UINT64_MAX) {
+  if (inIndex >= this.ins.length) {
     /* istanbul ignore next */
     throw new Error('Input index is out of range')
   }
@@ -660,13 +660,10 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     var baseBufferSize = 0
     baseBufferSize += 4 * 5  // header, nVersionGroupId, lock_time, nExpiryHeight, hashType
     baseBufferSize += 32 * 4  // 256 hashes: hashPrevouts, hashSequence, hashOutputs, hashJoinSplits
-    if (inIndex !== VALUE_UINT64_MAX) {
-      // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
-      baseBufferSize += 4 * 2  // input.index, input.sequence
-      baseBufferSize += 8  // value
-      baseBufferSize += 32  // input.hash
-      baseBufferSize += varSliceSize(prevOutScript)  // prevOutScript
-    }
+    baseBufferSize += 4 * 2  // input.index, input.sequence
+    baseBufferSize += 8  // value
+    baseBufferSize += 32  // input.hash
+    baseBufferSize += varSliceSize(prevOutScript)  // prevOutScript
     if (this.isSaplingCompatible()) {
       baseBufferSize += 32 * 2  // hashShieldedSpends and hashShieldedOutputs
       baseBufferSize += 8  // valueBalance
@@ -690,18 +687,15 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     }
     bufferWriter.writeUInt32(hashType)
 
-    // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig):
-    if (inIndex !== VALUE_UINT64_MAX) {
-      // The input being signed (replacing the scriptSig with scriptCode + amount)
-      // The prevout may already be contained in hashPrevout, and the nSequence
-      // may already be contained in hashSequence.
-      var input = this.ins[inIndex]
-      bufferWriter.writeSlice(input.hash)
-      bufferWriter.writeUInt32(input.index)
-      bufferWriter.writeVarSlice(prevOutScript)
-      bufferWriter.writeUInt64(value)
-      bufferWriter.writeUInt32(input.sequence)
-    }
+    // The input being signed (replacing the scriptSig with scriptCode + amount)
+    // The prevout may already be contained in hashPrevout, and the nSequence
+    // may already be contained in hashSequence.
+    const input = this.ins[inIndex]
+    bufferWriter.writeSlice(input.hash)
+    bufferWriter.writeUInt32(input.index)
+    bufferWriter.writeVarSlice(prevOutScript)
+    bufferWriter.writeUInt64(value)
+    bufferWriter.writeUInt32(input.sequence)
 
     var personalization = Buffer.alloc(16)
     var prefix = 'ZcashSigHash'
