@@ -882,7 +882,7 @@ exports.signTransaction = function (params) {
     debug('New network: %O', network);
   }
 
-  let transaction = utxolib.bitgo.createTransactionFromHex(params.transactionHex, network);
+  const transaction = utxolib.bitgo.createTransactionFromHex(params.transactionHex, network);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
@@ -919,6 +919,10 @@ exports.signTransaction = function (params) {
       continue;
     }
 
+    if (currentUnspent.witnessScript && enableBCH) {
+      throw new Error('BCH does not support segwit inputs');
+    }
+
     const chainPath = currentUnspent.chainPath;
     if (rootExtKey) {
       const { walletSubPath = '/0/0' } = keychain;
@@ -927,8 +931,6 @@ exports.signTransaction = function (params) {
     }
 
     privKey.network = network;
-
-    const isSegwitInput = !!currentUnspent.witnessScript;
 
     // subscript is the part of the output script after the OP_CODESEPARATOR.
     // Since we are only ever signing p2sh outputs, which do not have
@@ -940,45 +942,9 @@ exports.signTransaction = function (params) {
     // builder, confusingly named the same exact thing as our transaction
     // builder, but with inequivalent behavior.
     try {
-
-      if (isSegwitInput) {
-        debug('Signing segwit input #%d', index);
-        if (enableBCH) {
-          throw new Error('BCH does not support segwit inputs');
-        }
-        let signatures = _.cloneDeep(txb.inputs[index].signatures);
-        const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
-        currentUnspent.validationScript = witnessScript;
-
-        debug('Current unspent value: %d', currentUnspent.value);
-
-        txb.sign(index, privKey, subscript, utxolib.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
-
-        if (Array.isArray(signatures)) {
-          // for segwit inputs, if they are partially signed, bitcoinjs-lib overrides previous signatures
-          // this workaround forces them to be preserved
-          signatures = signatures.filter(sig => !!sig);
-          // Last, override builder's signatures property to an array including previous signatures, if there are any.
-          const builderSignatures = txb.inputs[index].signatures;
-          const nonEmptySignatures = _.remove(builderSignatures, sig => !!sig);
-          signatures.push.apply(signatures, nonEmptySignatures);
-          txb.inputs[index].signatures = signatures;
-        }
-
-      } else {
-        debug('Signing non-segwit input #%d', index);
-
-        // only if bitcoin cash is enabled, which should only be in unit tests anyway
-        const bchParameter = enableBCH ? currentUnspent.value : undefined;
-        let sigHashType = utxolib.Transaction.SIGHASH_ALL;
-        if (enableBCH) {
-          sigHashType |= utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-        }
-        debug('BCH parameter: %d', bchParameter);
-        debug('Sighash type: %d', sigHashType);
-        txb.sign(index, privKey, subscript, sigHashType, bchParameter);
-      }
-
+      const witnessScript = currentUnspent.witnessScript ? Buffer.from(currentUnspent.witnessScript, 'hex') : undefined;
+      const sigHash = utxolib.bitgo.getDefaultSigHash(network);
+      txb.sign(index, privKey, subscript, sigHash, currentUnspent.value, witnessScript);
     } catch (e) {
       // we need to know what's causing this
       e.result = {
@@ -988,143 +954,25 @@ exports.signTransaction = function (params) {
       debug('input sign failed: %s', e.message);
       return Bluebird.reject(e);
     }
-
   }
 
-  // reserialize transaction
-  transaction = txb.build();
+  const partialTransaction = txb.buildIncomplete();
 
-  for (let index = 0; index < transaction.ins.length; ++index) {
-    // bitcoinjs-lib adds one more OP_0 than we need. It creates one OP_0 for
-    // every n public keys in an m-of-n multisig, and replaces the OP_0s with
-    // the signature of the nth public key, then removes any remaining OP_0s
-    // at the end. This behavior is not incorrect and valid for some use
-    // cases, particularly if you do not know which keys will be signing the
-    // transaction and the signatures may be added to the transaction in any
-    // chronological order, but is not compatible with the BitGo API, which
-    // assumes m OP_0s for m-of-n multisig (or m-1 after the first signature
-    // is created). Thus we need to remove the superfluous OP_0.
-
-    const currentUnspent = params.unspents[index];
-
-    // The signatures are validated server side and on the bitcoin network, so
-    // the signature validation is optional and can be disabled by setting:
-    // validate = false
-    if (validate) {
-      const signatureCount = exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, currentUnspent.value);
-      // TODO: figure out something smarter for half-signed
-
-      // if params.fullLocalSigning is set to true, we allow custom non-zero values
-      // otherwise, the signature count has to be -1
-
-      const fullLocalSigning = !!params.fullLocalSigning;
-      if (signatureCount === 0 || (!fullLocalSigning && signatureCount !== -1)) {
-        // if the signature count is positive, we do not want to throw the error, because it is expected
-        throw new Error('number of signatures is invalid - something went wrong when signing');
+  if (validate) {
+    partialTransaction.ins.forEach((input, index) => {
+      const signatureCount = utxolib.bitgo.getSignatureVerifications(
+        partialTransaction, index, params.unspents[index].value
+      ).filter(v => v.signedBy !== undefined).length;
+      if (signatureCount < 1) {
+        throw new Error('expected at least one valid signature');
       }
-
-    }
+      if (params.fullLocalSigning && signatureCount < 2) {
+        throw new Error('fullLocalSigning set: expected at least two valid signatures');
+      }
+    });
   }
 
   return Bluebird.resolve({
-    transactionHex: transaction.toHex(),
+    transactionHex: partialTransaction.toHex(),
   });
-};
-
-/**
- * Verify the signature on an input.
- *
- * If the transaction is fully signed, returns a positive number representing the number of valid signatures.
- * If the transaction is partially signed, returns a negative number representing the number of valid signatures.
- * @param transaction The bitcoinjs-lib transaction object
- * @param inputIndex the input index to verify
- * @param pubScript the redeem script to verify with
- * @param ignoreKeyIndices array of multisig keys indexes (in order of keychains on the wallet). e.g. [1] to ignore backup keys
- * @param amount
- * @returns {number}
- */
-exports.verifyInputSignatures = function (transaction, inputIndex, pubScript, amount) {
-  if (inputIndex < 0 || inputIndex >= transaction.ins.length) {
-    throw new Error('illegal index');
-  }
-
-  const currentTransactionInput = transaction.ins[inputIndex];
-  let sigScript = currentTransactionInput.script;
-  let sigsNeeded = 1;
-  const sigs: string[] = [];
-  const pubKeys: string[] = [];
-  let decompiledSigScript = utxolib.script.decompile(sigScript);
-
-  const isSegwitInput = currentTransactionInput.witness.length > 0;
-  if (isSegwitInput) {
-    decompiledSigScript = currentTransactionInput.witness;
-    sigScript = utxolib.script.compile(decompiledSigScript);
-    if (!amount) {
-      return 0;
-    }
-  }
-
-  // Check the script type to determine number of signatures, the pub keys, and the script to hash.
-  const inputClassification = utxolib.script.classifyInput(sigScript, true);
-  switch (inputClassification) {
-    case 'scripthash':
-      // Replace the pubScript with the P2SH Script.
-      pubScript = decompiledSigScript[decompiledSigScript.length - 1];
-      const decompiledPubScript = utxolib.script.decompile(pubScript);
-      sigsNeeded = decompiledPubScript[0] - utxolib.opcodes.OP_1 + 1;
-      for (let index = 1; index < decompiledSigScript.length - 1; ++index) {
-        sigs.push(decompiledSigScript[index]);
-      }
-      for (let index = 1; index < decompiledPubScript.length - 2; ++index) {
-        pubKeys.push(decompiledPubScript[index]);
-      }
-      break;
-    case 'pubkeyhash':
-      sigsNeeded = 1;
-      sigs.push(decompiledSigScript[0]);
-      pubKeys.push(decompiledSigScript[1]);
-      break;
-    default:
-      return 0;
-  }
-
-  let numVerifiedSignatures = 0;
-  for (let sigIndex = 0; sigIndex < sigs.length; ++sigIndex) {
-    // If this is an OP_0, then its been left as a placeholder for a future sig.
-    if (sigs[sigIndex] === utxolib.opcodes.OP_0) {
-      continue;
-    }
-
-    const hashType = sigs[sigIndex][sigs[sigIndex].length - 1];
-    sigs[sigIndex] = sigs[sigIndex].slice(0, sigs[sigIndex].length - 1); // pop hash type from end
-    const signatureHash = transaction.hashForSignatureByNetwork(
-      inputIndex,
-      pubScript,
-      amount,
-      hashType,
-      isSegwitInput
-    );
-
-    let validSig = false;
-
-    // Enumerate the possible public keys
-    for (let pubKeyIndex = 0; pubKeyIndex < pubKeys.length; ++pubKeyIndex) {
-      const pubKey = utxolib.ECPair.fromPublicKeyBuffer(pubKeys[pubKeyIndex]);
-      const signature = utxolib.ECSignature.fromDER(sigs[sigIndex]);
-      validSig = pubKey.verify(signatureHash, signature);
-      if (validSig) {
-        pubKeys.splice(pubKeyIndex, 1);  // remove the pubkey so we can't match 2 sigs against the same pubkey
-        break;
-      }
-    }
-    if (!validSig) {
-      throw new Error('invalid signature for index ' + inputIndex);
-    }
-    numVerifiedSignatures++;
-  }
-
-  if (numVerifiedSignatures < sigsNeeded) {
-    numVerifiedSignatures = -numVerifiedSignatures;
-  }
-  return numVerifiedSignatures;
 };
