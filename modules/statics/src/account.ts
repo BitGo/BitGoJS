@@ -226,6 +226,7 @@ export class AlgoCoin extends AccountCoinToken {
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param feeLimit? Optional max fee for transactions
  */
 export function account(
   name: string,
@@ -238,7 +239,7 @@ export function account(
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   isToken: boolean = false,
-  feeLimit: string = ''
+  feeLimit?: string
 ) {
   return Object.freeze(
     new AccountCoin({
@@ -525,6 +526,7 @@ export function tstellarToken(
  * @param network? Optional token network. Defaults to TRON main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param feeLimit Max fee for transactions
  */
 export function tronToken(
   name: string,
@@ -570,7 +572,7 @@ export function tronToken(
  * @param network? Optional token network. Defaults to the testnet TRON network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
- * @param feeLimit
+ * @param feeLimit Max fee for transactions
  */
 export function ttronToken(
   name: string,

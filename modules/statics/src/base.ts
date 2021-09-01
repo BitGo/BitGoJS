@@ -709,6 +709,9 @@ export abstract class BaseCoin {
    */
   public readonly primaryKeyCurve: KeyCurve;
 
+  /**
+   * The max fee for transactions
+   */
   public readonly feeLimit?: string;
 
   /**
