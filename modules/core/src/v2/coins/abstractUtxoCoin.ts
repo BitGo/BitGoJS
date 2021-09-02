@@ -38,6 +38,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
+  HalfSignedUtxoTransaction,
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
@@ -1112,10 +1113,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   signTransaction(
     params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
+    callback?: NodeCallback<SignedTransaction | HalfSignedUtxoTransaction>
+  ): Bluebird<SignedTransaction | HalfSignedUtxoTransaction> {
     const self = this;
-    return co<SignedTransaction>(function* () {
+    return co<SignedTransaction | HalfSignedUtxoTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
       const userPrv = params.prv;
 
@@ -1154,7 +1155,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
       const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, self.network);
-      self.prepareTransactionBuilder(txb);
+      utxolib.bitgo.setTransactionBuilderDefaults(txb, self.network);
 
       const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
         const currentUnspent = txPrebuild.txInfo.unspents[index];
@@ -1186,7 +1187,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
         debug('Input details: %O', signatureContext);
 
-        const sigHashType = self.defaultSigHashType;
+        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
         try {
           if (signatureContext.isP2wsh) {
             debug('Signing p2wsh input');
@@ -1272,20 +1273,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Modify the transaction builder to comply with the specific coin's requirements such as version and branch id
-   * @param txBuilder
-   * @returns {*}
-   */
-  prepareTransactionBuilder(txBuilder: any): any {
-    return txBuilder;
-  }
-
-  /**
-   * Get the default sighash type to be used when signing transactions
+   * @deprecated - use utxolib.bitgo.getDefaultSigHash(network) instead
    * @returns {number}
    */
   get defaultSigHashType(): number {
-    return utxolib.Transaction.SIGHASH_ALL;
+    return utxolib.bitgo.getDefaultSigHash(this.network);
   }
 
   /**
