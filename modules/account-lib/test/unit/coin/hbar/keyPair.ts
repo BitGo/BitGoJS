@@ -159,6 +159,20 @@ describe('Hedera Key Pair', () => {
       isValid.should.be.true();
     });
 
+    it('a message in hex format', () => {
+      const userPub = '302a300506032b657003210012558e304e09d468d3ab07edf6f7e634adc4788cee76d6a9eb2aff9385698077';
+      const message = '302a300506032b6570032100aa3de24a1df3ce6fb61c8397358985f1df517853ef01523daee5b19dc82f40d5';
+      const signature = Buffer.from(
+        '76ca6556fbfcc5a8b43c12ba6425c5a6c90f5033180628410b5c29f651719f58ef4c1e' +
+          '78dddd5fd794c555ec38c9b9c02ea76d3eef4d8422ae7ea8363cab920c',
+        'hex',
+      );
+
+      const keyPair = new KeyPair({ pub: userPub });
+      const isValid = keyPair.verifySignature(message, new Uint8Array(signature));
+      isValid.should.be.true();
+    });
+
     it('an empty message', () => {
       const message = '';
       const keyPair = new KeyPair({ prv: prv });
