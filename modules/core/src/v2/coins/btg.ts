@@ -41,24 +41,6 @@ export class Btg extends Btc {
     return true;
   }
 
-  /**
-   *
-   * @param txBuilder
-   * @returns {*}
-   */
-  prepareTransactionBuilder(txBuilder: any): any {
-    txBuilder.setVersion(2);
-    return txBuilder;
-  }
-
-  /**
-   *
-   * @returns {number}
-   */
-  get defaultSigHashType(): number {
-    return utxolib.Transaction.SIGHASH_ALL | utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
-  }
-
   recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl;
 

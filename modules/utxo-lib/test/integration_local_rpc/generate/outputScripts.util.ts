@@ -8,6 +8,7 @@ import { Transaction, Triple } from './types';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
 import { getMainnet, isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 import { getDefaultSigHash } from '../../../src/bitgo/signature';
+import { createTransactionBuilderForNetwork, createTransactionForNetwork } from '../../../src/bitgo';
 
 const utxolib = require('../../../src');
 
@@ -78,23 +79,6 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
   throw new Error(`unsupported output type ${scriptType}`);
 }
 
-export function getTransactionBuilder(network: Network) {
-  const txb = new utxolib.TransactionBuilder(network);
-  switch (getMainnet(network)) {
-    case utxolib.networks.zcash:
-      txb.setVersion(4);
-      txb.setVersionGroupId(0x892f2085);
-      // Use "Canopy" consensus branch ID https://zips.z.cash/zip-0251
-      txb.setConsensusBranchId(0xe9ff75a6);
-      break;
-    case utxolib.networks.bitcoincash:
-    case utxolib.networks.bitcoinsv:
-      txb.setVersion(2);
-      break;
-  }
-  return txb;
-}
-
 export function createSpendTransactionFromPrevOutputs(
   keys: bip32.BIP32Interface[],
   scriptType: ScriptType2Of3,
@@ -107,7 +91,7 @@ export function createSpendTransactionFromPrevOutputs(
     throw new Error(`signKeys length must be 1 or 2`);
   }
 
-  const txBuilder = getTransactionBuilder(network);
+  const txBuilder = createTransactionBuilderForNetwork(network);
 
   prevOutputs.forEach(([txid, vout]) => {
     txBuilder.addInput(txid, vout);

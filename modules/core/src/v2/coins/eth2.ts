@@ -10,7 +10,7 @@ import BigNumber from 'bignumber.js';
 
 import {
   BaseCoin,
-  HalfSignedTransaction as BaseHalfSignedTransaction,
+  HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
