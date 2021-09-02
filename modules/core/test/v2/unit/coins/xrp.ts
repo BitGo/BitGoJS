@@ -148,8 +148,9 @@ describe('XRP:', function () {
     });
 
     it('should validate pub key', () => {
-      const { pub } = basecoin.keychains().create();
+      const { pub, prv } = basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
+      basecoin.isValidPrv(prv).should.equal(true);
     });
   });
 });
