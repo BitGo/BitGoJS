@@ -2,6 +2,8 @@ import 'should';
 
 import { randomBytes } from 'crypto';
 import { bytesToWord } from '../../../src/v2/internal/internal';
+import * as bip32 from 'bip32';
+import { Util } from '../../../src/v2/internal/util';
 
 describe('Internal:', () => {
   describe('bytesToWord', () => {
@@ -52,6 +54,13 @@ describe('Internal:', () => {
         const arrStr = inputArr.toString('hex');
         parseInt(resStr, 16).should.equal(parseInt(arrStr, 16));
       }
+    });
+  });
+
+  describe('Util', function () {
+    it('has working xpubToEthAddress', function () {
+      const xpub = bip32.fromSeed(Buffer.alloc(32)).neutered().toBase58();
+      Util.xpubToEthAddress(xpub).should.eql('0xeb317b9f2e0891d66c061ddc3f5ee7ed42d70a44');
     });
   });
 });
