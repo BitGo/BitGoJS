@@ -118,7 +118,7 @@ export class Util {
     if (!isEthAvailable) {
       throw new EthereumLibraryUnavailableError(ethImport);
     }
-    return ethUtil.bufferToHex(ethUtil.publicToAddress(bip32.fromBase58(xpub).publicKey, false));
+    return ethUtil.bufferToHex(ethUtil.publicToAddress(bip32.fromBase58(xpub).publicKey, true /* sanitize */));
   }
 
   /**

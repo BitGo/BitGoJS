@@ -643,76 +643,70 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     throw new Error('hashForZcashSignature can only be called when using Zcash network')
   }
 
-  if (inIndex >= this.ins.length && inIndex !== VALUE_UINT64_MAX) {
+  if (inIndex >= this.ins.length) {
     /* istanbul ignore next */
     throw new Error('Input index is out of range')
   }
 
-  if (this.isOverwinterCompatible()) {
-    var hashPrevouts = this.getPrevoutHash(hashType)
-    var hashSequence = this.getSequenceHash(hashType)
-    var hashOutputs = this.getOutputsHash(hashType, inIndex)
-    var hashJoinSplits = ZERO
-    var hashShieldedSpends = ZERO
-    var hashShieldedOutputs = ZERO
-
-    var bufferWriter
-    var baseBufferSize = 0
-    baseBufferSize += 4 * 5  // header, nVersionGroupId, lock_time, nExpiryHeight, hashType
-    baseBufferSize += 32 * 4  // 256 hashes: hashPrevouts, hashSequence, hashOutputs, hashJoinSplits
-    if (inIndex !== VALUE_UINT64_MAX) {
-      // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
-      baseBufferSize += 4 * 2  // input.index, input.sequence
-      baseBufferSize += 8  // value
-      baseBufferSize += 32  // input.hash
-      baseBufferSize += varSliceSize(prevOutScript)  // prevOutScript
-    }
-    if (this.isSaplingCompatible()) {
-      baseBufferSize += 32 * 2  // hashShieldedSpends and hashShieldedOutputs
-      baseBufferSize += 8  // valueBalance
-    }
-    bufferWriter = new BufferWriter(Buffer.alloc(baseBufferSize))
-
-    bufferWriter.writeInt32(this.getHeader())
-    bufferWriter.writeUInt32(this.versionGroupId)
-    bufferWriter.writeSlice(hashPrevouts)
-    bufferWriter.writeSlice(hashSequence)
-    bufferWriter.writeSlice(hashOutputs)
-    bufferWriter.writeSlice(hashJoinSplits)
-    if (this.isSaplingCompatible()) {
-      bufferWriter.writeSlice(hashShieldedSpends)
-      bufferWriter.writeSlice(hashShieldedOutputs)
-    }
-    bufferWriter.writeUInt32(this.locktime)
-    bufferWriter.writeUInt32(this.expiryHeight)
-    if (this.isSaplingCompatible()) {
-      bufferWriter.writeSlice(VALUE_INT64_ZERO)
-    }
-    bufferWriter.writeUInt32(hashType)
-
-    // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig):
-    if (inIndex !== VALUE_UINT64_MAX) {
-      // The input being signed (replacing the scriptSig with scriptCode + amount)
-      // The prevout may already be contained in hashPrevout, and the nSequence
-      // may already be contained in hashSequence.
-      var input = this.ins[inIndex]
-      bufferWriter.writeSlice(input.hash)
-      bufferWriter.writeUInt32(input.index)
-      bufferWriter.writeVarSlice(prevOutScript)
-      bufferWriter.writeUInt64(value)
-      bufferWriter.writeUInt32(input.sequence)
-    }
-
-    var personalization = Buffer.alloc(16)
-    var prefix = 'ZcashSigHash'
-    personalization.write(prefix)
-    personalization.writeUInt32LE(this.consensusBranchId, prefix.length)
-
-    return this.getBlake2bHash(bufferWriter.buffer, personalization)
+  /* istanbul ignore next */
+  if (!this.isOverwinterCompatible()) {
+    throw new Error(`unsupported version`);
   }
 
-  /* istanbul ignore next */
-  throw new Error(`unsupported version`)
+  var hashPrevouts = this.getPrevoutHash(hashType)
+  var hashSequence = this.getSequenceHash(hashType)
+  var hashOutputs = this.getOutputsHash(hashType, inIndex)
+  var hashJoinSplits = ZERO
+  var hashShieldedSpends = ZERO
+  var hashShieldedOutputs = ZERO
+
+  var bufferWriter
+  var baseBufferSize = 0
+  baseBufferSize += 4 * 5  // header, nVersionGroupId, lock_time, nExpiryHeight, hashType
+  baseBufferSize += 32 * 4  // 256 hashes: hashPrevouts, hashSequence, hashOutputs, hashJoinSplits
+  baseBufferSize += 4 * 2  // input.index, input.sequence
+  baseBufferSize += 8  // value
+  baseBufferSize += 32  // input.hash
+  baseBufferSize += varSliceSize(prevOutScript)  // prevOutScript
+  if (this.isSaplingCompatible()) {
+    baseBufferSize += 32 * 2  // hashShieldedSpends and hashShieldedOutputs
+    baseBufferSize += 8  // valueBalance
+  }
+  bufferWriter = new BufferWriter(Buffer.alloc(baseBufferSize))
+
+  bufferWriter.writeInt32(this.getHeader())
+  bufferWriter.writeUInt32(this.versionGroupId)
+  bufferWriter.writeSlice(hashPrevouts)
+  bufferWriter.writeSlice(hashSequence)
+  bufferWriter.writeSlice(hashOutputs)
+  bufferWriter.writeSlice(hashJoinSplits)
+  if (this.isSaplingCompatible()) {
+    bufferWriter.writeSlice(hashShieldedSpends)
+    bufferWriter.writeSlice(hashShieldedOutputs)
+  }
+  bufferWriter.writeUInt32(this.locktime)
+  bufferWriter.writeUInt32(this.expiryHeight)
+  if (this.isSaplingCompatible()) {
+    bufferWriter.writeSlice(VALUE_INT64_ZERO)
+  }
+  bufferWriter.writeUInt32(hashType)
+
+  // The input being signed (replacing the scriptSig with scriptCode + amount)
+  // The prevout may already be contained in hashPrevout, and the nSequence
+  // may already be contained in hashSequence.
+  const input = this.ins[inIndex]
+  bufferWriter.writeSlice(input.hash)
+  bufferWriter.writeUInt32(input.index)
+  bufferWriter.writeVarSlice(prevOutScript)
+  bufferWriter.writeUInt64(value)
+  bufferWriter.writeUInt32(input.sequence)
+
+  var personalization = Buffer.alloc(16)
+  var prefix = 'ZcashSigHash'
+  personalization.write(prefix)
+  personalization.writeUInt32LE(this.consensusBranchId, prefix.length)
+
+  return this.getBlake2bHash(bufferWriter.buffer, personalization)
 }
 
 Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
