@@ -2,6 +2,7 @@
 // Tests for Wallets
 //
 
+import * as assert from 'assert';
 import * as should from 'should';
 import * as sinon from 'sinon';
 require('should-sinon');
@@ -13,6 +14,7 @@ import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
+import { HalfSignedUtxoTransaction } from '../../../src';
 
 nock.disableNetConnect();
 
@@ -225,7 +227,7 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Transaction Signature Verification', function () {
-    let wallet;
+    let wallet: Wallet;
     let basecoin;
 
     const userKeychain = {
@@ -340,14 +342,16 @@ describe('V2 Wallet:', function () {
       const halfSignedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: userKeychain.prv,
-      });
+      }) as HalfSignedUtxoTransaction;
+      assert(halfSignedTransaction.txHex);
       halfSignedTransaction.txHex.should.equal('02000000010fef30ca07288fb78659253227b8514ae9397faf76e53530118712d240bfb10600000000b6004730440220140811e76ad440c863164a1f9c0956b7a7db17a29f3fe543576dd6279f975243022006ec7def583d18e8ac2de5bb7bf9c647b67d510c07fc7bdc2487ab06f08e3a684100004c695221032c227d73891b33c45f5f02ab7eebdc4f4ed9ffb5565aedbfb478abb1bfd9d467210266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e21037c07484a5d2d3831d38df1b7b45a2459df6fb40b204bbbf24e0f11763c79a50953aeffffffff02255df4240000000017a9149799c321e46a9c7bb11835495a96d6ae31af36c58780c3c9010000000017a9144394c8c16c50397285830b449ceca588f5f359e98700000000');
 
       prebuild.txHex = halfSignedTransaction.txHex;
       const signedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: backupKeychain.prv,
-      });
+      }) as HalfSignedUtxoTransaction;
+      assert(signedTransaction.txHex);
       signedTransaction.txHex.should.equal(signedTxHex);
     });
 

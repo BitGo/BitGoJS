@@ -10,7 +10,7 @@ import { randomBytes } from 'crypto';
 import {
   BaseCoin,
   FullySignedTransaction,
-  HalfSignedTransaction,
+  HalfSignedAccountTransaction,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -63,7 +63,7 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
-export interface HalfSignedEthLikeTransaction extends HalfSignedTransaction {
+export interface HalfSignedEthLikeTransaction extends HalfSignedAccountTransaction {
   halfSigned?: {
     txHex?: never;
     recipients: Recipient[];
