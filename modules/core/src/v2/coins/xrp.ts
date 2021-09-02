@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
@@ -208,11 +207,17 @@ export class Xrp extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   public isValidPub(pub: string): boolean {
-    try {
-      return bip32.fromBase58(pub).isNeutered();
-    } catch (e) {
-      return false;
-    }
+    return accountLib.Xrp.Utils.default.isValidPublicKey(pub);
+  }
+
+  /**
+   * Return boolean indicating whether input is valid public key for the coin.
+   *
+   * @param {String} pub the pub to be checked
+   * @returns {Boolean} is it valid?
+   */
+  public isValidPrv(prv: string): boolean {
+    return accountLib.Xrp.Utils.default.isValidPrivateKey(prv);
   }
 
   /**
