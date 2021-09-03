@@ -1,8 +1,7 @@
-import { isValidSeed as AlgoIsValidSeed } from 'algosdk';
 import * as stellar from 'stellar-sdk';
 import * as _ from 'lodash';
 import { CoinFamily } from '@bitgo/statics';
-import { Hbar } from '@bitgo/account-lib';
+import { Hbar, Algo } from '@bitgo/account-lib';
 
 /**
  * This classes intention is to guess/verify what seeds come from where.
@@ -24,7 +23,7 @@ export class SeedValidator {
       // stellar have checksums. coin is guaranteed to be mutually exclusive by the
       // competing seed format check
 
-      if (AlgoIsValidSeed(seed)) coin = CoinFamily.ALGO;
+      if (Algo.algoUtils.isValidSeed(seed)) coin = CoinFamily.ALGO;
       if (stellar.StrKey.isValidEd25519SecretSeed(seed)) coin = CoinFamily.XLM;
       if (SeedValidator.isValidHbarSeedFormat(seed)) coin = CoinFamily.HBAR;
     }
@@ -48,7 +47,7 @@ export class SeedValidator {
    * @param seed
    */
   static hasCompetingSeedFormats(seed: string): boolean {
-    const isAlgoSeed = AlgoIsValidSeed(seed);
+    const isAlgoSeed = Algo.algoUtils.isValidSeed(seed);
     const isStellarSeed = stellar.StrKey.isValidEd25519SecretSeed(seed);
     const isHbarSeed = SeedValidator.isValidHbarSeedFormat(seed);
 
