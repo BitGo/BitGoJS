@@ -11,6 +11,7 @@ import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
 import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
+import { SeedEncoding } from './seedEncoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
@@ -431,10 +432,20 @@ export class Utils implements BaseUtils {
    * decodeEd25519PublicKeyStellar decode the key with the stellar-sdk
    *
    * @param publicKey
-   * @returns booldean
+   * @returns Buffer
    */
   protected decodeEd25519PublicKeyStellar(publicKey: string): Buffer {
     return stellar.StrKey.decodeEd25519PublicKey(publicKey);
+  }
+
+  /**
+   * Convert a stellar seed to algorand encoding
+   *
+   * @param seed
+   * @returns string the encoded seed
+   */
+  convertFromStellarSeed(seed: string): string {
+    return SeedEncoding.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
   }
 
   /**
