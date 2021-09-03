@@ -1,4 +1,5 @@
-import { HDNode, ECPair, networks } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
+import { ECPair, networks } from 'bitcoinjs-lib';
 import * as nacl from 'tweetnacl';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 import { toUint8Array } from '../coin/hbar/utils';
@@ -11,8 +12,9 @@ export function xpubToUncompressedPub(xpub: string): string {
   if (!isValidXpub(xpub)) {
     throw new Error('invalid xpub');
   }
-  const hdNode = HDNode.fromBase58(xpub, networks.bitcoin);
-  return hdNode.keyPair.__Q.getEncoded(false).toString('hex');
+  return ECPair.fromPublicKey(bip32.fromBase58(xpub, networks.bitcoin).publicKey, {
+    compressed: false,
+  }).publicKey.toString('hex');
 }
 
 /**
@@ -23,8 +25,12 @@ export function xprvToRawPrv(xprv: string): string {
   if (!isValidXprv(xprv)) {
     throw new Error('invalid xprv');
   }
-  const hdNode = HDNode.fromBase58(xprv, networks.bitcoin);
-  return hdNode.keyPair.d.toBuffer(32).toString('hex');
+
+  const { privateKey } = bip32.fromBase58(xprv, networks.bitcoin);
+  if (!privateKey) {
+    throw new Error('invalid xprv');
+  }
+  return privateKey.toString('hex');
 }
 
 /**
@@ -32,8 +38,7 @@ export function xprvToRawPrv(xprv: string): string {
  * @returns {ExtendedKeys} xprv and xpub in string format
  */
 export function rawPrvToExtendedKeys(prv: string): ExtendedKeys {
-  const keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
-  const hd = new HDNode(keyPair, Buffer.alloc(32));
+  const hd = bip32.fromPrivateKey(Buffer.from(prv, 'hex'), Buffer.alloc(32));
   return {
     xprv: hd.toBase58(),
     xpub: hd.neutered().toBase58(),
@@ -51,7 +56,7 @@ export function isValidXpub(xpub: string): boolean {
     return false;
   }
   try {
-    HDNode.fromBase58(xpub, networks.bitcoin);
+    bip32.fromBase58(xpub, networks.bitcoin);
   } catch (err) {
     return false;
   }
@@ -70,7 +75,7 @@ export function isValidXprv(xprv: string): boolean {
     return false;
   }
   try {
-    HDNode.fromBase58(xprv, networks.bitcoin);
+    bip32.fromBase58(xprv, networks.bitcoin);
   } catch (err) {
     return false;
   }
@@ -85,7 +90,7 @@ export function isValidXprv(xprv: string): boolean {
  */
 export function isValidPub(pub: string): boolean {
   try {
-    ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
+    ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
   } catch (e) {
     return false;
   }
@@ -99,7 +104,7 @@ export function isValidPub(pub: string): boolean {
  */
 export function isValidPrv(prv: string): boolean {
   try {
-    ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
+    ECPair.fromPrivateKey(Buffer.from(prv, 'hex'));
   } catch (e) {
     return false;
   }
