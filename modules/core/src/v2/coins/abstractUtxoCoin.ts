@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as assert from 'assert';
 import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
@@ -87,6 +88,8 @@ export interface TransactionExplanation {
 export interface Unspent {
   id: string;
   value: number;
+  redeemScript?: string;
+  witnessScript?: string;
 }
 
 export interface ExplainTransactionOptions {
@@ -1157,7 +1160,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, self.network);
       utxolib.bitgo.setTransactionBuilderDefaults(txb, self.network);
 
-      const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
+      type SignatureContext = {
+        inputIndex: number;
+        unspent: Unspent;
+        path: string;
+        isP2wsh: boolean;
+        isBitGoTaintedUnspent: boolean;
+        error: Error | undefined;
+      };
+
+      const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number): SignatureContext => {
         const currentUnspent = txPrebuild.txInfo.unspents[index];
         return {
           inputIndex: index,
@@ -1190,15 +1202,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
         try {
           if (signatureContext.isP2wsh) {
+            assert(signatureContext.unspent.witnessScript);
             debug('Signing p2wsh input');
             const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
             const witnessScriptHash = utxolib.crypto.sha256(witnessScript);
             const prevOutScript = utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
             txb.sign(index, keyPair, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
           } else {
+            assert(signatureContext.unspent.redeemScript);
             const subscript = Buffer.from(signatureContext.unspent.redeemScript, 'hex');
             const isP2shP2wsh = !!signatureContext.unspent.witnessScript;
             if (isP2shP2wsh) {
+              assert(signatureContext.unspent.witnessScript);
               debug('Signing p2shP2wsh input');
               const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
               txb.sign(index, keyPair, subscript, sigHashType, signatureContext.unspent.value, witnessScript);
