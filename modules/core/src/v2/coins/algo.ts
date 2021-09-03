@@ -18,6 +18,8 @@ import {
   mergeMultisigTransactions,
 } from 'algosdk';
 import { BitGo } from '../../bitgo';
+import { SeedValidator } from '../internal/seedValidator';
+import { CoinFamily } from '@bitgo/statics';
 
 import {
   BaseCoin,
@@ -318,6 +320,35 @@ export class Algo extends BaseCoin {
 
     if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
       return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if a seed is a valid stellar seed
+   *
+   * @param {String} seed the seed to check
+   * @returns {Boolean} true if the input is a Stellar seed
+   */
+  isStellarSeed(seed: string): boolean {
+    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
+  }
+
+  /**
+   * Convert a stellar seed to an algo seed
+   *
+   * @param {String} seed the seed to convert
+   * @returns {Boolean | null} seed in algo encoding
+   */
+  convertFromStellarSeed(seed: string): string | null {
+    // assume this is a trust custodial seed if its a valid ed25519 prv
+    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
+      return null;
+    }
+
+    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
+      return accountLib.Algo.algoUtils.convertFromStellarSeed(seed);
     }
 
     return null;
