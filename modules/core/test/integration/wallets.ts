@@ -12,7 +12,7 @@ const Q = require('q');
 
 const TestBitGo = require('../lib/test_bitgo');
 import * as utxolib from '@bitgo/utxo-lib';
-import { getNetwork } from '../../src/bitcoin';
+import { getAddressP2PKH, getNetwork } from '../../src/bitcoin';
 import * as common from '../../src/common';
 import * as nock from 'nock';
 
@@ -357,7 +357,7 @@ describe('Wallets', function () {
     let sourceAddress;
     before(() => {
       key = utxolib.ECPair.makeRandom({ network: getNetwork(common.Environments[bitgo.getEnv()].network) });
-      sourceAddress = key.getAddress();
+      sourceAddress = getAddressP2PKH(key);
     });
 
     it('arguments', function () {
