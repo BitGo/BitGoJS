@@ -16,7 +16,7 @@ import * as Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import { getNetwork } from './bitcoin';
+import { getAddressP2PKH, getNetwork } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
@@ -113,7 +113,7 @@ exports.createTransaction = function (params) {
 
   if (params.feeSingleKeyWIF) {
     const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network);
-    feeSingleKeySourceAddress = feeSingleKey.getAddress();
+    feeSingleKeySourceAddress = getAddressP2PKH(feeSingleKey);
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
     params.feeSingleKeySourceAddress !== feeSingleKeySourceAddress) {
