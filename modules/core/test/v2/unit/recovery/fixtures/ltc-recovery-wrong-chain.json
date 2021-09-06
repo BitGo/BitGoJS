@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "sourceCoin": "tltc",
+  "recoveryCoin": "tbtc",
+  "walletId": "5abace103cddfbb607d8239d806671bf",
+  "recoveryAddress": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
+  "recoveryAmount": 39965900,
+  "txHex": "010000000139db811c27a5ed5e34a2e435c53c90b2492fe0bcbf71b3c41ee994783ee422fe01000000b700483045022100d55ff6eb899c81d2787a0d85084dcba192b65f88c7725dd8d1b3e5cb58efd88b022046dd4bd19ff0b06ed4f4adcc85ff5df09eda9156af7a3f2718cba2e09343ea760100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01ccd461020000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000",
+  "txInfo": {
+    "inputAmount": 40000000,
+    "outputAmount": 39965900,
+    "spendAmount": 39965900,
+    "inputs": [
+      {
+        "id": "fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39:1",
+        "address": "QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP",
+        "value": 40000000,
+        "valueString": "40000000",
+        "blockHeight": 476097,
+        "redeemScript": "5221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153ae",
+        "index": 0,
+        "chain": 0,
+        "wallet": "5abace103cddfbb607d8239d806671bf",
+        "fromWallet": "5abace103cddfbb607d8239d806671bf"
+      }
+    ],
+    "outputs": [
+      {
+        "address": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
+        "valueString": "39965900",
+        "wallet": "5abace103cddfbb607d8239d806671bf",
+        "change": false
+      }
+    ],
+    "unspents": [
+      {
+        "id": "fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39:1",
+        "address": "QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP",
+        "value": 40000000,
+        "valueString": "40000000",
+        "blockHeight": 476097,
+        "redeemScript": "5221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153ae",
+        "index": 0,
+        "chain": 0,
+        "wallet": "5abace103cddfbb607d8239d806671bf",
+        "fromWallet": "5abace103cddfbb607d8239d806671bf"
+      }
+    ],
+    "externalOutputs": [
+      {
+        "address": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
+        "valueString": "39965900",
+        "wallet": "5abace103cddfbb607d8239d806671bf",
+        "change": false
+      }
+    ],
+    "changeOutputs": [],
+    "minerFee": 34100,
+    "payGoFee": 0
+  }
+}
