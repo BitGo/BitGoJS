@@ -46,6 +46,9 @@ export interface EthereumNetwork extends AccountNetwork {
   // unique chain id used for replay-protecting transactions
   readonly chainId: number;
   readonly batcherContractAddress?: string;
+  // forwarder configuration addresses used for calculating forwarder version 1 addresses
+  readonly forwarderFactoryAddress?: string;
+  readonly forwarderImplementationAddress?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -218,14 +221,14 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
   chainId = 44787;
 }
 
-//TODO update explorerUrl STLX-1657
+// TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
   family = CoinFamily.CSPR;
   explorerUrl = 'https://cspr.live/deploy/';
   accountExplorerUrl = 'https://cspr.live/account/';
 }
 
-//TODO update explorerUrl STLX-1657
+// TODO update explorerUrl STLX-1657
 class CasperTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.CSPR;
   explorerUrl = 'https://testnet.cspr.live/deploy/';
@@ -239,6 +242,8 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
   batcherContractAddress = '0x92c44c271a53f5cec699549c531d595c9692f663';
+  forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
+  forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -260,6 +265,8 @@ class Kovan extends Testnet implements EthereumNetwork {
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 42;
   batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
+  forwarderFactoryAddress = '0xa79a485294d226075ee65410bc94ea454f3e409d';
+  forwarderImplementationAddress = '0xa946e748f25a5ec6878eb1a9f2e902028174c0b3';
 }
 
 class Goerli extends Testnet implements EthereumNetwork {
@@ -269,6 +276,8 @@ class Goerli extends Testnet implements EthereumNetwork {
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 5;
   batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
+  forwarderFactoryAddress = '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917';
+  forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
