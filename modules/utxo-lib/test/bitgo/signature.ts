@@ -8,10 +8,10 @@ import networks = require('../../src/networks');
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { getDefaultSigHash, verifySignature } from '../../src/bitgo';
+import { createTransactionBuilderForNetwork, getDefaultSigHash, verifySignature } from '../../src/bitgo';
 
 import { Transaction } from '../integration_local_rpc/generate/types';
-import { createScriptPubKey, getTransactionBuilder } from '../integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey } from '../integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 
 function runTest(network: Network, scriptType: ScriptType2Of3) {
@@ -19,7 +19,7 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   const prevOutputs = [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]];
 
   function createSignedTransaction(keys: bip32.BIP32Interface[], signKeys: bip32.BIP32Interface[]) {
-    const txBuilder = getTransactionBuilder(network);
+    const txBuilder = createTransactionBuilderForNetwork(network);
 
     prevOutputs.forEach(([txid, vout]) => {
       txBuilder.addInput(txid, vout);

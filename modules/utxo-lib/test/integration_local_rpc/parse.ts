@@ -6,7 +6,13 @@ import * as bip32 from 'bip32';
 
 import { Network } from '../../src/networkTypes';
 import { isTestnet } from '../../src/coins';
-import { verifySignature, parseSignatureScript, Input } from '../../src/bitgo/signature';
+import {
+  verifySignature,
+  parseSignatureScript,
+  Input,
+  parseSignatureScript2Of3,
+  ParsedSignatureScript2Of3,
+} from '../../src/bitgo/signature';
 
 import {
   createSpendTransactionFromPrevOutputs,
@@ -85,7 +91,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
     it(`parseSignatureScript`, function () {
       parsedTx.ins.forEach((input, i) => {
-        const result = parseSignatureScript(input);
+        const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
         if (txType === 'deposit') {
           return;
@@ -113,7 +119,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     it(`verifySignatures for original transaction`, function () {
       parsedTx.ins.forEach((input, i) => {
         const prevOutValue = getPrevOutputValue(input);
-        const { publicKeys } = parseSignatureScript(input);
+        const { publicKeys } = parseSignatureScript2Of3(input);
         if (!publicKeys) {
           throw new Error(`expected publicKeys`);
         }
