@@ -1,0 +1,59 @@
+{
+  "inputs": [
+    {
+      "chainPath": "/0/0/0/2",
+      "redeemScript": "522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae",
+      "value": 8125000
+    }
+  ],
+  "transactionHex": "010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000",
+  "tx": {
+    "Version": "1",
+    "LockTime": "0",
+    "Vin": [
+      {
+        "TxId": "e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74",
+        "Vout": "0",
+        "ScriptSig": {
+          "Asm": "0 3045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae",
+          "Hex": "00483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae"
+        },
+        "CoinBase": null,
+        "TxInWitness": null,
+        "Sequence": "4294967295"
+      }
+    ],
+    "Vout": [
+      {
+        "Value": 0.070956,
+        "N": 0,
+        "ScriptPubKey": {
+          "Asm": "OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL",
+          "Hex": "a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787",
+          "ReqSigs": 1,
+          "Type": "scripthash",
+          "Addresses": [
+            "2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw"
+          ]
+        }
+      },
+      {
+        "Value": 0.0099,
+        "N": 1,
+        "ScriptPubKey": {
+          "Asm": "OP_HASH160 1b60c33def13c3eda4cf4835e11a633e4b3302ec OP_EQUAL",
+          "Hex": "a9141b60c33def13c3eda4cf4835e11a633e4b3302ec87",
+          "ReqSigs": 1,
+          "Type": "scripthash",
+          "Addresses": [
+            "2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN"
+          ]
+        }
+      }
+    ],
+    "TxId": "946dbefaefa5452daba373c0e0e3ada7d74bc4cf2a27518c9fcc581f19b0cb2b"
+  },
+  "coin": "tbtc",
+  "backupKey": "xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK",
+  "recoveryAmount": 7095600
+}

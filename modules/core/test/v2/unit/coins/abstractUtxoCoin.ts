@@ -1,23 +1,12 @@
-const utxolib = require('@bitgo/utxo-lib');
-import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { BitGo, VerificationOptions } from '../../../../src';
 import { Wallet } from '../../../../src/v2';
 import { AbstractUtxoCoin } from '../../../../src/v2/coins';
-const recoveryNocks = require('../../lib/recovery-nocks');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as errors from '../../../../src/errors';
-import { Btc } from '../../../../src/v2/coins/btc';
 import { TransactionParams } from '../../../../src/v2/coins/abstractUtxoCoin';
-import {
-  addressUnspents,
-  addressInfos,
-  emptyAddressInfo,
-  recoverBtcUnsignedFixtures,
-  recoverBtcSegwitFixtures,
-} from '../../fixtures/coins/recovery';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -476,68 +465,6 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
       bitcoinMock.restore();
-    });
-  });
-
-  describe('Recover Wallet:', () => {
-    let coin, bitgo, sandbox;
-    before(() => {
-      bitgo = new TestBitGo({ env: 'mock' });
-      coin = bitgo.coin('tbtc');
-    });
-
-    beforeEach(() => {
-      sandbox = sinon.createSandbox();
-      recoveryNocks.nockbitcoinFees(20, 20, 6);
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it('should construct a recovery transaction with segwit unspents', async function () {
-      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
-      callBack1.resolves(emptyAddressInfo);
-      callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']);
-      callBack1.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves(addressInfos['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']);
-      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
-      callBack2.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves([addressUnspents['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']]);
-      callBack2.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves([addressUnspents['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']]);
-      callBack2.resolves([]);
-      const { params, expectedTxHex } = recoverBtcSegwitFixtures();
-      recoveryNocks.nockBtcSegwitRecovery(bitgo);
-      const tx = await coin.recover(params);
-      const transaction = utxolib.bitgo.createTransactionFromHex(tx.transactionHex, utxolib.networks.bitcoin);
-      transaction.ins.length.should.equal(2);
-      transaction.outs.length.should.equal(1);
-      transaction.outs[0].value.should.equal(57112);
-      tx.transactionHex.should.equal(expectedTxHex);
-    });
-
-    it('should construct an unsigned recovery transaction for the offline vault', async function () {
-      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
-      callBack1.resolves(emptyAddressInfo);
-      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({ txCount: 2, totalBalance: 0 });
-      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves({ txCount: 2, totalBalance: 100000 });
-      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves({ txCount: 2, totalBalance: 0 });
-      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves({ txCount: 2, totalBalance: 120000 });
-
-      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
-      callBack2.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves([addressUnspents['2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49']]);
-      callBack2.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves([addressUnspents['2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR']]);
-      callBack2.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves([addressUnspents['2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z']]);
-      callBack2.resolves([]);
-      const { params, expectedTxHex } = recoverBtcUnsignedFixtures();
-      recoveryNocks.nockBtcUnsignedRecovery(bitgo);
-      const txPrebuild = await coin.recover(params);
-      txPrebuild.txHex.should.equal(expectedTxHex);
-      txPrebuild.should.have.property('feeInfo');
-      txPrebuild.coin.should.equal('tbtc');
-      txPrebuild.txInfo.unspents.length.should.equal(2);
-    });
-
-    after(() => {
-      nock.cleanAll();
     });
   });
 });
