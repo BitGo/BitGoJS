@@ -47,7 +47,9 @@ export interface ParsedSignatureP2PKH extends ParsedSignatureScript {
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
-  signatures: Buffer[];
+  signatures:
+    | [Buffer, Buffer] // fully-signed transactions with signatures
+    | [Buffer, Buffer, Buffer]; // partially signed transactions with placeholder signatures
   publicKeys: [Buffer, Buffer, Buffer];
   pubScript: Buffer;
 }
@@ -110,42 +112,58 @@ export function parseSignatureScript(
   // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
   // multisig setup:
   //
-  // decompiledSigScript = 0 <sig1> [<sig2>] <pubScript>
-  // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
+  //   decompiledSigScript = 0 <sig1> <sig2> [<sig3>] <pubScript>
+  //   decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
+  //
+  // Transactions built with `.build()` only have two signatures `<sig1>` and `<sig2>` in _decompiledSigScript_.
+  // Transactions built with `.buildIncomplete()` have three signatures, where missing signatures are substituted with `OP_0`.
   const expectedScriptType = inputClassification === script.types.P2SH || inputClassification === script.types.P2WSH;
   const expectedScriptLength =
-    decompiledSigScript.length === 4 || // single signature
-    decompiledSigScript.length === 5; // double signature
+    // complete transactions with 2 signatures
+    decompiledSigScript.length === 4 ||
+    // incomplete transaction with 3 signatures or signature placeholders
+    decompiledSigScript.length === 5;
 
   if (!expectedScriptType || !expectedScriptLength) {
     return { isSegwitInput, inputClassification };
   }
 
-  const signatures = decompiledSigScript.slice(0, -1);
+  if (isSegwitInput) {
+    if (!Buffer.isBuffer(decompiledSigScript[0])) {
+      throw new Error(`expected decompiledSigScript[0] to be a buffer for segwit inputs`);
+    }
+    if (decompiledSigScript[0].length !== 0) {
+      throw new Error(`witness stack expected to start with empty buffer`);
+    }
+  } else if (decompiledSigScript[0] !== opcodes.OP_0) {
+    throw new Error(`sigScript expected to start with OP_0`);
+  }
+
+  const signatures = decompiledSigScript.slice(1 /* ignore leading OP_0 */, -1 /* ignore trailing pubScript */);
+  if (signatures.length !== 2 && signatures.length !== 3) {
+    throw new Error(`expected 2 or 3 signatures, got ${signatures.length}`);
+  }
+
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
   const decompiledPubScript = script.decompile(pubScript);
   if (decompiledPubScript.length !== 6) {
     throw new Error(`unexpected decompiledPubScript length`);
   }
   const publicKeys = decompiledPubScript.slice(1, -2);
+  if (publicKeys.length !== 3) {
+    throw new Error(`expected 3 public keys, got ${publicKeys.length}`);
+  }
 
   // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
   // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
   const len = decompiledPubScript.length;
-  const nSignatures = decompiledPubScript[0] - 80;
-  const nPubKeys = decompiledPubScript[len - 2] - 80;
-
-  // Due to a bug in the implementation of multisignature in the bitcoin protocol, a 0 is added to the signature
-  // script, so we add 1 when asserting the number of signatures matches the number of signatures expected by the
-  // pub script. Also, note that we consider a signature script with the the same number of signatures as public
-  // keys (+1 as noted above) valid because we use placeholder signatures when parsing a half-signed signature
-  // script.
-  if (signatures.length !== nSignatures + 1 && signatures.length !== nPubKeys + 1) {
-    throw new Error(`expected ${nSignatures} or ${nPubKeys} signatures, got ${signatures.length - 1}`);
+  const signatureThreshold = decompiledPubScript[0] - 80;
+  if (signatureThreshold !== 2) {
+    throw new Error(`expected signatureThreshold 2, got ${signatureThreshold}`);
   }
-
-  if (publicKeys.length !== nPubKeys) {
-    throw new Error(`expected ${nPubKeys} public keys, got ${publicKeys.length}`);
+  const nPubKeys = decompiledPubScript[len - 2] - 80;
+  if (nPubKeys !== 3) {
+    throw new Error(`expected nPubKeys 3, got ${nPubKeys}`);
   }
 
   const lastOpCode = decompiledPubScript[len - 1];
