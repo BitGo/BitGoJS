@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { HDNode } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
 import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { SECP256K1_PREFIX } from './constants';
@@ -15,9 +15,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     super(source);
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
-      this.hdNode = HDNode.fromSeedBuffer(seed);
+      this.hdNode = bip32.fromSeed(seed);
     } else if (isSeed(source)) {
-      this.hdNode = HDNode.fromSeedBuffer(source.seed);
+      this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -27,7 +27,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
     }
   }
 
@@ -37,18 +37,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys() {
-    if (this.hdNode) {
-      const { xpub, xprv } = this.getExtendedKeys();
-      return {
-        pub: HDNode.fromBase58(xpub).getPublicKeyBuffer().toString('hex'),
-        prv: xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex') : undefined,
-      };
-    } else {
-      return {
-        pub: this.keyPair.Q.getEncoded(true).toString('hex'),
-        prv: this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined,
-      };
-    }
+    return {
+      pub: this.getPublicKey({ compressed: true }).toString('hex'),
+      prv: this.getPrivateKey()?.toString('hex'),
+    };
   }
 
   /** @inheritdoc */
