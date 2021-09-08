@@ -37,7 +37,6 @@
     "@bitgo/blake2b": "^3.0.1",
     "@bitgo/bls": "^0.1.0",
     "@bitgo/statics": "^6.13.0-rc.3",
-    "@bitgo/utxo-lib": "^1.10.0-rc.7",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.3.0",
     "@ethereumjs/tx": "^3.2.0",
@@ -48,8 +47,9 @@
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",
-    "algosdk": "^1.9.1",
     "bignumber.js": "^9.0.0",
+    "bip32": "^2.0.6",
+    "bitcoinjs-lib": "^5.2.0",
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.39",
     "elliptic": "^6.5.2",
@@ -57,8 +57,6 @@
     "ethereumjs-util": "5.2.0",
     "ethereumjs-utils-old": "npm:ethereumjs-util@5.2.0",
     "ethers": "^5.1.3",
-    "hi-base32": "^0.5.1",
-    "joi": "^17.4.0",
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15",
     "long": "^4.0.0",
@@ -66,8 +64,7 @@
     "secp256k1": "4.0.2",
     "stellar-sdk": "^8.1.1",
     "tronweb": "^3.2.6",
-    "tweetnacl": "^1.0.3",
-    "typescript": "^4.2.4"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
@@ -86,8 +83,8 @@
     "prettier": "^1.19.1",
     "should": "^13.1.3",
     "sinon": "^7.5.0",
-    "terser-webpack-plugin": "^1.2.3",
-    "webpack": "^4.29.6",
+    "terser-webpack-plugin": "^4.2.3",
+    "webpack": "^4.46.0",
     "webpack-cli": "^3.2.3"
   },
   "nyc": {
