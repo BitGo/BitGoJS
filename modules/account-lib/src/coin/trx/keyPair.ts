@@ -1,5 +1,5 @@
+import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
-import { HDNode } from '@bitgo/utxo-lib';
 import { AddressFormat } from '../baseCoin/enum';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
@@ -21,9 +21,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     super(source);
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
-      this.hdNode = HDNode.fromSeedBuffer(seed);
+      this.hdNode = bip32.fromSeed(seed);
     } else if (isSeed(source)) {
-      this.hdNode = HDNode.fromSeedBuffer(source.seed);
+      this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
       super.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -33,7 +33,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
     }
   }
 
@@ -43,14 +43,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {DefaultKeys} The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
-    const result: DefaultKeys = {
-      pub: this.keyPair.Q.getEncoded(false).toString('hex').toUpperCase(),
+    return {
+      pub: this.getPublicKey({ compressed: false }).toString('hex').toUpperCase(),
+      prv: this.getPrivateKey()?.toString('hex').toUpperCase(),
     };
-
-    if (this.keyPair.d) {
-      result.prv = this.keyPair.d.toBuffer(32).toString('hex').toUpperCase();
-    }
-    return result;
   }
 
   /**

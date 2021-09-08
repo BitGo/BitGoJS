@@ -1,4 +1,3 @@
-import { HDNode } from '@bitgo/utxo-lib';
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
 import { DefaultKeys, isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
@@ -26,6 +25,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     } else {
       throw new Error('Invalid key pair options');
     }
+
+    if (this.hdNode) {
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
+    }
   }
 
   /**
@@ -34,18 +37,12 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns { DefaultKeys } The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
-    if (this.hdNode) {
-      const { xpub, xprv } = this.getExtendedKeys();
-      return {
-        pub: HDNode.fromBase58(xpub).getPublicKeyBuffer().toString('hex').toUpperCase(),
-        prv: xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex').toUpperCase() : undefined,
-      };
-    } else {
-      return {
-        pub: this.keyPair.Q.getEncoded(false).toString('hex').toUpperCase(),
-        prv: this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex').toUpperCase() : undefined,
-      };
-    }
+    return {
+      pub: this.getPublicKey({ compressed: this.hdNode !== undefined })
+        .toString('hex')
+        .toUpperCase(),
+      prv: this.getPrivateKey()?.toString('hex').toUpperCase(),
+    };
   }
 
   /**

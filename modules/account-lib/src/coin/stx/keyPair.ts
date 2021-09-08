@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
-import { ECPair, HDNode } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
+import { ECPair } from 'bitcoinjs-lib';
 import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
@@ -18,11 +19,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     super(source);
     if (!source) {
       const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
-      this.hdNode = HDNode.fromSeedBuffer(seed);
-      this.hdNode.keyPair.compressed = false;
+      this.hdNode = bip32.fromSeed(seed);
     } else if (isSeed(source)) {
-      this.hdNode = HDNode.fromSeedBuffer(source.seed);
-      this.hdNode.keyPair.compressed = false;
+      this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
@@ -32,7 +31,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (this.hdNode) {
-      this.keyPair = this.hdNode.keyPair;
+      this.keyPair = Secp256k1ExtendedKeyPair.toKeyPair(this.hdNode);
     }
   }
 
@@ -52,11 +51,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (isValidXprv(prv)) {
-      this.hdNode = HDNode.fromBase58(prv);
-      this.hdNode.keyPair.compressed = false;
+      this.hdNode = bip32.fromBase58(prv);
     } else {
-      this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv.slice(0, 64), 'hex'));
-      this.keyPair.compressed = prv.length === 66;
+      this.keyPair = ECPair.fromPrivateKey(Buffer.from(prv.slice(0, 64), 'hex'));
     }
   }
 
@@ -76,11 +73,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     }
 
     if (isValidXpub(pub)) {
-      this.hdNode = HDNode.fromBase58(pub);
-      this.hdNode.keyPair.compressed = false;
+      this.hdNode = bip32.fromBase58(pub);
     } else {
-      this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
-      this.keyPair.compressed = pub.length === 66;
+      this.keyPair = ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
     }
   }
 
@@ -91,29 +86,15 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {DefaultKeys} The keys in the protocol default key format
    */
   getKeys(compressed = false): DefaultKeys {
-    let prv;
-
-    if (this.hdNode) {
-      const { xpub, xprv } = this.getExtendedKeys();
-      prv = xprv ? HDNode.fromBase58(xprv).keyPair.getPrivateKeyBuffer().toString('hex') : undefined;
-      prv = prv && compressed ? prv + '01' : prv;
-
-      const kp = HDNode.fromBase58(xpub);
-      kp.keyPair.compressed = compressed;
-
-      return {
-        pub: kp.getPublicKeyBuffer().toString('hex'),
-        prv: prv,
-      };
-    } else {
-      prv = this.keyPair.d ? this.keyPair.d.toBuffer(32).toString('hex') : undefined;
-      prv = prv && compressed ? prv + '01' : prv;
-
-      return {
-        pub: this.keyPair.Q.getEncoded(compressed).toString('hex'),
-        prv: prv,
-      };
+    let prv = this.getPrivateKey()?.toString('hex');
+    if (prv && compressed) {
+      prv += '01';
     }
+
+    return {
+      pub: this.getPublicKey({ compressed }).toString('hex'),
+      prv,
+    };
   }
 
   getCompressed(): boolean {
