@@ -66,6 +66,10 @@ export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
   tokenURL: string;
 }
 
+export interface EosCoinConstructorOptions extends AccountConstructorOptions {
+  contractName: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -209,6 +213,23 @@ export class AlgoCoin extends AccountCoinToken {
     }
 
     this.tokenURL = options.tokenURL;
+  }
+}
+
+/**
+ * The Eos network supports tokens
+ * Eos tokens work similar to native Eos coin, but the token name is determined by
+ * the contractName on the chain.
+ *
+ */
+export class EosCoin extends AccountCoinToken {
+  public contractName: string;
+  constructor(options: EosCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.contractName = options.contractName;
   }
 }
 
@@ -692,4 +713,74 @@ export function talgoToken(
   network: AccountNetwork = Networks.test.algorand
 ) {
   return algoToken(name, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for eos token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractName Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to EOS main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function eosToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractName: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.eos,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new EosCoin({
+      name,
+      fullName,
+      network,
+      contractName,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet eos token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet EOS network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function teosToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractName: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.eos
+) {
+  return eosToken(name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
 }

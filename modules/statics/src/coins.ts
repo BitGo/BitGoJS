@@ -12,6 +12,7 @@ import {
   tstellarToken,
   ttronToken,
   AccountCoin,
+  teosToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -857,4 +858,6 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
+  teosToken('LAD', 'LAD', 4, 'lionteste212', UnderlyingAsset.LAD, AccountCoin.DEFAULT_FEATURES, '', 'LAD'),
+  teosToken('OLLA', 'OLLA', 4, 'lionteste212', UnderlyingAsset.OLLA, AccountCoin.DEFAULT_FEATURES, '', 'OLLA'),
 ]);
