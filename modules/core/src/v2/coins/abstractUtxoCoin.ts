@@ -1188,25 +1188,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         debug('Input details: %O', signatureContext);
 
         const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
+        const redeemScript = signatureContext.unspent.redeemScript
+          ? Buffer.from(signatureContext.unspent.redeemScript, 'hex')
+          : undefined;
+        const witnessScript = signatureContext.unspent.witnessScript
+          ? Buffer.from(signatureContext.unspent.witnessScript, 'hex')
+          : undefined;
+        const scriptType = witnessScript ? (redeemScript ? 'p2shP2wsh' : 'p2wsh') : 'p2sh';
+        debug(`Signing ${scriptType} input`);
         try {
-          if (signatureContext.isP2wsh) {
-            debug('Signing p2wsh input');
-            const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
-            const witnessScriptHash = utxolib.crypto.sha256(witnessScript);
-            const prevOutScript = utxolib.script.witnessScriptHash.output.encode(witnessScriptHash);
-            txb.sign(index, keyPair, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
-          } else {
-            const subscript = Buffer.from(signatureContext.unspent.redeemScript, 'hex');
-            const isP2shP2wsh = !!signatureContext.unspent.witnessScript;
-            if (isP2shP2wsh) {
-              debug('Signing p2shP2wsh input');
-              const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
-              txb.sign(index, keyPair, subscript, sigHashType, signatureContext.unspent.value, witnessScript);
-            } else {
-              debug('Signing p2sh input');
-              txb.sign(index, keyPair, subscript, sigHashType, signatureContext.unspent.value);
-            }
-          }
+          txb.sign(index, keyPair, redeemScript, sigHashType, signatureContext.unspent.value, witnessScript);
         } catch (e) {
           debug('Failed to sign input:', e);
           signatureContext.error = e;
