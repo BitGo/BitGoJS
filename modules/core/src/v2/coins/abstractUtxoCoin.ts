@@ -1154,7 +1154,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
 
-      const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, self.network);
+      const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction);
       utxolib.bitgo.setTransactionBuilderDefaults(txb, self.network);
 
       const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
