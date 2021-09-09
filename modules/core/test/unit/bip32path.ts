@@ -5,9 +5,7 @@ import 'should';
 import * as bip32 from 'bip32';
 import { sanitizeLegacyPath } from '../../src/bip32path';
 import { getSeed } from '../lib/keys';
-import { Derivable, hdPath } from '../../src/bitcoin';
-
-const utxolib = require('@bitgo/utxo-lib');
+import { HDNode, Derivable, hdPath } from '../../src/legacyBitcoin';
 
 describe('bip32util', function () {
   const seed = getSeed('bip32test');
@@ -15,7 +13,7 @@ describe('bip32util', function () {
   const testKeyBip32Master = bip32.fromSeed(seed);
   const testKeyBip32Child = testKeyBip32Master.derivePath('m/0');
 
-  const testKeyHDPathMaster = utxolib.HDNode.fromSeedBuffer(seed);
+  const testKeyHDPathMaster = HDNode.fromSeedBuffer(seed);
   const testKeyHDPathChild = testKeyHDPathMaster.derivePath('m/0');
 
   /**
@@ -47,6 +45,11 @@ describe('bip32util', function () {
         .derivePath(refPath)
         .toBase58() //
         .should.eql(refHDPath.derive(p).toBase58());
+
+      refBIP32
+        .derivePath(refPath)
+        .publicKey.toString('hex')
+        .should.eql(refHDPath.deriveKey(p).getPublicKeyBuffer().toString('hex'));
     });
   }
 
