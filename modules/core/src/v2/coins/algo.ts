@@ -481,4 +481,12 @@ export class Algo extends BaseCoin {
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
   }
+
+  decodeTx(txn: Buffer): unknown {
+    return accountLib.Algo.algoUtils.decodeAlgoTxn(txn);
+  }
+
+  getAddressFromPublicKey(Pubkey: Uint8Array): string {
+    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(Pubkey);
+  }
 }
