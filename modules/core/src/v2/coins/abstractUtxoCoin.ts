@@ -1295,7 +1295,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (transaction.network !== this.network) {
       throw new Error(`network mismatch`);
     }
-    return utxolib.bitgo.verifySignature(transaction, inputIndex, amount, verificationSettings);
+    return utxolib.bitgo.verifySignature(transaction, inputIndex, amount, {
+      signatureIndex: verificationSettings.signatureIndex,
+      publicKey: verificationSettings.publicKey ? Buffer.from(verificationSettings.publicKey, 'hex') : undefined,
+    });
   }
 
   /**

@@ -6,7 +6,7 @@
 
 import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
-import { makeRandomKey } from './bitcoin';
+import { getAddressP2PKH, makeRandomKey } from './bitcoin';
 import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
@@ -1193,7 +1193,7 @@ export class BitGo {
     if (extensible) {
       this._extensionKey = makeRandomKey();
       authParams.extensible = true;
-      authParams.extensionAddress = this._extensionKey.getAddress();
+      authParams.extensionAddress = getAddressP2PKH(this._extensionKey);
     }
 
     return authParams;

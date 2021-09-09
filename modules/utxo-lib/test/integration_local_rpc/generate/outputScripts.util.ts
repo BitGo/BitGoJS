@@ -6,9 +6,9 @@ import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
 import { Transaction, Triple } from './types';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
-import { getMainnet, isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
+import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 import { getDefaultSigHash } from '../../../src/bitgo/signature';
-import { createTransactionBuilderForNetwork, createTransactionForNetwork } from '../../../src/bitgo';
+import { createTransactionBuilderForNetwork } from '../../../src/bitgo';
 
 const utxolib = require('../../../src');
 
