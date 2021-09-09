@@ -17,7 +17,6 @@ describe('Algo Unison Token:', function () {
     algoTokenCoin.getChain().should.equal('talgo:16026728');
     algoTokenCoin.getBaseChain().should.equal('talgo');
     algoTokenCoin.getFullName().should.equal('Algo Token');
-    algoTokenCoin.getBaseFactor().should.equal(1e18);
     algoTokenCoin.type.should.equal(tokenName);
     algoTokenCoin.name.should.equal('Unison');
     algoTokenCoin.coin.should.equal('talgo');
