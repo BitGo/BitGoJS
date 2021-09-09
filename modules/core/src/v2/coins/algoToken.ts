@@ -71,6 +71,10 @@ export class AlgoToken extends Algo {
     return this.tokenConfig.type;
   }
 
+  getBaseChain() {
+    return this.coin;
+  }
+
   getFullName() {
     return 'Algo Token';
   }
