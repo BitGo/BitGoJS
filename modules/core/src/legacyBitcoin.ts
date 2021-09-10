@@ -31,7 +31,7 @@ export class HDNode {
     return new HDNode(bip32.fromSeed(buf));
   }
 
-  public static formBase58(str: string): HDNode {
+  public static fromBase58(str: string): HDNode {
     return new HDNode(bip32.fromBase58(str));
   }
 
