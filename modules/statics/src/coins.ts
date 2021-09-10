@@ -12,6 +12,7 @@ import {
   tstellarToken,
   ttronToken,
   AccountCoin,
+  teosToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -82,8 +83,32 @@ export const coins = CoinMap.fromCoins([
   account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS),
   account('rbtc', 'Rsk', Networks.main.rbtc, 18, UnderlyingAsset.RBTC, ETH_FEATURES),
   account('trbtc', 'Testnet Rsk', Networks.test.rbtc, 18, UnderlyingAsset.RBTC, ETH_FEATURES),
-  account('trx', 'Tron', Networks.main.trx, 6, UnderlyingAsset.TRX),
-  account('ttrx', 'Testnet Tron', Networks.test.trx, 6, UnderlyingAsset.TRX),
+  account(
+    'trx',
+    'Tron',
+    Networks.main.trx,
+    6,
+    UnderlyingAsset.TRX,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '5000000000'
+  ),
+  account(
+    'ttrx',
+    'Testnet Tron',
+    Networks.test.trx,
+    6,
+    UnderlyingAsset.TRX,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '5000000000'
+  ),
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP),
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES, KeyCurve.Ed25519),
@@ -747,8 +772,32 @@ export const coins = CoinMap.fromCoins([
     '',
     'BRLT'
   ),
-  tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65', UnderlyingAsset.WBTC),
-  tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
+  tronToken(
+    'trx:wbtc',
+    'Tron Wrapped Bitcoin',
+    8,
+    'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65',
+    UnderlyingAsset.WBTC,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '100000000'
+  ),
+  tronToken(
+    'trx:weth',
+    'Tron Wrapped Ether',
+    18,
+    'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok',
+    UnderlyingAsset.WETH,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '100000000'
+  ),
   terc20(
     'fixed',
     'Goerli Example Fixed Supply Token',
@@ -825,8 +874,32 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
-  ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf', UnderlyingAsset.WBTC),
-  ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
+  ttronToken(
+    'ttrx:wbtc',
+    'Test Tron Wrapped Bitcoin',
+    8,
+    'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf',
+    UnderlyingAsset.WBTC,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '100000000'
+  ),
+  ttronToken(
+    'ttrx:weth',
+    'Test Tron Wrapped Ether',
+    18,
+    'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g',
+    UnderlyingAsset.WETH,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    '100000000'
+  ),
   talgoToken(
     'talgo:16026728',
     'Unison',
@@ -857,4 +930,6 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
+  teosToken('LAD', 'LAD', 4, 'lionteste212', UnderlyingAsset.LAD, AccountCoin.DEFAULT_FEATURES, '', 'LAD'),
+  teosToken('OLLA', 'OLLA', 4, 'lionteste212', UnderlyingAsset.OLLA, AccountCoin.DEFAULT_FEATURES, '', 'OLLA'),
 ]);

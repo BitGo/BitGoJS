@@ -13,6 +13,10 @@ import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } fr
 import { sanitizeLegacyPath } from '../../../bip32path';
 import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo, UtxoNetwork } from '../abstractUtxoCoin';
 
+interface Transaction {
+  toBuffer(): Buffer;
+}
+
 interface TransactionBuilder {
   network: UtxoNetwork;
 
@@ -25,9 +29,9 @@ interface TransactionBuilder {
     witnessScript: Buffer | undefined
   );
 
-  build(): {
-    toBuffer(): Buffer;
-  };
+  buildIncomplete(): Transaction;
+
+  build(): Transaction;
 }
 
 interface SignatureAddressInfo extends AddressInfo {
@@ -359,7 +363,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
       addressesById,
       !isKrsRecovery
     );
-    txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
+    txInfo.transactionHex = signedTx.buildIncomplete().toBuffer().toString('hex');
     try {
       txInfo.tx = await coin.verifyRecoveryTransaction(txInfo);
     } catch (e) {

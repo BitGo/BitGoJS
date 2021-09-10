@@ -13,7 +13,7 @@
 
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { makeRandomKey, getNetwork } from './bitcoin';
+import { makeRandomKey, getNetwork, getAddressP2PKH } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
@@ -279,7 +279,7 @@ Wallets.prototype.acceptShare = function (params, callback) {
 Wallets.prototype.createKey = function (params) {
   const key = makeRandomKey();
   return {
-    address: key.getAddress(),
+    address: getAddressP2PKH(key),
     key: key.toWIF(),
   };
 };
@@ -439,7 +439,7 @@ Wallets.prototype.createForwardWallet = function (params, callback) {
 
   try {
     const key = utxolib.ECPair.fromWIF(params.privKey, getNetwork());
-    addressFromPrivKey = key.getAddress();
+    addressFromPrivKey = getAddressP2PKH(key);
   } catch (e) {
     throw new Error('expecting a valid privKey');
   }

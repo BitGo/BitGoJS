@@ -1,6 +1,8 @@
 import should from 'should';
 
 import { Eth } from '../../../../src';
+import { KeyPair } from '../../../../src/coin/eth';
+import * as nacl from 'tweetnacl';
 
 describe('Eth KeyPair', function () {
   // these are all encodings of the same key so the test suite will show that they we can interchange between them
@@ -13,6 +15,7 @@ describe('Eth KeyPair', function () {
   const uncompressedPub =
     '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355';
   const address = '0xeb317b9f2e0891d66c061ddc3f5ee7ed42d70a44';
+  const invalidPrivateKeyErrorMessage = 'Unsupported private key';
 
   describe('should create a KeyPair', function () {
     it('from an xpub', () => {
@@ -62,6 +65,21 @@ describe('Eth KeyPair', function () {
 
       should.throws(() => keyPair.getExtendedKeys());
     });
+
+    it('from an empty value', () => {
+      const keyPair = new KeyPair();
+      should.exists(keyPair.getKeys().prv);
+      should.exists(keyPair.getKeys().pub);
+      should.equal(keyPair.getKeys().prv!.length, 64);
+      should.equal(keyPair.getKeys().pub.length, 66);
+    });
+
+    it('from seed', () => {
+      const seed = nacl.randomBytes(64);
+      const keyPair = new KeyPair({ seed: Buffer.from(seed) });
+      keyPair.getKeys().should.have.property('pub');
+      keyPair.getKeys().should.have.property('prv');
+    });
   });
 
   describe('should fail to create a KeyPair', function () {
@@ -77,6 +95,10 @@ describe('Eth KeyPair', function () {
         prv: '82A34E',
       };
       should.throws(() => new Eth.KeyPair(source));
+      should.throws(
+        () => new KeyPair({ prv: prv + pub }),
+        (e) => e.message === invalidPrivateKeyErrorMessage,
+      );
     });
   });
 
