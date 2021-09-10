@@ -2,11 +2,11 @@
  * @prettier
  */
 
+import * as bip32 from 'bip32';
 import { coroutine as co } from 'bluebird';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { HDNode } from '@bitgo/utxo-lib';
 
 import fixtures from '../../fixtures/trading/payload';
 
@@ -14,6 +14,7 @@ import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
+import { getAddressP2PKH } from '../../../../src/bitcoin';
 
 describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
@@ -104,7 +105,7 @@ describe('Trade Payloads', function () {
     // signature should be a hex string
     signature.should.match(/^[0-9a-f]+$/);
 
-    const address = HDNode.fromBase58(xpub).getAddress();
+    const address = getAddressP2PKH(bip32.fromBase58(xpub));
 
     bitcoinMessage.verify(JSON.stringify(payload), address, Buffer.from(signature, 'hex')).should.be.True();
 

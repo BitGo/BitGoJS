@@ -1,6 +1,10 @@
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
-import { DefaultKeys, isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
+import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
+import { randomBytes } from 'crypto';
+import * as bip32 from 'bip32';
+
+const DEFAULT_SEED_SIZE_BYTES = 64;
 
 /**
  * Ethereum keys and address management.
@@ -14,14 +18,15 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   constructor(source?: KeyPairOptions) {
     super(source);
-    if (source) {
-      if (isPrivateKey(source)) {
-        super.recordKeysFromPrivateKey(source.prv);
-      } else if (isPublicKey(source)) {
-        super.recordKeysFromPublicKey(source.pub);
-      } else {
-        throw new Error('Invalid key pair options');
-      }
+    if (!source) {
+      const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
+      this.hdNode = bip32.fromSeed(seed);
+    } else if (isSeed(source)) {
+      this.hdNode = bip32.fromSeed(source.seed);
+    } else if (isPrivateKey(source)) {
+      this.recordKeysFromPrivateKey(source.prv);
+    } else if (isPublicKey(source)) {
+      this.recordKeysFromPublicKey(source.pub);
     } else {
       throw new Error('Invalid key pair options');
     }

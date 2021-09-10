@@ -4,5 +4,5 @@ export * from './networks';
 export * from './errors';
 export { OfcCoin } from './ofc';
 export { UtxoCoin } from './utxo';
-export { AccountCoin, CeloCoin, ContractAddressDefinedToken, Erc20Coin, StellarCoin } from './account';
+export { AccountCoin, CeloCoin, ContractAddressDefinedToken, Erc20Coin, StellarCoin, EosCoin } from './account';
 export { CoinMap } from './map';
