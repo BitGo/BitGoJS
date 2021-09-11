@@ -5,8 +5,7 @@
 //
 
 import 'should';
-import { HDNode } from '@bitgo/utxo-lib';
-import { hdPath } from '../../src/bitcoin';
+import { HDNode, hdPath } from '../../src/legacyBitcoin';
 
 describe('HDNode', function () {
 
