@@ -14,19 +14,9 @@ import { getTransactionBuilder } from '../transaction_util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { padInputScript } from '../../src/bitgo/nonStandardHalfSigned';
 
-async function getFixture<T>(network: Network, name: string, defaultValue: T): Promise<T> {
+async function getFixture<T>(network: Network, name: string): Promise<T> {
   const p = path.join(__dirname, 'fixtures', getNetworkName(network) as string, name);
-  try {
-    return JSON.parse(await fs.readFile(p, 'utf-8'));
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      await fs.mkdirp(path.dirname(p));
-      await fs.writeFile(p, JSON.stringify(defaultValue, null, 2));
-      throw new Error(`wrote default value, please verify output and re-run tests`);
-    }
-
-    throw e;
-  }
+  return JSON.parse(await fs.readFile(p, 'utf-8'));
 }
 
 function runTest(scriptType: ScriptType2Of3) {
@@ -37,12 +27,10 @@ function runTest(scriptType: ScriptType2Of3) {
       it(`parses non-standard half signed transaction pubkeyIndex=${pubkeyIndex}`, async function () {
         const txb = getTransactionBuilder(fixtureKeys, [signKey], scriptType, network);
         const standardHalfSigned = txb.buildIncomplete();
+
+        // Fixtures can only be constructed using utxolib < 1.10
         const nonStandardHalfSigned = createTransactionFromHex(
-          await getFixture(
-            network,
-            `nonStandardHalfSigned-${scriptType}-${pubkeyIndex}.json`,
-            txb.build().toBuffer().toString('hex')
-          ),
+          await getFixture(network, `nonStandardHalfSigned-${scriptType}-${pubkeyIndex}.json`),
           network
         );
 

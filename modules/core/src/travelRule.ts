@@ -35,7 +35,7 @@ interface DecryptReceivedTravelRuleOptions {
   keychain?: {
     xprv?: string;
   };
-  hdnode?: utxolib.HDNode;
+  hdnode?: bip32.BIP32Interface;
 }
 
 interface Recipient {
@@ -175,7 +175,7 @@ TravelRule.prototype.prepareParams = function (params) {
   }
 
   // If a key was not provided, create a new random key
-  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork());
+  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork() as any);
   if (!fromKey) {
     fromKey = makeRandomKey();
   }
@@ -194,7 +194,7 @@ TravelRule.prototype.prepareParams = function (params) {
     txid: txid,
     outputIndex: recipient.outputIndex,
     toPubKey: recipient.pubKey,
-    fromPubKey: fromKey.getPublicKeyBuffer().toString('hex'),
+    fromPubKey: fromKey.publicKey.toString('hex'),
     encryptedTravelInfo: encryptedTravelInfo,
     fromPrivateInfo: undefined,
   };

@@ -12,7 +12,6 @@ import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
   createScriptPubKey,
   createSpendTransaction,
-  getKeyTriple,
   isSupportedDepositType,
   isSupportedSpendType,
   ScriptType,

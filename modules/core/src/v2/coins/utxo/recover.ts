@@ -11,28 +11,7 @@ import { BitGo } from '../../../bitgo';
 import * as errors from '../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
 import { sanitizeLegacyPath } from '../../../bip32path';
-import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo, UtxoNetwork } from '../abstractUtxoCoin';
-
-interface Transaction {
-  toBuffer(): Buffer;
-}
-
-interface TransactionBuilder {
-  network: UtxoNetwork;
-
-  sign(
-    index: number,
-    privateKey: Buffer | bip32.BIP32Interface,
-    redeemScript: Buffer | undefined,
-    sigHashType: number,
-    inputValue: number,
-    witnessScript: Buffer | undefined
-  );
-
-  buildIncomplete(): Transaction;
-
-  build(): Transaction;
-}
+import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo } from '../abstractUtxoCoin';
 
 interface SignatureAddressInfo extends AddressInfo {
   backupKey: bip32.BIP32Interface;
@@ -61,12 +40,12 @@ function deriveKeys(keyArray: bip32.BIP32Interface[], index: number): bip32.BIP3
  * @returns transactionBuilder originally passed in as the first argument
  */
 function signRecoveryTransaction(
-  txb: TransactionBuilder,
+  txb: utxolib.bitgo.UtxoTransactionBuilder,
   sigHashType: number,
   unspents: Output[],
   addressesById: Record<string, SignatureAddressInfo>,
   cosign: boolean
-): TransactionBuilder {
+): utxolib.bitgo.UtxoTransactionBuilder {
   interface SignatureIssue {
     inputIndex: number;
     unspent: Output;

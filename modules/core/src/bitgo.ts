@@ -142,7 +142,7 @@ export interface VerifyShardsOptions {
 
 export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
-  eckey: utxolib.ECPair;
+  eckey: utxolib.ECPair.ECPairInterface;
 }
 
 export interface AccessTokenOptions {
@@ -351,7 +351,7 @@ export class BitGo {
   private readonly _proxy?: string;
   private _reqId?: IRequestTracer;
   private _ecdhXprv?: string;
-  private _extensionKey?: utxolib.ECPair;
+  private _extensionKey?: utxolib.ECPair.ECPairInterface;
   private _markets?: any;
   private _blockchain?: any;
   private _travelRule?: any;
@@ -728,15 +728,16 @@ export class BitGo {
       throw new Error('missing required string address');
     }
 
+    const networkName = common.Environments[this.getEnv()].network;
+    const network = utxolib.networks[networkName];
+
     let address;
     try {
-      address = utxolib.address.fromBase58Check(params.address);
+      address = utxolib.address.fromBase58Check(params.address, network);
     } catch (e) {
       return false;
     }
 
-    const networkName = common.Environments[this.getEnv()].network;
-    const network = utxolib.networks[networkName];
     return address.version === network.pubKeyHash || address.version === network.scriptHash;
   }
 
@@ -1676,7 +1677,10 @@ export class BitGo {
     const timestamp = Date.now();
     const duration = params.duration;
     const message = timestamp + '|' + this._token + '|' + duration;
-    const privateKey = this._extensionKey.d.toBuffer(32);
+    const privateKey = this._extensionKey.privateKey;
+    if (!privateKey) {
+      throw new Error('no privateKey on extensionKey');
+    }
     const isCompressed = this._extensionKey.compressed;
     const prefix = utxolib.networks.bitcoin.messagePrefix;
     const signature = bitcoinMessage.sign(message, privateKey, isCompressed, prefix).toString('hex');

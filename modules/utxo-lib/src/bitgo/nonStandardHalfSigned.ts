@@ -1,16 +1,15 @@
 /**
  * @prettier
  */
+import * as assert from 'assert';
 import * as opcodes from 'bitcoin-ops';
-import * as bscript from '../script';
-
-import { Input } from './signature';
+import { classify, script as bscript, TxInput } from '../';
 
 /**
  * @param input - Input of non-standard half-signed transaction created with `tx.build()` instead of `tx.buildIncomplete()`.
  * @param signatureIndex - Position to map the existing signatures to. Other signatures will be padded with OP_0.
  */
-export function padInputScript(input: Input, signatureIndex: number): void {
+export function padInputScript(input: TxInput, signatureIndex: number): void {
   if (![0, 1, 2].includes(signatureIndex)) {
     throw new Error(`invalid signature index: must be one of [0, 1, 2]`);
   }
@@ -22,9 +21,13 @@ export function padInputScript(input: Input, signatureIndex: number): void {
     throw new Error(`native segwit not supported`);
   }
 
-  const inputClassification = bscript.classifyInput(input.script, true);
+  const inputClassification = classify.input(input.script, true);
   const decompiledSigScript = input.witness.length ? input.witness : bscript.decompile(input.script);
-  const expectedScriptType = inputClassification === bscript.types.P2SH || inputClassification === bscript.types.P2WSH;
+  if (!decompiledSigScript) {
+    throw new Error(`could not parse input script`);
+  }
+  const expectedScriptType =
+    inputClassification === classify.types.P2SH || inputClassification === classify.types.P2WSH;
 
   if (!expectedScriptType) {
     return;
@@ -49,9 +52,9 @@ export function padInputScript(input: Input, signatureIndex: number): void {
   ];
 
   if (input.witness.length) {
-    input.witness = paddedSigScript;
+    paddedSigScript.forEach((b) => assert(Buffer.isBuffer(b)));
+    input.witness = paddedSigScript as Buffer[];
   } else {
-    // @ts-ignore: bscript uses an odd "Buffer" type (per jsdoc)
     input.script = bscript.compile(paddedSigScript);
   }
 }

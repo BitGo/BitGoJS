@@ -173,18 +173,12 @@ export function isZcash(network) {
 }
 
 /**
- * @param {Network} network
+ * @param {unknown} network
  * @returns {boolean} returns true iff network is any of the network stated in the argument
  */
-export const isValidNetwork = typeforce.oneOf(
-  isBitcoin,
-  isBitcoinCash,
-  isBitcoinGold,
-  isBitcoinSV,
-  isDash,
-  isLitecoin,
-  isZcash
-);
+export function isValidNetwork(network: unknown): network is Network {
+  return Object.values(networks).includes(network as Network);
+}
 
 /** @deprecated */
 export const BCH = coins.BCH;

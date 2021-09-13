@@ -1603,7 +1603,7 @@ export class Wallet {
             sharedKeychain = {
               pub: keychain.pub,
               encryptedPrv: newEncryptedPrv,
-              fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
+              fromPubKey: eckey.publicKey.toString('hex'),
               toPubKey: sharing.pubkey,
               path: sharing.path,
             };
