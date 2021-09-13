@@ -114,6 +114,10 @@ export class Algo extends BaseCoin {
     return 'algo';
   }
 
+  getBaseChain(): string {
+    return 'algo';
+  }
+
   getFamily(): string {
     return 'algo';
   }
@@ -238,7 +242,7 @@ export class Algo extends BaseCoin {
         throw new Error('missing explain tx parameters');
       }
 
-      const factory = accountLib.getBuilder(this.getChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
+      const factory = accountLib.getBuilder(this.getBaseChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
       const txBuilder = factory.from(txHex);
       const tx = (yield txBuilder.build()) as any;
