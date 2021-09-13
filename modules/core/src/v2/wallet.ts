@@ -264,6 +264,7 @@ export interface CreateAddressOptions {
   label?: string;
   lowPriority?: boolean;
   forwarderVersion?: number;
+  format?: 'base58' | 'cashaddr';
 }
 
 export interface UpdateAddressOptions {
@@ -1249,6 +1250,7 @@ export class Wallet {
         label,
         lowPriority,
         forwarderVersion,
+        format,
         count = 1,
       } = params;
 
@@ -1289,6 +1291,13 @@ export class Wallet {
           throw new Error('lowPriority has to be a boolean');
         }
         addressParams.lowPriority = lowPriority;
+      }
+
+      if (!_.isUndefined(format)) {
+        if (!_.isString(format)) {
+          throw new Error('format has to be a string');
+        }
+        addressParams.format = format;
       }
 
       // get keychains for address verification
