@@ -18,6 +18,7 @@
     "javascript"
   ],
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc --project tsconfig.build.json",
     "coverage-report": "nyc report --reporter=lcov",
     "coverage-html": "nyc report --reporter=html",
