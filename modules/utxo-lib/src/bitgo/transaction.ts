@@ -5,50 +5,37 @@ import * as networks from '../networks';
 import { Network, ZcashNetwork } from '../networkTypes';
 import { getMainnet } from '../coins';
 
-const Transaction = require('../transaction');
-const TransactionBuilder = require('../transaction_builder');
+import { UtxoTransaction } from './UtxoTransaction';
+import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import { DashTransaction } from './dash/DashTransaction';
+import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
+import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
+import { ZcashTransaction } from './zcash/ZcashTransaction';
 
-type Transaction = any;
-
-type TransactionBuilder = any;
-
-export function createTransactionForNetwork(network: Network): Transaction {
+export function createTransactionFromBuffer(buf: Buffer, network: Network): UtxoTransaction {
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.dash:
     case networks.litecoin:
+      return UtxoTransaction.fromBuffer(buf, false, network);
+    case networks.dash:
+      return DashTransaction.fromBuffer(buf, false, network);
     case networks.zcash:
-      return new Transaction(network);
+      return ZcashTransaction.fromBuffer(buf, false, network as ZcashNetwork);
   }
 
   /* istanbul ignore next */
   throw new Error(`invalid network`);
 }
 
-export function createTransactionFromBuffer(buf: Buffer, network: Network): Transaction {
-  switch (getMainnet(network)) {
-    case networks.bitcoin:
-    case networks.bitcoincash:
-    case networks.bitcoinsv:
-    case networks.bitcoingold:
-    case networks.dash:
-    case networks.litecoin:
-    case networks.zcash:
-      return Transaction.fromBuffer(buf, network);
-  }
-
-  /* istanbul ignore next */
-  throw new Error(`invalid network`);
-}
-
-export function createTransactionFromHex(hex: string, network: Network): Transaction {
+/* istanbul ignore next */
+export function createTransactionFromHex(hex: string, network: Network): UtxoTransaction {
   return createTransactionFromBuffer(Buffer.from(hex, 'hex'), network);
 }
 
-export function setTransactionBuilderDefaults(txb: TransactionBuilder, network: Network): void {
+export function setTransactionBuilderDefaults(txb: UtxoTransactionBuilder, network: Network): void {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
@@ -56,29 +43,32 @@ export function setTransactionBuilderDefaults(txb: TransactionBuilder, network: 
       txb.setVersion(2);
       break;
     case networks.zcash:
-      txb.setVersion(4);
-      txb.setVersionGroupId(0x892f2085);
+      (txb as ZcashTransactionBuilder).setVersion(4);
+      (txb as ZcashTransactionBuilder).setVersionGroupId(0x892f2085);
       // Use "Canopy" consensus branch ID https://zips.z.cash/zip-0251
-      txb.setConsensusBranchId(0xe9ff75a6);
+      (txb as ZcashTransactionBuilder).setConsensusBranchId(0xe9ff75a6);
       break;
   }
 }
 
-export function createTransactionBuilderForNetwork(network: Network): TransactionBuilder {
+export function createTransactionBuilderForNetwork(network: Network): UtxoTransactionBuilder {
   let txb;
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.dash:
-    case networks.litecoin:
-    case networks.zcash:
-      txb = new TransactionBuilder(network);
+    case networks.litecoin: {
+      txb = new UtxoTransactionBuilder(network);
       break;
-    default:
-      /* istanbul ignore next */
-      throw new Error(`invalid network`);
+    }
+    case networks.dash:
+      txb = new DashTransactionBuilder(network);
+      break;
+    case networks.zcash: {
+      txb = new ZcashTransactionBuilder(network as ZcashNetwork);
+      break;
+    }
   }
 
   setTransactionBuilderDefaults(txb, network);
@@ -86,18 +76,19 @@ export function createTransactionBuilderForNetwork(network: Network): Transactio
   return txb;
 }
 
-export function createTransactionBuilderFromTransaction(tx: Transaction): TransactionBuilder {
+export function createTransactionBuilderFromTransaction(tx: UtxoTransaction): UtxoTransactionBuilder {
   switch (getMainnet(tx.network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.dash:
     case networks.litecoin:
+      return UtxoTransactionBuilder.fromTransaction(tx);
+    case networks.dash:
+      return DashTransactionBuilder.fromTransaction(tx as DashTransaction);
     case networks.zcash:
-      return TransactionBuilder.fromTransaction(tx, tx.network);
+      return ZcashTransactionBuilder.fromTransaction(tx as ZcashTransaction);
   }
 
-  /* istanbul ignore next */
   throw new Error(`invalid network`);
 }

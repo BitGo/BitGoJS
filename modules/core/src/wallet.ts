@@ -319,7 +319,7 @@ Wallet.prototype.generateAddress = function ({ segwit, path, keychains, threshol
   } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, isSegwit ? 'p2shP2wsh' : 'p2sh');
 
   addressDetails.witnessScript = witnessScript?.toString('hex');
-  addressDetails.redeemScript = redeemScript.toString('hex');
+  addressDetails.redeemScript = redeemScript?.toString('hex');
   addressDetails.outputScript = outputScript.toString('hex');
   addressDetails.address = utxolib.address.fromOutputScript(outputScript, getNetwork(network));
 
@@ -2193,7 +2193,7 @@ Wallet.prototype.shareWallet = function (params, callback) {
               sharedKeychain = {
                 xpub: keychain.xpub,
                 encryptedXprv: newEncryptedXprv,
-                fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
+                fromPubKey: eckey.publicKey.toString('hex'),
                 toPubKey: sharing.pubkey,
                 path: sharing.path,
               };

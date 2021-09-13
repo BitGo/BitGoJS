@@ -244,7 +244,10 @@ export class Cspr extends BaseCoin {
         }
       } else {
         const keyPair = ECPair.makeRandom();
-        walletParams.rootPrivateKey = keyPair.getPrivateKeyBuffer().toString('hex');
+        if (!keyPair.privateKey) {
+          throw new Error('no privateKey');
+        }
+        walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
       }
       return walletParams;
     }).call(this);

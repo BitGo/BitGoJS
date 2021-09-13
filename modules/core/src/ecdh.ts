@@ -24,16 +24,25 @@ import * as utxolib from '@bitgo/utxo-lib';
  * @returns Buffer public key buffer that can be used as shared secret (see note)
  */
 export function getSharedSecret(
-  privateKey: bip32.BIP32Interface | utxolib.ECPair | Buffer,
+  privateKey: bip32.BIP32Interface | utxolib.ECPair.ECPairInterface | Buffer,
   publicKey: bip32.BIP32Interface | Buffer
 ): Buffer {
-  if (privateKey.constructor.name === 'BIP32') {
+  function isBIP32Interface(k: any): k is bip32.BIP32Interface {
+    return k.constructor.name === 'BIP32';
+  }
+  function isECPairInterface(k: any): k is utxolib.ECPair.ECPairInterface {
+    return k.constructor.name === 'ECPair';
+  }
+  if (isBIP32Interface(privateKey)) {
     if (!privateKey.privateKey) {
       throw new Error(`privateNode must be private key`);
     }
     privateKey = privateKey.privateKey;
-  } else if (privateKey instanceof utxolib.ECPair) {
-    privateKey = privateKey.d.toBuffer(32);
+  } else if (isECPairInterface(privateKey)) {
+    if (privateKey.privateKey === undefined || !Buffer.isBuffer(privateKey.privateKey)) {
+      throw new Error(`unexpected ECPair`);
+    }
+    privateKey = privateKey.privateKey;
   }
 
   if (!Buffer.isBuffer(publicKey)) {

@@ -98,9 +98,6 @@ describe('ZEC:', function () {
         txb.addOutput(receiveAddress, unspent.value - 50000);
 
         const tx = txb.buildIncomplete();
-        tx.coin = coin.type;
-        tx.overwintered = 1;
-        tx.versionGroupId = 0x03C48270;
 
         // Individual private keys derived from keychains above at chain=1 and index=113
         // key0WIF:  cUkLnuyeKgsEaFjtXqK2yhZwzrstTftHHtqMtw4pts8iKqwj3wd8
@@ -129,7 +126,7 @@ describe('ZEC:', function () {
           txPrebuild: prebuild,
           prv: keychains[0].prv,
         });
-        const halfSignedTx = utxolib.bitgo.createTransactionFromHex(halfSigned.txHex, testCoin.network);
+        const halfSignedTx = utxolib.bitgo.createTransactionFromHex(halfSigned.txHex, testCoin.network) as utxolib.bitgo.ZcashTransaction;
         halfSignedTx.network.coin.should.equal('zec');
         halfSignedTx.version.should.equal(4);
         halfSignedTx.versionGroupId.should.equal(2301567109);
@@ -145,7 +142,7 @@ describe('ZEC:', function () {
           prv: keychains[2].prv,
           isLastSignature: true,
         });
-        const fullySignedTx = utxolib.bitgo.createTransactionFromHex(fullySigned.txHex, testCoin.network);
+        const fullySignedTx = utxolib.bitgo.createTransactionFromHex(fullySigned.txHex, testCoin.network) as utxolib.bitgo.ZcashTransaction;
         fullySignedTx.network.coin.should.equal('zec');
         fullySignedTx.version.should.equal(4);
         fullySignedTx.versionGroupId.should.equal(2301567109);
