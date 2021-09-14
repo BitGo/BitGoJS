@@ -5,7 +5,7 @@ import * as testData from '../../../resources/stx/stx';
 import { KeyPair } from '../../../../src/coin/stx/keyPair';
 
 describe('Stx Transaction', () => {
-  const coin = coins.get('stx');
+  const coin = coins.get('tstx');
 
   it('should throw empty transaction', () => {
     const tx = new Transaction(coin);

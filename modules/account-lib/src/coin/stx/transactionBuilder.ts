@@ -13,7 +13,7 @@ import {
   StacksMessageType,
   PubKeyEncoding,
 } from '@stacks/transactions';
-import { StacksNetwork, StacksTestnet } from '@stacks/network';
+import { StacksNetwork, StacksTestnet, StacksMainnet } from '@stacks/network';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -46,7 +46,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._fromPubKeys = [];
     this._signatures = [];
     this._numberSignatures = 2;
-    this._network = new StacksTestnet();
+    this._network = _coinConfig.network.type === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
     this._transaction = new Transaction(_coinConfig);
   }
 
