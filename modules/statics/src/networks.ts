@@ -51,6 +51,11 @@ export interface EthereumNetwork extends AccountNetwork {
   readonly forwarderImplementationAddress?: string;
 }
 
+export interface TronNetwork extends AccountNetwork {
+  maxFeeLimit: string;
+  contractCallFeeLimit: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
@@ -391,14 +396,18 @@ class SUSDTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
-class Trx extends Mainnet implements AccountNetwork {
+class Trx extends Mainnet implements TronNetwork {
   family = CoinFamily.TRX;
   explorerUrl = 'https://tronscan.org/#/transaction/';
+  maxFeeLimit = '5000000000';
+  contractCallFeeLimit = '100000000';
 }
 
-class TrxTestnet extends Testnet implements AccountNetwork {
+class TrxTestnet extends Testnet implements TronNetwork {
   family = CoinFamily.TRX;
   explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
+  maxFeeLimit = '5000000000';
+  contractCallFeeLimit = '100000000';
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
