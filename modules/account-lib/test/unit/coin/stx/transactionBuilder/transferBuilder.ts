@@ -1,5 +1,5 @@
 import should from 'should';
-import { StacksTestnet } from '@stacks/network';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
@@ -8,7 +8,8 @@ import { rawPrvToExtendedKeys } from '../../../../../src/utils/crypto';
 import { padMemo } from '../../../../../src/coin/stx/utils';
 
 describe('Stx Transfer Builder', () => {
-  const factory = register('stx', TransactionBuilderFactory);
+  const factory = register('tstx', TransactionBuilderFactory);
+  const factoryProd = register('stx', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
@@ -18,6 +19,19 @@ describe('Stx Transfer Builder', () => {
     txBuilder.amount('1000');
     return txBuilder;
   };
+
+  describe('transfer builder environment', function () {
+    it('should select the right network', function () {
+      should.equal(factory.getTransferBuilder().coinName(), 'tstx');
+      should.equal(factoryProd.getTransferBuilder().coinName(), 'stx');
+      // used type any to access protected properties
+      const txBuilder: any = factory.getTransferBuilder();
+      const txBuilderProd: any = factoryProd.getTransferBuilder();
+
+      txBuilder._network.should.deepEqual(new StacksTestnet());
+      txBuilderProd._network.should.deepEqual(new StacksMainnet());
+    });
+  });
 
   describe('should build ', () => {
     it('a signed transfer transaction', async () => {
