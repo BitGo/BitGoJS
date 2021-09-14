@@ -3,6 +3,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { TX_WITH_REPLAY_PROTECTION } from '../../fixtures/coins/bch';
 
 describe('BCH:', function () {
   let bitgo;
@@ -312,6 +313,17 @@ describe('BCH:', function () {
         prv: 'xpub661MyMwAqRbcGpyL5QvWah4XZYHuTK21mSQ4NVwYaX67A35Kzb42nmTdf2WArW4tettXrWpfpwFbEFdEVqcSvnHLB8F6p1D41ssmbnRMXpc',
       }).should.be.rejectedWith('expected user private key but received public key');
     }));
+  });
 
+  describe('Explain Transaction:', () => {
+    it('should successfully explain a transaction that includes a single sig p2sh replay protection input', async function () {
+      const tbch = bitgo.coin('tbch');
+
+      const explanation = await tbch.explainTransaction({
+        txHex: TX_WITH_REPLAY_PROTECTION,
+      });
+
+      explanation.should.have.property('signatures', 0);
+    });
   });
 });
