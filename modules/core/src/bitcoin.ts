@@ -17,7 +17,7 @@ export function makeRandomKey(): utxolib.ECPair {
 }
 
 export function getAddressP2PKH(key: utxolib.ECPair | bip32.BIP32Interface): string {
-  const pkHash = utxolib.crypto.hash160(key.publicKey);
+  const pkHash = utxolib.crypto.hash160(key.publicKey ?? key.getPublicKeyBuffer());
   return utxolib.address.fromOutputScript(
     utxolib.script.pubKeyHash.output.encode(pkHash),
     key.network,
