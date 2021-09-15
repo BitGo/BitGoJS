@@ -4,8 +4,6 @@
 import * as networks from './networks';
 import { coins, Network } from './networkTypes';
 
-const typeforce = require('typeforce');
-
 /**
  * @returns {Network[]} all known networks as array
  */
