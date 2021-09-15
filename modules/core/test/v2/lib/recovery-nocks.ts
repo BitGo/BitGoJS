@@ -3165,7 +3165,7 @@ module.exports.nockEosRecovery = function () {
     .post('/v1/chain/get_info')
     .reply(200, {
       server_version: '14185431',
-      chain_id: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473',
+      chain_id: '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840',
       head_block_num: 39752030,
       last_irreversible_block_num: 39751705,
       last_irreversible_block_id: '025e90194fbe7ba5773af4b3ed099aaed0fb26b8f7750e414ea0ee975a04cdc1',
