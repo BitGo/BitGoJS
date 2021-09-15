@@ -650,7 +650,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
 
   /* istanbul ignore next */
   if (!this.isOverwinterCompatible()) {
-    throw new Error(`unsupported version`);
+    throw new Error(`unsupported version`)
   }
 
   var hashPrevouts = this.getPrevoutHash(hashType)

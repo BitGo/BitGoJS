@@ -16,7 +16,7 @@ export interface Input {
   hash: Buffer;
   index: number;
   sequence: number;
-  witness: Buffer;
+  witness: Buffer[];
   script: Buffer;
   signScript: Buffer;
 }
