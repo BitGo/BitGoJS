@@ -129,7 +129,7 @@ function configureProxy(app: express.Application, config: Config): void {
   });
 
   app.use(function (req: StaticRequest, res: express.Response) {
-    if (req.url && (/^\/api\/v[12]\/.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
+    if (req.url && (/^\/api.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
       req.isProxy = true;
       proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });
       return;
