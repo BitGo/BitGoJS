@@ -1,6 +1,6 @@
 # BitGo UTXO library
 
-This library is a wrapper around `bitcoinjs-lib` adding altcoin support.
+This library is a wrapper around [bitcoinjs-lib](https://github.com/bitcoinjs/bitcoinjs-lib) adding altcoin support.
 
 ## Features
 - Multicoin support: Configurable behaviour based on [network](https://github.com/BitGo/bitgo-utxo-lib/blob/master/src/networks.js) objects.
