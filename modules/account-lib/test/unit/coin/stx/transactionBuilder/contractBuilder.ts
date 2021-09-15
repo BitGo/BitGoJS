@@ -9,7 +9,8 @@ import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV }
 import { stringifyCv } from '../../../../../src/coin/stx/utils';
 
 describe('Stx Contract call Builder', () => {
-  const factory = register('stx', TransactionBuilderFactory);
+  const factory = register('tstx', TransactionBuilderFactory);
+  const factoryProd = register('stx', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
     const txBuilder = factory.getContractBuilder();
@@ -20,6 +21,19 @@ describe('Stx Contract call Builder', () => {
     txBuilder.functionName(testData.CONTRACT_FUNCTION_NAME);
     return txBuilder;
   };
+
+  describe('contract builder environment', function () {
+    it('should select the right network', function () {
+      should.equal(factory.getTransferBuilder().coinName(), 'tstx');
+      should.equal(factoryProd.getTransferBuilder().coinName(), 'stx');
+      // used type any to access protected properties
+      const txBuilder: any = factory.getTransferBuilder();
+      const txBuilderProd: any = factoryProd.getTransferBuilder();
+
+      txBuilder._network.should.deepEqual(new StacksTestnet());
+      txBuilderProd._network.should.deepEqual(new StacksMainnet());
+    });
+  });
 
   describe('should build ', () => {
     it('an unsigned contract call transaction', async () => {

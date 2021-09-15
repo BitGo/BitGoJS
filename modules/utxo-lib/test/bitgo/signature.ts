@@ -4,51 +4,16 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
-import networks = require('../../src/networks');
-import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { createTransactionBuilderForNetwork, getDefaultSigHash, verifySignature } from '../../src/bitgo';
+import { verifySignature } from '../../src/bitgo';
 
 import { Transaction } from '../integration_local_rpc/generate/types';
-import { createScriptPubKey } from '../integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
+import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
 
 function runTest(network: Network, scriptType: ScriptType2Of3) {
-  const outputAmount = 1e8;
-  const prevOutputs = [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]];
-
-  function createSignedTransaction(keys: bip32.BIP32Interface[], signKeys: bip32.BIP32Interface[]) {
-    const txBuilder = createTransactionBuilderForNetwork(network);
-
-    prevOutputs.forEach(([txid, vout]) => {
-      txBuilder.addInput(txid, vout);
-    });
-
-    const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);
-    txBuilder.addOutput(recipientScript, outputAmount - 1000);
-
-    const { redeemScript, witnessScript } = createOutputScript2of3(
-      keys.map((k) => k.publicKey),
-      scriptType
-    );
-
-    prevOutputs.forEach(([, , value], vin) => {
-      signKeys.forEach((key) => {
-        txBuilder.sign(
-          vin,
-          Object.assign(key, { network }),
-          redeemScript,
-          getDefaultSigHash(network),
-          value,
-          witnessScript
-        );
-      });
-    });
-
-    return txBuilder.buildIncomplete();
-  }
-
   function assertVerifySignatureEquals(
     tx: Transaction,
     value: boolean,
@@ -59,27 +24,15 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   ) {
     tx.ins.forEach((input, i) => {
       assert.strictEqual(
-        verifySignature(tx, i, outputAmount, verificationSettings),
+        verifySignature(tx, i, defaultTestOutputAmount, verificationSettings),
         value,
         JSON.stringify(verificationSettings)
       );
     });
   }
 
-  function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
-    if (length === 0) {
-      return [];
-    }
-    if (length === 1) {
-      return fixtureKeys.map((k) => [k]);
-    }
-    return getSignKeyCombinations(length - 1)
-      .map((head) => fixtureKeys.filter((k) => !head.includes(k)).map((k) => [...head, k]))
-      .reduce((all, keys) => [...all, ...keys]);
-  }
-
   function checkSignTransaction(signKeys: bip32.BIP32Interface[]) {
-    const tx = createSignedTransaction(fixtureKeys, signKeys);
+    const tx = getTransactionBuilder(fixtureKeys, signKeys, scriptType, network).buildIncomplete();
 
     // return true iff there are any valid signatures at all
     assertVerifySignatureEquals(tx, signKeys.length > 0);

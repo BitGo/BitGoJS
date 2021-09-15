@@ -16,7 +16,7 @@ export interface Input {
   hash: Buffer;
   index: number;
   sequence: number;
-  witness: Buffer;
+  witness: Buffer[];
   script: Buffer;
   signScript: Buffer;
 }
@@ -106,9 +106,10 @@ export function parseSignatureScript(
   }
 
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
-  // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
-  // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
-  // entry in the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
+  // BitGo platform only supports multisig within these types of inputs, with the exception of replay protection inputs,
+  // which are single signature p2sh). Signatures are all but the last entry in the decompiledSigScript.
+  // The redeemScript/witnessScript (depending on which type of input this is) is the last entry in
+  // the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
   // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
   // multisig setup:
   //

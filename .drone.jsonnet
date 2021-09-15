@@ -230,13 +230,13 @@ local CheckPreconditions(version) = {
   ]
 };
 
-local UnitVersions = ["10", "12", "14"];
+local UnitVersions = ["12", "14"];
 local OptionalUnitVersions = ["15"];
-local IntegrationVersions = ["10"];
+local IntegrationVersions = ["12"];
 
 [
-  CheckPreconditions("10"),
-  IncludeBranches(MeasureSizeAndTiming("10")),
+  CheckPreconditions("12"),
+  IncludeBranches(MeasureSizeAndTiming("12")),
 ] + [
   UnitTest(version)
   for version in UnitVersions
@@ -248,6 +248,6 @@ local IntegrationVersions = ["10"];
 #  IncludeBranches(IntegrationTest(version))
 #  for version in IntegrationVersions
 ] + [
-  IncludeBranches(BrowserTest("10"))
+  IncludeBranches(BrowserTest("12"))
 ]
 

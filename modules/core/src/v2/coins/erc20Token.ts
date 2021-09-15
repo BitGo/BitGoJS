@@ -327,7 +327,7 @@ export class Erc20Token extends Eth {
       {
         name: 'signature',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.signature),
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
       },
     ];
   }
