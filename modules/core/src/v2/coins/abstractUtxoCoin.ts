@@ -1400,7 +1400,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           }
         }
 
-        const nonEmptySignatures = parsedSigScript.signatures.filter((sig) => !_.isEmpty(sig));
+        const nonEmptySignatures = parsedSigScript.signatures?.filter((sig) => !_.isEmpty(sig)) ?? [];
         const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
           if (_.isEmpty(sig)) {
             return false;

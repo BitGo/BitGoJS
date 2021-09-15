@@ -8,7 +8,7 @@ import { getMainnet, isZcash } from '../../src/coins';
 
 type NormalizedObject = Record<string, unknown>;
 
-export function normalizeParsedTransaction(tx, network: Network): NormalizedObject {
+export function normalizeParsedTransaction(tx, network: Network = tx.network): NormalizedObject {
   const normalizedTx: NormalizedObject = {
     txid: tx.getId(),
     version: tx.version,
