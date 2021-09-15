@@ -175,7 +175,7 @@ TravelRule.prototype.prepareParams = function (params) {
   }
 
   // If a key was not provided, create a new random key
-  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork() as any);
+  let fromKey = params.fromKey && utxolib.ECPair.fromWIF(params.fromKey, getNetwork() as utxolib.BitcoinJSNetwork);
   if (!fromKey) {
     fromKey = makeRandomKey();
   }

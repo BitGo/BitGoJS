@@ -13,7 +13,7 @@ export function getNetwork(network?: V1Network): utxolib.Network {
 }
 
 export function makeRandomKey(): utxolib.ECPair.ECPairInterface {
-  return utxolib.ECPair.makeRandom({ network: getNetwork() as any });
+  return utxolib.ECPair.makeRandom({ network: getNetwork() as utxolib.BitcoinJSNetwork });
 }
 
 interface LegacyECPair {
@@ -28,7 +28,7 @@ export function getAddressP2PKH(key: utxolib.ECPair.ECPairInterface | bip32.BIP3
   } else {
     pubkey = key.publicKey;
   }
-  const { address } = utxolib.payments.p2pkh({ pubkey, network: key.network as any });
+  const { address } = utxolib.payments.p2pkh({ pubkey, network: key.network as utxolib.BitcoinJSNetwork });
   if (!address) {
     throw new Error('could not compute address');
   }

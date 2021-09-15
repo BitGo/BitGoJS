@@ -112,7 +112,7 @@ exports.createTransaction = function (params) {
   }
 
   if (params.feeSingleKeyWIF) {
-    const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as any);
+    const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as utxolib.BitcoinJSNetwork);
     feeSingleKeySourceAddress = getAddressP2PKH(feeSingleKey);
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
@@ -862,7 +862,7 @@ exports.signTransaction = function (params) {
 
   if (!_.isObject(keychain) || !_.isString((keychain as any).xprv)) {
     if (_.isString(params.signingKey)) {
-      privKey = utxolib.ECPair.fromWIF(params.signingKey, network as any);
+      privKey = utxolib.ECPair.fromWIF(params.signingKey, network as utxolib.BitcoinJSNetwork);
       keychain = undefined;
     } else {
       throw new Error('expecting the keychain object with xprv');
@@ -871,7 +871,7 @@ exports.signTransaction = function (params) {
 
   let feeSingleKey;
   if (params.feeSingleKeyWIF) {
-    feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as any);
+    feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as utxolib.BitcoinJSNetwork);
   }
 
   debug('Network: %O', network);
