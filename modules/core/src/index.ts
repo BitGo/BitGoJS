@@ -6,29 +6,23 @@
 //
 // Copyright 2019, BitGo, Inc.  All Rights Reserved.
 //
+import * as _ from 'lodash';
 import * as common from './common';
+import * as utxolib from '@bitgo/utxo-lib';
 
 export * from './bitgo';
 
-// Expose bitcoin and sjcl
-import * as utxolib from '@bitgo/utxo-lib';
-import { hdPath, makeRandomKey } from './bitcoin';
+export * as Errors from './errors';
 
-// can't add types for these since they are part of @bitgo/utxo-lib's default export
-// see https://github.com/Microsoft/TypeScript/issues/14080
-(utxolib as any).hdPath = hdPath;
-(utxolib as any).makeRandomKey = makeRandomKey;
-
-export const bitcoin = utxolib;
+// Expose legacy "bitcoin" API (mostly HDNode)
+/** @deprecated */
+export * as bitcoin from './legacyBitcoin';
+/** @deprecated */
 export const sjcl = require('./vendor/sjcl.min.js');
-export const bs58 = require('bs58');
 
 export { Buffer } from 'buffer';
 
-import * as _ from 'lodash';
-import * as errors from './errors';
 export const Environments = _.cloneDeep(common.Environments);
-export const Errors = errors;
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
 export { V1Network } from './v2/types';
 export { EnvironmentName } from './v2/environments';
@@ -57,7 +51,7 @@ export function getNetwork() {
  * @deprecated
  */
 export function getNetworkObj() {
-  return bitcoin.networks[common.getNetwork()];
+  return utxolib.networks[common.getNetwork()];
 }
 
 setNetwork('testnet');

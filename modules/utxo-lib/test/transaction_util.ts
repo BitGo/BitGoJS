@@ -1,9 +1,51 @@
 /**
  * @prettier
  */
+import * as bip32 from 'bip32';
 import * as assert from 'assert';
+import * as networks from '../src/networks';
 import { Network } from '../src/networkTypes';
-import { createTransactionBuilderFromTransaction, createTransactionFromBuffer } from '../src/bitgo';
+import {
+  createTransactionBuilderForNetwork,
+  createTransactionBuilderFromTransaction,
+  createTransactionFromBuffer,
+  getDefaultSigHash,
+} from '../src/bitgo';
+import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
+import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
+import { createOutputScript2of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
+import { Transaction } from './integration_local_rpc/generate/types';
+
+export interface Input {
+  signatures: Buffer[];
+}
+
+export interface TransactionBuilder {
+  inputs: Input[];
+  tx: Transaction;
+  build(): Transaction;
+  buildIncomplete(): Transaction;
+  sign(
+    index: number,
+    privKey: bip32.BIP32Interface,
+    redeemScript: Buffer | undefined,
+    sigHash: number,
+    value: number | undefined,
+    witnessScript: Buffer | undefined
+  );
+}
+
+export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
+  if (length === 0) {
+    return [];
+  }
+  if (length === 1) {
+    return fixtureKeys.map((k) => [k]);
+  }
+  return getSignKeyCombinations(length - 1)
+    .map((head) => fixtureKeys.filter((k) => !head.includes(k)).map((k) => [...head, k]))
+    .reduce((all, keys) => [...all, ...keys]);
+}
 
 export function parseTransactionRoundTrip(
   buf: Buffer,
@@ -29,4 +71,51 @@ export function parseTransactionRoundTrip(
   }
 
   return tx;
+}
+
+export const defaultTestOutputAmount = 1e8;
+
+type PrevOutput = [txid: string, index: number, amount: number];
+
+export function getTransactionBuilder(
+  keys: bip32.BIP32Interface[],
+  signKeys: bip32.BIP32Interface[],
+  scriptType: ScriptType2Of3,
+  network: Network,
+  {
+    outputAmount = defaultTestOutputAmount,
+    prevOutputs = [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]],
+  }: {
+    outputAmount?: number;
+    prevOutputs?: PrevOutput[];
+  } = {}
+) {
+  const txBuilder = createTransactionBuilderForNetwork(network);
+
+  prevOutputs.forEach(([txid, vout]) => {
+    txBuilder.addInput(txid, vout);
+  });
+
+  const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);
+  txBuilder.addOutput(recipientScript, outputAmount - 1000);
+
+  const { redeemScript, witnessScript } = createOutputScript2of3(
+    keys.map((k) => k.publicKey),
+    scriptType
+  );
+
+  prevOutputs.forEach(([, , value], vin) => {
+    signKeys.forEach((key) => {
+      txBuilder.sign(
+        vin,
+        Object.assign(key, { network }),
+        redeemScript,
+        getDefaultSigHash(network),
+        value,
+        witnessScript
+      );
+    });
+  });
+
+  return txBuilder;
 }

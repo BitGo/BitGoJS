@@ -42,7 +42,6 @@ allows this package to run on newer, non-LTS, versions of Node. Furthermore, we 
 work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test
 suite on the latest release of the following versions of node:
 
-* `10`
 * `12`
 * `14`
 * `15`

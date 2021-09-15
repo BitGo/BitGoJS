@@ -264,6 +264,7 @@ export interface CreateAddressOptions {
   label?: string;
   lowPriority?: boolean;
   forwarderVersion?: number;
+  format?: 'base58' | 'cashaddr';
 }
 
 export interface UpdateAddressOptions {
@@ -1249,6 +1250,7 @@ export class Wallet {
         label,
         lowPriority,
         forwarderVersion,
+        format,
         count = 1,
       } = params;
 
@@ -1291,6 +1293,13 @@ export class Wallet {
         addressParams.lowPriority = lowPriority;
       }
 
+      if (!_.isUndefined(format)) {
+        if (!_.isString(format)) {
+          throw new Error('format has to be a string');
+        }
+        addressParams.format = format;
+      }
+
       // get keychains for address verification
       const keychains = yield Bluebird.map(self._wallet.keys as string[],
         k => self.baseCoin.keychains().get({ id: k, reqId })
@@ -1311,6 +1320,8 @@ export class Wallet {
         }
 
         newAddress.keychains = keychains;
+        newAddress.baseAddress = _.get(self._wallet, 'coinSpecific.baseAddress');
+
         const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 
         if (verificationData.error) {

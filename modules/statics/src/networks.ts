@@ -205,7 +205,7 @@ class DashTestnet extends BitcoinLikeTestnet {
   pubKeyHash = 0x8c;
   scriptHash = 0x13;
   family = CoinFamily.DASH;
-  explorerUrl = 'https://tbch.blockdozer.com/tx/';
+  explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
 class Celo extends Mainnet implements EthereumNetwork {
   family = CoinFamily.CELO;
