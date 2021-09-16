@@ -80,4 +80,8 @@ export const address = {
   fromBase58Check(addr: string): { hash: Buffer; version: number } {
     return utxolib.address.fromBase58Check(addr, utxolib.networks.bitcoin);
   },
+
+  toBase58Check(hash: Buffer, version: number): string {
+    return utxolib.address.toBase58Check(hash, version, utxolib.networks.bitcoin);
+  },
 };

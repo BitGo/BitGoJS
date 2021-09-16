@@ -15,19 +15,11 @@ export function padInputScript(input: Input, signatureIndex: number): void {
     throw new Error(`invalid signature index: must be one of [0, 1, 2]`);
   }
 
-  // We only use `txb.build()` on certain legacy v1 SDKs.
-  // Since native segwit was never enabled in v1 we do not have to worry about p2wsh inputs
-  // and can focus on p2sh and p2shP2wsh.
-  if (!input.script) {
-    throw new Error(`native segwit not supported`);
-  }
-
-  const inputClassification = bscript.classifyInput(input.script, true);
-  const decompiledSigScript = input.witness.length ? input.witness : bscript.decompile(input.script);
-  const expectedScriptType = inputClassification === bscript.types.P2SH || inputClassification === bscript.types.P2WSH;
-
-  if (!expectedScriptType) {
-    return;
+  let decompiledSigScript;
+  if (input.witness && input.witness.length > 0) {
+    decompiledSigScript = input.witness;
+  } else {
+    decompiledSigScript = bscript.decompile(input.script);
   }
 
   // The shape of a non-standard half-signed input is
@@ -37,9 +29,12 @@ export function padInputScript(input: Input, signatureIndex: number): void {
   }
 
   const [op0, signatureBuffer, sigScript] = decompiledSigScript;
-
   if (op0 !== opcodes.OP_0 && !(Buffer.isBuffer(op0) && op0.length === 0)) {
-    throw new Error(`unexpected instruction`);
+    return;
+  }
+
+  if (bscript.classifyOutput(sigScript) !== bscript.types.MULTISIG) {
+    return;
   }
 
   const paddedSigScript = [
