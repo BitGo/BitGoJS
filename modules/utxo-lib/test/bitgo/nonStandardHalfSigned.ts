@@ -6,7 +6,7 @@ import * as fs from 'fs-extra';
 import * as assert from 'assert';
 import { getNetworkName } from '../../src/coins';
 import { createTransactionFromHex } from '../../src/bitgo';
-import { ScriptType2Of3 } from '../../src/bitgo/outputScripts';
+import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import * as networks from '../../src/networks';
 import { Network } from '../../src/networkTypes';
 
@@ -62,5 +62,5 @@ function runTest(scriptType: ScriptType2Of3) {
 }
 
 describe('Non-Standard Half-Signed Transactions', function () {
-  ['p2sh', 'p2shP2wsh'].forEach((scriptType) => runTest(scriptType as ScriptType2Of3));
+  scriptTypes2Of3.forEach((scriptType) => runTest(scriptType as ScriptType2Of3));
 });
