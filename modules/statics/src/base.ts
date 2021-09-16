@@ -687,7 +687,6 @@ export interface BaseCoinConstructorOptions {
   asset: UnderlyingAsset;
   network: BaseNetwork;
   primaryKeyCurve: KeyCurve;
-  feeLimit?: string;
 }
 
 export abstract class BaseCoin {
@@ -722,11 +721,6 @@ export abstract class BaseCoin {
    * The primary elliptic curve BitGo signs and generates keys against.
    */
   public readonly primaryKeyCurve: KeyCurve;
-
-  /**
-   * Max fee for transactions
-   */
-  public readonly feeLimit?: string;
 
   /**
    * Set of features which are required by a coin subclass
@@ -791,6 +785,5 @@ export abstract class BaseCoin {
     this.asset = options.asset;
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
-    this.feeLimit = options.feeLimit;
   }
 }
