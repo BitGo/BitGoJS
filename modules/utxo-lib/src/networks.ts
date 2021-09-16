@@ -28,7 +28,7 @@ const coins = {
   DASH: 'dash',
 } as const;
 
-type NetworkName =
+export type NetworkName =
   | 'bitcoin'
   | 'testnet'
   | 'bitcoincash'
