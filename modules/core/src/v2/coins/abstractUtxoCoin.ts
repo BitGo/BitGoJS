@@ -528,7 +528,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
       // verify that each recipient from txParams has their own output
-      const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]);
+      const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
+        return { ...output, address: this.canonicalAddress(output.address) };
+      });
+
       const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
 
       // get the keychains from the custom change wallet if needed
