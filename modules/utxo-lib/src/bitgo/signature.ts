@@ -293,7 +293,7 @@ export function verifySignature(
     verificationSettings
   ).filter(
     (v) =>
-      // If not publicKey constraint is set in verificationSettings, all signatures must be valid.
+      // If no publicKey is set in verificationSettings, all signatures must be valid.
       // Otherwise, a single valid signature by the specified pubkey is sufficient.
       verificationSettings.publicKey === undefined ||
       (v.signedBy !== undefined && verificationSettings.publicKey.equals(v.signedBy))
