@@ -1,16 +1,15 @@
 /**
  * @prettier
  */
+import * as assert from 'assert';
 import * as opcodes from 'bitcoin-ops';
-import * as bscript from '../script';
-
-import { Input } from './signature';
+import { classify, script as bscript, TxInput } from '../';
 
 /**
  * @param input - Input of non-standard half-signed transaction created with `tx.build()` instead of `tx.buildIncomplete()`.
  * @param signatureIndex - Position to map the existing signatures to. Other signatures will be padded with OP_0.
  */
-export function padInputScript(input: Input, signatureIndex: number): void {
+export function padInputScript(input: TxInput, signatureIndex: number): void {
   if (![0, 1, 2].includes(signatureIndex)) {
     throw new Error(`invalid signature index: must be one of [0, 1, 2]`);
   }
@@ -33,7 +32,7 @@ export function padInputScript(input: Input, signatureIndex: number): void {
     return;
   }
 
-  if (bscript.classifyOutput(sigScript) !== bscript.types.MULTISIG) {
+  if (classify.output(sigScript) !== classify.types.P2MS) {
     return;
   }
 
@@ -44,9 +43,9 @@ export function padInputScript(input: Input, signatureIndex: number): void {
   ];
 
   if (input.witness.length) {
-    input.witness = paddedSigScript;
+    paddedSigScript.forEach((b) => assert(Buffer.isBuffer(b)));
+    input.witness = paddedSigScript as Buffer[];
   } else {
-    // @ts-ignore: bscript uses an odd "Buffer" type (per jsdoc)
     input.script = bscript.compile(paddedSigScript);
   }
 }

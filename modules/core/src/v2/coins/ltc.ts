@@ -72,7 +72,7 @@ export class Ltc extends AbstractUtxoCoin {
       // not a valid bech32, try to decode as base58
     }
 
-    const addressDetails = utxolib.address.fromBase58Check(address);
+    const addressDetails = utxolib.address.fromBase58Check(address, this.network);
     if (addressDetails.version === this.network.pubKeyHash) {
       // the pub keys never changed
       return address;
@@ -88,7 +88,7 @@ export class Ltc extends AbstractUtxoCoin {
       2: this.network.scriptHash,
     };
     const newScriptHash = scriptHashMap[scriptHashVersion];
-    return utxolib.address.toBase58Check(addressDetails.hash, newScriptHash);
+    return utxolib.address.toBase58Check(addressDetails.hash, newScriptHash, this.network);
   }
 
   calculateRecoveryAddress(scriptHashScript: Buffer): string {

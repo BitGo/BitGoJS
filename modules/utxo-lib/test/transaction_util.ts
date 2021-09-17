@@ -5,6 +5,7 @@ import * as bip32 from 'bip32';
 import * as assert from 'assert';
 import * as networks from '../src/networks';
 import { Network } from '../src/networkTypes';
+import { UtxoTransaction } from '../src/bitgo/UtxoTransaction';
 import {
   createTransactionBuilderForNetwork,
   createTransactionBuilderFromTransaction,
@@ -14,26 +15,6 @@ import {
 import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
-import { Transaction } from './integration_local_rpc/generate/types';
-
-export interface Input {
-  signatures: Buffer[];
-}
-
-export interface TransactionBuilder {
-  inputs: Input[];
-  tx: Transaction;
-  build(): Transaction;
-  buildIncomplete(): Transaction;
-  sign(
-    index: number,
-    privKey: bip32.BIP32Interface,
-    redeemScript: Buffer | undefined,
-    sigHash: number,
-    value: number | undefined,
-    witnessScript: Buffer | undefined
-  );
-}
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
   if (length === 0) {
@@ -51,7 +32,7 @@ export function parseTransactionRoundTrip(
   buf: Buffer,
   network: Network,
   inputs?: [txid: string, index: number, value: number][]
-) {
+): UtxoTransaction {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
   assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
@@ -62,7 +43,7 @@ export function parseTransactionRoundTrip(
   // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
     inputs.forEach(([txid, index, value], i) => {
-      tx.ins[i].value = value;
+      (tx.ins[i] as any).value = value;
     });
     assert.strictEqual(
       createTransactionBuilderFromTransaction(tx).build().toBuffer().toString('hex'),

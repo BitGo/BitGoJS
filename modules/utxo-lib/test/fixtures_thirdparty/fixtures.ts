@@ -83,6 +83,15 @@ export type SigHashTestVector = [
   // BCH and BSV have two extra entries that we don't care abount
 ];
 
+export type ZcashSigHashTestVector = [
+  rawTransaction: string,
+  script: string,
+  inputIndex: number,
+  hashType: number,
+  branchId: number,
+  signatureHash: string
+];
+
 export const txValidTestFile = 'tx_valid.json';
 export type TxValidVector = [
   inputData: [prevoutHash: string, prevoutIndex: string, prevoutScriptPubKey: string][],

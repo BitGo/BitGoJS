@@ -7,15 +7,14 @@ import * as bip32 from 'bip32';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction } from '../../src/bitgo';
 
-import { Transaction } from '../integration_local_rpc/generate/types';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
 
 function runTest(network: Network, scriptType: ScriptType2Of3) {
   function assertVerifySignatureEquals(
-    tx: Transaction,
+    tx: UtxoTransaction,
     value: boolean,
     verificationSettings?: {
       publicKey?: Buffer;
