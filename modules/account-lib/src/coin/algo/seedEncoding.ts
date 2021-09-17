@@ -7,10 +7,8 @@ const ALGORAND_SEED_BYTE_LENGTH = 36;
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_SEED_LENGTH = 58;
 
-const MALFORMED_SEED_ERROR = new Error('seed seems to be malformed');
-
 export class SeedEncoding {
-  private static genericHash(arr) {
+  private static genericHash(arr: Uint8Array): number[] {
     return sha512.sha512_256.array(arr);
   }
 
@@ -25,7 +23,7 @@ export class SeedEncoding {
     }
 
     // Try to decode
-    let decoded;
+    let decoded: Seed;
     try {
       decoded = SeedEncoding.decode(seed);
     } catch (e) {
@@ -56,7 +54,7 @@ export class SeedEncoding {
     const decoded = base32.decode.asBytes(seed);
 
     // Sanity check
-    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw MALFORMED_SEED_ERROR;
+    if (decoded.length !== ALGORAND_SEED_BYTE_LENGTH) throw new Error('seed seems to be malformed');
 
     return {
       seed: new Uint8Array(decoded.slice(0, ALGORAND_SEED_BYTE_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH)),
@@ -70,7 +68,7 @@ export class SeedEncoding {
    * @param secretKey
    * @return {String} encoded seed
    */
-  static encode(secretKey): string {
+  static encode(secretKey: Uint8Array): string {
     // get seed
     const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
     // compute checksum

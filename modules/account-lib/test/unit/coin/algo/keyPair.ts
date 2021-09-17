@@ -1,6 +1,4 @@
 import should from 'should';
-import { test } from 'mocha';
-
 import { Algo } from '../../../../src';
 import * as AlgoResources from '../../../resources/algo';
 
@@ -12,7 +10,7 @@ describe('Algo KeyPair', () => {
   } = AlgoResources;
 
   describe('Keypair creation', () => {
-    test('initial state', () => {
+    it('initial state', () => {
       const keyPair = new Algo.KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
@@ -20,7 +18,7 @@ describe('Algo KeyPair', () => {
       should.equal(keyPair.getKeys().pub.length, 64);
     });
 
-    test('initialization from private key', () => {
+    it('initialization from private key', () => {
       let keyPair = new Algo.KeyPair({ prv: account1.secretKey.toString('hex') });
       should.equal(keyPair.getKeys().prv, account1.secretKey.toString('hex'));
       should.equal(keyPair.getKeys().pub, account1.pubKey.toString('hex'));
@@ -30,7 +28,7 @@ describe('Algo KeyPair', () => {
       should.equal(keyPair.getKeys().pub, account2.pubKey.toString('hex'));
     });
 
-    test('initialization from public key', () => {
+    it('initialization from public key', () => {
       const keyPair = new Algo.KeyPair({ pub: account3.pubKey.toString('hex') });
       should.equal(keyPair.getKeys().pub, account3.pubKey.toString('hex'));
     });
@@ -39,21 +37,21 @@ describe('Algo KeyPair', () => {
   describe('KeyPair validation', () => {
     it('should fail to create from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Algo.KeyPair(seed));
+      should.throws(() => new Algo.KeyPair(seed), 'bad seed size');
     });
 
     it('should fail to create from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Algo.KeyPair(source));
+      should.throws(() => new Algo.KeyPair(source), 'address seems to be malformed');
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      should.throws(() => new Algo.KeyPair(source));
+      should.throws(() => new Algo.KeyPair(source), 'Invalid base32 characters');
     });
   });
 

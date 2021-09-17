@@ -68,7 +68,7 @@ export class Transaction extends BaseTransaction {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const signKey = keyPair.getKeys().prv + keyPair.getKeys().pub;
+    const signKey = Buffer.from(keyPair.getSigningKey()).toString('hex');
     if (signKey) {
       this._signedTransaction = algosdk.signTransaction(this._algoTransaction, utils.toUint8Array(signKey)).blob;
     } else {
@@ -81,7 +81,6 @@ export class Transaction extends BaseTransaction {
    *
    * @param {KeyPair} keyPair Signers keys.
    */
-  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   private signMultiSig(keyPair: KeyPair[]): void {
     if (!this._algoTransaction) {
       throw new InvalidTransactionError('Empty transaction');

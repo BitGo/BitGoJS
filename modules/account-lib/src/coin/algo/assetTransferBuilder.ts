@@ -107,7 +107,7 @@ export class AssetTransferBuilder extends TransferBuilder {
     this.validateFields(this._tokenId, this._amount, this._to);
   }
 
-  private validateFields(tokenId: number, assetAmount: number | bigint, receiver: string): void {
+  protected validateFields(tokenId: number, assetAmount: number | bigint, receiver: string): void {
     let validationResult;
     if (this._sender !== this._to) {
       validationResult = AssetTransferTxnSchema.validate({
