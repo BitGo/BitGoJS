@@ -438,7 +438,7 @@ Wallets.prototype.createForwardWallet = function (params, callback) {
   let addressFromPrivKey;
 
   try {
-    const key = utxolib.ECPair.fromWIF(params.privKey, getNetwork());
+    const key = utxolib.ECPair.fromWIF(params.privKey, getNetwork() as utxolib.BitcoinJSNetwork);
     addressFromPrivKey = getAddressP2PKH(key);
   } catch (e) {
     throw new Error('expecting a valid privKey');

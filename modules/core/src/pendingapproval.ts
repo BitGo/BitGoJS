@@ -187,7 +187,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
     }
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
-        const outAddress = utxolib.address.fromOutputScript(out.script, network).toBase58Check();
+        const outAddress = utxolib.address.fromOutputScript(out.script, network);
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
           params.recipients[outAddress] = out.value;
@@ -202,7 +202,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
       .then(function (result) {
         const changeAddresses = _.keyBy(result.addresses, 'address');
         transaction.outs.forEach(function (out) {
-          const outAddress = utxolib.address.fromOutputScript(out.script, network).toBase58Check();
+          const outAddress = utxolib.address.fromOutputScript(out.script, network);
           if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
             params.recipients[outAddress] = out.value;

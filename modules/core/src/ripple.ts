@@ -29,8 +29,7 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);
   }
-  const privateKeyObject = ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
-  const publicKey = privateKeyObject.getPublicKeyBuffer().toString('hex').toUpperCase();
+  const publicKey = ECPair.fromPrivateKey(privateKeyBuffer).publicKey.toString('hex').toUpperCase();
 
   let tx;
   try {

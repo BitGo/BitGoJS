@@ -136,6 +136,7 @@ const networks: Record<NetworkName, Network> &
     scriptHash: 0xc4,
     wif: 0xef,
     coin: coins.BSV,
+    forkId: 0x00,
   },
 
   // https://github.com/dashpay/dash/blob/master/src/validation.cpp

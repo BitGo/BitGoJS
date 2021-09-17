@@ -122,7 +122,7 @@ export class Bch extends AbstractUtxoCoin {
         // no conversion needed
         return address;
       }
-      const addressDetails = utxolib.address.fromBase58Check(address);
+      const addressDetails = utxolib.address.fromBase58Check(address, this.network);
 
       // JS annoyingly converts JSON Object variable keys to Strings, so we have to do so as well
       const addressVersionString = String(addressDetails.version);
@@ -140,7 +140,7 @@ export class Bch extends AbstractUtxoCoin {
     }
 
     const rawBytes = cashaddress.decode(address);
-    return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]]);
+    return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]], this.network);
   }
 
   /**

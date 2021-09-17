@@ -9,13 +9,14 @@ require('should-sinon');
 import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
-const utxolib = require('@bitgo/utxo-lib');
+
+import * as utxolib from '@bitgo/utxo-lib';
+
 import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 import { HalfSignedUtxoTransaction } from '../../../src';
-
 nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {
@@ -363,9 +364,12 @@ describe('V2 Wallet:', function () {
 
       // mangle first signature
       const sigScript = utxolib.script.decompile(signedTransaction.ins[0].script);
+      assert(sigScript);
       sigScript.length.should.equal(5);
-      const firstSignature = sigScript[1];
-      const secondSignature = sigScript[2];
+      const firstSignature = sigScript[1] as Buffer;
+      const secondSignature = sigScript[2] as Buffer;
+      assert(firstSignature);
+      assert(secondSignature);
       firstSignature.length.should.equal(71);
       secondSignature.length.should.equal(71);
 

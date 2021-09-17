@@ -9,7 +9,6 @@ import { isTestnet } from '../../src/coins';
 import {
   verifySignature,
   parseSignatureScript,
-  Input,
   parseSignatureScript2Of3,
   ParsedSignatureScript2Of3,
 } from '../../src/bitgo/signature';
@@ -23,9 +22,10 @@ import {
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
-import { Transaction } from './generate/types';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
+import { UtxoTransaction } from '../../src/bitgo/UtxoTransaction';
+import { createTransactionFromBuffer } from '../../src/bitgo';
 
 const utxolib = require('../../src');
 
@@ -48,11 +48,11 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
   const fixtureName = `${txType}_${scriptType}.json`;
   describe(fixtureName, function () {
     let fixture: TransactionFixtureWithInputs;
-    let parsedTx: Transaction;
+    let parsedTx: UtxoTransaction;
 
     before(async function () {
       fixture = await readFixture(network, fixtureName);
-      parsedTx = utxolib.Transaction.fromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), network);
+      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), network);
     });
 
     function getPrevOutputValue(input: { txid?: string; hash?: Buffer; index: number }) {
@@ -149,7 +149,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         recipientScript,
         network,
         { signKeys }
-      ) as unknown as Transaction;
+      );
     }
 
     it(`verifySignatures with one or two signatures`, function () {

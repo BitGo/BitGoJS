@@ -104,7 +104,7 @@ exports.createTransaction = function (params) {
   let feeSingleKeyInputAmount = 0;
   if (params.feeSingleKeySourceAddress) {
     try {
-      utxolib.address.fromBase58Check(params.feeSingleKeySourceAddress);
+      utxolib.address.fromBase58Check(params.feeSingleKeySourceAddress, network);
       feeSingleKeySourceAddress = params.feeSingleKeySourceAddress;
     } catch (e) {
       throw new Error('invalid bitcoin address: ' + params.feeSingleKeySourceAddress);
@@ -112,7 +112,7 @@ exports.createTransaction = function (params) {
   }
 
   if (params.feeSingleKeyWIF) {
-    const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network);
+    const feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as utxolib.BitcoinJSNetwork);
     feeSingleKeySourceAddress = getAddressP2PKH(feeSingleKey);
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
@@ -185,7 +185,7 @@ exports.createTransaction = function (params) {
   recipients.forEach(function (recipient) {
     if (_.isString(recipient.address)) {
       try {
-        utxolib.address.fromBase58Check(recipient.address);
+        utxolib.address.fromBase58Check(recipient.address, network);
       } catch (e) {
         throw new Error('invalid bitcoin address: ' + recipient.address);
       }
@@ -862,7 +862,7 @@ exports.signTransaction = function (params) {
 
   if (!_.isObject(keychain) || !_.isString((keychain as any).xprv)) {
     if (_.isString(params.signingKey)) {
-      privKey = utxolib.ECPair.fromWIF(params.signingKey, network);
+      privKey = utxolib.ECPair.fromWIF(params.signingKey, network as utxolib.BitcoinJSNetwork);
       keychain = undefined;
     } else {
       throw new Error('expecting the keychain object with xprv');
@@ -871,7 +871,7 @@ exports.signTransaction = function (params) {
 
   let feeSingleKey;
   if (params.feeSingleKeyWIF) {
-    feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network);
+    feeSingleKey = utxolib.ECPair.fromWIF(params.feeSingleKeyWIF, network as utxolib.BitcoinJSNetwork);
   }
 
   debug('Network: %O', network);
@@ -901,7 +901,7 @@ exports.signTransaction = function (params) {
     rootExtKey = bip32.fromBase58(keychain.xprv);
   }
 
-  const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction, network);
+  const txb = utxolib.bitgo.createTransactionBuilderFromTransaction(transaction);
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];
