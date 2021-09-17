@@ -41,6 +41,6 @@ export function verifyMessage(
     throw new Error(`invalid argument 'network'`);
   }
 
-  const address = utxolib.address.toBase58Check(utxolib.crypto.hash160(publicKey), utxolib.networks.bitcoin.pubKeyHash);
+  const address = utxolib.address.toBase58Check(utxolib.crypto.hash160(publicKey), utxolib.networks.bitcoin.pubKeyHash, utxolib.networks.bitcoin);
   return bitcoinMessage.verify(message, address, signature, network.messagePrefix);
 }

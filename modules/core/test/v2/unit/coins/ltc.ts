@@ -1,10 +1,13 @@
 import * as should from 'should';
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
-const utxolib = require('@bitgo/utxo-lib');
+
+import * as utxolib from '@bitgo/utxo-lib';
+
 const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src';
+
 
 describe('LTC:', function () {
   let bitgo;

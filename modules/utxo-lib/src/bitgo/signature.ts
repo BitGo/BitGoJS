@@ -3,23 +3,14 @@
  */
 import * as opcodes from 'bitcoin-ops';
 
-import * as script from '../script';
-import * as crypto from '../crypto';
-import * as ECPair from '../ecpair';
-import * as Transaction from '../transaction';
-import * as ECSignature from '../ecsignature';
+import { ECPair, payments, script, Transaction, TxInput } from 'bitcoinjs-lib';
+import * as classify from 'bitcoinjs-lib/src/classify';
+import * as ScriptSignature from 'bitcoinjs-lib/src/script_signature';
+
 import { Network } from '../networkTypes';
 import * as networks from '../networks';
 import { getMainnet } from '../coins';
-
-export interface Input {
-  hash: Buffer;
-  index: number;
-  sequence: number;
-  witness: Buffer[];
-  script: Buffer;
-  signScript: Buffer;
-}
+import { UtxoTransaction } from './UtxoTransaction';
 
 const inputTypes = [
   'multisig',
@@ -38,6 +29,7 @@ type InputType = typeof inputTypes[number];
 export interface ParsedSignatureScript {
   isSegwitInput: boolean;
   inputClassification: InputType;
+  publicKeys?: Buffer[];
 }
 
 export interface ParsedSignatureP2PKH extends ParsedSignatureScript {
@@ -59,7 +51,7 @@ export function getDefaultSigHash(network: Network): number {
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-      return Transaction.SIGHASH_ALL | Transaction.SIGHASH_BITCOINCASHBIP143;
+      return Transaction.SIGHASH_ALL | UtxoTransaction.SIGHASH_FORKID;
     default:
       return Transaction.SIGHASH_ALL;
   }
@@ -75,7 +67,7 @@ export function getDefaultSigHash(network: Network): number {
  * @returns ParsedSignatureScript
  */
 export function parseSignatureScript(
-  input: Input
+  input: TxInput
 ): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
@@ -87,20 +79,20 @@ export function parseSignatureScript(
     // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
     decompiledSigScript = input.witness;
     if (isNativeSegwitInput) {
-      inputClassification = script.classifyWitness(script.compile(decompiledSigScript), true);
+      inputClassification = classify.witness(script.compile(decompiledSigScript), true);
     } else {
-      inputClassification = script.classifyInput(input.script, true);
+      inputClassification = classify.input(input.script, true);
     }
   } else {
-    inputClassification = script.classifyInput(input.script, true);
+    inputClassification = classify.input(input.script, true);
     decompiledSigScript = script.decompile(input.script);
   }
 
-  if (inputClassification === script.types.P2PKH) {
+  if (inputClassification === classify.types.P2PKH) {
     const [signature, publicKey] = decompiledSigScript;
-    const publicKeys: [Buffer] = [publicKey];
+    const publicKeys = [publicKey];
     const signatures: [Buffer] = [signature];
-    const pubScript: Buffer = script.pubKeyHash.output.encode(crypto.hash160(publicKey));
+    const pubScript = payments.p2pkh({ pubkey: publicKey }).output;
 
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
   }
@@ -118,7 +110,8 @@ export function parseSignatureScript(
   //
   // Transactions built with `.build()` only have two signatures `<sig1>` and `<sig2>` in _decompiledSigScript_.
   // Transactions built with `.buildIncomplete()` have three signatures, where missing signatures are substituted with `OP_0`.
-  const expectedScriptType = inputClassification === script.types.P2SH || inputClassification === script.types.P2WSH;
+  const expectedScriptType =
+    inputClassification === classify.types.P2SH || inputClassification === classify.types.P2WSH;
   const expectedScriptLength =
     // complete transactions with 2 signatures
     decompiledSigScript.length === 4 ||
@@ -147,10 +140,18 @@ export function parseSignatureScript(
 
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
   const decompiledPubScript = script.decompile(pubScript);
+  if (decompiledPubScript === null) {
+    throw new Error(`could not decompile pubScript`);
+  }
   if (decompiledPubScript.length !== 6) {
     throw new Error(`unexpected decompiledPubScript length`);
   }
-  const publicKeys = decompiledPubScript.slice(1, -2);
+  const publicKeys = decompiledPubScript.slice(1, -2) as Buffer[];
+  publicKeys.forEach((b) => {
+    if (!Buffer.isBuffer(b)) {
+      throw new Error();
+    }
+  });
   if (publicKeys.length !== 3) {
     throw new Error(`expected 3 public keys, got ${publicKeys.length}`);
   }
@@ -158,11 +159,11 @@ export function parseSignatureScript(
   // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
   // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
   const len = decompiledPubScript.length;
-  const signatureThreshold = decompiledPubScript[0] - 80;
+  const signatureThreshold = (decompiledPubScript[0] as number) - 80;
   if (signatureThreshold !== 2) {
     throw new Error(`expected signatureThreshold 2, got ${signatureThreshold}`);
   }
-  const nPubKeys = decompiledPubScript[len - 2] - 80;
+  const nPubKeys = (decompiledPubScript[len - 2] as number) - 80;
   if (nPubKeys !== 3) {
     throw new Error(`expected nPubKeys 3, got ${nPubKeys}`);
   }
@@ -175,10 +176,10 @@ export function parseSignatureScript(
   return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
 }
 
-export function parseSignatureScript2Of3(input: Input): ParsedSignatureScript2Of3 {
+export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 {
   const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
-  if (![script.types.P2WSH, script.types.P2SH, script.types.P2PKH].includes(result.inputClassification)) {
+  if (![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH].includes(result.inputClassification)) {
     throw new Error(`unexpected inputClassification ${result.inputClassification}`);
   }
   if (!result.signatures) {
@@ -227,7 +228,7 @@ export type SignatureVerification = {
  * @returns SignatureVerification[] - in order of parsed non-empty signatures
  */
 export function getSignatureVerifications(
-  transaction: Transaction,
+  transaction: UtxoTransaction,
   inputIndex: number,
   amount: number,
   verificationSettings: VerificationSettings = {}
@@ -255,17 +256,12 @@ export function getSignatureVerifications(
 
   return signatures.map((signatureBuffer) => {
     // slice the last byte from the signature hash input because it's the hash type
-    const signature = ECSignature.fromDER(signatureBuffer.slice(0, -1));
-    const hashType = signatureBuffer[signatureBuffer.length - 1];
-    const transactionHash = transaction.hashForSignatureByNetwork(
-      inputIndex,
-      parsedScript.pubScript,
-      amount,
-      hashType,
-      parsedScript.isSegwitInput
-    );
+    const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
+    const transactionHash = parsedScript.isSegwitInput
+      ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
+      : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
     const signedBy = publicKeys.filter((publicKey) =>
-      ECPair.fromPublicKeyBuffer(publicKey).verify(transactionHash, signature)
+      ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
     );
 
     if (signedBy.length === 0) {
@@ -285,7 +281,7 @@ export function getSignatureVerifications(
  * @param verificationSettings - if publicKey is specified, returns true iff any signature is signed by publicKey.
  */
 export function verifySignature(
-  transaction: Transaction,
+  transaction: UtxoTransaction,
   inputIndex: number,
   amount: number,
   verificationSettings: VerificationSettings = {}
@@ -297,8 +293,8 @@ export function verifySignature(
     verificationSettings
   ).filter(
     (v) =>
-      // If a publicKey constraint is set, a single valid signature by the specified pubkey is sufficient.
-      // Otherwise, all signatures must be valid.
+      // If no publicKey is set in verificationSettings, all signatures must be valid.
+      // Otherwise, a single valid signature by the specified pubkey is sufficient.
       verificationSettings.publicKey === undefined ||
       (v.signedBy !== undefined && verificationSettings.publicKey.equals(v.signedBy))
   );

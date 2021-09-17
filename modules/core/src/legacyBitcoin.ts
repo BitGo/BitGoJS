@@ -7,11 +7,23 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import { sanitizeLegacyPath } from './bip32path';
 
-interface ECPair {
+import * as bitcoinUtil from './bitcoin';
+
+interface ECPairCompat extends utxolib.ECPairInterface {
   getPublicKeyBuffer(): Buffer;
 }
 
-export { makeRandomKey } from './bitcoin';
+function createECPairCompat(ecPair: utxolib.ECPairInterface): ECPairCompat {
+  return Object.assign(ecPair, {
+    getPublicKeyBuffer(): Buffer {
+      return ecPair.publicKey;
+    },
+  });
+}
+
+export function makeRandomKey(): ECPairCompat {
+  return createECPairCompat(bitcoinUtil.makeRandomKey());
+}
 
 /**
  * Implementation of legacy "HDNode" class as used by certain components
@@ -53,7 +65,7 @@ export class HDNode {
 }
 
 export interface Derivable {
-  deriveKey(path: string): ECPair;
+  deriveKey(path: string): ECPairCompat;
   derive(path: string): HDNode;
 }
 
@@ -63,12 +75,12 @@ export function hdPath(hdNode: HDNode): Derivable {
       return hdNode.derivePath(path);
     },
 
-    deriveKey(path: string): ECPair {
+    deriveKey(path: string): ECPairCompat {
       const node = hdNode.derivePath(path);
-      if (node.isNeutered()) {
-        return utxolib.ECPair.fromPublicKeyBuffer(node.publicKey);
+      if (node.privateKey) {
+        return createECPairCompat(utxolib.ECPair.fromPrivateKey(node.privateKey));
       } else {
-        return utxolib.bitgo.keyutil.privateKeyBufferToECPair(node.privateKey);
+        return createECPairCompat(utxolib.ECPair.fromPublicKey(node.publicKey));
       }
     },
   };
