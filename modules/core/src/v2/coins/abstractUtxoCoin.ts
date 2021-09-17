@@ -188,8 +188,8 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 
 export interface MultiSigAddress {
   outputScript: Buffer;
-  redeemScript: Buffer;
-  witnessScript: Buffer;
+  redeemScript?: Buffer;
+  witnessScript?: Buffer;
   address: string;
 }
 
@@ -255,9 +255,9 @@ export interface UnspentParams {
 export abstract class AbstractUtxoCoin extends BaseCoin {
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
-  private readonly _network: UtxoNetwork;
+  private readonly _network: utxolib.Network;
 
-  protected constructor(bitgo: BitGo, network: UtxoNetwork) {
+  protected constructor(bitgo: BitGo, network: utxolib.Network) {
     super(bitgo);
     if (!_.isObject(network)) {
       throw new Error('network must be an object');
@@ -309,7 +309,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected getAddressVersion(address: string): number | undefined {
     // try decoding as base58 first
     try {
-      const { version } = utxolib.address.fromBase58Check(address);
+      const { version } = utxolib.address.fromBase58Check(address, this.network);
       return version;
     } catch (e) {
       // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
@@ -704,7 +704,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
     const signingAddress = utxolib.address.toBase58Check(
       utxolib.crypto.hash160(publicKey),
-      utxolib.networks.bitcoin.pubKeyHash
+      utxolib.networks.bitcoin.pubKeyHash,
+      this.network
     );
 
     // BG-5703: use BTC mainnet prefix for all key signature operations
@@ -1445,7 +1446,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       scriptPubKey: outputScript,
       redeemScript,
       witnessScript,
-    } = utxolib.bitgo.outputScripts.createOutputScript2of3(keys, addressType);
+    } = utxolib.bitgo.outputScripts.createOutputScript2of3(keys, addressType as 'p2sh' | 'p2shP2wsh' | 'p2wsh');
 
     return {
       outputScript,

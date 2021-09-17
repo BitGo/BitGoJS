@@ -4,15 +4,15 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
+import * as _ from 'lodash';
 import { strict as assert } from 'assert';
 import 'should';
+import * as utxolib from '@bitgo/utxo-lib';
 
-const utxolib = require('@bitgo/utxo-lib');
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
 const TestUtil = require('./testutil');
 
-import * as _ from 'lodash';
 const Q = require('q');
 
 describe('PendingApproval', function () {

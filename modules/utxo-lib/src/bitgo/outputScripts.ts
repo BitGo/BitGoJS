@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import * as script from '../script';
-import * as crypto from '../crypto';
+import * as assert from 'assert';
+import * as bitcoinjs from 'bitcoinjs-lib';
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
@@ -33,32 +33,35 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
     }
   });
 
-  const script2of3 = script.multisig.output.encode(2, pubkeys);
-  const p2wshOutputScript = script.witnessScriptHash.output.encode(crypto.sha256(script2of3));
+  const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
+  assert(script2of3.output);
+
+  let scriptPubKey;
   let redeemScript;
   let witnessScript;
   switch (scriptType) {
     case 'p2sh':
       redeemScript = script2of3;
+      scriptPubKey = bitcoinjs.payments.p2sh({ redeem: script2of3 });
       break;
     case 'p2shP2wsh':
       witnessScript = script2of3;
-      redeemScript = p2wshOutputScript;
+      redeemScript = bitcoinjs.payments.p2wsh({ redeem: script2of3 });
+      scriptPubKey = bitcoinjs.payments.p2sh({ redeem: redeemScript });
       break;
     case 'p2wsh':
       witnessScript = script2of3;
+      scriptPubKey = bitcoinjs.payments.p2wsh({ redeem: witnessScript });
       break;
     default:
       throw new Error(`unknown multisig script type ${scriptType}`);
   }
 
-  let scriptPubKey;
-  if (scriptType === 'p2wsh') {
-    scriptPubKey = p2wshOutputScript;
-  } else {
-    const redeemScriptHash = crypto.hash160(redeemScript);
-    scriptPubKey = script.scriptHash.output.encode(redeemScriptHash);
-  }
+  assert(scriptPubKey);
 
-  return { redeemScript, witnessScript, scriptPubKey };
+  return {
+    scriptPubKey: scriptPubKey?.output,
+    redeemScript: redeemScript?.output,
+    witnessScript: witnessScript?.output,
+  };
 }

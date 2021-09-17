@@ -13,7 +13,8 @@ import { TestBitGo } from '../lib/test_bitgo';
 import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
+import { ECPair } from '@bitgo/utxo-lib';
 
 nock.disableNetConnect();
 
@@ -281,9 +282,9 @@ describe('BitGo Prototype Methods', function () {
 
   describe('ECDH sharing secret', () => {
     function getKey(seed: string) {
-      return utxolib.HDNode.fromSeedBuffer(
+      return ECPair.fromPrivateKey(bip32.fromSeed(
         crypto.createHash('sha256').update(seed).digest()
-      ).keyPair;
+      ).privateKey as Buffer);
     }
 
     it('should calculate a new ECDH sharing secret correctly', () => {
@@ -291,8 +292,8 @@ describe('BitGo Prototype Methods', function () {
         const bitgo = new TestBitGo();
         const eckey1 = getKey(`${i}.a`);
         const eckey2 = getKey(`${i}.b`);
-        const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
-        const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
+        const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.publicKey.toString('hex') });
+        const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.publicKey.toString('hex') });
         sharingKey1.should.equal(sharingKey2);
 
         switch (i) {

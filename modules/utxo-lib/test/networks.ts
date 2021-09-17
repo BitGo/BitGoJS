@@ -48,7 +48,7 @@ describe('networks', function () {
     it('mainnets are sorted alphabetically', function () {
       const mainnets = coins.getNetworkList().filter(coins.isMainnet);
       const sortedMainnets = [...mainnets].sort((a, b) =>
-        coins.getNetworkName(a).localeCompare(coins.getNetworkName(b))
+        (coins.getNetworkName(a) as string).localeCompare(coins.getNetworkName(b) as string)
       );
       assert.deepStrictEqual(mainnets, sortedMainnets);
     });
@@ -58,6 +58,7 @@ describe('networks', function () {
       while (list.length > 0) {
         // first element is a mainnet
         const mainnet = list.shift();
+        assert.strict(mainnet);
         assert.strictEqual(coins.isMainnet(mainnet), true);
 
         // subsequent entries are testnets

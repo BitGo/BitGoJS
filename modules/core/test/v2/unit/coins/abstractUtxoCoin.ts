@@ -1,3 +1,4 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
@@ -389,7 +390,7 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] });
+      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
       await coin.verifyTransaction({
         txParams: {
@@ -450,7 +451,7 @@ describe('Abstract UTXO Coin:', () => {
         needsCustomChangeKeySignatureVerification: false,
       });
 
-      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] });
+      const bitcoinMock = sinon.stub(coin, 'createTransactionFromHex').returns({ ins: [] } as unknown as utxolib.bitgo.UtxoTransaction);
 
       await coin.verifyTransaction({
         txParams: {

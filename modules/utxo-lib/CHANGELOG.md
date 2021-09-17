@@ -9,6 +9,11 @@ Version `1.0.0` of bitgo-utxo-lib is roughly equivalent of bitcoinjs-lib `3.3.1`
 
 This document contains the Changelog starting with release 1.8.0
 
+## 2.0.0 (2021-09-13)
+
+* Rewrite `bitcoinjs-lib` to be a wrapper instead of a fork. Uses minimal fork of `bitcoinjs-lib@5.2.0` as a dependency and
+re-exports most symbols verbatim. Altcoin support and some bitgo-specific methods are available at `utxolib.bitgo.*`.
+
 ## 1.9.0 (2020-01-16)
 
 * fix(bufferutils): remove pushdata re-exports ([f48669e](https://github.com/BitGo/bitgo-utxo-lib/commit/f48669e))
