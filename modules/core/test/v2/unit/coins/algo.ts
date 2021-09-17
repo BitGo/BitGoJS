@@ -2,13 +2,10 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as AlgoResources from '../../fixtures/coins/algo';
 import { randomBytes } from 'crypto';
-// import should from 'should';
 
 describe('ALGO:', function () {
   let bitgo;
   let basecoin;
-
-  // const sender = AlgoResources.accounts.account1;
   const receiver = AlgoResources.accounts.account2;
 
   before(function () {
@@ -19,25 +16,17 @@ describe('ALGO:', function () {
 
   describe('Should Fail: ', () => {
     it('Does not have a txHex', async () => {
-      try {
-        await basecoin.explainTransaction({
-          params: {},
-        });
-      } catch (error) {
-        error.message.should.equal('missing explain tx parameters');
-      }
+      await basecoin.explainTransaction({
+        params: {},
+      }).should.be.rejectedWith('missing explain tx parameters');
     });
 
     it('Does not have a fee', async () => {
-      try {
-        await basecoin.explainTransaction({
-          params: {
+      await basecoin.explainTransaction({
+        params: {
             txHex: 'Some Valid Hex',
-          },
-        });
-      } catch (error) {
-        error.message.should.equal('missing explain tx parameters');
-      }
+        },
+      }).should.be.rejectedWith('missing explain tx parameters');
     });
   });
 

@@ -12,12 +12,15 @@ import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../bas
 import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 import { SeedEncoding } from './seedEncoding';
+import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
+import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
 const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
+const ALGORAND_TRANSACTION_LENGTH = 52;
 const SEED_BYTES_LENGTH = 32;
 
 /**
@@ -27,7 +30,7 @@ const SEED_BYTES_LENGTH = 32;
  * @returns {boolean} true if the string consists of only hex characters, otherwise false.
  */
 function allHexChars(maybe: string): boolean {
-  return maybe.match(/^[0-9a-f]+$/i) !== null;
+  return /^([0-9a-f]{2})+$/i.test(maybe);
 }
 
 /**
@@ -100,22 +103,13 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Converts a hex string into a uint8 array object.
-   *
-   * @param {string} str A hex string.
-   * @returns {Uint8Array} The byte representation of the hex string.
-   */
-  hexStringToUInt8Array(str: string): Uint8Array {
-    return new Uint8Array(Buffer.from(str, 'hex'));
-  }
-  /**
    * Returns a Uint8Array of the given hex string
    *
    * @param {string} str - the hex string to be converted
    * @returns {string} - the Uint8Array value
    */
   toUint8Array(str: string): Uint8Array {
-    return hex.decode(str);
+    return Buffer.from(str, 'hex');
   }
 
   /**
@@ -142,7 +136,7 @@ export class Utils implements BaseUtils {
       sha512.sha512_256.array(decoded.seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
     );
 
-    // Check if the checksum and the seed are equal
+    // Check if the checksum matches the one from the decoded seed
     return _.isEqual(checksum, decoded.checksum);
   }
 
@@ -257,7 +251,7 @@ export class Utils implements BaseUtils {
    * @returns {EncodedTx} The decoded transaction.
    */
   decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    let buffer;
+    let buffer: Buffer;
     if (typeof txnBytes === 'string') {
       if (allHexChars(txnBytes)) {
         buffer = Buffer.from(txnBytes, 'hex');
@@ -265,7 +259,7 @@ export class Utils implements BaseUtils {
         buffer = Buffer.from(txnBytes, 'base64');
       }
     } else {
-      buffer = txnBytes;
+      buffer = Buffer.from(txnBytes);
     }
 
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
@@ -280,7 +274,7 @@ export class Utils implements BaseUtils {
       // see: https://github.com/algorand/js-algorand-sdk/issues/364
       // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
       // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
-      const tx: any = algosdk.decodeSignedTransaction(buffer);
+      const tx = algosdk.decodeSignedTransaction(buffer);
 
       const signers: string[] = [];
       const signedBy: string[] = [];
@@ -320,8 +314,7 @@ export class Utils implements BaseUtils {
       return txInfo.estimateSize();
     }
 
-    const { fee = 1 } = txInfo;
-    const transaction = this.createMultisigTransaction(Object.assign({}, txInfo, { fee }));
+    const transaction = this.createMultisigTransaction(Object.assign({}, { fee: 1 }, txInfo));
     return transaction.estimateSize();
   }
 
@@ -354,7 +347,7 @@ export class Utils implements BaseUtils {
    * @param o - Uint8Array to decode
    * @returns object
    */
-  decodeObj(o: ArrayLike<number>) {
+  decodeObj(o: ArrayLike<number>): unknown {
     return algosdk.decodeObj(o);
   }
 
@@ -397,7 +390,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * createKeyPair generet the new objet keyPair.
+   * Generate a new `KeyPair` object from the given private key.
    *
    * @param base64PrivateKey 64 bytes long privateKey
    * @returns KeyPair
@@ -495,7 +488,6 @@ export class Utils implements BaseUtils {
   /**
    * Build correct fee info and fee rate for Algorand transactions.
    *
-   // eslint-disable-next-line jsdoc/require-param-type
    * @param tx {Object} required fields or building fee info.
    * @param feeRate {number} required fee rate for building fee info.
    * @returns {Object} The fee information for algorand txn.
@@ -579,6 +571,27 @@ export class Utils implements BaseUtils {
       addr: algosdk.encodeAddress(keys.publicKey),
       sk: keys.secretKey,
     };
+  }
+
+  /**
+   * Generates Tx ID from an encoded multisig transaction
+   *
+   * This is done because of a change made on version 1.10.1 on algosdk so method txID() only supports SignedTransaction type.
+   * (https://github.com/algorand/js-algorand-sdk/blob/develop/CHANGELOG.md#1101)
+   *
+   * @param {string} txBase64 - encoded base64 multisig transaction
+   * @returns {string} - transaction ID
+   */
+  getMultisigTxID(txBase64: string): string {
+    const txBytes = Buffer.from(txBase64, 'base64');
+    const decodeSignTx = algosdk.decodeSignedTransaction(txBytes);
+    const wellFormedDecodedSignTx = decodeSignTx.txn.get_obj_for_encoding();
+    const txForEncoding = { msig: decodeSignTx.msig, txn: wellFormedDecodedSignTx };
+    const en_msg = encoding.encode(txForEncoding);
+    const tag = Buffer.from([84, 88]);
+    const gh = Buffer.from(concatArrays(tag, en_msg));
+    const hash = Buffer.from(algoNacl.genericHash(gh));
+    return base32.encode(hash).slice(0, ALGORAND_TRANSACTION_LENGTH);
   }
 }
 

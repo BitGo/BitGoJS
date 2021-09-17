@@ -18,8 +18,8 @@ describe('Algo Transaction Builder Factory', () => {
   });
 
   it('should parse a asset transfer txn and return a asset transfer builder', () => {
-    //  should(txnBuilderFactory.from(rawTx.transfer.unsigned)).instanceOf(TransferBuilder);
-    // should(txnBuilderFactory.from(rawTx.transfer.signed)).instanceOf(TransferBuilder);
+    should(factory.from(rawTx.transfer.unsigned)).instanceOf(TransferBuilder);
+    should(factory.from(rawTx.transfer.signed)).instanceOf(TransferBuilder);
   });
 
   describe('serialized transactions', () => {

@@ -127,7 +127,7 @@ describe('Algo Transaction Builder', () => {
     });
 
     it('should validate number of signers is not less than 0', () => {
-      should.throws(() => txnBuilder.numberOfRequiredSigners(-1));
+      should.throws(() => txnBuilder.numberOfRequiredSigners(-1), "Number of signers: '-1' cannot be negative");
 
       for (let i = 0; i < STANDARD_REQUIRED_NUMBER_OF_SIGNERS; i++) {
         should.doesNotThrow(() => txnBuilder.numberOfRequiredSigners(i));
@@ -268,17 +268,17 @@ describe('Algo Transaction Builder', () => {
       sinon.restore();
     });
 
-    // TODO: uncomment after recordKeysFromPrivateKeyInProtocolFormat is implemented
+    // TODO(STLX-7506): uncomment after recordKeysFromPrivateKeyInProtocolFormat is implemented
     // in keypair
-    /*  it('should sign the transaction', () => {
+    xit('should sign the transaction', () => {
       const txn = txnBuilder.getTransaction();
       txn.setAlgoTransaction(algoTxn);
-      txn.numberOfSigners(1);
-      txnBuilder.signImplementation({ key: account1.secretKey });
+      txn.setNumberOfRequiredSigners(1);
+      txnBuilder.signImplementation({ key: Buffer.from(account1.prvKey).toString('hex') });
       txnBuilder.buildImplementation();
 
       should.doesNotThrow(() => txnBuilder.getTransaction().toBroadcastFormat());
-    }); */
+    });
   });
 
   describe('transaction validation', () => {
@@ -305,7 +305,10 @@ describe('Algo Transaction Builder', () => {
         .genesisId(testnet.genesisID)
         .genesisHash(testnet.genesisHash);
 
-      should.throws(() => txnBuilder.validateTransaction(txnBuilder.getTransaction()));
+      should.throws(
+        () => txnBuilder.validateTransaction(txnBuilder.getTransaction()),
+        'Transaction validation failed: "value" failed custom validation because lastRound cannot be greater than or equal to firstRound',
+      );
     });
 
     it('should build a normal transaction with correct signers', () => {

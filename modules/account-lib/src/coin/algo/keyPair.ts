@@ -1,7 +1,7 @@
-/* eslint-disable no-unused-vars */
 import algosdk, { encodeAddress } from 'algosdk';
 import { Ed25519KeyPair } from '../baseCoin';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import { InvalidKey } from '../baseCoin/errors';
 import utils from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
@@ -17,9 +17,9 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
     const decodedSeed = utils.decodeSeed(prv);
-    const hexSecretKey = Buffer.from(decodedSeed.seed);
+    const bufferFromSeed = Buffer.from(decodedSeed.seed);
 
-    return utils.keyPairFromSeed(hexSecretKey).keyPair;
+    return utils.keyPairFromSeed(bufferFromSeed).keyPair;
   }
 
   /** @inheritdoc */
@@ -30,7 +30,7 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    return encodeAddress(utils.hexStringToUInt8Array(this.keyPair.pub));
+    return encodeAddress(utils.toUint8Array(this.keyPair.pub));
   }
 
   /** @inheritdoc */
@@ -53,6 +53,9 @@ export class KeyPair extends Ed25519KeyPair {
    * @see https://developer.algorand.org/docs/features/accounts/#transformation-private-key-to-base64-private-key
    */
   getSigningKey(): Uint8Array {
+    if (!this.keyPair.prv) {
+      throw new InvalidKey('Private key undefined');
+    }
     return utils.toUint8Array(this.keyPair.prv + this.keyPair.pub);
   }
 }

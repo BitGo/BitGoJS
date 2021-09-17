@@ -20,7 +20,7 @@ describe('Algo seed encoding', function () {
       const seed = nacl.randomBytes(32);
       const encodedSeed = SeedEncoding.encode(seed);
       const decodedSeed = SeedEncoding.decode(encodedSeed);
-      should.deepEqual(new Uint8Array(decodedSeed.seed), seed);
+      should.deepEqual(decodedSeed.seed, seed);
     });
   });
 });

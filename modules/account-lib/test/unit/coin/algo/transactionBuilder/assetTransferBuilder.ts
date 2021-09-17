@@ -109,19 +109,28 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     it('should not build a token transaction with an invalid sender address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(() => tx.sender({ address: wrongAddress }));
+      should.throws(
+        () => tx.sender({ address: wrongAddress }),
+        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+      );
     });
 
     it('should not build a token transaction with an invalid closeRemainderTo address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(() => tx.closeRemainderTo({ address: wrongAddress }));
+      should.throws(
+        () => tx.closeRemainderTo({ address: wrongAddress }),
+        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+      );
     });
 
     it('should not build a token transaction with an invalid to address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(() => tx.to({ address: wrongAddress }));
+      should.throws(
+        () => tx.to({ address: wrongAddress }),
+        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+      );
     });
 
     it('should build a valid enable token transaction', async function () {
@@ -272,10 +281,10 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     });
 
     it('should fail to decode other types of transactions', () => {
-      should.throws(() => txnBuilder.from(rawTx.keyReg.unsigned));
-      should.throws(() => txnBuilder.from(rawTx.keyReg.signed));
-      should.throws(() => txnBuilder.from(rawTx.transfer.unsigned));
-      should.throws(() => txnBuilder.from(rawTx.transfer.signed));
+      should.throws(() => txnBuilder.from(rawTx.keyReg.unsigned), 'Invalid Transaction Type: keyreg. Expected axfer');
+      should.throws(() => txnBuilder.from(rawTx.keyReg.signed), 'Invalid Transaction Type: keyreg. Expected axfer');
+      should.throws(() => txnBuilder.from(rawTx.transfer.unsigned), 'Invalid Transaction Type: pay. Expected axfer');
+      should.throws(() => txnBuilder.from(rawTx.transfer.signed), 'Invalid Transaction Type: pay. Expected axfer');
     });
   });
 
