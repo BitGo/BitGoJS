@@ -12,12 +12,15 @@ import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../bas
 import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 import { SeedEncoding } from './seedEncoding';
+import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
+import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_ADDRESS_LENGTH = 58;
 const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
+const ALGORAND_TRANSACTION_LENGTH = 52;
 const SEED_BYTES_LENGTH = 32;
 
 /**
@@ -579,6 +582,27 @@ export class Utils implements BaseUtils {
       addr: algosdk.encodeAddress(keys.publicKey),
       sk: keys.secretKey,
     };
+  }
+
+  /**
+   * Generates Tx ID from an encoded multisig transaction
+   *
+   * This is done because of a change made on version 1.10.1 on algosdk so method txID() only supports SignedTransaction type.
+   * (https://github.com/algorand/js-algorand-sdk/blob/develop/CHANGELOG.md#1101)
+   *
+   * @param {string} txBase64 - encoded base64 multisig transaction
+   * @returns {string} - transaction ID
+   */
+  getMultisigTxID(txBase64: string): string {
+    const txBytes = Buffer.from(txBase64, 'base64');
+    const decodeSignTx = algosdk.decodeSignedTransaction(txBytes);
+    const wellFormedDecodedSignTx = decodeSignTx.txn.get_obj_for_encoding();
+    const txForEncoding = { msig: decodeSignTx.msig, txn: wellFormedDecodedSignTx };
+    const en_msg = encoding.encode(txForEncoding);
+    const tag = Buffer.from([84, 88]);
+    const gh = Buffer.from(concatArrays(tag, en_msg));
+    const hash = Buffer.from(algoNacl.genericHash(gh));
+    return base32.encode(hash).slice(0, ALGORAND_TRANSACTION_LENGTH);
   }
 }
 

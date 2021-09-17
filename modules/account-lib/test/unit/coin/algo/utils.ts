@@ -8,6 +8,7 @@ describe('utils', () => {
   const {
     accounts: { account1, account2, account3 },
     transactions: { payTxn, nonParticipationTxn, keyregTxn },
+    base64Txn: { validTxn, invalidTxn, invalidTxn2 },
   } = AlgoResources;
 
   it('should properly encode an algorand address from an ed25519 public key', () => {
@@ -334,5 +335,28 @@ describe('utils', () => {
   it('getTransactionByteSize should generate the size correct para keyregTxn', () => {
     const size = Algo.algoUtils.getTransactionByteSize(keyregTxn);
     should.equal(size, 320);
+  });
+
+  it('Should be able to get a txID from a multising Tx', () => {
+    const rawTxn = validTxn.txn;
+    const txId = Algo.algoUtils.getMultisigTxID(rawTxn);
+
+    should.equal(txId, validTxn.txid);
+  });
+
+  it('Should not be able to get a txID from an incomplete multising Tx', () => {
+    const rawTxn = invalidTxn.txn;
+
+    should.throws(() => {
+      Algo.algoUtils.getMultisigTxID(rawTxn);
+    }, 'RangeError: Insufficient data');
+  });
+
+  it('Should not be able to get a txID from a simple Tx', () => {
+    const rawTxn = invalidTxn2.txn;
+
+    should.throws(() => {
+      Algo.algoUtils.getMultisigTxID(rawTxn);
+    }, 'Error: The object contains empty or 0 values. First empty or 0 value encountered during encoding: msig');
   });
 });
