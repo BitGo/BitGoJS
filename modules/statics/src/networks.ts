@@ -6,6 +6,7 @@ export enum NetworkType {
 }
 
 export abstract class BaseNetwork {
+  public abstract readonly name: string;
   public abstract readonly type: NetworkType;
   public abstract readonly family: CoinFamily;
   public abstract readonly explorerUrl: string | undefined;
@@ -112,17 +113,20 @@ abstract class BitcoinLikeTestnet extends Testnet implements UtxoNetwork {
 }
 
 class Algorand extends Mainnet implements AccountNetwork {
+  name = 'Algorand';
   family = CoinFamily.ALGO;
   explorerUrl = 'https://algoexplorer.io/tx/';
 }
 
 class AlgorandTestnet extends Testnet implements AccountNetwork {
+  name = 'AlgorandTestnet';
   family = CoinFamily.ALGO;
   explorerUrl = 'https://testnet.algoexplorer.io/tx/';
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
+  name = 'AvalancheC';
   family = CoinFamily.AVAXC;
   explorerUrl = 'https://cchain.explorer.avax.network/tx/';
   accountExplorerUrl = 'https://cchain.explorer.avax.network/address/';
@@ -131,6 +135,7 @@ class AvalancheC extends Mainnet implements AccountNetwork {
 
 class AvalancheCTestnet extends Testnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
+  name = 'AvalancheCTestnet';
   family = CoinFamily.AVAXC;
   explorerUrl = 'https://cchain.explorer.avax-test.network/tx/';
   accountExplorerUrl = 'https://cchain.explorer.avax-test.network/address/';
@@ -138,12 +143,14 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
 }
 
 class Bitcoin extends BitcoinLikeMainnet {
+  name = 'Bitcoin';
   family = CoinFamily.BTC;
   explorerUrl = 'https://blockstream.info/tx/';
   bech32 = 'bc';
 }
 
 class BitcoinTestnet extends BitcoinLikeTestnet {
+  name = 'BitcoinTestnet';
   family = CoinFamily.BTC;
   explorerUrl = 'https://blockstream.info/testnet/tx/';
   bech32 = 'tb';
@@ -152,21 +159,25 @@ class BitcoinTestnet extends BitcoinLikeTestnet {
 // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
 // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
 class BitcoinCash extends BitcoinLikeMainnet {
+  name = 'BitcoinCash';
   family = CoinFamily.BCH;
   explorerUrl = 'http://blockdozer.com/tx/';
 }
 
 class BitcoinCashTestnet extends BitcoinLikeTestnet {
+  name = 'BitcoinCashTestnet';
   family = CoinFamily.BCH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 
 class BitcoinABC extends BitcoinLikeMainnet {
+  name = 'BitcoinABC';
   family = CoinFamily.BCHA;
   explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
 }
 
 class BitcoinABCTestnet extends BitcoinLikeTestnet {
+  name = 'BitcoinABCTestnet';
   family = CoinFamily.BCHA;
   explorerUrl = undefined;
 }
@@ -174,11 +185,13 @@ class BitcoinABCTestnet extends BitcoinLikeTestnet {
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
 class BitcoinSV extends BitcoinLikeMainnet {
+  name = 'BitcoinSV';
   family = CoinFamily.BSV;
   explorerUrl = 'https://blockchair.com/bitcoin-sv/transaction/';
 }
 
 class BitcoinSVTestnet extends BitcoinLikeTestnet {
+  name = 'BitcoinSVTestnet';
   family = CoinFamily.BSV;
   explorerUrl = undefined;
 }
@@ -186,6 +199,7 @@ class BitcoinSVTestnet extends BitcoinLikeTestnet {
 // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
 // https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
 class BitcoinGold extends BitcoinLikeMainnet {
+  name = 'BitcoinGold';
   messagePrefix = '\x18Bitcoin Gold Signed Message:\n';
   bech32 = 'btg';
   pubKeyHash = 0x26;
@@ -197,6 +211,7 @@ class BitcoinGold extends BitcoinLikeMainnet {
 // https://github.com/dashpay/dash/blob/master/src/validation.cpp
 // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
 class Dash extends BitcoinLikeMainnet {
+  name = 'Dash';
   messagePrefix = '\x19DarkCoin Signed Message:\n';
   pubKeyHash = 0x4c;
   scriptHash = 0x10;
@@ -206,6 +221,7 @@ class Dash extends BitcoinLikeMainnet {
 }
 
 class DashTestnet extends BitcoinLikeTestnet {
+  name = 'DashTestnet';
   messagePrefix = '\x19DarkCoin Signed Message:\n';
   pubKeyHash = 0x8c;
   scriptHash = 0x13;
@@ -213,6 +229,7 @@ class DashTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
 class Celo extends Mainnet implements EthereumNetwork {
+  name = 'Celo';
   family = CoinFamily.CELO;
   explorerUrl = 'https://explorer.celo.org/tx/';
   accountExplorerUrl = 'https://explorer.celo.org/address/';
@@ -220,6 +237,7 @@ class Celo extends Mainnet implements EthereumNetwork {
 }
 
 class CeloTestnet extends Testnet implements EthereumNetwork {
+  name = 'CeloTestnet';
   family = CoinFamily.CELO;
   explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
@@ -228,6 +246,7 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
 
 // TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
+  name = 'Casper';
   family = CoinFamily.CSPR;
   explorerUrl = 'https://cspr.live/deploy/';
   accountExplorerUrl = 'https://cspr.live/account/';
@@ -235,12 +254,14 @@ class Casper extends Mainnet implements AccountNetwork {
 
 // TODO update explorerUrl STLX-1657
 class CasperTestnet extends Testnet implements AccountNetwork {
+  name = 'CasperTestnet';
   family = CoinFamily.CSPR;
   explorerUrl = 'https://testnet.cspr.live/deploy/';
   accountExplorerUrl = 'https://testnet.cspr.live/account/';
 }
 
 class Ethereum extends Mainnet implements EthereumNetwork {
+  name = 'Ethereum';
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
   accountExplorerUrl = 'https://etherscan.io/address/';
@@ -252,18 +273,21 @@ class Ethereum extends Mainnet implements EthereumNetwork {
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
+  name = 'Ethereum2';
   family = CoinFamily.ETH2;
   explorerUrl = 'https://beaconscan.com/tx';
   accountExplorerUrl = 'https://beaconscan.com/address';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
+  name = 'Pyrmont';
   family = CoinFamily.ETH2;
   explorerUrl = 'https://beaconscan.com/pyrmont/tx';
   accountExplorerUrl = 'https://beaconscan.com/pyrmont/address';
 }
 
 class Kovan extends Testnet implements EthereumNetwork {
+  name = 'Kovan';
   family = CoinFamily.ETH;
   explorerUrl = 'https://kovan.etherscan.io/tx/';
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
@@ -275,6 +299,7 @@ class Kovan extends Testnet implements EthereumNetwork {
 }
 
 class Goerli extends Testnet implements EthereumNetwork {
+  name = 'Goerli';
   family = CoinFamily.ETH;
   explorerUrl = 'https://goerli.etherscan.io/tx/';
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
@@ -286,6 +311,7 @@ class Goerli extends Testnet implements EthereumNetwork {
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
+  name = 'EthereumClassic';
   family = CoinFamily.ETC;
   explorerUrl = 'https://blockscout.com/etc/mainnet/tx/';
   accountExplorerUrl = 'https://blockscout.com/etc/mainnet/address/';
@@ -294,6 +320,7 @@ class EthereumClassic extends Mainnet implements EthereumNetwork {
 }
 
 class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
+  name = 'EthereumClassicTestnet';
   family = CoinFamily.ETC;
   explorerUrl = 'https://blockscout.com/etc/mordor/tx/';
   accountExplorerUrl = 'https://blockscout.com/etc/mordor/address/';
@@ -302,21 +329,25 @@ class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Eos extends Mainnet implements AccountNetwork {
+  name = 'Eos';
   family = CoinFamily.EOS;
   explorerUrl = 'https://bloks.io/transaction/';
 }
 
 class EosTestnet extends Testnet implements AccountNetwork {
+  name = 'EosTestnet';
   family = CoinFamily.EOS;
   explorerUrl = 'https://jungle.bloks.io/transaction/';
 }
 
 class Hedera extends Mainnet implements AccountNetwork {
+  name = 'Hedera';
   family = CoinFamily.HBAR;
   explorerUrl = 'https://explorer.kabuto.sh/mainnet/transaction/';
 }
 
 class HederaTestnet extends Testnet implements AccountNetwork {
+  name = 'HederaTestnet';
   family = CoinFamily.HBAR;
   explorerUrl = 'https://explorer.kabuto.sh/testnet/transaction/';
 }
@@ -324,6 +355,7 @@ class HederaTestnet extends Testnet implements AccountNetwork {
 // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
 // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
 class Litecoin extends BitcoinLikeMainnet {
+  name = 'Litecoin';
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
   pubKeyHash = 0x30;
@@ -334,6 +366,7 @@ class Litecoin extends BitcoinLikeMainnet {
 }
 
 class LitecoinTestnet extends BitcoinLikeTestnet {
+  name = 'LitecoinTestnet';
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'tltc';
   pubKeyHash = 0x6f;
@@ -343,16 +376,19 @@ class LitecoinTestnet extends BitcoinLikeTestnet {
 }
 
 class Ofc extends Mainnet implements OfcNetwork {
+  name = 'Ofc';
   family = CoinFamily.OFC;
   explorerUrl = undefined;
 }
 
 class OfcTestnet extends Testnet implements OfcNetwork {
+  name = 'OfcTestnet';
   family = CoinFamily.OFC;
   explorerUrl = undefined;
 }
 
 class Rbtc extends Mainnet implements EthereumNetwork {
+  name = 'Rbtc';
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.rsk.co/address/';
@@ -360,6 +396,7 @@ class Rbtc extends Mainnet implements EthereumNetwork {
 }
 
 class RbtcTestnet extends Testnet implements EthereumNetwork {
+  name = 'RbtcTestnet';
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.testnet.rsk.co/address/';
@@ -367,36 +404,43 @@ class RbtcTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
+  name = 'Stellar';
   family = CoinFamily.XLM;
   explorerUrl = 'https://stellar.expert/explorer/public/tx/';
 }
 
 class StellarTestnet extends Testnet implements AccountNetwork {
+  name = 'StellarTestnet';
   family = CoinFamily.XLM;
   explorerUrl = 'https://stellar.expert/explorer/testnet/tx/';
 }
 
 class Stx extends Mainnet implements AccountNetwork {
+  name = 'Stx';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/';
 }
 
 class StxTestnet extends Testnet implements AccountNetwork {
+  name = 'StxTestnet';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/?chain=testnet';
 }
 
 class SUSD extends Mainnet implements AccountNetwork {
+  name = 'SUSD';
   family = CoinFamily.SUSD;
   explorerUrl = undefined;
 }
 
 class SUSDTestnet extends Testnet implements AccountNetwork {
+  name = 'SUSDTestnet';
   family = CoinFamily.SUSD;
   explorerUrl = undefined;
 }
 
 class Trx extends Mainnet implements TronNetwork {
+  name = 'Trx';
   family = CoinFamily.TRX;
   explorerUrl = 'https://tronscan.org/#/transaction/';
   maxFeeLimit = '5000000000';
@@ -404,6 +448,7 @@ class Trx extends Mainnet implements TronNetwork {
 }
 
 class TrxTestnet extends Testnet implements TronNetwork {
+  name = 'TrxTestnet';
   family = CoinFamily.TRX;
   explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
   maxFeeLimit = '5000000000';
@@ -411,22 +456,26 @@ class TrxTestnet extends Testnet implements TronNetwork {
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
+  name = 'Xrp';
   family = CoinFamily.XRP;
   explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
 }
 
 class XrpTestnet extends Testnet implements AccountNetwork {
+  name = 'XrpTestnet';
   family = CoinFamily.XRP;
   explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
 }
 
 class Xtz extends Mainnet implements AccountNetwork {
+  name = 'Xtz';
   family = CoinFamily.XTZ;
   explorerUrl = 'https://tezblock.io/transaction/';
   accountExplorerUrl = 'https://tezblock.io/account/';
 }
 
 class XtzTestnet extends Testnet implements AccountNetwork {
+  name = 'XtzTestnet';
   family = CoinFamily.XTZ;
   explorerUrl = 'https://carthagenet.tezblock.io/transaction/';
   accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
@@ -435,6 +484,7 @@ class XtzTestnet extends Testnet implements AccountNetwork {
 // https://github.com/zcash/zcash/blob/master/src/validation.cpp
 // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
 class ZCash extends BitcoinLikeMainnet {
+  name = 'ZCash';
   messagePrefix = '\x18ZCash Signed Message:\n';
   pubKeyHash = 0x1cb8;
   scriptHash = 0x1cbd;
@@ -443,6 +493,7 @@ class ZCash extends BitcoinLikeMainnet {
 }
 
 class ZCashTestnet extends BitcoinLikeTestnet {
+  name = 'ZCashTestnet';
   messagePrefix = '\x18ZCash Signed Message:\n';
   pubKeyHash = 0x1d25;
   scriptHash = 0x1cba;
