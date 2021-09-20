@@ -44,6 +44,7 @@
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@stacks/transactions": "2.0.1",
+    "@stacks/stacking": "2.0.1",
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",

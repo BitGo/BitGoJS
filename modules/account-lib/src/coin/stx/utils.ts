@@ -32,6 +32,7 @@ import { isValidXpub, isValidXprv } from '../../utils/crypto';
 import { InvalidParameterValueError, SigningError, UtilsError } from '../baseCoin/errors';
 import { AddressDetails } from './iface';
 import { KeyPair } from '.';
+export { decodeBtcAddress } from '@stacks/stacking';
 
 const ContractFunctionNames = [
   'stack-stx',

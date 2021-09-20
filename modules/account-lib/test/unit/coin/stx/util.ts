@@ -266,4 +266,50 @@ describe('Stx util library', function () {
       ).should.be.false();
     });
   });
+
+  describe('decode BTC Address', function () {
+    let address: string;
+
+    it('should decode P2PKH MainNet', function () {
+      address = '1AKKSgC8AeUGiwGu48vPcaEJuzBA5f8Zg9';
+      Stx.Utils.decodeBtcAddress(address);
+      const result = Stx.Utils.decodeBtcAddress(address);
+
+      result.should.have.property('hashMode');
+      result.hashMode.should.equal(0);
+      result.should.have.property('data');
+      Buffer.isBuffer(result.data).should.true;
+    });
+
+    it('should decode P2PKH TestNet', function () {
+      address = 'msBE6aCaAesegu4VzbQW3L5xWBL8vi15Q7';
+      Stx.Utils.decodeBtcAddress(address);
+      const result = Stx.Utils.decodeBtcAddress(address);
+
+      result.should.have.property('hashMode');
+      result.hashMode.should.equal(0);
+      result.should.have.property('data');
+      Buffer.isBuffer(result.data).should.true;
+    });
+
+    it('should decode P2SH MainNet', function () {
+      address = '3479NUy2P91ETE2DGHtD1eK5b76zyhu3kf';
+      const result = Stx.Utils.decodeBtcAddress(address);
+
+      result.should.have.property('hashMode');
+      result.hashMode.should.equal(1);
+      result.should.have.property('data');
+      Buffer.isBuffer(result.data).should.true;
+    });
+
+    it('should decode P2SH TestNet', function () {
+      address = '2NDVm1LRUGh26GJN1V3NY9LAR2aVMEawp1s';
+      const result = Stx.Utils.decodeBtcAddress(address);
+
+      result.should.have.property('hashMode');
+      result.hashMode.should.equal(1);
+      result.should.have.property('data');
+      Buffer.isBuffer(result.data).should.true;
+    });
+  });
 });
