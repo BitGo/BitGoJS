@@ -3,7 +3,6 @@ import { AvaxC, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import * as testData from '../../../../resources/avaxc/avaxc';
 import { TxData } from '../../../../../src/coin/eth/iface';
-import { TransactionBuilder } from '../../../../../src/coin/avaxc';
 
 describe('AvaxC Wallet Initialization Builder', function () {
   let txBuilder: AvaxC.TransactionBuilder;
@@ -128,41 +127,6 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txBuilder.sign({ key: testData.OWNER_1.ethKey });
 
       txBuilder.build().should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
-    });
-
-    it('Should getting same tx from raw tx', async function () {
-      initTxBuilder();
-      txBuilder.owner(testData.OWNER_1.ethAddress);
-      txBuilder.owner(testData.OWNER_2.ethAddress);
-      txBuilder.owner(testData.OWNER_3.ethAddress);
-      txBuilder.sign({ key: testData.OWNER_1.ethKey });
-      const tx = await txBuilder.build();
-      const txBuiderFromRaw = getBuilder('tavaxc') as TransactionBuilder;
-      txBuiderFromRaw.from(tx.toBroadcastFormat());
-      const txFromRaw = await txBuiderFromRaw.build();
-      should.deepEqual(tx.toJson(), txFromRaw.toJson());
-      should.deepEqual(tx.toBroadcastFormat(), txFromRaw.toBroadcastFormat());
-      should.deepEqual(tx.id, txFromRaw.id);
-    });
-
-    it('Should getting same tx from raw tx ETH', async function () {
-      txBuilder = getBuilder('eth') as AvaxC.TransactionBuilder;
-      txBuilder.fee({
-        fee: '280000000000',
-        gasLimit: '7000000',
-      });
-      txBuilder.counter(1);
-      txBuilder.type(TransactionType.WalletInitialization);
-      txBuilder.owner(testData.OWNER_1.ethAddress);
-      txBuilder.owner(testData.OWNER_2.ethAddress);
-      txBuilder.owner(testData.OWNER_3.ethAddress);
-      txBuilder.sign({ key: testData.OWNER_1.ethKey });
-      const tx = await txBuilder.build();
-      const txBuiderFromRaw = getBuilder('eth') as TransactionBuilder;
-      txBuiderFromRaw.from(tx.toBroadcastFormat());
-      const txFromRaw = await txBuiderFromRaw.build();
-
-      should.deepEqual(tx.toJson(), txFromRaw.toJson());
     });
   });
 });

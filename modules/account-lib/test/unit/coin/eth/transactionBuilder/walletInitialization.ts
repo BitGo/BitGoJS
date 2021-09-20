@@ -381,23 +381,4 @@ describe('Eth Transaction builder wallet initialization', function () {
       should.throws(() => txBuilder.owner('0x7325A3F7d4f9E86AE62C'), 'Invalid address');
     });
   });
-
-  it('Should getting same tx hash from raw tx', async function () {
-    const txBuilder: any = getBuilder('eth');
-    txBuilder.fee({
-      fee: '280000000000',
-      gasLimit: '7000000',
-    });
-    txBuilder.counter(1);
-    txBuilder.type(TransactionType.WalletInitialization);
-    txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-    txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
-    txBuilder.owner(new Eth.KeyPair({ prv: sourcePrv }).getAddress());
-    txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-    const tx = await txBuilder.build();
-    const txBuiderFromRaw: any = getBuilder('eth');
-    txBuiderFromRaw.from(tx.toBroadcastFormat());
-    const txFromRaw = await txBuiderFromRaw.build();
-    should.deepEqual(tx.id, txFromRaw.id);
-  });
 });
