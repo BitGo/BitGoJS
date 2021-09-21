@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { Transaction } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';

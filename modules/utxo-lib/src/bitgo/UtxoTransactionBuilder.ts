@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { Transaction, TransactionBuilder } from 'bitcoinjs-lib';
 // eslint-disable-next-line
 import * as bitcoinjs from 'bitcoinjs-lib';

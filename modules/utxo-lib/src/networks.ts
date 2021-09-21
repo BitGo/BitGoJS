@@ -1,7 +1,3 @@
-/**
- * @prettier
- */
-
 /*
 
 The values for the various fork coins can be found in these files:

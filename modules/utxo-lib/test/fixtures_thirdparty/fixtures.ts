@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as fs from 'fs-extra';
 import { Network } from '../../src/networkTypes';
 import { getMainnet, getNetworkName } from '../../src/coins';

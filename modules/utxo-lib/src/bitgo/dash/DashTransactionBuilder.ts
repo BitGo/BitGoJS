@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { Network } from '../../networkTypes';
 import { DashTransaction } from './DashTransaction';

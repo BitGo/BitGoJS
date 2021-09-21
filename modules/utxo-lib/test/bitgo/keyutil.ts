@@ -1,7 +1,3 @@
-/**
- * @prettier
- */
-
 const assert = require('assert');
 const crypto = require('crypto');
 

@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { RpcTransaction } from './generate/RpcTypes';
 import * as networks from '../../src/networks';
 import { Network } from '../../src/networkTypes';

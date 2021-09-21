@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 import * as bcrypto from 'bitcoinjs-lib/src/crypto';
 

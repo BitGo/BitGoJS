@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as ECPair from 'bitcoinjs-lib/src/ecpair';
 
 import { Network } from '../networkTypes';

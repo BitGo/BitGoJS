@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as bip32 from 'bip32';
 import * as assert from 'assert';
 import * as networks from '../src/networks';

@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import { Network } from '../../networkTypes';
 import { isZcash } from '../../coins';

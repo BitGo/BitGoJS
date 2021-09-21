@@ -25,7 +25,8 @@
     "coverage": "npm run build && nyc --check-coverage mocha",
     "test": "npm run coverage",
     "unit-test": "mocha",
-    "lint": "eslint --quiet ."
+    "lint": "eslint --quiet .",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'"
   },
   "nyc": {
     "include": [

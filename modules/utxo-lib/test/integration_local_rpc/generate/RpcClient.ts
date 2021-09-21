@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import axios, { AxiosError } from 'axios';
 import buildDebug from 'debug';

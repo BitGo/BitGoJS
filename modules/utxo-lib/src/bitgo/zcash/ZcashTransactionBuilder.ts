@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { Transaction } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 const typeforce = require('typeforce');

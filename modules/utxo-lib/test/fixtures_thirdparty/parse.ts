@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash } from '../../src/coins';
 import {

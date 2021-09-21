@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as networks from './networks';
 import { coins, Network } from './networkTypes';
 

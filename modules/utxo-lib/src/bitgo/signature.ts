@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as opcodes from 'bitcoin-ops';
 
 import { ECPair, payments, script, Transaction, TxInput } from 'bitcoinjs-lib';

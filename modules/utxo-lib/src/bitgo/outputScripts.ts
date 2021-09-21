@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 

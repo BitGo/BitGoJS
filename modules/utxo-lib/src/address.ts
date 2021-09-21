@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as bitcoinjs from 'bitcoinjs-lib';
 
 import * as zcashAddress from '../src/bitgo/zcash/address';

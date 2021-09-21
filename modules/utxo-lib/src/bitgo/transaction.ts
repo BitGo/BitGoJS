@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as networks from '../networks';
 import { Network, ZcashNetwork } from '../networkTypes';
 import { getMainnet } from '../coins';
