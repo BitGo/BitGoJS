@@ -44,7 +44,7 @@
     "no-console": "warn",
     "no-dupe-args": "error",
     "no-dupe-keys": "error",
-    "no-duplicate-imports": "error",  // whilst imports are not being used, if we start to use them, we do not want duplicates
+    "no-duplicate-imports": "error",
     "no-empty": ["warn", { "allowEmptyCatch": false }],
     "no-extra-boolean-cast": "off",
     "no-extra-semi": "error",
