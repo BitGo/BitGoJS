@@ -27,8 +27,7 @@ describe('Third-Party Fixtures', function () {
           const buffer = Buffer.from(rawTransaction, 'hex');
           let transaction, signatureHash;
           if (isZcash(network)) {
-            let branchId;
-            [branchId, signatureHash] = rest as [number, string];
+            [, /* branchId ,*/ signatureHash] = rest as [number, string];
             transaction = ZcashTransaction.fromBuffer(buffer, false, network as ZcashNetwork);
           } else {
             [signatureHash] = rest as [string];
@@ -65,7 +64,7 @@ describe('Third-Party Fixtures', function () {
 
         testFixtureArray(network, txValidTestFile, function (vectors: TxValidVector[]) {
           vectors.forEach((v: TxValidVector, i) => {
-            const [inputs, txHex, verifyFlags] = v;
+            const [, /* inputs , */ txHex] = v;
             parseTransactionRoundTrip(Buffer.from(txHex, 'hex'), network);
           });
         });

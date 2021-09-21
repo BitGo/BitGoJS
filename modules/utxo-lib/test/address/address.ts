@@ -58,7 +58,7 @@ describe('Address', function () {
         assert.strictEqual(vectors.length, refVectors.length);
         vectors.forEach((v, i) => {
           assert.deepStrictEqual(v, refVectors[i]);
-          const [scriptType, scriptPubKeyHex, address] = v;
+          const [, scriptPubKeyHex, address] = v;
           assert.strictEqual(utxolib.address.toOutputScript(address, network).toString('hex'), scriptPubKeyHex);
         });
       });

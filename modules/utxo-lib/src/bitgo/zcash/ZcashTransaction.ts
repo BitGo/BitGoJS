@@ -16,7 +16,6 @@ import { ZcashNetwork } from '../../networkTypes';
 
 const ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
 
-const VALUE_UINT64_MAX = Buffer.from('ffffffffffffffff', 'hex');
 const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
 
 /**
@@ -271,7 +270,6 @@ export class ZcashTransaction extends UtxoTransaction {
     const hashShieldedSpends = ZERO;
     const hashShieldedOutputs = ZERO;
 
-    let bufferWriter;
     let baseBufferSize = 0;
     baseBufferSize += 4 * 5; // header, nVersionGroupId, lock_time, nExpiryHeight, hashType
     baseBufferSize += 32 * 4; // 256 hashes: hashPrevouts, hashSequence, hashOutputs, hashJoinSplits
@@ -283,10 +281,11 @@ export class ZcashTransaction extends UtxoTransaction {
       baseBufferSize += 32 * 2; // hashShieldedSpends and hashShieldedOutputs
       baseBufferSize += 8; // valueBalance
     }
-    bufferWriter = new BufferWriter(Buffer.alloc(baseBufferSize));
 
     const mask = this.overwintered ? 1 : 0;
     const header = this.version | (mask << 31);
+
+    const bufferWriter = new BufferWriter(Buffer.alloc(baseBufferSize));
     bufferWriter.writeInt32(header);
     bufferWriter.writeUInt32(this.versionGroupId);
     bufferWriter.writeSlice(hashPrevouts);

@@ -17,7 +17,7 @@ export class DashTransaction extends UtxoTransaction {
   static DASH_COINBASE = 5;
   static DASH_QUORUM_COMMITMENT = 6;
 
-  public type: number = 0;
+  public type = 0;
   public extraPayload?: Buffer;
 
   constructor(network: Network, tx?: UtxoTransaction | DashTransaction) {
@@ -87,7 +87,7 @@ export class DashTransaction extends UtxoTransaction {
    */
   getPrevoutHash(hashType: number): Buffer {
     if (!(hashType & UtxoTransaction.SIGHASH_ANYONECANPAY)) {
-      var bufferWriter = new BufferWriter(Buffer.allocUnsafe(36 * this.ins.length));
+      const bufferWriter = new BufferWriter(Buffer.allocUnsafe(36 * this.ins.length));
 
       this.ins.forEach(function (txIn) {
         bufferWriter.writeSlice(txIn.hash);

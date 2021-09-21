@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-/* global describe, it */
 import * as assert from 'assert';
 import { coins, networks } from '../src';
 import { Network } from '../src/networkTypes';

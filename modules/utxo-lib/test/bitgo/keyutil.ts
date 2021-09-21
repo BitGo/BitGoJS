@@ -44,8 +44,7 @@ describe('privateKeyBufferToECPair', function () {
 
   it('throws if the private key buffer is not a buffer', function () {
     assert.throws(function () {
-      // @ts-ignore
-      privateKeyBufferToECPair('not a buffer');
+      privateKeyBufferToECPair('not a buffer' as any);
     }, new RegExp('invalid private key buffer'));
   });
 
