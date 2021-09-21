@@ -43,7 +43,7 @@ export async function writeTransactionFixtureWithInputs(
   network: Network,
   filename: string,
   txid: string
-) {
+): Promise<void> {
   const transaction = await rpc.getRawTransactionVerbose(txid);
   const inputTransactionIds = transaction.vin.reduce(
     (all: string[], input) => (all.includes(input.txid) ? all : [...all, input.txid]),

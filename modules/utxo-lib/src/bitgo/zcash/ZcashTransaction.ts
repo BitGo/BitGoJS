@@ -51,7 +51,7 @@ export class ZcashTransaction extends UtxoTransaction {
     this.consensusBranchId = networks.zcash.consensusBranchId[this.version];
   }
 
-  static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork) {
+  static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
     /* istanbul ignore next */
     if (!network) {
       throw new Error(`must provide network`);
@@ -132,7 +132,7 @@ export class ZcashTransaction extends UtxoTransaction {
     return tx;
   }
 
-  byteLength() {
+  byteLength(): number {
     let byteLength = super.byteLength();
     if (this.isOverwinterCompatible()) {
       byteLength += 4; // nVersionGroupId
@@ -151,16 +151,16 @@ export class ZcashTransaction extends UtxoTransaction {
     return byteLength;
   }
 
-  isSaplingCompatible() {
-    return this.overwintered && this.version >= ZcashTransaction.VERSION_SAPLING;
+  isSaplingCompatible(): boolean {
+    return !!this.overwintered && this.version >= ZcashTransaction.VERSION_SAPLING;
   }
 
-  isOverwinterCompatible() {
-    return this.overwintered && this.version >= ZcashTransaction.VERSION_OVERWINTER;
+  isOverwinterCompatible(): boolean {
+    return !!this.overwintered && this.version >= ZcashTransaction.VERSION_OVERWINTER;
   }
 
-  supportsJoinSplits() {
-    return this.overwintered && this.version >= ZcashTransaction.VERSION_JOINSPLITS_SUPPORT;
+  supportsJoinSplits(): boolean {
+    return !!this.overwintered && this.version >= ZcashTransaction.VERSION_JOINSPLITS_SUPPORT;
   }
 
   /**
@@ -168,7 +168,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param hashType
    * @returns Buffer - BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getPrevoutHash(hashType: number) {
+  getPrevoutHash(hashType: number): Buffer {
     if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
       const bufferWriter = new BufferWriter(Buffer.allocUnsafe(36 * this.ins.length));
 
@@ -187,7 +187,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param hashType
    * @returns Buffer BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getSequenceHash(hashType: number) {
+  getSequenceHash(hashType: number): Buffer {
     if (
       !(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
       (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
@@ -210,7 +210,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param inIndex
    * @returns Buffer BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getOutputsHash(hashType: number, inIndex: number) {
+  getOutputsHash(hashType: number, inIndex: number): Buffer {
     if ((hashType & 0x1f) !== Transaction.SIGHASH_SINGLE && (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
       // Find out the size of the outputs and write them
       const txOutsSize = this.outs.reduce(function (sum, output) {
@@ -317,7 +317,7 @@ export class ZcashTransaction extends UtxoTransaction {
     return getBlake2bHash(bufferWriter.buffer, personalization);
   }
 
-  toBuffer(buffer?: Buffer, initialOffset = 0) {
+  toBuffer(buffer?: Buffer, initialOffset = 0): Buffer {
     if (!buffer) buffer = Buffer.allocUnsafe(this.byteLength());
 
     const bufferWriter = new BufferWriter(buffer, initialOffset);

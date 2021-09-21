@@ -13,11 +13,11 @@ export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransacti
     return new DashTransaction(network, tx as UtxoTransaction);
   }
 
-  setType(type: number) {
+  setType(type: number): void {
     this.tx.type = type;
   }
 
-  setExtraPayload(extraPayload?: Buffer) {
+  setExtraPayload(extraPayload?: Buffer): void {
     this.tx.extraPayload = extraPayload;
   }
 

@@ -58,12 +58,12 @@ export function getFixtureInfo(network: Network): FixtureInfo {
   throw new Error(`${getNetworkName(network)} not supported`);
 }
 
-export async function readFile(network, path): Promise<string> {
+export async function readFile(network: Network, path: string): Promise<string> {
   const root = getArchiveRoot(getFixtureInfo(network));
   return await fs.readFile(`test/fixtures_thirdparty/nodes/${root}/src/test/data/${path}`, 'utf8');
 }
 
-export async function readJSON<T>(network, path): Promise<T> {
+export async function readJSON<T>(network: Network, path: string): Promise<T> {
   return JSON.parse(await readFile(network, path));
 }
 
@@ -96,7 +96,11 @@ export type TxValidVector = [
   verifyFlags: string
 ];
 
-export function testFixture<T>(network: Network, filename: string, callback: (this: Mocha.Context, data: T) => void) {
+export function testFixture<T>(
+  network: Network,
+  filename: string,
+  callback: (this: Mocha.Context, data: T) => void
+): void {
   it(filename, async function () {
     callback.call(this, await readJSON(network, filename));
   });
@@ -106,7 +110,7 @@ export function testFixtureArray<T>(
   network: Network,
   filename: string,
   callback: (this: Mocha.Context, data: T[]) => void
-) {
+): void {
   testFixture<T[]>(network, filename, function (arr: T[]) {
     callback.call(
       this,

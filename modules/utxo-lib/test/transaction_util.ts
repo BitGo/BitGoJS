@@ -8,6 +8,7 @@ import {
   createTransactionBuilderFromTransaction,
   createTransactionFromBuffer,
   getDefaultSigHash,
+  UtxoTransactionBuilder,
 } from '../src/bitgo';
 import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
@@ -67,7 +68,7 @@ export function getTransactionBuilder(
     outputAmount?: number;
     prevOutputs?: PrevOutput[];
   } = {}
-) {
+): UtxoTransactionBuilder {
   const txBuilder = createTransactionBuilderForNetwork(network);
 
   prevOutputs.forEach(([txid, vout]) => {
