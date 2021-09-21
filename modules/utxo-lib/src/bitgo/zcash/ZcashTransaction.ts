@@ -1,7 +1,6 @@
-import { Transaction } from 'bitcoinjs-lib';
+import { Transaction, crypto } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
-import * as bcrypto from 'bitcoinjs-lib/src/crypto';
 
 const blake2b = require('@bitgo/blake2b');
 const varuint = require('varuint-bitcoin');
@@ -17,13 +16,13 @@ const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
 
 /**
  * Blake2b hashing algorithm for Zcash
- * @param bufferToHash
+ * @param buffer
  * @param personalization
  * @returns 256-bit BLAKE2b hash
  */
-function getBlake2bHash(bufferToHash, personalization) {
+function getBlake2bHash(buffer: Buffer, personalization: string | Buffer) {
   const out = Buffer.allocUnsafe(32);
-  return blake2b(out.length, null, null, Buffer.from(personalization)).update(bufferToHash).digest(out);
+  return blake2b(out.length, null, null, Buffer.from(personalization)).update(buffer).digest(out);
 }
 
 export class ZcashTransaction extends UtxoTransaction {
@@ -52,7 +51,7 @@ export class ZcashTransaction extends UtxoTransaction {
     this.consensusBranchId = networks.zcash.consensusBranchId[this.version];
   }
 
-  static fromBuffer(buffer, __noStrict: boolean, network?: ZcashNetwork) {
+  static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork) {
     /* istanbul ignore next */
     if (!network) {
       throw new Error(`must provide network`);
@@ -169,7 +168,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param hashType
    * @returns Buffer - BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getPrevoutHash(hashType) {
+  getPrevoutHash(hashType: number) {
     if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
       const bufferWriter = new BufferWriter(Buffer.allocUnsafe(36 * this.ins.length));
 
@@ -188,7 +187,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param hashType
    * @returns Buffer BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getSequenceHash(hashType) {
+  getSequenceHash(hashType: number) {
     if (
       !(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
       (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
@@ -211,7 +210,7 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param inIndex
    * @returns Buffer BLAKE2b hash or 256-bit zero if doesn't apply
    */
-  getOutputsHash(hashType, inIndex) {
+  getOutputsHash(hashType: number, inIndex: number) {
     if ((hashType & 0x1f) !== Transaction.SIGHASH_SINGLE && (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
       // Find out the size of the outputs and write them
       const txOutsSize = this.outs.reduce(function (sum, output) {
@@ -377,7 +376,7 @@ export class ZcashTransaction extends UtxoTransaction {
     if (forWitness) {
       throw new Error(`invalid argument`);
     }
-    return bcrypto.hash256(this.toBuffer());
+    return crypto.hash256(this.toBuffer());
   }
 
   clone(): ZcashTransaction {

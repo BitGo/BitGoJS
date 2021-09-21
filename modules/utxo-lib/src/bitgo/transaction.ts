@@ -66,6 +66,8 @@ export function createTransactionBuilderForNetwork(network: Network): UtxoTransa
       txb = new ZcashTransactionBuilder(network as ZcashNetwork);
       break;
     }
+    default:
+      throw new Error(`unsupported network`);
   }
 
   setTransactionBuilderDefaults(txb, network);

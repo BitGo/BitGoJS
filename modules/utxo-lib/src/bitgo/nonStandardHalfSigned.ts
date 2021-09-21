@@ -20,12 +20,16 @@ export function padInputScript(input: TxInput, signatureIndex: number): void {
 
   // The shape of a non-standard half-signed input is
   //   OP_0 <signature> <p2ms>
-  if (decompiledSigScript.length !== 3) {
+  if (!decompiledSigScript || decompiledSigScript.length !== 3) {
     return;
   }
 
   const [op0, signatureBuffer, sigScript] = decompiledSigScript;
   if (op0 !== opcodes.OP_0 && !(Buffer.isBuffer(op0) && op0.length === 0)) {
+    return;
+  }
+
+  if (!Buffer.isBuffer(sigScript)) {
     return;
   }
 

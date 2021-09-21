@@ -1,5 +1,5 @@
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
-import * as bcrypto from 'bitcoinjs-lib/src/crypto';
+import { crypto as bcrypto } from 'bitcoinjs-lib';
 
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { Network } from '../../networkTypes';

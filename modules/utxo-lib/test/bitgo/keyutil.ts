@@ -25,7 +25,7 @@ describe('privateKeyBufferFromECPair', function () {
 
   it('throws if passed value is not ecpair', function () {
     assert.throws(function () {
-      privateKeyBufferFromECPair({});
+      privateKeyBufferFromECPair({} as ECPair.ECPairInterface);
     }, new RegExp('invalid argument ecpair'));
   });
 });

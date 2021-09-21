@@ -38,7 +38,9 @@ export interface ParsedSignatureP2PKH extends ParsedSignatureScript {
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
   signatures:
     | [Buffer, Buffer] // fully-signed transactions with signatures
-    | [Buffer, Buffer, Buffer]; // partially signed transactions with placeholder signatures
+    /* Partially signed transactions with placeholder signatures.
+       For p2sh, the placeholder is OP_0 (number 0) */
+    | [Buffer | 0, Buffer | 0, Buffer | 0];
   publicKeys: [Buffer, Buffer, Buffer];
   pubScript: Buffer;
 }
@@ -68,7 +70,7 @@ export function parseSignatureScript(
 ): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
-  let decompiledSigScript, inputClassification;
+  let decompiledSigScript, inputClassification: InputType;
   if (isSegwitInput) {
     // The decompiledSigScript is the script containing the signatures, public keys, and the script that was committed
     // to (pubScript). If this is a segwit input the decompiledSigScript is in the witness, regardless of whether it
@@ -76,17 +78,27 @@ export function parseSignatureScript(
     // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
     decompiledSigScript = input.witness;
     if (isNativeSegwitInput) {
-      inputClassification = classify.witness(script.compile(decompiledSigScript), true);
+      inputClassification = classify.witness(decompiledSigScript, true) as InputType;
     } else {
-      inputClassification = classify.input(input.script, true);
+      inputClassification = classify.input(input.script, true) as InputType;
     }
   } else {
-    inputClassification = classify.input(input.script, true);
+    inputClassification = classify.input(input.script, true) as InputType;
     decompiledSigScript = script.decompile(input.script);
   }
 
+  if (!decompiledSigScript) {
+    return { isSegwitInput, inputClassification };
+  }
+
   if (inputClassification === classify.types.P2PKH) {
+    if (!decompiledSigScript || decompiledSigScript.length !== 2) {
+      throw new Error('unexpected signature for p2pkh');
+    }
     const [signature, publicKey] = decompiledSigScript;
+    if (!Buffer.isBuffer(signature) || !Buffer.isBuffer(publicKey)) {
+      throw new Error('unexpected signature for p2pkh');
+    }
     const publicKeys = [publicKey];
     const signatures: [Buffer] = [signature];
     const pubScript = payments.p2pkh({ pubkey: publicKey }).output;
@@ -136,6 +148,9 @@ export function parseSignatureScript(
   }
 
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
+  if (!Buffer.isBuffer(pubScript)) {
+    throw new Error(`invalid pubscript`);
+  }
   const decompiledPubScript = script.decompile(pubScript);
   if (decompiledPubScript === null) {
     throw new Error(`could not decompile pubScript`);
@@ -170,7 +185,18 @@ export function parseSignatureScript(
     throw new Error(`expected opcode #${opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
   }
 
-  return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+  return {
+    isSegwitInput,
+    inputClassification,
+    signatures: signatures.map((b) => {
+      if (Buffer.isBuffer(b) || b === 0) {
+        return b;
+      }
+      throw new Error(`unexpected signature element ${b}`);
+    }) as [Buffer, Buffer] | [Buffer, Buffer, Buffer],
+    publicKeys,
+    pubScript,
+  };
 }
 
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 {
@@ -253,6 +279,9 @@ export function getSignatureVerifications(
 
   return signatures.map((signatureBuffer) => {
     // slice the last byte from the signature hash input because it's the hash type
+    if (signatureBuffer === 0 || signatureBuffer.length === 0) {
+      return { signedBy: undefined };
+    }
     const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
     const transactionHash = parsedScript.isSegwitInput
       ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)

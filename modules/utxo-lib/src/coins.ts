@@ -1,11 +1,11 @@
 import * as networks from './networks';
-import { coins, Network } from './networkTypes';
+import { coins, Network, NetworkName } from './networkTypes';
 
 /**
  * @returns {Network[]} all known networks as array
  */
 export function getNetworkList(): Network[] {
-  return Object.keys(networks).map((n) => networks[n]);
+  return Object.values(networks);
 }
 
 /**
@@ -14,7 +14,7 @@ export function getNetworkList(): Network[] {
  *                   of `networks`
  */
 export function getNetworkName(network: Network): string | undefined {
-  return Object.keys(networks).find((n) => networks[n] === network);
+  return Object.keys(networks).find((n) => networks[n as NetworkName] === network);
 }
 
 /**
@@ -163,7 +163,7 @@ export function isLitecoin(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is zcash or zcashTest
  */
-export function isZcash(network) {
+export function isZcash(network: Network) {
   return getMainnet(network) === networks.zcash;
 }
 
@@ -172,7 +172,7 @@ export function isZcash(network) {
  * @returns {boolean} returns true iff network is any of the network stated in the argument
  */
 export function isValidNetwork(network: unknown): network is Network {
-  return Object.values(networks).includes(network as Network);
+  return getNetworkList().includes(network as Network);
 }
 
 /** @deprecated */

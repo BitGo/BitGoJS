@@ -50,7 +50,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     return txb;
   }
 
-  setVersion(version, overwinter = true) {
+  setVersion(version: number, overwinter = true) {
     typeforce(types.UInt32, version);
     /* istanbul ignore next */
     if (!networks.zcash.consensusBranchId.hasOwnProperty(this.tx.version)) {
@@ -61,11 +61,11 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     this.tx.version = version;
   }
 
-  setConsensusBranchId(consensusBranchId) {
+  setConsensusBranchId(consensusBranchId: number) {
     typeforce(types.UInt32, consensusBranchId);
     /* istanbul ignore next */
     if (
-      !(this as any).__INPUTS.every(function (input) {
+      !(this as any).__INPUTS.every(function (input: { signatures: unknown }) {
         return input.signatures === undefined;
       })
     ) {
@@ -74,12 +74,12 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     this.tx.consensusBranchId = consensusBranchId;
   }
 
-  setVersionGroupId(versionGroupId) {
+  setVersionGroupId(versionGroupId: number) {
     typeforce(types.UInt32, versionGroupId);
     (this as any).tx.versionGroupId = versionGroupId;
   }
 
-  setExpiryHeight(expiryHeight) {
+  setExpiryHeight(expiryHeight: number) {
     typeforce(types.UInt32, expiryHeight);
     this.tx.expiryHeight = expiryHeight;
   }
