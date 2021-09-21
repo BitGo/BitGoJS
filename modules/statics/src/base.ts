@@ -662,8 +662,8 @@ export enum UnderlyingAsset {
   'talgo:16026733' = 'talgo:16026733',
 
   // EOS testnet tokens
-  LAD = 'LAD',
-  OLLA = 'OLLA',
+  CHEX = 'CHEX',
+  IQ = 'IQ',
 }
 
 /**
