@@ -21,7 +21,8 @@ local Install(version, allow_failure=false) = {
   [if allow_failure then "failure"]: "ignore",
   commands: [
     "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true",
-    "yarn install",
+    # --with-frozen-lockfile: Don’t generate a yarn.lock lockfile and fail if an update is needed.
+    "yarn install --with-frozen-lockfile",
   ],
 };
 
