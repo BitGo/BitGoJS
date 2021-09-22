@@ -6,7 +6,6 @@ export * as coins from './coins';
 
 export * as address from './address';
 
-
 export const networks = require('./networks');
 
 export { Network, ZcashNetwork, BitcoinCashNetwork } from './networkTypes';

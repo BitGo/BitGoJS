@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 
 import { createOutputScript2of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';

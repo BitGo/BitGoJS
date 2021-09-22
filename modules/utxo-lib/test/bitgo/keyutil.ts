@@ -1,7 +1,3 @@
-/**
- * @prettier
- */
-
 const assert = require('assert');
 const crypto = require('crypto');
 
@@ -29,7 +25,7 @@ describe('privateKeyBufferFromECPair', function () {
 
   it('throws if passed value is not ecpair', function () {
     assert.throws(function () {
-      privateKeyBufferFromECPair({});
+      privateKeyBufferFromECPair({} as ECPair.ECPairInterface);
     }, new RegExp('invalid argument ecpair'));
   });
 });
@@ -44,8 +40,7 @@ describe('privateKeyBufferToECPair', function () {
 
   it('throws if the private key buffer is not a buffer', function () {
     assert.throws(function () {
-      // @ts-ignore
-      privateKeyBufferToECPair('not a buffer');
+      privateKeyBufferToECPair('not a buffer' as any);
     }, new RegExp('invalid private key buffer'));
   });
 

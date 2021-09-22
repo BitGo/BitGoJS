@@ -1,7 +1,3 @@
-/**
- * @prettier
- */
-
 /*
 
 Despite the location of this file, the fixtures are in fact not created via `local_rpc` but a

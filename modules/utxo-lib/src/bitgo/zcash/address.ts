@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import { Network } from '../../networkTypes';
 import { isZcash } from '../../coins';
@@ -38,7 +35,7 @@ export function fromOutputScript(outputScript: Buffer, network: Network): string
     o = payments.p2sh({ output: outputScript });
     prefix = network.scriptHash;
   } catch (e) {}
-  if (!o) {
+  if (!o || !o.hash || prefix === undefined) {
     throw new Error(`unsupported outputScript`);
   }
   return toBase58Check(o.hash, prefix);
