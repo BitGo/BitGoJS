@@ -16,7 +16,7 @@ function setupRules(env) {
 }
 
 function setupExternals() {
-  const nodeLibraries = ['fs', 'net', 'tls'];
+  const nodeLibraries = ['fs', 'net', 'tls', /libsodium-wrappers/, /@bitgo\/bls/];
   
   return nodeLibraries;
 }
