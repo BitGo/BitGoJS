@@ -72,6 +72,32 @@ describe('Eth Transaction builder flush tokens', function () {
       txJson.data.should.startWith(flushForwarderTokensMethodId);
     });
 
+    it('a wallet flush forwarder transaction with eip1559 fee model', async () => {
+      const tx = await buildTransaction({
+        fee: {
+          fee: '30',
+          eip1559: {
+            maxPriorityFeePerGas: '5',
+            maxFeePerGas: '30',
+          },
+          gasLimit: '1000',
+        },
+        counter: 1,
+        forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        contractAddress: '0x8f977e912ef500548a0c3be6ddde9899f1199b81',
+      });
+
+      tx.type.should.equal(TransactionType.FlushTokens);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('1000');
+      txJson._type.should.equals(ETHTransactionType.EIP1559);
+      txJson.maxFeePerGas!.should.equal('30');
+      txJson.maxPriorityFeePerGas!.should.equal('5');
+      should.equal(txJson.nonce, 1);
+      txJson.data.should.startWith(flushForwarderTokensMethodId);
+    });
+
     it('a wallet flush forwarder transaction with nonce 0', async () => {
       const tx = await buildTransaction({
         fee: {
