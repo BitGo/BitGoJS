@@ -4,6 +4,7 @@ import { Transaction } from '../../../../src/coin/eth';
 import * as testData from '../../../resources/eth/eth';
 import { getCommon } from '../../../../src/coin/eth/utils';
 import { TxData } from '../../../../src/coin/eth/iface';
+import { test } from 'mocha';
 
 describe('ETH Transaction', () => {
   const coinConfig = coins.get('teth');
@@ -23,11 +24,18 @@ describe('ETH Transaction', () => {
     });
   });
 
+  const testParams = [
+    ['Legacy', testData.LEGACY_TXDATA, testData.UNSIGNED_LEGACY_TX, testData.ENCODED_LEGACY_TRANSACTION],
+    ['EIP1559', testData.EIP1559_TXDATA, testData.UNSIGNED_EIP1559_TX, testData.ENCODED_EIP1559_TRANSACTION],
+  ] as const;
+
   describe('should return', () => {
-    it('a valid transaction', () => {
-      const tx = getTransaction(testData.TXDATA);
-      should.deepEqual(tx.toJson(), testData.TXDATA);
-      should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_TX);
+    testParams.map(([txnType, txData, unsignedTx]) => {
+      test(`a valid ${txnType} transaction`, () => {
+        const tx = getTransaction(txData);
+        should.deepEqual(tx.toJson(), txData);
+        should.deepEqual(tx.toBroadcastFormat(), unsignedTx);
+      });
     });
   });
 
@@ -37,17 +45,21 @@ describe('ETH Transaction', () => {
       return tx.sign(testData.KEYPAIR_PRV).should.be.rejected();
     });
 
-    it('valid', () => {
-      const tx = getTransaction(testData.TXDATA);
-      return tx.sign(testData.KEYPAIR_PRV).should.be.fulfilled();
+    testParams.map(([txnType, txData]) => {
+      it(`should create a valid ${txnType} signature`, () => {
+        const tx = getTransaction(txData);
+        return tx.sign(testData.KEYPAIR_PRV).should.be.fulfilled();
+      });
     });
   });
 
   describe('should return encoded tx', () => {
-    it('valid sign', async () => {
-      const tx = getTransaction(testData.TXDATA);
-      await tx.sign(testData.KEYPAIR_PRV);
-      should.equal(tx.toBroadcastFormat(), testData.ENCODED_TRANSACTION);
+    testParams.map(([txnType, txData, _, encodedTxData]) => {
+      it(`should create a valid ${txnType} encoded transaction`, async () => {
+        const tx = getTransaction(txData);
+        await tx.sign(testData.KEYPAIR_PRV);
+        should.equal(tx.toBroadcastFormat(), encodedTxData);
+      });
     });
   });
 });
