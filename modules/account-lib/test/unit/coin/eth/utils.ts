@@ -15,12 +15,12 @@ import EthereumAbi from 'ethereumjs-abi';
 describe('ETH util library', function () {
   describe('sign operation', function () {
     it('should return a correct signed transaction', async () => {
-      const SIGNATURE = await sign(testData.TXDATA, testData.KEYPAIR_PRV);
-      should.equal(SIGNATURE, testData.ENCODED_TRANSACTION);
+      const SIGNATURE = await sign(testData.LEGACY_TXDATA, testData.KEYPAIR_PRV);
+      should.equal(SIGNATURE, testData.ENCODED_LEGACY_TRANSACTION);
     });
 
     it('should fail with missing prv key', function () {
-      sign(testData.TXDATA, testData.KEYPAIR_PUB).should.be.rejectedWith(new RegExp('Missing private key'));
+      sign(testData.LEGACY_TXDATA, testData.KEYPAIR_PUB).should.be.rejectedWith(new RegExp('Missing private key'));
     });
   });
 

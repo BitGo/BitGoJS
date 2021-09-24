@@ -2,7 +2,7 @@ import should from 'should';
 import { AvaxC, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import * as testData from '../../../../resources/avaxc/avaxc';
-import { TxData } from '../../../../../src/coin/eth/iface';
+import { ETHTransactionType, TxData } from '../../../../../src/coin/eth/iface';
 import { TransactionBuilder } from '../../../../../src/coin/avaxc';
 
 describe('AvaxC Wallet Initialization Builder', function () {
@@ -31,7 +31,8 @@ describe('AvaxC Wallet Initialization Builder', function () {
 
       tx.type.should.equal(TransactionType.WalletInitialization);
       txJson.gasLimit.should.equal('7000000');
-      txJson.gasPrice.should.equal('280000000000');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('280000000000');
       should.equal(txJson.nonce, 1);
       should.equal(txJson.chainId!, '0xa869');
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
@@ -55,7 +56,8 @@ describe('AvaxC Wallet Initialization Builder', function () {
 
       tx.type.should.equal(TransactionType.WalletInitialization);
       txJson.gasLimit.should.equal('7000000');
-      txJson.gasPrice.should.equal('280000000000');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('280000000000');
       should.equal(txJson.chainId!, '0xa869');
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST_ZERO_NONCE);
     });

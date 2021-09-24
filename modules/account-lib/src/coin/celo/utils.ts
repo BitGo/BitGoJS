@@ -3,7 +3,7 @@ import EthereumCommon from '@ethereumjs/common';
 import { recoverTransaction } from '@celo/wallet-base';
 import * as ethers from 'ethers';
 import BigNumber from 'bignumber.js';
-import { TxData } from '../eth/iface';
+import { ETHTransactionType, LegacyTxData } from '../eth/iface';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { mainnetCommon, testnetCommon } from './resources';
 
@@ -13,9 +13,9 @@ import { mainnetCommon, testnetCommon } from './resources';
  * github: https://github.com/celo-org/celo-monorepo/tree/master/packages/contractkit
  *
  * @param {string} serializedTx the serialized transaction
- * @returns {TxData} the deserialized transaction
+ * @returns {LegacyTxData} the deserialized transaction
  */
-export function deserialize(serializedTx: string): TxData {
+export function deserialize(serializedTx: string): LegacyTxData {
   try {
     const decodedTx = ethers.utils.RLP.decode(serializedTx);
     decodedTx.splice(3, 3); // remove unused feeCurrency, gatewayFeeRecipient and gatewayFee
@@ -27,7 +27,8 @@ export function deserialize(serializedTx: string): TxData {
       from = sender;
       chainId = tx.chainId;
     }
-    const celoTx: TxData = {
+    const celoTx: LegacyTxData = {
+      _type: ETHTransactionType.LEGACY,
       nonce: nonce.toLowerCase() === '0x' ? 0 : parseInt(nonce, 16),
       gasPrice: gasPrice.toLowerCase() === '0x' ? '0' : new BigNumber(gasPrice, 16).toString(),
       gasLimit: gasLimit.toLowerCase() === '0x' ? '0' : new BigNumber(gasLimit, 16).toString(),
