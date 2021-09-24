@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as bitcoinjs from 'bitcoinjs-lib';
 
 import * as zcashAddress from '../src/bitgo/zcash/address';
@@ -9,14 +6,14 @@ import { Network } from './networkTypes';
 import { isValidNetwork, isZcash } from './coins';
 import { Base58CheckResult } from 'bitcoinjs-lib/types/address';
 
-export function fromOutputScript(outputScript: Buffer, network: Network) {
+export function fromOutputScript(outputScript: Buffer, network: Network): string {
   if (isValidNetwork(network) && isZcash(network)) {
     return zcashAddress.fromOutputScript(outputScript, network);
   }
   return bitcoinjs.address.fromOutputScript(outputScript, network as bitcoinjs.Network);
 }
 
-export function toOutputScript(address: string, network: Network) {
+export function toOutputScript(address: string, network: Network): Buffer {
   if (isValidNetwork(network) && isZcash(network)) {
     return zcashAddress.toOutputScript(address, network);
   }

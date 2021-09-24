@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 
@@ -58,9 +55,10 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
   }
 
   assert(scriptPubKey);
+  assert(scriptPubKey.output);
 
   return {
-    scriptPubKey: scriptPubKey?.output,
+    scriptPubKey: scriptPubKey.output,
     redeemScript: redeemScript?.output,
     witnessScript: witnessScript?.output,
   };

@@ -1,8 +1,4 @@
 /**
- * @prettier
- */
-
-/**
  * @deprecated
  */
 export const coins = {

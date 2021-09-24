@@ -1,4 +1,7 @@
 import should from 'should';
+import { coins, TronNetwork } from '@bitgo/statics/';
+import BigNumber from 'bignumber.js';
+
 import { Transaction, WrappedBuilder } from '../../../../../src/coin/trx';
 import { getBuilder } from '../../../../../src/index';
 import { TransactionType } from '../../../../../src/coin/baseCoin/';
@@ -12,7 +15,6 @@ import {
   EXPIRATION,
   TX_CONTRACT,
 } from '../../../../resources/trx/trx';
-import { MAX_FEE } from '../../../../../src/coin/trx/contractCallBuilder';
 
 describe('Trx Contract call Builder', () => {
   const initTxBuilder = () => {
@@ -366,7 +368,8 @@ describe('Trx Contract call Builder', () => {
 
       should.throws(
         () => {
-          txBuilder.fee({ feeLimit: (MAX_FEE + 1).toString() });
+          const tronNetwork = coins.get('ttrx').network as TronNetwork;
+          txBuilder.fee({ feeLimit: new BigNumber(tronNetwork.maxFeeLimit).plus(1).toString() });
         },
         (e) => e.message === 'Invalid fee limit value',
       );

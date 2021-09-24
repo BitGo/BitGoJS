@@ -354,6 +354,14 @@ export abstract class BaseCoin {
   abstract verifyAddress(params: VerifyAddressOptions): boolean;
 
   /**
+   * convert address into desired address format.
+   * @param address
+   */
+  canonicalAddress(address: string): string {
+    return address;
+  }
+
+  /**
    * Check whether a coin supports blockTarget for transactions to be included in
    * @returns {boolean}
    */

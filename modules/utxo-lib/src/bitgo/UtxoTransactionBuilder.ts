@@ -1,8 +1,6 @@
-/**
- * @prettier
- */
-import * as bitcoinjs from 'bitcoinjs-lib';
 import { Transaction, TransactionBuilder } from 'bitcoinjs-lib';
+// eslint-disable-next-line
+import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '../networkTypes';
 import { UtxoTransaction } from './UtxoTransaction';
 import { Signer } from 'bitcoinjs-lib/ts_src';

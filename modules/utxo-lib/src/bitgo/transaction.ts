@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as networks from '../networks';
 import { Network, ZcashNetwork } from '../networkTypes';
 import { getMainnet } from '../coins';
@@ -69,6 +66,8 @@ export function createTransactionBuilderForNetwork(network: Network): UtxoTransa
       txb = new ZcashTransactionBuilder(network as ZcashNetwork);
       break;
     }
+    default:
+      throw new Error(`unsupported network`);
   }
 
   setTransactionBuilderDefaults(txb, network);
