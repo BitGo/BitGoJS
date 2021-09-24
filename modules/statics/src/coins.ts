@@ -858,6 +858,6 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
-  teosToken('LAD', 'LAD', 4, 'lionteste212', UnderlyingAsset.LAD, AccountCoin.DEFAULT_FEATURES, '', 'LAD'),
-  teosToken('OLLA', 'OLLA', 4, 'lionteste212', UnderlyingAsset.OLLA, AccountCoin.DEFAULT_FEATURES, '', 'OLLA'),
+  teosToken('CHEX', 'Chintai', 8, 'testtoken111', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
+  teosToken('IQ', 'Everipedia', 3, 'testtoken112', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
 ]);
