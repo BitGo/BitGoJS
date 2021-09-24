@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/';
+import { BaseCoin as CoinConfig, TronNetwork } from '@bitgo/statics/';
 import BigNumber from 'bignumber.js';
 import { TransactionType } from '../baseCoin';
 import { protocol } from '../../../resources/trx/protobuf/tron';
@@ -223,7 +223,8 @@ export class ContractCallBuilder extends TransactionBuilder {
    */
   fee(fee: Fee): this {
     const feeLimit = new BigNumber(fee.feeLimit);
-    if (feeLimit.isNaN() || feeLimit.isLessThan(0) || feeLimit.isGreaterThan(MAX_FEE)) {
+    const tronNetwork = this._coinConfig.network as TronNetwork;
+    if (feeLimit.isNaN() || feeLimit.isLessThan(0) || feeLimit.isGreaterThan(tronNetwork.maxFeeLimit)) {
       throw new InvalidParameterValueError('Invalid fee limit value');
     }
     this._fee = fee;

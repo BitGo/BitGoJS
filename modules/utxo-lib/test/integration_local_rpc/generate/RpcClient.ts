@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import axios, { AxiosError } from 'axios';
 import buildDebug from 'debug';
@@ -22,7 +19,7 @@ function sleep(millis: number): Promise<void> {
 export class RpcClient {
   id = 0;
 
-  constructor(private network: Network, private url) {}
+  constructor(private network: Network, private url: string) {}
 
   async exec<T>(method: string, ...params: unknown[]): Promise<T> {
     try {
@@ -125,7 +122,7 @@ export class RpcClient {
     }
   }
 
-  static async forUrl(network: Network, url: string) {
+  static async forUrl(network: Network, url: string): Promise<RpcClient> {
     const networkName = getNetworkName(network);
     const rpcClient = new RpcClient(network, url);
     const networkinfo = await rpcClient.getNetworkInfo();

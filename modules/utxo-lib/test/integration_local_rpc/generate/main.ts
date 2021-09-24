@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 
 const utxolib = require('../../../src');
