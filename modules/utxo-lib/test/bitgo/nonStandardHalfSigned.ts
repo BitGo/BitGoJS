@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as assert from 'assert';

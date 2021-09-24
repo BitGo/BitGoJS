@@ -10,6 +10,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-utils-old';
+import { generateAddress2 } from 'ethereumjs-util';
 import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
@@ -387,6 +388,36 @@ export function hexStringToNumber(hex: string): number {
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
   const forwarderAddress = generateAddress(contractAddress, contractCounter);
   return addHexPrefix(forwarderAddress.toString('hex'));
+}
+
+/**
+ * Calculate the forwarder v1 address that will be generated if `creatorAddress` creates it with salt `salt`
+ * and initcode `inicode using the create2 opcode
+ * @param {string} creatorAddress The address that is sending the tx to create a new address, hex string
+ * @param {string} salt The salt to create the address with using create2, hex string
+ * @param {string} initcode The initcode that will be deployed to the address, hex string
+ * @return {string} The calculated address
+ */
+export function calculateForwarderV1Address(creatorAddress: string, salt: string, initcode: string): string {
+  const forwarderV1Address = generateAddress2(
+    Buffer.from(stripHexPrefix(creatorAddress), 'hex'),
+    Buffer.from(stripHexPrefix(salt), 'hex'),
+    Buffer.from(stripHexPrefix(initcode), 'hex'),
+  );
+  return addHexPrefix(forwarderV1Address.toString('hex'));
+}
+
+/**
+ * Take the implementation address for the proxy contract, and get the binary initcode for the associated proxy
+ * @param {string} implementationAddress The address of the implementation contract for the proxy
+ * @return {string} Binary hex string of the proxy
+ */
+export function getProxyInitcode(implementationAddress: string): string {
+  const target = stripHexPrefix(implementationAddress.toLowerCase()).padStart(40, '0');
+
+  // bytecode of the proxy, from:
+  // https://github.com/BitGo/eth-multisig-v4/blob/d546a937f90f93e83b3423a5bf933d1d77c677c3/contracts/CloneFactory.sol#L42-L56
+  return `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${target}5af43d82803e903d91602b57fd5bf3`;
 }
 
 /**

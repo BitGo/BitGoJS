@@ -144,6 +144,9 @@ export class Transaction extends BaseTransaction {
     }
     await this._transactionData.sign(keyPair);
     const txData = this._transactionData.toJson();
+    if (txData.id) {
+      this._id = txData.id;
+    }
     this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
   }
 

@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';

@@ -1,14 +1,11 @@
-/**
- * @prettier
- */
 import * as networks from './networks';
-import { coins, Network } from './networkTypes';
+import { coins, Network, NetworkName } from './networkTypes';
 
 /**
  * @returns {Network[]} all known networks as array
  */
 export function getNetworkList(): Network[] {
-  return Object.keys(networks).map((n) => networks[n]);
+  return Object.values(networks);
 }
 
 /**
@@ -17,7 +14,7 @@ export function getNetworkList(): Network[] {
  *                   of `networks`
  */
 export function getNetworkName(network: Network): string | undefined {
-  return Object.keys(networks).find((n) => networks[n] === network);
+  return Object.keys(networks).find((n) => networks[n as NetworkName] === network);
 }
 
 /**
@@ -79,7 +76,7 @@ export function isTestnet(network: Network): boolean {
  * @param {Network} otherNetwork
  * @returns {boolean} true iff both networks are for the same coin
  */
-export function isSameCoin(network: Network, otherNetwork: Network) {
+export function isSameCoin(network: Network, otherNetwork: Network): boolean {
   return getMainnet(network) === getMainnet(otherNetwork);
 }
 
@@ -118,7 +115,7 @@ export function getTestnet(network: Network): Network | undefined {
  * @param {Network} network
  * @returns {boolean} true iff network bitcoin or testnet
  */
-export function isBitcoin(network: Network) {
+export function isBitcoin(network: Network): boolean {
   return getMainnet(network) === networks.bitcoin;
 }
 
@@ -126,7 +123,7 @@ export function isBitcoin(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is bitcoincash or bitcoincashTestnet
  */
-export function isBitcoinCash(network: Network) {
+export function isBitcoinCash(network: Network): boolean {
   return getMainnet(network) === networks.bitcoincash;
 }
 
@@ -134,7 +131,7 @@ export function isBitcoinCash(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is bitcoingold
  */
-export function isBitcoinGold(network: Network) {
+export function isBitcoinGold(network: Network): boolean {
   return getMainnet(network) === networks.bitcoingold;
 }
 
@@ -142,7 +139,7 @@ export function isBitcoinGold(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is bitcoinsv or bitcoinsvTestnet
  */
-export function isBitcoinSV(network: Network) {
+export function isBitcoinSV(network: Network): boolean {
   return getMainnet(network) === networks.bitcoinsv;
 }
 
@@ -150,7 +147,7 @@ export function isBitcoinSV(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is dash or dashTest
  */
-export function isDash(network: Network) {
+export function isDash(network: Network): boolean {
   return getMainnet(network) === networks.dash;
 }
 
@@ -158,7 +155,7 @@ export function isDash(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is litecoin or litecoinTest
  */
-export function isLitecoin(network: Network) {
+export function isLitecoin(network: Network): boolean {
   return getMainnet(network) === networks.litecoin;
 }
 
@@ -166,7 +163,7 @@ export function isLitecoin(network: Network) {
  * @param {Network} network
  * @returns {boolean} true iff network is zcash or zcashTest
  */
-export function isZcash(network) {
+export function isZcash(network: Network): boolean {
   return getMainnet(network) === networks.zcash;
 }
 
@@ -175,7 +172,7 @@ export function isZcash(network) {
  * @returns {boolean} returns true iff network is any of the network stated in the argument
  */
 export function isValidNetwork(network: unknown): network is Network {
-  return Object.values(networks).includes(network as Network);
+  return getNetworkList().includes(network as Network);
 }
 
 /** @deprecated */

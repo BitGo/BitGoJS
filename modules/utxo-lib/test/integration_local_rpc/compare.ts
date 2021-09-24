@@ -1,14 +1,12 @@
-/**
- * @prettier
- */
 import { RpcTransaction } from './generate/RpcTypes';
 import * as networks from '../../src/networks';
 import { Network } from '../../src/networkTypes';
 import { getMainnet, isZcash } from '../../src/coins';
+import { DashTransaction, UtxoTransaction, ZcashTransaction } from '../../src/bitgo';
 
 type NormalizedObject = Record<string, unknown>;
 
-export function normalizeParsedTransaction(tx, network: Network = tx.network): NormalizedObject {
+export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network = tx.network): NormalizedObject {
   const normalizedTx: NormalizedObject = {
     txid: tx.getId(),
     version: tx.version,
@@ -50,16 +48,18 @@ export function normalizeParsedTransaction(tx, network: Network = tx.network): N
       normalizedTx.weight = tx.weight();
       break;
     case networks.dash:
-      normalizedTx.type = tx.type;
-      if (tx.extraPayload && tx.extraPayload.length) {
-        normalizedTx.extraPayload = tx.extraPayload.toString('hex');
-        normalizedTx.extraPayloadSize = tx.extraPayload.length;
+      const dashTx = tx as DashTransaction;
+      normalizedTx.type = dashTx.type;
+      if (dashTx.extraPayload && dashTx.extraPayload.length) {
+        normalizedTx.extraPayload = dashTx.extraPayload.toString('hex');
+        normalizedTx.extraPayloadSize = dashTx.extraPayload.length;
       }
       break;
     case networks.zcash:
-      normalizedTx.overwintered = !!tx.overwintered;
-      normalizedTx.versiongroupid = tx.versionGroupId.toString(16);
-      normalizedTx.expiryheight = tx.expiryHeight;
+      const zcashTx = tx as ZcashTransaction;
+      normalizedTx.overwintered = !!zcashTx.overwintered;
+      normalizedTx.versiongroupid = zcashTx.versionGroupId.toString(16);
+      normalizedTx.expiryheight = zcashTx.expiryHeight;
       normalizedTx.vjoinsplit = [];
       normalizedTx.vShieldedOutput = [];
       normalizedTx.vShieldedSpend = [];

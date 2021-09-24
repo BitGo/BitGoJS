@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as fs from 'fs-extra';
 import * as childProcess from 'child_process';
 

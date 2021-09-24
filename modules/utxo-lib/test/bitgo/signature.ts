@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
