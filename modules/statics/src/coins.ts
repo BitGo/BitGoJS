@@ -852,6 +852,7 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+<<<<<<< HEAD
   terc20(
     'gterc18dp',
     'Goerli Test ERC Token 18 Decimals',
@@ -885,6 +886,9 @@ export const coins = CoinMap.fromCoins([
     '0xd1e7cd06a5c81af9307cf3162f0fe740a0a69d25',
     UnderlyingAsset.TERC18DP
   ),
+=======
+  terc20('terc', 'Test ERC Token', 18, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
+>>>>>>> 5dd96a8b... feat(statics): update decimal places  from 0 to 18 for terc
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
