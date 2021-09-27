@@ -151,6 +151,7 @@ export enum UnderlyingAsset {
   USD = 'usd',
   ETH = 'eth',
   ETH2 = 'eth2',
+  GTETH = 'gteth',
   ETC = 'etc',
   EOS = 'eos',
   HBAR = 'hbar', // Hedera main coin
