@@ -49,6 +49,20 @@ describe('Celo Transaction builder for wallet initialization', () => {
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
     });
 
+    it('unsigned transaction without final v', async () => {
+      initTxBuilder();
+      txBuilder.counter(0);
+      const tx = await txBuilder.build();
+      tx.type.should.equal(TransactionType.WalletInitialization);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('12100000');
+      txJson.gasPrice.should.equal('1000000000');
+      should.equal(txJson.nonce, 0);
+      should.equal(txJson.chainId, 44787);
+      // Celo has disable final v and it has chain id as v value.
+      should.equal(txJson.v, 44787);
+    });
+
     it('an init transaction from an unsigned serialized one', async () => {
       initTxBuilder();
       const tx = await txBuilder.build();

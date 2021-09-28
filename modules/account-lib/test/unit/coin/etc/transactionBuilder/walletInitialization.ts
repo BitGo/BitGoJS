@@ -90,5 +90,14 @@ describe('Etc wallet initialization', function () {
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
     });
+
+    it('an unsigned transaction with final v check', async () => {
+      initTxBuilder();
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      const tx = await txBuilder.build();
+      should.equal(tx.toJson().v, '0xa1');
+    });
   });
 });

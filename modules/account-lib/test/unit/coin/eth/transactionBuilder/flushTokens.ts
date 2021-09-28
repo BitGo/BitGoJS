@@ -133,11 +133,12 @@ describe('Eth Transaction builder flush tokens', function () {
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
-      const newTxBuilder: any = getBuilder('eth');
+      const newTxBuilder: any = getBuilder('teth');
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
       newTx.toJson().data.should.startWith(flushForwarderTokensMethodId);
+      should.equal(newTx.toJson().v, '0x77');
     });
 
     it('a signed flush transaction from serialized', async () => {

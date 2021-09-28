@@ -1,7 +1,7 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
-import { Transaction } from '../../../../../src/coin/eth';
+import { Transaction, TransactionBuilder } from '../../../../../src/coin/eth';
 import { ETHTransactionType, Fee } from '../../../../../src/coin/eth/iface';
 import { flushCoinsMethodId } from '../../../../../src/coin/eth/walletUtil';
 
@@ -18,7 +18,7 @@ describe('Eth Transaction builder flush native coins', function () {
   }
 
   const buildTransaction = async function (details: FlushCoinsDetails): Promise<Transaction> {
-    const txBuilder: any = getBuilder('teth');
+    const txBuilder: TransactionBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.type(TransactionType.FlushCoins);
 
     if (details.fee !== undefined) {
@@ -37,7 +37,7 @@ describe('Eth Transaction builder flush native coins', function () {
       txBuilder.sign({ key: details.key.getKeys().prv });
     }
 
-    return await txBuilder.build();
+    return (await txBuilder.build()) as Transaction;
   };
 
   describe('should build', () => {
@@ -90,11 +90,12 @@ describe('Eth Transaction builder flush native coins', function () {
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
-      const newTxBuilder: any = getBuilder('eth');
+      const newTxBuilder: any = getBuilder('teth');
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
       newTx.toJson().data.should.startWith(flushCoinsMethodId);
+      newTx.toJson().v.should.equal('0x77');
     });
 
     it('a signed flush coin transaction from serialized', async () => {

@@ -164,6 +164,25 @@ describe('Send transaction', function () {
       const txJson = tx.toJson();
       should.equal(txJson.from, undefined);
     });
+
+    it('a send token transaction without final v', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+      const amount = '1000000000';
+      initTxBuilder();
+      txBuilder.contract(contractAddress);
+      txBuilder
+        .transfer()
+        .coin('tcusd')
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.v, '0xaef3');
+    });
   });
 
   describe('should fail to build', async () => {
