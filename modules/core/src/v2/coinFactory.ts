@@ -56,6 +56,7 @@ import {
   StellarToken,
   OfcToken,
   Zec,
+  EosToken,
 } from './coins';
 import { tokens } from '../config';
 
@@ -186,6 +187,12 @@ for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.toke
 
 for (const token of [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]) {
   const tokenConstructor = CeloToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+  GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
+}
+
+for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
+  const tokenConstructor = EosToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
   GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
 }
