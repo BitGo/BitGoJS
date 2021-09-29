@@ -1,17 +1,31 @@
 import { BaseFee } from '../baseCoin/iface';
 import { KeyPair } from './keyPair';
 
-export interface Fee extends BaseFee {
+export interface EthFee extends BaseFee {
   gasLimit: string;
 }
+
+export interface LegacyFee extends EthFee {
+  gasPrice?: string;
+  eip1559?: never;
+}
+
+export interface EIP1559Fee extends EthFee {
+  gasPrice?: never;
+  eip1559: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
+}
+
+export type Fee = LegacyFee | EIP1559Fee;
 
 /**
  * A transaction's data.
  */
-export interface TxData {
-  gasLimit: string;
-  gasPrice: string;
+export interface BaseTxData {
   to?: string;
+  gasLimit: string;
   nonce: number;
   data: string;
   value: string;
@@ -32,6 +46,30 @@ export interface TxData {
    */
   s?: string;
 }
+
+export const ETHTransactionType = {
+  LEGACY: 'Legacy',
+  EIP1559: 'EIP1559',
+} as const;
+
+// eslint-disable-next-line no-redeclare
+export type ETHTransactionType = typeof ETHTransactionType[keyof typeof ETHTransactionType];
+
+export interface LegacyTxData extends BaseTxData {
+  _type: typeof ETHTransactionType.LEGACY;
+  gasPrice: string;
+  maxFeePerGas?: never;
+  maxPriorityFeePerGas?: never;
+}
+
+export interface EIP1559TxData extends BaseTxData {
+  _type: typeof ETHTransactionType.EIP1559;
+  gasPrice?: never;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+}
+
+export type TxData = EIP1559TxData | LegacyTxData;
 
 /**
  * An Ethereum transaction with helpers for serialization and deserialization.

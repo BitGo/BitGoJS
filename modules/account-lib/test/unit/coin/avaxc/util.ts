@@ -11,7 +11,7 @@ import {
 import { AvaxC, getBuilder } from '../../../../src/';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import { KeyPair, TransactionBuilder } from '../../../../src/coin/avaxc';
-import { TxData } from '../../../../src/coin/eth/iface';
+import { ETHTransactionType, TxData } from '../../../../src/coin/eth/iface';
 
 describe('AVAX util library', () => {
   describe('keys validations success cases', () => {
@@ -110,6 +110,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with gasLimit set as number', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '1',
         gasPrice: '0x0',
@@ -122,6 +123,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with gasPrice set as number', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x1',
         gasPrice: '1',
@@ -134,6 +136,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with hex gasLimit and gasPrice values', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x1',
         gasPrice: '0x1',
@@ -146,6 +149,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with nonce zero', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x1',
         gasPrice: '0x1',
@@ -158,6 +162,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with value set as number', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x1',
         gasPrice: '0x1',
@@ -170,6 +175,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with value set as hex', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x1',
         gasPrice: '0x1',
@@ -184,6 +190,7 @@ describe('AVAX util library', () => {
   describe('sign failure cases', () => {
     it('sign txData with invalid gasLimit', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '',
         gasPrice: '0x0',
@@ -196,6 +203,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with invalid gasPrice', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x0',
         gasPrice: '',
@@ -208,6 +216,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with invalid nonce', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x0',
         gasPrice: '0x0',
@@ -220,6 +229,7 @@ describe('AVAX util library', () => {
 
     it('sign txData with invalid value', async () => {
       const txData: TxData = {
+        _type: ETHTransactionType.LEGACY,
         data: '',
         gasLimit: '0x0',
         gasPrice: '0x0',

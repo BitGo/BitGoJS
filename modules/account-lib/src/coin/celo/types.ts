@@ -12,7 +12,7 @@ import {
 } from 'ethereumjs-utils-old';
 import { unpad } from 'ethereumjs-util';
 import { CeloTx, EncodedTransaction } from '@celo/connect';
-import { EthLikeTransactionData, TxData } from '../eth/iface';
+import { EthLikeTransactionData, ETHTransactionType, LegacyTxData } from '../eth/iface';
 import { KeyPair } from '../eth';
 
 export class CeloTransaction {
@@ -49,7 +49,7 @@ export class CeloTransaction {
     return '0x0' + numberValue.slice(2);
   }
 
-  constructor(tx: TxData) {
+  constructor(tx: LegacyTxData) {
     this.nonce = unpad(toBuffer(tx.nonce));
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
@@ -155,10 +155,11 @@ export class CeloTransactionData implements EthLikeTransactionData {
     this.deployedAddress = deployedAddress;
   }
 
-  public static fromJson(tx: TxData): CeloTransactionData {
+  public static fromJson(tx: LegacyTxData): CeloTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));
     return new CeloTransactionData(
       new CeloTransaction({
+        _type: ETHTransactionType.LEGACY,
         nonce: tx.nonce,
         to: tx.to,
         gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
@@ -190,8 +191,9 @@ export class CeloTransactionData implements EthLikeTransactionData {
   }
 
   /** @inheritdoc */
-  toJson(): TxData {
-    const result: TxData = {
+  toJson(): LegacyTxData {
+    const result: LegacyTxData = {
+      _type: ETHTransactionType.LEGACY,
       nonce: bufferToInt(this.tx.nonce),
       gasPrice: new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10),
       gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),
@@ -222,7 +224,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
     return result;
   }
 
-  private setSignatureFields(result: TxData): void {
+  private setSignatureFields(result: LegacyTxData): void {
     if (this.tx.v && this.tx.v.length) {
       result.v = bufferToHex(this.tx.v);
     }
@@ -241,7 +243,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
     return addHexPrefix(this.tx.serialize().toString('hex'));
   }
 
-  private static txJsonToCeloTx(txJson: TxData, signer: string): CeloTx {
+  private static txJsonToCeloTx(txJson: LegacyTxData, signer: string): CeloTx {
     // the celo library requires you to specify the signer address with the from field
     return Object.assign({}, txJson, {
       chainId: txJson.chainId === undefined ? 0 : parseInt(txJson.chainId, 10),
@@ -250,11 +252,13 @@ export class CeloTransactionData implements EthLikeTransactionData {
     });
   }
 
-  private static encodedTxToJson(encodedTx: EncodedTransaction): TxData {
-    return Object.assign({}, encodedTx.tx, {
+  private static encodedTxToJson(encodedTx: EncodedTransaction): LegacyTxData {
+    return {
+      ...encodedTx.tx,
+      _type: ETHTransactionType.LEGACY,
       nonce: parseInt(encodedTx.tx.nonce, 16),
       gasLimit: encodedTx.tx.gas,
       data: encodedTx.raw,
-    });
+    };
   }
 }

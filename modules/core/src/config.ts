@@ -4,7 +4,8 @@ import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, Networks } from '@bitgo/statics';
+import { EosTokenConfig } from './v2/coins/eosToken';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, EosCoin, Networks } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -20,6 +21,9 @@ export interface Tokens {
     celo: {
       tokens: CeloTokenConfig[];
     };
+    eos: {
+      tokens: EosTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -34,6 +38,9 @@ export interface Tokens {
     celo: {
       tokens: CeloTokenConfig[];
     };
+    eos: {
+      tokens: EosTokenConfig[];
+    }
   };
 }
 
@@ -119,6 +126,20 @@ const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
+  if (coin instanceof EosCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractName.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -134,6 +155,9 @@ export const tokens: Tokens = {
     celo: {
       tokens: formattedCeloTokens.filter(token => token.network === 'Mainnet'),
     },
+    eos: {
+      tokens: formattedEosTokens.filter(token => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -148,6 +172,9 @@ export const tokens: Tokens = {
     },
     celo: {
       tokens: formattedCeloTokens.filter(token => token.network === 'Testnet'),
+    },
+    eos: {
+      tokens: formattedEosTokens.filter(token => token.network === 'Testnet'),
     },
   },
 };

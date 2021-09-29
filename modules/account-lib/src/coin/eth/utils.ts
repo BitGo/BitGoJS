@@ -55,7 +55,7 @@ export function getCommon(network: EthereumNetwork): EthereumCommon {
       networkId: network.chainId,
       chainId: network.chainId,
     },
-    'petersburg',
+    'london',
   );
 }
 
