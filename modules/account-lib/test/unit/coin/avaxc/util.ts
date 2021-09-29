@@ -91,7 +91,7 @@ describe('AVAX util library', () => {
 
       should.not.exists(txData.r);
       should.not.exists(txData.s);
-      should.not.exists(txData.v);
+      should.equal(txData.v, '0x0150f5');
 
       const keyPair = new KeyPair({ prv: TEST_ACCOUNT_2.ethPrivateKey });
       const signedTx = await sign(txData, keyPair);

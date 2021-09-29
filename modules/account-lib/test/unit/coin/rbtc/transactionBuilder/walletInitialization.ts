@@ -89,6 +89,16 @@ describe('Rbtc wallet initialization', function () {
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
+      should.equal(newTx.toJson().v, '0x61');
+    });
+
+    it('unsigned transaction with final v check', async function () {
+      initTxBuilder();
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      const tx = await txBuilder.build();
+      should.deepEqual(tx.toJson().v, '0x61');
     });
   });
 });
