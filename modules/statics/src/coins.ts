@@ -13,6 +13,7 @@ import {
   ttronToken,
   AccountCoin,
   teosToken,
+  eosToken,
   algoToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
@@ -947,6 +948,8 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
-  teosToken('CHEX', 'Chintai', 8, 'testtoken111', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
-  teosToken('IQ', 'Everipedia', 3, 'testtoken112', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
+  eosToken('CHEX', 'Chintai', 8, 'chexchexchex', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
+  eosToken('IQ', 'Everipedia', 3, 'everipediaiq', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
+  eosToken('BOX', 'Box', 6, 'token.defi', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
+  eosToken('USDT', 'Tether', 4, 'tethertether', UnderlyingAsset.EOS_USDT, AccountCoin.DEFAULT_FEATURES, '', 'USDT'),
 ]);
