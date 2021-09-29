@@ -3,7 +3,7 @@ import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
 import { Transaction } from '../../../../../src/coin/eth';
-import { Fee } from '../../../../../src/coin/eth/iface';
+import { ETHTransactionType, Fee } from '../../../../../src/coin/eth/iface';
 
 describe('Eth Transaction builder wallet initialization', function () {
   const sourcePrv =
@@ -67,7 +67,8 @@ describe('Eth Transaction builder wallet initialization', function () {
       tx.type.should.equal(TransactionType.WalletInitialization);
       const txJson = tx.toJson();
       txJson.gasLimit.should.equal('1000');
-      txJson.gasPrice.should.equal('10');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('10');
       should.equal(txJson.nonce, 1);
       should.equal(txJson.chainId, 42);
     });
@@ -90,7 +91,8 @@ describe('Eth Transaction builder wallet initialization', function () {
       tx.type.should.equal(TransactionType.WalletInitialization);
       const txJson = tx.toJson();
       txJson.gasLimit.should.equal('1000');
-      txJson.gasPrice.should.equal('10');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('10');
       should.equal(txJson.nonce, 0);
       should.equal(txJson.chainId, 42);
     });

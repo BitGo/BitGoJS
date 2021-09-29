@@ -3,12 +3,11 @@ import { Transaction, TransactionBuilder } from 'bitcoinjs-lib';
 import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '../networkTypes';
 import { UtxoTransaction } from './UtxoTransaction';
-import { Signer } from 'bitcoinjs-lib/ts_src';
 
 interface TxbSignArg {
   prevOutScriptType: string;
   vin: number;
-  keyPair: Signer;
+  keyPair: bitcoinjs.ECPair.Signer;
   redeemScript?: Buffer;
   hashType?: number;
   witnessValue?: number;
@@ -49,7 +48,7 @@ export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction>
 
   sign(
     signParams: number | TxbSignArg,
-    keyPair?: Signer,
+    keyPair?: bitcoinjs.ECPair.Signer,
     redeemScript?: Buffer,
     hashType?: number,
     witnessValue?: number,
