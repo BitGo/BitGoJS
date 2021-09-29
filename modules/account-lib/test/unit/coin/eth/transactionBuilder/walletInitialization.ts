@@ -71,6 +71,7 @@ describe('Eth Transaction builder wallet initialization', function () {
       txJson.gasPrice!.should.equal('10');
       should.equal(txJson.nonce, 1);
       should.equal(txJson.chainId, 42);
+      should.equal(txJson.v, '0x77');
     });
 
     it('a wallet initialization transaction with nonce 0', async () => {
@@ -95,6 +96,7 @@ describe('Eth Transaction builder wallet initialization', function () {
       txJson.gasPrice!.should.equal('10');
       should.equal(txJson.nonce, 0);
       should.equal(txJson.chainId, 42);
+      should.equal(txJson.v, '0x77');
     });
 
     it('an unsigned init transaction from serialized with 0-prefixed address', async () => {

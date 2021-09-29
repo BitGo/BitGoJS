@@ -65,6 +65,12 @@ describe('Etc send transaction', function () {
     const tx = await txBuilder.build();
     should.equal(tx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
   });
+  it('unsigned transaction with final v check', async () => {
+    initTxBuilder();
+    txBuilder.transfer().amount('0').to(testData.ACCOUNT_2).expirationTime(1590066728).contractSequenceId(5).key(key);
+    const tx = await txBuilder.build();
+    should.equal(tx.toJson().v, '0xa1');
+  });
 });
 
 describe('should sign and build from serialized', () => {
