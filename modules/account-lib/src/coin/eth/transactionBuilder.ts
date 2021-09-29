@@ -26,6 +26,7 @@ import {
   isValidEthAddress,
 } from './utils';
 import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { addHexPrefix } from 'ethereumjs-util';
 
 const DEFAULT_M = 3;
 
@@ -434,7 +435,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       gasLimit: this._fee.gasLimit,
       nonce: this._counter,
       data: data,
-      chainId: this._common.chainId().toString(),
+      chainId: this._common.chainIdBN().toString(),
       value: this._value,
       to: this._contractAddress,
     };
@@ -451,6 +452,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         ...baseParams,
         _type: ETHTransactionType.LEGACY,
         gasPrice: this._fee?.gasPrice ?? this._fee.fee,
+        v: this.getFinalV(),
       };
     }
   }
@@ -644,5 +646,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
+  }
+
+  /**
+   * Get the final v value. Final v is described in EIP-155.
+   *
+   * @protected for internal use when the enableFinalVField flag is true.
+   */
+  protected getFinalV(): string {
+    return addHexPrefix(this._common.chainIdBN().muln(2).addn(35).toString(16));
   }
 }

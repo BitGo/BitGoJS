@@ -153,4 +153,25 @@ describe('Avax C-Chain Transfer Transaction', function () {
       (e) => e.message === 'Transfers can only be set for send transactions',
     );
   });
+
+  it('Should build unsigned transfer with final v', async function () {
+    initTxBuilder();
+    txBuilder
+      .transfer()
+      .amount('100000000000000000') // This represents 0.1 Avax = 0.1 Ether
+      .contractSequenceId(1)
+      .expirationTime(50000)
+      .to(testData.TEST_ACCOUNT_2.ethAddress)
+      .key(testData.OWNER_2.ethKey);
+    const tx = await txBuilder.build();
+    const txJson: TxData = tx.toJson();
+
+    should.exists(txJson.chainId);
+    should.exists(txJson.to);
+    txJson.nonce.should.equals(1);
+    should.equal(txJson.chainId, '0xa869');
+    txJson.gasLimit.should.equals('7000000');
+    should.equal(txJson.gasPrice, '280000000000');
+    should.equal(txJson.v, '0x0150f5');
+  });
 });

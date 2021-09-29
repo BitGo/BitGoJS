@@ -85,6 +85,7 @@ describe('Eth Transaction builder flush tokens', function () {
       txJson.gasPrice!.should.equal('10');
       txJson.value.should.equal('123');
       txJson.nonce.should.equal(0);
+      should.equal(txJson.v, '0x77');
     });
 
     it('an unsigned single sig send from serialized', async () => {
@@ -104,6 +105,7 @@ describe('Eth Transaction builder flush tokens', function () {
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
+      should.equal(newTx.toJson().v, '0x77');
     });
 
     it('a signed single sig send from serialized', async () => {
@@ -130,6 +132,26 @@ describe('Eth Transaction builder flush tokens', function () {
       should.exist(txJson.r);
       should.exist(txJson.s);
       should.exist(txJson.from);
+    });
+
+    it('an unsigned single sig send from serialized with final v', async () => {
+      const tx = await buildTransaction({
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        counter: 0,
+        recipient: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        value: '123',
+      });
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the unsigned signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('teth');
+      newTxBuilder.from(serialized);
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
+      newTx.toJson().v.should.equal('0x77');
     });
   });
 
