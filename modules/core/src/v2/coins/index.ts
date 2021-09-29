@@ -9,6 +9,7 @@ export { Celo } from './celo';
 export { CeloToken } from './celoToken';
 export { Dash } from './dash';
 export { Eos } from './eos';
+export { EosToken } from './eosToken';
 export { Erc20Token } from './erc20Token';
 export { Etc } from './etc';
 export { Eth } from './eth';
