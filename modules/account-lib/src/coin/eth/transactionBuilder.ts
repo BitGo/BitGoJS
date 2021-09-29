@@ -15,7 +15,7 @@ import {
   SigningError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { Fee, SignatureParts, TxData } from './iface';
+import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
   flushCoinsData,
@@ -136,9 +136,26 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected loadBuilderInput(transactionJson: TxData): void {
     const decodedType = Utils.classifyTransaction(transactionJson.data);
     this.type(decodedType);
-    this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
     this.counter(transactionJson.nonce);
     this.value(transactionJson.value);
+
+    if (transactionJson._type === ETHTransactionType.LEGACY) {
+      this.fee({
+        fee: transactionJson.gasPrice,
+        gasPrice: transactionJson.gasPrice,
+        gasLimit: transactionJson.gasLimit,
+      });
+    } else {
+      this.fee({
+        gasLimit: transactionJson.gasLimit,
+        fee: transactionJson.maxFeePerGas,
+        eip1559: {
+          maxFeePerGas: transactionJson.maxFeePerGas,
+          maxPriorityFeePerGas: transactionJson.maxPriorityFeePerGas,
+        },
+      });
+    }
+
     if (hasSignature(transactionJson)) {
       this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
     }
@@ -241,7 +258,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected validateBaseTransactionFields(): void {
-    if (this._fee === undefined) {
+    if (this._fee === undefined || (!this._fee.fee && !this._fee.gasPrice && !this._fee.eip1559)) {
       throw new BuildTransactionError('Invalid transaction: missing fee');
     }
     if (this._common === undefined) {
@@ -379,6 +396,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (fee.gasLimit) {
       this.validateValue(new BigNumber(fee.gasLimit));
     }
+    if (fee.eip1559) {
+      this.validateValue(new BigNumber(fee.eip1559.maxFeePerGas));
+      this.validateValue(new BigNumber(fee.eip1559.maxPriorityFeePerGas));
+    }
+    if (fee.gasPrice) {
+      this.validateValue(new BigNumber(fee.gasPrice));
+    }
     this._fee = fee;
   }
 
@@ -406,16 +430,31 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // set args that are required for all types of eth transactions
   protected buildBase(data: string): TxData {
-    return {
+    const baseParams = {
       gasLimit: this._fee.gasLimit,
-      gasPrice: this._fee.fee,
       nonce: this._counter,
       data: data,
       chainId: this._common.chainId().toString(),
       value: this._value,
       to: this._contractAddress,
     };
+
+    if (this._fee.eip1559) {
+      return {
+        ...baseParams,
+        _type: ETHTransactionType.EIP1559,
+        maxFeePerGas: this._fee.eip1559.maxFeePerGas,
+        maxPriorityFeePerGas: this._fee.eip1559.maxPriorityFeePerGas,
+      };
+    } else {
+      return {
+        ...baseParams,
+        _type: ETHTransactionType.LEGACY,
+        gasPrice: this._fee?.gasPrice ?? this._fee.fee,
+      };
+    }
   }
+
   // endregion
 
   // region WalletInitialization builder methods

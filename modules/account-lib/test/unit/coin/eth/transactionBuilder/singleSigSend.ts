@@ -2,7 +2,7 @@ import * as should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import { Transaction } from '../../../../../src/coin/eth';
-import { Fee } from '../../../../../src/coin/eth/iface';
+import { ETHTransactionType, Fee } from '../../../../../src/coin/eth/iface';
 
 describe('Eth Transaction builder flush tokens', function () {
   const defaultKeyPair = new Eth.KeyPair({
@@ -61,7 +61,8 @@ describe('Eth Transaction builder flush tokens', function () {
       tx.type.should.equal(TransactionType.SingleSigSend);
       const txJson = tx.toJson();
       txJson.gasLimit.should.equal('1000');
-      txJson.gasPrice.should.equal('10');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('10');
       txJson.value.should.equal('123');
       txJson.nonce.should.equal(1);
     });
@@ -80,7 +81,8 @@ describe('Eth Transaction builder flush tokens', function () {
       tx.type.should.equal(TransactionType.SingleSigSend);
       const txJson = tx.toJson();
       txJson.gasLimit.should.equal('1000');
-      txJson.gasPrice.should.equal('10');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      txJson.gasPrice!.should.equal('10');
       txJson.value.should.equal('123');
       txJson.nonce.should.equal(0);
     });

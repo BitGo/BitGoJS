@@ -1,18 +1,28 @@
 import BigNumber from 'bignumber.js';
-import { Transaction as EthereumTx } from '@ethereumjs/tx';
+import {
+  TransactionFactory,
+  TypedTransaction,
+  Transaction as LegacyTransaction,
+  FeeMarketEIP1559Transaction,
+  AccessListEIP2930Transaction,
+} from '@ethereumjs/tx';
 import EthereumCommon from '@ethereumjs/common';
 import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-utils-old';
-import { EthLikeTransactionData, TxData } from './iface';
+import { BaseTxData, EIP1559TxData, EthLikeTransactionData, LegacyTxData, ETHTransactionType, TxData } from './iface';
 import { KeyPair } from './keyPair';
+
+// https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L31
+const LEGACY_TX_TYPE = 0;
+const EIP1559_TX_TYPE = 2;
 
 /**
  * An Ethereum transaction with helpers for serialization and deserialization.
  */
 export class EthTransactionData implements EthLikeTransactionData {
-  private tx: EthereumTx;
+  private tx: TypedTransaction;
   protected args?: { deployedAddress?: string; chainId?: string };
 
-  constructor(tx: EthereumTx, args?: { deployedAddress?: string; chainId?: string }) {
+  constructor(tx: TypedTransaction, args?: { deployedAddress?: string; chainId?: string }) {
     this.tx = tx;
     this.args = args;
   }
@@ -25,14 +35,30 @@ export class EthTransactionData implements EthLikeTransactionData {
    * @returns {EthTransactionData} a new ethereum transaction object
    */
   public static fromJson(tx: TxData, common: EthereumCommon): EthTransactionData {
+    const nonce = addHexPrefix(new BigNumber(tx.nonce).toString(16));
+    const value = addHexPrefix(new BigNumber(tx.value).toString(16));
+    const gasLimit = addHexPrefix(new BigNumber(tx.gasLimit).toString(16));
+    const chainId = tx.chainId ? addHexPrefix(new BigNumber(tx.chainId).toString(16)) : undefined;
+
+    const gasPrice = isLegacyTx(tx) ? addHexPrefix(new BigNumber(tx.gasPrice).toString(16)) : undefined;
+
+    const maxFeePerGas = isEIP1559Txn(tx) ? addHexPrefix(new BigNumber(tx.maxFeePerGas).toString(16)) : undefined;
+    const maxPriorityFeePerGas = isEIP1559Txn(tx)
+      ? addHexPrefix(new BigNumber(tx.maxPriorityFeePerGas).toString(16))
+      : undefined;
+
     return new EthTransactionData(
-      new EthereumTx(
+      TransactionFactory.fromTxData(
         {
-          nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
+          type: isLegacyTx(tx) ? LEGACY_TX_TYPE : EIP1559_TX_TYPE,
+          chainId,
+          nonce,
           to: tx.to,
-          gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
-          gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
-          value: addHexPrefix(new BigNumber(tx.value).toString(16)),
+          gasPrice,
+          gasLimit,
+          maxFeePerGas,
+          maxPriorityFeePerGas,
+          value,
           data: tx.data,
           v: tx.v,
           r: tx.r,
@@ -40,7 +66,10 @@ export class EthTransactionData implements EthLikeTransactionData {
         },
         { common: common },
       ),
-      { deployedAddress: tx.deployedAddress, chainId: addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)) },
+      {
+        deployedAddress: tx.deployedAddress,
+        chainId: addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)),
+      },
     );
   }
 
@@ -51,7 +80,7 @@ export class EthTransactionData implements EthLikeTransactionData {
    * @param common
    */
   public static fromSerialized(tx: string, common: EthereumCommon): EthTransactionData {
-    return new EthTransactionData(EthereumTx.fromSerializedTx(toBuffer(tx), { common: common }));
+    return new EthTransactionData(TransactionFactory.fromSerializedData(toBuffer(tx), { common: common }));
   }
 
   sign(keyPair: KeyPair) {
@@ -61,14 +90,18 @@ export class EthTransactionData implements EthLikeTransactionData {
 
   /** @inheritdoc */
   toJson(): TxData {
-    const result: TxData = {
+    const result: BaseTxData = {
       nonce: bufferToInt(this.tx.nonce),
-      gasPrice: new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10),
       gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),
       value: this.tx.value.toString(10),
       data: bufferToHex(this.tx.data),
-      id: addHexPrefix(bufferToHex(this.tx.hash())),
     };
+
+    if (this.tx.isSigned()) {
+      result.id = addHexPrefix(bufferToHex(this.tx.hash()));
+    } else {
+      result.id = addHexPrefix(bufferToHex(this.tx.getMessageToSign()));
+    }
 
     if (this.tx.to) {
       result.to = bufferToHex(this.tx.to.toBuffer());
@@ -86,11 +119,39 @@ export class EthTransactionData implements EthLikeTransactionData {
       result.deployedAddress = this.args.deployedAddress;
     }
 
-    return result;
+    if (this.tx instanceof LegacyTransaction) {
+      const gasPrice = new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10);
+
+      return {
+        ...result,
+        _type: ETHTransactionType.LEGACY,
+        gasPrice,
+      };
+    } else if (this.tx instanceof FeeMarketEIP1559Transaction) {
+      const maxFeePerGas = new BigNumber(bufferToHex(this.tx.maxFeePerGas), 16).toString(10);
+      const maxPriorityFeePerGas = new BigNumber(bufferToHex(this.tx.maxPriorityFeePerGas), 16).toString(10);
+
+      return {
+        ...result,
+        _type: ETHTransactionType.EIP1559,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+      };
+    } else {
+      throw new Error(`Unsupported tx type: ${AccessListEIP2930Transaction.name}`);
+    }
   }
 
   /** @inheritdoc */
   toSerialized(): string {
     return addHexPrefix(this.tx.serialize().toString('hex'));
   }
+}
+
+function isLegacyTx(tx: TxData): tx is LegacyTxData {
+  return tx._type === ETHTransactionType.LEGACY;
+}
+
+function isEIP1559Txn(tx: TxData): tx is EIP1559TxData {
+  return tx._type === ETHTransactionType.EIP1559;
 }

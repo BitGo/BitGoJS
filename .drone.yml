@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: check preconditions (node:10)
+name: check preconditions (node:12)
 
 platform:
   os: linux
@@ -8,7 +8,7 @@ platform:
 
 steps:
 - name: build information
-  image: node:10
+  image: node:12
   commands:
   - node --version
   - npm --version
@@ -16,33 +16,33 @@ steps:
   - git --version
 
 - name: install
-  image: node:10
+  image: node:12
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
+  - yarn install --with-frozen-lockfile
 
 - name: check-commits
-  image: node:10
+  image: node:12
   commands:
   - yarn run check-commits
 
 - name: check-versions
-  image: node:10
+  image: node:12
   commands:
   - yarn run check-versions
 
 - name: audit
-  image: node:10
+  image: node:12
   commands:
   - yarn run audit
 
 - name: lint
-  image: node:10
+  image: node:12
   commands:
   - yarn run lint
 
 - name: check-fmt
-  image: node:10
+  image: node:12
   commands:
   - yarn run check-fmt
 
@@ -73,7 +73,7 @@ steps:
 
 ---
 kind: pipeline
-name: size and timing (node:10)
+name: size and timing (node:12)
 
 platform:
   os: linux
@@ -81,7 +81,7 @@ platform:
 
 steps:
 - name: slow-deps
-  image: node:10
+  image: node:12
   commands:
   - npm install -g slow-deps
   - slow-deps
@@ -91,56 +91,6 @@ trigger:
   - master
   - rel/*
   - prod/production
-
----
-kind: pipeline
-name: unit tests (node:10)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:10
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - git --version
-
-- name: install
-  image: node:10
-  commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
-
-- name: unit-test-changed
-  image: node:10
-  commands:
-  - yarn run unit-test-changed
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
-- name: upload artifacts
-  image: bitgosdk/upload-tools:latest
-  commands:
-  - yarn run artifacts
-  - yarn run gen-coverage-changed
-  - yarn run coverage
-  environment:
-    CODECOV_FLAG: unit
-    CODECOV_TOKEN:
-      from_secret: codecov
-    reports_s3_akid:
-      from_secret: reports_s3_akid
-    reports_s3_sak:
-      from_secret: reports_s3_sak
-  when:
-    status:
-    - success
-    - failure
 
 ---
 kind: pipeline
@@ -163,7 +113,7 @@ steps:
   image: node:12
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
+  - yarn install --with-frozen-lockfile
 
 - name: unit-test-changed
   image: node:12
@@ -213,7 +163,7 @@ steps:
   image: node:14
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
+  - yarn install --with-frozen-lockfile
 
 - name: unit-test-changed
   image: node:14
@@ -263,7 +213,7 @@ steps:
   image: node:15
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
+  - yarn install --with-frozen-lockfile
   failure: ignore
 
 - name: unit-test-changed
@@ -305,7 +255,7 @@ platform:
 
 steps:
 - name: build information
-  image: node:10
+  image: node:12
   commands:
   - node --version
   - npm --version
@@ -313,13 +263,13 @@ steps:
   - git --version
 
 - name: install
-  image: node:10
+  image: node:12
   commands:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
-  - yarn install
+  - yarn install --with-frozen-lockfile
 
 - name: browser-tests
-  image: node:10
+  image: node:12
   commands:
   - apt-get update
   - apt-get install -y gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
@@ -355,6 +305,6 @@ trigger:
 
 ---
 kind: signature
-hmac: b77a90131736635740e4a80bf46c5d72faa952694883a31e3153f953e456b722
+hmac: 1849c64789fd4faa75b5ef389a5fecbd01bf22e29bfc3793d4e33d8b76662b08
 
 ...

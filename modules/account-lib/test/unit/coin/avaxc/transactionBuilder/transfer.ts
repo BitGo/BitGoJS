@@ -1,7 +1,7 @@
 import should from 'should';
 import { AvaxC, getBuilder, BaseCoin } from '../../../../../src';
 import { TransactionBuilder } from '../../../../../src/coin/avaxc';
-import { TxData } from '../../../../../src/coin/eth/iface';
+import { ETHTransactionType, TxData } from '../../../../../src/coin/eth/iface';
 import * as testData from '../../../../resources/avaxc/avaxc';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 
@@ -40,7 +40,8 @@ describe('Avax C-Chain Transfer Transaction', function () {
     txJson.from?.should.equals(testData.OWNER_1.ethAddress);
     txJson.chainId?.should.equals('0xa869');
     txJson.gasLimit.should.equals('7000000');
-    txJson.gasPrice.should.equals('280000000000');
+    txJson._type.should.equals(ETHTransactionType.LEGACY);
+    txJson.gasPrice!.should.equals('280000000000');
   });
 
   it('Should build with counter 0 if not manually defined', async function () {
@@ -71,7 +72,8 @@ describe('Avax C-Chain Transfer Transaction', function () {
     txJson.from!.should.equals(testData.OWNER_1.ethAddress);
     txJson.chainId!.should.equals('0xa869');
     txJson.gasLimit.should.equals('7000000');
-    txJson.gasPrice.should.equals('280000000000');
+    txJson._type.should.equals(ETHTransactionType.LEGACY);
+    txJson.gasPrice!.should.equals('280000000000');
   });
 
   it('Should build transfer with default type', async function () {
@@ -101,7 +103,8 @@ describe('Avax C-Chain Transfer Transaction', function () {
     txJson.from?.should.equals(testData.OWNER_1.ethAddress);
     txJson.chainId?.should.equals('0xa869');
     txJson.gasLimit.should.equals('7000000');
-    txJson.gasPrice.should.equals('280000000000');
+    txJson._type.should.equals(ETHTransactionType.LEGACY);
+    txJson.gasPrice!.should.equals('280000000000');
   });
 
   it('Should create transfer object if not created or return it if already initialized', async function () {
