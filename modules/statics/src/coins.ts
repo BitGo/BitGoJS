@@ -59,7 +59,7 @@ export const coins = CoinMap.fromCoins([
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
-  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.GTETH, ETH_FEATURES),
   account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
   account(
     'teth2',
