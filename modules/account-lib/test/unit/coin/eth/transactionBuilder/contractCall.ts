@@ -1,5 +1,4 @@
 import should from 'should';
-
 import { Eth, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 
@@ -47,6 +46,7 @@ describe('Eth contract call transaction builder', () => {
     const tx = await builderFrom.build();
 
     should.equal(tx.toBroadcastFormat(), rawTx);
+    should.equal(txUnsigned.toJson().v, '0x77');
   });
 
   it('should thrown if contract or data is missing', async () => {

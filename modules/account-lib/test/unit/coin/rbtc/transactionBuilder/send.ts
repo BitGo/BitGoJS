@@ -58,6 +58,15 @@ describe('Rbtc send transaction', function () {
     should.equal(tx.outputs[0].value, amount);
   });
 
+  it('a send funds unsigned transaction with final v', async () => {
+    initTxBuilder();
+    const recipient = testData.ACCOUNT_2;
+    const amount = '1000000000';
+    txBuilder.transfer().amount(amount).to(recipient).expirationTime(1590066728).contractSequenceId(5).key(key);
+    const tx = await txBuilder.build();
+    should.equal(tx.toJson().v, '0x61');
+  });
+
   it('a send funds with amount 0 transaction', async () => {
     initTxBuilder();
     txBuilder.transfer().amount('0').to(testData.ACCOUNT_2).expirationTime(1590066728).contractSequenceId(5).key(key);

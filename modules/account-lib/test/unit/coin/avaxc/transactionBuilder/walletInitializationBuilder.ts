@@ -59,6 +59,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txJson._type.should.equals(ETHTransactionType.LEGACY);
       txJson.gasPrice!.should.equal('280000000000');
       should.equal(txJson.chainId!, '0xa869');
+      should.equal(txJson.v, '0x0150f5');
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST_ZERO_NONCE);
     });
 
@@ -147,24 +148,13 @@ describe('AvaxC Wallet Initialization Builder', function () {
       should.deepEqual(tx.id, txFromRaw.id);
     });
 
-    it('Should getting same tx from raw tx ETH', async function () {
-      txBuilder = getBuilder('eth') as AvaxC.TransactionBuilder;
-      txBuilder.fee({
-        fee: '280000000000',
-        gasLimit: '7000000',
-      });
-      txBuilder.counter(1);
-      txBuilder.type(TransactionType.WalletInitialization);
+    it('Should build tx with final v', async function () {
+      initTxBuilder();
       txBuilder.owner(testData.OWNER_1.ethAddress);
       txBuilder.owner(testData.OWNER_2.ethAddress);
       txBuilder.owner(testData.OWNER_3.ethAddress);
-      txBuilder.sign({ key: testData.OWNER_1.ethKey });
       const tx = await txBuilder.build();
-      const txBuiderFromRaw = getBuilder('eth') as TransactionBuilder;
-      txBuiderFromRaw.from(tx.toBroadcastFormat());
-      const txFromRaw = await txBuiderFromRaw.build();
-
-      should.deepEqual(tx.toJson(), txFromRaw.toJson());
+      should.deepEqual(tx.toJson().v, '0x0150f5');
     });
   });
 });
