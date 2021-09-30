@@ -37,7 +37,6 @@
     "@bitgo/blake2b": "^3.0.1",
     "@bitgo/bls": "^0.1.0",
     "@bitgo/statics": "^6.14.0-rc.0",
-    "@bitgo/utxo-lib": "^2.0.0",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
