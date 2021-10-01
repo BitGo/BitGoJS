@@ -5,7 +5,8 @@ import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
 import { EosTokenConfig } from './v2/coins/eosToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, EosCoin, Networks } from '@bitgo/statics';
+import { AlgoTokenConfig } from './v2/coins/algoToken';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, EosCoin, Networks, AlgoCoin } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -14,6 +15,9 @@ export interface Tokens {
     };
     xlm: {
       tokens: StellarTokenConfig[];
+    };
+    algo: {
+      tokens: AlgoTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -31,6 +35,9 @@ export interface Tokens {
     };
     xlm: {
       tokens: StellarTokenConfig[];
+    };
+    algo: {
+      tokens: AlgoTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -97,6 +104,20 @@ const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) =>
   return acc;
 }, []);
 
+// Get the list of Stellar tokens from statics and format it properly
+const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
+  if (coin instanceof AlgoCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 // Get the list of OFC tokens from statics and format it properly
 const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
   if (coin instanceof OfcCoin) {
@@ -149,6 +170,9 @@ export const tokens: Tokens = {
     xlm: {
       tokens: formattedStellarTokens.filter(token => token.network === 'Mainnet'),
     },
+    algo: {
+      tokens: formattedAlgoTokens.filter(token => token.network === 'Mainnet'),
+    },
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.MAINNET),
     },
@@ -166,6 +190,9 @@ export const tokens: Tokens = {
     },
     xlm: {
       tokens: formattedStellarTokens.filter(token => token.network === 'Testnet'),
+    },
+    algo: {
+      tokens: formattedAlgoTokens.filter(token => token.network === 'Testnet'),
     },
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.TESTNET),
