@@ -798,6 +798,28 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'gterc2dp',
+    'Goerli Test ERC Token 2 Decimals',
+    2,
+    '0xe19e232e942cde4320b6354646cbb1336ae732c7',
+    UnderlyingAsset.TERC2DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gterc6dp',
+    'Goerli Test ERC Token 6 Decimals',
+    6,
+    '0xe7afa17e6e5257806d2309b01e6de320668ec3dc',
+    UnderlyingAsset.TERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     'goerli:hcn',
     'Himalayan Coin',
     18,
@@ -808,7 +830,39 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+  terc20(
+    'gterc18dp',
+    'Goerli Test ERC Token 18 Decimals',
+    18,
+    '0x61d54356be035944a3868eaa9556353b7150699d',
+    UnderlyingAsset.TERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
   terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
+  terc20(
+    'terc2dp',
+    'Test ERC Token 2 Decimals',
+    2,
+    '0x107295c724c29553f51c5373b959f947065e6445',
+    UnderlyingAsset.TERC2DP
+  ),
+  terc20(
+    'terc6dp',
+    'Test ERC Token 6 Decimals',
+    6,
+    '0x4fcae60b370e5e523d18ba1fdf3bae46de88ac70',
+    UnderlyingAsset.TERC6DP
+  ),
+  terc20(
+    'terc18dp',
+    'Test ERC Token 18 Decimals',
+    18,
+    '0xd1e7cd06a5c81af9307cf3162f0fe740a0a69d25',
+    UnderlyingAsset.TERC18DP
+  ),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
