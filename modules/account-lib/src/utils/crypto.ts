@@ -149,7 +149,7 @@ export function isValidEd25519SecretKey(prv: string): boolean {
  */
 export function isValidEd25519PublicKey(pub: string): boolean {
   try {
-    const decodedPub = new Uint8Array(Buffer.from(pub, 'hex'));
+    const decodedPub = toUint8Array(pub);
     return decodedPub.length === nacl.sign.publicKeyLength;
   } catch (e) {
     return false;
