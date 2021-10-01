@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import algosdk from 'algosdk';
 import stellar from 'stellar-sdk';
 import * as hex from '@stablelib/hex';
@@ -16,7 +15,6 @@ import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
 import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
-const ALGORAND_ADDRESS_LENGTH = 58;
 const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
@@ -201,18 +199,7 @@ export class Utils implements BaseUtils {
    * @returns {string} The algorand address.
    */
   publicKeyToAlgoAddress(pk: Uint8Array): string {
-    const pkHex = Buffer.from(pk).toString('hex');
-    if (!this.isValidPublicKey(pkHex)) {
-      throw new InvalidKey(`The public key: ${pkHex} is invalid`);
-    }
-
-    const hash = crypto.createHash('SHA512-256').update(pk).digest();
-    const checksum = hash.slice(-ALGORAND_CHECKSUM_BYTE_LENGTH);
-
-    const address = base32.encode(Buffer.concat([pk, checksum]));
-    const addressWithPaddingRemoved = address.slice(0, ALGORAND_ADDRESS_LENGTH);
-
-    return addressWithPaddingRemoved;
+    return new KeyPair({ pub: Buffer.from(pk).toString('hex') }).getAddress();
   }
   /**
    * Checks if a unsigned algo transaction can be decoded.
@@ -260,6 +247,18 @@ export class Utils implements BaseUtils {
       }
     } else {
       buffer = Buffer.from(txnBytes);
+    }
+
+    // In order to maintain backward compatibility with old keyreg transactions encoded with
+    // forked algosdk 1.2.0 (https://github.com/BitGo/algosdk-bitgo),
+    // the relevant information is extracted and parsed following the latest algosdk
+    // release standard.
+    // This way we can decode transactions successfully by still maintaining backward compatibility.
+    const decodedTx = encoding.decode(buffer);
+    if (decodedTx.txn && decodedTx.txn.type === 'keyreg') {
+      decodedTx.txn.votekey = decodedTx.txn.votekey || decodedTx.msig.subsig[0].pk;
+      decodedTx.txn.selkey = decodedTx.txn.selkey || decodedTx.msig.subsig[0].pk;
+      buffer = encoding.encode(decodedTx);
     }
 
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
