@@ -99,13 +99,8 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * @param {Uint8Array} signature to verify
    * @returns {boolean} True if the message was signed with the current key pair
    */
-  verifySignature(message: Uint8Array | string, signature: Uint8Array): boolean {
-    let messageToVerify;
-    if (typeof message === 'string') {
-      messageToVerify = toUint8Array(Buffer.from(message).toString('hex'));
-    } else {
-      messageToVerify = message;
-    }
+  verifySignature(message: string, signature: Uint8Array): boolean {
+    const messageToVerify = toUint8Array(Buffer.from(message).toString('hex'));
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
   }
