@@ -54,7 +54,6 @@ import {
   Erc20Token,
   CeloToken,
   StellarToken,
-  AlgoToken,
   OfcToken,
   Zec,
   EosToken,
@@ -196,9 +195,4 @@ for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]
   const tokenConstructor = EosToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
   GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
-}
-
-for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.tokens]) {
-  const tokenConstructor = AlgoToken.createTokenConstructor(token);
-  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
 }
