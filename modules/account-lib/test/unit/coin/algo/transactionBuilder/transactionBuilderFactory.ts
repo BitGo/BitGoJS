@@ -1,7 +1,12 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { register } from '../../../../../src/index';
-import { TransactionBuilderFactory, TransferBuilder, KeyRegistrationBuilder } from '../../../../../src/coin/algo';
+import {
+  TransactionBuilderFactory,
+  TransferBuilder,
+  KeyRegistrationBuilder,
+  algoUtils,
+} from '../../../../../src/coin/algo';
 import * as AlgoResources from '../../../../resources/algo';
 describe('Algo Transaction Builder Factory', () => {
   const factory = register('algo', TransactionBuilderFactory);
@@ -36,6 +41,21 @@ describe('Algo Transaction Builder Factory', () => {
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.WalletInitialization);
       should.equal(Buffer.from(tx.toBroadcastFormat()).toString('hex'), AlgoResources.rawTx.keyReg.signed);
+    });
+
+    it('a non signed keyreg transaction serialized with old sdk', async () => {
+      const decodedTx = algoUtils.decodeAlgoTxn(AlgoResources.rawTx.keyReg.oldSdkUnsigned);
+      should.equal(Buffer.from(decodedTx.rawTransaction).toString('base64'), AlgoResources.rawTx.keyReg.oldSdkUnsigned);
+    });
+
+    it('a signed keyreg transaction serialized with old sdk', async () => {
+      const decodedTx = algoUtils.decodeAlgoTxn(AlgoResources.rawTx.keyReg.oldSdkSigned);
+      decodedTx.signed.should.be.true();
+      decodedTx.txn.fee.should.equals(1050);
+      decodedTx.txn.should.have.property('type');
+      decodedTx.txn.type!.should.equals('keyreg');
+      decodedTx.txn.should.have.property('nonParticipation');
+      decodedTx.txn.nonParticipation!.should.be.true();
     });
 
     it('a multisigned transfer transaction from serialized', async () => {
