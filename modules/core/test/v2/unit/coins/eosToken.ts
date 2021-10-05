@@ -5,7 +5,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 describe('EOS Token:', function () {
   let bitgo;
   let eosTokenCoin;
-  const tokenName = 'CHEX';
+  const tokenName = 'teos:CHEX';
 
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
