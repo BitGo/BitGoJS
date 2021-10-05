@@ -948,8 +948,21 @@ export const coins = CoinMap.fromCoins([
     '',
     'KAL'
   ),
-  eosToken('CHEX', 'Chintai', 8, 'chexchexchex', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
-  eosToken('IQ', 'Everipedia', 3, 'everipediaiq', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
-  eosToken('BOX', 'Box', 6, 'token.defi', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
-  eosToken('USDT', 'Tether', 4, 'tethertether', UnderlyingAsset.EOS_USDT, AccountCoin.DEFAULT_FEATURES, '', 'USDT'),
+  eosToken('eos:CHEX', 'Chintai', 8, 'chexchexchex', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
+  eosToken('eos:IQ', 'Everipedia', 3, 'everipediaiq', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
+  eosToken('eos:BOX', 'Box', 6, 'token.defi', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
+  eosToken('eos:USDT', 'Tether', 4, 'tethertether', UnderlyingAsset.EOS_USDT, AccountCoin.DEFAULT_FEATURES, '', 'USDT'),
+  teosToken('teos:CHEX', 'Chintai', 8, 'testtoken111', UnderlyingAsset.CHEX, AccountCoin.DEFAULT_FEATURES, '', 'CHEX'),
+  teosToken('teos:IQ', 'Everipedia', 3, 'testtoken112', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
+  teosToken('teos:BOX', 'Box', 6, 'kvszn1xyz1bu', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
+  teosToken(
+    'teos:USDT',
+    'Tether',
+    4,
+    'lionteste212',
+    UnderlyingAsset.EOS_USDT,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDT'
+  ),
 ]);
