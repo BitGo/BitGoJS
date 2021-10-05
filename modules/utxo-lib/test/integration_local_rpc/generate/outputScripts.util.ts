@@ -2,7 +2,12 @@ import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
 import { Triple } from './types';
-import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  createTaprootScript2of3,
+  ScriptType2Of3,
+  scriptTypes2Of3,
+} from '../../../src/bitgo/outputScripts';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
 import { Transaction } from 'bitcoinjs-lib';
@@ -36,8 +41,13 @@ export function supportsSegwit(network: Network): boolean {
   return isBitcoin(network) || isLitecoin(network) || isBitcoinGold(network);
 }
 
+export function supportsTaproot(network: Network): boolean {
+  // TODO: add litecoin once taproot activates
+  return isBitcoin(network);
+}
+
 export function isSupportedDepositType(network: Network, scriptType: ScriptType): boolean {
-  return !requiresSegwit(scriptType) || supportsSegwit(network);
+  return scriptType === 'p2tr' ? supportsTaproot(network) : !requiresSegwit(scriptType) || supportsSegwit(network);
 }
 
 export function isSupportedSpendType(network: Network, scriptType: ScriptType): boolean {
@@ -57,14 +67,15 @@ export function isSupportedSpendType(network: Network, scriptType: ScriptType): 
  * @return {Buffer} scriptPubKey
  */
 export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, network: Network): Buffer {
+  const pubkeys = keys.map((k) => k.publicKey) as [Buffer, Buffer, Buffer];
+
   switch (scriptType) {
     case 'p2sh':
     case 'p2shP2wsh':
     case 'p2wsh':
-      return createOutputScript2of3(
-        keys.map((k) => k.publicKey),
-        scriptType
-      ).scriptPubKey;
+      return createOutputScript2of3(pubkeys, scriptType).scriptPubKey;
+    case 'p2tr':
+      return createTaprootScript2of3(pubkeys).scriptPubKey;
   }
 
   switch (scriptType) {

@@ -46,7 +46,7 @@
   "dependencies": {
     "@bitgo/blake2b": "^3.0.1",
     "bitcoin-ops": "^1.3.0",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.0.0",
+    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib.git#e445ccbd706fc0bc00646e6942fdc5177bbf1061",
     "bs58check": "^2.0.0",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4"
