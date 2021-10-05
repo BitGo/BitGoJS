@@ -20,6 +20,9 @@ function runTest(scriptType: ScriptType2Of3) {
   const network = networks.bitcoin;
 
   describe(`createTransactionFromNonStandardHalfSigned ${scriptType}`, function () {
+    if (scriptType === 'p2tr') {
+      return; // TODO: enable p2tr tests when signing is supported
+    }
     fixtureKeys.forEach((signKey, pubkeyIndex) => {
       it(`parses non-standard half signed transaction pubkeyIndex=${pubkeyIndex}`, async function () {
         const txb = getTransactionBuilder(fixtureKeys, [signKey], scriptType, network);
