@@ -25,6 +25,11 @@
     "tb1q3wew7svpkc9tu695e8xugnyjuuamk9l6ycg70edkp4u5099pe9xsjzsuxa"
   ],
   [
+    "p2tr",
+    "512076850b78e72534e785664f34ce698f39d206c2f660517d2f87c6c72e944b0238",
+    "tb1pw6zsk788y56w0ptxfu6vu6v088fqdshkvpgh6tu8cmrja9ztqguqzhd0aj"
+  ],
+  [
     "p2pkh",
     "76a91491b8f56f155030f74259be43dff4d94a6258d84a88ac",
     "mtoTr2XB2QoKpCyca1tvnERZp7ujv9jJrC"
@@ -48,6 +53,11 @@
     "p2wsh",
     "0020a0f0ee4bfe6a5393ffb952c17425566c8a6a11600450818afebb68c3c0c18b09",
     "tb1q5rcwujl7dffe8lae2tqhgf2kdj9x5ytqq3ggrzh7hd5v8sxp3vys730cst"
+  ],
+  [
+    "p2tr",
+    "5120eae04ccdd4bb54c8794b307d6ba676301dbc7df969e916f6cf1a7ce6ad896fef",
+    "tb1patsyenw5hd2vs72txp7khfnkxqwmcl0ed853dak0rf7wdtvfdlhs45vmum"
   ],
   [
     "p2pkh",
@@ -75,6 +85,11 @@
     "tb1qf5jqea9qtysuhz3ycm3hxjywlzsrs7pt5awdvrd7glkstewegzeslx36ac"
   ],
   [
+    "p2tr",
+    "51203a64de9326c5dd917437bda81c4a2f5dd770e6649fde53ed5b7621438266db37",
+    "tb1p8fjdayexchwezaphhk5pcj30ththpenynl098m2mwcs58qnxmvmswqekj0"
+  ],
+  [
     "p2pkh",
     "76a9145a8451539186feb4578b4f5613df6991e307823088ac",
     "momZcush7fbvnERUkx22pvTNz67z3iDSj8"
@@ -98,5 +113,10 @@
     "p2wsh",
     "0020161f1f0478c1649e1b1bf5eba467a27ba621d8a0f69fe7f46a27c3bb0f628a54",
     "tb1qzc037prcc9jfuxcm7h46geaz0wnzrk9q76070ar2ylpmkrmz3f2qnk3524"
+  ],
+  [
+    "p2tr",
+    "512092f93b6bfe23b8f09364eda8391466dcd786d66cb95d160f2bcd82a16eaba01e",
+    "tb1pjtunk6l7ywu0pymyak5rj9rxmntcd4nvh9w3vretekp2zm4t5q0qtde39r"
   ]
 ]

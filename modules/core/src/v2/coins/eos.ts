@@ -16,7 +16,7 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import * as url from 'url';
@@ -28,6 +28,7 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { Environments } from '../environments';
 import * as request from 'superagent';
 import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import { bootstrapEosWithTokens } from './eosutil/abis';
 
 interface AddressDetails {
   address: string;
@@ -462,7 +463,7 @@ export class Eos extends BaseCoin {
         chainId: self.getChainId(),
         transactionHeaders: headers,
       };
-      const eosClient = new EosJs(eosClientConfig);
+      const eosClient = bootstrapEosWithTokens(new EosJs(eosClientConfig));
 
       // Get tx base values
       const eosTxStruct = eosClient.fc.structs.transaction;
@@ -485,7 +486,7 @@ export class Eos extends BaseCoin {
           throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
         }
 
-        const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
+        const transferStruct = eosClient.fc.abiCache.abi(txAction.account).structs.transfer;
         const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
         const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
         tx.address = transferActionData.to;
@@ -545,11 +546,7 @@ export class Eos extends BaseCoin {
       }
       // Get the tx id if tx headers were provided
       if (headers) {
-        const rebuiltTransaction = yield eosClient.transaction(
-          { actions: tx.actions },
-          { sign: false, broadcast: false }
-        );
-        tx.transaction_id = (rebuiltTransaction as any).transaction_id;
+        tx.transaction_id = createHash('sha256').update(serializedTxBuffer).digest().toString('hex');
       }
 
       return tx;
@@ -571,7 +568,7 @@ export class Eos extends BaseCoin {
       try {
         transaction = yield self.deserializeTransaction(params);
       } catch (e) {
-        throw new Error('invalid EOS transaction or headers');
+        throw new Error('invalid EOS transaction or headers: ' + e.toString());
       }
       return {
         displayOrder: [
