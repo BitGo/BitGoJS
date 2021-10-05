@@ -13,6 +13,7 @@ import {
   ttronToken,
   AccountCoin,
   teosToken,
+  algoToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -764,6 +765,26 @@ export const coins = CoinMap.fromCoins([
   ),
   tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'TXpw8XeWYeTUd4quDskoUqeQPowRh4jY65', UnderlyingAsset.WBTC),
   tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
+  algoToken(
+    'algo:31566704',
+    'USDC',
+    6,
+    UnderlyingAsset['algo:31566704'],
+    'https://algoexplorer.io/asset/31566704',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDC'
+  ),
+  algoToken(
+    'algo:312769',
+    'Tether USDt',
+    6,
+    UnderlyingAsset['algo:312769'],
+    'https://algoexplorer.io/asset/312769',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDt'
+  ),
   terc20(
     'fixed',
     'Goerli Example Fixed Supply Token',
