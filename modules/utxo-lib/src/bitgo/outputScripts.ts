@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
+import { OP_CHECKSIGVERIFY } from 'bitcoin-ops';
 
-export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
+export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
 
 export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
@@ -12,13 +13,15 @@ export type SpendableScript = {
   scriptPubKey: Buffer;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
+  /** A triplet of control blocks for the user+bitgo, user+backup, and backup+bitgo scripts in that order. */
+  controlBlocks?: [userBitGoScript: Buffer, userBackupScript: Buffer, backupBitGoScript: Buffer];
 };
 
 /**
  * Return scripts for 2-of-3 multisig output
  * @param pubkeys - the key array for multisig
  * @param scriptType
- * @returns {{redeemScript, witnessScript, address}}
+ * @returns {{redeemScript, witnessScript, scriptPubKey}}
  */
 export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType2Of3): SpendableScript {
   if (pubkeys.length !== 3) {
@@ -33,9 +36,9 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
   assert(script2of3.output);
 
-  let scriptPubKey;
-  let redeemScript;
-  let witnessScript;
+  let scriptPubKey: bitcoinjs.Payment;
+  let redeemScript: bitcoinjs.Payment | undefined;
+  let witnessScript: bitcoinjs.Payment | undefined;
   switch (scriptType) {
     case 'p2sh':
       redeemScript = script2of3;
@@ -61,5 +64,41 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
     scriptPubKey: scriptPubKey.output,
     redeemScript: redeemScript?.output,
     witnessScript: witnessScript?.output,
+  };
+}
+
+/**
+ * Creates and returns a taproot output script using the user and bitgo keys for the aggregate
+ * public key and a taptree containing a user+bitgo 2-of-2 script at the first depth level of the
+ * tree and user+backup and bitgo+backup 2-of-2 scripts one level deeper.
+ * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
+ * @returns {{scriptPubKey}}
+ */
+export function createTaprootScript2of3([userKey, backupKey, bitGoKey]: [Buffer, Buffer, Buffer]): SpendableScript {
+  [userKey, backupKey, bitGoKey].forEach((key) => {
+    if (key.length !== 33 && key.length !== 32) {
+      throw new Error(`Unexpected key length ${key.length}. Must use compressed keys.`);
+    }
+  });
+
+  const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);
+  const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIGVERIFY]);
+  const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);
+
+  assert(userBitGoScript);
+  assert(userBackupScript);
+  assert(backupBitGoScript);
+
+  const { output } = bitcoinjs.payments.p2tr({
+    pubkeys: [userKey, bitGoKey],
+    scripts: [userBitGoScript, userBackupScript, backupBitGoScript],
+    weights: [2, 1, 1],
+  });
+
+  assert(output);
+
+  // TODO: return control blocks once they are returned from payments.p2tr()
+  return {
+    scriptPubKey: output,
   };
 }
