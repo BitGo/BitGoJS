@@ -10,6 +10,9 @@ import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
 
 function runTest(network: Network, scriptType: ScriptType2Of3) {
+  if (scriptType === 'p2tr') {
+    return; // TODO: enable p2tr tests when signing is supported
+  }
   function assertVerifySignatureEquals(
     tx: UtxoTransaction,
     value: boolean,
