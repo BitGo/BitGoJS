@@ -2071,7 +2071,7 @@ export class Wallet {
           if (amount.isNegative()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
           }
-          if (!coin.valuelessTransferAllowed(params.type) && amount.isZero()) {
+          if (!coin.valuelessTransferAllowed() && amount.isZero()) {
             throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
           }
         });
