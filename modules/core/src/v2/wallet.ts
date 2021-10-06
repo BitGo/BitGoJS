@@ -1329,7 +1329,9 @@ export class Wallet {
           throw new AddressGenerationError(verificationData.error);
         }
 
-        if (verificationData.coinSpecific && !verificationData.coinSpecific.pendingChainInitialization) {
+        // This condition was added in first place because in celo, when verifyAddress method was called on addresses which were having pendingChainInitialization as true, it used to throw some error
+        // In case of forwarder version 1 eth addresses, addresses need to be verified even if the pendingChainInitialization flag is true
+        if (verificationData.coinSpecific && (!verificationData.coinSpecific.pendingChainInitialization || verificationData.coinSpecific.forwarderVersion === 1)) {
           // can't verify addresses which are pending chain initialization, as the address is hidden
           self.baseCoin.verifyAddress(verificationData);
         }
