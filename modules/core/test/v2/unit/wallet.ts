@@ -12,11 +12,12 @@ import * as _ from 'lodash';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { Wallet } from '../../../src/v2/wallet';
+import { Wallet } from '../../../src/';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 import { HalfSignedUtxoTransaction } from '../../../src';
+
 nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {

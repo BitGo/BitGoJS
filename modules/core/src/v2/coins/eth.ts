@@ -778,6 +778,7 @@ export class Eth extends BaseCoin {
         gasPrice: params.gasPrice,
         hopTransaction: txPrebuild.hopTransaction,
         backupKeyNonce: txPrebuild.backupKeyNonce,
+        custodianTransactionId: params.custodianTransactionId,
       };
       return { halfSigned: txParams };
     })

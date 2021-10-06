@@ -351,6 +351,7 @@ export interface SendOptions {
   prv?: string;
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
+  custodianTransactionId?: string;
   [index: string]: unknown;
 }
 
@@ -1986,6 +1987,7 @@ export class Wallet {
    * @param params.amount - the amount in satoshis/wei/base value to be sent
    * @param params.message - optional message to attach to transaction
    * @param params.data - [Ethereum Specific] optional data to pass to transaction
+   * @param params.custodianTransactionId - [Ethereum/MMI Specific] id of transaction created via metamask
    * @param params.walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
    * @param params.prv - the private key in string form, if walletPassphrase is not available
    * @param params.minConfirms - the minimum confirmation threshold for inputs
@@ -2092,7 +2094,6 @@ export class Wallet {
         'stakingOptions',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.url('/tx/send'))
         .send(finalTxParams)
