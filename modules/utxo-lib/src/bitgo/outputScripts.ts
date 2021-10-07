@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { OP_CHECKSIGVERIFY } from 'bitcoin-ops';
+import { OP_CHECKSIG, OP_CHECKSIGVERIFY } from 'bitcoin-ops';
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
@@ -81,9 +81,9 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @returns {{scriptPubKey}}
  */
 function createTaprootScript2of3([userKey, backupKey, bitGoKey]: [Buffer, Buffer, Buffer]): SpendableScript {
-  const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);
-  const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIGVERIFY]);
-  const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);
+  const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
+  const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIG]);
+  const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
 
   assert(userBitGoScript);
   assert(userBackupScript);
