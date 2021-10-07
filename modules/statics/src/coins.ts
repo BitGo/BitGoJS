@@ -28,6 +28,7 @@ const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -81,8 +82,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ETC,
     ETH_FEATURES
   ),
-  account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),
-  account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS),
+  account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS, EOS_FEATURES),
+  account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS, EOS_FEATURES),
   account('rbtc', 'Rsk', Networks.main.rbtc, 18, UnderlyingAsset.RBTC, ETH_FEATURES),
   account('trbtc', 'Testnet Rsk', Networks.test.rbtc, 18, UnderlyingAsset.RBTC, ETH_FEATURES),
   account('trx', 'Tron', Networks.main.trx, 6, UnderlyingAsset.TRX),
