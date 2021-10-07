@@ -367,6 +367,17 @@ export async function handleV2GenerateWallet(req: express.Request) {
 }
 
 /**
+ * handle new address creation
+ * @param req
+ */
+export async function handleV2CreateAddress(req: express.Request) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  return wallet.createAddress(req.body);
+}
+
+/**
  * handle v2 approve transaction
  * @param req
  */
@@ -847,6 +858,9 @@ export function setupRoutes(app: express.Application, config: Config): void {
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
+
+  // create address
+  app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
 
   // share wallet
   app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
