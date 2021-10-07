@@ -9,7 +9,7 @@ const typeforce = require('typeforce');
 
 export function fromBase58Check(address: string): Base58CheckResult {
   const payload = bs58check.decode(address);
-  const version = payload.readUInt16BE();
+  const version = payload.readUInt16BE(0);
   const hash = payload.slice(2);
   return { version, hash };
 }
