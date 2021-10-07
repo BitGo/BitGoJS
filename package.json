@@ -53,9 +53,10 @@
     }
   },
   "resolutions": {
+    "axios": "^0.21.2",
     "elliptic": "^6.5.4",
-    "underscore": "^1.12.1",
+    "normalize-url": "^6.0.1",
     "trim-newlines": "^3.0.0",
-    "normalize-url": "^6.0.1"
+    "underscore": "^1.12.1"
   }
 }
