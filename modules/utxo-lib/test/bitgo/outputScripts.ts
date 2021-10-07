@@ -16,36 +16,32 @@ describe('createOutputScript2of3()', function () {
   const p2tr = '5120c7c8dee54b739f805aeaeb0458eedc3b153e8008f1b609bf79e8c887a9350e39';
 
   scriptTypes2Of3.forEach((scriptType) => {
-    if (scriptType === 'p2tr') {
-      it(`creates taproot script`, function () {
-        const output = createTaprootScript2of3(pubkeys);
-        assert.strictEqual(output.scriptPubKey.toString('hex'), p2tr);
-        // TODO: validate script control blocks once they are returned by payments.p2tr()
-      });
-    } else {
-      it(`creates output script (type=${scriptType})`, function () {
-        const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType);
+    it(`creates output script (type=${scriptType})`, function () {
+      const { scriptPubKey, redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType);
 
-        switch (scriptType) {
-          case 'p2sh':
-            assert.strictEqual(scriptPubKey.toString('hex'), 'a91491590bed8198ea7ca57ba68ab7cbfabc656cbbaf87');
-            assert.strictEqual(redeemScript && redeemScript.toString('hex'), p2ms);
-            assert.strictEqual(witnessScript, undefined);
-            break;
-          case 'p2shP2wsh':
-            assert.strictEqual(scriptPubKey.toString('hex'), 'a9140312dd6f801ab11d53c35f6a2bdac9c602a55d9d87');
-            assert.strictEqual(redeemScript && redeemScript.toString('hex'), p2wsh);
-            assert.strictEqual(witnessScript && witnessScript.toString('hex'), p2ms);
-            break;
-          case 'p2wsh':
-            assert.strictEqual(scriptPubKey.toString('hex'), p2wsh);
-            assert.strictEqual(redeemScript, undefined);
-            assert.strictEqual(witnessScript && witnessScript.toString('hex'), p2ms);
-            break;
-          default:
-            throw new Error(`unexpected type ${scriptType}`);
-        }
-      });
-    }
+      switch (scriptType) {
+        case 'p2sh':
+          assert.strictEqual(scriptPubKey.toString('hex'), 'a91491590bed8198ea7ca57ba68ab7cbfabc656cbbaf87');
+          assert.strictEqual(redeemScript && redeemScript.toString('hex'), p2ms);
+          assert.strictEqual(witnessScript, undefined);
+          break;
+        case 'p2shP2wsh':
+          assert.strictEqual(scriptPubKey.toString('hex'), 'a9140312dd6f801ab11d53c35f6a2bdac9c602a55d9d87');
+          assert.strictEqual(redeemScript && redeemScript.toString('hex'), p2wsh);
+          assert.strictEqual(witnessScript && witnessScript.toString('hex'), p2ms);
+          break;
+        case 'p2wsh':
+          assert.strictEqual(scriptPubKey.toString('hex'), p2wsh);
+          assert.strictEqual(redeemScript, undefined);
+          assert.strictEqual(witnessScript && witnessScript.toString('hex'), p2ms);
+          break;
+        case 'p2tr':
+          assert.strictEqual(scriptPubKey.toString('hex'), p2tr);
+          // TODO: validate script control blocks once they are returned by payments.p2tr()
+          break;
+        default:
+          throw new Error(`unexpected type ${scriptType}`);
+      }
+    });
   });
 });

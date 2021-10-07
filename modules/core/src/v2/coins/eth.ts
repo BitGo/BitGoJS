@@ -44,6 +44,7 @@ import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
+import * as accountLib from '@bitgo/account-lib';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -404,6 +405,10 @@ export class Eth extends BaseCoin {
 
   getFamily(): string {
     return 'eth';
+  }
+
+  getNetwork(): EthereumNetwork | undefined {
+    return this.staticsCoin?.network as EthereumNetwork;
   }
 
   getFullName(): string {
@@ -1660,7 +1665,7 @@ export class Eth extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
-    // base address is required to calculate the salt which is used in calculateEthAddress2 method
+    // base address is required to calculate the salt which is used in calculateForwarderV1Address method
     if (_.isUndefined(baseAddress) || !self.isValidAddress(baseAddress)) {
       throw new InvalidAddressError('invalid base address');
     }
@@ -1674,8 +1679,11 @@ export class Eth extends BaseCoin {
     if (coinSpecific.forwarderVersion === 0) {
       return true;
     } else {
-      const forwarderFactoryAddress = config.defaults[self.getChain()].forwarderFactoryAddress;
-      const initcode = Util.getProxyInitcode(config.defaults[self.getChain()].forwarderImplementationAddress);
+      const ethNetwork = self.getNetwork();
+      const forwarderFactoryAddress = ethNetwork?.forwarderFactoryAddress as string;
+      const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
+
+      const initcode = accountLib.Eth.Utils.getProxyInitcode(forwarderImplementationAddress);
       const saltBuffer = optionalDeps.ethUtil.setLengthLeft(coinSpecific.salt, 32);
 
       // Hash the wallet base address with the given salt, so the address directly relies on the base address
@@ -1683,7 +1691,11 @@ export class Eth extends BaseCoin {
         optionalDeps.ethAbi.soliditySHA3(['address', 'bytes32'], [baseAddress, saltBuffer])
       );
 
-      expectedAddress = Util.calculateEthAddress2(forwarderFactoryAddress, calculationSalt, initcode);
+      expectedAddress = accountLib.Eth.Utils.calculateForwarderV1Address(
+        forwarderFactoryAddress,
+        calculationSalt,
+        initcode
+      );
       actualAddress = address;
     }
 
@@ -1710,6 +1722,7 @@ export class Eth extends BaseCoin {
    */
   verifyTransaction(params: VerifyEthTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     const self = this;
+    const ethNetwork = self.getNetwork();
     return co<boolean>(function* (): any {
       const { txParams, txPrebuild, wallet } = params;
       if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
@@ -1760,7 +1773,7 @@ export class Eth extends BaseCoin {
         }
 
         // Check batch transaction is sent to the batcher contract address for the chain
-        const batcherContractAddress = (self.staticsCoin?.network as EthereumNetwork).batcherContractAddress;
+        const batcherContractAddress = ethNetwork?.batcherContractAddress;
         if (
           !batcherContractAddress ||
           batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()

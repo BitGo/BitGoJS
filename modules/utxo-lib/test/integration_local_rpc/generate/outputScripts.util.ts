@@ -67,25 +67,21 @@ export function isSupportedSpendType(network: Network, scriptType: ScriptType): 
  * @return {Buffer} scriptPubKey
  */
 export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, network: Network): Buffer {
-  const pubkeys = keys.map((k) => k.publicKey) as [Buffer, Buffer, Buffer];
+  const pubkeys = keys.map((k) => k.publicKey);
 
   switch (scriptType) {
     case 'p2sh':
     case 'p2shP2wsh':
     case 'p2wsh':
-      return createOutputScript2of3(pubkeys, scriptType).scriptPubKey;
     case 'p2tr':
-      return createTaprootScript2of3(pubkeys).scriptPubKey;
-  }
-
-  switch (scriptType) {
+      return createOutputScript2of3(pubkeys, scriptType).scriptPubKey;
     case 'p2pkh':
       return utxolib.payments.p2pkh({ pubkey: keys[0].publicKey }).output;
     case 'p2wkh':
       return utxolib.payments.p2wpkh({ pubkey: keys[0].publicKey }).output;
+    default:
+      throw new Error(`unsupported output type ${scriptType}`);
   }
-
-  throw new Error(`unsupported output type ${scriptType}`);
 }
 
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(

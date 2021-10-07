@@ -33,6 +33,12 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
     }
   });
 
+  if (scriptType === 'p2tr') {
+    // p2tr addresses use a combination of 2 of 2 multisig scripts distinct from
+    // the 2 of 3 multisig used for other script types
+    return createTaprootScript2of3(pubkeys as [Buffer, Buffer, Buffer]);
+  }
+
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
   assert(script2of3.output);
 
@@ -74,13 +80,7 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
  * @returns {{scriptPubKey}}
  */
-export function createTaprootScript2of3([userKey, backupKey, bitGoKey]: [Buffer, Buffer, Buffer]): SpendableScript {
-  [userKey, backupKey, bitGoKey].forEach((key) => {
-    if (key.length !== 33 && key.length !== 32) {
-      throw new Error(`Unexpected key length ${key.length}. Must use compressed keys.`);
-    }
-  });
-
+function createTaprootScript2of3([userKey, backupKey, bitGoKey]: [Buffer, Buffer, Buffer]): SpendableScript {
   const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);
   const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIGVERIFY]);
   const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIGVERIFY]);

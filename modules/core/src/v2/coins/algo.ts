@@ -134,13 +134,8 @@ export class Algo extends BaseCoin {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed(type?: unknown): boolean {
-    // TODO: this sounds like its true with the staking txes - confirm before launch
-    if (typeof type === 'string' && (type === this.ENABLE_TOKEN || type === this.DISABLE_TOKEN)) {
-      return true;
-    }
-
-    return false;
+  valuelessTransferAllowed(): boolean {
+    return true;
   }
 
   /**

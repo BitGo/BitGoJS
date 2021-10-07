@@ -197,46 +197,4 @@ export class Util {
     const pubKey = ethUtil.ecrecover(Buffer.from(msgHash, 'hex'), v, r, s);
     return ethUtil.bufferToHex(ethUtil.pubToAddress(pubKey));
   }
-
-  // TODO (BG-35735): move getProxyInitcode, calculateEthAddress and calculateEthAddress2 to account-lib
-  /**
-   * Take the implementation address for the proxy contract, and get the binary initcode for the associated proxy
-   * @param implementationAddress The address of the implementation contract for the proxy
-   * @return {string} Binary hex string of the proxy
-   */
-  static getProxyInitcode = (implementationAddress) => {
-    const target = ethUtil.stripHexPrefix(implementationAddress.toLowerCase()).padStart(40, '0');
-
-    // bytecode of the proxy, from:
-    // https://github.com/BitGo/eth-multisig-v4/blob/d546a937f90f93e83b3423a5bf933d1d77c677c3/contracts/CloneFactory.sol#L42-L56
-    return `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${target}5af43d82803e903d91602b57fd5bf3`;
-  };
-
-  /**
-   * Calculate the address that will be generated if `creatorAddress` creates it with nonce `creatorNonce
-   * @param creatorAddress The address that is sending the tx to create a new address
-   * @param creatorNonce The nonce of the tx where the address creation will happen
-   * @return {String} The calculated address
-   */
-  static calculateEthAddress = function (creatorAddress, creatorNonce) {
-    return ethUtil.bufferToHex(ethUtil.generateAddress(creatorAddress, creatorNonce));
-  };
-
-  /**
-   * Calculate the address that will be generated if `creatorAddress` creates it with salt `salt`
-   * and initcode `inicode using the create2 opcode
-   * @param creatorAddress The address that is sending the tx to create a new address, hex string
-   * @param salt The salt to create the address with using create2, hex string
-   * @param initcode The initcode that will be deployed to the address, hex string
-   * @return {String} The calculated address
-   */
-  static calculateEthAddress2 = function (creatorAddress, salt, initcode) {
-    return ethUtil.bufferToHex(
-      ethUtil.generateAddress2(
-        Buffer.from(ethUtil.stripHexPrefix(creatorAddress), 'hex'),
-        Buffer.from(ethUtil.stripHexPrefix(salt), 'hex'),
-        Buffer.from(ethUtil.stripHexPrefix(initcode), 'hex')
-      )
-    );
-  };
 }

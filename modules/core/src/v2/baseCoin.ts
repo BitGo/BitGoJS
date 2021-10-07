@@ -178,6 +178,7 @@ export interface AddressCoinSpecific {
   witnessScript?: string;
   baseAddress?: string;
   pendingChainInitialization?: boolean;
+  forwarderVersion?: number;
 }
 
 export interface FullySignedTransaction {
