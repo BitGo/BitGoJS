@@ -61,6 +61,5 @@
     "ts-node": "^9.1.1",
     "typescript": "^4.4.3"
   },
-  "license": "MIT",
-  "gitHead": "5c418dbf2a79c4d422713a3ec150482854054283"
+  "license": "MIT"
 }
