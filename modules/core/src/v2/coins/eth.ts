@@ -1096,14 +1096,14 @@ export class Eth extends BaseCoin {
       };
 
       // Build contract call and sign it
-      const tx = Eth.buildTransaction(txParams);
+      let tx = Eth.buildTransaction(txParams);
 
       if (isUnsignedSweep) {
         return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
       }
 
       if (!isKrsRecovery) {
-        tx.sign(backupSigningKey);
+        tx = tx.sign(backupSigningKey);
       }
 
       const signedTx: RecoveryInfo = {
