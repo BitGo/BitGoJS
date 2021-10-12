@@ -84,4 +84,8 @@ parser.addArgument(['--authversion'], {
   help: 'BitGo authentication scheme version to use (default 2). See BitGo documentation for more details on auth versions.',
 });
 
+parser.addArgument(['--externalSignerUrl'], {
+  help: 'Signing option which enables the external signing API.',
+});
+
 export const args = () => parser.parseArgs();

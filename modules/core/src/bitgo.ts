@@ -76,6 +76,7 @@ export interface BitGoOptions {
   etherscanApiToken?: string;
   hmacVerification?: boolean;
   authVersion?: 2 | 3;
+  externalSignerUrl?: string;
 }
 
 export interface User {
@@ -359,6 +360,7 @@ export class BitGo {
   private _pendingApprovals?: any;
   private _hmacVerification = true;
   private readonly _authVersion: Exclude<BitGoOptions['authVersion'], undefined> = 2;
+  private readonly _externalSignerUrl?: string;
   /**
    * Constructor for BitGo Object
    */
@@ -411,6 +413,10 @@ export class BitGo {
 
     if (params.authVersion !== undefined) {
       this._authVersion = params.authVersion;
+    }
+
+    if (params.externalSignerUrl !== undefined) {
+      this._externalSignerUrl = params.externalSignerUrl;
     }
 
     // if this env is an alias, swap it out with the equivalent supported environment

@@ -1765,9 +1765,24 @@ export class Wallet {
         throw new Error('txPrebuild must be an object');
       }
       const presign = yield self.baseCoin.presignTransaction(params);
-      const userPrv = self.getUserPrv(presign);
-      const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
-      return self.baseCoin.signTransaction(signingParams);
+      const externalSignerUrl = this.bitgo._externalSignerUrl;
+      if (externalSignerUrl) {
+        return fetch(externalSignerUrl, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            txPrebuild: txPrebuild,
+            presign: presign,
+          }),
+        }).then(response => response.json() as SignedTransaction);
+      } else {
+        const userPrv = self.getUserPrv(presign);
+        const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
+        return self.baseCoin.signTransaction(signingParams);
+      }
     }).call(this).asCallback(callback);
   }
 

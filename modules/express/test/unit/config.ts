@@ -53,6 +53,7 @@ describe('Config:', () => {
       timeout: 'argtimeout',
       customrooturi: 'argcustomRootUri',
       custombitcoinnetwork: 'argcustomBitcoinNetwork',
+      externalSignerUrl: 'argCustomExternalSignerUrl',
     });
     const envStub = sinon.stub(process, 'env').value({
       BITGO_PORT: 'env12345',
@@ -69,6 +70,7 @@ describe('Config:', () => {
       BITGO_TIMEOUT: 'envtimeout',
       BITGO_CUSTOM_ROOT_URI: 'envcustomRootUri',
       BITGO_CUSTOM_BITCOIN_NETWORK: 'envcustomBitcoinNetwork',
+      BITGO_EXTERNAL_SIGNER_URL: 'envCustomExternalSignerUrl',
     });
     config().should.eql({
       port: 23456,
@@ -86,6 +88,7 @@ describe('Config:', () => {
       customRootUri: 'argcustomRootUri',
       customBitcoinNetwork: 'argcustomBitcoinNetwork',
       authVersion: 2,
+      externalSignerUrl: 'argCustomExternalSignerUrl',
     });
     argStub.restore();
     envStub.restore();
