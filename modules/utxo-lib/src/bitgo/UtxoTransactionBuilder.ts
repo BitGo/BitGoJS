@@ -54,14 +54,28 @@ export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction>
     witnessValue?: number,
     witnessScript?: Buffer
   ): void {
-    if (typeof signParams !== 'number') {
-      throw new Error(`TxbSignArg not supported yet`);
+    // Regular bitcoin p2sh-p2ms inputs do not include the input amount (value) in the signature and
+    // thus do not require the parameter `value` to be set.
+    // For bitcoincash and bitcoinsv p2sh-p2ms inputs, the value parameter *is* required however.
+    // Since the `value` parameter is not passed to the legacy hashing method, we must store it
+    // on the transaction input object.
+
+    if (typeof signParams === 'number') {
+      if (typeof witnessValue === 'number') {
+        (this.tx.ins[signParams] as any).value = witnessValue;
+      }
+
+      return super.sign(signParams, keyPair, redeemScript, hashType, witnessValue, witnessScript);
     }
 
-    if (typeof witnessValue === 'number') {
-      (this.tx.ins[signParams] as any).value = witnessValue;
+    if (signParams.witnessValue !== undefined) {
+      (this.tx.ins[signParams.vin] as any).value = signParams.witnessValue;
     }
-
-    return super.sign(signParams, keyPair, redeemScript, hashType, witnessValue, witnessScript);
+    // When calling the sign method via TxbSignArg, the `value` parameter is actually not permitted
+    // to be set for p2sh-p2ms transactions.
+    if (signParams.prevOutScriptType === 'p2sh-p2ms') {
+      delete signParams.witnessValue;
+    }
+    return super.sign(signParams);
   }
 }
