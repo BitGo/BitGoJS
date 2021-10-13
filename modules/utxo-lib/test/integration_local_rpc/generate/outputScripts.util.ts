@@ -89,7 +89,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
 }
 
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
-  keys: bip32.BIP32Interface[],
+  keys: KeyTriple,
   scriptType: ScriptType2Of3,
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
