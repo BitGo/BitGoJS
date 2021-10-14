@@ -435,6 +435,18 @@ export function stringifyCv(cv: ClarityValue): any {
     case ClarityType.Int:
     case ClarityType.UInt:
       return { type: cv.type, value: cv.value.toString() };
+    case ClarityType.OptionalSome:
+      return { type: cv.type, value: stringifyCv(cv.value) };
+    case ClarityType.Tuple:
+      return {
+        type: cv.type,
+        data: _.mapValues(cv.data, (value) => stringifyCv(value)),
+      };
+    case ClarityType.List:
+      return {
+        type: cv.type,
+        list: cv.list.map(stringifyCv),
+      };
     default:
       return cv;
   }

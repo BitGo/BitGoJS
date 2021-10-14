@@ -1,8 +1,9 @@
 import should from 'should';
-import { AddressVersion } from '@stacks/transactions';
+import { AddressVersion, ClarityType, IntCV, NoneCV, SomeCV, UIntCV, ListCV } from '@stacks/transactions';
 import * as testData from '../../../resources/stx/stx';
 import * as Utils from '../../../../src/coin/stx/utils';
 import { Stx } from '../../../../src';
+import BigNum from 'bn.js';
 
 describe('Stx util library', function () {
   describe('address', function () {
@@ -264,6 +265,55 @@ describe('Stx util library', function () {
         testData.expectedSignature1,
         keyPair2.getKeys().pub,
       ).should.be.false();
+    });
+  });
+
+  describe('stringifyCv', function () {
+    it('Int type', function () {
+      const input: IntCV = { type: ClarityType.Int, value: BigInt('100000') };
+      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 0, value: '100000' });
+    });
+
+    it('UInt type', function () {
+      const input: UIntCV = { type: ClarityType.UInt, value: BigInt('100000') };
+      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 1, value: '100000' });
+    });
+
+    it('OptionalNone type', function () {
+      const input: NoneCV = { type: ClarityType.OptionalNone };
+      Stx.Utils.stringifyCv(input).should.deepEqual(input);
+    });
+
+    it('OptionalSome type with uint value', function () {
+      const input: SomeCV = {
+        type: ClarityType.OptionalSome,
+        value: { type: ClarityType.UInt, value: BigInt('100000') },
+      };
+      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 10, value: { type: 1, value: '100000' } });
+    });
+
+    it('OptionalSome type with tuple value', function () {
+      const input: SomeCV = {
+        type: ClarityType.OptionalSome,
+        value: {
+          type: ClarityType.Tuple,
+          data: {
+            hashbytes: { type: ClarityType.Buffer, buffer: Buffer.from('some-hash') },
+            version: { type: ClarityType.Buffer, buffer: new BigNum(1).toBuffer() },
+          },
+        },
+      };
+      Stx.Utils.stringifyCv(input).should.deepEqual(input);
+    });
+
+    it('List type', function () {
+      const input: ListCV = { type: ClarityType.List, list: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
+      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [{ type: 1, value: '100000' }] });
+    });
+
+    it('List type with empty list', function () {
+      const input: ListCV = { type: ClarityType.List, list: [] };
+      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
     });
   });
 });
