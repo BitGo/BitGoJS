@@ -864,7 +864,7 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
-  terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
+  terc20('terc', 'Test ERC Token', 18, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20(
     'terc2dp',
     'Test ERC Token 2 Decimals',
