@@ -1055,7 +1055,9 @@ export class Wallet {
       params = params || {};
       common.validateParams(params, ['address'], ['walletPassphrase', 'xprv', 'otp'], callback);
 
-      if (['eth', 'xrp'].includes(self.baseCoin.getFamily())) {
+      // The sweep API endpoint is only available to utxo-based coins
+
+      if (!(self.baseCoin as any instanceof AbstractUtxoCoin)) {
         if (self.confirmedBalanceString() !== self.balanceString()) {
           throw new Error('cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm');
         }
