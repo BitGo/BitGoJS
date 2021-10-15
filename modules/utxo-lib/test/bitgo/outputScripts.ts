@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { createOutputScript2of3, createTaprootScript2of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+import { createOutputScript2of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 
 import { getKeyTriple } from '../integration_local_rpc/generate/outputScripts.util';
 

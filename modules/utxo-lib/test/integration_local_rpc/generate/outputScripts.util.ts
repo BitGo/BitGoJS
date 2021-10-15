@@ -4,8 +4,8 @@ import { Network } from '../../../src/networkTypes';
 import { Triple } from './types';
 import {
   createOutputScript2of3,
-  createTaprootScript2of3,
   ScriptType2Of3,
+  scriptType2Of3AsPrevOutType,
   scriptTypes2Of3,
 } from '../../../src/bitgo/outputScripts';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
@@ -51,6 +51,10 @@ export function isSupportedDepositType(network: Network, scriptType: ScriptType)
 }
 
 export function isSupportedSpendType(network: Network, scriptType: ScriptType): boolean {
+  // TODO: enable this when p2tr signing is implemented
+  if (scriptType === 'p2tr') {
+    return false;
+  }
   if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
     return false;
   }
@@ -114,14 +118,15 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
 
   prevOutputs.forEach(([, , value], vin) => {
     signKeys.forEach((key) => {
-      txBuilder.sign(
+      txBuilder.sign({
+        prevOutScriptType: scriptType2Of3AsPrevOutType(scriptType),
         vin,
-        Object.assign(key, { network: null }),
+        keyPair: Object.assign(key, { network: null }),
         redeemScript,
-        getDefaultSigHash(network),
-        value,
-        witnessScript
-      );
+        hashType: getDefaultSigHash(network),
+        witnessValue: value,
+        witnessScript,
+      });
     });
   });
 

@@ -105,6 +105,8 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
           case 'p2wsh':
             assert.strictEqual(result.inputClassification, 'witnessscripthash');
             break;
+          default:
+            throw new Error(`unknown scriptType ${scriptType}`);
         }
       });
     });
@@ -185,9 +187,6 @@ describe(`regtest fixtures`, function () {
 
     describe(`${networkName} fixtures`, function () {
       scriptTypes.forEach((scriptType) => {
-        if (scriptType === 'p2tr') {
-          return; // TODO: enable p2tr tests when signing is supported
-        }
         fixtureTxTypes.forEach((txType) => {
           runTestParse(network, txType, scriptType);
         });

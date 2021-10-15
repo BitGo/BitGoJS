@@ -41,13 +41,16 @@ describe('Stx Contract call Builder', () => {
       builder.functionArgs([
         { type: 'uint128', val: '400000000' },
         { type: 'principal', val: testData.ACCOUNT_2.address },
-        { type: 'uint128', val: '200' },
+        { type: 'optional', val: { type: 'uint128', val: '200' } },
         {
-          type: 'tuple',
-          val: [
-            { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
-            { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
-          ],
+          type: 'optional',
+          val: {
+            type: 'tuple',
+            val: [
+              { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
+              { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
+            ],
+          },
         },
       ]);
       builder.fromPubKey(testData.TX_SENDER.pub);
@@ -76,13 +79,16 @@ describe('Stx Contract call Builder', () => {
       builder.functionArgs([
         { type: 'uint128', val: '400000000' },
         { type: 'principal', val: testData.ACCOUNT_2.address },
-        { type: 'uint128', val: '200' },
+        { type: 'optional' },
         {
-          type: 'tuple',
-          val: [
-            { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
-            { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
-          ],
+          type: 'optional',
+          val: {
+            type: 'tuple',
+            val: [
+              { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
+              { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
+            ],
+          },
         },
       ]);
       builder.sign({ key: testData.TX_SENDER.prv });
@@ -108,7 +114,7 @@ describe('Stx Contract call Builder', () => {
     it('a signed contract call transaction', async () => {
       const amount = 123;
       const builder = initTxBuilder();
-      builder.functionArgs([{ type: 'int128', val: amount }]);
+      builder.functionArgs([{ type: 'optional', val: { type: 'int128', val: amount } }]);
       builder.sign({ key: testData.TX_SENDER.prv });
       const tx = await builder.build();
 
@@ -118,7 +124,7 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
-      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(intCV(amount))]);
+      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(someCV(intCV(amount)))]);
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
     });
@@ -132,7 +138,7 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
-      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(intCV('123'))]);
+      should.deepEqual(txJson.payload.functionArgs, [stringifyCv(someCV(intCV(123)))]);
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
       tx.outputs.length.should.equal(1);
@@ -145,7 +151,7 @@ describe('Stx Contract call Builder', () => {
 
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
-      builder.functionArgs([{ type: 'int128', val: '123' }]);
+      builder.functionArgs([{ type: 'optional', val: { type: 'int128', val: '123' } }]);
       builder.network(new StacksTestnet());
 
       builder.sign({ key: testData.prv1 });

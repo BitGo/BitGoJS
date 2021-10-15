@@ -42,7 +42,7 @@ async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
 }
 
 function toRegtestAddress(network: { bech32?: string }, scriptType: ScriptType, script: Buffer): string {
-  if (scriptType === 'p2wsh' || scriptType === 'p2wkh') {
+  if (scriptType === 'p2wsh' || scriptType === 'p2wkh' || scriptType === 'p2tr') {
     switch (network) {
       case utxolib.networks.testnet:
         network = { bech32: 'bcrt' };

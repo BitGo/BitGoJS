@@ -96,8 +96,8 @@ export const coins = CoinMap.fromCoins([
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
-  account('stx', 'Blockstack', Networks.main.stx, 6, UnderlyingAsset.STX),
-  account('tstx', 'Testnet Blockstack', Networks.test.stx, 6, UnderlyingAsset.STX),
+  account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX),
+  account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
@@ -864,7 +864,7 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
-  terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
+  terc20('terc', 'Test ERC Token', 18, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20(
     'terc2dp',
     'Test ERC Token 2 Decimals',
