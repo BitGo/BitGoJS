@@ -1,5 +1,5 @@
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
-import { crypto as bcrypto } from 'bitcoinjs-lib';
+import { crypto as bcrypto, Transaction } from 'bitcoinjs-lib';
 
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { Network } from '../../networkTypes';
@@ -32,6 +32,9 @@ export class DashTransaction extends UtxoTransaction {
         this.extraPayload = tx.extraPayload;
       }
     }
+
+    // since `__toBuffer` is private we have to do a little hack here
+    (this as any).__toBuffer = this.toBufferWithExtraPayload;
   }
 
   static fromTransaction(tx: DashTransaction): DashTransaction {
@@ -58,16 +61,44 @@ export class DashTransaction extends UtxoTransaction {
     return super.byteLength(_ALLOW_WITNESS) + (this.extraPayload ? varSliceSize(this.extraPayload) : 0);
   }
 
-  toBuffer(buffer?: Buffer, initialOffset?: number): Buffer {
-    const buf = Buffer.allocUnsafe(this.byteLength());
-    const result = super.toBuffer(buf);
-    const bufferWriter = new BufferWriter(result, 0);
+  /**
+   * Helper to override `__toBuffer()` of bitcoinjs.Transaction.
+   * Since the method is private, we use a hack in the constructor to make it work.
+   *
+   * TODO: remove `private` modifier in bitcoinjs `__toBuffer()` or find some other solution
+   *
+   * @param buffer - optional target buffer
+   * @param initialOffset - can only be undefined or 0. Other values are only used for serialization in blocks.
+   * @param _ALLOW_WITNESS - ignored
+   */
+  private toBufferWithExtraPayload(buffer?: Buffer, initialOffset?: number, _ALLOW_WITNESS = false): Buffer {
+    // We can ignore the `_ALLOW_WITNESS` parameter here since it has no effect.
+    if (!buffer) {
+      buffer = Buffer.allocUnsafe(this.byteLength(false));
+    }
+
+    if (initialOffset !== undefined && initialOffset !== 0) {
+      throw new Error(`not supported`);
+    }
+
+    // Start out with regular bitcoin byte sequence.
+    // This buffer will have excess size because it uses `byteLength()` to allocate.
+    const baseBuffer = (Transaction.prototype as any).__toBuffer.call(this);
+    baseBuffer.copy(buffer);
+
+    // overwrite leading version bytes (uint16 version, uint16 type)
+    const bufferWriter = new BufferWriter(buffer, 0);
     bufferWriter.writeUInt32((this.version & 0xffff) | (this.type << 16));
+
+    // Seek to end of original byte sequence and add extraPayload.
+    // We must use the byteLength as calculated by the bitcoinjs implementation since
+    // `baseBuffer` has an excess size.
     if (this.extraPayload) {
-      bufferWriter.offset = super.byteLength();
+      bufferWriter.offset = Transaction.prototype.byteLength.call(this);
       bufferWriter.writeVarSlice(this.extraPayload);
     }
-    return result;
+
+    return buffer;
   }
 
   getHash(forWitness?: boolean): Buffer {
