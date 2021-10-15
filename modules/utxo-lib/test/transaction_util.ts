@@ -12,7 +12,7 @@ import {
 } from '../src/bitgo';
 import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import { createOutputScript2of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
+import { createOutputScript2of3, ScriptType2Of3, scriptType2Of3AsPrevOutType } from '../src/bitgo/outputScripts';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
   if (length === 0) {
@@ -85,14 +85,15 @@ export function getTransactionBuilder(
 
   prevOutputs.forEach(([, , value], vin) => {
     signKeys.forEach((key) => {
-      txBuilder.sign(
+      txBuilder.sign({
+        prevOutScriptType: scriptType2Of3AsPrevOutType(scriptType),
         vin,
-        Object.assign(key, { network }),
+        keyPair: Object.assign(key, { network }),
         redeemScript,
-        getDefaultSigHash(network),
-        value,
-        witnessScript
-      );
+        hashType: getDefaultSigHash(network),
+        witnessValue: value,
+        witnessScript,
+      });
     });
   });
 

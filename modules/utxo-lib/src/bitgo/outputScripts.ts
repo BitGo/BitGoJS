@@ -9,6 +9,23 @@ export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
   return scriptTypes2Of3.includes(t as ScriptType2Of3);
 }
 
+/**
+ * @param t
+ * @return string prevOut as defined in PREVOUT_TYPES (bitcoinjs-lib/.../transaction_builder.js)
+ */
+export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
+  switch (t) {
+    case 'p2sh':
+      return 'p2sh-p2ms';
+    case 'p2shP2wsh':
+      return 'p2sh-p2wsh-p2ms';
+    case 'p2wsh':
+      return 'p2wsh-p2ms';
+    default:
+      throw new Error(`unsupported script type ${t}`);
+  }
+}
+
 export type SpendableScript = {
   scriptPubKey: Buffer;
   redeemScript?: Buffer;
