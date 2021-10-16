@@ -367,6 +367,7 @@ export class Eth extends BaseCoin {
       nonce: params.nonce,
       value: params.value,
       data: params.data,
+      gasLimit: new optionalDeps.ethUtil.BN(params.gasLimit),
     };
 
     const unsignedEthTx = !!params.eip1559
@@ -382,7 +383,6 @@ export class Eth extends BaseCoin {
           {
             ...baseParams,
             gasPrice: new optionalDeps.ethUtil.BN(params.gasPrice),
-            gasLimit: new optionalDeps.ethUtil.BN(params.gasLimit),
           },
           { common: ethCommon }
         );
