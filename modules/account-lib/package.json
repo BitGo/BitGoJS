@@ -24,7 +24,8 @@
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
     "test": "npm run unit-test",
-    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
+    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
+    "test-dot": "nyc -- mocha --opts test/mocha.opts \"test/unit/coin/dot/**/*.ts\""
   },
   "repository": {
     "type": "git",
@@ -41,6 +42,9 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@hashgraph/sdk": "^2.0.17",
+    "@polkadot/api": "^6.4.1",
+    "@polkadot/keyring": "^7.5.1",
+    "@polkadot/util-crypto": "^7.5.1",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@stacks/transactions": "2.0.1",

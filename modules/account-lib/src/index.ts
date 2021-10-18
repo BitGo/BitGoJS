@@ -47,6 +47,9 @@ export { Stx };
 import * as Algo from './coin/algo';
 export { Algo };
 
+import * as Dot from './coin/dot';
+export { Dot };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
