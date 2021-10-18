@@ -33,11 +33,11 @@ function allHexChars(maybe: string): boolean {
 
 /**
  * ConcatArrays takes two array and returns a joint array of both
- * @param a
- * @param b
+ * @param a {Buffer}
+ * @param b {Buffer}
  * @returns {Uint8Array} [a,b]
  */
-function concatArrays(a, b) {
+function concatArrays(a: Buffer, b: Buffer): Uint8Array {
   const c = new Uint8Array(a.length + b.length);
   c.set(a);
   c.set(b, a.length);
@@ -148,9 +148,9 @@ export class Utils implements BaseUtils {
     // get seed
     const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
     // compute checksum
-    const checksum = sha512.sha512_256
-      .array(seed)
-      .slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH);
+    const checksum = Buffer.from(
+      sha512.sha512_256.array(seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
+    );
     const encodedSeed = base32.encode(concatArrays(seed, checksum));
 
     return encodedSeed.toString().slice(0, ALGORAND_SEED_LENGTH); // removing the extra '===='
