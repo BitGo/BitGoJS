@@ -33,6 +33,7 @@ function allHexChars(maybe: string): boolean {
 
 /**
  * ConcatArrays takes two array and returns a joint array of both
+ *
  * @param a {Buffer}
  * @param b {Buffer}
  * @returns {Uint8Array} [a,b]
