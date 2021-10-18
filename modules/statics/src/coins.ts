@@ -381,6 +381,7 @@ export const coins = CoinMap.fromCoins([
   erc20('idrc', 'Rupiah Coin', 18, '0x569f2241551011d5710c40fc61e0b3906c780b2f', UnderlyingAsset.IDRC),
   erc20('idrt', 'Rupiah Token', 2, '0x998ffe1e43facffb941dc337dd0468d52ba5b48a', UnderlyingAsset.IDRT),
   erc20('imx', 'Immutable X', 18, '0x65d0388c858acd99bdd1d44b00629d73f0ce4587', UnderlyingAsset.IMX),
+  erc20('imxv2', 'Immutable X', 18, '0xf57e7e7c23978c3caec3c3548e3d615c346e79ff', UnderlyingAsset.IMXV2),
   erc20('incx', 'InternationalCryptoX', 18, '0xa984a92731c088f1ea4d53b71a2565a399f7d8d5', UnderlyingAsset.INCX),
   erc20('ind', 'Indorse', 18, '0xf8e386eda857484f5a12e4b5daa9984e06e73705', UnderlyingAsset.IND),
   erc20('index', 'Index Coop', 18, '0x0954906da0bf32d5479e25f46056d22f08464cab', UnderlyingAsset.INDEX),
