@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 import { OP_CHECKSIG, OP_CHECKSIGVERIFY } from 'bitcoin-ops';
+import { isTriple, Triple } from './types';
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
@@ -30,20 +31,21 @@ export type SpendableScript = {
   scriptPubKey: Buffer;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
-  /** A triplet of control blocks for the user+bitgo, user+backup, and backup+bitgo scripts in that order. */
+  /** A triple of control blocks for the user+bitgo, user+backup, and backup+bitgo scripts in that order. */
   controlBlocks?: [userBitGoScript: Buffer, userBackupScript: Buffer, backupBitGoScript: Buffer];
 };
 
 /**
  * Return scripts for 2-of-3 multisig output
- * @param pubkeys - the key array for multisig
+ * @param pubkeys - the key triple for multisig
  * @param scriptType
  * @returns {{redeemScript, witnessScript, scriptPubKey}}
  */
 export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType2Of3): SpendableScript {
-  if (pubkeys.length !== 3) {
-    throw new Error(`must provide 3 pubkeys`);
+  if (!isTriple(pubkeys)) {
+    throw new Error(`must provide pubkey triple`);
   }
+
   pubkeys.forEach((key) => {
     if (key.length !== 33) {
       throw new Error(`Unexpected key length ${key.length}. Must use compressed keys.`);
@@ -53,7 +55,7 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
   if (scriptType === 'p2tr') {
     // p2tr addresses use a combination of 2 of 2 multisig scripts distinct from
     // the 2 of 3 multisig used for other script types
-    return createTaprootScript2of3(pubkeys as [Buffer, Buffer, Buffer]);
+    return createTaprootScript2of3(pubkeys);
   }
 
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
@@ -97,7 +99,7 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
  * @returns {{scriptPubKey}}
  */
-function createTaprootScript2of3([userKey, backupKey, bitGoKey]: [Buffer, Buffer, Buffer]): SpendableScript {
+function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>): SpendableScript {
   const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
   const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIG]);
   const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);

@@ -10,7 +10,7 @@ import {
   getDefaultSigHash,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, ScriptType2Of3, scriptType2Of3AsPrevOutType } from '../src/bitgo/outputScripts';
 
@@ -57,7 +57,7 @@ export const defaultTestOutputAmount = 1e8;
 type PrevOutput = [txid: string, index: number, amount: number];
 
 export function getTransactionBuilder(
-  keys: bip32.BIP32Interface[],
+  keys: KeyTriple,
   signKeys: bip32.BIP32Interface[],
   scriptType: ScriptType2Of3,
   network: Network,
