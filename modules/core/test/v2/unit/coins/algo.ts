@@ -670,5 +670,41 @@ describe('ALGO:', function () {
       explain.operations[0].type.should.equals('transferToken');
       explain.operations[0].coin.should.equals('talgo:1');
     });
+    it('should explain an enable USDT token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.enableTokenUSDT,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('enableToken');
+      explain.operations[0].coin.should.equals('talgo:180447');
+    });
+    it('should explain an enable USDC token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.enableTokenUSDC,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('enableToken');
+      explain.operations[0].coin.should.equals('talgo:10458941');
+    });
+    it('should explain an disable USDC token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.disableTokenUSDC,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('disableToken');
+      explain.operations[0].coin.should.equals('talgo:10458941');
+    });
+    it('should explain an transfer USDC token transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txHex: AlgoResources.explainRawTx.USDCAssetTransfer.signed,
+        feeInfo: { fee: '1000' },
+      });
+      explain.operations.length.should.equals(1);
+      explain.operations[0].type.should.equals('transferToken');
+      explain.operations[0].coin.should.equals('talgo:10458941');
+    });
   });
 });
