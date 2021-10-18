@@ -14,6 +14,8 @@ const co = Bluebird.coroutine;
 export interface OfcTokenConfig {
   type: string;
   coin: string;
+  networkName: string;
+  requiresExplicitNetwork: boolean;
   decimalPlaces: number;
   name: string;
   backingCoin: string;
@@ -40,6 +42,10 @@ export class OfcToken extends Ofc {
     return this.tokenConfig.coin;
   }
 
+  get networkName() {
+    return this.tokenConfig.networkName;
+  }
+
   get decimalPlaces() {
     return this.tokenConfig.decimalPlaces;
   }
@@ -62,6 +68,10 @@ export class OfcToken extends Ofc {
 
   getFullName() {
     return this.name;
+  }
+
+  getRequiresExplicitNetwork() {
+    return this.tokenConfig.requiresExplicitNetwork;
   }
 
   getBaseFactor() {

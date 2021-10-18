@@ -718,6 +718,7 @@ export interface BaseCoinConstructorOptions {
   suffix?: string;
   kind: CoinKind;
   isToken: boolean;
+  requiresExplicitNetwork: boolean;
   features: CoinFeature[];
   decimalPlaces: number;
   asset: UnderlyingAsset;
@@ -739,6 +740,7 @@ export abstract class BaseCoin {
   public readonly kind: CoinKind;
   public readonly family: CoinFamily;
   public readonly isToken: boolean;
+  public readonly requiresExplicitNetwork: boolean;
   /*
     Coin Features. These are yes or no questions about what the coin supports and does not support.
    */
@@ -816,6 +818,7 @@ export abstract class BaseCoin {
     this.kind = options.kind;
     this.family = options.network.family;
     this.isToken = options.isToken;
+    this.requiresExplicitNetwork = options.requiresExplicitNetwork;
     this.features = options.features;
     this.decimalPlaces = options.decimalPlaces;
     this.asset = options.asset;

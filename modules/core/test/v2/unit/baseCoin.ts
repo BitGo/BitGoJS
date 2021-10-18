@@ -102,11 +102,13 @@ describe('V2 Base Coin:', function () {
       // goerli token
       const goerliToken = bitgo.coin('gusdt');
       goerliToken.coin.should.equal('gteth');
+      goerliToken.networkName.should.equal('Goerli');
       goerliToken.network.should.equal('Testnet');
       goerliToken.getFamily().should.equal('eth');
       // kovan token
       const kovanToken = bitgo.coin('terc');
       kovanToken.coin.should.equal('teth');
+      kovanToken.networkName.should.equal('Kovan');
       kovanToken.network.should.equal('Testnet');
       kovanToken.getFamily().should.equal('eth');
     });

@@ -2,10 +2,13 @@ import { BaseCoin } from './base';
 import { DuplicateCoinDefinitionError, CoinNotDefinedError } from './errors';
 
 export class CoinMap {
+  // A mapping form coin name -> BaseCoin object
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
 
   private constructor() {}
 
+  // TODO: update formCoins to allow for duplicate coin names on different networks
+  // using a similar strategy to that used for coinFactory
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
     return coins.reduce((coinMap, coin) => {
       if (coinMap._map.has(coin.name)) {

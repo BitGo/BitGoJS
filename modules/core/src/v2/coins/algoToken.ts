@@ -12,6 +12,8 @@ export interface AlgoTokenConfig {
   type: string;
   coin: string;
   network: string;
+  networkName: string;
+  requiresExplicitNetwork: boolean;
   decimalPlaces: number;
 }
 
@@ -55,6 +57,10 @@ export class AlgoToken extends Algo {
     return this.tokenConfig.network;
   }
 
+  get networkName() {
+    return this.tokenConfig.networkName;
+  }
+
   get code() {
     return this._code;
   }
@@ -69,6 +75,10 @@ export class AlgoToken extends Algo {
 
   getChain() {
     return this.tokenConfig.type;
+  }
+
+  getRequiresExplicitNetwork() {
+    return this.tokenConfig.requiresExplicitNetwork;
   }
 
   getBaseChain() {

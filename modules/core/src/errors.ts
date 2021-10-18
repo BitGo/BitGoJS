@@ -35,6 +35,14 @@ export class UnsupportedCoinError extends BitGoJsError {
   }
 }
 
+export class ExplicitNetworkRequiredError extends BitGoJsError {
+  public constructor(coinIdentifier: string) {
+    super(`Coin or token type ${coinIdentifier} is either not supported, not compiled, or cannot be uniquely identified without explicitly providing its network. 
+      Try specifying both the network name and the identifier to determine if this coin is supported.`);
+    Object.setPrototypeOf(this, UnsupportedCoinError.prototype);
+  }
+}
+
 export class AddressTypeChainMismatchError extends BitGoJsError {
   constructor(addressType: string, chain: number | string) {
     super(`address type ${addressType} does not correspond to chain ${chain}`);

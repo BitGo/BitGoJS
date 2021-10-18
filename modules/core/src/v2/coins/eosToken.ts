@@ -11,6 +11,8 @@ export interface EosTokenConfig {
   type: string;
   coin: string;
   network: string;
+  networkName: string;
+  requiresExplicitNetwork: boolean;
   tokenContractAddress: string;
   decimalPlaces: number;
 }
@@ -43,6 +45,10 @@ export class EosToken extends Eos {
     return this.tokenConfig.network;
   }
 
+  get networkName() {
+    return this.tokenConfig.networkName;
+  }
+
   get tokenContractAddress() {
     return this.tokenConfig.tokenContractAddress;
   }
@@ -53,6 +59,10 @@ export class EosToken extends Eos {
 
   getChain() {
     return this.tokenConfig.type;
+  }
+
+  getRequiresExplicitNetwork() {
+    return this.tokenConfig.requiresExplicitNetwork;
   }
 
   getBaseChain() {

@@ -10,6 +10,7 @@ export interface AccountConstructorOptions {
   features: CoinFeature[];
   decimalPlaces: number;
   isToken: boolean;
+  requiresExplicitNetwork: boolean;
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
@@ -244,6 +245,7 @@ export class EosCoin extends AccountCoinToken {
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
+ * @param requiresExplicitNetwork? Whether or not this coin requires a network to be specified in order to uniquely identify it
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -253,6 +255,7 @@ export function account(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix: string = '',
@@ -266,6 +269,7 @@ export function account(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       isToken,
@@ -283,6 +287,7 @@ export function account(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Ethereum main network.
@@ -295,6 +300,7 @@ export function erc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -309,6 +315,7 @@ export function erc20(
       contractAddress,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       asset,
@@ -326,6 +333,7 @@ export function erc20(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the Kovan test network.
@@ -337,12 +345,24 @@ export function terc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.kovan
 ) {
-  return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return erc20(
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    requiresExplicitNetwork,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -354,6 +374,7 @@ export function terc20(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
@@ -366,6 +387,7 @@ export function erc20CompatibleAccountCoin(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -383,6 +405,7 @@ export function erc20CompatibleAccountCoin(
       decimalPlaces,
       asset,
       isToken: false,
+      requiresExplicitNetwork,
       primaryKeyCurve,
     })
   );
@@ -396,6 +419,7 @@ export function erc20CompatibleAccountCoin(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to CELO main network.
@@ -408,6 +432,7 @@ export function celoToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -426,6 +451,7 @@ export function celoToken(
       decimalPlaces,
       asset,
       isToken: true,
+      requiresExplicitNetwork,
       primaryKeyCurve,
     })
   );
@@ -439,6 +465,7 @@ export function celoToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the testnet CELO network.
@@ -450,12 +477,24 @@ export function tceloToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.celo
 ) {
-  return celoToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return celoToken(
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    requiresExplicitNetwork,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -465,6 +504,7 @@ export function tceloToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param domain Domain of the token issuer (used to access token information from the issuer's stellar.toml file)
  * See https://www.stellar.org/developers/guides/concepts/stellar-toml.html
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -478,6 +518,7 @@ export function stellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   domain: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -497,6 +538,7 @@ export function stellarToken(
       suffix,
       network,
       isToken: true,
+      requiresExplicitNetwork,
       primaryKeyCurve,
     })
   );
@@ -509,6 +551,7 @@ export function stellarToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param domain Domain of the token issuer (used to access token information from the issuer's stellar.toml file)
  * See https://www.stellar.org/developers/guides/concepts/stellar-toml.html
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -521,13 +564,25 @@ export function tstellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   domain: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.stellar
 ) {
-  return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
+  return stellarToken(
+    name,
+    fullName,
+    decimalPlaces,
+    asset,
+    requiresExplicitNetwork,
+    domain,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -538,6 +593,7 @@ export function tstellarToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to TRON main network.
@@ -550,6 +606,7 @@ export function tronToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -568,6 +625,7 @@ export function tronToken(
       decimalPlaces,
       asset,
       isToken: true,
+      requiresExplicitNetwork,
       primaryKeyCurve,
     })
   );
@@ -581,6 +639,7 @@ export function tronToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the testnet TRON network.
@@ -593,6 +652,7 @@ export function ttronToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -605,6 +665,7 @@ export function ttronToken(
     decimalPlaces,
     contractAddress,
     asset,
+    requiresExplicitNetwork,
     features,
     prefix,
     suffix,
@@ -620,6 +681,7 @@ export function ttronToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param nodeAccountId node account Id from which the transaction will be sent
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -633,6 +695,7 @@ export function hederaCoin(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   nodeAccountId: string = '0.0.3',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -645,6 +708,7 @@ export function hederaCoin(
       fullName,
       decimalPlaces,
       asset,
+      requiresExplicitNetwork,
       nodeAccountId,
       features,
       prefix,
@@ -663,6 +727,7 @@ export function hederaCoin(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param tokenURL Optional asset Url for more informationa about the asset
  * See https://developer.algorand.org/docs/reference/transactions/#url
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -676,6 +741,7 @@ export function algoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   tokenURL: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -689,6 +755,7 @@ export function algoToken(
       fullName,
       decimalPlaces,
       asset,
+      requiresExplicitNetwork,
       tokenURL: tokenURL,
       features,
       prefix,
@@ -707,6 +774,7 @@ export function algoToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param tokenURL Optional asset Url for more informationa about the asset
  * See https://developer.algorand.org/docs/reference/transactions/#url
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -719,13 +787,25 @@ export function talgoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   tokenURL: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.algorand
 ) {
-  return algoToken(name, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
+  return algoToken(
+    name,
+    fullName,
+    decimalPlaces,
+    asset,
+    requiresExplicitNetwork,
+    tokenURL,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -736,6 +816,7 @@ export function talgoToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractName Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to EOS main network.
@@ -748,6 +829,7 @@ export function eosToken(
   decimalPlaces: number,
   contractName: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -762,6 +844,7 @@ export function eosToken(
       contractName,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       asset,
@@ -779,6 +862,7 @@ export function eosToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork? Whether or not this token requires a network to be specified in order to uniquely identify it
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the testnet EOS network.
@@ -790,10 +874,22 @@ export function teosToken(
   decimalPlaces: number,
   contractName: string,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.eos
 ) {
-  return eosToken(name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
+  return eosToken(
+    name,
+    fullName,
+    decimalPlaces,
+    contractName,
+    asset,
+    requiresExplicitNetwork,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }

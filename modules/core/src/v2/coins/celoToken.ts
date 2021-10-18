@@ -12,6 +12,8 @@ export interface CeloTokenConfig {
   type: string;
   coin: string;
   network: string;
+  networkName: string;
+  requiresExplicitNetwork: boolean;
   tokenContractAddress: string;
   decimalPlaces: number;
 }
@@ -45,6 +47,10 @@ export class CeloToken extends Celo {
     return this.tokenConfig.network;
   }
 
+  get networkName() {
+    return this.tokenConfig.name;
+  }
+
   get tokenContractAddress() {
     return this.tokenConfig.tokenContractAddress;
   }
@@ -59,6 +65,10 @@ export class CeloToken extends Celo {
 
   getBaseChain() {
     return this.coin;
+  }
+
+  getRequiresExplicitNetwork() {
+    return this.tokenConfig.requiresExplicitNetwork;
   }
 
   getFullName() {

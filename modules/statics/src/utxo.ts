@@ -5,6 +5,7 @@ export interface UtxoConstructorOptions {
   fullName: string;
   name: string;
   network: UtxoNetwork;
+  requiresExplicitNetwork: boolean;
   features: CoinFeature[];
   asset: UnderlyingAsset;
   prefix?: string;
@@ -62,6 +63,7 @@ export function utxo(
   fullName: string,
   network: UtxoNetwork,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -75,6 +77,7 @@ export function utxo(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       asset,
       primaryKeyCurve,

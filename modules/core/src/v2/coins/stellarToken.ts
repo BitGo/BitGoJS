@@ -13,6 +13,8 @@ export interface StellarTokenConfig {
   type: string;
   coin: string;
   network: string;
+  networkName: string;
+  requiresExplicitNetwork: boolean;
   decimalPlaces: number;
 }
 
@@ -56,6 +58,10 @@ export class StellarToken extends Xlm {
     return this.tokenConfig.network;
   }
 
+  get networkName() {
+    return this.tokenConfig.networkName;
+  }
+
   get code() {
     return this._code;
   }
@@ -74,6 +80,10 @@ export class StellarToken extends Xlm {
 
   getChain() {
     return this.tokenConfig.type;
+  }
+
+  getRequiresExplicitNetwork() {
+    return this.tokenConfig.requiresExplicitNetwork;
   }
 
   getFullName() {

@@ -609,10 +609,11 @@ export class BitGo {
 
   /**
    * Create a basecoin object
-   * @param coinName
+   * @param coinIdentifier
+   * @param networkName
    */
-  coin(coinName: string): BaseCoin {
-    return GlobalCoinFactory.getInstance(this, coinName);
+  coin(coinIdentifier: string, networkName?: string): BaseCoin {
+    return GlobalCoinFactory.getInstance(this, coinIdentifier, networkName);
   }
 
   /**

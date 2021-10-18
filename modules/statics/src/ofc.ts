@@ -9,6 +9,7 @@ export interface OfcConstructorOptions {
   features: CoinFeature[];
   decimalPlaces: number;
   isToken: boolean;
+  requiresExplicitNetwork: boolean;
   kind: CoinKind;
   prefix?: string;
   suffix?: string;
@@ -55,6 +56,7 @@ export class OfcCoin extends BaseCoin {
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork Whether or not the coin requires an explicit network to be specified in order to uniquely identify it from other coins
  * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
@@ -67,6 +69,7 @@ export function ofc(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -83,6 +86,7 @@ export function ofc(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       isToken,
@@ -101,6 +105,7 @@ export function ofc(
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork Whether or not the coin requires an explicit network to be specified in order to uniquely identify it from other coins
  * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
@@ -113,6 +118,7 @@ export function tofc(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -128,6 +134,7 @@ export function tofc(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       isToken,
@@ -146,6 +153,7 @@ export function tofc(
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork Whether or not the coin requires an explicit network to be specified in order to uniquely identify it from other coins
  * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
@@ -158,6 +166,7 @@ export function ofcerc20(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -174,6 +183,7 @@ export function ofcerc20(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       isToken,
@@ -192,6 +202,7 @@ export function ofcerc20(
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param requiresExplicitNetwork Whether or not the coin requires an explicit network to be specified in order to uniquely identify it from other coins
  * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
@@ -204,6 +215,7 @@ export function tofcerc20(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  requiresExplicitNetwork: boolean = true,
   kind: CoinKind = CoinKind.CRYPTO,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
@@ -220,6 +232,7 @@ export function tofcerc20(
       network,
       prefix,
       suffix,
+      requiresExplicitNetwork,
       features,
       decimalPlaces,
       isToken,
