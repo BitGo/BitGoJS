@@ -26,11 +26,11 @@ export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][]
     .reduce((all, keys) => [...all, ...keys]);
 }
 
-export function parseTransactionRoundTrip(
+export function parseTransactionRoundTrip<T extends UtxoTransaction>(
   buf: Buffer,
   network: Network,
   inputs?: [txid: string, index: number, value: number][]
-): UtxoTransaction {
+): T {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
   assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
@@ -49,7 +49,7 @@ export function parseTransactionRoundTrip(
     );
   }
 
-  return tx;
+  return tx as T;
 }
 
 export const defaultTestOutputAmount = 1e8;
