@@ -21,7 +21,7 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
-import { NodeCallback, TransferType } from '../types';
+import { NodeCallback, TransferType, TransferTypes } from '../types';
 
 const co = Bluebird.coroutine;
 
@@ -335,9 +335,9 @@ export class Algo extends BaseCoin {
    * @returns true if it's a token tx
    */
   getTokenTxType(tx: { amount: string; closeRemainderTo: string; from: string; to: string }): string {
-    let type: TransferType = 'transfertoken';
+    let type: TransferTypes = 'transferToken';
     if (tx.amount === '0' && tx.from === tx.to) {
-      type = !tx.closeRemainderTo ? 'enabletoken' : 'disabletoken';
+      type = !tx.closeRemainderTo ? 'enableToken' : 'disableToken';
     }
     return type;
   }

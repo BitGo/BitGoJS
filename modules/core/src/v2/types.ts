@@ -14,4 +14,6 @@ export interface RequestTracer {
   toString(): string;
 }
 
-export type TransferType = 'enabletoken' | 'disabletoken' | 'transfertoken';
+export type TransferType = 'enabletoken' | 'disabletoken';
+
+export type TransferTypes = 'enableToken' | 'disableToken' | 'transferToken';
