@@ -8,14 +8,13 @@ import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
 import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx, Address, Seed, TxData } from './ifaces';
+import { EncodedTx, Address, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 import { SeedEncoding } from './seedEncoding';
 import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
 import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
-const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
 const ALGORAND_TRANSACTION_LENGTH = 52;
