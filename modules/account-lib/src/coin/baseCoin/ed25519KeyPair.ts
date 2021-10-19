@@ -100,11 +100,11 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * @returns {boolean} True if the message was signed with the current key pair
    */
   verifySignature(message: Uint8Array | string, signature: Uint8Array): boolean {
-    let messageToVerify;
+    let messageToVerify: Buffer;
     if (typeof message === 'string') {
-      messageToVerify = toUint8Array(Buffer.from(message).toString('hex'));
+      messageToVerify = Buffer.from(message);
     } else {
-      messageToVerify = message;
+      messageToVerify = Buffer.from(message);
     }
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
