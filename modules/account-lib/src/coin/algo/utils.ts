@@ -258,7 +258,7 @@ export class Utils implements BaseUtils {
     if (decodedTx.txn && decodedTx.txn.type === 'keyreg') {
       decodedTx.txn.votekey = decodedTx.txn.votekey || decodedTx.msig.subsig[0].pk;
       decodedTx.txn.selkey = decodedTx.txn.selkey || decodedTx.msig.subsig[0].pk;
-      buffer = encoding.encode(decodedTx);
+      buffer = decodedTx.msig || decodedTx.sig ? encoding.encode(decodedTx) : encoding.encode(decodedTx.txn);
     }
 
     if (this.isDecodableUnsignedAlgoTxn(buffer)) {
