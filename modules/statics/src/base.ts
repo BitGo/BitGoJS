@@ -385,6 +385,7 @@ export enum UnderlyingAsset {
   IDRC = 'idrc',
   IDRT = 'idrt',
   IMX = 'imx',
+  IMXV2 = 'imxv2',
   INCX = 'incx',
   IND = 'ind',
   INDEX = 'index',

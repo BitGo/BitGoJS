@@ -10,7 +10,7 @@ import {
   getDefaultSigHash,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, ScriptType2Of3, scriptType2Of3AsPrevOutType } from '../src/bitgo/outputScripts';
 
@@ -26,11 +26,11 @@ export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][]
     .reduce((all, keys) => [...all, ...keys]);
 }
 
-export function parseTransactionRoundTrip(
+export function parseTransactionRoundTrip<T extends UtxoTransaction>(
   buf: Buffer,
   network: Network,
   inputs?: [txid: string, index: number, value: number][]
-): UtxoTransaction {
+): T {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
   assert.strictEqual(tx.toBuffer().toString('hex'), buf.toString('hex'));
@@ -49,7 +49,7 @@ export function parseTransactionRoundTrip(
     );
   }
 
-  return tx;
+  return tx as T;
 }
 
 export const defaultTestOutputAmount = 1e8;
@@ -57,7 +57,7 @@ export const defaultTestOutputAmount = 1e8;
 type PrevOutput = [txid: string, index: number, amount: number];
 
 export function getTransactionBuilder(
-  keys: bip32.BIP32Interface[],
+  keys: KeyTriple,
   signKeys: bip32.BIP32Interface[],
   scriptType: ScriptType2Of3,
   network: Network,

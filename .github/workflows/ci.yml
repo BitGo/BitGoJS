@@ -1,0 +1,153 @@
+name: BitGo SDK
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node:${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Build Info
+        run: |
+          echo "node $(node --version)"
+          echo "npm $(npm --version)"
+          echo "yarn $(yarn --version)"
+          git --version
+          echo "base ref $GITHUB_BASE_REF"
+          echo "head ref $GITHUB_HEAD_REF"
+
+      - name: Fetch Base Ref
+        run: |
+          git fetch origin $GITHUB_BASE_REF
+
+      - name: Install Packages
+        run: yarn install --with-frozen-lockfile
+
+      - name: Lint Commit Messages
+        if: ${{ startsWith(matrix.node-version, '12') }}
+        run: |
+          # temporary workaround for hard-coded drone env var - this should be fixed
+          DRONE_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+
+      - name: Check In-Repo Package Versions
+        if: ${{ startsWith(matrix.node-version, '12') }}
+        run: yarn run check-versions
+
+      - name: Dependency Audit
+        if: ${{ startsWith(matrix.node-version, '12') }}
+        run: yarn run audit
+
+      - name: Lint Source Code
+        if: ${{ startsWith(matrix.node-version, '12') }}
+        run: yarn run lint
+
+      - name: Check Source Code Formatting
+        if: ${{ startsWith(matrix.node-version, '12') }}
+        run: yarn run check-fmt
+
+      - name: Unit Test
+        run: yarn run unit-test-changed
+        env:
+          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
+
+      - name: Upload Code Coverage
+        run: |
+          yarn run gen-coverage-changed
+          yarn run coverage
+        env:
+          CODECOV_FLAG: unit
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  browser-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node:${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Build Info
+        run: |
+          echo "node $(node --version)"
+          echo "npm $(npm --version)"
+          echo "yarn $(yarn --version)"
+          git --version
+          echo "base ref $GITHUB_BASE_REF"
+          echo "head ref $GITHUB_HEAD_REF"
+
+      - name: Install APT Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gconf-service \
+            libasound2 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libc6 \
+            libcairo2 \
+            libcups2 \
+            libdbus-1-3 \
+            libexpat1 \
+            libfontconfig1 \
+            libgcc1 \
+            libgconf-2-4 \
+            libgdk-pixbuf2.0-0 \
+            libglib2.0-0 \
+            libgtk-3-0 \
+            libnspr4 \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libstdc++6 \
+            libx11-6 \
+            libx11-xcb1 \
+            libxcb1 \
+            libxcomposite1 \
+            libxcursor1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxi6 \
+            libxrandr2 \
+            libxrender1 \
+            libxss1 \
+            libxtst6 \
+            ca-certificates \
+            fonts-liberation \
+            libappindicator1 \
+            libnss3 \
+            lsb-release \
+            xdg-utils \
+            wget
+
+      - name: Install Packages
+        run: yarn install --with-frozen-lockfile
+
+      - name: Browser Tests
+        run: yarn run browser-tests
+        env:
+          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
