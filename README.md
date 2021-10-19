@@ -44,7 +44,7 @@ suite on the latest release of the following versions of node:
 
 * `12`
 * `14`
-* `15`
+* `16`
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning
 if your version of Node does not fall within the range specified by our node engines property. If you encounter issues
