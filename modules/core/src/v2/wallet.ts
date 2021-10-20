@@ -513,7 +513,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions', 'eip1559',
+      'stakingOptions', 'eip1559', 'keyregTxBase64',
     ];
   }
 
