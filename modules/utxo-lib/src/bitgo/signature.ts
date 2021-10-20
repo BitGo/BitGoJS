@@ -26,6 +26,7 @@ type InputType = typeof inputTypes[number];
 export interface ParsedSignatureScript {
   isSegwitInput: boolean;
   inputClassification: InputType;
+  p2shOutputClassification?: string;
   publicKeys?: Buffer[];
 }
 
@@ -70,7 +71,8 @@ export function parseSignatureScript(
 ): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
-  let decompiledSigScript, inputClassification: InputType;
+  let decompiledSigScript: Array<Buffer | number> | null;
+  let inputClassification: InputType;
   if (isSegwitInput) {
     // The decompiledSigScript is the script containing the signatures, public keys, and the script that was committed
     // to (pubScript). If this is a segwit input the decompiledSigScript is in the witness, regardless of whether it
@@ -78,7 +80,7 @@ export function parseSignatureScript(
     // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
     decompiledSigScript = input.witness;
     if (isNativeSegwitInput) {
-      inputClassification = classify.witness(decompiledSigScript, true) as InputType;
+      inputClassification = classify.witness(decompiledSigScript as Buffer[], true) as InputType;
     } else {
       inputClassification = classify.input(input.script, true) as InputType;
     }
@@ -121,13 +123,38 @@ export function parseSignatureScript(
   // Transactions built with `.buildIncomplete()` have three signatures, where missing signatures are substituted with `OP_0`.
   const expectedScriptType =
     inputClassification === classify.types.P2SH || inputClassification === classify.types.P2WSH;
+
+  if (!expectedScriptType) {
+    return { isSegwitInput, inputClassification };
+  }
+
+  const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
+  if (!Buffer.isBuffer(pubScript)) {
+    throw new Error(`invalid pubScript`);
+  }
+
+  const p2shOutputClassification = classify.output(pubScript);
+
+  if (p2shOutputClassification !== 'multisig') {
+    return {
+      isSegwitInput,
+      inputClassification,
+      p2shOutputClassification,
+    };
+  }
+
+  const decompiledPubScript = script.decompile(pubScript);
+  if (decompiledPubScript === null) {
+    throw new Error(`could not decompile pubScript`);
+  }
+
   const expectedScriptLength =
     // complete transactions with 2 signatures
     decompiledSigScript.length === 4 ||
     // incomplete transaction with 3 signatures or signature placeholders
     decompiledSigScript.length === 5;
 
-  if (!expectedScriptType || !expectedScriptLength) {
+  if (!expectedScriptLength) {
     return { isSegwitInput, inputClassification };
   }
 
@@ -147,14 +174,6 @@ export function parseSignatureScript(
     throw new Error(`expected 2 or 3 signatures, got ${signatures.length}`);
   }
 
-  const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
-  if (!Buffer.isBuffer(pubScript)) {
-    throw new Error(`invalid pubscript`);
-  }
-  const decompiledPubScript = script.decompile(pubScript);
-  if (decompiledPubScript === null) {
-    throw new Error(`could not decompile pubScript`);
-  }
   if (decompiledPubScript.length !== 6) {
     throw new Error(`unexpected decompiledPubScript length`);
   }
@@ -188,6 +207,7 @@ export function parseSignatureScript(
   return {
     isSegwitInput,
     inputClassification,
+    p2shOutputClassification,
     signatures: signatures.map((b) => {
       if (Buffer.isBuffer(b) || b === 0) {
         return b;

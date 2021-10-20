@@ -12,7 +12,13 @@ import {
 } from '../src/bitgo';
 import { createScriptPubKey, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import { createOutputScript2of3, ScriptType2Of3, scriptType2Of3AsPrevOutType } from '../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  createOutputScriptP2shP2pk,
+  isScriptType2Of3,
+  ScriptType2Of3,
+  scriptType2Of3AsPrevOutType,
+} from '../src/bitgo/outputScripts';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
   if (length === 0) {
@@ -59,7 +65,7 @@ type PrevOutput = [txid: string, index: number, amount: number];
 export function getTransactionBuilder(
   keys: KeyTriple,
   signKeys: bip32.BIP32Interface[],
-  scriptType: ScriptType2Of3,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
   network: Network,
   {
     outputAmount = defaultTestOutputAmount,
@@ -78,20 +84,23 @@ export function getTransactionBuilder(
   const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);
   txBuilder.addOutput(recipientScript, outputAmount - 1000);
 
-  const { redeemScript, witnessScript } = createOutputScript2of3(
-    keys.map((k) => k.publicKey),
-    scriptType
-  );
+  const pubkeys = keys.map((k) => k.publicKey);
+
+  const { redeemScript, witnessScript } = isScriptType2Of3(scriptType)
+    ? createOutputScript2of3(pubkeys, scriptType)
+    : createOutputScriptP2shP2pk(pubkeys[0]);
+
+  const prevOutScriptType = isScriptType2Of3(scriptType) ? scriptType2Of3AsPrevOutType(scriptType) : 'p2sh-p2pk';
 
   prevOutputs.forEach(([, , value], vin) => {
-    signKeys.forEach((key) => {
+    signKeys.forEach((key, i) => {
       txBuilder.sign({
-        prevOutScriptType: scriptType2Of3AsPrevOutType(scriptType),
+        prevOutScriptType,
         vin,
         keyPair: Object.assign(key, { network }),
         redeemScript,
         hashType: getDefaultSigHash(network),
-        witnessValue: value,
+        witnessValue: scriptType === 'p2shP2pk' ? undefined : value,
         witnessScript,
       });
     });
