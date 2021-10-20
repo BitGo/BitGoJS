@@ -1,13 +1,13 @@
 import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
-import { Triple } from './types';
 import {
   createOutputScript2of3,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
   scriptTypes2Of3,
 } from '../../../src/bitgo/outputScripts';
+import { Triple } from '../../../src/bitgo/types';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
 import { Transaction } from 'bitcoinjs-lib';
@@ -89,7 +89,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
 }
 
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
-  keys: bip32.BIP32Interface[],
+  keys: KeyTriple,
   scriptType: ScriptType2Of3,
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
