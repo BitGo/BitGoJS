@@ -48,6 +48,16 @@ describe('Algo Transaction Builder Factory', () => {
       should.equal(Buffer.from(decodedTx.rawTransaction).toString('base64'), AlgoResources.rawTx.keyReg.oldSdkUnsigned);
     });
 
+    it('second non signed keyreg transaction serialized with old sdk', () => {
+      const tx = algoUtils.decodeAlgoTxn(AlgoResources.rawTx.keyReg.oldSdkUnsigned2);
+      should.equal(tx.txn.type, 'keyreg');
+      should.equal(tx.txn.fee, 1000);
+      should.equal(tx.txn.voteFirst, 1);
+      should.equal(tx.txn.voteLast, 6000001);
+      should.equal(tx.txn.voteKeyDilution, 10000);
+      should.equal(tx.signed, false);
+    });
+
     it('a signed keyreg transaction serialized with old sdk', async () => {
       const decodedTx = algoUtils.decodeAlgoTxn(AlgoResources.rawTx.keyReg.oldSdkSigned);
       decodedTx.signed.should.be.true();
