@@ -13,3 +13,7 @@ export interface RequestTracer {
   inc(): void;
   toString(): string;
 }
+
+export type TokenManagementType = 'enabletoken' | 'disabletoken';
+
+export type ExplainTokenTxType= 'enableToken' | 'disableToken' | 'transferToken';

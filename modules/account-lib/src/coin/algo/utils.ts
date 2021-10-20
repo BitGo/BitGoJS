@@ -15,7 +15,6 @@ import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
 import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
-const ALGORAND_MINIMUM_FEE = 1000;
 const ALGORAND_SEED_LENGTH = 58;
 const ALGORAND_SEED_BYTE_LENGTH = 36;
 const ALGORAND_TRANSACTION_LENGTH = 52;
@@ -33,11 +32,12 @@ function allHexChars(maybe: string): boolean {
 
 /**
  * ConcatArrays takes two array and returns a joint array of both
- * @param a
- * @param b
+ *
+ * @param a {Buffer}
+ * @param b {Buffer}
  * @returns {Uint8Array} [a,b]
  */
-function concatArrays(a, b) {
+function concatArrays(a: Buffer, b: Buffer): Uint8Array {
   const c = new Uint8Array(a.length + b.length);
   c.set(a);
   c.set(b, a.length);
@@ -148,9 +148,9 @@ export class Utils implements BaseUtils {
     // get seed
     const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
     // compute checksum
-    const checksum = sha512.sha512_256
-      .array(seed)
-      .slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH);
+    const checksum = Buffer.from(
+      sha512.sha512_256.array(seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
+    );
     const encodedSeed = base32.encode(concatArrays(seed, checksum));
 
     return encodedSeed.toString().slice(0, ALGORAND_SEED_LENGTH); // removing the extra '===='
@@ -299,37 +299,6 @@ export class Utils implements BaseUtils {
     }
   }
 
-  /**
-   * Estimate the transaction byte size by signing it with a random hey and calculating the byte length
-   *
-   * @param txInfo {Object} required fields to build a multisig transaction
-   * @returns {number} estimated byte size of the signed transaction
-   */
-  getTransactionByteSize(txInfo): number {
-    // The txInfo for keyreg txes only contain the object for encoding with no metadata so we can't use the normal
-    // createMultisigTransaction constructor because it will fail to construct the tx without the metadata. Since we
-    // already have the object for encoding we can instead just estimate its size directly.
-    if (!_.isUndefined(txInfo.objForEncoding)) {
-      return txInfo.estimateSize();
-    }
-
-    const transaction = this.createMultisigTransaction(Object.assign({}, { fee: 1 }, txInfo));
-    return transaction.estimateSize();
-  }
-
-  /**
-   * Create a Multisig transaction object using Algorand SDK.
-   *
-   * @param txInfo {Object} required fields to build a multisig transaction
-   * @returns {MultiSigTransaction} as defined in Algorand SDK
-   */
-  protected createMultisigTransaction(txInfo): any {
-    const note = _.get(txInfo, 'note', '');
-    const convertedNote = new Uint8Array(Buffer.from(note, 'utf-8'));
-    const refinedTx = Object.assign({}, txInfo, { note: convertedNote });
-
-    return new algosdk.Transaction(refinedTx);
-  }
   /*
    * encodeObj takes a javascript object and returns its msgpack encoding
    * Note that the encoding sorts the fields alphabetically
@@ -482,60 +451,6 @@ export class Utils implements BaseUtils {
       throw new Error('Cannot convert Stellar address to an Algorand address via pubkey.');
     }
     throw new Error('Neither an Algorand address nor a stellar pubkey.');
-  }
-
-  /**
-   * Build correct fee info and fee rate for Algorand transactions.
-   *
-   * @param tx {Object} required fields or building fee info.
-   * @param feeRate {number} required fee rate for building fee info.
-   * @returns {Object} The fee information for algorand txn.
-   */
-  getFeeData(tx, feeRate: number): any {
-    const size = this.getTransactionByteSize(tx);
-    let feeInfo = this.validateFeeInfo(size, { feeRate: feeRate, fee: undefined, baseFactor: 1 });
-    if (feeInfo.fee < ALGORAND_MINIMUM_FEE) {
-      feeInfo = this.validateFeeInfo(size, { feeRate: undefined, fee: ALGORAND_MINIMUM_FEE, baseFactor: 1 });
-      feeRate = feeInfo.feeRate;
-    }
-    return { feeInfo, feeRate };
-  }
-
-  /**
-   * Check values for feeInfo building
-   *
-   * @param size {number} required size to check.
-   * @param feeData {Object} required fees to check.
-   * @returns {Object} with fee data validated.
-   */
-  protected validateFeeInfo(size: number, { feeRate, fee, baseFactor = 1000 }): any {
-    if (!Number.isSafeInteger(size) || size < 0) {
-      throw new Error('Size must be integer positive number');
-    }
-    if (_.isUndefined(feeRate) && _.isUndefined(fee)) {
-      throw new Error('Fee rate or fee are missed');
-    }
-    let fee_value, fee_rate;
-    if (!_.isUndefined(feeRate)) {
-      if (!Number.isSafeInteger(feeRate) || feeRate < 0) {
-        throw new Error('FeeRate must be integer positive number');
-      }
-      fee_rate = feeRate;
-      fee_value = Math.ceil((fee_rate * size) / baseFactor);
-    } else {
-      if (!Number.isSafeInteger(fee) || fee < 0) {
-        throw new Error('Fee must be integer positive number');
-      }
-      fee_value = fee;
-      fee_rate = Math.round((fee / size) * baseFactor);
-    }
-    const feeObj = {
-      feeRate: fee_rate,
-      fee: fee_value,
-      size: size,
-    };
-
-    return feeObj;
   }
 
   /**
