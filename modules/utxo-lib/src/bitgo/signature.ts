@@ -94,10 +94,12 @@ export function parseSignatureScript(
   }
 
   if (inputClassification === classify.types.P2PKH) {
+    /* istanbul ignore next */
     if (!decompiledSigScript || decompiledSigScript.length !== 2) {
       throw new Error('unexpected signature for p2pkh');
     }
     const [signature, publicKey] = decompiledSigScript;
+    /* istanbul ignore next */
     if (!Buffer.isBuffer(signature) || !Buffer.isBuffer(publicKey)) {
       throw new Error('unexpected signature for p2pkh');
     }
@@ -129,6 +131,7 @@ export function parseSignatureScript(
   }
 
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
+  /* istanbul ignore next */
   if (!Buffer.isBuffer(pubScript)) {
     throw new Error(`invalid pubScript`);
   }
@@ -145,6 +148,7 @@ export function parseSignatureScript(
 
   const decompiledPubScript = script.decompile(pubScript);
   if (decompiledPubScript === null) {
+    /* istanbul ignore next */
     throw new Error(`could not decompile pubScript`);
   }
 
@@ -159,9 +163,11 @@ export function parseSignatureScript(
   }
 
   if (isSegwitInput) {
+    /* istanbul ignore next */
     if (!Buffer.isBuffer(decompiledSigScript[0])) {
       throw new Error(`expected decompiledSigScript[0] to be a buffer for segwit inputs`);
     }
+    /* istanbul ignore next */
     if (decompiledSigScript[0].length !== 0) {
       throw new Error(`witness stack expected to start with empty buffer`);
     }
@@ -170,20 +176,24 @@ export function parseSignatureScript(
   }
 
   const signatures = decompiledSigScript.slice(1 /* ignore leading OP_0 */, -1 /* ignore trailing pubScript */);
+  /* istanbul ignore next */
   if (signatures.length !== 2 && signatures.length !== 3) {
     throw new Error(`expected 2 or 3 signatures, got ${signatures.length}`);
   }
 
+  /* istanbul ignore next */
   if (decompiledPubScript.length !== 6) {
     throw new Error(`unexpected decompiledPubScript length`);
   }
   const publicKeys = decompiledPubScript.slice(1, -2) as Buffer[];
   publicKeys.forEach((b) => {
+    /* istanbul ignore next */
     if (!Buffer.isBuffer(b)) {
       throw new Error();
     }
   });
   if (publicKeys.length !== 3) {
+    /* istanbul ignore next */
     throw new Error(`expected 3 public keys, got ${publicKeys.length}`);
   }
 
@@ -191,15 +201,18 @@ export function parseSignatureScript(
   // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
   const len = decompiledPubScript.length;
   const signatureThreshold = (decompiledPubScript[0] as number) - 80;
+  /* istanbul ignore next */
   if (signatureThreshold !== 2) {
     throw new Error(`expected signatureThreshold 2, got ${signatureThreshold}`);
   }
   const nPubKeys = (decompiledPubScript[len - 2] as number) - 80;
+  /* istanbul ignore next */
   if (nPubKeys !== 3) {
     throw new Error(`expected nPubKeys 3, got ${nPubKeys}`);
   }
 
   const lastOpCode = decompiledPubScript[len - 1];
+  /* istanbul ignore next */
   if (lastOpCode !== opcodes.OP_CHECKMULTISIG) {
     throw new Error(`expected opcode #${opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
   }
