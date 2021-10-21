@@ -89,6 +89,7 @@ export interface PrebuildTransactionOptions {
     unspents?: any[];
     changeAddress?: string;
     type?: string;
+    closeRemainderTo?:string;
     nonParticipation?: boolean;
     validFromBlock?: number;
     validToBlock?: number;
@@ -513,7 +514,7 @@ export class Wallet {
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
       'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions', 'eip1559', 'keyregTxBase64',
+      'stakingOptions', 'eip1559', 'keyregTxBase64', 'closeRemainderTo',
     ];
   }
 
