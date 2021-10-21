@@ -7,3 +7,5 @@ npm-debug.log
 mochawesome-report/
 coverage.lcov
 package-lock.json
+# Sandbox folder for testing
+lab/
