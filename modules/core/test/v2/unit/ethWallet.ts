@@ -332,6 +332,25 @@ describe('Add final signature to ETH tx from offline vault', function () {
   }));
 });
 
+describe('Add signature to EIP1559 tx from offline vault', function () {
+
+  let paramsFromVault, expectedResult, bitgo, coin;
+  before(function () {
+    const vals = fixtures.getUnsignedEip1559TethFromVault();
+    paramsFromVault = vals.paramsFromVault;
+    expectedResult = vals.expectedResult;
+    bitgo = new TestBitGo({ env: 'test' });
+    coin = bitgo.coin('teth');
+  });
+
+  it('should successfully sign an unsigned transaction from the offline vault', co(function *() {
+    const response = (yield coin.signTransaction(paramsFromVault)) as any;
+    should.exist(response.halfSigned);
+    response.halfSigned.eip1559.should.deepEqual(expectedResult.halfSigned.eip1559);
+    response.halfSigned.recipients.should.deepEqual(expectedResult.halfSigned.recipients);
+  }));
+});
+
 describe('prebuildTransaction', function () {
   let bitgo;
   let ethWallet;
