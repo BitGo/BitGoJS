@@ -10,17 +10,20 @@
 modules/core/src/v2/recovery.ts tyler@bitgo.com
 
 # Coin Support
-modules/core/src/v2/coins/*btc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*bch.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*btg.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*bsv.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*ltc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*dash.ts dawid@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*btc.ts @BitGo/btc-team
+modules/core/src/v2/coins/*bch.ts @BitGo/btc-team
+modules/core/src/v2/coins/*btg.ts @BitGo/btc-team
+modules/core/src/v2/coins/*bsv.ts @BitGo/btc-team
+modules/core/src/v2/coins/*ltc.ts @BitGo/btc-team
+modules/core/src/v2/coins/*dash.ts @BitGo/btc-team
+modules/core/src/v2/coins/*zec.ts @BitGo/btc-team
+modules/core/src/v2/coins/abstractUtxoCoin.ts @BitGo/btc-team
+modules/core/src/v2/coins/utxo/* @BitGo/btc-team
+
 modules/core/src/v2/coins/*xlm.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
 modules/core/src/v2/coins/*xrp.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
 modules/core/src/v2/coins/*eth.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
 modules/core/src/v2/coins/token.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*zec.ts jorge@bitgo.com tyler@bitgo.com
 
 # Trading accounts
 modules/core/src/v2/trading/*.ts tyler@bitgo.com
@@ -35,7 +38,7 @@ modules/statics/* tyler@bitgo.com
 modules/*/package*.json tyler@bitgo.com
 
 modules/account-lib/* @argjv @twtaylorbitgo @CapnMigraine @marktoda
-modules/utxo-lib/* @tylerlevine @OttoAllmendinger jorge@bitgo.com
+modules/utxo-lib/* @BitGo/btc-team
 
 # Lock files
 yarn.lock tyler@bitgo.com

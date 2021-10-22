@@ -6,6 +6,8 @@ import { Eos } from '../../../../src/v2/coins';
 import { EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { Wallet } from '../../../../src';
+import * as _ from 'lodash';
 
 describe('EOS:', function () {
   let bitgo;
@@ -211,5 +213,194 @@ describe('EOS:', function () {
       explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
       explainedTx.memo.should.equal('1');
     });
+  });
+
+  describe('Transaction Verification', function () {
+    let wallet;
+    let basecoin;
+    let verification;
+    let sandBox;
+    let newTxPrebuild;
+    let newTxParams;
+
+    before(async () => {
+      basecoin = bitgo.coin('teos');
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        users: [
+          {
+            user: '543c11ed356d00cb7600000b98794503',
+            permissions: [
+              'admin',
+              'view',
+              'spend',
+            ],
+          },
+        ],
+        coin: 'teos',
+        label: 'Verification Wallet',
+        m: 2,
+        n: 3,
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2',
+        ],
+        tags: [
+          '5a78dd561c6258a907f1eeaee132f796',
+        ],
+        disableTransactionNotifications: false,
+        freeze: {},
+        deleted: false,
+        approvalsRequired: 1,
+        isCold: true,
+        coinSpecific: {},
+        clientFlags: [],
+        balance: 650000000,
+        confirmedBalance: 650000000,
+        spendableBalance: 650000000,
+        balanceString: '650000000',
+        confirmedBalanceString: '650000000',
+        spendableBalanceString: '650000000',
+        receiveAddress: {
+          id: '5a78de2bbfe424aa07aa131ec03c8dc1',
+          address: '78xczhaijyhek2',
+          chain: 0,
+          index: 0,
+          coin: 'teos',
+          wallet: '5a78dd561c6258a907f1eeaee132f796',
+          coinSpecific: {},
+        },
+        pendingApprovals: [],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+      const userKeychain = {
+        prv: '5KJq565HTrgEJG9EbvJH5BLYTgioAyY27dT9am1kCtn2YVAJEYK',
+        pub: 'EOS6g7AAMQkhXp8j73E8BD4KRwtQevEsFgYx8htaQkRVhhXJMgkMZ',
+      };
+      const backupKeychain = {
+        prv: '5KZ1nXXCi5yXH8AjCJqjnCYHCVnhQa9YWGV2D14i8g221dxNwLW',
+        pub: 'EOS7gyDLNk12faVb1aqNxj1L2DpBerFkhAsxBs95yW3yxJpqvg9Mt',
+      };
+      const txPrebuild = {
+        recipients: [
+          {
+            address: 'asdfasdfasdf',
+            amount: '100',
+          },
+        ],
+        headers: {
+          expiration: '2021-09-15T17:10:28.346',
+          ref_block_num: 1,
+          ref_block_prefix: 100,
+        },
+        txHex: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473042942610100640000000000000100408c7a02ea3055000000000085269d000201310100a6823403ea3055000000572d3ccdcd01d0f9ce64f437f7cf00000000a8ed323222d0f9ce64f437f7cfb012362b61b31236640000000000000004454f53000000000131000000000000000000000000000000000000000000000000000000000000000000',
+        transaction: {
+          compression: 'none',
+          packed_trx: '042942610100640000000000000100408c7a02ea3055000000000085269d000201310100a6823403ea3055000000572d3ccdcd01d0f9ce64f437f7cf00000000a8ed323222d0f9ce64f437f7cfb012362b61b31236640000000000000004454f5300000000013100',
+          signatures: [],
+        },
+        txid: '0492e8cf6275b9ee7c0685fc22211b174dd5bc8834b1963b52ae6486c41dad25',
+        isVotingTransaction: false,
+        coin: 'teos',
+      };
+      verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub },
+        },
+      };
+      const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
+      const keyPair = basecoin.generateKeyPair(seed);
+      const txParams = {
+        txPrebuild,
+        prv: keyPair.prv,
+        recipients: [
+          {
+            address: 'asdfasdfasdf?memoId=1',
+            amount: '100',
+          },
+        ],
+      };
+
+      newTxPrebuild = () => { return _.cloneDeep(txPrebuild); };
+      newTxParams = () => { return _.cloneDeep(txParams); };
+    });
+
+    beforeEach(async () => {
+      // mock responses to the block chain
+      sandBox = sinon.createSandbox();
+      const callBack = sandBox.stub(Eos.prototype, <any>'getDataFromNode');
+      callBack.withArgs({
+        endpoint: '/v1/chain/get_info',
+      }).resolves(EosResponses.getInfoResponseSuccess1);
+      callBack.withArgs({
+        endpoint: '/v1/chain/get_block',
+        payload: { block_num_or_id: 191839472 },
+      }).resolves(EosResponses.getBlockResponseSuccess1);
+    });
+
+    afterEach(async () => {
+      sandBox.restore();
+    });
+
+    it('should verify a transaction', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should throw if different prebuilds are provided in txParams and txPrebuild', async function() {
+
+      const txPrebuild = newTxPrebuild();
+
+      // txParams with different txPrebuild
+      const txPrebuild2 = newTxPrebuild();
+      txPrebuild2.recipients[0].address = 'sadjghaslsdgo';
+      const txParams = newTxParams();
+      txParams.txPrebuild = txPrebuild2;
+
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('inputs txParams.txPrebuild and txPrebuild expected to be equal but were not');
+    });
+
+    it('should throw if unpacked txHex is not the same as the unpacked packed_trx', async function() {
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf9111111111111111111111111111111111640000000000000100408c7a02ea3055000000000085269d000201310100a6823403ea3055000000572d3ccdcd01d0f9ce64f437f7cf00000000a8ed323222d0f9ce64f437f7cfb012362b61b31236640000000000000004454f53000000000131000000000000000000000000000000000000000000000000000000000000000000';
+      const txParams = newTxParams();
+      txParams.txPrebuild = txPrebuild;
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('unpacked packed_trx and unpacked txHex are not equal');
+    });
+
+    it('should throw if the transaction headers are inconsistent', async function() {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.txPrebuild = txPrebuild;
+      txParams.txPrebuild.headers.ref_block_prefix = 5;
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('the transaction headers are inconsistent');
+    });
+
+    it('should throw if the expected amount is different than actual amount', async function() {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.recipients[0].amount = 10000;
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive amount does not match expected recipient amount');
+    });
+
+    it('should throw if the expected recipient is different than actual recipient', async function() {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'aaaaaaaaaaaa';
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive address does not match expected recipient address');
+    });
+
+    it('should throw if the expected memo is different than actual memo', async function() {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'asdfasdfasdf?memoId=10';
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive memoId does not match expected recipient memoId');
+    });
+
   });
 });

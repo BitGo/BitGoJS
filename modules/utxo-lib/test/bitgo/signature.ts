@@ -1,10 +1,11 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
+import * as networks from '../../src/networks';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
 
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
@@ -69,7 +70,7 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   });
 }
 
-describe('signature', function () {
+describe('Signature (scriptTypes2Of3)', function () {
   getNetworkList()
     .filter(isMainnet)
     // The signing and verification methods are largely network-independent so let's focus on a
@@ -79,4 +80,23 @@ describe('signature', function () {
     .forEach((network) => {
       scriptTypes2Of3.forEach((scriptType) => runTest(network, scriptType));
     });
+});
+
+describe('Signature (p2shP2pk)', function () {
+  it('sign and parse', function () {
+    const signedTransaction = getTransactionBuilder(
+      fixtureKeys,
+      fixtureKeys.slice(0, 1),
+      'p2shP2pk',
+      networks.bitcoin
+    ).build();
+
+    signedTransaction.ins.forEach((input) => {
+      assert.deepStrictEqual(parseSignatureScript(input), {
+        inputClassification: 'scripthash',
+        isSegwitInput: false,
+        p2shOutputClassification: 'pubkey',
+      });
+    });
+  });
 });

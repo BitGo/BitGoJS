@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 
-import { createOutputScript2of3, createTaprootScript2of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
-
+import { createOutputScript2of3, createOutputScriptP2shP2pk, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getKeyTriple } from '../integration_local_rpc/generate/outputScripts.util';
+import { ECPair, networks } from 'bitcoinjs-lib';
 
 describe('createOutputScript2of3()', function () {
   const keys = getKeyTriple('utxo');
@@ -43,5 +43,18 @@ describe('createOutputScript2of3()', function () {
           throw new Error(`unexpected type ${scriptType}`);
       }
     });
+  });
+});
+
+describe('createOutputScriptP2shP2pk', function () {
+  it('create output script p2shP2pk', function () {
+    const keypair = ECPair.fromWIF('cTLxw4KC55LQfFj3eZz51NpWX1j2ja4WkbQFbHaTuaRkSFGeJ4yS', networks.testnet);
+    const { scriptPubKey, redeemScript, witnessScript } = createOutputScriptP2shP2pk(keypair.publicKey);
+    assert.strictEqual(scriptPubKey.toString('hex'), 'a914172dcc4e025361d951a9511c670973a4e3720c9887');
+    assert.strictEqual(
+      redeemScript?.toString('hex'),
+      '210219da48412c2268865fe8c126327d1b12eee350a3b69eb09e3323cc9a11828945ac'
+    );
+    assert.strictEqual(witnessScript, undefined);
   });
 });
