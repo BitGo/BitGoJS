@@ -351,16 +351,21 @@ export class Eth extends BaseCoin {
   }
 
   static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+    // if eip1559 params are specified, default to london hardfork, otherwise,
+    // default to tangerine whistle to avoid replay protection issues
+    const defaultHardfork = !!params.eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    const defaultCommon = new optionalDeps.EthCommon.default({
+      chain: optionalDeps.EthCommon.Chain.Mainnet,
+      hardfork: defaultHardfork,
+    });
+
+    // if replay protection options are set, override the default common setting
     const ethCommon = params.replayProtectionOptions
       ? new optionalDeps.EthCommon.default({
           chain: params.replayProtectionOptions.chain,
           hardfork: params.replayProtectionOptions.hardfork,
         })
-      : // default to a pre EIP155 hardfork so the chain id is not included in the transaction
-        new optionalDeps.EthCommon.default({
-          chain: optionalDeps.EthCommon.Chain.Mainnet,
-          hardfork: optionalDeps.EthCommon.Hardfork.TangerineWhistle,
-        });
+      : defaultCommon;
 
     const baseParams = {
       to: params.to,
