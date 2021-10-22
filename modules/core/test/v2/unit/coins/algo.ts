@@ -626,6 +626,16 @@ describe('ALGO:', function () {
     });
   });
 
+  describe('Sign message', () => {
+    it('should sign message', async function () {
+      const signed = await basecoin.signMessage(
+        { prv: AlgoResources.accounts.account1.prvKey },
+        AlgoResources.message.unsigned
+      );
+      signed.toString('hex').should.equal(AlgoResources.message.signed);
+    });
+  });
+
   describe('Generate wallet key pair: ', () => {
     it('should generate key pair', () => {
       const kp = basecoin.generateKeyPair();

@@ -68,6 +68,10 @@ describe('V2 Wallets:', function () {
     it(`should generate a tltc wallet`, co(function *() {
       yield testWalletGeneration('tltc');
     }));
+
+    it(`should generate a talgo wallet`, co(function *() {
+      yield testWalletGeneration('talgo');
+    }));
   });
 
   describe('Generate Wallet', function () {
