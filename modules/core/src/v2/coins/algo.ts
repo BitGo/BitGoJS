@@ -209,7 +209,7 @@ export class Algo extends BaseCoin {
       if (Buffer.isBuffer(message)) {
         message = message.toString('base64');
       }
-      return algoKeypair.signMessage(message);
+      return Buffer.from(algoKeypair.signMessage(message));
     })
       .call(this)
       .asCallback(callback);
