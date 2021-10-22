@@ -686,6 +686,8 @@ export enum UnderlyingAsset {
   'talgo:16026728' = 'talgo:16026728',
   'talgo:16026732' = 'talgo:16026732',
   'talgo:16026733' = 'talgo:16026733',
+  'talgo:10458941' = 'talgo:10458941',
+  'talgo:180447' = 'talgo:180447',
 
   // EOS tokens
   CHEX = 'CHEX',

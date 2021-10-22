@@ -87,12 +87,12 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     });
 
     it(`parseSignatureScript`, function () {
+      if (txType === 'deposit') {
+        return;
+      }
+
       parsedTx.ins.forEach((input, i) => {
         const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
-
-        if (txType === 'deposit') {
-          return;
-        }
 
         assert.strict(result.publicKeys !== undefined);
         assert.strictEqual(result.publicKeys.length, 3);

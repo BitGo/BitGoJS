@@ -36,6 +36,22 @@ export type SpendableScript = {
 };
 
 /**
+ * Return scripts for p2sh-p2pk (used for BCH/BSV replay protection)
+ * @param pubkey
+ */
+export function createOutputScriptP2shP2pk(pubkey: Buffer): SpendableScript {
+  const p2pk = bitcoinjs.payments.p2pk({ pubkey });
+  const p2sh = bitcoinjs.payments.p2sh({ redeem: p2pk });
+  if (!p2sh.output || !p2pk.output) {
+    throw new Error(`invalid state`);
+  }
+  return {
+    scriptPubKey: p2sh.output,
+    redeemScript: p2pk.output,
+  };
+}
+
+/**
  * Return scripts for 2-of-3 multisig output
  * @param pubkeys - the key triple for multisig
  * @param scriptType

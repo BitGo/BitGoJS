@@ -921,6 +921,26 @@ export const coins = CoinMap.fromCoins([
   ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf', UnderlyingAsset.WBTC),
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
   talgoToken(
+    'talgo:10458941',
+    'USDC',
+    6,
+    UnderlyingAsset['talgo:10458941'],
+    'https://someurl.com/',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDC'
+  ),
+  talgoToken(
+    'talgo:180447',
+    'USDt',
+    6,
+    UnderlyingAsset['talgo:180447'],
+    'https://someurl.com/',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDt'
+  ),
+  talgoToken(
     'talgo:16026728',
     'Unison',
     2,
