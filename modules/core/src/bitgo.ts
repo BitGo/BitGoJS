@@ -54,6 +54,7 @@ const debug = debugLib('bitgo:index');
 const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
 if (!(process as any).browser) {
+  debug('enabling superagent-proxy wrapper');
   require('superagent-proxy')(superagent);
 }
 
@@ -506,6 +507,7 @@ export class BitGo {
     return function<ResponseType = any> (url: string): BitGoRequest<ResponseType> {
       let req: superagent.SuperAgentRequest = superagent[method](url);
       if (self._proxy) {
+        debug('proxying request through %s', self._proxy);
         req = req.proxy(self._proxy);
       }
 
