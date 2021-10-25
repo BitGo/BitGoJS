@@ -20,10 +20,25 @@ modules/core/src/v2/coins/*zec.ts @BitGo/btc-team
 modules/core/src/v2/coins/abstractUtxoCoin.ts @BitGo/btc-team
 modules/core/src/v2/coins/utxo/* @BitGo/btc-team
 
+# Eth
+modules/core/src/v2/coins/abstractEthLikeCoin.ts @BitGo/eth-team
+modules/core/src/v2/coins/*celo.ts @BitGo/eth-team
+modules/core/src/v2/coins/celoToken.ts @BitGo/eth-team
+modules/core/src/v2/coins/*eth.ts @BitGo/eth-team
+modules/core/src/v2/coins/*eth2.ts @BitGo/eth-team
+modules/core/src/v2/coins/*rbtc.ts @BitGo/eth-team
+modules/core/src/v2/coins/token.ts @BitGo/eth-team
+
+modules/core/test/v2/unit/coins/abstractEthLikeCoin.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/*celo.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/celoToken.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/*eth.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/*eth2.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/*rbtc.ts @BitGo/eth-team
+modules/core/test/v2/unit/coins/token.ts @BitGo/eth-team
+
 modules/core/src/v2/coins/*xlm.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
 modules/core/src/v2/coins/*xrp.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/*eth.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
-modules/core/src/v2/coins/token.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
 
 # Trading accounts
 modules/core/src/v2/trading/*.ts tyler@bitgo.com
@@ -37,13 +52,27 @@ modules/statics/* tyler@bitgo.com
 # Package Configuration Files
 modules/*/package*.json tyler@bitgo.com
 
-modules/account-lib/* @argjv @twtaylorbitgo @CapnMigraine @marktoda
+# ACCOUNT LIB
+modules/account-lib/* @argjv @CapnMigraine
 modules/utxo-lib/* @BitGo/btc-team
+
+# Eth
+modules/account-lib/src/coin/celo/* @BitGo/eth-team
+modules/account-lib/src/coin/etc/* @BitGo/eth-team
+modules/account-lib/src/coin/eth/* @BitGo/eth-team
+modules/account-lib/src/coin/eth2/* @BitGo/eth-team
+modules/account-lib/src/coin/rbtc/* @BitGo/eth-team
+
+modules/account-lib/test/coin/celo/* @BitGo/eth-team
+modules/account-lib/test/coin/etc/* @BitGo/eth-team
+modules/account-lib/test/coin/eth/* @BitGo/eth-team
+modules/account-lib/test/coin/eth2/* @BitGo/eth-team
+modules/account-lib/test/coin/rbtc/* @BitGo/eth-team
 
 # Lock files
 yarn.lock tyler@bitgo.com
 modules/express/package-lock.json tyler@bitgo.com
 
 # NOTHING BELOW THIS LINE
-CODEOWNERS @BitGo/git-admins @argjv @twtaylorbitgo @CapnMigraine @tylerlevine @marktoda
+CODEOWNERS @BitGo/git-admins @argjv @twtaylorbitgo @CapnMigraine @tylerlevine
 
