@@ -142,7 +142,7 @@ export class RpcClient {
   static getSupportedNodeVersions(network: Network): string[] {
     switch (getMainnet(network)) {
       case utxolib.networks.bitcoin:
-        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/', '/Satoshi:22.0.0/'];
+        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/', '/Satoshi:22.0.0/', '/Satoshi:22.99.0/'];
       case utxolib.networks.bitcoincash:
         return ['/Bitcoin Cash Node:23.0.0(EB32.0)/'];
       case utxolib.networks.bitcoinsv:
