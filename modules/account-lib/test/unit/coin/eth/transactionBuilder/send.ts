@@ -56,7 +56,7 @@ describe('Eth transaction builder send', () => {
       const tx = await txBuilder.build();
 
       should.equal(tx.toJson().chainId, 42);
-      should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
+      should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_LEGACY);
       should.equal(tx.signature.length, 2);
       should.equal(tx.inputs.length, 1);
       should.equal(tx.inputs[0].address, contractAddress);
@@ -114,13 +114,22 @@ describe('Eth transaction builder send', () => {
     });
   });
 
-  describe('should sign and build from serialized', () => {
-    it('a send funds transaction from serialized', async () => {
-      const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
-      txBuilder.from(testData.SEND_TX_BROADCAST);
-      const signedTx = await txBuilder.build();
-      should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
-    });
+  describe('sign and build from serialized', () => {
+    {
+      const testParams = [
+        ['Legacy', testData.SEND_TX_BROADCAST_LEGACY],
+        ['EIP1559', testData.SEND_TX_BROADCAST_EIP1559],
+      ];
+
+      testParams.map(([txnType, txnHex]) => {
+        it(`should be able to create a send transaction from serialized ${txnType} tx hex`, async () => {
+          const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+          txBuilder.from(txnHex);
+          const signedTx = await txBuilder.build();
+          should.equal(signedTx.toBroadcastFormat(), txnHex);
+        });
+      });
+    }
 
     it('a send funds transaction with amount 0 from serialized', async () => {
       const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;

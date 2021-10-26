@@ -2,7 +2,6 @@ import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
-import * as ethers from 'ethers';
 
 import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
@@ -26,7 +25,8 @@ import {
   isValidEthAddress,
 } from './utils';
 import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
-import { addHexPrefix } from 'ethereumjs-util';
+import * as ethUtil from 'ethereumjs-util';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 
 const DEFAULT_M = 3;
 
@@ -241,9 +241,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     if (typeof rawTransaction === 'string') {
       if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-        try {
-          ethers.utils.RLP.decode(rawTransaction);
-        } catch (e) {
+        const txBytes = ethUtil.toBuffer(ethUtil.addHexPrefix(rawTransaction.toLowerCase()));
+        if (!this.isEip1559Txn(txBytes) && !this.isRLPDecodable(txBytes)) {
           throw new ParseTransactionError('There was error in decoding the hex string');
         }
       } else {
@@ -255,6 +254,24 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       }
     } else {
       throw new InvalidTransactionError('Transaction is not a hex string or stringified json');
+    }
+  }
+
+  private isEip1559Txn(txn: Buffer): boolean {
+    try {
+      FeeMarketEIP1559Transaction.fromSerializedTx(txn);
+      return true;
+    } catch (_: unknown) {
+      return false;
+    }
+  }
+
+  private isRLPDecodable(bytes: Buffer): boolean {
+    try {
+      ethUtil.rlp.decode(bytes);
+      return true;
+    } catch (_: unknown) {
+      return false;
     }
   }
 
@@ -654,6 +671,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @protected for internal use when the enableFinalVField flag is true.
    */
   protected getFinalV(): string {
-    return addHexPrefix(this._common.chainIdBN().muln(2).addn(35).toString(16));
+    return ethUtil.addHexPrefix(this._common.chainIdBN().muln(2).addn(35).toString(16));
   }
 }
