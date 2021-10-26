@@ -431,17 +431,27 @@ async function handleV2SignTxWallet(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.signTransaction(req.body);
+  try {
+    return await wallet.signTransaction(req.body);
+  } catch (error) {
+    console.log('error while signing wallet transaction ', error);
+    throw error;
+  }
 }
 
 /**
  * handle sign transaction
  * @param req
  */
-function handleV2SignTx(req: express.Request) {
+async function handleV2SignTx(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  return coin.signTransaction(req.body);
+  try {
+    return await coin.signTransaction(req.body);
+  } catch (error) {
+    console.log('error while signing the transaction ', error);
+    throw error;
+  }
 }
 
 /**
