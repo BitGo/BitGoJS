@@ -19,11 +19,13 @@ import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
 
 const nonce = new Date().getTime();
 
+const faucetWallet = 'utxolibtest-' + nonce;
+
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
   switch (network) {
     case utxolib.networks.testnet:
-      await rpc.createWallet('utxolibtest-' + nonce);
+      await rpc.createWallet(faucetWallet);
       break;
     case utxolib.networks.bitcoingoldTestnet:
       // The actual BTC/BTG fork flag only gets activated at this height.
@@ -88,7 +90,7 @@ async function createTransactionsForScriptType(
 }
 
 // https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
-async function createWalletP2trSpend(rpc: RpcClient, network: Network) {
+async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, network: Network) {
   if (!isBitcoin(network)) {
     throw new Error(`invalid network`);
   }
@@ -108,8 +110,9 @@ async function createWalletP2trSpend(rpc: RpcClient, network: Network) {
     }
   });
   const address = await walletRpc.getNewAddress('p2tr-addr', 'bech32m');
-  await walletRpc.generateToAddress(200, address);
-  const txid = await walletRpc.sendToAddress(address, 1);
+  await faucetRpc.sendToAddress(address, 1);
+  await faucetRpc.generateToAddress(10, await faucetRpc.getNewAddress());
+  const txid = await walletRpc.sendToAddress(address, 0.5);
   await writeTransactionFixtureWithInputs(rpc, network, `spend_p2tr.json`, txid);
 }
 
@@ -119,7 +122,7 @@ async function createTransactions(rpc: RpcClient, network: Network) {
     await createTransactionsForScriptType(rpc, scriptType, network);
   }
    */
-  await createWalletP2trSpend(rpc, network);
+  await createWalletP2trSpend(rpc.withWallet(faucetWallet), rpc, network);
 }
 
 async function run(network: Network) {
