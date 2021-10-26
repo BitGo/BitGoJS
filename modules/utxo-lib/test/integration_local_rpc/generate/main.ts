@@ -9,13 +9,15 @@ import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
   createScriptPubKey,
   createSpendTransaction,
+  getKeyTriple,
   isSupportedDepositType,
   isSupportedSpendType,
   ScriptType,
 } from './outputScripts.util';
-import { RpcClient } from './RpcClient';
+import { Descriptor, RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
+import { bip32 } from 'bitcoinjs-lib';
 
 const nonce = new Date().getTime();
 
@@ -95,10 +97,25 @@ async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, netwo
     throw new Error(`invalid network`);
   }
 
-  const descriptor = {
-    desc: 'tr(tprv8ZgxMBicQKsPdCttbKDzsuDzypKyWMDfGbzR5YsQe3dnPg6B69PPEaxawUuaanULMtgA8Etd9DaqDVSEBSbScA9xTsdR8PRfPsJZwKS3dJQ/*)#e05hhj4z',
+  function pkToXOnlyHex(pk: bip32.BIP32Interface): string {
+    return pk.publicKey.slice(1).toString('hex');
+  }
+  const [pk0, pk1, pk2] = getKeyTriple('taproot');
+  function descMulti2of2(a: bip32.BIP32Interface, b: bip32.BIP32Interface) {
+    return `multi(2,${pkToXOnlyHex(a)},${pkToXOnlyHex(b)})`;
+  }
+  const descMulti = `tr(${pkToXOnlyHex(pk0)},{${descMulti2of2(pk0, pk1)},${descMulti2of2(pk1, pk2)}})`;
+  const { descriptor: descStr } = await rpc.getDescriptorInfo(descMulti);
+
+  /*
+  const descTr =
+    'tr(tprv8ZgxMBicQKsPdCttbKDzsuDzypKyWMDfGbzR5YsQe3dnPg6B69PPEaxawUuaanULMtgA8Etd9DaqDVSEBSbScA9xTsdR8PRfPsJZwKS3dJQ/*)#e05hhj4z';
+   */
+
+  const descriptor: Descriptor = {
+    desc: descStr as string,
     timestamp: 1633973910,
-    active: true,
+    active: false,
   };
   const walletName = 'p2tr-test-' + nonce;
   await rpc.createWalletWithDescriptor(walletName);
