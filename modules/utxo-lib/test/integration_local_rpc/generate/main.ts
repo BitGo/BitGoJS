@@ -110,8 +110,8 @@ async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, netwo
     }
   });
   const address = await walletRpc.getNewAddress('p2tr-addr', 'bech32m');
+  await faucetRpc.generateToAddress(110, await faucetRpc.getNewAddress());
   await faucetRpc.sendToAddress(address, 1);
-  await faucetRpc.generateToAddress(10, await faucetRpc.getNewAddress());
   const txid = await walletRpc.sendToAddress(address, 0.5);
   await writeTransactionFixtureWithInputs(rpc, network, `spend_p2tr.json`, txid);
 }
