@@ -97,6 +97,7 @@ async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, netwo
     throw new Error(`invalid network`);
   }
 
+  /*
   function pkToXOnlyHex(pk: bip32.BIP32Interface): string {
     return pk.publicKey.slice(1).toString('hex');
   }
@@ -107,15 +108,15 @@ async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, netwo
   const descMulti = `tr(${pkToXOnlyHex(pk0)},{${descMulti2of2(pk0, pk1)},${descMulti2of2(pk1, pk2)}})`;
   const { descriptor: descStr } = await rpc.getDescriptorInfo(descMulti);
 
-  /*
-  const descTr =
-    'tr(tprv8ZgxMBicQKsPdCttbKDzsuDzypKyWMDfGbzR5YsQe3dnPg6B69PPEaxawUuaanULMtgA8Etd9DaqDVSEBSbScA9xTsdR8PRfPsJZwKS3dJQ/*)#e05hhj4z';
    */
 
+  const descTr =
+    'tr(tprv8ZgxMBicQKsPdCttbKDzsuDzypKyWMDfGbzR5YsQe3dnPg6B69PPEaxawUuaanULMtgA8Etd9DaqDVSEBSbScA9xTsdR8PRfPsJZwKS3dJQ/*)#e05hhj4z';
+
   const descriptor: Descriptor = {
-    desc: descStr as string,
+    desc: descTr as string,
     timestamp: 1633973910,
-    active: false,
+    active: true,
   };
   const walletName = 'p2tr-test-' + nonce;
   await rpc.createWalletWithDescriptor(walletName);
@@ -127,6 +128,7 @@ async function createWalletP2trSpend(faucetRpc: RpcClient, rpc: RpcClient, netwo
     }
   });
   const address = await walletRpc.getNewAddress('p2tr-addr', 'bech32m');
+  await walletRpc.exec('getaddressinfo', address);
   await faucetRpc.generateToAddress(110, await faucetRpc.getNewAddress());
   await faucetRpc.sendToAddress(address, 1);
   const txid = await walletRpc.sendToAddress(address, 0.5);
