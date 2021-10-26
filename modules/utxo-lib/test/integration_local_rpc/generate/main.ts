@@ -3,7 +3,7 @@ import * as assert from 'assert';
 const utxolib = require('../../../src');
 
 import { Network } from '../../../src/networkTypes';
-import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
+import { getMainnet, getNetworkName, isBitcoin, isTestnet } from '../../../src/coins';
 
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
@@ -12,17 +12,18 @@ import {
   isSupportedDepositType,
   isSupportedSpendType,
   ScriptType,
-  scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
 
+const nonce = new Date().getTime();
+
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
   switch (network) {
     case utxolib.networks.testnet:
-      await rpc.createWallet('utxolibtest');
+      await rpc.createWallet('utxolibtest-' + nonce);
       break;
     case utxolib.networks.bitcoingoldTestnet:
       // The actual BTC/BTG fork flag only gets activated at this height.
@@ -86,10 +87,39 @@ async function createTransactionsForScriptType(
   await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);
 }
 
+// https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
+async function createWalletP2trSpend(rpc: RpcClient, network: Network) {
+  if (!isBitcoin(network)) {
+    throw new Error(`invalid network`);
+  }
+
+  const descriptor = {
+    desc: 'tr(tprv8ZgxMBicQKsPdCttbKDzsuDzypKyWMDfGbzR5YsQe3dnPg6B69PPEaxawUuaanULMtgA8Etd9DaqDVSEBSbScA9xTsdR8PRfPsJZwKS3dJQ/*)#e05hhj4z',
+    timestamp: 1633973910,
+    active: true,
+  };
+  const walletName = 'p2tr-test-' + nonce;
+  await rpc.createWalletWithDescriptor(walletName);
+  const walletRpc = rpc.withWallet(walletName);
+  const result = await walletRpc.importDescriptors([descriptor]);
+  result.forEach((r) => {
+    if (!r.success) {
+      throw new Error(`error importing descriptor`);
+    }
+  });
+  const address = await walletRpc.getNewAddress('p2tr-addr', 'bech32m');
+  await walletRpc.generateToAddress(200, address);
+  const txid = await walletRpc.sendToAddress(address, 1);
+  await writeTransactionFixtureWithInputs(rpc, network, `spend_p2tr.json`, txid);
+}
+
 async function createTransactions(rpc: RpcClient, network: Network) {
+  /*
   for (const scriptType of scriptTypes) {
     await createTransactionsForScriptType(rpc, scriptType, network);
   }
+   */
+  await createWalletP2trSpend(rpc, network);
 }
 
 async function run(network: Network) {

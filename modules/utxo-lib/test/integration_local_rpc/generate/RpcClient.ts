@@ -16,15 +16,34 @@ function sleep(millis: number): Promise<void> {
   });
 }
 
+// https://developer.bitcoin.org/reference/rpc/importdescriptors.html
+export interface Descriptor {
+  desc: string;
+  active: boolean;
+  range?: number | [number, number];
+  next_index?: number;
+  timestamp?: number | 'now';
+  internal?: boolean;
+  label?: string;
+}
+
 export class RpcClient {
   id = 0;
 
-  constructor(private network: Network, private url: string) {}
+  constructor(private network: Network, private url: string, private wallet?: string) {}
+
+  public withWallet(walletName: string): RpcClient {
+    return new RpcClient(this.network, this.url, walletName);
+  }
 
   async exec<T>(method: string, ...params: unknown[]): Promise<T> {
     try {
       debug('<', method, params);
-      const response = await axios.post(this.url, {
+      const urlParts = [this.url];
+      if (this.wallet) {
+        urlParts.push('wallet', this.wallet);
+      }
+      const response = await axios.post(urlParts.join('/'), {
         jsonrpc: '1.0',
         method,
         params,
@@ -48,8 +67,27 @@ export class RpcClient {
     return this.exec('createwallet', walletName);
   }
 
-  async getNewAddress(): Promise<string> {
-    return this.exec('getnewaddress');
+  async createWalletWithDescriptor(walletName: string): Promise<Record<string, unknown>> {
+    return this.exec('createwallet', walletName, false, false, null, false, /* descriptors */ true);
+  }
+
+  async getDescriptorInfo(descriptorFunc: string): Promise<Record<string, unknown>> {
+    return this.exec('getdescriptorinfo', descriptorFunc);
+  }
+
+  async importDescriptors(desc: Descriptor[]): Promise<
+    {
+      success: boolean;
+      warnings: string[];
+      error: Record<string, unknown>;
+    }[]
+  > {
+    return this.exec('importdescriptors', desc);
+  }
+
+  async getNewAddress(label?: string, addressType?: string): Promise<string> {
+    const args = [label, addressType].filter((a) => a !== undefined);
+    return this.exec('getnewaddress', ...args);
   }
 
   async getNetworkInfo(): Promise<{ subversion: string }> {
@@ -104,7 +142,7 @@ export class RpcClient {
   static getSupportedNodeVersions(network: Network): string[] {
     switch (getMainnet(network)) {
       case utxolib.networks.bitcoin:
-        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/'];
+        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/', '/Satoshi:22.0.0/'];
       case utxolib.networks.bitcoincash:
         return ['/Bitcoin Cash Node:23.0.0(EB32.0)/'];
       case utxolib.networks.bitcoinsv:
