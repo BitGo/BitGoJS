@@ -2,8 +2,6 @@
  * @prettier
  */
 import * as express from 'express';
-import * as httpProxy from 'http-proxy';
-import * as url from 'url';
 import * as path from 'path';
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
@@ -22,10 +20,6 @@ import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors'
 
 import { Environments } from 'bitgo';
 import { setupRoutes } from './clientRoutes';
-const { version } = require('bitgo/package.json');
-const pjson = require('../package.json');
-
-const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
 /**
  * Set up the logging middleware provided by morgan
@@ -40,6 +34,7 @@ function setupLogging(app: express.Application, config: Config): void {
     // create a write stream (in append mode)
     const accessLogPath = path.resolve(config.logFile);
     const accessLogStream = fs.createWriteStream(accessLogPath, { flags: 'a' });
+    /* eslint-disable-next-line no-console */
     console.log('Log location: ' + accessLogPath);
     // setup the logger
     middleware = morgan('combined', { stream: accessLogStream });
@@ -67,77 +62,6 @@ function configureEnvironment(config: Config): void {
   if (customBitcoinNetwork) {
     Environments['custom'].network = customBitcoinNetwork;
   }
-}
-
-/**
- * Create and configure the proxy middleware and add it to the app middleware stack
- *
- * @param app bitgo-express Express app
- * @param config
- */
-function configureProxy(app: express.Application, config: Config): void {
-  const { env, timeout } = config;
-
-  // Mount the proxy middleware
-  const options = {
-    timeout: timeout,
-    proxyTimeout: timeout,
-    secure: true,
-  };
-
-  if (Environments[env].network === 'testnet') {
-    // Need to do this to make supertest agent pass (set rejectUnauthorized to false)
-    options.secure = false;
-  }
-
-  const proxy = httpProxy.createProxyServer(options);
-
-  const sendError = (res: http.ServerResponse, status: number, json: Record<string, unknown>) => {
-    res.writeHead(status, {
-      'Content-Type': 'application/json',
-    });
-
-    res.end(JSON.stringify(json));
-  };
-
-  proxy.on('proxyReq', function (proxyReq, req) {
-    // Need to rewrite the host, otherwise cross-site protection kicks in
-    const parsedUri = url.parse(Environments[env].uri).hostname;
-    if (parsedUri) {
-      proxyReq.setHeader('host', parsedUri);
-    }
-
-    const userAgent = req.headers['user-agent']
-      ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
-      : BITGOEXPRESS_USER_AGENT;
-    proxyReq.setHeader('User-Agent', userAgent);
-  });
-
-  proxy.on('error', (err, _, res) => {
-    debug('Proxy server error: ', err);
-    sendError(res, 500, {
-      error: 'BitGo Express encountered an error while attempting to proxy your request to BitGo. Please try again.',
-    });
-  });
-
-  proxy.on('econnreset', (err, _, res) => {
-    debug('Proxy server connection reset error: ', err);
-    sendError(res, 500, {
-      error:
-        'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
-    });
-  });
-
-  app.use(function (req: StaticRequest, res: express.Response) {
-    if (req.url && (/^\/api.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
-      req.isProxy = true;
-      proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });
-      return;
-    }
-
-    // user tried to access a url which is not an api route, do not proxy
-    res.status(404).send('bitgo-express can only proxy BitGo API requests');
-  });
 }
 
 /**
@@ -180,6 +104,7 @@ function createHttpServer(app: express.Application): http.Server {
 export function startup(config: Config, baseUri: string): () => void {
   return function () {
     const { env, ipc, customRootUri, customBitcoinNetwork } = config;
+    /* eslint-disable no-console */
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
     if (ipc) {
@@ -193,6 +118,7 @@ export function startup(config: Config, baseUri: string): () => void {
     if (customBitcoinNetwork) {
       console.log(`Custom bitcoin network: ${customBitcoinNetwork}`);
     }
+    /* eslint-enable no-console */
   };
 }
 
@@ -268,18 +194,24 @@ export function app(cfg: Config): express.Application {
   const app = express();
 
   setupLogging(app, cfg);
+  debug('logging setup');
 
-  const { debugNamespace, disableProxy } = cfg;
+  const { debugNamespace } = cfg;
 
   // enable specified debug namespaces
   if (_.isArray(debugNamespace)) {
-    _.forEach(debugNamespace, (ns) => debugLib.enable(ns));
+    for (const ns of debugNamespace) {
+      if (ns && !debugLib.enabled(ns)) {
+        debugLib.enable(ns);
+      }
+    }
   }
 
   checkPreconditions(cfg);
+  debug('preconditions satisfied');
 
   // Be more robust about accepting URLs with double slashes
-  app.use(function (req, res, next) {
+  app.use(function replaceUrlSlashes(req, res, next) {
     req.url = req.url.replace(/\/\//g, '/');
     next();
   });
@@ -288,10 +220,6 @@ export function app(cfg: Config): express.Application {
   setupRoutes(app, cfg);
 
   configureEnvironment(cfg);
-
-  if (!disableProxy) {
-    configureProxy(app, cfg);
-  }
 
   return app;
 }

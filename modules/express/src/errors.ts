@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 // Descriptive error types for common issues which may arise
 // during the operation of BitGoJS or BitGoExpress
 
@@ -7,14 +10,14 @@
 import { Errors } from 'bitgo';
 
 export class TlsConfigurationError extends Errors.BitGoJsError {
-  public constructor(message?) {
+  public constructor(message?: string) {
     super(message || 'TLS is configuration is invalid');
     Object.setPrototypeOf(this, TlsConfigurationError.prototype);
   }
 }
 
 export class NodeEnvironmentError extends Errors.BitGoJsError {
-  public constructor(message?) {
+  public constructor(message?: string) {
     super(message || 'NODE_ENV is invalid for the current bitgo environment');
     Object.setPrototypeOf(this, NodeEnvironmentError.prototype);
   }
@@ -22,8 +25,8 @@ export class NodeEnvironmentError extends Errors.BitGoJsError {
 
 export class ApiResponseError extends Errors.BitGoJsError {
   public readonly status: number;
-  public readonly result: any;
-  public constructor(message: string | undefined, status: number, result?: any) {
+  public readonly result: unknown;
+  public constructor(message: string | undefined, status: number, result?: unknown) {
     super(message);
     Object.setPrototypeOf(this, ApiResponseError.prototype);
     this.status = status;

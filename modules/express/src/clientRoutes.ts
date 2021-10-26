@@ -431,17 +431,27 @@ async function handleV2SignTxWallet(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.signTransaction(req.body);
+  try {
+    return await wallet.signTransaction(req.body);
+  } catch (error) {
+    console.log('error while signing wallet transaction ', error);
+    throw error;
+  }
 }
 
 /**
  * handle sign transaction
  * @param req
  */
-function handleV2SignTx(req: express.Request) {
+async function handleV2SignTx(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  return coin.signTransaction(req.body);
+  try {
+    return await coin.signTransaction(req.body);
+  } catch (error) {
+    console.log('error while signing the transaction ', error);
+    throw error;
+  }
 }
 
 /**
@@ -604,6 +614,8 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
   const method = req.method;
   const bitgo = req.bitgo;
 
+  debug('handling v2 coin specific rest req');
+
   try {
     const coin = bitgo.coin(req.params.coin);
     const coinURL = coin.url(createAPIPath(req));
@@ -653,6 +665,19 @@ function redirectRequest(bitgo: BitGo, method: string, url: string, req: express
   next();
 }
 
+async function handleProxyReq(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const fullUrl = req.bitgo.microservicesUrl(req.url);
+  if (req.url && (/^\/api.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
+    req.isProxy = true;
+    debug('proxying %s request to %s', req.method, fullUrl);
+    return await redirectRequest(req.bitgo, req.method, fullUrl, req, next);
+  }
+
+  // user tried to access a url which is not an api route, do not proxy
+  debug('unable to proxy %s request to %s', req.method, fullUrl);
+  res.status(404).send('bitgo-express can only proxy BitGo API requests');
+}
+
 /**
  *
  * @param status
@@ -683,7 +708,7 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
 function prepareBitGo(config: Config) {
   const { env, customRootUri, customBitcoinNetwork } = config;
 
-  return function (req: express.Request, res: express.Response, next: express.NextFunction) {
+  return function prepBitGo(req: express.Request, res: express.Response, next: express.NextFunction) {
     // Get access token
     let accessToken;
     if (req.headers.authorization) {
@@ -714,7 +739,7 @@ function prepareBitGo(config: Config) {
  * @param promiseRequestHandler
  */
 function promiseWrapper(promiseRequestHandler: express.RequestHandler) {
-  return function (req: express.Request, res: express.Response, next: express.NextFunction) {
+  return function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
     bluebird
       .try(promiseRequestHandler.bind(null, req, res, next))
@@ -929,4 +954,9 @@ export function setupRoutes(app: express.Application, config: Config): void {
   // any other API v2 call
   app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
   app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
+
+  // everything else should use the proxy handler
+  if (!config.disableProxy) {
+    app.use(prepareBitGo(config), promiseWrapper(handleProxyReq));
+  }
 }

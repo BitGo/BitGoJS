@@ -1,5 +1,3 @@
-// eslint-disable-next-line
-/// <reference types="mocha" />
 import * as should from 'should';
 import 'should-http';
 import 'should-sinon';
@@ -13,7 +11,6 @@ import * as http from 'http';
 import * as https from 'https';
 import * as debugLib from 'debug';
 import * as path from 'path';
-import * as httpProxy from 'http-proxy';
 import { Environments } from 'bitgo';
 import { coroutine as co } from 'bluebird';
 
@@ -298,102 +295,6 @@ describe('Bitgo Express', function () {
 
       should(args.env).equal('custom');
       Environments.custom.network.should.equal(args.customBitcoinNetwork);
-    });
-
-    it('should configure the request proxy for testnet', () => {
-      const onStub = sinon.stub();
-      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
-        .returns({ on: onStub } as any);
-
-      const timeout = 100000;
-      const args: any = {
-        env: 'test',
-        timeout,
-      };
-
-      expressApp(args);
-
-      createProxyServerStub.should.have.been.calledOnceWith({ secure: false, timeout, proxyTimeout: timeout });
-      onStub.should.have.been.calledThrice();
-      onStub.should.have.been.calledWith('proxyReq');
-      onStub.should.have.been.calledWith('error');
-      onStub.should.have.been.calledWith('econnreset');
-
-      const onCallback = onStub.args[0][1];
-
-      const setHeaderStub = sinon.stub();
-
-      onCallback({ setHeader: setHeaderStub }, { headers: [] });
-
-      setHeaderStub.should.have.been.calledTwice();
-      setHeaderStub.should.have.been.calledWith('host');
-      setHeaderStub.should.have.been.calledWith('User-Agent');
-
-      createProxyServerStub.restore();
-    });
-
-    it('should configure the request proxy for mainnet', () => {
-      const onStub = sinon.stub();
-      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
-        .returns({ on: onStub } as any);
-
-      const args: any = {
-        env: 'prod',
-        disableSSL: true,
-        disableEnvCheck: true,
-        timeout: 305 * 1000,
-      };
-
-      expressApp(args);
-
-      createProxyServerStub.should.have.been.calledOnceWith({ timeout: 305 * 1000, secure: true, proxyTimeout: 305 * 1000 });
-      onStub.should.have.been.calledThrice();
-      onStub.should.have.been.calledWith('proxyReq');
-      onStub.should.have.been.calledWith('error');
-      onStub.should.have.been.calledWith('econnreset');
-
-      const onCallback = onStub.args[0][1];
-
-      const setHeaderStub = sinon.stub();
-
-      onCallback({ setHeader: setHeaderStub }, { headers: [] });
-
-      setHeaderStub.should.have.been.calledTwice();
-      setHeaderStub.should.have.been.calledWith('host');
-      setHeaderStub.should.have.been.calledWith('User-Agent');
-
-      createProxyServerStub.restore();
-    });
-
-    it('should configure the request proxy for testnet with custom timeout', () => {
-      const onStub = sinon.stub();
-      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
-        .returns({ on: onStub } as any);
-
-      const args: any = {
-        env: 'test',
-        timeout: 1000,
-      };
-
-      expressApp(args);
-
-      createProxyServerStub.should.have.been.calledOnceWith({ timeout: args.timeout, secure: false, proxyTimeout: args.timeout });
-      onStub.should.have.been.calledThrice();
-      onStub.should.have.been.calledWith('proxyReq');
-      onStub.should.have.been.calledWith('error');
-      onStub.should.have.been.calledWith('econnreset');
-
-      const onCallback = onStub.args[0][1];
-
-      const setHeaderStub = sinon.stub();
-
-      onCallback({ setHeader: setHeaderStub }, { headers: [] });
-
-      setHeaderStub.should.have.been.calledTwice();
-      setHeaderStub.should.have.been.calledWith('host');
-      setHeaderStub.should.have.been.calledWith('User-Agent');
-
-      createProxyServerStub.restore();
     });
 
     it('should fail if IPC option is used on windows', async () => {
