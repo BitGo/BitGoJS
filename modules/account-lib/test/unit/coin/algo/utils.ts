@@ -299,4 +299,40 @@ describe('utils', () => {
       Algo.algoUtils.getMultisigTxID(rawTxn);
     }, 'Error: The object contains empty or 0 values. First empty or 0 value encountered during encoding: msig');
   });
+
+  it('Should return enableToken', () => {
+    const amount = '0';
+    const from = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const to = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const closeRemainderTo = '';
+
+    Algo.algoUtils.getTokenTxType(amount, from, to, closeRemainderTo).should.equal('enableToken');
+  });
+
+  it('Should return disableToken', () => {
+    const amount = '0';
+    const from = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const to = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const closeRemainderTo = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+
+    Algo.algoUtils.getTokenTxType(amount, from, to, closeRemainderTo).should.equal('disableToken');
+  });
+
+  it('Should return transferToken when "from" and "to" are different ', () => {
+    const amount = '0';
+    const from = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const to = 'SP745JJR4KPRQEXJZHVIEN736LYTL2T2DFMG3OIIFJBV66K73PHNMDCZVM';
+    const closeRemainderTo = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+
+    Algo.algoUtils.getTokenTxType(amount, from, to, closeRemainderTo).should.equal('transferToken');
+  });
+
+  it('Should return transferToken when amount is not 0', () => {
+    const amount = '1000';
+    const from = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const to = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+    const closeRemainderTo = 'R275HNKEXC3AI3CYL2PPOGP2AFA4XCRDO2CCREGCVDX6OJAZ54MBD7VLYA';
+
+    Algo.algoUtils.getTokenTxType(amount, from, to, closeRemainderTo).should.equal('transferToken');
+  });
 });

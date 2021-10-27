@@ -20,6 +20,8 @@ export interface TxData {
   genesisHash: string | Buffer;
   closeRemainderTo?: string;
   nonParticipation?: boolean;
+  txType?: string;
+  tokenName?: string;
 }
 
 export interface Address {
