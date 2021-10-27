@@ -20,5 +20,10 @@ describe('eos', function() {
       EosInputs.explainTransactionInputNative, EosResponses.explainTransactionOutputNative));
     it('explains CHEX token transfer transaction', testExplainTransaction(
       EosInputs.explainTransactionInputChex, EosResponses.explainTransactionOutputChex));
+    it('explain EOS Unstake1 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput1, EosResponses.explainUnstakeOutput1));
+    it('explain EOS Unstake2 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput2, EosResponses.explainUnstakeOutput2));
+
   });
 });
