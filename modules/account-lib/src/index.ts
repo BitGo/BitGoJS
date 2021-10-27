@@ -47,6 +47,9 @@ export { Stx };
 import * as Algo from './coin/algo';
 export { Algo };
 
+import * as Sol from './coin/sol';
+export { Sol };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -73,6 +76,8 @@ const coinBuilderMap = {
   tstx: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,
   talgo: Algo.TransactionBuilderFactory,
+  sol: Sol.TransactionBuilderFactory,
+  tsol: Sol.TransactionBuilderFactory,
 };
 
 /**

@@ -41,6 +41,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@hashgraph/sdk": "~2.3.0",
+    "@solana/web3.js": "^1.30.2",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@stacks/transactions": "2.0.1",

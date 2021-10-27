@@ -24,7 +24,7 @@ import { MethodNotImplementedError } from '../../errors';
 export interface TransactionFee {
   fee: string;
 }
-export type StxTransactionExplanation = TransactionExplanation;
+export type SolTransactionExplanation = TransactionExplanation;
 
 export interface ExplainTransactionOptions {
   txHex?: string;
@@ -91,7 +91,7 @@ export class Sol extends BaseCoin {
   }
 
   /**
-   * Generate Stacks key pair
+   * Generate Solana key pair
    *
    * @param {Buffer} seed - Seed from which the new keypair should be generated, otherwise a random seed is used
    * @returns {Object} object with generated pub and prv
@@ -125,7 +125,7 @@ export class Sol extends BaseCoin {
   }
 
   /**
-   * Signs stacks transaction
+   * Signs Solana transaction
    * @param params
    * @param callback
    */
@@ -141,14 +141,14 @@ export class Sol extends BaseCoin {
   }
 
   /**
-   * Explain a Stacks transaction from txHex
+   * Explain a Solana transaction from txHex
    * @param params
    * @param callback
    */
   explainTransaction(
     params: ExplainTransactionOptions,
-    callback?: NodeCallback<StxTransactionExplanation>
-  ): Bluebird<StxTransactionExplanation> {
+    callback?: NodeCallback<SolTransactionExplanation>
+  ): Bluebird<SolTransactionExplanation> {
     throw new MethodNotImplementedError('explainTransaction method not implemented');
   }
 }
