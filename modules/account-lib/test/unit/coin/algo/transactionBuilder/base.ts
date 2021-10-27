@@ -94,7 +94,6 @@ class StubTransactionBuilder extends TransactionBuilder {
 
 describe('Algo Transaction Builder', () => {
   let txnBuilder: StubTransactionBuilder;
-
   const {
     accounts: { account1, account2, account3 },
     networks: { testnet },
@@ -268,16 +267,25 @@ describe('Algo Transaction Builder', () => {
       sinon.restore();
     });
 
-    // TODO(STLX-7506): uncomment after recordKeysFromPrivateKeyInProtocolFormat is implemented
-    // in keypair
-    xit('should sign the transaction', () => {
+    it('should not sign the transaction', () => {
       const txn = txnBuilder.getTransaction();
       txn.setAlgoTransaction(algoTxn);
       txn.setNumberOfRequiredSigners(1);
-      txnBuilder.signImplementation({ key: Buffer.from(account1.prvKey).toString('hex') });
-      txnBuilder.buildImplementation();
 
-      should.doesNotThrow(() => txnBuilder.getTransaction().toBroadcastFormat());
+      should.throws(
+        () => txnBuilder.signImplementation({ key: Buffer.from(account1.prvKey).toString('hex') }),
+        'Invalid base32 characters',
+      );
+    });
+
+    it('should sign the transaction', () => {
+      const { prv, pub } = new KeyPair().recordKeysFromPrivateKeyInProtocolFormat(account1.prvKey);
+      const prvKey = algoUtils.encodeSeed(Buffer.from(prv + pub));
+      const txn = txnBuilder.getTransaction();
+      txn.setAlgoTransaction(algoTxn);
+      txn.setNumberOfRequiredSigners(1);
+
+      should.doesNotThrow(() => txnBuilder.signImplementation({ key: prvKey }));
     });
   });
 
