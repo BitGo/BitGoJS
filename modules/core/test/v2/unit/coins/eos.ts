@@ -3,7 +3,7 @@ import * as ecc from 'eosjs-ecc';
 import * as bip32 from 'bip32';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
-import { EosResponses } from '../../fixtures/coins/eos';
+import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src';
@@ -167,6 +167,11 @@ describe('EOS:', function () {
   });
 
   describe('Transactions:', function () {
+    const testExplainTransaction = (input, expectedOutput) => async function() {
+      const explainedTransaction = await basecoin.explainTransaction(input);
+      should.exist(explainedTransaction);
+      explainedTransaction.should.deepEqual(expectedOutput);
+    };
     it('should generate a valid transaction signature', async function () {
       const signatureData = 'abcd';
       const tx = {
@@ -213,6 +218,14 @@ describe('EOS:', function () {
       explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
       explainedTx.memo.should.equal('1');
     });
+    it('explains EOS native transfer transaction', testExplainTransaction(
+      EosInputs.explainTransactionInputNative, EosResponses.explainTransactionOutputNative));
+    it('explains CHEX token transfer transaction', testExplainTransaction(
+      EosInputs.explainTransactionInputChex, EosResponses.explainTransactionOutputChex));
+    it('explain EOS Unstake1 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput1, EosResponses.explainUnstakeOutput1));
+    it('explain EOS Unstake2 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput2, EosResponses.explainUnstakeOutput2));
   });
 
   describe('Transaction Verification', function () {

@@ -132,6 +132,15 @@ interface StakeActionData {
   stake_cpu_quantity: string;
 }
 
+interface UnstakeActionData {
+  address: string;
+  amount: string;
+  from: string;
+  receiver: string;
+  unstake_cpu_quantity: string;
+  unstake_net_quantity: string;
+}
+
 interface VoteActionData {
   address: string;
   proxy: string;
@@ -474,6 +483,22 @@ export class Eos extends BaseCoin {
     };
   }
 
+  private validateUnstakeActionData(unstakeActionData: UnstakeActionData): any {
+    if (unstakeActionData.from !== unstakeActionData.receiver) {
+      throw new Error(
+        `unstaker (${unstakeActionData.from}) and receiver (${unstakeActionData.receiver}) must be the same`
+      );
+    }
+    const cpuAmount = new BigNumber(unstakeActionData.unstake_cpu_quantity.split(' ')[0]);
+    const netAmount = new BigNumber(unstakeActionData.unstake_net_quantity.split(' ')[0]);
+    const totalAmount = cpuAmount.plus(netAmount).toNumber();
+
+    return {
+      address: unstakeActionData.receiver,
+      amount: this.bigUnitsToBaseUnits(totalAmount),
+    };
+  }
+
   private static validateVoteActionData(voteActionData: VoteActionData) {
     const proxyIsEmpty = _.isEmpty(voteActionData.proxy);
     const producersIsEmpty = _.isEmpty(voteActionData.producers);
@@ -527,6 +552,14 @@ export class Eos extends BaseCoin {
           (txActionData as StakeActionData).receiver !== undefined &&
           (txActionData as StakeActionData).transfer !== undefined &&
           (txActionData as StakeActionData).stake_cpu_quantity !== undefined
+        );
+      };
+      const isUnstakeActionData = (txActionData: any): txActionData is UnstakeActionData => {
+        return (
+          (txActionData as UnstakeActionData).from !== undefined &&
+          (txActionData as UnstakeActionData).receiver !== undefined &&
+          (txActionData as UnstakeActionData).unstake_cpu_quantity !== undefined &&
+          (txActionData as UnstakeActionData).unstake_net_quantity !== undefined
         );
       };
       const isVoteActionData = (txActionData: any): txActionData is VoteActionData => {
@@ -645,6 +678,19 @@ export class Eos extends BaseCoin {
         tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
         tx.proxy = deserializedVoteAction.proxy;
         tx.producers = deserializedVoteAction.producers;
+      } else if (txAction.name === 'undelegatebw') {
+        if (tx.actions.length !== 1) {
+          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+        }
+
+        if (!isUnstakeActionData(txAction.data)) {
+          throw new Error('Invalid or incomplete unstake action data');
+        }
+        const unstakeActionData = txAction.data;
+        const deserializedUnstakeAction = self.validateUnstakeActionData(unstakeActionData);
+
+        tx.amount = deserializedUnstakeAction.amount;
+        tx.address = deserializedUnstakeAction.address;
       } else {
         throw new Error(`invalid action: ${txAction.name}`);
       }
