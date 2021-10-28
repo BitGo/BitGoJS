@@ -245,7 +245,7 @@ describe('AVAX util library', () => {
     it('getCommon for mainnet', () => {
       const common = getCommon(NetworkType.MAINNET);
       should.equal(common.chainName(), 'mainnet');
-      should.equal(common.hardfork(), 'petersburg');
+      should.equal(common.hardfork(), 'london');
       should.equal(common.chainIdBN().toString(), '43114');
       should.equal(common.networkIdBN().toString(), '1');
     });
@@ -253,7 +253,7 @@ describe('AVAX util library', () => {
     it('getCommon for testnet', () => {
       const common = getCommon(NetworkType.TESTNET);
       should.equal(common.chainName(), 'fuji');
-      should.equal(common.hardfork(), 'petersburg');
+      should.equal(common.hardfork(), 'london');
       should.equal(common.chainIdBN().toString(), '43113');
       should.equal(common.networkIdBN().toString(), '1');
     });
