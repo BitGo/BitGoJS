@@ -53,3 +53,9 @@ export const StakeTransactionSchema = joi.object({
     }),
   ],
 });
+
+export const AddProxyTransactionSchema = joi.object({
+  proxyType: joi.string().required(),
+  delegate: addressSchema.required(),
+  delay: joi.number().required(),
+});

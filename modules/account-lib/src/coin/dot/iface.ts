@@ -22,6 +22,9 @@ export interface TxData {
   eraPeriod?: number;
   controller?: string;
   payee?: string;
+  delegate?: string;
+  proxyType?: string;
+  delay?: number;
 }
 
 export interface TransferArgs {
@@ -46,17 +49,17 @@ export interface StakeArgs {
 }
 
 export type proxyType =
-  | 'any'
-  | 'nontransfer'
-  | 'governance'
+  | 'Any'
+  | 'NonTransfer'
+  | 'Governance'
   | 'staking'
-  | 'unusedsudobalances'
-  | 'identityjudgement'
-  | 'cancelproxy';
+  | 'UnusedSudoBalances'
+  | 'IdentityJudgement'
+  | 'CancelProxy';
 
 export interface AddProxyArgs {
   delegate: string;
-  delay: string | number;
+  delay: string;
   proxyType: proxyType;
 }
 
