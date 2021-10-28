@@ -7,7 +7,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
-import { TxData, DecodedTx, TransferArgs, StakeArgs, StakeArgsPayeeRaw, AddProxyArgs } from './iface';
+import { TxData, DecodedTx, TransferArgs, StakeArgs, StakeArgsPayeeRaw, AddProxyArgs, ProxyArgs } from './iface';
 import utils from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -65,6 +65,13 @@ export class Transaction extends BaseTransaction {
 
   signedTransaction(signedTransaction: string): void {
     this._signedTransaction = signedTransaction;
+  }
+
+  methodHex(): string {
+    if (!this._dotTransaction) {
+      throw new InvalidTransactionError('Empty Transaction');
+    }
+    return this._dotTransaction.method;
   }
 
   /** @inheritdoc */
@@ -143,6 +150,20 @@ export class Transaction extends BaseTransaction {
       result.delegate = keypair.getAddress();
       result.proxyType = txMethod.proxyType;
       result.delay = parseInt(txMethod.delay, 10);
+    }
+
+    if (this.type === TransactionType.Proxy) {
+      const txMethod = decodedTx.method.args as ProxyArgs;
+      const keypair = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.real, false, this._registry.chainSS58)).toString('hex'),
+      });
+      result.real = keypair.getAddress();
+      result.forceProxyType = txMethod.forceProxyType;
+      const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
+        metadataRpc: this._dotTransaction.metadataRpc,
+        registry: this._registry,
+      });
+      result.call = decodedCall;
     }
 
     return result;

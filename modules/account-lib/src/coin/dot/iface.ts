@@ -25,6 +25,9 @@ export interface TxData {
   delegate?: string;
   proxyType?: string;
   delay?: number;
+  real?: string;
+  forceProxyType?: proxyType;
+  call?: string;
 }
 
 export interface TransferArgs {
@@ -63,15 +66,16 @@ export interface AddProxyArgs {
   proxyType: proxyType;
 }
 
+export type ProxyCallArgs =
+  | string
+  | {
+      callIndex?: string;
+      args?: TransferArgs | StakeArgs;
+    };
 export interface ProxyArgs {
   real: string;
   forceProxyType: proxyType;
-  call:
-    | string
-    | {
-        callIndex?: string;
-        args?: string;
-      };
+  call: string;
 }
 export interface TxMethod {
   args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs;
