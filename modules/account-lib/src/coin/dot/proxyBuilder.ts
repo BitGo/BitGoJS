@@ -6,7 +6,7 @@ import { Transaction } from './transaction';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
 
-export class TransferBuilder extends TransactionBuilder {
+export class ProxyBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -16,7 +16,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.Send;
+    return TransactionType.Proxy;
   }
 
   /** @inheritdoc */
