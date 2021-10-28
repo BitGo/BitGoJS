@@ -6,7 +6,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
-import { AddProxyArgs, proxyType } from './iface';
+import { AddProxyArgs, MethodNames, proxyType } from './iface';
 import { AddProxyTransactionSchema } from './txnSchema';
 
 export class AddProxyBuilder extends TransactionBuilder {
@@ -88,7 +88,7 @@ export class AddProxyBuilder extends TransactionBuilder {
       metadataRpc: this._metadataRpc,
       registry: this._registry,
     });
-    if (decodedTxn.method?.name === 'addProxy') {
+    if (decodedTxn.method?.name === MethodNames.AddProxy) {
       const txMethod = decodedTxn.method.args as unknown as AddProxyArgs;
       const delegate = txMethod.delegate;
       const proxyType = txMethod.proxyType;
@@ -103,7 +103,7 @@ export class AddProxyBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === 'addProxy') {
+    if (this._method?.name === MethodNames.AddProxy) {
       const txMethod = this._method.args as AddProxyArgs;
       this.delegate(txMethod.delegate);
       this.proxyType(txMethod.proxyType);

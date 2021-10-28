@@ -106,20 +106,20 @@ describe('Dot Transfer Builder', () => {
     it('should validate eraPeriod', () => {
       const spy = sinon.spy(builder, 'validateValue');
       should.throws(
-        () => builder.eraPeriod(-1),
+        () => builder.durationConfig({ maxDuration: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
-      should.doesNotThrow(() => builder.eraPeriod(64));
+      should.doesNotThrow(() => builder.durationConfig({ maxDuration: 64 }));
       assert.calledTwice(spy);
     });
 
     it('should validate nonce', () => {
       const spy = sinon.spy(builder, 'validateValue');
       should.throws(
-        () => builder.nonce(-1),
+        () => builder.sequenceId({ name: 'Nonce', keyword: 'nonce', value: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
-      should.doesNotThrow(() => builder.nonce(10));
+      should.doesNotThrow(() => builder.sequenceId({ name: 'Nonce', keyword: 'nonce', value: 10 }));
       assert.calledTwice(spy);
     });
 
@@ -136,10 +136,10 @@ describe('Dot Transfer Builder', () => {
     it('should validate blockNumber', () => {
       const spy = sinon.spy(builder, 'validateValue');
       should.throws(
-        () => builder.blockNumber(-1),
+        () => builder.validity({ firstValid: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
-      should.doesNotThrow(() => builder.blockNumber(10));
+      should.doesNotThrow(() => builder.validity({ firstValid: 10 }));
       assert.calledTwice(spy);
     });
   });
@@ -149,12 +149,12 @@ describe('Dot Transfer Builder', () => {
       builder
         .testnet()
         .sender(sender.address)
-        .blockNumber(3933)
+        .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .nonce(200)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .tip(0)
         .transactionVersion(7)
-        .eraPeriod(64);
+        .durationConfig({ maxDuration: 64 });
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
 
