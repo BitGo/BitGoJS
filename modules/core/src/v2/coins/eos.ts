@@ -70,6 +70,8 @@ interface EosTransactionPrebuild {
   transaction: EosTx;
   txid: string;
   coin: string;
+  // full token name with the format, [t]eos:SYMBOL. This will only be present for token transactions. e.g. teos:CHEX.
+  token?: string;
 }
 
 export interface EosSignTransactionParams extends BaseSignTransactionOptions {
@@ -319,7 +321,7 @@ export class Eos extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: undefined,
+        memoId: '',
       };
     }
 
@@ -1067,10 +1069,14 @@ export class Eos extends BaseCoin {
       const txJsonFromHexHeaders = _.pick(txJsonFromHex, eosTransactionHeaderFields);
       const txJsonFromPackedTrxHeaders = _.pick(txJsonFromPackedTrx, eosTransactionHeaderFields);
 
-      // milliseconds are dropped in packed_trx and txHex
+      // dates are rounded to the nearest second in packed_trx and txHex
       _.map([txJsonFromPackedTrxHeaders, txJsonFromHexHeaders, txPrebuild.headers], (headers) => {
         const date = moment(headers.expiration as string);
-        headers.expiration = date.milliseconds(0).toISOString();
+
+        headers.expiration = date
+          .seconds(date.seconds() + Math.round(date.milliseconds() / 1000))
+          .milliseconds(0)
+          .toISOString();
         return headers;
       });
 
@@ -1108,15 +1114,16 @@ export class Eos extends BaseCoin {
         if (expectedOutputAmount !== actualOutputAmount) {
           throw new Error('txHex receive amount does not match expected recipient amount');
         }
+
         if (txPrebuild.coin === 'eos' || txPrebuild.coin === 'teos') {
-          if (actualAmountAndCoin[1] !== 'EOS') {
-            throw new Error('txHex receive coin name does not match expected recipient coin name');
+          const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : txPrebuild.token.split(':')[1];
+
+          if (actualAmountAndCoin[1] !== expectedSymbol) {
+            throw new Error('txHex receive symbol does not match expected recipient symbol');
           }
         } else {
-          // check the token name
-          if (txPrebuild.coin !== actualAmountAndCoin[1]) {
-            throw new Error('txHex receive coin name does not match expected recipient coin name');
-          }
+          // this should never happen
+          throw new Error('txHex coin name does not match expected coin name');
         }
       }
 
