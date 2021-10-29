@@ -20,6 +20,8 @@ export interface TxData {
   dest?: string;
   tip?: number;
   eraPeriod?: number;
+  controller?: string;
+  payee?: string;
 }
 
 export interface TransferArgs {
@@ -27,10 +29,20 @@ export interface TransferArgs {
   value: string;
 }
 
+export type StakeArgsPayee =
+  | 'Staked'
+  | 'Stash'
+  | 'Controller'
+  | {
+      Account: string;
+    };
+
+export type StakeArgsPayeeRaw = { controller?: null; stash?: null; staked?: null; account?: string };
+
 export interface StakeArgs {
   value: string;
   controller: { id: string };
-  payee: 'Stake' | 'Stash' | 'Controller' | { account: string };
+  payee: StakeArgsPayee;
 }
 
 export type proxyType =

@@ -7,7 +7,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
-import { TxData, DecodedTx, TransferArgs } from './iface';
+import { TxData, DecodedTx, TransferArgs, StakeArgs, StakeArgsPayeeRaw } from './iface';
 import utils from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -112,6 +112,27 @@ export class Transaction extends BaseTransaction {
       });
       result.dest = keypair.getAddress();
       result.amount = txMethod.value;
+    }
+
+    if (this.type === TransactionType.StakingActivate) {
+      const txMethod = decodedTx.method.args as StakeArgs;
+      const keypair = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.controller.id, false, this._registry.chainSS58)).toString('hex'),
+      });
+
+      result.controller = keypair.getAddress();
+      result.amount = txMethod.value;
+
+      const payee = txMethod.payee as StakeArgsPayeeRaw;
+      if (payee.account) {
+        const keypair = new KeyPair({
+          pub: Buffer.from(decodeAddress(payee.account, false, this._registry.chainSS58)).toString('hex'),
+        });
+        result.payee = keypair.getAddress();
+      } else {
+        const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as string;
+        result.payee = payeeType;
+      }
     }
 
     return result;
