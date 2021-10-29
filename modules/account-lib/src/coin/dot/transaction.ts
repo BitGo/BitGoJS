@@ -7,7 +7,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
-import { TxData, DecodedTx, TransferArgs, StakeArgs, StakeArgsPayeeRaw } from './iface';
+import { TxData, DecodedTx, TransferArgs, StakeArgs, StakeArgsPayeeRaw, AddProxyArgs } from './iface';
 import utils from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -133,6 +133,16 @@ export class Transaction extends BaseTransaction {
         const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as string;
         result.payee = payeeType;
       }
+    }
+
+    if (this.type === TransactionType.AddProxy) {
+      const txMethod = decodedTx.method.args as AddProxyArgs;
+      const keypair = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
+      });
+      result.delegate = keypair.getAddress();
+      result.proxyType = txMethod.proxyType;
+      result.delay = parseInt(txMethod.delay, 10);
     }
 
     return result;
