@@ -113,4 +113,22 @@ export class AddProxyBuilder extends TransactionBuilder {
     }
     return tx;
   }
+
+  /** @inheritdoc */
+  validateTransaction(_: Transaction): void {
+    super.validateTransaction(_);
+    this.validateFields(this._delegate, this._proxyType, this._delay);
+  }
+
+  private validateFields(delegate: string, proxyType: string, delay: number): void {
+    const validationResult = AddProxyTransactionSchema.validate({
+      delegate,
+      proxyType,
+      delay,
+    });
+
+    if (validationResult.error) {
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
+    }
+  }
 }
