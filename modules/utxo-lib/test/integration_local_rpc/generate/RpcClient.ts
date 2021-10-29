@@ -16,40 +16,98 @@ function sleep(millis: number): Promise<void> {
   });
 }
 
+export class RpcError extends Error {
+  constructor(public rpcError: { code: number; message: string }) {
+    super(`RPC error: ${rpcError.message} (code=${rpcError.code})`);
+  }
+
+  static isRpcErrorWithCode(e: Error, code: number): boolean {
+    return e instanceof RpcError && e.rpcError.code === code;
+  }
+}
+
+type NetworkInfo = { subversion: string };
+
+const BITCOIN_CORE_22_99 = '/Satoshi:22.99.0/';
+
 export class RpcClient {
   id = 0;
 
-  constructor(private network: Network, private url: string) {}
+  constructor(protected network: Network, protected url: string, protected networkInfo?: NetworkInfo) {}
+
+  /**
+   * Poor man's Bluebird.map(arr, f, { concurrency })
+   * Processes promises in batches of 16
+   *
+   * @param arr
+   * @param f
+   * @param [concurrency=8]
+   */
+  static async parallelMap<S, T>(
+    arr: S[],
+    f: (S, i: number) => Promise<T>,
+    { concurrency }: { concurrency: number } = { concurrency: 16 }
+  ): Promise<T[]> {
+    const rest: S[] = arr.splice(concurrency);
+    const result = await Promise.all(arr.map((v, i) => f(v, i)));
+    if (rest.length) {
+      return [...result, ...(await this.parallelMap(rest, f))];
+    }
+    return result;
+  }
+
+  protected getUrl(): string {
+    return this.url;
+  }
 
   async exec<T>(method: string, ...params: unknown[]): Promise<T> {
     try {
-      debug('<', method, params);
-      const response = await axios.post(this.url, {
+      debug('>', this.getUrl(), method, params);
+      const response = await axios.post(this.getUrl(), {
         jsonrpc: '1.0',
         method,
         params,
         id: `${this.id++}`,
       });
-      debug('>', response.data.result);
+      if (method === 'generate' || method === 'generatetoaddress') {
+        debug('<', '[...]');
+      } else {
+        debug('<', response.data.result);
+      }
       return response.data.result;
     } catch (e) {
       if (e.isAxiosError && e.response) {
         e = e as AxiosError;
-        const { error } = e.response.data;
-        const { code, message } = error;
-        throw new Error(`RPC error: ${message} (code=${code})`);
+        debug('< ERROR', e.response.statusText, e.response.data);
+        e = e as AxiosError;
+        const { error = {} } = e.response.data;
+        throw new RpcError(error);
       }
 
       throw e;
     }
   }
 
+  requiresWalletPath(): boolean {
+    if (!this.networkInfo) {
+      throw new Error(`networkInfo must be set`);
+    }
+    return this.networkInfo.subversion === BITCOIN_CORE_22_99;
+  }
+
+  withWallet(walletName: string): RpcClientWithWallet {
+    if (!this.networkInfo) {
+      throw new Error(`networkInfo must be set`);
+    }
+    return new RpcClientWithWallet(this.network, this.url, this.networkInfo, walletName);
+  }
+
   async createWallet(walletName: string): Promise<string> {
     return this.exec('createwallet', walletName);
   }
 
-  async getNewAddress(): Promise<string> {
-    return this.exec('getnewaddress');
+  async loadWallet(walletName: string): Promise<string> {
+    return this.exec('loadwallet', walletName);
   }
 
   async getNetworkInfo(): Promise<{ subversion: string }> {
@@ -58,22 +116,6 @@ export class RpcClient {
 
   async getBlockCount(): Promise<number> {
     return this.exec('getblockcount');
-  }
-
-  async sendToAddress(address: string, amount: number): Promise<string> {
-    return this.exec('sendtoaddress', address, amount);
-  }
-
-  async generateToAddress(n: number, address: string): Promise<void> {
-    switch (this.network) {
-      case utxolib.networks.zcashTest:
-        await this.exec('generate', n);
-        await sleep(1_000);
-        await this.sendToAddress(address, 1);
-        break;
-      default:
-        await this.exec('generatetoaddress', n, address);
-    }
   }
 
   async getRawTransaction(txid: string): Promise<Buffer> {
@@ -104,7 +146,7 @@ export class RpcClient {
   static getSupportedNodeVersions(network: Network): string[] {
     switch (getMainnet(network)) {
       case utxolib.networks.bitcoin:
-        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/'];
+        return ['/Satoshi:0.20.0/', '/Satoshi:0.21.1/', '/Satoshi:22.0.0/', BITCOIN_CORE_22_99];
       case utxolib.networks.bitcoincash:
         return ['/Bitcoin Cash Node:23.0.0(EB32.0)/'];
       case utxolib.networks.bitcoinsv:
@@ -132,7 +174,7 @@ export class RpcClient {
       throw new Error(`unsupported coin ${networkName} subversion=${networkinfo.subversion} versions=${versions}`);
     }
 
-    return rpcClient;
+    return new RpcClient(network, url, networkinfo);
   }
 
   static async forUrlWait(network: Network, url: string): Promise<RpcClient> {
@@ -140,10 +182,51 @@ export class RpcClient {
       try {
         return await this.forUrl(network, url);
       } catch (e) {
-        console.error(`${e}, waiting 1000 millis...`);
+        console.error(`[${getNetworkName(network)}] ${e}, waiting 1000 millis...`);
         await sleep(1_000);
       }
     }
     throw new Error(`could not get RpcClient`);
+  }
+}
+
+export class RpcClientWithWallet extends RpcClient {
+  constructor(network: Network, url: string, networkInfo: NetworkInfo, private walletName?: string) {
+    super(network, url, networkInfo);
+  }
+
+  protected getUrl(): string {
+    if (this.requiresWalletPath()) {
+      return super.getUrl() + '/wallet/' + this.walletName;
+    }
+    return super.getUrl();
+  }
+
+  public async getWalletInfo(): Promise<Record<string, unknown>> {
+    return await this.exec('getwalletinfo');
+  }
+
+  public async getBalance(): Promise<number> {
+    return await this.exec('getbalance');
+  }
+
+  async getNewAddress(): Promise<string> {
+    return this.exec('getnewaddress');
+  }
+
+  async sendToAddress(address: string, amount: number): Promise<string> {
+    return this.exec('sendtoaddress', address, amount);
+  }
+
+  async generateToAddress(n: number, address: string): Promise<void> {
+    switch (this.network) {
+      case utxolib.networks.zcashTest:
+        await this.exec('generate', n);
+        await sleep(1_000);
+        await this.sendToAddress(address, 1);
+        break;
+      default:
+        await this.exec('generatetoaddress', n, address);
+    }
   }
 }
