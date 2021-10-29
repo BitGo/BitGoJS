@@ -31,3 +31,8 @@ export const SignedTransactionSchema = joi.object({
   eraPeriod: joi.number().optional(),
   tip: joi.number().optional(),
 });
+
+export const TransferTransactionSchema = joi.object({
+  value: joi.string().required(),
+  dest: addressSchema.required(),
+});
