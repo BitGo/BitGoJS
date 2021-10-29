@@ -227,6 +227,8 @@ describe('EOS:', function () {
       EosInputs.explainUnstakeInput1, EosResponses.explainUnstakeOutput1));
     it('explain EOS Unstake2 transaction', testExplainTransaction(
       EosInputs.explainUnstakeInput2, EosResponses.explainUnstakeOutput2));
+    it('explain EOS Refund transaction', testExplainTransaction(
+      EosInputs.explainRefundInput, EosResponses.explainRefundOutput));
   });
 
   describe('Transaction Verification', function () {

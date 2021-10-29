@@ -340,6 +340,40 @@ const explainUnstakeOutput2 = {
   producers: undefined,
 };
 
+const explainRefundInput = {
+  headers: {
+    ref_block_prefix: 791036850,
+    ref_block_num: 37567,
+    expiration: '2021-10-28T12:22:25',
+  },
+  transaction: {
+    packed_trx: '193b7b610100640000000000000100408c7a02ea3055000000000085269d00020130010000000000ea305500000000a4a997ba0120825019ab3ca98b00000000a8ed32320820825019ab3ca98b00',
+  },
+};
+
+const explainRefundOutput = {
+  displayOrder: [
+    'id',
+    'outputAmount',
+    'changeAmount',
+    'outputs',
+    'changeOutputs',
+    'fee',
+    'memo',
+    'proxy',
+    'producers',
+  ],
+  id: '5d0ec161bfbe22fdc2d0b2285a6dac7ccd0bec331014a5c1d05af9cba4db2d28',
+  changeOutputs: [],
+  outputAmount: undefined,
+  changeAmount: 0,
+  outputs: [{ address: 'lionteste212', amount: undefined }],
+  fee: {},
+  memo: undefined,
+  proxy: undefined,
+  producers: undefined,
+};
+
 export const EosResponses = {
   getAccountResponseSuccess1,
   getAccountResponseSuccess2,
@@ -349,6 +383,7 @@ export const EosResponses = {
   explainTransactionOutputChex,
   explainUnstakeOutput1,
   explainUnstakeOutput2,
+  explainRefundOutput,
 } as const;
 
 export const EosInputs = {
@@ -356,4 +391,5 @@ export const EosInputs = {
   explainTransactionInputNative,
   explainUnstakeInput1,
   explainUnstakeInput2,
+  explainRefundInput,
 } as const;

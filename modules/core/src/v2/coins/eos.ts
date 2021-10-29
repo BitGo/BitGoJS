@@ -143,6 +143,11 @@ interface UnstakeActionData {
   unstake_net_quantity: string;
 }
 
+interface RefundActionData {
+  address: string;
+  owner: string;
+}
+
 interface VoteActionData {
   address: string;
   proxy: string;
@@ -567,6 +572,9 @@ export class Eos extends BaseCoin {
       const isVoteActionData = (txActionData: any): txActionData is VoteActionData => {
         return (txActionData as VoteActionData).voter !== undefined;
       };
+      const isRefundActionData = (txActionData: any): txActionData is RefundActionData => {
+        return (txActionData as RefundActionData).owner !== undefined;
+      };
 
       // deserializeTransaction
       const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
@@ -693,6 +701,17 @@ export class Eos extends BaseCoin {
 
         tx.amount = deserializedUnstakeAction.amount;
         tx.address = deserializedUnstakeAction.address;
+      } else if (txAction.name === 'refund') {
+        if (tx.actions.length !== 1) {
+          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+        }
+
+        if (!isRefundActionData(txAction.data)) {
+          throw new Error('Invalid or incomplete unstake action data');
+        }
+
+        const refundActionData = txAction.data;
+        tx.address = refundActionData.owner;
       } else {
         throw new Error(`invalid action: ${txAction.name}`);
       }
