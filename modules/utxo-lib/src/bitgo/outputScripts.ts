@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { OP_CHECKSIG, OP_CHECKSIGVERIFY } from 'bitcoin-ops';
 import { isTriple, Triple } from './types';
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
@@ -116,23 +115,25 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @returns {{scriptPubKey}}
  */
 function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>): SpendableScript {
-  const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
-  const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIG]);
-  const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
-
-  assert(userBitGoScript);
-  assert(userBackupScript);
-  assert(backupBitGoScript);
+  const keyCombinations2of2 = [
+    [userKey, bitGoKey],
+    [userKey, backupKey],
+    [backupKey, bitGoKey],
+  ].map(([key1, key2]) => [key1.slice(1), key2.slice(1)]); // remove the y odd/even prefix byte
+  const redeems = keyCombinations2of2.map((pubkeys, index) => 
+    bitcoinjs.payments.p2tr_ns({
+      pubkeys,
+      weight: index === 0 ? 2 : 1,
+    })
+  );
 
   const { output } = bitcoinjs.payments.p2tr({
-    pubkeys: [userKey, bitGoKey],
-    scripts: [userBitGoScript, userBackupScript, backupBitGoScript],
-    weights: [2, 1, 1],
+    pubkeys: keyCombinations2of2[0],
+    redeems,
   });
 
   assert(output);
 
-  // TODO: return control blocks once they are returned from payments.p2tr()
   return {
     scriptPubKey: output,
   };

@@ -13,7 +13,7 @@ describe('createOutputScript2of3()', function () {
     '27d7de660a2103c79183d6641585179d25bbc091b2a7fce86c9f15d311e5aca0' +
     'a020478d8f208753ae';
   const p2wsh = '002095ecaacb606b9ece3821c0111c0a1208dd1d35192809bf8cf6cbad4bbeaca67f';
-  const p2tr = '51203f29b88ff391432ffaa2475497ec0eebe28e19b0dca62a620526dbc21ffae307';
+  const p2tr = '5120a4ce7d122bdc05224b27415228728e5d5bf485961a07493d068ddbb4d4569059';
 
   scriptTypes2Of3.forEach((scriptType) => {
     it(`creates output script (type=${scriptType})`, function () {
