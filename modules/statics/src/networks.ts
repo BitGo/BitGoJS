@@ -464,7 +464,7 @@ class Xrp extends Mainnet implements AccountNetwork {
 class XrpTestnet extends Testnet implements AccountNetwork {
   name = 'XrpTestnet';
   family = CoinFamily.XRP;
-  explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
+  explorerUrl = 'https://test.bithomp.com/explorer/';
 }
 
 class Xtz extends Mainnet implements AccountNetwork {
