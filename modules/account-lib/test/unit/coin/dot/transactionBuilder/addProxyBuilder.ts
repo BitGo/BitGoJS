@@ -8,7 +8,7 @@ describe('Dot Add Proxy Builder', () => {
   let builder: AddProxyBuilder;
 
   const sender = DotResources.accounts.account1;
-  const receiver = DotResources.accounts.account2;
+  const receiver = DotResources.accounts.account3;
 
   beforeEach(() => {
     const config = coins.get('algo');

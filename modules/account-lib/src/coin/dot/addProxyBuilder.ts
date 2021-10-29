@@ -109,7 +109,7 @@ export class AddProxyBuilder extends TransactionBuilder {
       this.proxyType(txMethod.proxyType);
       this.delay(parseInt(txMethod.delay, 10));
     } else {
-      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected bond`);
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected addProxy`);
     }
     return tx;
   }

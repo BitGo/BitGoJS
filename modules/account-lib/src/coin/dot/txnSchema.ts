@@ -55,7 +55,19 @@ export const StakeTransactionSchema = joi.object({
 });
 
 export const AddProxyTransactionSchema = joi.object({
-  proxyType: joi.string().required(),
+  proxyType: joi
+    .string()
+    .valid('Any', 'NonTransfer', 'Governance', 'staking', 'UnusedSudoBalances', 'IdentityJudgement', 'CancelProxy')
+    .required(),
   delegate: addressSchema.required(),
   delay: joi.number().required(),
+});
+
+export const ProxyTransactionSchema = joi.object({
+  real: addressSchema.required(),
+  forceProxyType: joi
+    .string()
+    .valid('Any', 'NonTransfer', 'Governance', 'staking', 'UnusedSudoBalances', 'IdentityJudgement', 'CancelProxy')
+    .required(),
+  call: [joi.string(), TransferTransactionSchema, StakeTransactionSchema],
 });

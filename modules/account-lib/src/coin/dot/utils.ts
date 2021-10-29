@@ -12,6 +12,9 @@ import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { createMetadata, construct } from '@substrate/txwrapper-polkadot';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
+import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+const polkaUtils = require('@polkadot/util');
+const { createTypeUnsafe } = require('@polkadot/types');
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -74,6 +77,31 @@ export class Utils implements BaseUtils {
 
   capitalizeFirstLetter(val: string): string {
     return val.charAt(0).toUpperCase() + val.slice(1);
+  }
+
+  decodeCallMethod(tx: string | UnsignedTransaction, options: { metadataRpc: string; registry: TypeRegistry }): string {
+    const { metadataRpc, registry } = options;
+    registry.setMetadata(createMetadata(registry, metadataRpc));
+    if (typeof tx === 'string') {
+      try {
+        const payload = createTypeUnsafe(registry, 'ExtrinsicPayload', [
+          tx,
+          {
+            version: EXTRINSIC_VERSION,
+          },
+        ]);
+        const methodCall = createTypeUnsafe(registry, 'Call', [payload.method]);
+        return methodCall.args[2].toHex();
+      } catch (e) {
+        const methodCall = registry.createType('Extrinsic', polkaUtils.hexToU8a(tx), {
+          isSigned: true,
+        }).method;
+        return methodCall.args[2].toHex();
+      }
+    } else {
+      const methodCall = registry.createType('Call', tx.method);
+      return methodCall.args[2].toHex();
+    }
   }
 
   /**
