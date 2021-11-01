@@ -871,6 +871,127 @@ export const coins = CoinMap.fromCoins([
     undefined,
     Networks.test.goerli
   ),
+  terc20(
+    'gtaave18dp',
+    'Goerli Test AAVE Token 18 Decimals',
+    18,
+    '0x631d5e3c45a459e8f98b9d6a2734fce7b051f845',
+    UnderlyingAsset.GTAAVE18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtbat18dp',
+    'Goerli Test BAT Token 18 Decimals',
+    18,
+    '0x95458b26c8b524eb5ef92c7a1759ede6224bef2e',
+    UnderlyingAsset.GTBAT18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtcomp18dp',
+    'Goerli Test COMP Token 18 Decimals',
+    18,
+    '0xa1ff97c394b25926acb09d12bacf0613055a2727',
+    UnderlyingAsset.GTCOMP18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtgrt18dp',
+    'Goerli Test GRT Token 18 Decimals',
+    18,
+    '0x1441f298d1f15084a0e5c714c966033e39597de7',
+    UnderlyingAsset.GTGRT18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtlink18dp',
+    'Goerli Test LINK Token 18 Decimals',
+    18,
+    '0xfe4537ff71aef28592c5c7331ed4b20f276d770b',
+    UnderlyingAsset.GTLINK18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtmkr18dp',
+    'Goerli Test MKR Token 18 Decimals',
+    18,
+    '0xf84e8207e4dc846e250208a6e4b05aa3e7ab00c6',
+    UnderlyingAsset.GTMKR18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtsnx18dp',
+    'Goerli Test SNX Token 18 Decimals',
+    18,
+    '0x50608a26bff103290a4a47b152395047801e9280',
+    UnderlyingAsset.GTSNX18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtuni18dp',
+    'Goerli Test UNI Token 18 Decimals',
+    18,
+    '0x6be1a99c215872cea33217b0f4bad63f186ddfac',
+    UnderlyingAsset.GTUNI18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtusdt6dp',
+    'Goerli Test USDT Token 6 Decimals',
+    6,
+    '0x51445dcddf5246229bae8c0ba3ea462e63038641',
+    UnderlyingAsset.GTUSDT6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtyfi18dp',
+    'Goerli Test YFI Token 18 Decimals',
+    18,
+    '0xf4755c1a9aaad9d6b919edb8346ce9b46d066be4',
+    UnderlyingAsset.GTYFI18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtwbtc18dp',
+    'Goerli Test WBTC Token 8 Decimals',
+    8,
+    '0xd4bccebe77b7c1da89818f8889e3ea09046e7e38',
+    UnderlyingAsset.GTWBTC8DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
   terc20('terc', 'Test ERC Token', 18, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20(
     'terc2dp',
