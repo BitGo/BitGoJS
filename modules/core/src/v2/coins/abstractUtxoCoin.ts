@@ -49,6 +49,8 @@ import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
 import { sanitizeLegacyPath } from '../../bip32path';
+import { assert } from 'console';
+import { Keypair } from 'stellar-base';
 
 const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
@@ -183,6 +185,8 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
     };
   };
   prv: string;
+  backupKeychain?: Keychain,
+  bitgoKeychain?: Keychain,
   isLastSignature?: boolean;
 }
 
@@ -1120,6 +1124,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     callback?: NodeCallback<SignedTransaction | HalfSignedUtxoTransaction>
   ): Bluebird<SignedTransaction | HalfSignedUtxoTransaction> {
     const self = this;
+    params
     return co<SignedTransaction | HalfSignedUtxoTransaction>(function* () {
       const txPrebuild = params.txPrebuild;
       const userPrv = params.prv;
@@ -1167,7 +1172,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           inputIndex: index,
           unspent: currentUnspent,
           path: '0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
-          isP2wsh: !currentUnspent.redeemScript,
+          chain: currentUnspent.chain,
           isBitGoTaintedUnspent: self.isBitGoTaintedUnspent(currentUnspent),
           error: undefined as Error | undefined,
         };
@@ -1192,22 +1197,59 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         debug('Input details: %O', signatureContext);
 
         const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
-        const redeemScript = signatureContext.unspent.redeemScript
-          ? Buffer.from(signatureContext.unspent.redeemScript, 'hex')
-          : undefined;
-        const witnessScript = signatureContext.unspent.witnessScript
-          ? Buffer.from(signatureContext.unspent.witnessScript, 'hex')
-          : undefined;
-        const scriptType = witnessScript ? (redeemScript ? 'p2shP2wsh' : 'p2wsh') : 'p2sh';
-        debug(`Signing ${scriptType} input`);
-        try {
-          txb.sign(index, keyPair, redeemScript, sigHashType, signatureContext.unspent.value, witnessScript);
-        } catch (e) {
-          debug('Failed to sign input:', e);
-          signatureContext.error = e;
-          signatureIssues.push(signatureContext);
-          continue;
+        if (Codes.isP2tr(signatureContext.chain)) {
+          // we default to signing for a p2tr-p2ns script path spend using
+          // the bitgo key and user key
+
+          assert(params.backupKeychain);
+          assert(params.bitgoKeychain);
+
+          const userPubkey = keyPair.publicKey;
+          const backupPubkey = bip32.fromBase58(params.backupKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path));
+          const bitgoPubkey = bip32.fromBase58(params.bitgoKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path));
+          
+          const {
+            controlBlock,
+            tapscript,
+          } = utxolib.bitgo.outputScripts.prepareP2trP2nsWitness([userPubkey, backupPubkey, bitgoPubkey]);
+
+          const signParams = {
+            controlBlock,
+            vin: index,
+            prevOutScriptType: 'p2tr-p2ns',
+            keyPair: keyPair,
+            hashType: sigHashType,
+            witnessScript: tapscript,
+            witnessValue: signatureContext.unspent.value,
+          };
+
+          try {
+            txb.sign(signParams);
+          } catch (e) {
+            debug('Failed to sign input:', e);
+            signatureContext.error = e;
+            signatureIssues.push(signatureContext);
+            continue;
+          }
+        } else {
+          const redeemScript = signatureContext.unspent.redeemScript
+            ? Buffer.from(signatureContext.unspent.redeemScript, 'hex')
+            : undefined;
+          const witnessScript = signatureContext.unspent.witnessScript
+            ? Buffer.from(signatureContext.unspent.witnessScript, 'hex')
+            : undefined;
+          const scriptType = witnessScript ? (redeemScript ? 'p2shP2wsh' : 'p2wsh') : 'p2sh';
+          debug(`Signing ${scriptType} input`);
+          try {
+            txb.sign(index, keyPair, redeemScript, sigHashType, signatureContext.unspent.value, witnessScript);
+          } catch (e) {
+            debug('Failed to sign input:', e);
+            signatureContext.error = e;
+            signatureIssues.push(signatureContext);
+            continue;
+          }
         }
+
         debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
       }
 
@@ -1230,10 +1272,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           continue;
         }
 
-        if (signatureContext.isP2wsh) {
+        if (Codes.isP2wsh(signatureContext.chain)) {
           transaction.setInputScript(index, Buffer.alloc(0));
         }
-
         const isValidSignature = utxolib.bitgo.verifySignature(transaction, index, signatureContext.unspent.value);
         if (!isValidSignature) {
           debug('Invalid signature');

@@ -122,6 +122,8 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
 export interface WalletSignTransactionOptions {
     txPrebuild?: TransactionPrebuild;
     prv?: string;
+    backupKeychain?: Keychain,
+    bitgoKeychain?: Keychain,
     isLastSignature?: boolean;
     [index: string]: unknown;
 }

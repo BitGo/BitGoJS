@@ -70,7 +70,9 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
   if (scriptType === 'p2tr') {
     // p2tr addresses use a combination of 2 of 2 multisig scripts distinct from
     // the 2 of 3 multisig used for other script types
-    return createTaprootScript2of3(pubkeys);
+    const { output } = createTaprootScript2of3(pubkeys);
+    assert(output);
+    return { scriptPubKey: output };
   }
 
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
@@ -114,7 +116,7 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
  * @returns {{scriptPubKey}}
  */
-function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>): SpendableScript {
+function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>, redeemIndex = 0): bitcoinjs.Payment {
   const keyCombinations2of2 = [
     [userKey, bitGoKey],
     [userKey, backupKey],
@@ -127,14 +129,31 @@ function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>)
     })
   );
 
-  const { output } = bitcoinjs.payments.p2tr({
+  return bitcoinjs.payments.p2tr({
     pubkeys: keyCombinations2of2[0],
     redeems,
+    redeemIndex,
   });
+}
 
-  assert(output);
+/**
+ * Returns the conrtrol block and tapscript necessary for creating a witness stack for a script
+ * path spend using one of the three n of n scripts in each taproot's taptree.
+ * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
+ * @param redeemIndex 
+ * @returns 
+ */
+export function prepareP2trP2nsWitness(pubkeys: Triple<Buffer>, redeemIndex = 0) {
+  const {
+    controlBlock,
+    redeem,
+  } = createTaprootScript2of3(pubkeys, redeemIndex);
+
+  assert(controlBlock);
+  assert(redeem);
 
   return {
-    scriptPubKey: output,
-  };
+    controlBlock,
+    tapscript: redeem.output,
+  }
 }
