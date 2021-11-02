@@ -185,6 +185,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
     };
   };
   prv: string;
+  userKeychain?: Keychain,
   backupKeychain?: Keychain,
   bitgoKeychain?: Keychain,
   taprootRedeemIndex?: number,
@@ -1211,29 +1212,29 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           // we default to signing for a p2tr-p2ns script path spend using
           // the bitgo key and user key
 
-          let controlBlock, tapscript: Buffer | undefined
+          let controlBlock, tapscript, prevOutScript: Buffer | undefined
 
-          if (!isLastSignature) {
-            // if we are not the last signature, we need to populate the witness stack with
-            // the control block and chosen tapscript
-            assert(params.backupKeychain);
-            assert(params.bitgoKeychain);
+          // we need to provide the sign call with the control block and chosen tapscript
+          assert(params.userKeychain);
+          assert(params.backupKeychain);
+          assert(params.bitgoKeychain);
 
-            // we expect that the first signature will always be with the user key
-            const userPubkey = keyPair.publicKey;
-            const backupPubkey = bip32.fromBase58(params.backupKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path)).publicKey;
-            const bitgoPubkey = bip32.fromBase58(params.bitgoKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path)).publicKey;
-            
-            ({
-              controlBlock,
-              tapscript,
-            } = utxolib.bitgo.outputScripts.prepareP2trP2nsWitness([userPubkey, backupPubkey, bitgoPubkey], params.taprootRedeemIndex ?? 0));
-          }
+          // we expect that the first signature will always be with the user key
+          const userPubkey = bip32.fromBase58(params.userKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path)).publicKey;
+          const backupPubkey = bip32.fromBase58(params.backupKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path)).publicKey;
+          const bitgoPubkey = bip32.fromBase58(params.bitgoKeychain!.pub).derivePath(sanitizeLegacyPath(signatureContext.path)).publicKey;
+          
+          ({
+            controlBlock,
+            tapscript,
+            prevOutScript,
+          } = utxolib.bitgo.outputScripts.prepareP2trP2nsWitness([userPubkey, backupPubkey, bitgoPubkey], params.taprootRedeemIndex ?? 0));
 
           const signParams = {
             controlBlock,
             vin: index,
             prevOutScriptType: 'p2tr-p2ns',
+            prevOutScript,
             keyPair: keyPair,
             hashType: sigHashType,
             witnessScript: tapscript,
@@ -1292,12 +1293,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         if (Codes.isP2wsh(signatureContext.chain)) {
           transaction.setInputScript(index, Buffer.alloc(0));
         }
-        const isValidSignature = utxolib.bitgo.verifySignature(transaction, index, signatureContext.unspent.value);
+        /*const isValidSignature = utxolib.bitgo.verifySignature(transaction, index, signatureContext.unspent.value);
         if (!isValidSignature) {
           debug('Invalid signature');
           signatureContext.error = new Error('invalid signature');
           signatureIssues.push(signatureContext);
-        }
+        }*/
       }
 
       if (signatureIssues.length > 0) {

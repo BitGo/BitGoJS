@@ -147,13 +147,16 @@ export function prepareP2trP2nsWitness(pubkeys: Triple<Buffer>, redeemIndex = 0)
   const {
     controlBlock,
     redeem,
+    output,
   } = createTaprootScript2of3(pubkeys, redeemIndex);
 
   assert(controlBlock);
   assert(redeem);
+  assert(output);
 
   return {
     controlBlock,
     tapscript: redeem.output,
+    prevOutScript: output,
   }
 }

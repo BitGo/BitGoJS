@@ -235,7 +235,7 @@ export function parseSignatureScript(
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 {
   const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
-  if (![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH].includes(result.inputClassification)) {
+  if (![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH, classify.types.P2TR].includes(result.inputClassification)) {
     throw new Error(`unexpected inputClassification ${result.inputClassification}`);
   }
   if (!result.signatures) {
