@@ -2653,21 +2653,6 @@
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-7.5.2.tgz#5e2f1d120f07b9cda07e5dedd4f3bf8888fccdb9"
   integrity sha512-T+m89VdXj/eidZyejvmoP9jivXgBDdkOSBVQjU9kF349NEx10QdPNGxHeZUaj1IlJ32/ewdyXJjnJxyxJroYwg==
 
-"@types/stellar-base@*":
-  version "0.13.4"
-  resolved "https://registry.yarnpkg.com/@types/stellar-base/-/stellar-base-0.13.4.tgz#e96dcb102a8cc9a37a6ccff239dac36dee9f0f97"
-  integrity sha512-U+jdDa5Q3eyr3UJbxm+8awkXsw/tiZdl6OTfM/thiPQbKbw59AFVXjMx+nZUsRbdGlswWBFLI66G8c5GZjYUqA==
-  dependencies:
-    stellar-base "*"
-
-"@types/stellar-sdk@^0.11.1":
-  version "0.11.1"
-  resolved "https://registry.yarnpkg.com/@types/stellar-sdk/-/stellar-sdk-0.11.1.tgz#3487ac99cbc457146ca2bc4c7c707f0c0213a09c"
-  integrity sha512-VHTTf2rs6ZpbWJmTCSLkw+CF7RwlN5DO+/kN3Ieze6RPWe3SA82O2DdsWXw5sM2hFbJ7pcjSyoR76ufNp0Bcvg==
-  dependencies:
-    "@types/node" "*"
-    "@types/stellar-base" "*"
-
 "@types/superagent@^4.1.3":
   version "4.1.11"
   resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.11.tgz#4822bc64a82a0f579261a77097dbca276556c20e"
@@ -13665,25 +13650,10 @@ stealthy-require@^1.1.1:
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
 
-stellar-base@*, stellar-base@^5.1.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/stellar-base/-/stellar-base-5.2.0.tgz#e1eba67893cc9d8d1548cc6d6031c452c111c21e"
-  integrity sha512-OmzItzXiCZsggczp1T/GUzexqOQuz4OovsyCeWLXIXD7dm78w8q6AlC2bTv1y+1v4yta8ijDaq2pSo3p1Kn7GA==
-  dependencies:
-    base32.js "^0.1.0"
-    bignumber.js "^4.0.0"
-    crc "^3.5.0"
-    js-xdr "^1.1.3"
-    lodash "^4.17.11"
-    sha.js "^2.3.6"
-    tweetnacl "^1.0.0"
-  optionalDependencies:
-    sodium-native "^2.3.0"
-
-stellar-base@^5.3.2:
-  version "5.3.2"
-  resolved "https://registry.yarnpkg.com/stellar-base/-/stellar-base-5.3.2.tgz#12b944cab10030687dfc443fa2f5ac735e7cb64e"
-  integrity sha512-KZizceCz15oqwKdNRMfHtBGsCBv4Xea1kOUxgMqQ0TU/HFUg3Vu78rzTZsRWdU7qrG48yJWdwm8R1dWjVL+LRw==
+stellar-base@^6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/stellar-base/-/stellar-base-6.0.4.tgz#2b44ef6434e52cbfca103ff9349f16fca806557e"
+  integrity sha512-zYoo4sjeF3mX9L/m/VF5qySpKdmGi+1c8Q58dB+wRNSLZMYssx7cplONuFMZpcCDukSdFNx+8mjyZdPuy7j1tA==
   dependencies:
     base32.js "^0.1.0"
     bignumber.js "^4.0.0"
@@ -13695,10 +13665,10 @@ stellar-base@^5.3.2:
   optionalDependencies:
     sodium-native "^2.3.0"
 
-stellar-sdk@^8.1.1:
-  version "8.1.1"
-  resolved "https://registry.yarnpkg.com/stellar-sdk/-/stellar-sdk-8.1.1.tgz#3a1de4f5aa211dc41504275d4c12c85ef66ba742"
-  integrity sha512-crZSONO1lDEg2TP2wsslB7kcBopP6r2jzA5fC7JNvFZMMf0yq14fGDOwQerWI9XaxzpXOJxuQ1ZP3yB93Ds0+Q==
+stellar-sdk@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/stellar-sdk/-/stellar-sdk-9.0.1.tgz#f0d920def0b395c9c240d6e399a1c63b107b3bd1"
+  integrity sha512-hHRlCAjX5NPEXAmUtIu0BU0F7Mm8qtTCldXgb2mXosfHz8o/vu7lYy/08FjEav925TlsS51HSu2MN0+qHnYkjQ==
   dependencies:
     "@types/eventsource" "^1.1.2"
     "@types/node" ">= 8"
@@ -13709,31 +13679,9 @@ stellar-sdk@^8.1.1:
     detect-node "^2.0.4"
     es6-promise "^4.2.4"
     eventsource "^1.0.7"
-    lodash "^4.17.11"
+    lodash "^4.17.21"
     randombytes "^2.1.0"
-    stellar-base "^5.1.0"
-    toml "^2.3.0"
-    tslib "^1.10.0"
-    urijs "^1.19.1"
-    utility-types "^3.7.0"
-
-stellar-sdk@^8.2.5:
-  version "8.2.5"
-  resolved "https://registry.yarnpkg.com/stellar-sdk/-/stellar-sdk-8.2.5.tgz#3f6b8f87749f2bfe29a3cf6370f8650f3550cadf"
-  integrity sha512-w10LVJE/0Ug5ymw7IR4mibNtHWZNJcaIlMEdyUIgMwCnrxYKPT6VSUCCRHYEemAR2fDzi2ZOKql1mxq2sMOV8Q==
-  dependencies:
-    "@types/eventsource" "^1.1.2"
-    "@types/node" ">= 8"
-    "@types/randombytes" "^2.0.0"
-    "@types/urijs" "^1.19.6"
-    axios "0.21.1"
-    bignumber.js "^4.0.0"
-    detect-node "^2.0.4"
-    es6-promise "^4.2.4"
-    eventsource "^1.0.7"
-    lodash "^4.17.11"
-    randombytes "^2.1.0"
-    stellar-base "^5.3.2"
+    stellar-base "^6.0.4"
     toml "^2.3.0"
     tslib "^1.10.0"
     urijs "^1.19.1"

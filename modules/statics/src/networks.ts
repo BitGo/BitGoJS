@@ -337,7 +337,7 @@ class Eos extends Mainnet implements AccountNetwork {
 class EosTestnet extends Testnet implements AccountNetwork {
   name = 'EosTestnet';
   family = CoinFamily.EOS;
-  explorerUrl = 'https://jungle.bloks.io/transaction/';
+  explorerUrl = 'https://local.bloks.io/transaction/';
 }
 
 class Hedera extends Mainnet implements AccountNetwork {
@@ -415,6 +415,18 @@ class StellarTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://stellar.expert/explorer/testnet/tx/';
 }
 
+class Sol extends Mainnet implements AccountNetwork {
+  name = 'Sol';
+  family = CoinFamily.SOL;
+  explorerUrl = 'https://explorer.solana.com/';
+}
+
+class SolTestnet extends Testnet implements AccountNetwork {
+  name = 'SolTestnet';
+  family = CoinFamily.SOL;
+  explorerUrl = 'https://explorer.solana.com/?cluster=devnet';
+}
+
 class Stx extends Mainnet implements AccountNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
@@ -464,7 +476,7 @@ class Xrp extends Mainnet implements AccountNetwork {
 class XrpTestnet extends Testnet implements AccountNetwork {
   name = 'XrpTestnet';
   family = CoinFamily.XRP;
-  explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
+  explorerUrl = 'https://test.bithomp.com/explorer/';
 }
 
 class Xtz extends Mainnet implements AccountNetwork {
@@ -522,6 +534,7 @@ export const Networks = {
     ofc: Object.freeze(new Ofc()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
+    sol: Object.freeze(new Sol()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
@@ -549,6 +562,7 @@ export const Networks = {
     ofc: Object.freeze(new OfcTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
+    sol: Object.freeze(new SolTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),

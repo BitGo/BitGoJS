@@ -838,12 +838,20 @@ export class Xlm extends BaseCoin {
       const outputs: TransactionOutput[] = [];
       const operations: TransactionOperation[] = []; // non-payment operations
 
-      _.forEach(tx.operations, (op) => {
+      _.forEach(tx.operations, (op: stellar.Operation) => {
         if (op.type === 'createAccount' || op.type === 'payment') {
           // TODO Remove memoId from address
           // Get memo to attach to address, if type is 'id'
           const memoId = _.get(memo, 'type') === 'id' && !_.get(memo, 'value') ? `?memoId=${memo.value}` : '';
-          const asset = op.type === 'payment' ? op.asset : stellar.Asset.native();
+          let asset;
+          if (op.type === 'payment') {
+            if (op.asset.getAssetType() === 'liquidity_pool_shares') {
+              throw new Error('Invalid asset type');
+            }
+            asset = op.asset as stellar.Asset;
+          } else {
+            asset = stellar.Asset.native();
+          }
           const coin = self.getTokenNameFromStellarAsset(asset); // coin or token id
           const output: TransactionOutput = {
             amount: self.bigUnitsToBaseUnits(
@@ -863,10 +871,15 @@ export class Xlm extends BaseCoin {
           }
           outputs.push(output);
         } else if (op.type === 'changeTrust') {
+          if (op.line.getAssetType() === 'liquidity_pool_shares') {
+            throw new Error('Invalid asset type');
+          }
+          const asset = op.line as stellar.Asset;
+
           operations.push({
             type: op.type,
-            coin: self.getTokenNameFromStellarAsset(op.line),
-            asset: op.line,
+            coin: self.getTokenNameFromStellarAsset(asset),
+            asset,
             limit: self.bigUnitsToBaseUnits(op.limit),
           });
         }
@@ -917,8 +930,15 @@ export class Xlm extends BaseCoin {
     if (trustlineOperations.length !== _.get(txParams, 'trustlines', []).length) {
       throw new Error('transaction prebuild does not match expected trustline operations');
     }
-    _.forEach(trustlineOperations, (op) => {
-      const opToken = this.getTokenNameFromStellarAsset(op.line);
+    _.forEach(trustlineOperations, (op: stellar.Operation) => {
+      if (op.type !== 'changeTrust') {
+        throw new Error('Invalid asset type');
+      }
+      if (op.line.getAssetType() === 'liquidity_pool_shares') {
+        throw new Error('Invalid asset type');
+      }
+      const asset = op.line as stellar.Asset;
+      const opToken = this.getTokenNameFromStellarAsset(asset);
       const tokenTrustline = _.find(txParams.trustlines, (trustline) => {
         // trustline params use limits in base units
         const opLimitBaseUnits = this.bigUnitsToBaseUnits(op.limit);

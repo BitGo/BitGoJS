@@ -3,7 +3,7 @@ import * as ecc from 'eosjs-ecc';
 import * as bip32 from 'bip32';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
-import { EosResponses } from '../../fixtures/coins/eos';
+import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src';
@@ -21,8 +21,9 @@ describe('EOS:', function () {
 
   it('should get address details', function () {
     let addressDetails = basecoin.getAddressDetails('i1skda3kso43');
+
     addressDetails.address.should.equal('i1skda3kso43');
-    should.not.exist(addressDetails.memoId);
+    should(addressDetails.memoId).be.empty();
 
     addressDetails = basecoin.getAddressDetails('ks13k3hdui24?memoId=1');
     addressDetails.address.should.equal('ks13k3hdui24');
@@ -167,6 +168,11 @@ describe('EOS:', function () {
   });
 
   describe('Transactions:', function () {
+    const testExplainTransaction = (input, expectedOutput) => async function() {
+      const explainedTransaction = await basecoin.explainTransaction(input);
+      should.exist(explainedTransaction);
+      explainedTransaction.should.deepEqual(expectedOutput);
+    };
     it('should generate a valid transaction signature', async function () {
       const signatureData = 'abcd';
       const tx = {
@@ -213,6 +219,16 @@ describe('EOS:', function () {
       explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
       explainedTx.memo.should.equal('1');
     });
+    it('explains EOS native transfer transaction', testExplainTransaction(
+      EosInputs.explainTransactionInputNative, EosResponses.explainTransactionOutputNative));
+    it('explains CHEX token transfer transaction', testExplainTransaction(
+      EosInputs.explainTransactionInputChex, EosResponses.explainTransactionOutputChex));
+    it('explain EOS Unstake1 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput1, EosResponses.explainUnstakeOutput1));
+    it('explain EOS Unstake2 transaction', testExplainTransaction(
+      EosInputs.explainUnstakeInput2, EosResponses.explainUnstakeOutput2));
+    it('explain EOS Refund transaction', testExplainTransaction(
+      EosInputs.explainRefundInput, EosResponses.explainRefundOutput));
   });
 
   describe('Transaction Verification', function () {
@@ -285,22 +301,22 @@ describe('EOS:', function () {
       const txPrebuild = {
         recipients: [
           {
-            address: 'asdfasdfasdf',
-            amount: '100',
+            address: 'lionteste212',
+            amount: '1000',
           },
         ],
         headers: {
-          expiration: '2021-09-15T17:10:28.346',
-          ref_block_num: 1,
-          ref_block_prefix: 100,
+          expiration: '2021-10-28T02:34:05.848',
+          ref_block_num: 42915,
+          ref_block_prefix: 1204086709,
         },
-        txHex: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473042942610100640000000000000100408c7a02ea3055000000000085269d000201310100a6823403ea3055000000572d3ccdcd01d0f9ce64f437f7cf00000000a8ed323222d0f9ce64f437f7cfb012362b61b31236640000000000000004454f53000000000131000000000000000000000000000000000000000000000000000000000000000000',
+        txHex: '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a9107468401e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f53000000000131000000000000000000000000000000000000000000000000000000000000000000',
         transaction: {
           compression: 'none',
-          packed_trx: '042942610100640000000000000100408c7a02ea3055000000000085269d000201310100a6823403ea3055000000572d3ccdcd01d0f9ce64f437f7cf00000000a8ed323222d0f9ce64f437f7cfb012362b61b31236640000000000000004454f5300000000013100',
+          packed_trx: '1e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f5300000000013100',
           signatures: [],
         },
-        txid: '0492e8cf6275b9ee7c0685fc22211b174dd5bc8834b1963b52ae6486c41dad25',
+        txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
         isVotingTransaction: false,
         coin: 'teos',
       };
@@ -318,8 +334,8 @@ describe('EOS:', function () {
         prv: keyPair.prv,
         recipients: [
           {
-            address: 'asdfasdfasdf?memoId=1',
-            amount: '100',
+            address: 'lionteste212?memoId=1',
+            amount: '1000',
           },
         ],
       };
@@ -352,8 +368,20 @@ describe('EOS:', function () {
       validTransaction.should.equal(true);
     });
 
-    it('should throw if different prebuilds are provided in txParams and txPrebuild', async function() {
+    it('should verify a transaction without a memoId', async function() {
+      const txPrebuild = newTxPrebuild();
 
+      // txParams with different txPrebuild
+      const txPrebuild2 = newTxPrebuild();
+      txPrebuild2.recipients[0].address = 'lionteste212';
+      const txParams = newTxParams();
+      txParams.txPrebuild = txPrebuild2;
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should throw if different prebuilds are provided in txParams and txPrebuild', async function() {
       const txPrebuild = newTxPrebuild();
 
       // txParams with different txPrebuild
@@ -398,9 +426,8 @@ describe('EOS:', function () {
     it('should throw if the expected memo is different than actual memo', async function() {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
-      txParams.recipients[0].address = 'asdfasdfasdf?memoId=10';
+      txParams.recipients[0].address = 'lionteste212?memoId=10';
       await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive memoId does not match expected recipient memoId');
     });
-
   });
 });

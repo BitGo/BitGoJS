@@ -892,7 +892,7 @@ exports.signTransaction = function (params) {
   const areValidUnspents = _.isObject(params) && Array.isArray((params as any).unspents);
   if (isUtxoTx && areValidUnspents) {
     // extend the transaction inputs with the values
-    const inputValues = _.map(params.unspents, (u => _.pick(u, 'value')));
+    const inputValues = _.map((params as any).unspents, (u => _.pick(u, 'value')));
     transaction.ins.map((currentItem, index) => _.extend(currentItem, inputValues[index]));
   }
 

@@ -70,6 +70,8 @@ interface EosTransactionPrebuild {
   transaction: EosTx;
   txid: string;
   coin: string;
+  // full token name with the format, [t]eos:SYMBOL. This will only be present for token transactions. e.g. teos:CHEX.
+  token?: string;
 }
 
 export interface EosSignTransactionParams extends BaseSignTransactionOptions {
@@ -130,6 +132,20 @@ interface StakeActionData {
   receiver: string;
   transfer: number;
   stake_cpu_quantity: string;
+}
+
+interface UnstakeActionData {
+  address: string;
+  amount: string;
+  from: string;
+  receiver: string;
+  unstake_cpu_quantity: string;
+  unstake_net_quantity: string;
+}
+
+interface RefundActionData {
+  address: string;
+  owner: string;
 }
 
 interface VoteActionData {
@@ -319,7 +335,7 @@ export class Eos extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: undefined,
+        memoId: '',
       };
     }
 
@@ -474,6 +490,22 @@ export class Eos extends BaseCoin {
     };
   }
 
+  private validateUnstakeActionData(unstakeActionData: UnstakeActionData): any {
+    if (unstakeActionData.from !== unstakeActionData.receiver) {
+      throw new Error(
+        `unstaker (${unstakeActionData.from}) and receiver (${unstakeActionData.receiver}) must be the same`
+      );
+    }
+    const cpuAmount = new BigNumber(unstakeActionData.unstake_cpu_quantity.split(' ')[0]);
+    const netAmount = new BigNumber(unstakeActionData.unstake_net_quantity.split(' ')[0]);
+    const totalAmount = cpuAmount.plus(netAmount).toNumber();
+
+    return {
+      address: unstakeActionData.receiver,
+      amount: this.bigUnitsToBaseUnits(totalAmount),
+    };
+  }
+
   private static validateVoteActionData(voteActionData: VoteActionData) {
     const proxyIsEmpty = _.isEmpty(voteActionData.proxy);
     const producersIsEmpty = _.isEmpty(voteActionData.producers);
@@ -529,8 +561,19 @@ export class Eos extends BaseCoin {
           (txActionData as StakeActionData).stake_cpu_quantity !== undefined
         );
       };
+      const isUnstakeActionData = (txActionData: any): txActionData is UnstakeActionData => {
+        return (
+          (txActionData as UnstakeActionData).from !== undefined &&
+          (txActionData as UnstakeActionData).receiver !== undefined &&
+          (txActionData as UnstakeActionData).unstake_cpu_quantity !== undefined &&
+          (txActionData as UnstakeActionData).unstake_net_quantity !== undefined
+        );
+      };
       const isVoteActionData = (txActionData: any): txActionData is VoteActionData => {
         return (txActionData as VoteActionData).voter !== undefined;
+      };
+      const isRefundActionData = (txActionData: any): txActionData is RefundActionData => {
+        return (txActionData as RefundActionData).owner !== undefined;
       };
 
       // deserializeTransaction
@@ -645,6 +688,30 @@ export class Eos extends BaseCoin {
         tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
         tx.proxy = deserializedVoteAction.proxy;
         tx.producers = deserializedVoteAction.producers;
+      } else if (txAction.name === 'undelegatebw') {
+        if (tx.actions.length !== 1) {
+          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+        }
+
+        if (!isUnstakeActionData(txAction.data)) {
+          throw new Error('Invalid or incomplete unstake action data');
+        }
+        const unstakeActionData = txAction.data;
+        const deserializedUnstakeAction = self.validateUnstakeActionData(unstakeActionData);
+
+        tx.amount = deserializedUnstakeAction.amount;
+        tx.address = deserializedUnstakeAction.address;
+      } else if (txAction.name === 'refund') {
+        if (tx.actions.length !== 1) {
+          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+        }
+
+        if (!isRefundActionData(txAction.data)) {
+          throw new Error('Invalid or incomplete unstake action data');
+        }
+
+        const refundActionData = txAction.data;
+        tx.address = refundActionData.owner;
       } else {
         throw new Error(`invalid action: ${txAction.name}`);
       }
@@ -1067,10 +1134,14 @@ export class Eos extends BaseCoin {
       const txJsonFromHexHeaders = _.pick(txJsonFromHex, eosTransactionHeaderFields);
       const txJsonFromPackedTrxHeaders = _.pick(txJsonFromPackedTrx, eosTransactionHeaderFields);
 
-      // milliseconds are dropped in packed_trx and txHex
+      // dates are rounded to the nearest second in packed_trx and txHex
       _.map([txJsonFromPackedTrxHeaders, txJsonFromHexHeaders, txPrebuild.headers], (headers) => {
         const date = moment(headers.expiration as string);
-        headers.expiration = date.milliseconds(0).toISOString();
+
+        headers.expiration = date
+          .seconds(date.seconds() + Math.round(date.milliseconds() / 1000))
+          .milliseconds(0)
+          .toISOString();
         return headers;
       });
 
@@ -1108,15 +1179,16 @@ export class Eos extends BaseCoin {
         if (expectedOutputAmount !== actualOutputAmount) {
           throw new Error('txHex receive amount does not match expected recipient amount');
         }
+
         if (txPrebuild.coin === 'eos' || txPrebuild.coin === 'teos') {
-          if (actualAmountAndCoin[1] !== 'EOS') {
-            throw new Error('txHex receive coin name does not match expected recipient coin name');
+          const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : txPrebuild.token.split(':')[1];
+
+          if (actualAmountAndCoin[1] !== expectedSymbol) {
+            throw new Error('txHex receive symbol does not match expected recipient symbol');
           }
         } else {
-          // check the token name
-          if (txPrebuild.coin !== actualAmountAndCoin[1]) {
-            throw new Error('txHex receive coin name does not match expected recipient coin name');
-          }
+          // this should never happen
+          throw new Error('txHex coin name does not match expected coin name');
         }
       }
 

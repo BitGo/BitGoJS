@@ -272,16 +272,124 @@ const explainTransactionOutputChex = {
   producers: undefined
 };
 
+const explainUnstakeInput1 = {
+  headers: {
+    ref_block_prefix: 791036279,
+    ref_block_num: 37429,
+    expiration: '2021-10-25T12:22:25',
+  },
+  transaction: {
+    packed_trx: '45d678610100640000000000000100408c7a02ea3055000000000085269d00020130010000000000ea3055c08fca86a9a8d2d4014002aeaf6471c67c00000000a8ed3232304002aeaf6471c67c4002aeaf6471c67ca08601000000000004454f5300000000a08601000000000004454f530000000000',
+  },
+};
+
+const explainUnstakeOutput1 = {
+  displayOrder: [
+    'id',
+    'outputAmount',
+    'changeAmount',
+    'outputs',
+    'changeOutputs',
+    'fee',
+    'memo',
+    'proxy',
+    'producers',
+  ],
+  id: '384a9c2bbdf16541113e2ea1ddbe6e4fffdbd787d0853cf5b742a56758743776',
+  changeOutputs: [],
+  outputAmount: '200000',
+  changeAmount: 0,
+  outputs: [{ address: 'jn3b2t5jps14', amount: '200000' }],
+  fee: {},
+  memo: undefined,
+  proxy: undefined,
+  producers: undefined,
+};
+
+const explainUnstakeInput2 = {
+  headers: {
+    ref_block_prefix: 791036280,
+    ref_block_num: 37490,
+    expiration: '2021-10-26T12:22:25',
+  },
+  transaction: {
+    packed_trx: '56e978610100640000000000000100408c7a02ea3055000000000085269d00020130010000000000ea3055c08fca86a9a8d2d4014002aeaf6471c67c00000000a8ed3232304002aeaf6471c67c4002aeaf6471c67c1bd911841700000004454f530000000046d911841700000004454f530000000000',
+  },
+};
+
+const explainUnstakeOutput2 = {
+  displayOrder: [
+    'id',
+    'outputAmount',
+    'changeAmount',
+    'outputs',
+    'changeOutputs',
+    'fee',
+    'memo',
+    'proxy',
+    'producers'
+  ],
+  id: '2bdb06d0813ed09c25a22d94e8b6dd33f206e394d9e4093ee49577a76c7752cd',
+  changeOutputs: [],
+  outputAmount: '202000020065',
+  changeAmount: 0,
+  outputs: [{ address: 'jn3b2t5jps14', amount: '202000020065' }],
+  fee: {},
+  memo: undefined,
+  proxy: undefined,
+  producers: undefined,
+};
+
+const explainRefundInput = {
+  headers: {
+    ref_block_prefix: 791036850,
+    ref_block_num: 37567,
+    expiration: '2021-10-28T12:22:25',
+  },
+  transaction: {
+    packed_trx: '193b7b610100640000000000000100408c7a02ea3055000000000085269d00020130010000000000ea305500000000a4a997ba0120825019ab3ca98b00000000a8ed32320820825019ab3ca98b00',
+  },
+};
+
+const explainRefundOutput = {
+  displayOrder: [
+    'id',
+    'outputAmount',
+    'changeAmount',
+    'outputs',
+    'changeOutputs',
+    'fee',
+    'memo',
+    'proxy',
+    'producers',
+  ],
+  id: '5d0ec161bfbe22fdc2d0b2285a6dac7ccd0bec331014a5c1d05af9cba4db2d28',
+  changeOutputs: [],
+  outputAmount: undefined,
+  changeAmount: 0,
+  outputs: [{ address: 'lionteste212', amount: undefined }],
+  fee: {},
+  memo: undefined,
+  proxy: undefined,
+  producers: undefined,
+};
+
 export const EosResponses = {
   getAccountResponseSuccess1,
   getAccountResponseSuccess2,
   getInfoResponseSuccess1,
   getBlockResponseSuccess1,
   explainTransactionOutputNative,
-  explainTransactionOutputChex
+  explainTransactionOutputChex,
+  explainUnstakeOutput1,
+  explainUnstakeOutput2,
+  explainRefundOutput,
 } as const;
 
 export const EosInputs = {
   explainTransactionInputChex,
-  explainTransactionInputNative
+  explainTransactionInputNative,
+  explainUnstakeInput1,
+  explainUnstakeInput2,
+  explainRefundInput,
 } as const;
