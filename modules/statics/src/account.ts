@@ -70,10 +70,6 @@ export interface EosCoinConstructorOptions extends AccountConstructorOptions {
   contractName: string;
 }
 
-export interface SolCoinConstructorOptions extends AccountConstructorOptions {
-  tokenAddress: string;
-}
-
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -234,23 +230,6 @@ export class EosCoin extends AccountCoinToken {
     });
 
     this.contractName = options.contractName;
-  }
-}
-
-/**
- * The Sol network supports tokens
- * Sol tokens work similar to native SOL coin, but the token name is determined by
- * the tokenAddress on the chain.
- *
- */
-export class SolCoin extends AccountCoinToken {
-  public tokenAddress: string;
-  constructor(options: SolCoinConstructorOptions) {
-    super({
-      ...options,
-    });
-
-    this.tokenAddress = options.tokenAddress;
   }
 }
 
@@ -817,74 +796,4 @@ export function teosToken(
   network: AccountNetwork = Networks.test.eos
 ) {
   return eosToken(name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
-}
-
-/**
- * Factory function for sol token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenAddress Token address of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to SOL main network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
- */
-export function solToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  tokenAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix: string = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.sol,
-  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
-) {
-  return Object.freeze(
-    new SolCoin({
-      name,
-      fullName,
-      network,
-      tokenAddress,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-    })
-  );
-}
-
-/**
- * Factory function for testnet sol token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenAddress Token address of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the testnet SOL network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
- */
-export function tsolToken(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  tokenAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix: string = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.sol
-) {
-  return solToken(name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
 }
