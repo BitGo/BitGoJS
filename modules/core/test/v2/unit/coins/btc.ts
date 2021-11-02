@@ -215,7 +215,7 @@ describe('BTC:', function () {
       wallet = new Wallet(bitgo, basecoin, walletData);
     });
 
-    it('should half-sign and fully signed transaction prebuild', async function () {
+    it('should half-sign and fully sign transaction prebuild', async function () {
       const prebuild = {
         txHex: '0100000001d58f82d996dd872012675adadf4606734906b25a413f6e2ee535c0c10aef96020000000000ffffffff028de888000000000017a914c91aa24f65827eecec775037d886f2952b73cbe48740420f000000000017a9149304d18497b9bfe9532778a0f06d9fff3b3befaf87c8b11400',
         txInfo: {
@@ -261,6 +261,151 @@ describe('BTC:', function () {
       const halfSignedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: userKeychain.prv,
+      });
+
+      // fully sign transaction
+      prebuild.txHex = halfSignedTransaction.txHex;
+      const signedTransaction = await wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupKeychain.prv,
+        isLastSignature: true,
+      });
+      // broadcast here: https://testnet.smartbit.com.au/tx/5fb17d5ac94f180ba58be7f5a814a6e92a3c31bc00e39604c59c936dcef958bc
+      signedTransaction.txHex.should.equal(signedTxHex);
+
+    });
+  });
+
+  describe('p2tr transaction script path signing:', function () {
+
+    let basecoin;
+    let wallet;
+
+    const userKeychain = {
+      prv: 'xprv9s21ZrQH143K3xQwj4yx3fHjDieEdqFDweBvFxn28qGvfQGvweUWuUuDRpepDu6opq3jiWHU9h3yYTKk5vvu4ykRuGA4i4Kz1vmFMPLTsoC',
+      pub: 'xpub661MyMwAqRbcGSVQq6WxQoETmkUj3Hy5Js7X4MBdhAouYCc5VBnmTHDhH7p9RpeGWjkcwbTVuqib1EdusAntf4VEgQJcVMatBU5thweF2Jz',
+      rawPub: '0275442d5a223845f38cbaa5525806571d1811511377ba8ead726426869b0d0400',
+      rawPrv: 'a4f46eabfd13859079a98b57056f48b4a7d26166848a0f7126c5b43828427d0b',
+    };
+    const backupKeychain = {
+      prv: 'xprv9s21ZrQH143K3ZijERhwuqfED1hLNWMN6A1ByMs6LtcFw6mexXLcPkRPXGPdMT658HJkaSCktjPNA6iujYdFgUwAVqwhtptvsQfHD2WEizC',
+      pub: 'xpub661MyMwAqRbcG3oCLTExGybxm3Xpmy5DTNvnmkGhuE9Eou6oW4erwYjsNYmWrc5YBCZPgpR6hJGpgdFpNwta9zBnta8jL2vAjRF42KB1Xmv',
+      rawPub: '0320e7370ace2e0dd974b8bdafa3a672e108ad12ab9c5ffd3786c303b2198e3f23',
+      rawPrv: '6f84aa9081fef0b95955ed399fd17bb72c94cec87f3fed92d2e7e9e074f0f00e',
+    };
+    const bitgoKeychain = {
+      prv: 'xprv9s21ZrQH143K2QjFdiB9a12bSjjDEGvVNDuQa7z3mukBFmRfJ2T7Pmvpkvh6VCW4TFNnhotBJ3mkKGFF2T8LTaPnbumk5Hb627NKGzTeXmt',
+      pub: 'xpub661MyMwAqRbcEtoijji9w8yKzmZhdjeLjSq1NWPfLFHA8ZkoqZmMwaFJcDMNfRGj2sPgYp5EzguEGjogTtzhejNfKYJyhYuGHYz9kffftpc',
+      rawPub: '03a48a6f40b7e6cd4d298072f5bef081054c3353f127f4c9169f02b00081c231c0',
+      rawPrv: 'cdf02e682b05dd7bbae28a7606cdba0eccc205f03835fc9c3f93ce8c7bd97671',
+    };
+    // user pubkey at m/0/0/30/0 is 02e4a64fa7252714d282e150f4def1ebf8090d5ecdd28fb372105575289f5af56a
+    // backup pubkey at m/0/0/30/0 is 02fae347fb2d2e058126cf78f39dd147e845052911ee55a65960ab41ebbae9d224
+    // bitgo pubkey at m/0/0/30/0 is 0275442d5a223845f38cbaa5525806571d1811511377ba8ead726426869b0d0400
+
+    const signedTxHex = '';
+
+    before(function () {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        users: [
+          {
+            user: '543c11ed356d00cb7600000b98794503',
+            permissions: [
+              'admin',
+              'view',
+              'spend',
+            ],
+          },
+        ],
+        coin: 'tbch',
+        label: 'Signature Verification Wallet',
+        m: 2,
+        n: 3,
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2',
+        ],
+        tags: [
+          '5a78dd561c6258a907f1eeaee132f796',
+        ],
+        disableTransactionNotifications: false,
+        freeze: {},
+        deleted: false,
+        approvalsRequired: 1,
+        isCold: true,
+        coinSpecific: {},
+        admin: {
+          policy: {
+            id: '5a78dd561c6258a907f1eeaf50991950',
+            version: 0,
+            date: '2018-02-05T22:40:22.761Z',
+            mutableUpToDate: '2018-02-07T22:40:22.761Z',
+            rules: [],
+          },
+        },
+        clientFlags: [],
+        balance: 650000000,
+        confirmedBalance: 650000000,
+        spendableBalance: 650000000,
+        balanceString: '650000000',
+        confirmedBalanceString: '650000000',
+        spendableBalanceString: '650000000',
+        receiveAddress: {
+          id: '5b5f83121d13489f7ff32f9d5729c6de',
+          address: 'tb1p022ks3y8qlnzgayslcqwfk5u0gsax538rg92nqyhzc4hcft3us8qce0l6w',
+          chain: 30,
+          index: 0,
+          coin: 'tbtc',
+          wallet: '5b5f81a78d2152514ab99a15ee9e0781',
+          coinSpecific: {
+            witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae',
+          },
+          addressType: Codes.UnspentTypeTcomb('p2tr'),
+        },
+        pendingApprovals: [],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should half-sign and fully sign transaction prebuild', async function () {
+      const prebuild = {
+        txHex: '0200000001619d71d14c29d97eb984048ce9277322fb8548303d44b3eb65438a00ada33f4b0000000000ffffffff01282300000000000017a914550623cdd8a5173be2c89c3c41b03b86dde0134a8700000000',
+        txInfo: {
+          nP2SHInputs: 0,
+          nSegwitInputs: 0,
+          nOutputs: 1,
+          unspents: [
+            {
+              chain: 30,
+              index: 0,
+              id: '4b3fa3ad008a4365ebb3443d304885fb227327e98c0484b97ed9294cd1719d61:0',
+              address: 'tb1p022ks3y8qlnzgayslcqwfk5u0gsax538rg92nqyhzc4hcft3us8qce0l6w',
+              addressType: Codes.UnspentTypeTcomb('p2tr'),
+              value: 10000,
+            },
+          ],
+          walletAddressDetails: {
+            '2MzznnCET4TftgF63vJhx9UDukhSdf4EyXu': {
+              chain: 10,
+              index: 2,
+            },
+          },
+        },
+        feeInfo: {
+          fee: 1000,
+        },
+        walletId: '5b5f81a78d2152514ab99a15ee9e0781',
+      };
+
+      // half-sign with the user key
+      const halfSignedTransaction = await wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: userKeychain.prv,
+        bitgoKeychain,
+        backupKeychain,
       });
 
       // fully sign transaction

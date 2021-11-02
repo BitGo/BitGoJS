@@ -241,6 +241,11 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
         return;
       }
 
+      if (addressType === Codes.UnspentTypeTcomb('p2tr') && !coin.supportsP2tr()) {
+        // P2tr is not supported. Skip.
+        return;
+      }
+
       let codes;
       try {
         codes = Codes.forType(Codes.UnspentTypeTcomb(addressType) as any);

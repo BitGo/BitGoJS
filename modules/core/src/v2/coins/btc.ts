@@ -51,6 +51,10 @@ export class Btc extends AbstractUtxoCoin {
     return true;
   }
 
+  supportsP2tr(): boolean {
+    return true;
+  }
+
   getRecoveryFeePerBytes(): Bluebird<number> {
     const self = this;
     return co<number>(function *getRecoveryFeePerBytes() {
