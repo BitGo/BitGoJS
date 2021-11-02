@@ -72,6 +72,10 @@ export class Utils implements BaseUtils {
     };
   }
 
+  capitalizeFirstLetter(val: string): string {
+    return val.charAt(0).toUpperCase() + val.slice(1);
+  }
+
   /**
    * keyPairFromSeed generates an object with secretKey and publicKey using the polkadot sdk
    * @param seed 32 bytes long seed

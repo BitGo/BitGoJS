@@ -36,3 +36,20 @@ export const TransferTransactionSchema = joi.object({
   value: joi.string().required(),
   dest: addressSchema.required(),
 });
+
+export const StakeTransactionSchema = joi.object({
+  value: joi.string().required(),
+  controller: addressSchema.required(),
+  payee: [
+    joi.string(),
+    joi.object({
+      account: joi.string().optional(),
+      controller: joi.equal(null).optional(),
+      staked: joi.equal(null).optional(),
+      stash: joi.equal(null).optional(),
+    }),
+    joi.object({
+      Account: joi.string().required(),
+    }),
+  ],
+});
