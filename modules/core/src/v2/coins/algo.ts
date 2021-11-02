@@ -21,7 +21,7 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
-import { NodeCallback, TokenManagementType, ExplainTokenTxType } from '../types';
+import { NodeCallback, TokenManagementType } from '../types';
 
 const co = Bluebird.coroutine;
 
@@ -257,8 +257,14 @@ export class Algo extends BaseCoin {
 
         const isTokenTx = this.isTokenTx(txJson.type);
         if (isTokenTx) {
+          const type = accountLib.Algo.algoUtils.getTokenTxType(
+            txJson.amount,
+            txJson.from,
+            txJson.to,
+            txJson.closeRemainderTo
+          );
           operations.push({
-            type: this.getTokenTxType(txJson),
+            type: type,
             coin: `${this.getChain()}:${txJson.tokenId}`,
           });
         }
@@ -327,19 +333,6 @@ export class Algo extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
-  }
-
-  /**
-   * returns if a tx is an enable or disable token tx
-   * @param tx - tx in JSON format
-   * @returns true if it's a token tx
-   */
-  getTokenTxType(tx: { amount: string; closeRemainderTo: string; from: string; to: string }): string {
-    let type: ExplainTokenTxType = 'transferToken';
-    if (tx.amount === '0' && tx.from === tx.to) {
-      type = !tx.closeRemainderTo ? 'enableToken' : 'disableToken';
-    }
-    return type;
   }
 
   /**

@@ -229,6 +229,10 @@ export class Transaction extends BaseTransaction {
         result.nonParticipation = this._algoTransaction.nonParticipation;
       }
     }
+    if (result.type === 'axfer' && result.to && result.amount) {
+      result.txType = utils.getTokenTxType(result.amount, result.from, result.to, result.closeRemainderTo);
+      result.tokenName = this._coinConfig.suffix;
+    }
     return result;
   }
 

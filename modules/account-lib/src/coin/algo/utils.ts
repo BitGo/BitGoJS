@@ -507,6 +507,19 @@ export class Utils implements BaseUtils {
     const hash = Buffer.from(algoNacl.genericHash(gh));
     return base32.encode(hash).slice(0, ALGORAND_TRANSACTION_LENGTH);
   }
+
+  /**
+   * returns if a tx is an enable or disable token tx
+   * @param tx - tx in JSON format
+   * @returns true if it's a token tx
+   */
+  getTokenTxType(amount: string, from: string, to: string, closeRemainderTo?: string): string {
+    let type = 'transferToken';
+    if (amount === '0' && from === to) {
+      type = !closeRemainderTo ? 'enableToken' : 'disableToken';
+    }
+    return type;
+  }
 }
 
 const utils = new Utils();
