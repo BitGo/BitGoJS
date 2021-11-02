@@ -12,7 +12,7 @@ import { TypeRegistry, DecodedSignedTx, DecodedSigningPayload } from '@substrate
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { CreateBaseTxInfo, specNameType, TxMethod } from './iface';
+import { CreateBaseTxInfo, sequenceId, specNameType, TxMethod } from './iface';
 import Utils from './utils';
 import { AddressValidationError } from './errors';
 
@@ -58,15 +58,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * The number of blocks after the checkpoint for which a transaction is valid. If zero, the transaction is immortal.
    *
-   * @param {number | undefined} eraPeriod
+   * @param {number | undefined} maxDuration
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  eraPeriod(eraPeriod: number | undefined): this {
-    if (eraPeriod !== undefined) {
-      this.validateValue(new BigNumber(eraPeriod));
-      this._eraPeriod = eraPeriod;
+  durationConfig({ maxDuration }: { maxDuration: number | undefined }): this {
+    if (maxDuration !== undefined) {
+      this.validateValue(new BigNumber(maxDuration));
+      this._eraPeriod = maxDuration;
     }
     return this;
   }
@@ -79,9 +79,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  nonce(nonce: number): this {
-    this.validateValue(new BigNumber(nonce));
-    this._nonce = nonce;
+  sequenceId(nonce: sequenceId): this {
+    const value = new BigNumber(nonce.value);
+    this.validateValue(value);
+    this._nonce = value.toNumber();
     return this;
   }
   /**
@@ -100,18 +101,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
     return this;
   }
+
   /**
    *
-   * The number of the checkpoint block.
+   * The number of the checkpoint block after which the transaction is valid
    *
    * @param {number} blockNumber
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  blockNumber(blockNumber: number): this {
-    this.validateValue(new BigNumber(blockNumber));
-    this._blockNumber = blockNumber;
+  validity({ firstValid }: { firstValid: number }): this {
+    this.validateValue(new BigNumber(firstValid));
+    this._blockNumber = firstValid;
     return this;
   }
   /**
@@ -199,8 +201,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       });
       this.sender(keypair.getAddress());
     }
-    this.eraPeriod(decodedTxn.eraPeriod);
-    this.nonce(decodedTxn.nonce);
+    this.durationConfig({ maxDuration: decodedTxn.eraPeriod });
+    this.sequenceId({
+      name: 'Nonce',
+      keyword: 'nonce',
+      value: decodedTxn.nonce,
+    });
     this.tip(decodedTxn.tip);
     this.method(decodedTxn.method as unknown as TxMethod);
     return this._transaction;

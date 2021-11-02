@@ -33,12 +33,12 @@ describe('Dot Transfer Builder', () => {
         .amount('90034235235322')
         .dest(receiver.address)
         .sender(sender.address)
-        .blockNumber(3933)
+        .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .nonce(200)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .tip(0)
         .transactionVersion(7)
-        .eraPeriod(64);
+        .durationConfig({ maxDuration: 64 });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -62,12 +62,12 @@ describe('Dot Transfer Builder', () => {
         .amount('90034235235322')
         .dest(receiver.address)
         .sender(sender.address)
-        .blockNumber(3933)
+        .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .nonce(200)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .tip(0)
         .transactionVersion(7)
-        .eraPeriod(64);
+        .durationConfig({ maxDuration: 64 });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
@@ -87,7 +87,7 @@ describe('Dot Transfer Builder', () => {
     it('should build from raw signed tx', async () => {
       builder.testnet().from(DotResources.rawTx.transfer.signed);
       builder
-        .blockNumber(3933)
+        .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .transactionVersion(7);
       const tx = await builder.build();
@@ -109,7 +109,7 @@ describe('Dot Transfer Builder', () => {
     it('should build from raw unsigned tx', async () => {
       builder.testnet().from(DotResources.rawTx.transfer.unsigned);
       builder
-        .blockNumber(3933)
+        .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender(sender.address)
         .sign({ key: sender.secretKey });

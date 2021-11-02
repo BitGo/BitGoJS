@@ -103,3 +103,9 @@ export interface CreateBaseTxInfo {
     registry: TypeRegistry;
   };
 }
+
+export interface sequenceId {
+  name: string; // "Nonce", "Sequence Id", "Counter"
+  keyword: string; // "nonce", "sequenceId", "counter"
+  value: string | number;
+}
