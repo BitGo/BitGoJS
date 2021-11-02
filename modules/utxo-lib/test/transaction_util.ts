@@ -7,18 +7,14 @@ import {
   createTransactionBuilderForNetwork,
   createTransactionBuilderFromTransaction,
   createTransactionFromBuffer,
-  getDefaultSigHash,
+  signInput2Of3,
+  signInputP2shP2pk,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import { createScriptPubKey, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey, getDefaultCosigner, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import {
-  createOutputScript2of3,
-  createOutputScriptP2shP2pk,
-  isScriptType2Of3,
-  ScriptType2Of3,
-  scriptType2Of3AsPrevOutType,
-} from '../src/bitgo/outputScripts';
+import { ScriptType2Of3 } from '../src/bitgo/outputScripts';
+import { isTriple } from '../src/bitgo/types';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
   if (length === 0) {
@@ -85,24 +81,23 @@ export function getTransactionBuilder(
   txBuilder.addOutput(recipientScript, outputAmount - 1000);
 
   const pubkeys = keys.map((k) => k.publicKey);
-
-  const { redeemScript, witnessScript } = isScriptType2Of3(scriptType)
-    ? createOutputScript2of3(pubkeys, scriptType)
-    : createOutputScriptP2shP2pk(pubkeys[0]);
-
-  const prevOutScriptType = isScriptType2Of3(scriptType) ? scriptType2Of3AsPrevOutType(scriptType) : 'p2sh-p2pk';
+  assert(isTriple(pubkeys));
 
   prevOutputs.forEach(([, , value], vin) => {
-    signKeys.forEach((key, i) => {
-      txBuilder.sign({
-        prevOutScriptType,
-        vin,
-        keyPair: Object.assign(key, { network }),
-        redeemScript,
-        hashType: getDefaultSigHash(network),
-        witnessValue: scriptType === 'p2shP2pk' ? undefined : value,
-        witnessScript,
-      });
+    signKeys.forEach((key) => {
+      if (scriptType === 'p2shP2pk') {
+        signInputP2shP2pk(txBuilder, vin, key);
+      } else {
+        signInput2Of3(
+          txBuilder,
+          vin,
+          scriptType as ScriptType2Of3,
+          pubkeys,
+          key,
+          getDefaultCosigner(pubkeys, key.publicKey),
+          value
+        );
+      }
     });
   });
 
