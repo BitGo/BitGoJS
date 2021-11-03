@@ -30,7 +30,7 @@ export async function readDashEvoTransactions(): Promise<RpcTransaction[]> {
 }
 
 describe('Dash', function () {
-  const network = networks.dash;
+  const network = networks.dashTest;
   let txs: RpcTransaction[];
 
   before('read fixtures', async function () {

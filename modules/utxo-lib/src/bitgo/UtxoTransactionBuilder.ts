@@ -4,7 +4,7 @@ import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '../networkTypes';
 import { UtxoTransaction } from './UtxoTransaction';
 
-interface TxbSignArg {
+export interface TxbSignArg {
   prevOutScriptType: string;
   vin: number;
   keyPair: bitcoinjs.ECPair.Signer;

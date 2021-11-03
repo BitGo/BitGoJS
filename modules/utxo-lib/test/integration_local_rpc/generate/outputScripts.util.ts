@@ -1,17 +1,12 @@
 import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import { Network } from '../../../src/networkTypes';
-import {
-  createOutputScript2of3,
-  ScriptType2Of3,
-  scriptType2Of3AsPrevOutType,
-  scriptTypes2Of3,
-} from '../../../src/bitgo/outputScripts';
-import { Triple } from '../../../src/bitgo/types';
+import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
+import { isTriple, Triple } from '../../../src/bitgo/types';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
 import { Transaction } from 'bitcoinjs-lib';
-import { createTransactionBuilderForNetwork, createTransactionFromBuffer, getDefaultSigHash } from '../../../src/bitgo';
+import { createTransactionBuilderForNetwork, createTransactionFromBuffer, signInput2Of3 } from '../../../src/bitgo';
 import { UtxoTransaction } from '../../../src/bitgo/UtxoTransaction';
 import { Output } from 'bitcoinjs-lib/types/transaction';
 
@@ -35,6 +30,20 @@ function getKey(seed: string): bip32.BIP32Interface {
 
 export function getKeyTriple(seed: string): KeyTriple {
   return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
+}
+
+export function getDefaultCosigner(pubkeys: Triple<Buffer>, signer: Buffer): Buffer {
+  const [user, backup, bitgo] = pubkeys;
+  if (signer.equals(user)) {
+    return bitgo;
+  }
+  if (signer.equals(backup)) {
+    return bitgo;
+  }
+  if (signer.equals(bitgo)) {
+    return user;
+  }
+  throw new Error(`signer not in pubkeys`);
 }
 
 export function supportsSegwit(network: Network): boolean {
@@ -94,7 +103,7 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
   network: Network,
-  { signKeys = keys.slice(0, 2) } = {}
+  { signKeys = [keys[0], keys[2]] } = {}
 ): T {
   if (signKeys.length !== 1 && signKeys.length !== 2) {
     throw new Error(`signKeys length must be 1 or 2`);
@@ -111,22 +120,14 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
 
   txBuilder.addOutput(recipientScript, inputSum - fee);
 
-  const { redeemScript, witnessScript } = createOutputScript2of3(
-    keys.map((k) => k.publicKey),
-    scriptType
-  );
+  const publicKeys = keys.map((k) => k.publicKey);
+  if (!isTriple(publicKeys)) {
+    throw new Error();
+  }
 
   prevOutputs.forEach(([, , value], vin) => {
     signKeys.forEach((key) => {
-      txBuilder.sign({
-        prevOutScriptType: scriptType2Of3AsPrevOutType(scriptType),
-        vin,
-        keyPair: Object.assign(key, { network: null }),
-        redeemScript,
-        hashType: getDefaultSigHash(network),
-        witnessValue: value,
-        witnessScript,
-      });
+      signInput2Of3(txBuilder, vin, scriptType, publicKeys, key, getDefaultCosigner(publicKeys, key.publicKey), value);
     });
   });
 

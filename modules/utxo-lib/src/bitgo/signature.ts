@@ -1,4 +1,5 @@
 import * as opcodes from 'bitcoin-ops';
+import * as bip32 from 'bip32';
 
 import { ECPair, payments, script, Transaction, TxInput } from 'bitcoinjs-lib';
 import * as classify from 'bitcoinjs-lib/src/classify';
@@ -8,6 +9,14 @@ import { Network } from '../networkTypes';
 import * as networks from '../networks';
 import { getMainnet } from '../coins';
 import { UtxoTransaction } from './UtxoTransaction';
+import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
+import {
+  createOutputScript2of3,
+  createOutputScriptP2shP2pk,
+  ScriptType2Of3,
+  scriptType2Of3AsPrevOutType,
+} from './outputScripts';
+import { Triple } from './types';
 
 const inputTypes = [
   'multisig',
@@ -359,4 +368,45 @@ export function verifySignature(
   );
 
   return signatureVerifications.length > 0 && signatureVerifications.every((v) => v.signedBy !== undefined);
+}
+
+export function signInputP2shP2pk(txBuilder: UtxoTransactionBuilder, vin: number, keyPair: bip32.BIP32Interface): void {
+  const prevOutScriptType = 'p2sh-p2pk';
+  const { redeemScript, witnessScript } = createOutputScriptP2shP2pk(keyPair.publicKey);
+  keyPair.network = txBuilder.network;
+
+  txBuilder.sign({
+    vin,
+    prevOutScriptType,
+    keyPair,
+    hashType: getDefaultSigHash(txBuilder.network as Network),
+    redeemScript,
+    witnessScript,
+    witnessValue: undefined,
+  });
+}
+
+export function signInput2Of3(
+  txBuilder: UtxoTransactionBuilder,
+  vin: number,
+  scriptType: ScriptType2Of3,
+  pubkeys: Triple<Buffer>,
+  keyPair: bip32.BIP32Interface,
+  cosigner: Buffer,
+  amount: number
+): void {
+  const prevOutScriptType = scriptType2Of3AsPrevOutType(scriptType);
+  const { redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType);
+
+  keyPair.network = txBuilder.network;
+
+  txBuilder.sign({
+    vin,
+    prevOutScriptType,
+    keyPair,
+    hashType: getDefaultSigHash(txBuilder.network as Network),
+    redeemScript,
+    witnessScript,
+    witnessValue: amount,
+  });
 }
