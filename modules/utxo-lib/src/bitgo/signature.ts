@@ -13,6 +13,7 @@ import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
+  createSpendScriptP2tr,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
@@ -395,8 +396,16 @@ export function signInput2Of3(
   cosigner: Buffer,
   amount: number
 ): void {
+  let controlBlock;
+  let redeemScript;
+  let witnessScript;
+
   const prevOutScriptType = scriptType2Of3AsPrevOutType(scriptType);
-  const { redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType);
+  if (scriptType === 'p2tr') {
+    ({ witnessScript, controlBlock } = createSpendScriptP2tr(pubkeys, [keyPair.publicKey, cosigner]));
+  } else {
+    ({ redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType));
+  }
 
   keyPair.network = txBuilder.network;
 
@@ -408,5 +417,6 @@ export function signInput2Of3(
     redeemScript,
     witnessScript,
     witnessValue: amount,
+    controlBlock,
   });
 }
