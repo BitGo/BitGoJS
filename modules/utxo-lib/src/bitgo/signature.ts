@@ -56,6 +56,13 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
   pubScript: Buffer;
 }
 
+export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
+  // P2TR tapscript spends are for 2-of-2 multisig scripts
+  signatures: [Buffer | 0, Buffer | 0]; // missing signature is encoded as OP_0
+  publicKeys: [Buffer, Buffer];
+  pubScript: Buffer;
+}
+
 export function getDefaultSigHash(network: Network): number {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
@@ -78,7 +85,7 @@ export function getDefaultSigHash(network: Network): number {
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
+): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
   let decompiledSigScript: Array<Buffer | number> | null;
@@ -148,10 +155,10 @@ export function parseSignatureScript(
           return b;
         }
         throw new Error(`unexpected signature element ${b}`);
-      }) as [Buffer, Buffer],
+      }),
       publicKeys,
       pubScript: tapscript,
-    };
+    } as ParsedSignatureScriptTaproot;
   }
 
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
