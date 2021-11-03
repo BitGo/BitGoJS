@@ -115,7 +115,16 @@ export const coins = CoinMap.fromCoins([
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP, false),
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP, false),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM, false, XLM_FEATURES, KeyCurve.Ed25519),
-  account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM, false, XLM_FEATURES, KeyCurve.Ed25519),
+  account(
+    'txlm',
+    'Testnet Stellar',
+    Networks.test.stellar,
+    7,
+    UnderlyingAsset.XLM,
+    false,
+    XLM_FEATURES,
+    KeyCurve.Ed25519
+  ),
   account('xtz', 'Tezos', Networks.main.xtz, 6, UnderlyingAsset.XTZ, false, XTZ_FEATURES),
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, false, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD, false),
