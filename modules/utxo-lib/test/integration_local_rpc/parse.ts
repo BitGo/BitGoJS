@@ -129,7 +129,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
             verifySignature(parsedTx, i, prevOutValue, {
               publicKey,
             }),
-            publicKeyIndex === 0 || publicKeyIndex === 1
+            publicKeyIndex === 0 || publicKeyIndex === 2
           );
         });
 

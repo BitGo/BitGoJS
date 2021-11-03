@@ -103,7 +103,7 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   prevOutputs: [txid: string, index: number, value: number][],
   recipientScript: Buffer,
   network: Network,
-  { signKeys = keys.slice(0, 2) } = {}
+  { signKeys = [keys[0], keys[2]] } = {}
 ): T {
   if (signKeys.length !== 1 && signKeys.length !== 2) {
     throw new Error(`signKeys length must be 1 or 2`);
