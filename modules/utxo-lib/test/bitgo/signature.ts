@@ -100,9 +100,9 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
             '6212d1db405758222dfeb28799777807e0730cf221372c1bf286efc2639c43a160e7c46db2c482a53c06ebd08b5fb5924577a3f6aab8a6c920e2fccdf964ac4b01',
             // signature 2
             'd9bd4e363508f3d3c5ae5815aa239ad482113fda1fad2553c1863b1b621bfb50013e5f4169f78a723eb6f8167a67a937e1ccbac6d50fa75126f7b955286a6e8801',
-            // tapscript
+            // tapscript (p2tr-p2ns)
             '208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac',
-            // control block ?
+            // control block
             'c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2185457a6e74cdfcdf020c0eef3b794f3077f43139aa7c30d50da5a26dceed225',
           ]
         );
@@ -229,8 +229,9 @@ describe('Signature (scriptTypes2Of3)', function () {
     .forEach((network) => {
       scriptTypes2Of3.forEach((scriptType) => {
         if (scriptType !== 'p2tr') {
-          runTest(network, scriptType);
+          return;
         }
+        runTest(network, scriptType);
         runTestCheckSignatureScripts(network, scriptType);
       });
     });

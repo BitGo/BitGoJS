@@ -58,6 +58,10 @@ export const defaultTestOutputAmount = 1e8;
 
 type PrevOutput = [txid: string, index: number, amount: number];
 
+export function getPrevOutputs(outputAmount = defaultTestOutputAmount): PrevOutput[] {
+  return [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]];
+}
+
 export function getTransactionBuilder(
   keys: KeyTriple,
   signKeys: bip32.BIP32Interface[],
@@ -65,7 +69,7 @@ export function getTransactionBuilder(
   network: Network,
   {
     outputAmount = defaultTestOutputAmount,
-    prevOutputs = [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]],
+    prevOutputs = getPrevOutputs(outputAmount),
   }: {
     outputAmount?: number;
     prevOutputs?: PrevOutput[];
