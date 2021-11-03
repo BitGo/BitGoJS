@@ -58,7 +58,7 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
 
 export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
   // P2TR tapscript spends are for 2-of-2 multisig scripts
-  signatures: [Buffer | 0, Buffer | 0]; // missing signature is encoded as OP_0
+  signatures: [Buffer, Buffer]; // missing signature is encoded as empty buffer
   publicKeys: [Buffer, Buffer];
   pubScript: Buffer;
 }
@@ -128,7 +128,8 @@ export function parseSignatureScript(
   }
 
   if (inputClassification === classify.types.P2TR) {
-    const tapscript = decompiledSigScript[decompiledSigScript.length - 2];
+    // assumes no annex
+    const tapscript = input.witness[input.witness.length - 2];
     if (!Buffer.isBuffer(tapscript)) {
       throw new Error(`invalid tapscript`);
     }
@@ -137,7 +138,7 @@ export function parseSignatureScript(
       throw new Error(`tapscript must be n of n multisig`);
     }
 
-    const signatures = decompiledSigScript.slice(0, -2);
+    const signatures = input.witness.slice(0, -2);
     if (signatures.length !== 2) {
       throw new Error(`expected 2 signatures, got ${signatures.length}`);
     }
@@ -151,7 +152,7 @@ export function parseSignatureScript(
       isSegwitInput,
       inputClassification,
       signatures: signatures.map((b) => {
-        if (Buffer.isBuffer(b) || b === 0) {
+        if (Buffer.isBuffer(b)) {
           return b;
         }
         throw new Error(`unexpected signature element ${b}`);

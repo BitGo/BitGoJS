@@ -165,7 +165,7 @@ export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: T
   assert(Buffer.isBuffer(controlBlock));
 
   assert(payment.redeem);
-  const { output } = payment.redeem;
+  const output = payment.redeem.output;
   assert(Buffer.isBuffer(output));
   return {
     controlBlock,
