@@ -8,6 +8,7 @@ import { TransactionType } from '../baseCoin';
 import { MethodNames, ProxyArgs, proxyType } from './iface';
 import { ProxyTransactionSchema } from './txnSchema';
 import utils from './utils';
+import { metadataRpc } from './metaData';
 
 export class ProxyBuilder extends TransactionBuilder {
   protected _real: string;
@@ -82,16 +83,16 @@ export class ProxyBuilder extends TransactionBuilder {
   validateRawTransaction(rawTransaction: string): void {
     super.validateRawTransaction(rawTransaction);
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
+      metadataRpc: metadataRpc,
+      registry: utils.getDefaultRegistry(),
     });
     if (decodedTxn.method?.name === MethodNames.Proxy) {
       const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
       const real = txMethod.real;
       const forceProxyType = txMethod.forceProxyType;
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: this._registry,
-        metadataRpc: this._metadataRpc,
+        registry: utils.getDefaultRegistry(),
+        metadataRpc: metadataRpc,
       });
       const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, call: decodedCall });
       if (validationResult.error) {
@@ -108,8 +109,8 @@ export class ProxyBuilder extends TransactionBuilder {
       this.real(txMethod.real);
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: this._registry,
-        metadataRpc: this._metadataRpc,
+        registry: utils.getDefaultRegistry(),
+        metadataRpc: metadataRpc,
       });
       this.call(decodedCall);
     } else {

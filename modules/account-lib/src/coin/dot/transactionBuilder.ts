@@ -188,8 +188,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
+      metadataRpc: metadataRpc,
+      registry: Utils.getDefaultRegistry(),
     }) as DecodedSigningPayload | DecodedSignedTx;
 
     if (this.isSigningPayload(decodedTxn)) {
@@ -197,7 +197,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.transactionVersion(decodedTxn.transactionVersion);
     } else {
       const keypair = new KeyPair({
-        pub: Buffer.from(decodeAddress(decodedTxn.address, false, this._registry.chainSS58)).toString('hex'),
+        pub: Buffer.from(decodeAddress(decodedTxn.address)).toString('hex'),
       });
       this.sender(keypair.getAddress());
     }
@@ -288,8 +288,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
+      metadataRpc: metadataRpc,
+      registry: Utils.getDefaultRegistry(),
     }) as DecodedSigningPayload | DecodedSignedTx;
 
     const eraPeriod = decodedTxn.eraPeriod;

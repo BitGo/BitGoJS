@@ -8,13 +8,14 @@ import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { Seed } from './iface';
+import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
-import { createMetadata, construct } from '@substrate/txwrapper-polkadot';
+import { createMetadata, construct, getRegistry } from '@substrate/txwrapper-polkadot';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 const polkaUtils = require('@polkadot/util');
 const { createTypeUnsafe } = require('@polkadot/types');
+import { metadataRpc } from './metaData';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -139,6 +140,14 @@ export class Utils implements BaseUtils {
       registry,
     });
     return txHex;
+  }
+  getDefaultRegistry(): TypeRegistry {
+    return getRegistry({
+      chainName: 'Polkadot',
+      specName: 'polkadot',
+      specVersion: 9100,
+      metadataRpc: metadataRpc,
+    });
   }
 }
 

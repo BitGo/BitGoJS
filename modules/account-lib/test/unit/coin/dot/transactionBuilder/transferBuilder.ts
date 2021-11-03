@@ -85,8 +85,9 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.testnet().from(DotResources.rawTx.transfer.signed);
+      builder.from(DotResources.rawTx.transfer.signed);
       builder
+        .testnet()
         .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .transactionVersion(7);
@@ -107,8 +108,9 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.testnet().from(DotResources.rawTx.transfer.unsigned);
+      builder.from(DotResources.rawTx.transfer.unsigned);
       builder
+        .testnet()
         .validity({ firstValid: 3933 })
         .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender(sender.address)

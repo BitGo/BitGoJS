@@ -11,6 +11,7 @@ import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { StakeTransactionSchema } from './txnSchema';
 import { KeyPair } from '.';
+import { metadataRpc } from './metaData';
 
 export class StakeBuilder extends TransactionBuilder {
   protected _amount: string;
@@ -92,8 +93,8 @@ export class StakeBuilder extends TransactionBuilder {
   validateRawTransaction(rawTransaction: string): void {
     super.validateRawTransaction(rawTransaction);
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
+      metadataRpc: metadataRpc,
+      registry: utils.getDefaultRegistry(),
     });
     if (decodedTxn.method?.name === MethodNames.Bond) {
       const txMethod = decodedTxn.method.args as unknown as StakeArgs;

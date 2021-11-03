@@ -8,6 +8,8 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { MethodNames, TransferArgs } from './iface';
 import { TransferTransactionSchema } from './txnSchema';
+import Utils from './utils';
+import { metadataRpc } from './metaData';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _amount: string;
@@ -63,8 +65,8 @@ export class TransferBuilder extends TransactionBuilder {
   validateRawTransaction(rawTransaction: string): void {
     super.validateRawTransaction(rawTransaction);
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
+      metadataRpc: metadataRpc,
+      registry: Utils.getDefaultRegistry(),
     });
     if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = decodedTxn.method.args as unknown as TransferArgs;

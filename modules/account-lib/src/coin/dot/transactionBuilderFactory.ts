@@ -1,42 +1,63 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
-import { TransferBuilder } from './transferBuilder';
-import { WalletInitializationBuilder } from './walletInitializationBuilder';
+import { NotSupported } from '../baseCoin/errors';
+import { decode } from '@substrate/txwrapper-polkadot';
 import { TransactionBuilder } from './transactionBuilder';
-import { Transaction } from './transaction';
+import { TransferBuilder } from './transferBuilder';
+import { ProxyBuilder } from './proxyBuilder';
+import { AddProxyBuilder } from './addProxyBuilder';
+import { StakeBuilder } from './stakeBuilder';
+import { metadataRpc } from './metaData';
+import { MethodNames } from './iface';
+import Utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
-  /** @inheritdoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  getTransferBuilder(): TransferBuilder {
+    return new TransferBuilder(this._coinConfig);
   }
 
-  /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+  getProxyBuilder(): ProxyBuilder {
+    return new ProxyBuilder(this._coinConfig);
   }
 
-  /** @inheritdoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getStakeBuilder(): StakeBuilder {
+    return new StakeBuilder(this._coinConfig);
   }
 
-  /**
-   * Initialize the builder with the given transaction
-   *
-   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @param {TransactionBuilder} builder - the builder to be initialized
-   * @returns {TransactionBuilder} the builder initialized
-   */
-  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    if (tx) {
-      builder.from(tx);
-    }
+  getAddProxyBuilder(): AddProxyBuilder {
+    return new AddProxyBuilder(this._coinConfig);
+  }
+
+  from(rawTxn: string): TransactionBuilder {
+    const builder = this.getBuilder(rawTxn);
+    builder.from(rawTxn);
+
     return builder;
+  }
+
+  private getBuilder(rawTxn: string): TransactionBuilder {
+    const decodedTxn = decode(rawTxn, {
+      metadataRpc: metadataRpc,
+      registry: Utils.getDefaultRegistry(),
+    });
+    if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
+      return this.getTransferBuilder();
+    } else if (decodedTxn.method?.name === MethodNames.Bond) {
+      return this.getStakeBuilder();
+    } else if (decodedTxn.method?.name === MethodNames.AddProxy) {
+      return this.getAddProxyBuilder();
+    } else if (decodedTxn.method?.name === MethodNames.Proxy) {
+      return this.getProxyBuilder();
+    } else {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
+  }
+
+  public getWalletInitializationBuilder(): TransferBuilder {
+    return new TransferBuilder(this._coinConfig);
   }
 }
