@@ -30,7 +30,7 @@ function getDockerParams(network: Network): DockerImageParams {
     case utxolib.networks.testnet:
       return dockerImage('ruimarinho/bitcoin-core:0.21.1', 'bitcoind', ['-fallbackfee=0.0001']);
     case utxolib.networks.bitcoincashTestnet:
-      return dockerImage('zquestz/bitcoin-cash-node:23.0.0', 'bitcoind');
+      return dockerImage('zquestz/bitcoin-cash-node:23.0.0', 'bitcoind', ['-usecashaddr=0']);
     case utxolib.networks.bitcoinsvTestnet:
       return dockerImage('bitcoinsv/bitcoin-sv:1.0.5', 'bitcoind', [
         '-excessiveblocksize=0',
