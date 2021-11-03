@@ -1293,12 +1293,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         if (Codes.isP2wsh(signatureContext.chain)) {
           transaction.setInputScript(index, Buffer.alloc(0));
         }
-        /*const isValidSignature = utxolib.bitgo.verifySignature(transaction, index, signatureContext.unspent.value);
+        const isValidSignature = utxolib.bitgo.verifySignature(transaction, index, signatureContext.unspent.value);
         if (!isValidSignature) {
           debug('Invalid signature');
           signatureContext.error = new Error('invalid signature');
           signatureIssues.push(signatureContext);
-        }*/
+        }
       }
 
       if (signatureIssues.length > 0) {
