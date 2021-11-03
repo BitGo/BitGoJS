@@ -13,7 +13,7 @@ import {
 } from '../src/bitgo';
 import { createScriptPubKey, getDefaultCosigner, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import { ScriptType2Of3 } from '../src/bitgo/outputScripts';
+import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import { isTriple } from '../src/bitgo/types';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
@@ -31,7 +31,7 @@ export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][]
 export function parseTransactionRoundTrip<T extends UtxoTransaction>(
   buf: Buffer,
   network: Network,
-  inputs?: [txid: string, index: number, value: number][]
+  inputs?: [txid: string, index: number, value: number, script: Buffer][]
 ): T {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
@@ -56,7 +56,31 @@ export function parseTransactionRoundTrip<T extends UtxoTransaction>(
 
 export const defaultTestOutputAmount = 1e8;
 
-type PrevOutput = [txid: string, index: number, amount: number];
+type PrevOutputWithTxid = {
+  prevOutScript?: Buffer;
+  value: number;
+  txid: string;
+  vout: number;
+};
+
+export function getPrevOutputs(
+  value = defaultTestOutputAmount,
+  scriptType: ScriptType2Of3 | 'p2shP2pk'
+): PrevOutputWithTxid[] {
+  return [
+    {
+      txid: Buffer.alloc(32).fill(0xff).toString('hex'),
+      vout: 0,
+      prevOutScript: isScriptType2Of3(scriptType)
+        ? createOutputScript2of3(
+            fixtureKeys.map((k) => k.publicKey),
+            scriptType
+          ).scriptPubKey
+        : undefined,
+      value,
+    },
+  ];
+}
 
 export function getTransactionBuilder(
   keys: KeyTriple,
@@ -65,15 +89,15 @@ export function getTransactionBuilder(
   network: Network,
   {
     outputAmount = defaultTestOutputAmount,
-    prevOutputs = [[Buffer.alloc(32).fill(0xff).toString('hex'), 0, outputAmount]],
+    prevOutputs = getPrevOutputs(outputAmount, scriptType),
   }: {
     outputAmount?: number;
-    prevOutputs?: PrevOutput[];
+    prevOutputs?: PrevOutputWithTxid[];
   } = {}
 ): UtxoTransactionBuilder {
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(([txid, vout]) => {
+  prevOutputs.forEach(({ txid, vout }) => {
     txBuilder.addInput(txid, vout);
   });
 
@@ -83,7 +107,7 @@ export function getTransactionBuilder(
   const pubkeys = keys.map((k) => k.publicKey);
   assert(isTriple(pubkeys));
 
-  prevOutputs.forEach(([, , value], vin) => {
+  prevOutputs.forEach(({ value }, vin) => {
     signKeys.forEach((key) => {
       if (scriptType === 'p2shP2pk') {
         signInputP2shP2pk(txBuilder, vin, key);

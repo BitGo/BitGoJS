@@ -12,6 +12,7 @@ export interface TxbSignArg {
   hashType?: number;
   witnessValue?: number;
   witnessScript?: Buffer;
+  controlBlock?: Buffer;
 }
 
 export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction> extends TransactionBuilder {

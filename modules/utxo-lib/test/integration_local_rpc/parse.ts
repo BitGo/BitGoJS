@@ -52,7 +52,9 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), network);
     });
 
-    function getPrevOutputValue(input: { txid?: string; hash?: Buffer; index: number }) {
+    type InputLookup = { txid?: string; hash?: Buffer; index: number };
+
+    function getPrevOutput(input: InputLookup) {
       if (input.hash) {
         input = {
           ...input,
@@ -68,11 +70,19 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       if (!prevOutput) {
         throw new Error(`could not prevOutput`);
       }
-      return prevOutput.value * 1e8;
+      return prevOutput;
     }
 
-    function getPrevOutputs(): [txid: string, index: number, value: number][] {
-      return parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutputValue(i)]);
+    function getPrevOutputValue(input: InputLookup) {
+      return getPrevOutput(input).value * 1e8;
+    }
+
+    function getPrevOutputScript(input: InputLookup): Buffer {
+      return Buffer.from(getPrevOutput(input).scriptPubKey.hex, 'hex');
+    }
+
+    function getPrevOutputs(): [txid: string, index: number, value: number, script: Buffer][] {
+      return parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutputValue(i), getPrevOutputScript(i)]);
     }
 
     it(`round-trip`, function () {
@@ -95,7 +105,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
         assert.strict(result.publicKeys !== undefined);
-        assert.strictEqual(result.publicKeys.length, 3);
+        assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
 
         switch (scriptType) {
           case 'p2sh':
@@ -104,6 +114,9 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
             break;
           case 'p2wsh':
             assert.strictEqual(result.inputClassification, 'witnessscripthash');
+            break;
+          case 'p2tr':
+            assert.strictEqual(result.inputClassification, 'taproot');
             break;
           default:
             throw new Error(`unknown scriptType ${scriptType}`);
@@ -122,7 +135,12 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         if (!publicKeys) {
           throw new Error(`expected publicKeys`);
         }
-        assert.strictEqual(publicKeys.length, 3);
+        assert.strictEqual(publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
+
+        if (scriptType === 'p2tr') {
+          // TODO implement verifySignature for p2tr
+          this.skip();
+        }
 
         publicKeys.forEach((publicKey, publicKeyIndex) => {
           assert.strictEqual(
@@ -154,8 +172,12 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     it(`verifySignatures with one or two signatures`, function () {
       fixtureKeys.forEach((key1) => {
         const rebuiltTx = getRebuiltTransaction([key1]);
+        const prevOutputs = rebuiltTx.ins.map((v) => ({
+          prevOutScript: getPrevOutputScript(v),
+          value: getPrevOutputValue(v),
+        }));
         rebuiltTx.ins.forEach((input, i) => {
-          assert.strict(verifySignature(rebuiltTx, i, getPrevOutputValue(input)));
+          assert.strict(verifySignature(rebuiltTx, i, getPrevOutputValue(input), {}, prevOutputs));
         });
 
         fixtureKeys.forEach((key2) => {
@@ -163,9 +185,16 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
             return;
           }
 
+          if (scriptType === 'p2tr') {
+            const keypair = [fixtureKeys[0], fixtureKeys[2]];
+            if (!keypair.includes(key1) || !keypair.includes(key2)) {
+              return;
+            }
+          }
+
           const rebuiltTx = getRebuiltTransaction([key1, key2]);
           rebuiltTx.ins.forEach((input, i) => {
-            assert.strict(verifySignature(rebuiltTx, i, getPrevOutputValue(input)));
+            assert.strict(verifySignature(rebuiltTx, i, getPrevOutputValue(input), {}, prevOutputs));
           });
         });
       });

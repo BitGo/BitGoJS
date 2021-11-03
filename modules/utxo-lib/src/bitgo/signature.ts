@@ -1,9 +1,17 @@
 import * as opcodes from 'bitcoin-ops';
 import * as bip32 from 'bip32';
 
-import { ECPair, payments, script, Transaction, TxInput } from 'bitcoinjs-lib';
-import * as classify from 'bitcoinjs-lib/src/classify';
-import * as ScriptSignature from 'bitcoinjs-lib/src/script_signature';
+import {
+  ECPair,
+  payments,
+  script,
+  Transaction,
+  TxInput,
+  schnorrBip340,
+  classify,
+  taproot,
+  ScriptSignature,
+} from 'bitcoinjs-lib';
 
 import { Network } from '../networkTypes';
 import * as networks from '../networks';
@@ -13,6 +21,7 @@ import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
+  createSpendScriptP2tr,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
@@ -55,14 +64,22 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
   pubScript: Buffer;
 }
 
-export function getDefaultSigHash(network: Network): number {
+export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
+  // P2TR tapscript spends are for 2-of-2 multisig scripts
+  signatures: [Buffer, Buffer]; // missing signature is encoded as empty buffer
+  publicKeys: [Buffer, Buffer];
+  pubScript: Buffer;
+  controlBlock: Buffer;
+}
+
+export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
       return Transaction.SIGHASH_ALL | UtxoTransaction.SIGHASH_FORKID;
     default:
-      return Transaction.SIGHASH_ALL;
+      return scriptType === 'p2tr' ? Transaction.SIGHASH_DEFAULT : Transaction.SIGHASH_ALL;
   }
 }
 
@@ -77,7 +94,7 @@ export function getDefaultSigHash(network: Network): number {
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 {
+): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
   let decompiledSigScript: Array<Buffer | number> | null;
@@ -117,6 +134,37 @@ export function parseSignatureScript(
     const pubScript = payments.p2pkh({ pubkey: publicKey }).output;
 
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+  }
+
+  if (inputClassification === classify.types.P2TR) {
+    // assumes no annex
+    if (input.witness.length !== 4) {
+      throw new Error(`unrecognized taproot input`);
+    }
+    const [sig1, sig2, tapscript, controlBlock] = input.witness;
+    const tapscriptClassification = classify.output(tapscript);
+    if (tapscriptClassification !== classify.types.P2TR_NS) {
+      throw new Error(`tapscript must be n of n multisig`);
+    }
+
+    const publicKeys = payments.p2tr_ns({ output: tapscript }).pubkeys;
+    if (!publicKeys || publicKeys.length !== 2) {
+      throw new Error('expected 2 pubkeys');
+    }
+
+    return {
+      isSegwitInput,
+      inputClassification,
+      signatures: [sig1, sig2].map((b) => {
+        if (Buffer.isBuffer(b)) {
+          return b;
+        }
+        throw new Error(`unexpected signature element ${b}`);
+      }),
+      publicKeys,
+      pubScript: tapscript,
+      controlBlock,
+    } as ParsedSignatureScriptTaproot;
   }
 
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
@@ -241,16 +289,23 @@ export function parseSignatureScript(
   };
 }
 
-export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 {
+export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
   const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
-  if (![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH].includes(result.inputClassification)) {
+  if (
+    ![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH, classify.types.P2TR].includes(
+      result.inputClassification
+    )
+  ) {
     throw new Error(`unexpected inputClassification ${result.inputClassification}`);
   }
   if (!result.signatures) {
     throw new Error(`missing signatures`);
   }
-  if (result.publicKeys.length !== 3) {
+  if (
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.inputClassification !== classify.types.P2TR)
+  ) {
     throw new Error(`unexpected pubkey count`);
   }
   if (!result.pubScript || result.pubScript.length === 0) {
@@ -284,19 +339,26 @@ export type SignatureVerification = {
   signedBy: Buffer | undefined;
 };
 
+export interface PrevOutput {
+  prevOutScript: Buffer;
+  value: number;
+}
+
 /**
  * Get signature verifications for multsig transaction
  * @param transaction
  * @param inputIndex
  * @param amount - must be set for segwit transactions and BIP143 transactions
  * @param verificationSettings
+ * @param prevOutputs - must be set for p2tr transactions
  * @returns SignatureVerification[] - in order of parsed non-empty signatures
  */
 export function getSignatureVerifications(
   transaction: UtxoTransaction,
   inputIndex: number,
   amount: number,
-  verificationSettings: VerificationSettings = {}
+  verificationSettings: VerificationSettings = {},
+  prevOutputs?: PrevOutput[]
 ): SignatureVerification[] {
   /* istanbul ignore next */
   if (!transaction.ins) {
@@ -316,29 +378,76 @@ export function getSignatureVerifications(
     .filter((s, i) => verificationSettings.signatureIndex === undefined || verificationSettings.signatureIndex === i);
 
   const publicKeys = parsedScript.publicKeys.filter(
-    (buf) => verificationSettings.publicKey === undefined || verificationSettings.publicKey.equals(buf)
+    (buf) =>
+      verificationSettings.publicKey === undefined ||
+      verificationSettings.publicKey.equals(buf) ||
+      verificationSettings.publicKey.slice(1).equals(buf)
   );
 
   return signatures.map((signatureBuffer) => {
-    // slice the last byte from the signature hash input because it's the hash type
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
       return { signedBy: undefined };
     }
-    const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
-    const transactionHash = parsedScript.isSegwitInput
-      ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
-      : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
-    const signedBy = publicKeys.filter((publicKey) =>
-      ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
-    );
 
-    if (signedBy.length === 0) {
-      return { signedBy: undefined };
+    let hashType = Transaction.SIGHASH_DEFAULT;
+
+    if (signatureBuffer.length === 65) {
+      hashType = signatureBuffer[signatureBuffer.length - 1];
+      signatureBuffer = signatureBuffer.slice(0, -1);
     }
-    if (signedBy.length === 1) {
-      return { signedBy: signedBy[0] };
+
+    if (parsedScript.inputClassification === classify.types.P2TR) {
+      if (verificationSettings.signatureIndex !== undefined) {
+        throw new Error(`signatureIndex parameter not supported for p2tr`);
+      }
+
+      if (!prevOutputs) {
+        throw new Error(`prevOutputs not set`);
+      }
+
+      if (prevOutputs.length !== transaction.ins.length) {
+        throw new Error(`prevOutputs length ${prevOutputs.length}, expected ${transaction.ins.length}`);
+      }
+
+      const { controlBlock, pubScript } = parsedScript as ParsedSignatureScriptTaproot;
+      const leafHash = taproot.getTapleafHash(controlBlock, pubScript);
+      const signatureHash = transaction.hashForWitnessV1(
+        inputIndex,
+        prevOutputs.map(({ prevOutScript }) => prevOutScript),
+        prevOutputs.map(({ value }) => value),
+        hashType,
+        leafHash
+      );
+
+      const signedBy = publicKeys.filter(
+        (k) => Buffer.isBuffer(signatureBuffer) && schnorrBip340.verifySchnorr(signatureHash, k, signatureBuffer)
+      );
+
+      if (signedBy.length === 0) {
+        return { signedBy: undefined };
+      }
+      if (signedBy.length === 1) {
+        return { signedBy: signedBy[0] };
+      }
+      throw new Error(`illegal state: signed by multiple public keys`);
+    } else {
+      // slice the last byte from the signature hash input because it's the hash type
+      const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
+      const transactionHash = parsedScript.isSegwitInput
+        ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
+        : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
+      const signedBy = publicKeys.filter((publicKey) =>
+        ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
+      );
+
+      if (signedBy.length === 0) {
+        return { signedBy: undefined };
+      }
+      if (signedBy.length === 1) {
+        return { signedBy: signedBy[0] };
+      }
+      throw new Error(`illegal state: signed by multiple public keys`);
     }
-    throw new Error(`illegal state: signed by multiple public keys`);
   });
 }
 
@@ -347,24 +456,29 @@ export function getSignatureVerifications(
  * @param inputIndex
  * @param amount
  * @param verificationSettings - if publicKey is specified, returns true iff any signature is signed by publicKey.
+ * @param prevOutputs - must be set for p2tr transactions
  */
 export function verifySignature(
   transaction: UtxoTransaction,
   inputIndex: number,
   amount: number,
-  verificationSettings: VerificationSettings = {}
+  verificationSettings: VerificationSettings = {},
+  prevOutputs?: PrevOutput[]
 ): boolean {
   const signatureVerifications = getSignatureVerifications(
     transaction,
     inputIndex,
     amount,
-    verificationSettings
+    verificationSettings,
+    prevOutputs
   ).filter(
     (v) =>
       // If no publicKey is set in verificationSettings, all signatures must be valid.
       // Otherwise, a single valid signature by the specified pubkey is sufficient.
       verificationSettings.publicKey === undefined ||
-      (v.signedBy !== undefined && verificationSettings.publicKey.equals(v.signedBy))
+      (v.signedBy !== undefined &&
+        (verificationSettings.publicKey.equals(v.signedBy) ||
+          verificationSettings.publicKey.slice(1).equals(v.signedBy)))
   );
 
   return signatureVerifications.length > 0 && signatureVerifications.every((v) => v.signedBy !== undefined);
@@ -395,8 +509,16 @@ export function signInput2Of3(
   cosigner: Buffer,
   amount: number
 ): void {
+  let controlBlock;
+  let redeemScript;
+  let witnessScript;
+
   const prevOutScriptType = scriptType2Of3AsPrevOutType(scriptType);
-  const { redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType);
+  if (scriptType === 'p2tr') {
+    ({ witnessScript, controlBlock } = createSpendScriptP2tr(pubkeys, [keyPair.publicKey, cosigner]));
+  } else {
+    ({ redeemScript, witnessScript } = createOutputScript2of3(pubkeys, scriptType));
+  }
 
   keyPair.network = txBuilder.network;
 
@@ -404,9 +526,10 @@ export function signInput2Of3(
     vin,
     prevOutScriptType,
     keyPair,
-    hashType: getDefaultSigHash(txBuilder.network as Network),
+    hashType: getDefaultSigHash(txBuilder.network as Network, scriptType),
     redeemScript,
     witnessScript,
     witnessValue: amount,
+    controlBlock,
   });
 }

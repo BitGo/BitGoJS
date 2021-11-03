@@ -6,20 +6,25 @@ import * as networks from '../../src/networks';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript, PrevOutput } from '../../src/bitgo';
 
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
-import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
+import {
+  defaultTestOutputAmount,
+  getPrevOutputs,
+  getSignKeyCombinations,
+  getTransactionBuilder,
+} from '../transaction_util';
 
 function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2Of3 | 'p2shP2pk') {
   it(`inputs script structure (${scriptType})`, function () {
-    if (scriptType === 'p2tr') {
-      this.skip();
-    }
-
     const tx = getTransactionBuilder(
       fixtureKeys,
-      fixtureKeys.slice(0, scriptType === 'p2shP2pk' ? 1 : 2),
+      scriptType === 'p2shP2pk'
+        ? [fixtureKeys[0]]
+        : scriptType === 'p2tr'
+        ? [fixtureKeys[0], fixtureKeys[2]]
+        : [fixtureKeys[0], fixtureKeys[1]],
       scriptType,
       networks.bitcoin
     ).build();
@@ -37,6 +42,10 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
     let classifyPubScript;
     let pubScriptASM;
 
+    let tapscript;
+    let tapscriptASM;
+    let classifyTapscript;
+
     if (classifyInput === 'scripthash' || classifyWitness === 'witnessscripthash') {
       if (witness.length) {
         pubScript = witness[witness.length - 1];
@@ -46,6 +55,10 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
 
       classifyPubScript = classify.output(pubScript);
       pubScriptASM = bscript.toASM(pubScript).split(' ');
+    } else if (classifyWitness === 'taproot') {
+      tapscript = witness[witness.length - 2];
+      classifyTapscript = classify.output(tapscript);
+      tapscriptASM = bscript.toASM(tapscript).split(' ');
     }
 
     const scriptP2msHex =
@@ -82,6 +95,23 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
           ]
         );
         break;
+      case 'p2tr':
+        assert.strictEqual(classifyInput, 'nonstandard');
+        assert.strictEqual(classifyWitness, 'taproot');
+        assert.deepStrictEqual(
+          witness.map((w) => w.toString('hex')),
+          [
+            // signature 1
+            '96c9a61eeb137facfbf517b661b24ace13941de3da14ea4ccdc39b13971be6ef402c586638509fda52187384dd5fb66b085b2fbdd75ac8f34e2467ad9f07be46',
+            // signature 2
+            '693e625c9b1a71820a7237b4f2e2f809c78725f052f18b940e016a1cbe6d11bd90e548ca32098d4b8f3a057d34c984c34975dd98aa7251b099271a61dabebf2a',
+            // tapscript
+            '208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac',
+            // control block
+            'c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2185457a6e74cdfcdf020c0eef3b794f3077f43139aa7c30d50da5a26dceed225',
+          ]
+        );
+        break;
       case 'p2shP2pk':
         assert.strictEqual(classifyInput, 'scripthash');
         assert.deepStrictEqual(scriptASM, [
@@ -112,6 +142,17 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
           'OP_CHECKMULTISIG',
         ]);
         break;
+      case 'p2tr':
+        assert.strictEqual(classifyTapscript, 'taprootnofn');
+        assert.deepStrictEqual(tapscriptASM, [
+          // Pubkey1
+          '8fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97',
+          'OP_CHECKSIGVERIFY',
+          // Pubkey3
+          'e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04',
+          'OP_CHECKSIG',
+        ]);
+        break;
       case 'p2shP2pk':
         assert.strictEqual(classifyPubScript, 'pubkey');
         assert.deepStrictEqual(pubScriptASM, [
@@ -127,9 +168,6 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
 }
 
 function runTest(network: Network, scriptType: ScriptType2Of3) {
-  if (scriptType === 'p2tr') {
-    return; // TODO: enable p2tr tests when signing is supported
-  }
   function assertVerifySignatureEquals(
     tx: UtxoTransaction,
     value: boolean,
@@ -140,7 +178,13 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   ) {
     tx.ins.forEach((input, i) => {
       assert.strictEqual(
-        verifySignature(tx, i, defaultTestOutputAmount, verificationSettings),
+        verifySignature(
+          tx,
+          i,
+          defaultTestOutputAmount,
+          verificationSettings,
+          getPrevOutputs(defaultTestOutputAmount, scriptType) as PrevOutput[]
+        ),
         value,
         JSON.stringify(verificationSettings)
       );
@@ -162,6 +206,10 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
     const orderedSigningKeys = fixtureKeys.filter((fixtureKey) => signKeys.includes(fixtureKey));
 
     [0, 1, 2].forEach((signatureIndex) => {
+      if (scriptType === 'p2tr') {
+        // signatureIndex parameter not support for p2tr verification
+        return;
+      }
       fixtureKeys.forEach((k) => {
         // If no public key is given, return true iff any valid signature with given index exists.
         assertVerifySignatureEquals(tx, signatureIndex < signKeys.length, {
@@ -180,7 +228,21 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   describe(`verifySignature ${getNetworkName(network)} ${scriptType}`, function () {
     [0, 1, 2, 3].forEach((length) => {
       it(`returns true for selected keys (length=${length})`, function () {
-        getSignKeyCombinations(length).forEach((keys) => checkSignTransaction(keys));
+        getSignKeyCombinations(length).forEach((keys) => {
+          if (scriptType === 'p2tr') {
+            // p2tr test only supports [userKey, bitgoKey] signatures currently
+            if (keys.length === 3) {
+              return;
+            }
+            if (keys.length === 2) {
+              const [userKey, , bitgoKey] = fixtureKeys;
+              if (!keys.every((k) => [userKey, bitgoKey].includes(k))) {
+                return;
+              }
+            }
+          }
+          checkSignTransaction(keys);
+        });
       });
     });
   });

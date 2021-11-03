@@ -60,10 +60,6 @@ export function isSupportedDepositType(network: Network, scriptType: ScriptType)
 }
 
 export function isSupportedSpendType(network: Network, scriptType: ScriptType): boolean {
-  // TODO: enable this when p2tr signing is implemented
-  if (scriptType === 'p2tr') {
-    return false;
-  }
   if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
     return false;
   }
@@ -100,7 +96,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
-  prevOutputs: [txid: string, index: number, value: number][],
+  prevOutputs: [txid: string, index: number, value: number, script: Buffer][],
   recipientScript: Buffer,
   network: Network,
   { signKeys = [keys[0], keys[2]] } = {}
@@ -164,7 +160,7 @@ export function createSpendTransaction(
   return createSpendTransactionFromPrevOutputs(
     keys,
     scriptType,
-    matches.map(([output, index]) => [inputTxid, index, output.value]),
+    matches.map(([output, index]) => [inputTxid, index, output.value, output.script]),
     recipientScript,
     network
   );
