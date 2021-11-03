@@ -1,10 +1,27 @@
-import { RpcTransaction } from './generate/RpcTypes';
+import * as address from '../../src/address';
 import * as networks from '../../src/networks';
 import { Network } from '../../src/networkTypes';
 import { getMainnet, isZcash } from '../../src/coins';
 import { DashTransaction, UtxoTransaction, ZcashTransaction } from '../../src/bitgo';
 
+import { RpcTransaction } from './generate/RpcTypes';
+
 type NormalizedObject = Record<string, unknown>;
+
+function toRegtestAddress(script: Buffer, network: { bech32?: string }): string {
+  switch (network) {
+    case networks.testnet:
+      network = { ...network, bech32: 'bcrt' };
+      break;
+    case networks.litecoinTest:
+      network = { ...network, bech32: 'rltc' };
+      break;
+    case networks.bitcoingoldTestnet:
+      network = { ...network, bech32: 'btgrt' };
+      break;
+  }
+  return address.fromOutputScript(script, network as Network);
+}
 
 export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network = tx.network): NormalizedObject {
   const normalizedTx: NormalizedObject = {
@@ -34,6 +51,7 @@ export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network
         n,
         scriptPubKey: {
           hex: o.script.toString('hex'),
+          address: toRegtestAddress(o.script, network),
         },
         value: o.value,
       };
@@ -77,6 +95,9 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       return v;
     }),
     vout: tx.vout.map((v: any) => {
+      if (v.scriptPubKey.addresses?.length === 1) {
+        v.scriptPubKey.address = v.scriptPubKey.addresses[0];
+      }
       delete v.type;
       delete v.scriptPubKey.asm;
       delete v.scriptPubKey.addresses;
