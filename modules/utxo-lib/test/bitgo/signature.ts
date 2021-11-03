@@ -97,9 +97,9 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
           witness.map((w) => w.toString('hex')),
           [
             // signature 1
-            '6212d1db405758222dfeb28799777807e0730cf221372c1bf286efc2639c43a160e7c46db2c482a53c06ebd08b5fb5924577a3f6aab8a6c920e2fccdf964ac4b01',
+            '96c9a61eeb137facfbf517b661b24ace13941de3da14ea4ccdc39b13971be6ef402c586638509fda52187384dd5fb66b085b2fbdd75ac8f34e2467ad9f07be46',
             // signature 2
-            'd9bd4e363508f3d3c5ae5815aa239ad482113fda1fad2553c1863b1b621bfb50013e5f4169f78a723eb6f8167a67a937e1ccbac6d50fa75126f7b955286a6e8801',
+            '693e625c9b1a71820a7237b4f2e2f809c78725f052f18b940e016a1cbe6d11bd90e548ca32098d4b8f3a057d34c984c34975dd98aa7251b099271a61dabebf2a',
             // tapscript
             '208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac',
             // control block

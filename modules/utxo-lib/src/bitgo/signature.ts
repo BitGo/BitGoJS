@@ -63,14 +63,14 @@ export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
   pubScript: Buffer;
 }
 
-export function getDefaultSigHash(network: Network): number {
+export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
       return Transaction.SIGHASH_ALL | UtxoTransaction.SIGHASH_FORKID;
     default:
-      return Transaction.SIGHASH_ALL;
+      return scriptType === 'p2tr' ? Transaction.SIGHASH_DEFAULT : Transaction.SIGHASH_ALL;
   }
 }
 
@@ -466,7 +466,7 @@ export function signInput2Of3(
     vin,
     prevOutScriptType,
     keyPair,
-    hashType: getDefaultSigHash(txBuilder.network as Network),
+    hashType: getDefaultSigHash(txBuilder.network as Network, scriptType),
     redeemScript,
     witnessScript,
     witnessValue: amount,
