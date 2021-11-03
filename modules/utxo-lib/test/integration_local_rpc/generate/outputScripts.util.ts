@@ -60,10 +60,6 @@ export function isSupportedDepositType(network: Network, scriptType: ScriptType)
 }
 
 export function isSupportedSpendType(network: Network, scriptType: ScriptType): boolean {
-  // TODO: enable this when p2tr signing is implemented
-  if (scriptType === 'p2tr') {
-    return false;
-  }
   if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
     return false;
   }

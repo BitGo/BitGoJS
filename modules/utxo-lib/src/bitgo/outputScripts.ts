@@ -21,6 +21,8 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
       return 'p2sh-p2wsh-p2ms';
     case 'p2wsh':
       return 'p2wsh-p2ms';
+    case 'p2tr':
+      return 'p2tr-p2ns';
     default:
       throw new Error(`unsupported script type ${t}`);
   }
@@ -32,6 +34,11 @@ export type SpendableScript = {
   redeemScript?: Buffer;
   /** @deprecated - use createSpendScript2of3 */
   witnessScript?: Buffer;
+};
+
+export type SpendScriptP2tr = {
+  controlBlock: Buffer;
+  witnessScript: Buffer;
 };
 
 /**
@@ -140,6 +147,30 @@ export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number)
     redeems,
     redeemIndex,
   });
+}
+
+export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
+  const keyCombinations = getTaptreeKeyCombinations(pubkeys);
+  const [a, b] = keyCombination.map((k) => toXOnlyPublicKey(k));
+  const redeemIndex = keyCombinations.findIndex(
+    ([c, d]) => (a.equals(c) && b.equals(d)) || (a.equals(d) && b.equals(c))
+  );
+
+  if (redeemIndex < 0) {
+    throw new Error(`could not find redeemIndex for key combination`);
+  }
+
+  const payment = createPaymentP2tr(pubkeys, redeemIndex);
+  const { controlBlock } = payment;
+  assert(Buffer.isBuffer(controlBlock));
+
+  assert(payment.redeem);
+  const { output } = payment.redeem;
+  assert(Buffer.isBuffer(output));
+  return {
+    controlBlock,
+    witnessScript: output,
+  };
 }
 
 /**

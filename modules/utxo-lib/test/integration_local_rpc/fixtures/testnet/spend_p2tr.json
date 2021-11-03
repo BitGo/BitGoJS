@@ -1,0 +1,99 @@
+{
+  "transaction": {
+    "txid": "7e9672ba37e3152e582318d39e68d4c141678b735ae9c02c35823282b15897fd",
+    "hash": "72a7b87d9b0b0d5411bc4a228483f545fab54ed962d89af09ab4621c82f314a9",
+    "version": 1,
+    "size": 364,
+    "vsize": 162,
+    "weight": 646,
+    "locktime": 0,
+    "vin": [
+      {
+        "txid": "b5d62df9d936d197c30321e103cc279a6a16075aa50c0d5f751d5ff49296e297",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "",
+          "hex": ""
+        },
+        "txinwitness": [
+          "ed1c4087c62d6be7544d5a67aee7b5c8fcf9cfdd15f14b1e647aab580443b089adf2ced66bcb94efc3332bca85e17d0a127ecc92124e5e0aa675758670b6a34f01",
+          "eb41bf073e8236741404ae0024ef23151d5fb38571012ee91eb92f468923d6b2c835c80a36de9342cb904c838a9ffc44193388c2524d9f97c61a4466468dd64c01",
+          "208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac",
+          "c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2185457a6e74cdfcdf020c0eef3b794f3077f43139aa7c30d50da5a26dceed225"
+        ],
+        "sequence": 4294967295
+      }
+    ],
+    "vout": [
+      {
+        "value": 0.99999,
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "1 c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8",
+          "hex": "5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8",
+          "reqSigs": 1,
+          "type": "witness_v1_taproot",
+          "addresses": [
+            "bcrt1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uqnpgrud"
+          ]
+        }
+      }
+    ],
+    "hex": "0100000000010197e29692f45f1d755f0d0ca55a07166a9a27cc03e12103c397d136d9f92dd6b50000000000ffffffff0118ddf50500000000225120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf80441ed1c4087c62d6be7544d5a67aee7b5c8fcf9cfdd15f14b1e647aab580443b089adf2ced66bcb94efc3332bca85e17d0a127ecc92124e5e0aa675758670b6a34f0141eb41bf073e8236741404ae0024ef23151d5fb38571012ee91eb92f468923d6b2c835c80a36de9342cb904c838a9ffc44193388c2524d9f97c61a4466468dd64c0144208fedaf75b5b08cddf3bf4631c658b68ee6766a8e999467a641d7cb7aaaecec97ad20e21c29b4a7eeace9c7a8cefb568ca00c86ff9bf5e79e07e5442c29d4a0950d04ac41c169d984b8967c360d084920bb8536dddef42b1ccb6337f2d310a8dabd24d43cc2185457a6e74cdfcdf020c0eef3b794f3077f43139aa7c30d50da5a26dceed22500000000"
+  },
+  "inputs": [
+    {
+      "txid": "b5d62df9d936d197c30321e103cc279a6a16075aa50c0d5f751d5ff49296e297",
+      "hash": "fd450f4c5c30174c57aac97d605b5014cbe0ef32b34bd40c65642eaf5574de9d",
+      "version": 2,
+      "size": 234,
+      "vsize": 153,
+      "weight": 609,
+      "locktime": 300,
+      "vin": [
+        {
+          "txid": "3a01724784f489cb585dd134a04acf63fdb5526915c5f22beb4d5fa87da0f792",
+          "vout": 0,
+          "scriptSig": {
+            "asm": "",
+            "hex": ""
+          },
+          "txinwitness": [
+            "304402201d81b30b194396cfd5f56436b94206c62458b8aad9b37042500f94ff48d0dd8f022035aa59cc223264b6472951cc08dd2baba0f78544163761e38c063e60c44db2a201",
+            "02730c15ea50a4c11265cc2f8eb9673d39e22d0ba93b897cdd657e5eab3a768a1e"
+          ],
+          "sequence": 4294967294
+        }
+      ],
+      "vout": [
+        {
+          "value": 1,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "1 c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8",
+            "hex": "5120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf8",
+            "reqSigs": 1,
+            "type": "witness_v1_taproot",
+            "addresses": [
+              "bcrt1pcnnt6rgns609syxzsvufd6t2x7ksqh6glelnhmtddhdk3ca6e0uqnpgrud"
+            ]
+          }
+        },
+        {
+          "value": 23.9999847,
+          "n": 1,
+          "scriptPubKey": {
+            "asm": "0 f74db1cdaa5ea6126df52ce736657bbc2dc98b61",
+            "hex": "0014f74db1cdaa5ea6126df52ce736657bbc2dc98b61",
+            "reqSigs": 1,
+            "type": "witness_v0_keyhash",
+            "addresses": [
+              "bcrt1q7axmrnd2t6npym049nnnvetmhskunzmp4zknje"
+            ]
+          }
+        }
+      ],
+      "hex": "0200000000010192f7a07da85f4deb2bf2c5156952b5fd63cf4aa034d15d58cb89f4844772013a0000000000feffffff0200e1f50500000000225120c4e6bd0d13869e5810c2833896e96a37ad005f48fe7f3bed6d6ddb68e3bacbf806120d8f00000000160014f74db1cdaa5ea6126df52ce736657bbc2dc98b610247304402201d81b30b194396cfd5f56436b94206c62458b8aad9b37042500f94ff48d0dd8f022035aa59cc223264b6472951cc08dd2baba0f78544163761e38c063e60c44db2a2012102730c15ea50a4c11265cc2f8eb9673d39e22d0ba93b897cdd657e5eab3a768a1e2c010000"
+    }
+  ]
+}
