@@ -83,7 +83,7 @@ export interface PrebuildTransactionOptions {
     maxValue?: number;
     sequenceId?: string;
     lastLedgerSequence?: number;
-    ledgerSequenceDelta?: string;
+    ledgerSequenceDelta?: number;
     gasPrice?: number;
     noSplitChange?: boolean;
     unspents?: any[];
@@ -375,7 +375,7 @@ export interface SendManyOptions {
   maxValue?: number;
   sequenceId?: string;
   lastLedgerSequence?: number;
-  ledgerSequenceDelta?: string;
+  ledgerSequenceDelta?: number;
   gasPrice?: number;
   noSplitChange?: boolean;
   unspents?: string[];
@@ -1677,7 +1677,7 @@ export class Wallet {
    * @param {Number} params.maxValue - Ignore unspents larger than this amount of base units
    * @param {Number} params.sequenceId - The sequence ID of the transaction
    * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
-   * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
+   * @param {Number} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
    * @param {Number} params.gasPrice - Custom gas price to be used for sending the transaction
    * @param {Number} params.gasLimit - Custom gas limit to be used for sending the transaction
    * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
@@ -2050,7 +2050,7 @@ export class Wallet {
    * @param {Number} params.maxValue - Ignore unspents larger than this amount of satoshis
    * @param {Number} params.sequenceId - The sequence ID of the transaction
    * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
-   * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
+   * @param {Number} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
    * @param {Number} params.gasPrice - Custom gas price to be used for sending the transaction
    * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
    * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
