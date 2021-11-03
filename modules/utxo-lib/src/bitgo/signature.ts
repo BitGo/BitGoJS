@@ -120,6 +120,40 @@ export function parseSignatureScript(
     return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
   }
 
+  if (inputClassification === classify.types.P2TR) {
+    const tapscript = decompiledSigScript[decompiledSigScript.length - 2];
+    if (!Buffer.isBuffer(tapscript)) {
+      throw new Error(`invalid tapscript`);
+    }
+    const tapscriptClassification = classify.output(tapscript);
+    if (tapscriptClassification !== classify.types.P2TR_NS) {
+      throw new Error(`tapscript must be n of n multisig`);
+    }
+
+    const signatures = decompiledSigScript.slice(0, -2);
+    if (signatures.length !== 2) {
+      throw new Error(`expected 2 signatures, got ${signatures.length}`);
+    }
+
+    const publicKeys = payments.p2tr_ns({ output: tapscript }).pubkeys;
+    if (!publicKeys || publicKeys.length !== 2) {
+      throw new Error('expected 2 pubkeys');
+    }
+
+    return {
+      isSegwitInput,
+      inputClassification,
+      signatures: signatures.map((b) => {
+        if (Buffer.isBuffer(b) || b === 0) {
+          return b;
+        }
+        throw new Error(`unexpected signature element ${b}`);
+      }) as [Buffer, Buffer],
+      publicKeys,
+      pubScript: tapscript,
+    };
+  }
+
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
   // BitGo platform only supports multisig within these types of inputs, with the exception of replay protection inputs,
   // which are single signature p2sh). Signatures are all but the last entry in the decompiledSigScript.
@@ -245,13 +279,20 @@ export function parseSignatureScript(
 export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2Of3 {
   const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
-  if (![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH].includes(result.inputClassification)) {
+  if (
+    ![classify.types.P2WSH, classify.types.P2SH, classify.types.P2PKH, classify.types.P2TR].includes(
+      result.inputClassification
+    )
+  ) {
     throw new Error(`unexpected inputClassification ${result.inputClassification}`);
   }
   if (!result.signatures) {
     throw new Error(`missing signatures`);
   }
-  if (result.publicKeys.length !== 3) {
+  if (
+    result.publicKeys.length !== 3 &&
+    (result.publicKeys.length !== 2 || result.inputClassification !== classify.types.P2TR)
+  ) {
     throw new Error(`unexpected pubkey count`);
   }
   if (!result.pubScript || result.pubScript.length === 0) {
@@ -321,25 +362,30 @@ export function getSignatureVerifications(
   );
 
   return signatures.map((signatureBuffer) => {
-    // slice the last byte from the signature hash input because it's the hash type
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
       return { signedBy: undefined };
     }
-    const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
-    const transactionHash = parsedScript.isSegwitInput
-      ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
-      : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
-    const signedBy = publicKeys.filter((publicKey) =>
-      ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
-    );
+    if (parsedScript.inputClassification === classify.types.P2TR) {
+      // TODO: schnorr signature verification
+      return { signedBy: Buffer.from([]) };
+    } else {
+      // slice the last byte from the signature hash input because it's the hash type
+      const { signature, hashType } = ScriptSignature.decode(signatureBuffer);
+      const transactionHash = parsedScript.isSegwitInput
+        ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
+        : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
+      const signedBy = publicKeys.filter((publicKey) =>
+        ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
+      );
 
-    if (signedBy.length === 0) {
-      return { signedBy: undefined };
+      if (signedBy.length === 0) {
+        return { signedBy: undefined };
+      }
+      if (signedBy.length === 1) {
+        return { signedBy: signedBy[0] };
+      }
+      throw new Error(`illegal state: signed by multiple public keys`);
     }
-    if (signedBy.length === 1) {
-      return { signedBy: signedBy[0] };
-    }
-    throw new Error(`illegal state: signed by multiple public keys`);
   });
 }
 
