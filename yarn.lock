@@ -3782,9 +3782,9 @@ bitcoinjs-lib@^5.2.0:
     varuint-bitcoin "^1.0.4"
     wif "^2.0.1"
 
-"bitcoinjs-lib@git+https://github.com/BitGo/bitcoinjs-lib.git#3fc9c50dabd909b9f6be799e8062ca3d84312900":
+"bitcoinjs-lib@git+https://github.com/BitGo/bitcoinjs-lib.git#cad21bde3e6719bf485f2df01d563f403ef12d2e":
   version "6.0.0"
-  resolved "git+https://github.com/BitGo/bitcoinjs-lib.git#3fc9c50dabd909b9f6be799e8062ca3d84312900"
+  resolved "git+https://github.com/BitGo/bitcoinjs-lib.git#cad21bde3e6719bf485f2df01d563f403ef12d2e"
   dependencies:
     bech32 "^2.0.0"
     bip174 "^2.0.1"

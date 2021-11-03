@@ -384,10 +384,6 @@ export function getSignatureVerifications(
       verificationSettings.publicKey.slice(1).equals(buf)
   );
 
-  if (verificationSettings.publicKey) {
-    debugger;
-  }
-
   return signatures.map((signatureBuffer) => {
     if (signatureBuffer === 0 || signatureBuffer.length === 0) {
       return { signedBy: undefined };
