@@ -96,7 +96,7 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
-  prevOutputs: [txid: string, index: number, value: number][],
+  prevOutputs: [txid: string, index: number, value: number, script: Buffer][],
   recipientScript: Buffer,
   network: Network,
   { signKeys = [keys[0], keys[2]] } = {}
@@ -160,7 +160,7 @@ export function createSpendTransaction(
   return createSpendTransactionFromPrevOutputs(
     keys,
     scriptType,
-    matches.map(([output, index]) => [inputTxid, index, output.value]),
+    matches.map(([output, index]) => [inputTxid, index, output.value, output.script]),
     recipientScript,
     network
   );

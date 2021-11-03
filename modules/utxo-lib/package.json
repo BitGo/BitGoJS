@@ -33,7 +33,8 @@
       "src/**"
     ],
     "branches": 78,
-    "functions": 90
+    "functions": 90,
+    "lines": 89
   },
   "repository": {
     "type": "git",
@@ -46,7 +47,7 @@
   "dependencies": {
     "@bitgo/blake2b": "^3.0.1",
     "bitcoin-ops": "^1.3.0",
-    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib.git#afe115063ca386bdb3e3c3a942fe8eb66fd8334c",
+    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib.git#cad21bde3e6719bf485f2df01d563f403ef12d2e",
     "bs58check": "^2.0.0",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4"

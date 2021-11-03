@@ -6,10 +6,15 @@ import * as networks from '../../src/networks';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript, PrevOutput } from '../../src/bitgo';
 
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
-import { defaultTestOutputAmount, getSignKeyCombinations, getTransactionBuilder } from '../transaction_util';
+import {
+  defaultTestOutputAmount,
+  getPrevOutputs,
+  getSignKeyCombinations,
+  getTransactionBuilder,
+} from '../transaction_util';
 
 function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2Of3 | 'p2shP2pk') {
   it(`inputs script structure (${scriptType})`, function () {
@@ -173,7 +178,13 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   ) {
     tx.ins.forEach((input, i) => {
       assert.strictEqual(
-        verifySignature(tx, i, defaultTestOutputAmount, verificationSettings),
+        verifySignature(
+          tx,
+          i,
+          defaultTestOutputAmount,
+          verificationSettings,
+          getPrevOutputs(defaultTestOutputAmount, scriptType) as PrevOutput[]
+        ),
         value,
         JSON.stringify(verificationSettings)
       );
@@ -195,6 +206,10 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
     const orderedSigningKeys = fixtureKeys.filter((fixtureKey) => signKeys.includes(fixtureKey));
 
     [0, 1, 2].forEach((signatureIndex) => {
+      if (scriptType === 'p2tr') {
+        // signatureIndex parameter not support for p2tr verification
+        return;
+      }
       fixtureKeys.forEach((k) => {
         // If no public key is given, return true iff any valid signature with given index exists.
         assertVerifySignatureEquals(tx, signatureIndex < signKeys.length, {
@@ -213,7 +228,21 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
   describe(`verifySignature ${getNetworkName(network)} ${scriptType}`, function () {
     [0, 1, 2, 3].forEach((length) => {
       it(`returns true for selected keys (length=${length})`, function () {
-        getSignKeyCombinations(length).forEach((keys) => checkSignTransaction(keys));
+        getSignKeyCombinations(length).forEach((keys) => {
+          if (scriptType === 'p2tr') {
+            // p2tr test only supports [userKey, bitgoKey] signatures currently
+            if (keys.length === 3) {
+              return;
+            }
+            if (keys.length === 2) {
+              const [userKey, , bitgoKey] = fixtureKeys;
+              if (!keys.every((k) => [userKey, bitgoKey].includes(k))) {
+                return;
+              }
+            }
+          }
+          checkSignTransaction(keys);
+        });
       });
     });
   });
@@ -228,9 +257,7 @@ describe('Signature (scriptTypes2Of3)', function () {
     .filter(isBitcoin)
     .forEach((network) => {
       scriptTypes2Of3.forEach((scriptType) => {
-        if (scriptType !== 'p2tr') {
-          runTest(network, scriptType);
-        }
+        runTest(network, scriptType);
         runTestCheckSignatureScripts(network, scriptType);
       });
     });

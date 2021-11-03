@@ -4,6 +4,9 @@ export type RpcInput = {
 
 export type RpcOutput = {
   value: number;
+  scriptPubKey: {
+    hex: string;
+  };
 };
 
 export type RpcTransaction = {
