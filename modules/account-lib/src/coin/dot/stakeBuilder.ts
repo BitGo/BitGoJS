@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import utils from './utils';
 import { TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { StakeArgs, StakeArgsPayee, StakeArgsPayeeRaw } from './iface';
+import { MethodNames, StakeArgs, StakeArgsPayee, StakeArgsPayeeRaw } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { StakeTransactionSchema } from './txnSchema';
@@ -95,7 +95,7 @@ export class StakeBuilder extends TransactionBuilder {
       metadataRpc: this._metadataRpc,
       registry: this._registry,
     });
-    if (decodedTxn.method?.name === 'bond') {
+    if (decodedTxn.method?.name === MethodNames.Bond) {
       const txMethod = decodedTxn.method.args as unknown as StakeArgs;
       const value = txMethod.value;
       const controller = txMethod.controller.id;
@@ -110,7 +110,7 @@ export class StakeBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === 'bond') {
+    if (this._method?.name === MethodNames.Bond) {
       const txMethod = this._method.args as StakeArgs;
       this.amount(txMethod.value);
       this.controller(txMethod.controller.id);

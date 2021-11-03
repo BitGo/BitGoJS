@@ -12,7 +12,7 @@ import { TypeRegistry, DecodedSignedTx, DecodedSigningPayload } from '@substrate
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { CreateBaseTxInfo, sequenceId, specNameType, TxMethod } from './iface';
+import { CreateBaseTxInfo, sequenceId, specNameType, TxMethod, Validity } from './iface';
 import Utils from './utils';
 import { AddressValidationError } from './errors';
 
@@ -111,7 +111,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  validity({ firstValid }: { firstValid: number }): this {
+  validity({ firstValid }: Validity): this {
     this.validateValue(new BigNumber(firstValid));
     this._blockNumber = firstValid;
     return this;

@@ -5,7 +5,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
-import { ProxyArgs, proxyType } from './iface';
+import { MethodNames, ProxyArgs, proxyType } from './iface';
 import { ProxyTransactionSchema } from './txnSchema';
 import utils from './utils';
 
@@ -54,7 +54,7 @@ export class ProxyBuilder extends TransactionBuilder {
    *
    * The proxy type to execute
    *
-   * @param {proxyType} proxyType
+   * @param {proxyType} forceProxyType
    * @returns {ProxyBuilder} This builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#proxy-types
@@ -68,7 +68,7 @@ export class ProxyBuilder extends TransactionBuilder {
    *
    * The hex of the method call to execute
    *
-   * @param {proxyType} proxyType
+   * @param {string} call
    * @returns {ProxyBuilder} This builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#another-way-to-create-proxies
@@ -85,12 +85,15 @@ export class ProxyBuilder extends TransactionBuilder {
       metadataRpc: this._metadataRpc,
       registry: this._registry,
     });
-    if (decodedTxn.method?.name === 'addProxy') {
+    if (decodedTxn.method?.name === MethodNames.Proxy) {
       const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
       const real = txMethod.real;
       const forceProxyType = txMethod.forceProxyType;
-      const call = txMethod.call;
-      const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, call });
+      const decodedCall = utils.decodeCallMethod(rawTransaction, {
+        registry: this._registry,
+        metadataRpc: this._metadataRpc,
+      });
+      const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, call: decodedCall });
       if (validationResult.error) {
         throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
       }
@@ -100,7 +103,7 @@ export class ProxyBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === 'proxy') {
+    if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
       this.real(txMethod.real);
       this.forceProxyType(txMethod.forceProxyType);

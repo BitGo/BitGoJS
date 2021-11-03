@@ -5,6 +5,18 @@ export interface Seed {
 }
 export type specNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine';
 
+export enum MethodNames {
+  AddProxy = 'addProxy',
+  Proxy = 'proxy',
+  Bond = 'bond',
+  TransferKeepAlive = 'transferKeepAlive',
+}
+
+export interface Validity {
+  firstValid: number;
+  lastValid?: number;
+}
+
 export interface TxData {
   sender: string;
   blockHash: string;
@@ -55,7 +67,7 @@ export type proxyType =
   | 'Any'
   | 'NonTransfer'
   | 'Governance'
-  | 'staking'
+  | 'Staking'
   | 'UnusedSudoBalances'
   | 'IdentityJudgement'
   | 'CancelProxy';

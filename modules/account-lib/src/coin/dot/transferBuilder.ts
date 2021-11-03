@@ -6,7 +6,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransferArgs } from './iface';
+import { MethodNames, TransferArgs } from './iface';
 import { TransferTransactionSchema } from './txnSchema';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -66,7 +66,7 @@ export class TransferBuilder extends TransactionBuilder {
       metadataRpc: this._metadataRpc,
       registry: this._registry,
     });
-    if (decodedTxn.method?.name === 'transferKeepAlive') {
+    if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = decodedTxn.method.args as unknown as TransferArgs;
       const value = txMethod.value;
       const dest = txMethod.dest.id;
@@ -79,7 +79,7 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === 'transferKeepAlive') {
+    if (this._method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = this._method.args as TransferArgs;
       this.amount(txMethod.value);
       this.dest(txMethod.dest.id);

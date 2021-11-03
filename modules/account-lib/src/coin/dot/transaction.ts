@@ -67,6 +67,12 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = signedTransaction;
   }
 
+  /**
+   * Returns the hex representation of the method called by the transaction
+   * Used to supply the original method to the proxy builder
+   *
+   * @returns {string} string
+   */
   methodHex(): string {
     if (!this._dotTransaction) {
       throw new InvalidTransactionError('Empty Transaction');
@@ -115,7 +121,7 @@ export class Transaction extends BaseTransaction {
     if (this.type === TransactionType.Send) {
       const txMethod = decodedTx.method.args as TransferArgs;
       const keypair = new KeyPair({
-        pub: Buffer.from(decodeAddress(txMethod.dest.id, false, this._registry.chainSS58)).toString('hex'),
+        pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
       });
       result.dest = keypair.getAddress();
       result.amount = txMethod.value;
