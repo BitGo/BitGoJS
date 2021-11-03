@@ -95,7 +95,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         const result = parseSignatureScript(input) as ParsedSignatureScript2Of3;
 
         assert.strict(result.publicKeys !== undefined);
-        assert.strictEqual(result.publicKeys.length, 3);
+        assert.strictEqual(result.publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
 
         switch (scriptType) {
           case 'p2sh':
@@ -104,6 +104,9 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
             break;
           case 'p2wsh':
             assert.strictEqual(result.inputClassification, 'witnessscripthash');
+            break;
+          case 'p2tr':
+            assert.strictEqual(result.inputClassification, 'taproot');
             break;
           default:
             throw new Error(`unknown scriptType ${scriptType}`);
@@ -122,7 +125,12 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         if (!publicKeys) {
           throw new Error(`expected publicKeys`);
         }
-        assert.strictEqual(publicKeys.length, 3);
+        assert.strictEqual(publicKeys.length, scriptType === 'p2tr' ? 2 : 3);
+
+        if (scriptType === 'p2tr') {
+          // TODO implement verifySignature for p2tr
+          this.skip();
+        }
 
         publicKeys.forEach((publicKey, publicKeyIndex) => {
           assert.strictEqual(
@@ -161,6 +169,13 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         fixtureKeys.forEach((key2) => {
           if (key1 === key2) {
             return;
+          }
+
+          if (scriptType === 'p2tr') {
+            const keypair = [fixtureKeys[0], fixtureKeys[2]];
+            if (!keypair.includes(key1) || !keypair.includes(key2)) {
+              return;
+            }
           }
 
           const rebuiltTx = getRebuiltTransaction([key1, key2]);
