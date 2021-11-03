@@ -49,7 +49,10 @@ export async function writeTransactionFixtureWithInputs(
     (all: string[], input) => (all.includes(input.txid) ? all : [...all, input.txid]),
     []
   );
-  const inputs = await Promise.all(inputTransactionIds.map((inputTxid) => rpc.getRawTransactionVerbose(inputTxid)));
+  const inputs = await RpcClient.parallelMap(inputTransactionIds, (inputTxid) =>
+    rpc.getRawTransactionVerbose(inputTxid)
+  );
+  assert.strictEqual(inputs.length, inputTransactionIds.length);
   await writeFixture(network, filename, {
     transaction,
     inputs,
