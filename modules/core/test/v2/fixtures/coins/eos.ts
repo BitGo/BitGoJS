@@ -374,6 +374,50 @@ const explainRefundOutput = {
   producers: undefined,
 };
 
+const unsignedTransaction = {
+  recipients: [
+    {
+      amount: '560000',
+      address: 'jzjkpn1bjnti',
+      recipientLabel: null,
+      memo: {
+        type: 'id',
+        value: 'Testing EOS Memo',
+      },
+    },
+  ],
+  headers: {
+    expiration: '2019-07-27T02:47:20.500Z',
+    ref_block_num: 21495,
+    ref_block_prefix: 3447713214,
+  },
+  txHex: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c4147339bb3b5df753beed7fcd000000000100a6823403ea3055000000572d3ccdcd012012a6f68a5ed4bf00000000a8ed3232212012a6f68a5ed4bfe0f27c27cc0adf7f808b08000000000004454f530000000000000000000000000000000000000000000000000000000000000000000000000000',
+  transaction: {
+    compression: 'none',
+    packed_trx: '39bb3b5df753beed7fcd000000000100a6823403ea3055000000572d3ccdcd012012a6f68a5ed4bf00000000a8ed3232212012a6f68a5ed4bfe0f27c27cc0adf7f808b08000000000004454f53000000000000',
+    signatures: [],
+  },
+  txid: '8bb4dc888bad8108a6c2f1bb8a2b74fbd8f68fa7216f86545786850517754e25',
+  walletId: '5d39c7da66ce12715470c9b2fd6a639d',
+  amount: '560000',
+  address: 'jzjkpn1bjnti',
+  receivedCoin: {
+    name: 'teos',
+    svg: 'eos',
+    modifier: 10000,
+    modifierExp: 4,
+    fullDisplay: 'EOS',
+    shortDisplay: 'TEOS',
+    hasMarketData: false,
+    walletCreationPolling: true,
+  },
+  coin: 'teos',
+  memo: {
+    type: 'id',
+    value: 'Testing EOS Memo',
+  },
+};
+
 export const EosResponses = {
   getAccountResponseSuccess1,
   getAccountResponseSuccess2,
@@ -392,4 +436,5 @@ export const EosInputs = {
   explainUnstakeInput1,
   explainUnstakeInput2,
   explainRefundInput,
+  unsignedTransaction
 } as const;

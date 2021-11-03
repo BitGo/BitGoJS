@@ -26,6 +26,7 @@ import * as querystring from 'querystring';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
+import { StringTextDecoder } from '../../stringTextDecoder';
 const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { Environments } from '../environments';
@@ -541,7 +542,8 @@ export class Eos extends BaseCoin {
         rpc: new NoopJsonRpc(),
         signatureProvider: new NoopSignatureProvider(),
         chainId: self.getChainId(),
-        textDecoder: new TextDecoder(),
+        // Use a custom TextDecoder as the global TextDecoder leads to crashes in OVC / Electron.
+        textDecoder: new StringTextDecoder(),
         textEncoder: new TextEncoder(),
       });
 
@@ -579,6 +581,7 @@ export class Eos extends BaseCoin {
       // deserializeTransaction
       const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
       const deserializedTxJsonFromPackedTrx = yield api.deserializeTransactionWithActions(serializedTxBuffer);
+
       if (!deserializedTxJsonFromPackedTrx) {
         throw new Error('could not process transaction from txHex');
       }
