@@ -17,13 +17,11 @@ import {
 import { RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
+import { sendFromFaucet, generateToFaucet } from './faucet';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
   switch (network) {
-    case utxolib.networks.testnet:
-      await rpc.createWallet('utxolibtest');
-      break;
     case utxolib.networks.bitcoingoldTestnet:
       // The actual BTC/BTG fork flag only gets activated at this height.
       // On mainnet the height was at 491407 (Around 10/25/2017 12:00 UTC)
@@ -36,8 +34,7 @@ async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
 
   if (diff > 0) {
     console.log(`mining ${diff} blocks to reach height ${minBlocks}`);
-    const address = await rpc.getNewAddress();
-    await rpc.generateToAddress(diff, address);
+    await generateToFaucet(rpc, diff);
   }
 }
 
@@ -72,7 +69,7 @@ async function createTransactionsForScriptType(
 
   const script = createScriptPubKey(fixtureKeys, scriptType, network);
   const address = toRegtestAddress(network, scriptType, script);
-  const depositTxid = await rpc.sendToAddress(address, 1);
+  const depositTxid = await sendFromFaucet(rpc, address, 1);
   const depositTx = await rpc.getRawTransaction(depositTxid);
   await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, depositTxid);
   if (!isScriptType2Of3(scriptType) || !isSupportedSpendType(network, scriptType)) {

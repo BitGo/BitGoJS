@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { OP_CHECKSIG, OP_CHECKSIGVERIFY } from 'bitcoin-ops';
-import { isTriple, Triple } from './types';
+import { isTriple, Triple, Tuple } from './types';
 
 export const scriptTypes2Of3 = ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr'] as const;
 export type ScriptType2Of3 = typeof scriptTypes2Of3[number];
@@ -22,6 +21,8 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
       return 'p2sh-p2wsh-p2ms';
     case 'p2wsh':
       return 'p2wsh-p2ms';
+    case 'p2tr':
+      return 'p2tr-p2ns';
     default:
       throw new Error(`unsupported script type ${t}`);
   }
@@ -29,10 +30,15 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
 
 export type SpendableScript = {
   scriptPubKey: Buffer;
+  /** @deprecated - use createSpendScripts2of3 */
   redeemScript?: Buffer;
+  /** @deprecated - use createSpendScript2of3 */
   witnessScript?: Buffer;
-  /** A triple of control blocks for the user+bitgo, user+backup, and backup+bitgo scripts in that order. */
-  controlBlocks?: [userBitGoScript: Buffer, userBackupScript: Buffer, backupBitGoScript: Buffer];
+};
+
+export type SpendScriptP2tr = {
+  controlBlock: Buffer;
+  witnessScript: Buffer;
 };
 
 /**
@@ -108,6 +114,65 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
   };
 }
 
+function toXOnlyPublicKey(b: Buffer): Buffer {
+  if (b.length === 33) {
+    return b.slice(1);
+  }
+  if (b.length === 32) {
+    return b;
+  }
+  throw new Error(`invalid key size ${b.length}`);
+}
+
+function getTaptreeKeyCombinations(keys: Triple<Buffer>): Tuple<Buffer>[] {
+  const [userKey, backupKey, bitGoKey] = keys.map((k) => toXOnlyPublicKey(k));
+  return [
+    [userKey, bitGoKey],
+    [userKey, backupKey],
+    [backupKey, bitGoKey],
+  ];
+}
+
+export function createPaymentP2tr(pubkeys: Triple<Buffer>, redeemIndex?: number): bitcoinjs.Payment {
+  const keyCombinations2of2 = getTaptreeKeyCombinations(pubkeys);
+  const redeems = keyCombinations2of2.map((pubkeys, index) =>
+    bitcoinjs.payments.p2tr_ns({
+      pubkeys,
+      weight: index === 0 ? 2 : 1,
+    })
+  );
+
+  return bitcoinjs.payments.p2tr({
+    pubkeys: keyCombinations2of2[0],
+    redeems,
+    redeemIndex,
+  });
+}
+
+export function createSpendScriptP2tr(pubkeys: Triple<Buffer>, keyCombination: Tuple<Buffer>): SpendScriptP2tr {
+  const keyCombinations = getTaptreeKeyCombinations(pubkeys);
+  const [a, b] = keyCombination.map((k) => toXOnlyPublicKey(k));
+  const redeemIndex = keyCombinations.findIndex(
+    ([c, d]) => (a.equals(c) && b.equals(d)) || (a.equals(d) && b.equals(c))
+  );
+
+  if (redeemIndex < 0) {
+    throw new Error(`could not find redeemIndex for key combination`);
+  }
+
+  const payment = createPaymentP2tr(pubkeys, redeemIndex);
+  const { controlBlock } = payment;
+  assert(Buffer.isBuffer(controlBlock));
+
+  assert(payment.redeem);
+  const output = payment.redeem.output;
+  assert(Buffer.isBuffer(output));
+  return {
+    controlBlock,
+    witnessScript: output,
+  };
+}
+
 /**
  * Creates and returns a taproot output script using the user and bitgo keys for the aggregate
  * public key and a taptree containing a user+bitgo 2-of-2 script at the first depth level of the
@@ -115,24 +180,9 @@ export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType
  * @param pubkeys - a pubkey array containing the user key, backup key, and bitgo key in that order
  * @returns {{scriptPubKey}}
  */
-function createTaprootScript2of3([userKey, backupKey, bitGoKey]: Triple<Buffer>): SpendableScript {
-  const userBitGoScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
-  const userBackupScript = bitcoinjs.script.compile([userKey, OP_CHECKSIGVERIFY, backupKey, OP_CHECKSIG]);
-  const backupBitGoScript = bitcoinjs.script.compile([backupKey, OP_CHECKSIGVERIFY, bitGoKey, OP_CHECKSIG]);
-
-  assert(userBitGoScript);
-  assert(userBackupScript);
-  assert(backupBitGoScript);
-
-  const { output } = bitcoinjs.payments.p2tr({
-    pubkeys: [userKey, bitGoKey],
-    scripts: [userBitGoScript, userBackupScript, backupBitGoScript],
-    weights: [2, 1, 1],
-  });
-
-  assert(output);
-
-  // TODO: return control blocks once they are returned from payments.p2tr()
+function createTaprootScript2of3(pubkeys: Triple<Buffer>): SpendableScript {
+  const { output } = createPaymentP2tr(pubkeys);
+  assert(Buffer.isBuffer(output));
   return {
     scriptPubKey: output,
   };
