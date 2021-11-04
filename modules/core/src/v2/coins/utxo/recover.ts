@@ -232,12 +232,17 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
     // internal indices
     if (!_.includes(params.ignoreAddressTypes, addressType)) {
       if (addressType === Codes.UnspentTypeTcomb('p2shP2wsh') && !coin.supportsP2shP2wsh()) {
-        // P2shP2wsh is not supported. Skip.
+        // P2shP2wsh is not supported for this coin so we skip this unspent type.
         return;
       }
 
       if (addressType === Codes.UnspentTypeTcomb('p2wsh') && !coin.supportsP2wsh()) {
-        // P2wsh is not supported. Skip.
+        // P2wsh is not supported for this coin so we skip this unspent type.
+        return;
+      }
+
+      if (addressType === Codes.UnspentTypeTcomb('p2tr') && !coin.supportsP2tr()) {
+        // P2tr is not supported for this coin so we skip this unspent type.
         return;
       }
 
