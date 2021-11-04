@@ -1236,6 +1236,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             params.taprootRedeemIndex ?? 0
           );
 
+          const derivedAddress = utxolib.address.fromOutputScript(output!, self.network);
+
+          if (derivedAddress !== signatureContext.unspent.address) {
+            throw new Error(`address mismatch: unspent=${signatureContext.unspent.address} derived=${derivedAddress}`);
+          }
+
           const signParams = {
             controlBlock,
             vin: index,
