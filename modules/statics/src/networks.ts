@@ -228,6 +228,19 @@ class DashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.DASH;
   explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
+
+class Polkadot extends Mainnet implements AccountNetwork {
+  name = 'Polkadot';
+  family = CoinFamily.DOT;
+  explorerUrl = 'https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/explorer';
+}
+
+class PolkadotTestnet extends Testnet implements AccountNetwork {
+  name = 'PolkadotTestnet';
+  family = CoinFamily.DOT;
+  explorerUrl = 'https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fwestend-rpc.polkadot.io#/explorer';
+}
+
 class Celo extends Mainnet implements EthereumNetwork {
   name = 'Celo';
   family = CoinFamily.CELO;
@@ -513,6 +526,7 @@ export const Networks = {
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
+    dot: Object.freeze(new Polkadot()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
     ethereum2: Object.freeze(new Ethereum2()),
@@ -539,6 +553,7 @@ export const Networks = {
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
+    dot: Object.freeze(new PolkadotTestnet()),
     eos: Object.freeze(new EosTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),

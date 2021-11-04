@@ -28,6 +28,7 @@ const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 
 export const coins = CoinMap.fromCoins([
@@ -60,6 +61,8 @@ export const coins = CoinMap.fromCoins([
   account('tavaxc', 'Testnet Avalanche C-Chain', Networks.test.avalancheC, 18, UnderlyingAsset.AVAXC, ETH_FEATURES),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
+  account('dot', 'Polkadot', Networks.main.dot, 10, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
+  account('tdot', 'Testnet Polkadot', Networks.test.dot, 12, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.GTETH, ETH_FEATURES),
@@ -146,10 +149,12 @@ export const coins = CoinMap.fromCoins([
   ofc('ofcalgo', 'Algorand', 6, UnderlyingAsset.ALGO, CoinKind.CRYPTO),
   ofc('ofcbtg', 'Bitcoin Gold', 8, UnderlyingAsset.BTG, CoinKind.CRYPTO),
   ofc('ofcbsv', 'Bitcoin SV', 8, UnderlyingAsset.BSV, CoinKind.CRYPTO),
+  ofc('ofcdot', 'Polkadot', 10, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   ofc('ofceos', 'Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
   ofc('ofcetc', 'Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
+  tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
   tofc('ofctltc', 'Test Litecoin', 8, UnderlyingAsset.LTC, CoinKind.CRYPTO),
   tofc('ofctdash', 'Test Dash', 8, UnderlyingAsset.DASH, CoinKind.CRYPTO),
