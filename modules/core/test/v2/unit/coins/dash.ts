@@ -86,6 +86,7 @@ describe('DASH:', function () {
                 chain: 0,
                 index: 0,
                 redeemScript: '5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae',
+                address: '8hBtzbNgcWpnxorvnFtCia7KEdFFLmoiFj',
               },
             ],
           },
