@@ -4,12 +4,12 @@
   "recoveryCoin": "tbtc",
   "walletId": "5abace103cddfbb607d8239d806671bf",
   "recoveryAddress": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
-  "recoveryAmount": 39965900,
-  "txHex": "010000000139db811c27a5ed5e34a2e435c53c90b2492fe0bcbf71b3c41ee994783ee422fe01000000b700483045022100d55ff6eb899c81d2787a0d85084dcba192b65f88c7725dd8d1b3e5cb58efd88b022046dd4bd19ff0b06ed4f4adcc85ff5df09eda9156af7a3f2718cba2e09343ea760100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01ccd461020000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000",
+  "recoveryAmount": 39965800,
+  "txHex": "010000000139db811c27a5ed5e34a2e435c53c90b2492fe0bcbf71b3c41ee994783ee422fe01000000b60047304402207fccbf8ecc586af774303a4558214b9c21f1c289471444118ae826e61fd3ec2702205d7af3ee9ebdc54e4e5d1e1be40b9c3ba4882bce95cb176ba2eeec6970fcabdc0100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff0168d461020000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000",
   "txInfo": {
     "inputAmount": 40000000,
-    "outputAmount": 39965900,
-    "spendAmount": 39965900,
+    "outputAmount": 39965800,
+    "spendAmount": 39965800,
     "inputs": [
       {
         "id": "fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39:1",
@@ -27,7 +27,7 @@
     "outputs": [
       {
         "address": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
-        "valueString": "39965900",
+        "valueString": "39965800",
         "wallet": "5abace103cddfbb607d8239d806671bf",
         "change": false
       }
@@ -49,13 +49,13 @@
     "externalOutputs": [
       {
         "address": "Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V",
-        "valueString": "39965900",
+        "valueString": "39965800",
         "wallet": "5abace103cddfbb607d8239d806671bf",
         "change": false
       }
     ],
     "changeOutputs": [],
-    "minerFee": 34100,
+    "minerFee": 34200,
     "payGoFee": 0
   }
 }

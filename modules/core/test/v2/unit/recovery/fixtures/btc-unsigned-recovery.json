@@ -1,5 +1,5 @@
 {
-  "txHex": "0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410200000000ffffffff01802e41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000",
+  "txHex": "0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410200000000ffffffff01e02d41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000",
   "txInfo": {
     "nP2SHInputs": 2,
     "nSegwitInputs": 0,
@@ -26,14 +26,14 @@
     "walletAddressDetails": {}
   },
   "feeInfo": {
-    "size": 638,
+    "size": 640,
     "feeRate": 80,
     "fee": 51,
     "payGoFee": 0,
     "payGoFeeString": "0"
   },
   "walletId": "5abacebe28d72fbd07e0b8cbba0ff39e",
-  "amount": 21048960,
+  "amount": 21048800,
   "address": "2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm",
   "coin": "tbtc"
 }

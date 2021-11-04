@@ -48,7 +48,7 @@
   "dependencies": {
     "@bitgo/account-lib": "^2.17.1-rc.6",
     "@bitgo/statics": "^6.15.0-rc.5",
-    "@bitgo/unspents": "^0.6.0",
+    "@bitgo/unspents": "^0.7.0-rc.2",
     "@bitgo/utxo-lib": "^2.2.0-rc.5",
     "@types/bluebird": "^3.5.25",
     "@types/superagent": "^4.1.3",
