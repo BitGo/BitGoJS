@@ -4,6 +4,7 @@ import * as varuint from 'varuint-bitcoin';
 import { Network } from '../networkTypes';
 import { getMainnet, isBitcoinGold } from '../coins';
 import * as networks from '../networks';
+import { PrevOutput } from './signature';
 
 export function varSliceSize(slice: Buffer): number {
   const length = slice.length;
@@ -23,7 +24,7 @@ export class UtxoTransaction extends bitcoinjs.Transaction {
     this.outs = transaction.outs.map((v) => ({ ...v }));
   }
 
-  static fromBuffer(buf: Buffer, noStrict: boolean, network?: Network): UtxoTransaction {
+  static fromBuffer(buf: Buffer, noStrict: boolean, network?: Network, prevOutput?: PrevOutput[]): UtxoTransaction {
     if (!network) {
       throw new Error(`must provide network`);
     }

@@ -1,15 +1,16 @@
+import * as bitcoinjs from 'bitcoinjs-lib';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { Network } from '../../networkTypes';
 import { DashTransaction } from './DashTransaction';
-import { Transaction } from 'bitcoinjs-lib';
 import { UtxoTransaction } from '../UtxoTransaction';
+import { PrevOutput } from '../signature';
 
 export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransaction> {
   constructor(network: Network, txb?: UtxoTransactionBuilder) {
     super(network, txb);
   }
 
-  createInitialTransaction(network: Network, tx?: Transaction): DashTransaction {
+  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction): DashTransaction {
     return new DashTransaction(network, tx as UtxoTransaction);
   }
 
@@ -21,8 +22,12 @@ export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransacti
     this.tx.extraPayload = extraPayload;
   }
 
-  static fromTransaction(tx: DashTransaction): DashTransactionBuilder {
-    const txb = new DashTransactionBuilder(tx.network, UtxoTransactionBuilder.fromTransaction(tx));
+  static fromTransaction(
+    tx: DashTransaction,
+    network?: bitcoinjs.Network,
+    prevOutput?: PrevOutput[]
+  ): DashTransactionBuilder {
+    const txb = new DashTransactionBuilder(tx.network, UtxoTransactionBuilder.fromTransaction(tx, network, prevOutput));
     txb.setType(tx.type);
     txb.setExtraPayload(tx.extraPayload);
     return txb;

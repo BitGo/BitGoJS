@@ -16,6 +16,7 @@ import {
   isSupportedSpendType,
   ScriptType,
   scriptTypes,
+  TxbInput,
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
@@ -81,8 +82,13 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       return Buffer.from(getPrevOutput(input).scriptPubKey.hex, 'hex');
     }
 
-    function getPrevOutputs(): [txid: string, index: number, value: number, script: Buffer][] {
-      return parsedTx.ins.map((i) => [getTxidFromHash(i.hash), i.index, getPrevOutputValue(i), getPrevOutputScript(i)]);
+    function getPrevOutputs(): TxbInput[] {
+      return parsedTx.ins.map((i) => ({
+        txid: getTxidFromHash(i.hash),
+        index: i.index,
+        prevOutScript: getPrevOutputScript(i),
+        value: getPrevOutputValue(i),
+      }));
     }
 
     it(`round-trip`, function () {

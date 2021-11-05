@@ -11,7 +11,12 @@ import {
   signInputP2shP2pk,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import { createScriptPubKey, getDefaultCosigner, KeyTriple } from './integration_local_rpc/generate/outputScripts.util';
+import {
+  createScriptPubKey,
+  getDefaultCosigner,
+  KeyTriple,
+  TxbInput,
+} from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import { isTriple } from '../src/bitgo/types';
@@ -31,7 +36,7 @@ export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][]
 export function parseTransactionRoundTrip<T extends UtxoTransaction>(
   buf: Buffer,
   network: Network,
-  inputs?: [txid: string, index: number, value: number, script: Buffer][]
+  inputs?: TxbInput[]
 ): T {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
@@ -42,11 +47,11 @@ export function parseTransactionRoundTrip<T extends UtxoTransaction>(
 
   // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
-    inputs.forEach(([txid, index, value], i) => {
+    inputs.forEach(({ txid, index, value }, i) => {
       (tx.ins[i] as any).value = value;
     });
     assert.strictEqual(
-      createTransactionBuilderFromTransaction(tx).build().toBuffer().toString('hex'),
+      createTransactionBuilderFromTransaction(tx, inputs).build().toBuffer().toString('hex'),
       buf.toString('hex')
     );
   }

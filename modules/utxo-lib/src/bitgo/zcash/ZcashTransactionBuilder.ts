@@ -1,4 +1,4 @@
-import { Transaction } from 'bitcoinjs-lib';
+import * as bitcoinjs from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 const typeforce = require('typeforce');
 
@@ -7,17 +7,22 @@ import { ZcashTransaction } from './ZcashTransaction';
 import { Network, ZcashNetwork } from '../../networkTypes';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
+import { PrevOutput } from '../signature';
 
 export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransaction> {
   constructor(network: ZcashNetwork) {
     super(network);
   }
 
-  createInitialTransaction(network: Network, tx?: Transaction): ZcashTransaction {
+  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction): ZcashTransaction {
     return new ZcashTransaction(network as ZcashNetwork, tx as ZcashTransaction);
   }
 
-  static fromTransaction(transaction: ZcashTransaction): ZcashTransactionBuilder {
+  static fromTransaction(
+    transaction: ZcashTransaction,
+    network?: bitcoinjs.Network,
+    prevOutput?: PrevOutput[]
+  ): ZcashTransactionBuilder {
     const txb = new ZcashTransactionBuilder(transaction.network);
 
     // Copy transaction fields
