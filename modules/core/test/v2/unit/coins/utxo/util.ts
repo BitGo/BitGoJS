@@ -37,6 +37,15 @@ function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
 
 export const utxoCoins = getUtxoCoins();
 
+export function getUtxoCoin(name: string): coins.AbstractUtxoCoin {
+  for (const c of utxoCoins) {
+    if (c.getChain() === name) {
+      return c;
+    }
+  }
+  throw new Error(`no coin with name ${name}`);
+}
+
 export function getUtxoCoinForNetwork(n: utxolib.Network): coins.AbstractUtxoCoin {
   for (const c of utxoCoins) {
     if (c.network === n) {
