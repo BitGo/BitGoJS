@@ -255,7 +255,7 @@
     lodash "~4.17.21"
     tcomb "~3.2.29"
 
-"@bitgo/utxo-lib@~2.2.0-rc.3":
+"@bitgo/utxo-lib@~2.2.0-rc.3", "@bitgo/utxo-lib@~2.2.0-rc.5":
   version "2.2.0-rc.5"
   resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-2.2.0-rc.5.tgz#0527a1ada0866b6116924261b663d16cbc4c994b"
   integrity sha512-AgxqhkpCZmQH3F5nFKF+mYHN1M0fo2jdOpy2W07HxW6kiGw2EE604sFemyIZ2+cybCrebCs6y1dETY4aq1EDdQ==
