@@ -15,19 +15,6 @@ describe('BTC:', function () {
     bitgo.initializeTestVars();
   });
 
-  describe('Address generation:', function () {
-    let testCoin;
-    before(function () {
-      testCoin = bitgo.coin('tbtc');
-    });
-
-
-    it('should validate pub key', () => {
-      const { pub } = testCoin.keychains().create();
-      testCoin.isValidPub(pub).should.equal(true);
-    });
-  });
-
   describe('transaction signing:', function () {
     let basecoin: Btc;
     let wallet;

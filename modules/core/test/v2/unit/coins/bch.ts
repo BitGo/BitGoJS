@@ -288,11 +288,6 @@ describe('BCH:', function () {
       }
     }));
 
-    it('should validate pub key', () => {
-      const { pub } = tbch.keychains().create();
-      tbch.isValidPub(pub).should.equal(true);
-    });
-
     it('should fail to sign a prebuilt transaction with only a public key', co(function *() {
       const tbch = bitgo.coin('tbch');
 

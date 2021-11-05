@@ -30,18 +30,9 @@ describe('ZEC:', function () {
       },
     ];
 
-    let coin;
     let testCoin;
     before(() => {
-      coin = bitgo.coin('zec');
       testCoin = bitgo.coin('tzec');
-    });
-
-    describe('Should test address generation', () => {
-      it('should validate pub key', () => {
-        const { pub } = coin.keychains().create();
-        coin.isValidPub(pub).should.equal(true);
-      });
     });
 
     describe('Should test transaction signing', () => {

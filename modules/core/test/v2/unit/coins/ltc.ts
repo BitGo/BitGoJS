@@ -127,13 +127,6 @@ describe('LTC:', function () {
     });
   });
 
-  describe('Should test address generation', () => {
-    it('should validate pub key', () => {
-      const { pub } = ltc.keychains().create();
-      ltc.isValidPub(pub).should.equal(true);
-    });
-  });
-
   describe('Should correctly sign segwit transactions', () => {
 
     const userKeychain = {

@@ -196,17 +196,4 @@ describe('BTG:', function () {
     }));
 
   });
-
-  describe('Should test address generation', () => {
-    let coin;
-    before(() => {
-      coin = bitgo.coin('btg');
-    });
-
-    it('should validate pub key', () => {
-      const { pub } = coin.keychains().create();
-      coin.isValidPub(pub).should.equal(true);
-    });
-  });
-
 });
