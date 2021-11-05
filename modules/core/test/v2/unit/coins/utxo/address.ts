@@ -70,12 +70,6 @@ function run(coin: AbstractUtxoCoin) {
 
     it('fixtures', async function () {
       const addresses = getParameters().map((p) => {
-        if (p.chain && !coin.supportsAddressChain(p.chain)) {
-          assert.throws(() => coin.generateAddress(p));
-        } else {
-          coin.isValidAddress(coin.generateAddress(p).address).should.eql(true);
-        }
-
         const label = { chain: p.chain === undefined ? 'default' : p.chain };
         try {
           return [label, coin.generateAddress(p)];
@@ -85,6 +79,19 @@ function run(coin: AbstractUtxoCoin) {
       });
 
       shouldEqualJSON(addresses, await getFixture(coin, 'addresses-by-chain', addresses));
+    });
+
+    it('validation and verification', function () {
+      getParameters().forEach((p) => {
+        if (p.chain && !coin.supportsAddressChain(p.chain)) {
+          assert.throws(() => coin.generateAddress(p));
+          return;
+        }
+
+        const a = coin.generateAddress(p);
+        coin.isValidAddress(a.address).should.eql(true);
+        coin.verifyAddress({ ...a, keychains });
+      });
     });
 
     it('defaults to canonical address', function () {
