@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BitGo/unspents.git"
+    "url": "git+https://github.com/BitGo/BitGoJS.git"
   },
   "keywords": [
     "bitcoin",
@@ -24,9 +24,9 @@
   "author": "BitGo Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/BitGo/unspents/issues"
+    "url": "https://github.com/BitGo/BitGoJS/issues"
   },
-  "homepage": "https://github.com/BitGo/unspents#readme",
+  "homepage": "https://github.com/BitGo/BitGoJS#readme",
   "devDependencies": {
     "@types/lodash": "~4.14.123",
     "@types/mocha": "~5.2.6",
