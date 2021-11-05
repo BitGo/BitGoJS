@@ -175,7 +175,45 @@ describe('V2 Wallets:', function () {
         gasPrice: 'string',
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number');
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+
+      params = {
+        label: 'abc',
+        gasPrice: true,
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+
+      params = {
+        label: 'abc',
+        gasPrice: 123,
+        eip1559: {
+          maxFeePerGas: 1234,
+          maxPriorityFeePerGas: 123,
+        },
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('can not use both eip1559 and gasPrice values');
+
+      params = {
+        label: 'abc',
+        eip1559: {
+          maxFeePerGas: 'q1234',
+          maxPriorityFeePerGas: '123',
+        },
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid max fee argument, expecting number or number as string');
+
+      params = {
+        label: 'abc',
+        eip1559: {
+          maxFeePerGas: 1234,
+          maxPriorityFeePerGas: '123a',
+        },
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid priority fee argument, expecting number or number as string');
 
       params = {
         label: 'abc',

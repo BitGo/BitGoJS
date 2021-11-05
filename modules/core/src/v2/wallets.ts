@@ -12,6 +12,7 @@ import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 import { sanitizeLegacyPath } from '../bip32path';
 import { getSharedSecret } from '../ecdh';
+import { BigNumber } from 'bignumber.js';
 
 const co = Bluebird.coroutine;
 
@@ -36,6 +37,10 @@ export interface GenerateWalletOptions {
   enterprise?: string;
   disableTransactionNotifications?: string;
   gasPrice?: string;
+  eip1559?: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
   walletVersion?: number;
   disableKRSEmail?: boolean;
   krsSpecific?: {
@@ -321,6 +326,10 @@ export class Wallets {
         }
       }
 
+      if (params.gasPrice && params.eip1559) {
+        throw new Error('can not use both eip1559 and gasPrice values');
+      }
+
       if (!_.isUndefined(params.enterprise)) {
         if (!_.isString(params.enterprise)) {
           throw new Error('invalid enterprise argument, expecting string');
@@ -336,10 +345,26 @@ export class Wallets {
       }
 
       if (!_.isUndefined(params.gasPrice)) {
-        if (!_.isNumber(params.gasPrice)) {
-          throw new Error('invalid gas price argument, expecting number');
+        const gasPriceBN = new BigNumber(params.gasPrice);
+        if (gasPriceBN.isNaN()) {
+          throw new Error('invalid gas price argument, expecting number or number as string');
         }
-        walletParams.gasPrice = params.gasPrice;
+        walletParams.gasPrice = gasPriceBN.toString();
+      }
+
+      if (!_.isUndefined(params.eip1559) && !_.isEmpty(params.eip1559)) {
+        const maxFeePerGasBN = new BigNumber(params.eip1559.maxFeePerGas);
+        if (maxFeePerGasBN.isNaN()) {
+          throw new Error('invalid max fee argument, expecting number or number as string');
+        }
+        const maxPriorityFeePerGasBN = new BigNumber(params.eip1559.maxPriorityFeePerGas);
+        if (maxPriorityFeePerGasBN.isNaN()) {
+          throw new Error('invalid priority fee argument, expecting number or number as string');
+        }
+        walletParams.eip1559 = {
+          maxFeePerGas: maxFeePerGasBN.toString(),
+          maxPriorityFeePerGas: maxPriorityFeePerGasBN.toString(),
+        };
       }
 
       if (!_.isUndefined(params.disableKRSEmail)) {

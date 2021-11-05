@@ -103,7 +103,11 @@ export interface SupplementGenerateWalletOptions {
   n: number;
   enterprise?: string;
   disableTransactionNotifications?: boolean;
-  gasPrice?: number;
+  gasPrice?: number | string;
+  eip1559?: {
+    maxFeePerGas: number | string;
+    maxPriorityFeePerGas?: number | string;
+  };
   walletVersion?: number;
   keys: string[];
   isCold: boolean;
