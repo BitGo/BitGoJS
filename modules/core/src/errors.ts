@@ -56,6 +56,13 @@ export class P2wshUnsupportedError extends BitGoJsError {
   }
 }
 
+export class P2trUnsupportedError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'p2tr not supported by this coin');
+    Object.setPrototypeOf(this, P2trUnsupportedError.prototype);
+  }
+}
+
 export class UnsupportedAddressTypeError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'invalid address type');

@@ -113,7 +113,7 @@ describe('Abstract UTXO Coin:', () => {
     const addressData = {
       chain: 11,
       index: 1,
-      addressType: 'p2shP2wsh',
+      addressType: 'p2shP2wsh' as const,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       keychains: [{ pub: keys.change.user.key.pub! }, { pub: keys.change.backup.key.pub! }, { pub: keys.change.bitgo.key.pub! }],
       threshold: 2,
