@@ -1045,6 +1045,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     function convertFlagsToAddressType(): ScriptType2Of3 {
+      if (_.isInteger(chain)) {
+        return utxolib.bitgo.outputScripts.scriptTypeForChain(chain as number);
+      }
       if (_.isBoolean(segwit) && segwit) {
         return 'p2shP2wsh';
       } else if (_.isBoolean(bech32) && bech32) {
