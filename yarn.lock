@@ -246,27 +246,6 @@
   dependencies:
     buffer "^5.4.3"
 
-"@bitgo/unspents@^0.7.0-rc.4":
-  version "0.7.0-rc.4"
-  resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.7.0-rc.4.tgz#94fc6673f357776687e52b47ae29b5619daaf620"
-  integrity sha512-u1d6teW6rwNv8KBvlA64gGjmbqWqnu9BcmWtTjhKOB/bu7p6G9v5TEQ6ZAyXsYswmeV5wMToK0hAnzMe0k3XKA==
-  dependencies:
-    "@bitgo/utxo-lib" "~2.2.0-rc.3"
-    lodash "~4.17.21"
-    tcomb "~3.2.29"
-
-"@bitgo/utxo-lib@~2.2.0-rc.3":
-  version "2.2.0-rc.5"
-  resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-2.2.0-rc.5.tgz#0527a1ada0866b6116924261b663d16cbc4c994b"
-  integrity sha512-AgxqhkpCZmQH3F5nFKF+mYHN1M0fo2jdOpy2W07HxW6kiGw2EE604sFemyIZ2+cybCrebCs6y1dETY4aq1EDdQ==
-  dependencies:
-    "@bitgo/blake2b" "^3.0.1"
-    bitcoin-ops "^1.3.0"
-    bitcoinjs-lib "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.0"
-    bs58check "^2.0.0"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
-
 "@celo/base@1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@celo/base/-/base-1.2.4.tgz#4d3f1d6cf395e5c9e4c725ea392a049551c00edb"
