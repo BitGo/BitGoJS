@@ -246,10 +246,10 @@
   dependencies:
     buffer "^5.4.3"
 
-"@bitgo/unspents@^0.7.0-rc.2":
-  version "0.7.0-rc.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.7.0-rc.2.tgz#d80add7487ffaad7de39d69a8d03273277658f43"
-  integrity sha512-BG1sRIXE6NGtQ8xmfK1Zgw5HOKfv9ZwqClJ2qNF0wer1XCoEz9HJ8N+fltgCGznQPdYOCzdfMd5YMIQU3XWIRg==
+"@bitgo/unspents@^0.7.0-rc.4":
+  version "0.7.0-rc.4"
+  resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.7.0-rc.4.tgz#94fc6673f357776687e52b47ae29b5619daaf620"
+  integrity sha512-u1d6teW6rwNv8KBvlA64gGjmbqWqnu9BcmWtTjhKOB/bu7p6G9v5TEQ6ZAyXsYswmeV5wMToK0hAnzMe0k3XKA==
   dependencies:
     "@bitgo/utxo-lib" "~2.2.0-rc.3"
     lodash "~4.17.21"
