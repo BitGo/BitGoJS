@@ -1879,7 +1879,7 @@ export class Wallet {
           addressVersion: self._wallet.coinSpecific.addressVersion,
         },
         keychain: keychains[0],
-        userKeychain: (keychains.length > 0) ? keychains[0] : null,
+        userKeychain: keychains[0],
         backupKeychain: (keychains.length > 1) ? keychains[1] : null,
         bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
       });

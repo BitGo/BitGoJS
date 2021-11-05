@@ -175,10 +175,11 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
     txHex: string;
     txInfo: {
       unspents: {
+        id: string;
         chain?: number;
         index?: number;
-        value?: number;
-        address?: string;
+        value: number;
+        address: string;
         redeemScript?: string;
         witnessScript?: string;
       }[];
@@ -1201,6 +1202,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       const prevOutputs: utxolib.bitgo.PrevOutput[] = []; // prev output scripts used for p2tr signature verification
       const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
+      const signingData: { signParams: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
+
       // Sign inputs
       for (let index = 0; index < transaction.ins.length; ++index) {
         debug('Signing input %d of %d', index + 1, transaction.ins.length);
@@ -1266,14 +1269,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             witnessValue: signatureContext.unspent.value,
           };
 
-          try {
-            txb.sign(signParams);
-          } catch (e) {
-            debug('Failed to sign input:', e);
-            signatureContext.error = e;
-            signatureIssues.push(signatureContext);
-            continue;
-          }
+          signingData.push({ signParams, signatureContext });
         } else {
           const redeemScript = signatureContext.unspent.redeemScript
             ? Buffer.from(signatureContext.unspent.redeemScript, 'hex')
@@ -1283,17 +1279,47 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             : undefined;
           const scriptType = witnessScript ? (redeemScript ? 'p2shP2wsh' : 'p2wsh') : 'p2sh';
           debug(`Signing ${scriptType} input`);
-          try {
-            txb.sign(index, keyPair, redeemScript, sigHashType, signatureContext.unspent.value, witnessScript);
-          } catch (e) {
-            debug('Failed to sign input:', e);
-            signatureContext.error = e;
-            signatureIssues.push(signatureContext);
-            continue;
-          }
-        }
 
-        debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
+          const signParams: utxolib.bitgo.TxbSignArg = {
+            vin: index,
+            keyPair,
+            prevOutScriptType: utxolib.bitgo.outputScripts.scriptType2Of3AsPrevOutType(scriptType),
+            redeemScript,
+            hashType: sigHashType,
+            witnessValue: signatureContext.unspent.value,
+            witnessScript,
+          };
+
+          signingData.push({ signParams, signatureContext });
+        }
+      }
+
+      // this is a hacky workaround needed due to the fact that not all data
+      // is present on the transaction builder when signing is called the first time
+      // on multi-input transactions with p2tr inputs. the first failed signed attempt
+      // will populate the required data. we then attempt signing again for any sign
+      // calls that failed and expect it to succeed the second time
+      const signatureSuccesses: boolean[] = [];
+      for (let index = 0; index < transaction.ins.length; ++index) {
+        try {
+          txb.sign(signingData[index].signParams); // this may fail
+          debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
+          signatureSuccesses[index] = true;
+        } catch {
+          signatureSuccesses[index] = false;
+        }
+      }
+      for (let index = 0; index < transaction.ins.length; ++index) {
+        try {
+          if (signatureSuccesses[index]) continue; // already signed
+          txb.sign(signingData[index].signParams); // this should work
+          debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
+        } catch (e) {
+          debug('Failed to sign input:', e);
+          const { signatureContext } = signingData[index];
+          signatureContext.error = e;
+          signatureIssues.push(signatureContext);
+        }
       }
 
       if (isLastSignature) {
