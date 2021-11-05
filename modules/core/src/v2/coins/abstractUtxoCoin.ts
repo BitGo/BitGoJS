@@ -154,9 +154,9 @@ export interface GenerateAddressOptions {
     pub: string;
     aspKeyId?: string;
   }[];
-  threshold: number;
+  threshold?: number;
   chain?: number;
-  index: number;
+  index?: number;
   segwit?: boolean;
   bech32?: boolean;
 }
@@ -1095,7 +1095,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     let signatureThreshold = 2;
     if (_.isInteger(threshold)) {
-      signatureThreshold = threshold;
+      signatureThreshold = threshold as number;
       if (signatureThreshold <= 0) {
         throw new Error('threshold has to be positive');
       }
@@ -1105,8 +1105,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     let derivationIndex = 0;
-    if (_.isInteger(index) && index > 0) {
-      derivationIndex = index;
+    if (_.isInteger(index) && (index as number) > 0) {
+      derivationIndex = index as number;
     }
 
     const path = '0/0/' + derivationChain + '/' + derivationIndex;
