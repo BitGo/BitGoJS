@@ -1024,6 +1024,24 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return false;
   }
 
+  supportsAddressType(addressType: ScriptType2Of3): boolean {
+    switch (addressType) {
+      case 'p2sh':
+        return true;
+      case 'p2shP2wsh':
+        return this.supportsP2shP2wsh();
+      case 'p2wsh':
+        return this.supportsP2wsh();
+      case 'p2tr':
+        return this.supportsP2tr();
+    }
+    throw new errors.UnsupportedAddressTypeError();
+  }
+
+  supportsAddressChain(chain: number) {
+    return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
+  }
+
   /**
    * TODO(BG-11487): Remove addressType, segwit, and bech32 params in SDKv6
    * Generate an address for a wallet based on a set of configurations
@@ -1059,41 +1077,23 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const addressType = params.addressType || convertFlagsToAddressType();
 
-    switch (addressType) {
-      case 'p2sh':
-        if (!Codes.isP2sh(derivationChain)) {
-          throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
-        }
-        break;
-      case 'p2shP2wsh':
-        if (!this.supportsP2shP2wsh()) {
+    if (addressType !== utxolib.bitgo.outputScripts.scriptTypeForChain(derivationChain)) {
+      throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
+    }
+
+    if (!this.supportsAddressType(addressType)) {
+      switch (addressType) {
+        case 'p2sh':
+          throw new Error(`internal error: p2sh should always be supported`);
+        case 'p2shP2wsh':
           throw new errors.P2shP2wshUnsupportedError();
-        }
-
-        if (!Codes.isP2shP2wsh(derivationChain)) {
-          throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
-        }
-        break;
-      case 'p2wsh':
-        if (!this.supportsP2wsh()) {
+        case 'p2wsh':
           throw new errors.P2wshUnsupportedError();
-        }
-
-        if (!Codes.isP2wsh(derivationChain)) {
-          throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
-        }
-        break;
-      case 'p2tr':
-        if (!this.supportsP2tr()) {
-          throw new errors.P2wshUnsupportedError();
-        }
-
-        if (!Codes.isP2tr(derivationChain)) {
-          throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
-        }
-        break;
-      default:
-        throw new errors.UnsupportedAddressTypeError();
+        case 'p2tr':
+          throw new errors.P2trUnsupportedError();
+        default:
+          throw new errors.UnsupportedAddressTypeError();
+      }
     }
 
     let signatureThreshold = 2;
