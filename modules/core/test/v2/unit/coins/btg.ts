@@ -1,7 +1,6 @@
 import 'should';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-const { Codes } = require('@bitgo/unspents');
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
@@ -199,55 +198,9 @@ describe('BTG:', function () {
   });
 
   describe('Should test address generation', () => {
-
-    const keychains = [
-      {
-        pub: 'xpub661MyMwAqRbcGiQhVk1J7cD1YodF9tc5Y1B8vpTjjB1pcB1J1m1QX8fMtYP2sYqFmW6J2ra69tNoARKjvTGo9cGUrbPbJdjwrSzGGzPzWWS',
-        prv: 'xprv9s21ZrQH143K4ELEPiUHkUGGzmnkkRtEAnFY8S48AqUqjNg9UDh9yLLt3FcfATyCjbsMB9JCGHAD8MeBTAK1P7trFppkoswu5ZAsHYASfbk',
-      },
-      {
-        pub: 'xpub661MyMwAqRbcFzLXuganogQvd7MrefQQqCcJP2ZDumnCdQecf5cw1P1nD5qBz8SNS1yCLSC9VqpNUWnQU3V6qmnPt2r21oXhicQFzPA6Lby',
-        prv: 'xprv9s21ZrQH143K3WG4of3nSYUC55XNFCgZTyghae9cMSFDkcKU7YJgTahJMpdTY9CjCcjgSo2TJ635uUVx176BufUMBFpieKYVJD9J3VvrGRm',
-      },
-      {
-        pub: 'xpub661MyMwAqRbcFHpwWrzPB61U2CgBmdD21WNVM1JKUn9rEExkoGE4yafUVFbPSd78vdX8tWcEUQWaALFkU9fUbUM4Cc49DKEJSCYGRnbzCym',
-        prv: 'xprv9s21ZrQH143K2okUQqTNox4jUAqhNAVAeHStYcthvScsMSdcFiupRnLzdxzfJithak5Zs92FQJeeJ9Jiya63KfUNxawuMZDCp2cGT9cdMKs',
-      },
-    ];
-
     let coin;
     before(() => {
       coin = bitgo.coin('btg');
-    });
-
-    it('should generate standard non-segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains });
-      generatedAddress.chain.should.equal(0);
-      generatedAddress.index.should.equal(0);
-      generatedAddress.coinSpecific.outputScript.should.equal('a9141e57a925dd863a86af341037e700862bf66bf7b687');
-      generatedAddress.coinSpecific.redeemScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-      generatedAddress.address.should.equal('AJYJw2ZqTEgJEYRGswDUf5CTkeH2D2zFPC');
-    });
-
-    it('should generate custom chain non-segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, chain: 1, index: 113 });
-      generatedAddress.chain.should.equal(1);
-      generatedAddress.index.should.equal(113);
-      generatedAddress.coinSpecific.outputScript.should.equal('a91443457880e5e29555d6ad16bc82ef53891d6512b087');
-      generatedAddress.coinSpecific.redeemScript.should.equal('522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae');
-      generatedAddress.address.should.equal('AMua9G6EN3GnxzHAbzzNR5W6XMEQayvF77');
-    });
-
-    it('should generate standard segwit address', () => {
-      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
-      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
-      const generatedAddress = coin.generateAddress({ keychains, addressType, chain });
-      generatedAddress.chain.should.equal(chain);
-      generatedAddress.index.should.equal(0);
-      generatedAddress.coinSpecific.outputScript.should.equal('a9147ff13f3faeba4d439ef40604f7c127951e77eb6a87');
-      generatedAddress.coinSpecific.redeemScript.should.equal('00207aad7d57b238a09b5daa10ff47c54483b7f2ad47f3f0c0aa230958b9df334260');
-      generatedAddress.coinSpecific.witnessScript.should.equal('52210304fcea3fb05f6e8a8fe91db2087bdd13b18102a0b10a77c1fdbb326b0ce7cec421028242a3ea9e20d4e6b78e3f0dde21aff86a623d48322681b203b6827e22d04a9d2102ceec88b222a55ec67d1414b523bcfc0f53eb6ac012ba91744a4ed8eb448d55f753ae');
-      generatedAddress.address.should.equal('ATSNTzzorpeYexY2wWj4MA3Uxko6YqsQmh');
     });
 
     it('should validate pub key', () => {

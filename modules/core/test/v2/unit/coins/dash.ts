@@ -37,37 +37,6 @@ describe('DASH:', function () {
     });
 
     describe('Should test address generation', () => {
-
-      it('should generate standard non-segwit address', () => {
-        const generatedAddress = coin.generateAddress({ keychains });
-        const generatedTestAddress = testCoin.generateAddress({ keychains });
-
-        [generatedAddress, generatedTestAddress].map((currentAddress) => {
-          currentAddress.chain.should.equal(0);
-          currentAddress.index.should.equal(0);
-          currentAddress.coinSpecific.outputScript.should.equal('a9141e57a925dd863a86af341037e700862bf66bf7b687');
-          currentAddress.coinSpecific.redeemScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-        });
-
-        generatedAddress.address.should.equal('7VB63GUpUySAWWSfhztFGCHxM7URDayyVi');
-        generatedTestAddress.address.should.equal('8hBtzbNgcWpnxorvnFtCia7KEdFFLmoiFj');
-      });
-
-      it('should generate custom chain non-segwit address', () => {
-        const generatedAddress = coin.generateAddress({ keychains, chain: 1, index: 113 });
-        const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 1, index: 113 });
-
-        [generatedAddress, generatedTestAddress].map((currentAddress) => {
-          currentAddress.chain.should.equal(1);
-          currentAddress.index.should.equal(113);
-          currentAddress.coinSpecific.outputScript.should.equal('a91443457880e5e29555d6ad16bc82ef53891d6512b087');
-          currentAddress.coinSpecific.redeemScript.should.equal('522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae');
-        });
-
-        generatedAddress.address.should.equal('7YYMFW1DPn2fExJZS4f92Cbb7pRocBiduW');
-        generatedTestAddress.address.should.equal('8kZACpu5XKRHhFipWKf6UaQx1LCdh4iRMu');
-      });
-
       it('should validate pub key', () => {
         const { pub } = coin.keychains().create();
         coin.isValidPub(pub).should.equal(true);
