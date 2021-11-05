@@ -929,6 +929,31 @@ Wallet.prototype.signTransaction = function (params, callback) {
     throw error;
   }
 
+  const externalSignerUrl = this.bitgo._externalSignerUrl;
+  if (externalSignerUrl) {
+    const transactionHex = params.transactionHex;
+    const unspents = params.unspents;
+    const keychain = params.keychain;
+    if (!_.isString(params.transactionHex)) {
+      throw new Error('expecting the transaction hex as a string');
+    }
+    return Bluebird.resolve(fetch(externalSignerUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transactionHex: transactionHex,
+        unspents: unspents,
+        keychain: keychain,
+      }),
+    })).then(function (result) {
+      return result.json();
+    })
+      .nodeify(callback);
+  }
+
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.bitgo = this.bitgo;
   return TransactionBuilder.signTransaction(params)
