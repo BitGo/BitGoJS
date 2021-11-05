@@ -8,10 +8,12 @@ import {
   parseSignatureScript,
   parseSignatureScript2Of3,
   ParsedSignatureScript2Of3,
+  signInput2Of3,
 } from '../../src/bitgo/signature';
 
 import {
   createSpendTransactionFromPrevOutputs,
+  getDefaultCosigner,
   isSupportedDepositType,
   isSupportedSpendType,
   ScriptType,
@@ -19,11 +21,16 @@ import {
   TxbInput,
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
-import { isScriptType2Of3 } from '../../src/bitgo/outputScripts';
+import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { UtxoTransaction } from '../../src/bitgo/UtxoTransaction';
-import { createTransactionFromBuffer } from '../../src/bitgo';
+import {
+  createTransactionBuilderForNetwork,
+  createTransactionBuilderFromTransaction,
+  createTransactionFromBuffer,
+} from '../../src/bitgo';
+import { Triple } from '../../src/bitgo/types';
 
 const utxolib = require('../../src');
 
@@ -93,6 +100,39 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
     it(`round-trip`, function () {
       parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network, getPrevOutputs());
+    });
+
+    it(`recreate from unsigned hex`, function () {
+      if (txType === 'deposit') {
+        return;
+      }
+      const txbUnsigned = createTransactionBuilderForNetwork(network);
+      getPrevOutputs().forEach((o) => {
+        txbUnsigned.addInput(o.txid, o.index);
+      });
+      fixture.transaction.vout.forEach((o) => {
+        txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);
+      });
+
+      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), network);
+      const txb = createTransactionBuilderFromTransaction(tx);
+      const signKeys = [fixtureKeys[0], fixtureKeys[2]];
+      const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;
+      getPrevOutputs().forEach(({ value }, vin) => {
+        signKeys.forEach((key) => {
+          signInput2Of3(
+            txb,
+            vin,
+            scriptType as ScriptType2Of3,
+            publicKeys,
+            key,
+            getDefaultCosigner(publicKeys, key.publicKey),
+            value
+          );
+        });
+      });
+
+      assert.strictEqual(txb.build().toBuffer().toString('hex'), fixture.transaction.hex);
     });
 
     it('compare against RPC data', function () {
