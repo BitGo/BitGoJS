@@ -1,4 +1,3 @@
-import { IDimensions } from '../src';
 import * as utxo from '../src';
 
 /**
@@ -38,7 +37,7 @@ class UnspentTypeOpReturn {
  * @param unspentType - one of UnspentTypeScript2of3
  * @return Dimensions
  */
-const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): IDimensions => {
+const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): utxo.IDimensions => {
   switch (unspentType) {
     case UnspentTypeScript2of3.p2sh:
       return utxo.Dimensions.sum({ nP2shInputs: 1 });
@@ -54,7 +53,7 @@ const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): IDimens
   throw new Error(`no input dimensions for ${unspentType}`);
 };
 
-const getOutputDimensionsForUnspentType = (unspentType: TestUnspentType): IDimensions => {
+const getOutputDimensionsForUnspentType = (unspentType: TestUnspentType): utxo.IDimensions => {
   /* The values here are validated in the test 'calculates output dimensions dynamically' */
   switch (unspentType) {
     case UnspentTypeScript2of3.p2sh:
