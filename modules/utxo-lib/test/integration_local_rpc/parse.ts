@@ -115,7 +115,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       });
 
       const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), network);
-      const txb = createTransactionBuilderFromTransaction(tx);
+      const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());
       const signKeys = [fixtureKeys[0], fixtureKeys[2]];
       const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;
       getPrevOutputs().forEach(({ value }, vin) => {
