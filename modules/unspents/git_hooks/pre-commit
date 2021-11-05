@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# To use this hook, you can configure this directory as the git `hooksPath`:
+#
+#   git config core.hooksPath git_hooks
+#
+
+set -euo pipefail
+IFS=$'\n\t '
+
+lint_failed=false
+
+run_lint() {
+  if [ ! -f ./node_modules/.bin/${LINTER} ];
+  then
+    echo "linter not installed - please run \"npm install\" first"
+  fi
+
+  # Only lint files that were added, copied, modified, or renamed
+  for file in $(git diff --diff-filter=ACMR --cached --name-only . | grep -E ${LINTER_PATTERN}); do
+    local error=0
+
+    git show ":$file" | \
+      ./node_modules/.bin/${LINTER} ${LINTER_ARGS[@]} || error=1
+
+    if [ $error -ne 0 ]; then
+      echo "${LINTER} failed on staged file '$file'"
+      lint_failed=true
+    fi
+  done
+}
+
+LINTER="tslint" \
+LINTER_ARGS="--project ." \
+LINTER_PATTERN='\.(ts|tsx|d\.ts)$' \
+  run_lint
+
+if [ "$lint_failed" = "true" ]; then
+  exit 1
+fi
