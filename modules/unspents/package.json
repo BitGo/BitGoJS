@@ -46,7 +46,7 @@
     "typescript": "~4.4.3"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "~2.2.0-rc.5",
+    "@bitgo/utxo-lib": "~2.3.0",
     "lodash": "~4.17.21",
     "tcomb": "~3.2.29"
   }
