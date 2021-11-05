@@ -11,7 +11,8 @@
     "build": "tsc --project tsconfig.build.json",
     "test": "mocha --require ts-node/register \"test/**/*.ts\"",
     "lint": "eslint --quiet .",
-    "generate_drone": "drone jsonnet --stream"
+    "prepare": "npm run build",
+    "unit-test": "npm run test"
   },
   "repository": {
     "type": "git",
