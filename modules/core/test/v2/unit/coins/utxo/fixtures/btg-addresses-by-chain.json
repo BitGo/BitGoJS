@@ -118,14 +118,7 @@
       "chain": 30
     },
     {
-      "address": "btg1p0sm0je6mv9zrzyguquzh24svlz6sgcct3qckp34nc09vj6wedn0swhjhkk",
-      "chain": 30,
-      "index": 0,
-      "coin": "btg",
-      "coinSpecific": {
-        "outputScript": "51207c36f9675b614431111c070575560cf8b504630b883160c6b3c3cac969d96cdf"
-      },
-      "addressType": "p2tr"
+      "error": "p2tr not supported by this coin"
     }
   ],
   [
@@ -133,14 +126,7 @@
       "chain": 31
     },
     {
-      "address": "btg1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqya8t2d",
-      "chain": 31,
-      "index": 0,
-      "coin": "btg",
-      "coinSpecific": {
-        "outputScript": "5120bdb5fb914bb7556340dabc9b1c3c4abab2f1e0791e4bf1c6c0821e1d18c0ca82"
-      },
-      "addressType": "p2tr"
+      "error": "p2tr not supported by this coin"
     }
   ]
 ]

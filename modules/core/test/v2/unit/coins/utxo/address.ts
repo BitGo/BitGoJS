@@ -3,6 +3,7 @@
  */
 import 'should';
 import * as assert from 'assert';
+import * as utxolib from '@bitgo/utxo-lib';
 import { Codes } from '@bitgo/unspents';
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 
@@ -37,6 +38,36 @@ function run(coin: AbstractUtxoCoin) {
   }
 
   describe(`UTXO Addresses ${coin.getChain()}`, function () {
+    it('address support', function () {
+      const supportedAddressTypes = utxolib.bitgo.outputScripts.scriptTypes2Of3.filter((t) =>
+        coin.supportsAddressType(t)
+      );
+      switch (coin.getChain()) {
+        case 'btc':
+        case 'tbtc':
+          supportedAddressTypes.should.eql(['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr']);
+          break;
+        case 'btg':
+        case 'tbtg':
+        case 'ltc':
+        case 'tltc':
+          supportedAddressTypes.should.eql(['p2sh', 'p2shP2wsh', 'p2wsh']);
+          break;
+        case 'bch':
+        case 'tbch':
+        case 'bsv':
+        case 'tbsv':
+        case 'dash':
+        case 'tdash':
+        case 'zec':
+        case 'tzec':
+          supportedAddressTypes.should.eql(['p2sh']);
+          break;
+        default:
+          throw new Error(`unexpected coin ${coin.getChain()}`);
+      }
+    });
+
     it('fixtures', async function () {
       const addresses = getParameters().map((p) => {
         if (p.chain && !coin.supportsAddressChain(p.chain)) {
