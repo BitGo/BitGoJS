@@ -87,8 +87,13 @@ export interface TransactionExplanation {
 }
 
 export interface Unspent {
+  address: string;
   id: string;
   value: number;
+  index: number;
+  chain: number;
+  redeemScript?: string;
+  witnessScript?: string;
 }
 
 export interface ExplainTransactionOptions {

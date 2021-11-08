@@ -6,6 +6,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { Btc } from '../../../../src/v2/coins';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '../../../../src/v2/coins/abstractUtxoCoin';
 
 describe('BTC:', function () {
   let bitgo;
@@ -216,14 +217,14 @@ describe('BTC:', function () {
           id: '1cd6b605b1ac6e39eb26cdd7ef85699ea1669970a8f3c7be023ab7986a8a22d7:0',
           value: 1000000,
         },
-      ];
+      ] as Unspent[];
 
       const p2wshUnspents = [
         {
           id: '52fcd5cceef2350b7f380a232a41dafc496afd7f186b203c04ad1201549c98b6:0',
           value: 10000000,
         },
-      ];
+      ] as Unspent[];
 
       const txs = {
         p2sh: {
