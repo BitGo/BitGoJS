@@ -4,10 +4,10 @@
 import 'should';
 import * as fs from 'fs-extra';
 
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
+import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 
 async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> {
-  const path = `${__dirname}/fixtures/${name}.json`;
+  const path = `${__dirname}/../fixtures/${name}.json`;
   try {
     return JSON.parse(await fs.readFile(path, 'utf8'));
   } catch (e) {

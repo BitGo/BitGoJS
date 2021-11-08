@@ -5,12 +5,11 @@ import 'should';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Codes } from '@bitgo/unspents';
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 
-import { keychains } from './keychains.util';
-import { utxoCoins } from './util';
-import { shouldEqualJSON, getFixture } from './fixtures';
+import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 import { GenerateAddressOptions } from '../../../../../src/v2/coins/abstractUtxoCoin';
+
+import { utxoCoins, keychains, getFixture, shouldEqualJSON } from './util';
 
 function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean {
   if (a === b) {
