@@ -23,7 +23,7 @@ describe('EOS:', function () {
     let addressDetails = basecoin.getAddressDetails('i1skda3kso43');
 
     addressDetails.address.should.equal('i1skda3kso43');
-    should(addressDetails.memoId).be.empty();
+    should(addressDetails.memoId).be.undefined();
 
     addressDetails = basecoin.getAddressDetails('ks13k3hdui24?memoId=1');
     addressDetails.address.should.equal('ks13k3hdui24');
@@ -428,6 +428,46 @@ describe('EOS:', function () {
       const txParams = newTxParams();
       txParams.recipients[0].address = 'lionteste212?memoId=10';
       await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification }).should.be.rejectedWith('txHex receive memoId does not match expected recipient memoId');
+    });
+
+    it('should verify transaction with memo id in params only', async function() {
+      const txPrebuild = newTxPrebuild();
+
+      txPrebuild.headers = {
+        expiration: '2021-11-08T17:24:47.792',
+        ref_block_num: 1,
+        ref_block_prefix: 100,
+      };
+      // has memoid in the txaction with value of '1'
+      txPrebuild.txHex = 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473605d89610100640000000000000100408c7a02ea3055000000000085269d000201300100a6823403ea3055000000572d3ccdcd01001dd9f9a000a53d00000000a8ed323222001dd9f9a000a53d20825019ab3ca98be80300000000000004454f53000000000131000000000000000000000000000000000000000000000000000000000000000000';
+      txPrebuild.transaction.packed_trx = '605d89610100640000000000000100408c7a02ea3055000000000085269d000201300100a6823403ea3055000000572d3ccdcd01001dd9f9a000a53d00000000a8ed323222001dd9f9a000a53d20825019ab3ca98be80300000000000004454f5300000000013100';
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'lionteste212';
+      txParams.txPrebuild = txPrebuild;
+
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify transaction with alpha numeric memo id params', async function() {
+      const txPrebuild = newTxPrebuild();
+
+      txPrebuild.headers = {
+        expiration: '2021-11-08T17:55:17.518',
+        ref_block_num: 1,
+        ref_block_prefix: 100,
+      };
+      // has memoid in the txaction with value of 'QG73WAXXG'
+      txPrebuild.txHex = 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473866489610100640000000000000100408c7a02ea3055000000000085269d000201300100a6823403ea3055000000572d3ccdcd013085b943b1b54ed700000000a8ed32322a3085b943b1b54ed720825019ab3ca98be80300000000000004454f530000000009514737335741585847000000000000000000000000000000000000000000000000000000000000000000';
+      txPrebuild.transaction.packed_trx = '866489610100640000000000000100408c7a02ea3055000000000085269d000201300100a6823403ea3055000000572d3ccdcd013085b943b1b54ed700000000a8ed32322a3085b943b1b54ed720825019ab3ca98be80300000000000004454f53000000000951473733574158584700';
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'lionteste212';
+      txParams.txPrebuild = txPrebuild;
+
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
     });
   });
 });
