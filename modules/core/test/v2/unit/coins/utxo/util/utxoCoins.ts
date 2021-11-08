@@ -32,7 +32,9 @@ function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
         throw new Error(`error creating ${cls.name}: ${e}`);
       }
     })
-    .sort((a, b) => a.getChain().localeCompare(b.getChain()));
+    .sort(
+      (a, b) => utxolib.coins.getNetworkList().indexOf(a.network) - utxolib.coins.getNetworkList().indexOf(b.network)
+    );
 }
 
 export const utxoCoins = getUtxoCoins();
