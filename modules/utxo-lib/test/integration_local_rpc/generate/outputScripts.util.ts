@@ -5,13 +5,8 @@ import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../.
 import { isTriple, Triple } from '../../../src/bitgo/types';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
-import { Transaction } from 'bitcoinjs-lib';
-import {
-  createTransactionBuilderForNetwork,
-  createTransactionFromBuffer,
-  PrevOutput,
-  signInput2Of3,
-} from '../../../src/bitgo';
+import { Transaction, TxOutput } from 'bitcoinjs-lib';
+import { createTransactionBuilderForNetwork, createTransactionFromBuffer, signInput2Of3 } from '../../../src/bitgo';
 import { UtxoTransaction } from '../../../src/bitgo/UtxoTransaction';
 
 const utxolib = require('../../../src');
@@ -97,15 +92,10 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
   }
 }
 
-export type TxbInput = PrevOutput & {
-  txid: string;
-  index: number;
-};
-
 export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
-  prevOutputs: TxbInput[],
+  prevOutputs: (TxOutPoint & TxOutput)[],
   recipientScript: Buffer,
   network: Network,
   { signKeys = [keys[0], keys[2]] } = {}
@@ -116,8 +106,8 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
 
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(({ txid, index, value, prevOutScript }) => {
-    txBuilder.addInput(txid, index, undefined, prevOutScript, value);
+  prevOutputs.forEach(({ txid, index, script, value }, i) => {
+    txBuilder.addInput(txid, index, undefined, script, value);
   });
 
   const inputSum = prevOutputs.reduce((sum, { value }) => sum + value, 0);
@@ -142,6 +132,11 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   return txBuilder.build() as T;
 }
 
+export type TxOutPoint = {
+  txid: string;
+  index: number;
+};
+
 export function createSpendTransaction(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
@@ -149,8 +144,8 @@ export function createSpendTransaction(
   recipientScript: Buffer,
   network: Network
 ): Transaction {
-  const matches: TxbInput[] = inputTxs
-    .map((inputTxBuffer): TxbInput[] => {
+  const matches: (TxOutPoint & TxOutput)[] = inputTxs
+    .map((inputTxBuffer): (TxOutPoint & TxOutput)[] => {
       const inputTx = createTransactionFromBuffer(inputTxBuffer, network);
 
       const { scriptPubKey } = createOutputScript2of3(
@@ -159,7 +154,7 @@ export function createSpendTransaction(
       );
 
       return inputTx.outs
-        .map((o, vout): TxbInput | undefined => {
+        .map((o, vout): (TxOutPoint & TxOutput) | undefined => {
           if (!scriptPubKey.equals(o.script)) {
             return;
           }
@@ -167,10 +162,10 @@ export function createSpendTransaction(
             txid: inputTx.getId(),
             index: vout,
             value: o.value,
-            prevOutScript: o.script,
+            script: o.script,
           };
         })
-        .filter((v): v is TxbInput => v !== undefined);
+        .filter((v): v is TxOutPoint & TxOutput => v !== undefined);
     })
     .reduce((all, matches) => [...all, ...matches]);
 

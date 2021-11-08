@@ -3,7 +3,6 @@ import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { Network } from '../../networkTypes';
 import { DashTransaction } from './DashTransaction';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { PrevOutput } from '../signature';
 
 export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransaction> {
   constructor(network: Network, txb?: UtxoTransactionBuilder) {
@@ -25,7 +24,7 @@ export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransacti
   static fromTransaction(
     tx: DashTransaction,
     network?: bitcoinjs.Network,
-    prevOutput?: PrevOutput[]
+    prevOutput?: bitcoinjs.TxOutput[]
   ): DashTransactionBuilder {
     const txb = new DashTransactionBuilder(tx.network, UtxoTransactionBuilder.fromTransaction(tx, network, prevOutput));
     txb.setType(tx.type);

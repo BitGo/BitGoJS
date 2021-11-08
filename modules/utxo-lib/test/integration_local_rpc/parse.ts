@@ -18,7 +18,7 @@ import {
   isSupportedSpendType,
   ScriptType,
   scriptTypes,
-  TxbInput,
+  TxOutPoint,
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
@@ -31,6 +31,7 @@ import {
   createTransactionFromBuffer,
 } from '../../src/bitgo';
 import { Triple } from '../../src/bitgo/types';
+import { TxOutput } from 'bitcoinjs-lib';
 
 const utxolib = require('../../src');
 
@@ -89,11 +90,11 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       return Buffer.from(getPrevOutput(input).scriptPubKey.hex, 'hex');
     }
 
-    function getPrevOutputs(): TxbInput[] {
+    function getPrevOutputs(): (TxOutPoint & TxOutput)[] {
       return parsedTx.ins.map((i) => ({
         txid: getTxidFromHash(i.hash),
         index: i.index,
-        prevOutScript: getPrevOutputScript(i),
+        script: getPrevOutputScript(i),
         value: getPrevOutputValue(i),
       }));
     }
@@ -219,7 +220,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       fixtureKeys.forEach((key1) => {
         const rebuiltTx = getRebuiltTransaction([key1]);
         const prevOutputs = rebuiltTx.ins.map((v) => ({
-          prevOutScript: getPrevOutputScript(v),
+          script: getPrevOutputScript(v),
           value: getPrevOutputValue(v),
         }));
         rebuiltTx.ins.forEach((input, i) => {

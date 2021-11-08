@@ -1,5 +1,7 @@
 import * as bip32 from 'bip32';
 import * as assert from 'assert';
+import { TxOutput } from 'bitcoinjs-lib';
+
 import * as networks from '../src/networks';
 import { Network } from '../src/networkTypes';
 import { UtxoTransaction } from '../src/bitgo/UtxoTransaction';
@@ -15,7 +17,7 @@ import {
   createScriptPubKey,
   getDefaultCosigner,
   KeyTriple,
-  TxbInput,
+  TxOutPoint,
 } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
@@ -36,7 +38,7 @@ export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][]
 export function parseTransactionRoundTrip<T extends UtxoTransaction>(
   buf: Buffer,
   network: Network,
-  inputs?: TxbInput[]
+  inputs?: (TxOutPoint & TxOutput)[]
 ): T {
   const tx = createTransactionFromBuffer(buf, network);
   assert.strictEqual(tx.byteLength(), buf.length);
@@ -61,27 +63,20 @@ export function parseTransactionRoundTrip<T extends UtxoTransaction>(
 
 export const defaultTestOutputAmount = 1e8;
 
-type PrevOutputWithTxid = {
-  prevOutScript?: Buffer;
-  value: number;
-  txid: string;
-  vout: number;
-};
-
 export function getPrevOutputs(
   value = defaultTestOutputAmount,
   scriptType: ScriptType2Of3 | 'p2shP2pk'
-): PrevOutputWithTxid[] {
+): (TxOutPoint & TxOutput)[] {
   return [
     {
       txid: Buffer.alloc(32).fill(0xff).toString('hex'),
-      vout: 0,
-      prevOutScript: isScriptType2Of3(scriptType)
+      index: 0,
+      script: isScriptType2Of3(scriptType)
         ? createOutputScript2of3(
             fixtureKeys.map((k) => k.publicKey),
             scriptType
           ).scriptPubKey
-        : undefined,
+        : Buffer.from([]),
       value,
     },
   ];
@@ -97,13 +92,13 @@ export function getTransactionBuilder(
     prevOutputs = getPrevOutputs(outputAmount, scriptType),
   }: {
     outputAmount?: number;
-    prevOutputs?: PrevOutputWithTxid[];
+    prevOutputs?: (TxOutPoint & TxOutput)[];
   } = {}
 ): UtxoTransactionBuilder {
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(({ txid, vout }) => {
-    txBuilder.addInput(txid, vout);
+  prevOutputs.forEach(({ txid, index }) => {
+    txBuilder.addInput(txid, index);
   });
 
   const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);

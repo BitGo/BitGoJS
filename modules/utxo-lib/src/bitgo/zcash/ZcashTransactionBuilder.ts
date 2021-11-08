@@ -7,7 +7,6 @@ import { ZcashTransaction } from './ZcashTransaction';
 import { Network, ZcashNetwork } from '../../networkTypes';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
-import { PrevOutput } from '../signature';
 
 export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransaction> {
   constructor(network: ZcashNetwork) {
@@ -21,7 +20,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
   static fromTransaction(
     transaction: ZcashTransaction,
     network?: bitcoinjs.Network,
-    prevOutput?: PrevOutput[]
+    prevOutput?: bitcoinjs.TxOutput[]
   ): ZcashTransactionBuilder {
     const txb = new ZcashTransactionBuilder(transaction.network);
 
