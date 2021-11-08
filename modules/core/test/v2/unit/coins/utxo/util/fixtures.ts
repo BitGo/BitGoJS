@@ -3,11 +3,21 @@
  */
 import 'should';
 import * as fs from 'fs-extra';
+import * as mpath from 'path';
 
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 
 async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> {
   const path = `${__dirname}/../fixtures/${name}.json`;
+  const dirname = mpath.dirname(path);
+  try {
+    await fs.access(dirname);
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+    await fs.mkdirp(dirname);
+  }
   try {
     return JSON.parse(await fs.readFile(path, 'utf8'));
   } catch (e) {
@@ -20,7 +30,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> 
 }
 
 export async function getFixture<T>(coin: AbstractUtxoCoin, name: string, defaultValue: T): Promise<T> {
-  return await getFixtureWithName(`${coin.getChain()}-${name}`, defaultValue);
+  return await getFixtureWithName(`${coin.getChain()}/${name}`, defaultValue);
 }
 
 /**
