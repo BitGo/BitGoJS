@@ -361,8 +361,9 @@ export abstract class BaseCoin {
   /**
    * convert address into desired address format.
    * @param address
+   * @param format
    */
-  canonicalAddress(address: string): string {
+  canonicalAddress(address: string, format?: unknown): string {
     return address;
   }
 
