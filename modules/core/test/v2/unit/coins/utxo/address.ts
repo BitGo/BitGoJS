@@ -68,7 +68,7 @@ function run(coin: AbstractUtxoCoin) {
       }
     });
 
-    it('fixtures', async function () {
+    it('generates address matching the fixtures', async function () {
       const addresses = getParameters().map((p) => {
         const label = { chain: p.chain === undefined ? 'default' : p.chain };
         try {
@@ -81,7 +81,7 @@ function run(coin: AbstractUtxoCoin) {
       shouldEqualJSON(addresses, await getFixture(coin, 'addresses-by-chain', addresses));
     });
 
-    it('validation and verification', function () {
+    it('validates and verifies generated addresses', function () {
       getParameters().forEach((p) => {
         if (p.chain && !coin.supportsAddressChain(p.chain)) {
           assert.throws(() => coin.generateAddress(p));
@@ -104,7 +104,7 @@ function run(coin: AbstractUtxoCoin) {
     });
 
     utxoCoins.forEach((otherCoin) => {
-      it(`address compatability with ${otherCoin.getChain()}`, async function () {
+      it(`has expected address compatability with ${otherCoin.getChain()}`, async function () {
         getParameters().forEach((p) => {
           if (p.chain && (!coin.supportsAddressChain(p.chain) || !otherCoin.supportsAddressChain(p.chain))) {
             return;
