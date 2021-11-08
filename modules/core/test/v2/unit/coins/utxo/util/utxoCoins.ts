@@ -19,7 +19,7 @@ function hasAbstractUtxoCoinPrototype(c: ObjectConstructor): boolean {
   return getPrototypeChain(c).includes(AbstractUtxoCoin);
 }
 
-const defaultBitGo = new TestBitGo({ env: 'mock' });
+export const defaultBitGo = new TestBitGo({ env: 'mock' });
 
 function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
   return Object.values(coins)

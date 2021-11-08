@@ -9,7 +9,7 @@ import { Codes } from '@bitgo/unspents';
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 import { GenerateAddressOptions } from '../../../../../src/v2/coins/abstractUtxoCoin';
 
-import { utxoCoins, keychains, getFixture, shouldEqualJSON } from './util';
+import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 
 function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean {
   if (a === b) {
@@ -30,6 +30,8 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
 }
 
 function run(coin: AbstractUtxoCoin) {
+  const keychains = keychainsBip32.map((k) => ({ pub: k.neutered().toBase58() }));
+
   const chains = [...Codes.all].sort((a, b) => a - b);
 
   function getParameters(): GenerateAddressOptions[] {
