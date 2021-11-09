@@ -1245,7 +1245,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
         debug('Input details: %O', signatureContext);
 
-        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
+        const scriptType = utxolib.bitgo.outputScripts.scriptTypeForChain(signatureContext.chain);
+        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network, scriptType);
+
         if (Codes.isP2tr(signatureContext.chain)) {
           // we default to signing for a p2tr-p2ns script path spend using
           // the bitgo key and user key
