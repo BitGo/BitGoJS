@@ -41,6 +41,10 @@ export class Btg extends Btc {
     return true;
   }
 
+  supportsP2tr(): boolean {
+    return false;
+  }
+
   recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl;
 

@@ -336,7 +336,7 @@ export class Eos extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: '',
+        memoId: undefined,
       };
     }
 
@@ -1171,8 +1171,11 @@ export class Eos extends BaseCoin {
         if (txHexTransferAction.to !== expectedOutputAddressAndMemoId.address) {
           throw new Error('txHex receive address does not match expected recipient address');
         }
-        if (txHexTransferAction.memo !== expectedOutputAddressAndMemoId.memoId) {
-          throw new Error('txHex receive memoId does not match expected recipient memoId');
+        // check if txaction memoid is equal to address memo id only if address also has memoid present
+        if (!_.isUndefined(expectedOutputAddressAndMemoId.memoId)) {
+          if (txHexTransferAction.memo !== expectedOutputAddressAndMemoId.memoId) {
+            throw new Error('txHex receive memoId does not match expected recipient memoId');
+          }
         }
 
         // check amount and coin

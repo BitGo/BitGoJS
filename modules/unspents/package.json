@@ -1,0 +1,46 @@
+{
+  "name": "@bitgo/unspents",
+  "version": "0.7.0",
+  "description": "Defines the chain codes used for different unspent types and methods to calculate bitcoin transaction sizes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "test": "mocha --require ts-node/register \"test/**/*.ts\"",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "unit-test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/unspents"
+  },
+  "keywords": [
+    "bitcoin",
+    "utxo"
+  ],
+  "author": "BitGo Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/BitGo/BitGoJS/issues"
+  },
+  "homepage": "https://github.com/BitGo/BitGoJS/tree/master/modules/unspents#bitgounspents",
+  "devDependencies": {
+    "@types/lodash": "~4.14.123",
+    "@types/mocha": "~5.2.6",
+    "@types/node": "~14.17.5",
+    "lodash.combinations": "~18.9.19",
+    "mocha": "~9.1.2",
+    "mocha-junit-reporter": "~2.0.2",
+    "should": "~13.2.3"
+  },
+  "dependencies": {
+    "@bitgo/utxo-lib": "^2.3.0",
+    "lodash": "~4.17.21",
+    "tcomb": "~3.2.29"
+  }
+}
