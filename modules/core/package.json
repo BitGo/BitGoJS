@@ -105,6 +105,7 @@
     "mocha": "^7.0.0",
     "mochawesome": "^5.0.0",
     "nock": "=9.0.28",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "nyc": "^15.0.0",
     "puppeteer": "2.1.1",
     "q": "^1.1.2",

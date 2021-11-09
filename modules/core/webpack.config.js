@@ -3,6 +3,7 @@ const fs = require('fs');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
+const NodePolyFillPlugin = require('node-polyfill-webpack-plugin');
 const glob = require('glob');
 
 function replaceUnsafeEval(file) {
@@ -119,6 +120,7 @@ function setupPlugins(env) {
     // inside a dynamic 'require'. This changes Webpack so that it bundles nothing.
     new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/),
     ...excludeCoins,
+    new NodePolyFillPlugin(),
     // This plugin uses webpack's hooks to perform a post processing step to find + replace unsafe code.
     // currently, hashgraph protobufs generated code will attempt resolve the global object with:
     //   Function("return this")()
