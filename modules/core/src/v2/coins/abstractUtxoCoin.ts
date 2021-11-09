@@ -1205,7 +1205,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       const prevOutputs: utxolib.bitgo.PrevOutput[] = []; // prev output scripts used for p2tr signature verification
       const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
-      const signingData: { signParams: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
+      const signingData: { signParams?: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
 
       // Sign inputs
       for (let index = 0; index < transaction.ins.length; ++index) {
@@ -1223,6 +1223,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             index + 1,
             transaction.ins.length
           );
+          signingData.push({ signParams: undefined, signatureContext });
           continue;
         }
 
@@ -1304,8 +1305,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // calls that failed and expect it to succeed the second time
       const signatureSuccesses: boolean[] = [];
       for (let index = 0; index < transaction.ins.length; ++index) {
+        const { signParams } = signingData[index];
+        if (signParams === undefined) {
+          debug('Skipping signature for input %d of %d (RP input?)', index + 1, transaction.ins.length);
+          continue;
+        }
         try {
-          txb.sign(signingData[index].signParams); // this may fail
+          txb.sign(signParams); // this may fail
           debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
           signatureSuccesses[index] = true;
         } catch {
@@ -1314,8 +1320,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       for (let index = 0; index < transaction.ins.length; ++index) {
         try {
-          if (signatureSuccesses[index]) continue; // already signed
-          txb.sign(signingData[index].signParams); // this should work
+          const { signParams } = signingData[index];
+          if (signatureSuccesses[index] || signParams === undefined) continue; // already signed
+          txb.sign(signParams); // this should work
           debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
         } catch (e) {
           debug('Failed to sign input:', e);
