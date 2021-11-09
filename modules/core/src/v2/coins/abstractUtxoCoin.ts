@@ -54,6 +54,7 @@ const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { getReplayProtectionAddresses } from './utxo/replayProtection';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -86,15 +87,23 @@ export interface TransactionExplanation {
   signatures: number | false;
 }
 
-export interface Unspent {
-  address: string;
+export interface WalletUnspent {
   id: string;
+  address: string;
   value: number;
   index: number;
   chain: number;
   redeemScript?: string;
   witnessScript?: string;
 }
+
+export interface ReplayProtectionUnspent {
+  id: string;
+  address: string;
+  value: number;
+}
+
+export type Unspent = WalletUnspent | ReplayProtectionUnspent;
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -1390,12 +1399,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Always false for coins other than BCH and TBCH.
    * @param unspent
    * @returns {boolean}
    */
   isBitGoTaintedUnspent(unspent: Unspent) {
-    return false;
+    return getReplayProtectionAddresses(this.network).includes(unspent.address);
   }
 
   /**

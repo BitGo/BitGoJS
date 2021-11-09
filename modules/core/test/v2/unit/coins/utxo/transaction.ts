@@ -7,6 +7,7 @@ import { Codes } from '@bitgo/unspents';
 
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 import { Unspent } from '../../../../../src/v2/coins/abstractUtxoCoin';
+import { getReplayProtectionAddresses } from '../../../../../src/v2/coins/utxo/replayProtection';
 
 import {
   utxoCoins,
@@ -15,6 +16,8 @@ import {
   getFixture,
   getUtxoWallet,
   mockUnspent,
+  mockUnspentReplayProtection,
+  InputScriptType,
   transactionToObj,
   transactionHexToObj,
 } from './util';
@@ -26,17 +29,21 @@ import {
   WalletSignTransactionOptions,
 } from '../../../../../src';
 
-function run(coin: AbstractUtxoCoin, scriptType: utxolib.bitgo.outputScripts.ScriptType2Of3) {
-  describe(`Transaction ${coin.getChain()} script=${scriptType}`, function () {
+function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
+  describe(`Transaction ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {
     const wallet = getUtxoWallet(coin);
-    const chain = Codes.forType(scriptType as any).internal;
     const value = 1e8;
 
-    function getUnspent(i: number): Unspent {
-      return mockUnspent(coin.network, { chain, value, index: i }, keychains);
+    function getUnspent(scriptType: InputScriptType, index: number): Unspent {
+      if (scriptType === 'replayProtection') {
+        return mockUnspentReplayProtection(coin.network);
+      } else {
+        const chain = Codes.forType(scriptType as any).internal;
+        return mockUnspent(coin.network, { chain, value, index }, keychains);
+      }
     }
 
-    const unspents = [getUnspent(0), getUnspent(1)];
+    const unspents = inputScripts.map((type, i) => getUnspent(type, i));
 
     function getSignParams(
       prebuildHex: string,
@@ -73,7 +80,7 @@ function run(coin: AbstractUtxoCoin, scriptType: utxolib.bitgo.outputScripts.Scr
         const [txid, vin] = u.id.split(':');
         txb.addInput(txid, Number(vin));
       });
-      const unspentSum = unspents.reduce((sum, u) => sum + u.value, 0);
+      const unspentSum = Math.round(unspents.reduce((sum, u) => sum + u.value, 0));
       const output = coin.generateAddress({ keychains: keychains.map((k) => ({ pub: k.neutered().toBase58() })) });
       txb.addOutput(output.address, unspentSum - 1000);
       return txb.buildIncomplete();
@@ -100,19 +107,28 @@ function run(coin: AbstractUtxoCoin, scriptType: utxolib.bitgo.outputScripts.Scr
     }
 
     it('transaction stages have expected values', async function () {
+      const fullSign = !inputScripts.some((s) => s === 'replayProtection');
       const prebuild = createPrebuildTransaction();
       const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, keychains[1]);
       const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, keychains[2]);
-      const fullSignedUserBackup = await createFullSignedTransaction(halfSignedUserBackup, keychains[1]);
-      const fullSignedUserBitGo = await createFullSignedTransaction(halfSignedUserBitGo, keychains[2]);
+      const fullSignedUserBackup = fullSign
+        ? await createFullSignedTransaction(halfSignedUserBackup, keychains[1])
+        : undefined;
+      const fullSignedUserBitGo = fullSign
+        ? await createFullSignedTransaction(halfSignedUserBitGo, keychains[2])
+        : undefined;
       const transactionSet = {
         prebuild: transactionToObj(prebuild),
         halfSignedUserBackup: transactionHexToObj(halfSignedUserBackup.txHex, coin.network),
         halfSignedUserBitGo: transactionHexToObj(halfSignedUserBitGo.txHex, coin.network),
-        fullSignedUserBackup: transactionHexToObj(fullSignedUserBackup.txHex, coin.network),
-        fullSignedUserBitGo: transactionHexToObj(fullSignedUserBitGo.txHex, coin.network),
+        fullSignedUserBackup: fullSignedUserBackup
+          ? transactionHexToObj(fullSignedUserBackup.txHex, coin.network)
+          : undefined,
+        fullSignedUserBitGo: fullSignedUserBitGo
+          ? transactionHexToObj(fullSignedUserBitGo.txHex, coin.network)
+          : undefined,
       };
-      shouldEqualJSON(transactionSet, await getFixture(coin, `transactions-${scriptType}`, transactionSet));
+      shouldEqualJSON(transactionSet, await getFixture(coin, `transactions-${inputScripts.join('-')}`, transactionSet));
     });
   });
 }
@@ -120,7 +136,11 @@ function run(coin: AbstractUtxoCoin, scriptType: utxolib.bitgo.outputScripts.Scr
 utxoCoins.forEach((coin) =>
   utxolib.bitgo.outputScripts.scriptTypes2Of3.forEach((type) => {
     if (coin.supportsAddressType(type)) {
-      run(coin, type);
+      run(coin, [type, type]);
+
+      if (getReplayProtectionAddresses(coin.network).length) {
+        run(coin, ['replayProtection', type]);
+      }
     }
   })
 );
