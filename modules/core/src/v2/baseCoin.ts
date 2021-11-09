@@ -171,6 +171,7 @@ export interface KeychainsTriplet {
 export interface TransactionPrebuild {
   txBase64?: string;
   txHex?: string;
+  txInfo?: unknown;
   wallet?: Wallet;
   buildParams?: any;
   consolidateId?: string;

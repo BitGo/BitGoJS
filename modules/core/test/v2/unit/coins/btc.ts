@@ -1,11 +1,8 @@
 import * as should from 'should';
-const { Codes } = require('@bitgo/unspents');
 
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Wallet } from '../../../../src/v2/wallet';
 import { Btc } from '../../../../src/v2/coins';
-import * as bip32 from 'bip32';
-import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '../../../../src/v2/coins/abstractUtxoCoin';
 
 describe('BTC:', function () {
   let bitgo;
@@ -13,192 +10,6 @@ describe('BTC:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
-  });
-
-  describe('transaction signing:', function () {
-    let basecoin: Btc;
-    let wallet;
-
-    const userKeychain = {
-      prv: 'xprv9s21ZrQH143K3xQwj4yx3fHjDieEdqFDweBvFxn28qGvfQGvweUWuUuDRpepDu6opq3jiWHU9h3yYTKk5vvu4ykRuGA4i4Kz1vmFMPLTsoC',
-      pub: 'xpub661MyMwAqRbcGSVQq6WxQoETmkUj3Hy5Js7X4MBdhAouYCc5VBnmTHDhH7p9RpeGWjkcwbTVuqib1EdusAntf4VEgQJcVMatBU5thweF2Jz',
-      rawPub: '0275442d5a223845f38cbaa5525806571d1811511377ba8ead726426869b0d0400',
-      rawPrv: 'a4f46eabfd13859079a98b57056f48b4a7d26166848a0f7126c5b43828427d0b',
-    };
-    const backupKeychain = {
-      prv: 'xprv9s21ZrQH143K3ZijERhwuqfED1hLNWMN6A1ByMs6LtcFw6mexXLcPkRPXGPdMT658HJkaSCktjPNA6iujYdFgUwAVqwhtptvsQfHD2WEizC',
-      pub: 'xpub661MyMwAqRbcG3oCLTExGybxm3Xpmy5DTNvnmkGhuE9Eou6oW4erwYjsNYmWrc5YBCZPgpR6hJGpgdFpNwta9zBnta8jL2vAjRF42KB1Xmv',
-      rawPub: '0320e7370ace2e0dd974b8bdafa3a672e108ad12ab9c5ffd3786c303b2198e3f23',
-      rawPrv: '6f84aa9081fef0b95955ed399fd17bb72c94cec87f3fed92d2e7e9e074f0f00e',
-    };
-    const bitgoKeychain = {
-      prv: 'xprv9s21ZrQH143K2QjFdiB9a12bSjjDEGvVNDuQa7z3mukBFmRfJ2T7Pmvpkvh6VCW4TFNnhotBJ3mkKGFF2T8LTaPnbumk5Hb627NKGzTeXmt',
-      pub: 'xpub661MyMwAqRbcEtoijji9w8yKzmZhdjeLjSq1NWPfLFHA8ZkoqZmMwaFJcDMNfRGj2sPgYp5EzguEGjogTtzhejNfKYJyhYuGHYz9kffftpc',
-      rawPub: '03a48a6f40b7e6cd4d298072f5bef081054c3353f127f4c9169f02b00081c231c0',
-      rawPrv: 'cdf02e682b05dd7bbae28a7606cdba0eccc205f03835fc9c3f93ce8c7bd97671',
-    };
-    // user pubkey at m/0/0/30/0 is 02e4a64fa7252714d282e150f4def1ebf8090d5ecdd28fb372105575289f5af56a
-    // backup pubkey at m/0/0/30/0 is 02fae347fb2d2e058126cf78f39dd147e845052911ee55a65960ab41ebbae9d224
-    // bitgo pubkey at m/0/0/30/0 is 0275442d5a223845f38cbaa5525806571d1811511377ba8ead726426869b0d0400
-
-    before(function () {
-      basecoin = bitgo.coin('tbtc');
-      wallet = new Wallet(bitgo, basecoin, {});
-    });
-
-    it('should half-sign and fully sign p2wsh transaction prebuild', async function () {
-      const prebuild = {
-        txHex: '0100000001d58f82d996dd872012675adadf4606734906b25a413f6e2ee535c0c10aef96020000000000ffffffff028de888000000000017a914c91aa24f65827eecec775037d886f2952b73cbe48740420f000000000017a9149304d18497b9bfe9532778a0f06d9fff3b3befaf87c8b11400',
-        txInfo: {
-          unspents: [
-            {
-              chain: 20,
-              index: 2,
-              witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae',
-              id: '0296ef0ac1c035e52e6e3f415ab20649730646dfda5a67122087dd96d9828fd5:0',
-              address: 'tb1qtxxqmkkdx4n4lcp0nt2cct89uh3h3dlcu940kw9fcqyyq36peh0st94hfp',
-              addressType: Codes.UnspentTypeTcomb('p2wsh'),
-              value: 10000000,
-            },
-          ],
-        },
-      };
-
-      // half-sign with the user key
-      const halfSignedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: userKeychain.prv,
-      });
-
-      // fully sign transaction
-      prebuild.txHex = halfSignedTransaction.txHex;
-      const signedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: backupKeychain.prv,
-        isLastSignature: true,
-      });
-
-      const signedTxHex = '01000000000101d58f82d996dd872012675adadf4606734906b25a413f6e2ee535c0c10aef96020000000000ffffffff028de888000000000017a914c91aa24f65827eecec775037d886f2952b73cbe48740420f000000000017a9149304d18497b9bfe9532778a0f06d9fff3b3befaf870400473044022023d7210ba6d8bbd7a28b8af226f40f7235caab79156f93f9c9969fc459ea7f73022050fbdca788fba3de686b66b3501853695ff9d6f375867470207d233b099576e001483045022100a4d9f100e4054e56a93b8abb99bb67f399090f1918a30722bd01bfc9e38437eb022035e3bf7446380000a514fe0791fc579b553542dc6204c40418ae24f05f3f03b80169522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53aec8b11400';
-
-      // broadcast here: https://testnet.smartbit.com.au/tx/5fb17d5ac94f180ba58be7f5a814a6e92a3c31bc00e39604c59c936dcef958bc
-      signedTransaction.txHex.should.equal(signedTxHex);
-
-    });
-
-    it('should half-sign and fully sign p2tr transaction prebuild', async function () {
-      const prebuild = {
-        txHex: '0200000001619d71d14c29d97eb984048ce9277322fb8548303d44b3eb65438a00ada33f4b0000000000ffffffff01282300000000000017a914550623cdd8a5173be2c89c3c41b03b86dde0134a8700000000',
-        txInfo: {
-          unspents: [
-            {
-              chain: 30,
-              index: 0,
-              id: '4b3fa3ad008a4365ebb3443d304885fb227327e98c0484b97ed9294cd1719d61:0',
-              address: 'tb1p022ks3y8qlnzgayslcqwfk5u0gsax538rg92nqyhzc4hcft3us8qce0l6w',
-              addressType: Codes.UnspentTypeTcomb('p2tr'),
-              value: 10000,
-            },
-          ],
-        },
-        feeInfo: {
-          fee: 1000,
-        },
-      };
-
-      // half-sign with the user key
-      const halfSignedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: userKeychain.prv,
-        userKeychain,
-        backupKeychain,
-        bitgoKeychain,
-        taprootRedeemIndex: 1,
-      });
-
-      // fully sign transaction
-      prebuild.txHex = halfSignedTransaction.txHex;
-      const signedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: backupKeychain.prv,
-        isLastSignature: true,
-        userKeychain,
-        backupKeychain,
-        bitgoKeychain,
-        taprootRedeemIndex: 1,
-      });
-
-      const signedTxHex = '02000000000101619d71d14c29d97eb984048ce9277322fb8548303d44b3eb65438a00ada33f4b0000000000ffffffff01282300000000000017a914550623cdd8a5173be2c89c3c41b03b86dde0134a870441f7ced2e03ec21775d5a9ed7e6e30fbeb371da9cf4f7fce1426e28383da38cea2cdab9975a9a3530b0598def493b5b9bc1dc6dd3b56bd1648a3e6c207ac6e86bf0141b672a6b37278d63aa79aae58ee0128d23d6f6ed1badbf27103b1f1b5030038c8bc251eba96a37a89a409cc1f0ef540a935612aa72b0fea7ca77fbb2e657ff54e014420e4a64fa7252714d282e150f4def1ebf8090d5ecdd28fb372105575289f5af56aad20fae347fb2d2e058126cf78f39dd147e845052911ee55a65960ab41ebbae9d224ac61c0d269bcf3972e6646ceaf151bc9f61dfcbbd1f3ead74cea98044f8d5e590cec1bc0001c15a537261350c6a6be87b196e23250750be161681129dbd18554003fda19c8fdbaa5f0504dd258991a24b740bf3f47117576e84010e93fa092b23125ca00000000';
-
-      // broadcast here: https://blockstream.info/testnet/tx/62cd8a14a20a18f8e7fff9dcaaa37f73e9feba3c4b16c20e90c8828ccbcb2fff?expand
-      signedTransaction.txHex.should.equal(signedTxHex);
-    });
-
-    it('should construct two p2tr addresses, build an unsigned tx spending from both, then half-sign and fully sign transaction', async function () {
-      const derivationPathIndexes = [1, 2];
-      const keyTriplets = derivationPathIndexes.map(i => [userKeychain, backupKeychain, bitgoKeychain].map(keychain =>
-        bip32
-            .fromBase58(keychain.pub)
-            .derivePath(`m/0/0/30/${i}`).publicKey
-      ));
-      
-      const addrs = keyTriplets.map(keyTriplet => basecoin.createMultiSigAddress('p2tr', 2, keyTriplet));
-      addrs[0].address.should.equal('tb1pyfve36k29zuw6gm3fnnqvle8fqr5v5vx90cg6ejq7k9x0kp6h8jqy2fz83');
-      addrs[1].address.should.equal('tb1pwxxqpg6q4pm2l830ertvrxfyvps5qe65vdec3ggymumps6nay7vse25fae');
-
-      const txb = utxolib.bitgo.createTransactionBuilderForNetwork(utxolib.networks.testnet);
-      const fundingTxs = [
-        '729c50091570889b535f3fb79e783f422b9ee9cd05b087a4948aaebf2a20f252',
-        'ca0046a165b30a317173bc6831bf255af9d0a55ae985df2104785b0f02aff897',
-      ];
-      fundingTxs.forEach((fundingTx, i) => {
-        txb.addInput(fundingTx, 0, 0xffffffff, addrs[i].outputScript);
-      });
-      txb.addOutput(Buffer.from('a914550623cdd8a5173be2c89c3c41b03b86dde0134a87', 'hex'), 19000);
-      
-      const txHex = txb.buildIncomplete().toHex();
-
-      const unspents = fundingTxs.map((fundingTx, i) => ({
-        chain: 30,
-        index: derivationPathIndexes[i],
-        id: `${fundingTx}:${i}`,
-        address: addrs[i].address,
-        addressType: Codes.UnspentTypeTcomb('p2tr'),
-        value: 10000,
-      }));
-      const prebuild = {
-        txHex,
-        txInfo: {
-          unspents,
-        },
-      };
-
-      // half-sign with the user key
-      const halfSignedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: userKeychain.prv,
-        userKeychain,
-        backupKeychain,
-        bitgoKeychain,
-        taprootRedeemIndex: 1,
-      });
-
-      // fully sign transaction
-      prebuild.txHex = halfSignedTransaction.txHex;
-      const signedTransaction = await wallet.signTransaction({
-        txPrebuild: prebuild,
-        prv: backupKeychain.prv,
-        isLastSignature: true,
-        userKeychain,
-        backupKeychain,
-        bitgoKeychain,
-        taprootRedeemIndex: 1,
-      });
-
-      const signedTxHex = '0100000000010252f2202abfae8a94a487b005cde99e2b423f789eb73f5f539b88701509509c720000000000ffffffff97f8af020f5b780421df85e95aa5d0f95a25bf3168bc7371310ab365a14600ca0000000000ffffffff01384a00000000000017a914550623cdd8a5173be2c89c3c41b03b86dde0134a87044158152bfb5c4205aa7257e4f511c75d6481de41c23e8ea7aab430613bab8478ca2c2c7f889cb89abf744fb5765c25fbb13f0c478eec713ce47e1439f7ad41e47b0141adccd1a05c6a34300b87c3aa7dd2d8f71dcc47f487fe750974847c75a982d077442e158fb529e86439ba1b0e02524c7013a1e4c64230ad36c7602774bb928b70014420176cd31aa06144bf0a172c90aa4457e961663f47d1520d0f47974a439adcc5a7ad205e94c200df9f6d1d1688908279f539cf7bbbc5a5bec5a937cea39a8a56c97f3eac61c0dd86b05745c346bcd5eeb59dbb45b9d43fd94aa32727e43c22d6e5ec941f4a09b2794be8efb16e06d81e002bed65b00ce24613ed1e6d69560b894ef0d003c8f75b3f56e34b2811b73d1d3e08c98efe82da239684a5e6f18db5659737e9986c140441a6fa60ad1d8b541c3e2a9bacb9b217aae6bb98c5c8e6bab7504d5f2590f67def212ef36f0e10d9fa9a8f6a35657322e062f3d352265aa74142899d8c3369f7a501416b53fd2c349201f8134d647d081aac7189364c7b5daa9a72d96a1084ec04bff772cb6857543c3112f83694e391e6818eb26a23ffb9dcc53114ea6d185bfea97c01442056f286eb2195533724d7522125fa21149c67d70e6c12ea994e8e41f6e6cc9614ad20b3ef33138414c0ef29545af49d1d63e27bb93967dc843e41e76bd1f6891c1c79ac61c17150fc8c2c847863cde9e175307e2b1f1e6092a15db77cbdb73eee11285ee26c87ab830cfde3d06638d6ab860d330e65978d16708cd4e5253316706f48da8ff6231c85d1f929271fa58417c31e1924fbefbdb2a1f3c198390ac64405e5fcf17e00000000';
-
-      // broadcast here: https://blockstream.info/testnet/tx/a9736d27287220b83d7e43f93477d4c2902ad7187eeeac0af665020b866c13ec
-      signedTransaction.txHex.should.equal(signedTxHex);
-    });
   });
 
   describe('Explain transaction:', () => {
@@ -216,14 +27,14 @@ describe('BTC:', function () {
           id: '1cd6b605b1ac6e39eb26cdd7ef85699ea1669970a8f3c7be023ab7986a8a22d7:0',
           value: 1000000,
         },
-      ];
+      ] as Unspent[];
 
       const p2wshUnspents = [
         {
           id: '52fcd5cceef2350b7f380a232a41dafc496afd7f186b203c04ad1201549c98b6:0',
           value: 10000000,
         },
-      ];
+      ] as Unspent[];
 
       const txs = {
         p2sh: {
