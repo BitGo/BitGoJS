@@ -7,11 +7,8 @@ import { NotImplementedError } from './errors';
 
 let initialized = false;
 const initialize = async () => {
-  // BLS is removed for secure browsers by our webpack config, check if it exists first.
-  if (typeof BLS?.initBLS !== 'undefined') {
-    await BLS.initBLS();
-    initialized = true;
-  }
+  await BLS.initBLS();
+  initialized = true;
 };
 
 initialize();
