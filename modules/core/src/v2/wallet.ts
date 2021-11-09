@@ -960,8 +960,17 @@ export class Wallet {
         .send(filteredParams)
         .result();
 
-      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
-      const transactionParams = _.extend({}, params, { txPrebuild: response, keychain });
+      // retrieve our keychains needed to run the prebuild - some coins use all pubs
+      const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId })) as any;
+
+      const transactionParams = {
+        ...params,
+        txPrebuild: response,
+        keychain: keychains[0],
+        userKeychain: keychains[0],
+        backupKeychain: (keychains.length > 1) ? keychains[1] : null,
+        bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+      };
       const signedTransaction = yield self.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
@@ -1088,8 +1097,18 @@ export class Wallet {
         .result();
       // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
-      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
-      const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
+      // retrieve our keychains needed to run the prebuild - some coins use all pubs
+      const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId })) as any;
+
+      const transactionParams = {
+        ...params,
+        txPrebuild: response,
+        keychain: keychains[0],
+        userKeychain: keychains[0],
+        backupKeychain: (keychains.length > 1) ? keychains[1] : null,
+        bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+        prv: params.xprv
+      };
       const signedTransaction = yield self.signTransaction(transactionParams);
 
       const selectParams = _.pick(params, ['otp']);
