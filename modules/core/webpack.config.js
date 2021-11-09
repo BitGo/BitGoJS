@@ -65,7 +65,7 @@ function setupRules(env) {
 // We have to add some core node libraries (fs, net, tls) because ripple-lib
 // does not have browser-friendly builds
 function setupExternals() {
-  const externals = ['morgan', 'superagent-proxy', /libsodium-wrappers/, /@bitgo\/bls/];
+  const externals = ['morgan', 'superagent-proxy'];
 
   // TODO: Bug ripple to make a browser-friendly build of ripple-lib?
   const nodeLibraries = ['fs', 'net', 'tls'];
@@ -143,8 +143,8 @@ function setupPlugins(env) {
   ];
 
   if (!env.test) {
-    // Create a browser.html which automatically includes BitGoJS, & uses similar CSP policies as bitgo.com
-    plugins.push(new HTMLWebpackPlugin({ filename: 'browser.html', template: 'browser-template.html' }));
+    // Create a browser.html which automatically includes BitGoJS
+    plugins.push(new HTMLWebpackPlugin({ filename: 'browser.html', title: 'BitGo SDK Sandbox' }));
   }
 
   return plugins;
