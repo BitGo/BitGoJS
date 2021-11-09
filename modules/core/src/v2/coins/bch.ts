@@ -143,15 +143,6 @@ export class Bch extends AbstractUtxoCoin {
     return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]], this.network);
   }
 
-  /**
-   * Checks if the unspent comes from the BitGo taint provider address
-   * @param unspent
-   * @returns {boolean}
-   */
-  isBitGoTaintedUnspent(unspent) {
-    return unspent.address === '33p1q7mTGyeM5UnZERGiMcVUkY12SCsatA';
-  }
-
   recoveryBlockchainExplorerUrl(url) {
     return common.Environments[this.bitgo.env].bchExplorerBaseUrl + url;
   }

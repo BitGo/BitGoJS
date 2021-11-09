@@ -54,6 +54,7 @@ const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { getReplayProtectionAddresses } from './utxo/replayProtection';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -86,10 +87,23 @@ export interface TransactionExplanation {
   signatures: number | false;
 }
 
-export interface Unspent {
+export interface WalletUnspent {
   id: string;
+  address: string;
+  value: number;
+  index: number;
+  chain: number;
+  redeemScript?: string;
+  witnessScript?: string;
+}
+
+export interface ReplayProtectionUnspent {
+  id: string;
+  address: string;
   value: number;
 }
+
+export type Unspent = WalletUnspent | ReplayProtectionUnspent;
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -1203,9 +1217,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         };
       };
 
-      const prevOutputs: utxolib.bitgo.PrevOutput[] = []; // prev output scripts used for p2tr signature verification
+      const prevOutputs: utxolib.TxOutput[] = []; // prev output scripts used for p2tr signature verification
       const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
-      const signingData: { signParams: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
+      const signingData: { signParams?: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
 
       // Sign inputs
       for (let index = 0; index < transaction.ins.length; ++index) {
@@ -1213,7 +1227,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         const signatureContext = getSignatureContext(txPrebuild, index);
 
         prevOutputs.push({
-          prevOutScript: utxolib.address.toOutputScript(signatureContext.unspent.address, self.network),
+          script: utxolib.address.toOutputScript(signatureContext.unspent.address, self.network),
           value: signatureContext.unspent.value,
         });
 
@@ -1223,6 +1237,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             index + 1,
             transaction.ins.length
           );
+          signingData.push({ signParams: undefined, signatureContext });
           continue;
         }
 
@@ -1230,7 +1245,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
         debug('Input details: %O', signatureContext);
 
-        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network);
+        const scriptType = utxolib.bitgo.outputScripts.scriptTypeForChain(signatureContext.chain);
+        const sigHashType = utxolib.bitgo.getDefaultSigHash(self.network, scriptType);
+
         if (Codes.isP2tr(signatureContext.chain)) {
           // we default to signing for a p2tr-p2ns script path spend using
           // the bitgo key and user key
@@ -1304,8 +1321,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // calls that failed and expect it to succeed the second time
       const signatureSuccesses: boolean[] = [];
       for (let index = 0; index < transaction.ins.length; ++index) {
+        const { signParams } = signingData[index];
+        if (signParams === undefined) {
+          debug('Skipping signature for input %d of %d (RP input?)', index + 1, transaction.ins.length);
+          continue;
+        }
         try {
-          txb.sign(signingData[index].signParams); // this may fail
+          txb.sign(signParams); // this may fail
           debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
           signatureSuccesses[index] = true;
         } catch {
@@ -1314,8 +1336,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       for (let index = 0; index < transaction.ins.length; ++index) {
         try {
-          if (signatureSuccesses[index]) continue; // already signed
-          txb.sign(signingData[index].signParams); // this should work
+          const { signParams } = signingData[index];
+          if (signatureSuccesses[index] || signParams === undefined) continue; // already signed
+          txb.sign(signParams); // this should work
           debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
         } catch (e) {
           debug('Failed to sign input:', e);
@@ -1378,12 +1401,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Always false for coins other than BCH and TBCH.
    * @param unspent
    * @returns {boolean}
    */
   isBitGoTaintedUnspent(unspent: Unspent) {
-    return false;
+    return getReplayProtectionAddresses(this.network).includes(unspent.address);
   }
 
   /**

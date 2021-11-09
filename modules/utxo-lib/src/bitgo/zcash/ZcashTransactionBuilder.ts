@@ -1,4 +1,4 @@
-import { Transaction } from 'bitcoinjs-lib';
+import * as bitcoinjs from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 const typeforce = require('typeforce');
 
@@ -13,11 +13,15 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     super(network);
   }
 
-  createInitialTransaction(network: Network, tx?: Transaction): ZcashTransaction {
+  createInitialTransaction(network: Network, tx?: bitcoinjs.Transaction): ZcashTransaction {
     return new ZcashTransaction(network as ZcashNetwork, tx as ZcashTransaction);
   }
 
-  static fromTransaction(transaction: ZcashTransaction): ZcashTransactionBuilder {
+  static fromTransaction(
+    transaction: ZcashTransaction,
+    network?: bitcoinjs.Network,
+    prevOutput?: bitcoinjs.TxOutput[]
+  ): ZcashTransactionBuilder {
     const txb = new ZcashTransactionBuilder(transaction.network);
 
     // Copy transaction fields
@@ -61,27 +65,35 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     this.tx.version = version;
   }
 
+  private hasSignatures(): boolean {
+    return (this as any).__INPUTS.some(function (input: { signatures: unknown }) {
+      return input.signatures !== undefined;
+    });
+  }
+
+  private setPropertyCheckSignatures(propName: keyof ZcashTransaction, value: unknown) {
+    if (this.tx[propName] === value) {
+      return;
+    }
+    if (this.hasSignatures()) {
+      throw new Error(`Changing property ${propName} for a partially signed transaction would invalidate signatures`);
+    }
+    this.tx[propName] = value as any;
+  }
+
   setConsensusBranchId(consensusBranchId: number): void {
     typeforce(types.UInt32, consensusBranchId);
-    /* istanbul ignore next */
-    if (
-      !(this as any).__INPUTS.every(function (input: { signatures: unknown }) {
-        return input.signatures === undefined;
-      })
-    ) {
-      throw new Error('Changing the consensusBranchId for a partially signed transaction would invalidate signatures');
-    }
-    this.tx.consensusBranchId = consensusBranchId;
+    this.setPropertyCheckSignatures('consensusBranchId', consensusBranchId);
   }
 
   setVersionGroupId(versionGroupId: number): void {
     typeforce(types.UInt32, versionGroupId);
-    (this as any).tx.versionGroupId = versionGroupId;
+    this.setPropertyCheckSignatures('versionGroupId', versionGroupId);
   }
 
   setExpiryHeight(expiryHeight: number): void {
     typeforce(types.UInt32, expiryHeight);
-    this.tx.expiryHeight = expiryHeight;
+    this.setPropertyCheckSignatures('expiryHeight', expiryHeight);
   }
 
   build(): ZcashTransaction {

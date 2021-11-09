@@ -23,7 +23,12 @@ export class UtxoTransaction extends bitcoinjs.Transaction {
     this.outs = transaction.outs.map((v) => ({ ...v }));
   }
 
-  static fromBuffer(buf: Buffer, noStrict: boolean, network?: Network): UtxoTransaction {
+  static fromBuffer(
+    buf: Buffer,
+    noStrict: boolean,
+    network?: Network,
+    prevOutput?: bitcoinjs.TxOutput[]
+  ): UtxoTransaction {
     if (!network) {
       throw new Error(`must provide network`);
     }

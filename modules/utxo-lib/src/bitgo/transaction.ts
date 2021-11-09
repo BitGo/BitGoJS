@@ -1,3 +1,5 @@
+import { TxOutput } from 'bitcoinjs-lib';
+
 import * as networks from '../networks';
 import { Network, ZcashNetwork } from '../networkTypes';
 import { getMainnet } from '../coins';
@@ -75,18 +77,21 @@ export function createTransactionBuilderForNetwork(network: Network): UtxoTransa
   return txb;
 }
 
-export function createTransactionBuilderFromTransaction(tx: UtxoTransaction): UtxoTransactionBuilder {
+export function createTransactionBuilderFromTransaction(
+  tx: UtxoTransaction,
+  prevOutputs?: TxOutput[]
+): UtxoTransactionBuilder {
   switch (getMainnet(tx.network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.litecoin:
-      return UtxoTransactionBuilder.fromTransaction(tx);
+      return UtxoTransactionBuilder.fromTransaction(tx, undefined, prevOutputs);
     case networks.dash:
-      return DashTransactionBuilder.fromTransaction(tx as DashTransaction);
+      return DashTransactionBuilder.fromTransaction(tx as DashTransaction, undefined, prevOutputs);
     case networks.zcash:
-      return ZcashTransactionBuilder.fromTransaction(tx as ZcashTransaction);
+      return ZcashTransactionBuilder.fromTransaction(tx as ZcashTransaction, undefined, prevOutputs);
   }
 
   throw new Error(`invalid network`);
