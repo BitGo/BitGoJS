@@ -6,7 +6,7 @@ import * as networks from '../../src/networks';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript, PrevOutput } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
 
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import {
@@ -15,6 +15,7 @@ import {
   getSignKeyCombinations,
   getTransactionBuilder,
 } from '../transaction_util';
+import { TxOutput } from 'bitcoinjs-lib';
 
 function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2Of3 | 'p2shP2pk') {
   it(`inputs script structure (${scriptType})`, function () {
@@ -183,7 +184,7 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
           i,
           defaultTestOutputAmount,
           verificationSettings,
-          getPrevOutputs(defaultTestOutputAmount, scriptType) as PrevOutput[]
+          getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[]
         ),
         value,
         JSON.stringify(verificationSettings)

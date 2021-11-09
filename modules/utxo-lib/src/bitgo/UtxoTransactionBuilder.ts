@@ -1,4 +1,4 @@
-import { Transaction, TransactionBuilder } from 'bitcoinjs-lib';
+import { TxOutput, Transaction, TransactionBuilder } from 'bitcoinjs-lib';
 // eslint-disable-next-line
 import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '../networkTypes';
@@ -16,7 +16,7 @@ export interface TxbSignArg {
 }
 
 export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction> extends TransactionBuilder {
-  constructor(network: Network, txb?: TransactionBuilder) {
+  constructor(network: Network, txb?: TransactionBuilder, prevOutputs?: TxOutput[]) {
     super();
     this.network = network as bitcoinjs.Network;
 
@@ -25,14 +25,29 @@ export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction>
     if (txb) {
       (this as any).__INPUTS = (txb as any).__INPUTS;
     }
+
+    if (prevOutputs) {
+      const txbInputs = (this as any).__INPUTS;
+      if (prevOutputs.length !== txbInputs.length) {
+        throw new Error(`prevOuts must match txbInput length`);
+      }
+      prevOutputs.forEach((o, i) => {
+        txbInputs[i].value = o.value;
+        txbInputs[i].prevOutScript = o.script;
+      });
+    }
   }
 
   createInitialTransaction(network: Network, tx?: Transaction): UtxoTransaction {
     return new UtxoTransaction(network, tx);
   }
 
-  static fromTransaction(tx: UtxoTransaction): UtxoTransactionBuilder {
-    return new UtxoTransactionBuilder(tx.network, TransactionBuilder.fromTransaction(tx));
+  static fromTransaction(
+    tx: UtxoTransaction,
+    network?: bitcoinjs.Network,
+    prevOutputs?: TxOutput[]
+  ): UtxoTransactionBuilder {
+    return new UtxoTransactionBuilder(tx.network, TransactionBuilder.fromTransaction(tx), prevOutputs);
   }
 
   get tx(): T {

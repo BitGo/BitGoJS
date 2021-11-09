@@ -1203,7 +1203,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         };
       };
 
-      const prevOutputs: utxolib.bitgo.PrevOutput[] = []; // prev output scripts used for p2tr signature verification
+      const prevOutputs: utxolib.TxOutput[] = []; // prev output scripts used for p2tr signature verification
       const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
       const signingData: { signParams?: utxolib.bitgo.TxbSignArg; signatureContext: any }[] = [];
 
@@ -1213,7 +1213,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         const signatureContext = getSignatureContext(txPrebuild, index);
 
         prevOutputs.push({
-          prevOutScript: utxolib.address.toOutputScript(signatureContext.unspent.address, self.network),
+          script: utxolib.address.toOutputScript(signatureContext.unspent.address, self.network),
           value: signatureContext.unspent.value,
         });
 

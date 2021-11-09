@@ -69,15 +69,17 @@ async function createTransactionsForScriptType(
 
   const script = createScriptPubKey(fixtureKeys, scriptType, network);
   const address = toRegtestAddress(network, scriptType, script);
-  const depositTxid = await sendFromFaucet(rpc, address, 1);
-  const depositTx = await rpc.getRawTransaction(depositTxid);
-  await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, depositTxid);
+  const deposit1Txid = await sendFromFaucet(rpc, address, 1);
+  const deposit1Tx = await rpc.getRawTransaction(deposit1Txid);
+  await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, deposit1Txid);
   if (!isScriptType2Of3(scriptType) || !isSupportedSpendType(network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
   }
 
-  const spendTx = createSpendTransaction(fixtureKeys, scriptType, depositTxid, depositTx, script, network);
+  const deposit2Txid = await sendFromFaucet(rpc, address, 1);
+  const deposit2Tx = await rpc.getRawTransaction(deposit2Txid);
+  const spendTx = createSpendTransaction(fixtureKeys, scriptType, [deposit1Tx, deposit2Tx], script, network);
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
   await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);

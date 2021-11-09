@@ -10,6 +10,7 @@ import {
   schnorrBip340,
   classify,
   taproot,
+  TxOutput,
   ScriptSignature,
 } from 'bitcoinjs-lib';
 
@@ -339,11 +340,6 @@ export type SignatureVerification = {
   signedBy: Buffer | undefined;
 };
 
-export interface PrevOutput {
-  prevOutScript: Buffer;
-  value: number;
-}
-
 /**
  * Get signature verifications for multsig transaction
  * @param transaction
@@ -358,7 +354,7 @@ export function getSignatureVerifications(
   inputIndex: number,
   amount: number,
   verificationSettings: VerificationSettings = {},
-  prevOutputs?: PrevOutput[]
+  prevOutputs?: TxOutput[]
 ): SignatureVerification[] {
   /* istanbul ignore next */
   if (!transaction.ins) {
@@ -413,7 +409,7 @@ export function getSignatureVerifications(
       const leafHash = taproot.getTapleafHash(controlBlock, pubScript);
       const signatureHash = transaction.hashForWitnessV1(
         inputIndex,
-        prevOutputs.map(({ prevOutScript }) => prevOutScript),
+        prevOutputs.map(({ script }) => script),
         prevOutputs.map(({ value }) => value),
         hashType,
         leafHash
@@ -463,7 +459,7 @@ export function verifySignature(
   inputIndex: number,
   amount: number,
   verificationSettings: VerificationSettings = {},
-  prevOutputs?: PrevOutput[]
+  prevOutputs?: TxOutput[]
 ): boolean {
   const signatureVerifications = getSignatureVerifications(
     transaction,
