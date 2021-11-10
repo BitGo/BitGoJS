@@ -141,7 +141,7 @@ describe('STX:', function () {
       feeInfo: { fee: '' },
     });
 
-    explain.memo.should.equal(accountLib.Stx.Utils.padMemo(memo));
+    explain.memo.should.equal(memo);
     explain.outputs[0].amount.should.equal(amount);
     explain.outputs[0].address.should.equal(destination);
   });
