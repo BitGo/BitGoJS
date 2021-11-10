@@ -12,7 +12,7 @@ const bitGo = new BitGo({ env: 'test' });
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses', () => {
     coins
-      .filter(coin => coin instanceof Erc20Coin)
+      .filter((coin) => coin instanceof Erc20Coin)
       .reduce((acc: { [index: string]: DuplicateCoinObject }, token) => {
         const address = (token as Readonly<Erc20Coin>).contractAddress.toString();
 
@@ -42,6 +42,23 @@ describe('ERC20 Coins', () => {
 describe('All Coins', () => {
   it('should initialize all coins in statics', () => {
     // will throw exception if we fail to init
-    coins.filter(coin => !coin.isToken).forEach(coin => bitGo.coin(coin.name));
+    coins.filter((coin) => !coin.isToken).forEach((coin) => bitGo.coin(coin.name));
+  });
+  describe('Polkadot Mainnet', () => {
+    const dot = coins.get('dot');
+    dot.network.name.should.equal('Polkadot');
+    dot.network.type.should.equal('mainnet');
+    dot.network.family.should.equal('dot');
+    dot.decimalPlaces.should.equal(10);
+    dot.primaryKeyCurve.should.equal('ed25519');
+  });
+
+  describe('Polkadot Westend', () => {
+    const dot = coins.get('tdot');
+    dot.network.name.should.equal('Westend');
+    dot.network.type.should.equal('testnet');
+    dot.network.family.should.equal('dot');
+    dot.decimalPlaces.should.equal(12);
+    dot.primaryKeyCurve.should.equal('ed25519');
   });
 });

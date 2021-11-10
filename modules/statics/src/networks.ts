@@ -232,13 +232,13 @@ class DashTestnet extends BitcoinLikeTestnet {
 class Polkadot extends Mainnet implements AccountNetwork {
   name = 'Polkadot';
   family = CoinFamily.DOT;
-  explorerUrl = 'https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/explorer';
+  explorerUrl = 'https://polkadot.subscan.io/extrinsic/';
 }
 
 class PolkadotTestnet extends Testnet implements AccountNetwork {
-  name = 'PolkadotTestnet';
+  name = 'Westend';
   family = CoinFamily.DOT;
-  explorerUrl = 'https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fwestend-rpc.polkadot.io#/explorer';
+  explorerUrl = 'https://westend.subscan.io/extrinsic/';
 }
 
 class Celo extends Mainnet implements EthereumNetwork {
