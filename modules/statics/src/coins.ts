@@ -99,9 +99,8 @@ export const coins = CoinMap.fromCoins([
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX),
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
-  // TODO (STLX-7738): Uncomment when core functionality is implemented
-  // account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
-  // account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
