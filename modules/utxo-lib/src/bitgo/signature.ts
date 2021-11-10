@@ -37,6 +37,8 @@ const inputTypes = [
   'scripthash',
   'witnesspubkeyhash',
   'witnessscripthash',
+  'taproot',
+  'taprootnofn',
   'witnesscommitment',
 ] as const;
 
@@ -71,6 +73,10 @@ export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
   publicKeys: [Buffer, Buffer];
   pubScript: Buffer;
   controlBlock: Buffer;
+}
+
+export function isParsedSignatureScriptTaproot(parsed: ParsedSignatureScript): parsed is ParsedSignatureScriptTaproot {
+  return parsed.inputClassification === 'taproot';
 }
 
 export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {

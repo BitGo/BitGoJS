@@ -1,10 +1,13 @@
 import 'should';
 import { CoinFamily, coins, Erc20Coin, EthereumNetwork, BaseNetwork } from '../../src';
+import { BitGo } from '../../../core';
 
 interface DuplicateCoinObject {
   name: string;
   network: BaseNetwork;
 }
+
+const bitGo = new BitGo({ env: 'test' });
 
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses', () => {
@@ -33,5 +36,12 @@ describe('ERC20 Coins', () => {
         acc[address] = { name: token.name, network: token.network };
         return acc;
       }, {});
+  });
+});
+
+describe('All Coins', () => {
+  it('should initialize all coins in statics', () => {
+    // will throw exception if we fail to init
+    coins.filter(coin => !coin.isToken).forEach(coin => bitGo.coin(coin.name));
   });
 });

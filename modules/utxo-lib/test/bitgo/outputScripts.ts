@@ -1,6 +1,12 @@
 import * as assert from 'assert';
 
-import { createOutputScript2of3, createOutputScriptP2shP2pk, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+import {
+  createOutputScript2of3,
+  createOutputScriptP2shP2pk,
+  createPaymentP2tr,
+  scriptTypeForChain,
+  scriptTypes2Of3,
+} from '../../src/bitgo/outputScripts';
 import { getKeyTriple } from '../integration_local_rpc/generate/outputScripts.util';
 import { ECPair, networks } from 'bitcoinjs-lib';
 
@@ -56,5 +62,36 @@ describe('createOutputScriptP2shP2pk', function () {
       '210219da48412c2268865fe8c126327d1b12eee350a3b69eb09e3323cc9a11828945ac'
     );
     assert.strictEqual(witnessScript, undefined);
+  });
+});
+
+describe('createPaymentP2tr', () => {
+  const keys = getKeyTriple('utxo');
+  const pubkeys = keys.map((k) => k.publicKey) as [Buffer, Buffer, Buffer];
+
+  const controlBlocks = [
+    'c1aa3303d48847f4d54aa02a4ff97448f1f430b07eecd632c41f390e3f8431a166487df024a0eb38aeb56b5263cf22c84a2c9c7daad9a8e55cce2e3cac87c52a0a',
+    'c1aa3303d48847f4d54aa02a4ff97448f1f430b07eecd632c41f390e3f8431a1660a75f62db677b9c1974741735aa4b0c2c8718796c82578b960e1fa0986d4f25cf0b2127669c12ad75a079c25502a5456764de23f30df1fcdb88418fe970834d7',
+    'c1aa3303d48847f4d54aa02a4ff97448f1f430b07eecd632c41f390e3f8431a1669c039366a9ce89ad30c9935268a10110cb1a4b6357dcc2c651e9de38639c206af0b2127669c12ad75a079c25502a5456764de23f30df1fcdb88418fe970834d7',
+  ];
+
+  it('allows no redeemIndex', () => {
+    const p2tr = createPaymentP2tr(pubkeys);
+    assert.strictEqual(p2tr.controlBlock, undefined);
+  });
+
+  for (let i = 0; i < 3; i++) {
+    it(`creates controlBlock for redeemIndex ${i}`, () => {
+      const p2tr = createPaymentP2tr(pubkeys, i);
+      assert.strictEqual(p2tr.controlBlock?.toString('hex'), controlBlocks[i]);
+    });
+  }
+});
+
+describe('scriptTypeForChain', () => {
+  const input = [0, 1, 10, 11, 20, 21, 30, 31];
+  const expected = ['p2sh', 'p2sh', 'p2shP2wsh', 'p2shP2wsh', 'p2wsh', 'p2wsh', 'p2tr', 'p2tr'];
+  it('returns expected values', () => {
+    assert.deepStrictEqual(input.map(scriptTypeForChain), expected);
   });
 });

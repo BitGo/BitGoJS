@@ -29,6 +29,7 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const SOL_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE, CoinFeature.SUPPORTS_TOKENS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -98,6 +99,9 @@ export const coins = CoinMap.fromCoins([
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX),
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
+  // TODO (STLX-7738): Uncomment when core functionality is implemented
+  // account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  // account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
@@ -241,6 +245,7 @@ export const coins = CoinMap.fromCoins([
   erc20('cdai', 'Compound DAI', 8, '0xf5dce57282a584d2746faf1593d3121fcac444dc', UnderlyingAsset.CDAI),
   erc20('cdt', 'Blox', 18, '0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af', UnderlyingAsset.CDT),
   erc20('cel', 'Celsius', 4, '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d', UnderlyingAsset.CEL),
+  erc20('celr', 'Celer Network', 18, '0x4f9254c83eb525f9fcf346490bbb3ed28a81c667', UnderlyingAsset.CELR),
   erc20('cfx', 'Changer Token', 18, '0x969faf8ca66b0d53a5196b5d3a0952cd3a88e074', UnderlyingAsset.CFX),
   erc20('ceth', 'Compound Ether', 8, '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', UnderlyingAsset.CETH),
   erc20('chfx', 'eToro Swiss Frank', 18, '0xe435502c85a4e7e79cfab4167af566c27a7a0784', UnderlyingAsset.CHFX),
@@ -541,6 +546,7 @@ export const coins = CoinMap.fromCoins([
   erc20('sgr', 'Sogur', 18, '0xaea8e1b6cb5c05d1dac618551c76bcd578ea3524', UnderlyingAsset.SGR),
   erc20('shk', 'iShook', 18, '0xebe4a49df7885d015329c919bf43e6460a858f1e', UnderlyingAsset.SHK),
   erc20('shopx', 'Splyt Core Token', 18, '0x7bef710a5759d197ec0bf621c3df802c2d60d848', UnderlyingAsset.SHOPX),
+  erc20('shib', 'Shiba Inu', 18, '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', UnderlyingAsset.SHIB),
   erc20('shr', 'ShareToken', 2, '0xee5fe244406f35d9b4ddb488a64d51456630befc', UnderlyingAsset.SHR),
   erc20('sih', 'Sih', 18, '0x6d728ff862bfe74be2aba30537e992a24f259a22', UnderlyingAsset.SIH),
   erc20('silv', 'XBullion Silver', 8, '0x628ab8b061fea2af1239b68efa5e46135d186666', UnderlyingAsset.SILV),
@@ -866,6 +872,127 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x61d54356be035944a3868eaa9556353b7150699d',
     UnderlyingAsset.GTERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtaave18dp',
+    'Goerli Test AAVE Token 18 Decimals',
+    18,
+    '0x631d5e3c45a459e8f98b9d6a2734fce7b051f845',
+    UnderlyingAsset.GTAAVE18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtbat18dp',
+    'Goerli Test BAT Token 18 Decimals',
+    18,
+    '0x95458b26c8b524eb5ef92c7a1759ede6224bef2e',
+    UnderlyingAsset.GTBAT18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtcomp18dp',
+    'Goerli Test COMP Token 18 Decimals',
+    18,
+    '0xa1ff97c394b25926acb09d12bacf0613055a2727',
+    UnderlyingAsset.GTCOMP18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtgrt18dp',
+    'Goerli Test GRT Token 18 Decimals',
+    18,
+    '0x1441f298d1f15084a0e5c714c966033e39597de7',
+    UnderlyingAsset.GTGRT18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtlink18dp',
+    'Goerli Test LINK Token 18 Decimals',
+    18,
+    '0xfe4537ff71aef28592c5c7331ed4b20f276d770b',
+    UnderlyingAsset.GTLINK18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtmkr18dp',
+    'Goerli Test MKR Token 18 Decimals',
+    18,
+    '0xf84e8207e4dc846e250208a6e4b05aa3e7ab00c6',
+    UnderlyingAsset.GTMKR18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtsnx18dp',
+    'Goerli Test SNX Token 18 Decimals',
+    18,
+    '0x50608a26bff103290a4a47b152395047801e9280',
+    UnderlyingAsset.GTSNX18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtuni18dp',
+    'Goerli Test UNI Token 18 Decimals',
+    18,
+    '0x6be1a99c215872cea33217b0f4bad63f186ddfac',
+    UnderlyingAsset.GTUNI18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtusdt6dp',
+    'Goerli Test USDT Token 6 Decimals',
+    6,
+    '0x51445dcddf5246229bae8c0ba3ea462e63038641',
+    UnderlyingAsset.GTUSDT6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtyfi18dp',
+    'Goerli Test YFI Token 18 Decimals',
+    18,
+    '0xf4755c1a9aaad9d6b919edb8346ce9b46d066be4',
+    UnderlyingAsset.GTYFI18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    'gtwbtc18dp',
+    'Goerli Test WBTC Token 8 Decimals',
+    8,
+    '0xd4bccebe77b7c1da89818f8889e3ea09046e7e38',
+    UnderlyingAsset.GTWBTC8DP,
     undefined,
     undefined,
     undefined,
