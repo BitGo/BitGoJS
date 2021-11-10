@@ -115,29 +115,6 @@ export const btcNonKrsRecoveryDecodedTx = {
   },
 };
 
-export const emptyBlockchairBtcAddressData = {
-  address: {
-    type: null,
-    script_hex: '',
-    balance: 0,
-    balance_usd: 0,
-    received: 0,
-    received_usd: 0,
-    spent: 0,
-    spent_usd: 0,
-    output_count: 0,
-    unspent_output_count: 0,
-    first_seen_receiving: null,
-    last_seen_receiving: null,
-    first_seen_spending: null,
-    last_seen_spending: null,
-    scripthash_type: null,
-    transaction_count: 0,
-  },
-  transactions: [],
-  utxo: [],
-};
-
 export const emptyAddressInfo = {
   txCount: 0,
   totalBalance: 0,
