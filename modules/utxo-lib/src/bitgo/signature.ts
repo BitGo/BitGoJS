@@ -23,10 +23,11 @@ import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
   createSpendScriptP2tr,
+  ScriptType,
   ScriptType2Of3,
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
-import { Triple } from './types';
+import { isTriple, Triple } from './types';
 
 const inputTypes = [
   'multisig',
@@ -44,20 +45,41 @@ const inputTypes = [
 
 type InputType = typeof inputTypes[number];
 
+export function isPlaceholderSignature(v: number | Buffer): boolean {
+  if (Buffer.isBuffer(v)) {
+    return v.length === 0;
+  }
+  return v === 0;
+}
+
 export interface ParsedSignatureScript {
+  scriptType: ScriptType | 'p2pkh' | undefined;
   isSegwitInput: boolean;
   inputClassification: InputType;
   p2shOutputClassification?: string;
   publicKeys?: Buffer[];
 }
 
-export interface ParsedSignatureP2PKH extends ParsedSignatureScript {
+export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
+  scriptType: undefined;
+}
+
+export interface ParsedSignatureScriptP2PK extends ParsedSignatureScript {
+  scriptType: 'p2shP2pk';
+  inputClassification: 'scripthash';
+}
+
+export interface ParsedSignatureScriptP2PKH extends ParsedSignatureScript {
+  scriptType: 'p2pkh';
+  inputClassification: 'pubkeyhash';
   signatures: [Buffer];
   publicKeys: [Buffer];
-  pubScript: Buffer;
+  pubScript?: Buffer;
 }
 
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
+  scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
+  inputClassification: 'scripthash' | 'witnessscripthash';
   signatures:
     | [Buffer, Buffer] // fully-signed transactions with signatures
     /* Partially signed transactions with placeholder signatures.
@@ -68,15 +90,13 @@ export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
 }
 
 export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
+  scriptType: 'p2tr';
+  inputClassification: 'taproot';
   // P2TR tapscript spends are for 2-of-2 multisig scripts
   signatures: [Buffer, Buffer]; // missing signature is encoded as empty buffer
   publicKeys: [Buffer, Buffer];
   pubScript: Buffer;
   controlBlock: Buffer;
-}
-
-export function isParsedSignatureScriptTaproot(parsed: ParsedSignatureScript): parsed is ParsedSignatureScriptTaproot {
-  return parsed.inputClassification === 'taproot';
 }
 
 export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
@@ -101,7 +121,12 @@ export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3)
  */
 export function parseSignatureScript(
   input: TxInput
-): ParsedSignatureScript | ParsedSignatureP2PKH | ParsedSignatureScript2Of3 | ParsedSignatureScriptTaproot {
+):
+  | ParsedSignatureScriptUnknown
+  | ParsedSignatureScriptP2PK
+  | ParsedSignatureScriptP2PKH
+  | ParsedSignatureScript2Of3
+  | ParsedSignatureScriptTaproot {
   const isSegwitInput = input.witness.length > 0;
   const isNativeSegwitInput = input.script.length === 0;
   let decompiledSigScript: Array<Buffer | number> | null;
@@ -123,10 +148,10 @@ export function parseSignatureScript(
   }
 
   if (!decompiledSigScript) {
-    return { isSegwitInput, inputClassification };
+    return { scriptType: undefined, isSegwitInput, inputClassification };
   }
 
-  if (inputClassification === classify.types.P2PKH) {
+  if (inputClassification === 'pubkeyhash') {
     /* istanbul ignore next */
     if (!decompiledSigScript || decompiledSigScript.length !== 2) {
       throw new Error('unexpected signature for p2pkh');
@@ -136,21 +161,28 @@ export function parseSignatureScript(
     if (!Buffer.isBuffer(signature) || !Buffer.isBuffer(publicKey)) {
       throw new Error('unexpected signature for p2pkh');
     }
-    const publicKeys = [publicKey];
+    const publicKeys: [Buffer] = [publicKey];
     const signatures: [Buffer] = [signature];
     const pubScript = payments.p2pkh({ pubkey: publicKey }).output;
 
-    return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+    return {
+      scriptType: 'p2pkh',
+      isSegwitInput,
+      inputClassification,
+      signatures,
+      publicKeys,
+      pubScript,
+    };
   }
 
-  if (inputClassification === classify.types.P2TR) {
+  if (inputClassification === 'taproot') {
     // assumes no annex
     if (input.witness.length !== 4) {
       throw new Error(`unrecognized taproot input`);
     }
     const [sig1, sig2, tapscript, controlBlock] = input.witness;
     const tapscriptClassification = classify.output(tapscript);
-    if (tapscriptClassification !== classify.types.P2TR_NS) {
+    if (tapscriptClassification !== 'taprootnofn') {
       throw new Error(`tapscript must be n of n multisig`);
     }
 
@@ -160,6 +192,7 @@ export function parseSignatureScript(
     }
 
     return {
+      scriptType: 'p2tr',
       isSegwitInput,
       inputClassification,
       signatures: [sig1, sig2].map((b) => {
@@ -187,11 +220,8 @@ export function parseSignatureScript(
   //
   // Transactions built with `.build()` only have two signatures `<sig1>` and `<sig2>` in _decompiledSigScript_.
   // Transactions built with `.buildIncomplete()` have three signatures, where missing signatures are substituted with `OP_0`.
-  const expectedScriptType =
-    inputClassification === classify.types.P2SH || inputClassification === classify.types.P2WSH;
-
-  if (!expectedScriptType) {
-    return { isSegwitInput, inputClassification };
+  if (inputClassification !== 'scripthash' && inputClassification !== 'witnessscripthash') {
+    return { scriptType: undefined, isSegwitInput, inputClassification };
   }
 
   const pubScript = decompiledSigScript[decompiledSigScript.length - 1];
@@ -202,8 +232,18 @@ export function parseSignatureScript(
 
   const p2shOutputClassification = classify.output(pubScript);
 
+  if (inputClassification === 'scripthash' && p2shOutputClassification === 'pubkey') {
+    return {
+      scriptType: 'p2shP2pk',
+      isSegwitInput,
+      inputClassification,
+      p2shOutputClassification,
+    };
+  }
+
   if (p2shOutputClassification !== 'multisig') {
     return {
+      scriptType: undefined,
       isSegwitInput,
       inputClassification,
       p2shOutputClassification,
@@ -223,7 +263,7 @@ export function parseSignatureScript(
     decompiledSigScript.length === 5;
 
   if (!expectedScriptLength) {
-    return { isSegwitInput, inputClassification };
+    return { scriptType: undefined, isSegwitInput, inputClassification };
   }
 
   if (isSegwitInput) {
@@ -256,7 +296,7 @@ export function parseSignatureScript(
       throw new Error();
     }
   });
-  if (publicKeys.length !== 3) {
+  if (!isTriple(publicKeys)) {
     /* istanbul ignore next */
     throw new Error(`expected 3 public keys, got ${publicKeys.length}`);
   }
@@ -281,7 +321,19 @@ export function parseSignatureScript(
     throw new Error(`expected opcode #${opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
   }
 
+  const scriptType = input.witness.length
+    ? input.script.length
+      ? 'p2shP2wsh'
+      : 'p2wsh'
+    : input.script.length
+    ? 'p2sh'
+    : undefined;
+  if (scriptType === undefined) {
+    throw new Error('illegal state');
+  }
+
   return {
+    scriptType,
     isSegwitInput,
     inputClassification,
     p2shOutputClassification,
