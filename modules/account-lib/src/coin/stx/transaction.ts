@@ -18,7 +18,7 @@ import { SigningError, ParseTransactionError, InvalidTransactionError, NotSuppor
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
-import { getTxSenderAddress, removeHexPrefix, stringifyCv } from './utils';
+import { getTxSenderAddress, removeHexPrefix, stringifyCv, unpadMemo } from './utils';
 import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
@@ -117,7 +117,7 @@ export class Transaction extends BaseTransaction {
         payloadType: PayloadType.TokenTransfer,
         // result.payload.memo will be padded with \u0000 up to
         // MEMO_MAX_LENGTH_BYTES as defined in @stacks/transactions
-        memo: payload.memo.content,
+        memo: unpadMemo(payload.memo.content),
         to: addressToString({
           type: StacksMessageType.Address,
           version: payload.recipient.address.version,

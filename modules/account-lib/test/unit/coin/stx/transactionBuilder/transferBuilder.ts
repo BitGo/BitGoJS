@@ -5,7 +5,6 @@ import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/stx'
 import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { rawPrvToExtendedKeys } from '../../../../../src/utils/crypto';
-import { padMemo } from '../../../../../src/coin/stx/utils';
 
 describe('Stx Transfer Builder', () => {
   const factory = register('tstx', TransactionBuilderFactory);
@@ -247,7 +246,7 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(signedTx.signature.length, 2);
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
-      should.deepEqual(txJson.payload.memo, padMemo('test'));
+      should.deepEqual(txJson.payload.memo, 'test');
       should.deepEqual(txJson.payload.amount, '1000');
     });
 
@@ -269,7 +268,7 @@ describe('Stx Transfer Builder', () => {
       should.deepEqual(signedTx.signature.length, 2);
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
-      should.deepEqual(txJson.payload.memo, padMemo('test'));
+      should.deepEqual(txJson.payload.memo, 'test');
       should.deepEqual(txJson.payload.amount, '1000');
     });
 

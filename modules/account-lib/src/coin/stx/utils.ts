@@ -13,7 +13,6 @@ import {
   deserializeTransaction,
   BufferReader,
   createMemoString,
-  MEMO_MAX_LENGTH_BYTES,
   AddressVersion,
   addressFromPublicKeys,
   createStacksPublicKey,
@@ -267,15 +266,17 @@ export function isValidContractFunctionName(name: string): boolean {
 }
 
 /**
- * Pads a memo string with nulls to fill up the length
+ * Unpads a memo string, so it removes nulls.
  *
- * Useful when comparing a memo in a transaction against a string.
+ * Useful when memo is fill up the length. Result is becomes readable.
  *
  * @param {string} memo - the string to be validated
  * @returns {boolean} - the validation result
  */
-export function padMemo(memo: string): string {
-  return memo.padEnd(MEMO_MAX_LENGTH_BYTES, '\u0000');
+export function unpadMemo(memo: string): string {
+  const end = memo.indexOf('\u0000');
+  if (end < 0) return memo;
+  return memo.slice(0, end);
 }
 
 /**
