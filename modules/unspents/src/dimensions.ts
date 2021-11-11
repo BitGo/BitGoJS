@@ -386,29 +386,30 @@ Dimensions.fromInput = function (input: utxolib.TxInput, params = {}) {
 
   if (input.script?.length || input.witness?.length) {
     const parsed = utxolib.bitgo.parseSignatureScript(input);
-    switch (parsed.inputClassification) {
-      case 'scripthash':
-        switch (parsed.p2shOutputClassification) {
-          case 'pubkey':
-            return p2shP2pkInput;
-          case 'multisig':
-            return parsed.isSegwitInput ? p2shP2wshInput : p2shInput;
-          default:
-            throw new Error(`unknown p2shOutputClassification: ${parsed.p2shOutputClassification}`);
-        }
-      case 'witnessscripthash':
+    switch (parsed.scriptType) {
+      case undefined:
+        // unknown script type, continue with `assumeUnsigned`
+        break;
+      case 'p2shP2pk':
+        return p2shP2pkInput;
+      case 'p2sh':
+        return p2shInput;
+      case 'p2shP2wsh':
+        return p2shP2wshInput;
+      case 'p2wsh':
         return p2wshInput;
-    }
-    if (utxolib.bitgo.isParsedSignatureScriptTaproot(parsed)) {
-      if (parsed.controlBlock.length === 65) {
-        // 33 bytes + 32 bytes for depth 1
-        return p2trScriptPathLevel1Input;
-      } else if (parsed.controlBlock.length === 97) {
-        // 33 bytes + 64 bytes for depth 2
-        return p2trScriptPathLevel2Input;
-      } else {
-        throw new Error(`unexpected control block length: ${parsed.controlBlock.length}`);
-      }
+      case 'p2tr':
+        if (parsed.controlBlock.length === 65) {
+          // 33 bytes + 32 bytes for depth 1
+          return p2trScriptPathLevel1Input;
+        } else if (parsed.controlBlock.length === 97) {
+          // 33 bytes + 64 bytes for depth 2
+          return p2trScriptPathLevel2Input;
+        } else {
+          throw new Error(`unexpected control block length: ${parsed.scriptType}`);
+        }
+      default:
+        throw new Error(`unexpected script type ${parsed.scriptType}`);
     }
   }
 
