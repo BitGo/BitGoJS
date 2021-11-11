@@ -53,3 +53,5 @@ export { Stx } from './stx';
 export { Tstx } from './tstx';
 export { AvaxC } from './avaxc';
 export { TavaxC } from './tavaxc';
+export { Sol } from './sol';
+export { Tsol } from './tsol';

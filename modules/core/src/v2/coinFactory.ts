@@ -22,6 +22,7 @@ import {
   Ltc,
   Ofc,
   Rbtc,
+  Sol,
   Stx,
   Susd,
   Talgo,
@@ -41,6 +42,7 @@ import {
   Tltc,
   Trbtc,
   Trx,
+  Tsol,
   Tstx,
   Tsusd,
   Ttrx,
@@ -170,6 +172,8 @@ GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcspr', Tcspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tstx', Tstx.createInstance);
+GlobalCoinFactory.registerCoinConstructor('sol', Sol.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tsol', Tsol.createInstance);
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
