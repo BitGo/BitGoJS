@@ -9,6 +9,7 @@ import {
   inputComponentsP2shP2pk,
   inputComponentsP2shP2wsh,
   inputComponentsP2wsh,
+  inputComponentsP2trScriptSpendLevel1,
 } from '../../src/inputWeights';
 import { pushdataEncodingLength } from '../../src/scriptSizes';
 import { UnspentTypeP2shP2pk, UnspentTypeScript2of3 } from '../testutils';
@@ -50,11 +51,6 @@ describe('Input Script Sizes (Worst-Case)', function () {
 
   [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk].forEach((inputType: string) => {
     describe(`inputType=${inputType}`, function () {
-      if (inputType === 'p2tr') {
-        // FIXME: validate p2tr spending sizes
-        return;
-      }
-
       it(`component sizes`, function () {
         let expectedComponents;
         switch (inputType) {
@@ -69,6 +65,9 @@ describe('Input Script Sizes (Worst-Case)', function () {
             break;
           case 'p2shP2pk':
             expectedComponents = inputComponentsP2shP2pk;
+            break;
+          case 'p2tr':
+            expectedComponents = inputComponentsP2trScriptSpendLevel1;
             break;
           default:
             throw new Error(`invalid inputType ${inputType}`);

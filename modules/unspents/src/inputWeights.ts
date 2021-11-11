@@ -71,8 +71,8 @@ function p2trScriptSpend(level: 1 | 2): number[] {
   return [
     schnorrSignatureNoSighashSize,
     schnorrSignatureNoSighashSize,
-    /* header byte */ 1 + /* inner key */ 32 + /* inner leaf */ 32 * level,
     opPushSize + schnorrPubkeySize + opCheckSigSize + opPushSize + schnorrPubkeySize + opCheckSigVerifySize,
+    /* header byte */ 1 + /* inner key */ 32 + /* inner leaf */ 32 * level,
   ];
 }
 
