@@ -12,7 +12,7 @@ const bitGo = new BitGo({ env: 'test' });
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses', () => {
     coins
-      .filter((coin) => coin instanceof Erc20Coin)
+      .filter(coin => coin instanceof Erc20Coin)
       .reduce((acc: { [index: string]: DuplicateCoinObject }, token) => {
         const address = (token as Readonly<Erc20Coin>).contractAddress.toString();
 
@@ -42,7 +42,7 @@ describe('ERC20 Coins', () => {
 describe('All Coins', () => {
   it('should initialize all coins in statics', () => {
     // will throw exception if we fail to init
-    coins.filter((coin) => !coin.isToken).forEach((coin) => bitGo.coin(coin.name));
+    coins.filter(coin => !coin.isToken && !['dot', 'tdot'].includes(coin.name)).forEach(coin => bitGo.coin(coin.name));
   });
   describe('Polkadot Mainnet', () => {
     const dot = coins.get('dot');
