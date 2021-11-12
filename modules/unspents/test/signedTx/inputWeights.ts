@@ -10,6 +10,7 @@ import {
   inputComponentsP2shP2wsh,
   inputComponentsP2wsh,
   inputComponentsP2trScriptSpendLevel1,
+  inputComponentsP2trScriptSpendLevel2,
 } from '../../src/inputWeights';
 import { pushdataEncodingLength } from '../../src/scriptSizes';
 import { UnspentTypeP2shP2pk, UnspentTypeScript2of3 } from '../testutils';
@@ -18,10 +19,18 @@ import { TxCombo } from './txGen';
 describe('Input Script Sizes (Worst-Case)', function () {
   const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/${v}`)));
 
-  function getLargestInputWithType(inputType: string, inputCount = 100): bitcoin.TxInput {
-    return new TxCombo(keys, Array.from({ length: inputCount }).fill(inputType) as string[], [
-      UnspentTypeScript2of3.p2sh,
-    ])
+  function getLargestInputWithType(
+    inputType: string,
+    signKeys: bip32.BIP32Interface[],
+    inputCount = 100
+  ): bitcoin.TxInput {
+    return new TxCombo(
+      keys,
+      Array.from({ length: inputCount }).fill(inputType) as string[],
+      [UnspentTypeScript2of3.p2sh],
+      undefined,
+      signKeys
+    )
       .getSignedTx()
       .ins.reduce((a, b) => (getInputWeight(a) > getInputWeight(b) ? a : b));
   }
@@ -49,8 +58,10 @@ describe('Input Script Sizes (Worst-Case)', function () {
     };
   }
 
-  [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk].forEach((inputType: string) => {
-    describe(`inputType=${inputType}`, function () {
+  function runTestComponentSizes(inputType: string, signKeys: bip32.BIP32Interface[]) {
+    const signKeysStr = signKeys.map((k) => ['user', 'backup', 'bitgo'][keys.indexOf(k)]).join(',');
+
+    describe(`inputType=${inputType} signKeys=${signKeysStr}`, function () {
       it(`component sizes`, function () {
         let expectedComponents;
         switch (inputType) {
@@ -67,17 +78,28 @@ describe('Input Script Sizes (Worst-Case)', function () {
             expectedComponents = inputComponentsP2shP2pk;
             break;
           case 'p2tr':
-            expectedComponents = inputComponentsP2trScriptSpendLevel1;
+            if (signKeys[1] === keys[2]) {
+              expectedComponents = inputComponentsP2trScriptSpendLevel1;
+            } else if (signKeys[1] === keys[1]) {
+              expectedComponents = inputComponentsP2trScriptSpendLevel2;
+            } else {
+              throw new Error(`unexpected cosigner`);
+            }
             break;
           default:
             throw new Error(`invalid inputType ${inputType}`);
         }
 
-        const input = getLargestInputWithType(inputType);
+        const input = getLargestInputWithType(inputType, signKeys);
         const components = getInputComponents(input);
         assert.deepStrictEqual(components, expectedComponents);
         assert.strictEqual(getInputComponentsWeight(components), getInputWeight(input));
       });
     });
+  }
+
+  [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk].forEach((inputType: string) => {
+    runTestComponentSizes(inputType, inputType === 'p2shP2pk' ? [keys[0]] : [keys[0], keys[2]]);
+    runTestComponentSizes(inputType, inputType === 'p2shP2pk' ? [keys[0]] : [keys[0], keys[1]]);
   });
 });
