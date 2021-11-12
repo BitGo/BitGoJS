@@ -399,14 +399,13 @@ Dimensions.fromInput = function (input: utxolib.TxInput, params = {}) {
       case 'p2wsh':
         return p2wshInput;
       case 'p2tr':
-        if (parsed.controlBlock.length === 65) {
-          // 33 bytes + 32 bytes for depth 1
-          return p2trScriptPathLevel1Input;
-        } else if (parsed.controlBlock.length === 97) {
-          // 33 bytes + 64 bytes for depth 2
-          return p2trScriptPathLevel2Input;
-        } else {
-          throw new Error(`unexpected control block length: ${parsed.scriptType}`);
+        switch (parsed.scriptPathLevel) {
+          case 1:
+            return p2trScriptPathLevel1Input;
+          case 2:
+            return p2trScriptPathLevel2Input;
+          default:
+            throw new Error(`unexpected script path level`);
         }
       default:
         throw new Error(`unexpected script type ${parsed.scriptType}`);
