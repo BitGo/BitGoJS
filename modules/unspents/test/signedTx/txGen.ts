@@ -80,12 +80,12 @@ function signInput(
   keys: bip32.BIP32Interface[],
   unspent: IUnspent
 ) {
-  const nKeys = unspent.inputType === 'p2shP2pk' ? 1 : 2;
-  keys.slice(0, nKeys).forEach((keyPair) => {
+  const signKeys = unspent.inputType === 'p2shP2pk' ? [keys[0]] : [keys[0], keys[2]];
+  signKeys.forEach((keyPair) => {
     if (unspent.inputType === 'p2shP2pk') {
       utxolib.bitgo.signInputP2shP2pk(txBuilder, index, keyPair);
     } else {
-      const cosigner = keyPair === keys[0] ? keys[1] : keys[0];
+      const cosigner = keyPair === signKeys[0] ? signKeys[1] : signKeys[0];
       utxolib.bitgo.signInput2Of3(
         txBuilder,
         index,
