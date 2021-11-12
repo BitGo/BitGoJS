@@ -1,6 +1,5 @@
-import * as assert from 'assert';
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import * as assert from 'assert';
 import * as utxolib from '../../src';
 import { getNetworkList, getNetworkName } from '../../src/coins';
 import {
@@ -10,23 +9,17 @@ import {
   ScriptType,
   scriptTypes,
 } from '../integration_local_rpc/generate/outputScripts.util';
-import { Network } from '../../src/networkTypes';
 
-async function readFixture<T>(network: Network, defaultValue: T): Promise<T> {
-  const p = path.join(__dirname, 'fixtures', `${getNetworkName(network)}.json`);
-  try {
-    return JSON.parse(await fs.readFile(p, 'utf8')) as T;
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      await fs.writeFile(p, JSON.stringify(defaultValue, null, 2));
-      throw new Error(`wrote defaults, please check contents and re-run tests`);
-    }
-
-    throw e;
-  }
-}
+import * as fixtureUtil from '../fixture.util';
 
 type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
+
+async function readFixture<T>(network: utxolib.Network, defaultValue: T): Promise<T> {
+  return await fixtureUtil.readFixture(
+    path.join(__dirname, 'fixtures', `${getNetworkName(network)}.json`),
+    defaultValue
+  );
+}
 
 describe('Address', function () {
   getNetworkList().forEach((network) => {
