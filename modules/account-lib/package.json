@@ -50,7 +50,7 @@
     "algosdk": "^1.12.0",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.2",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.39",
     "elliptic": "^6.5.2",
