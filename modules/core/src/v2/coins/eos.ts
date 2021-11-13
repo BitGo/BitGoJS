@@ -706,15 +706,16 @@ export class Eos extends BaseCoin {
         tx.address = deserializedUnstakeAction.address;
       } else if (txAction.name === 'refund') {
         if (tx.actions.length !== 1) {
-          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+          throw new Error(`refund should only have 1 action: ${tx.actions.length} given`);
         }
 
         if (!isRefundActionData(txAction.data)) {
-          throw new Error('Invalid or incomplete unstake action data');
+          throw new Error('Invalid or incomplete refund action data');
         }
 
         const refundActionData = txAction.data;
         tx.address = refundActionData.owner;
+        tx.amount = '0';
       } else {
         throw new Error(`invalid action: ${txAction.name}`);
       }
