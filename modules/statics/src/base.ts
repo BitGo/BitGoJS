@@ -627,6 +627,7 @@ export enum UnderlyingAsset {
   UQC = 'uqc',
   URHD = 'urhd',
   USDC = 'usdc',
+  // Also available on EOS
   USDT = 'usdt',
   USDX = 'usdx',
   USG = 'usg',
@@ -711,10 +712,9 @@ export enum UnderlyingAsset {
   'talgo:180447' = 'talgo:180447',
 
   // EOS tokens
-  CHEX = 'CHEX',
-  IQ = 'IQ',
-  EOS_BOX = 'BOX',
-  EOS_USDT = 'USDT',
+  CHEX = 'chex',
+  IQ = 'iq',
+  EOS_BOX = 'eos:box',
 }
 
 /**
