@@ -42,6 +42,23 @@ describe('ERC20 Coins', () => {
 describe('All Coins', () => {
   it('should initialize all coins in statics', () => {
     // will throw exception if we fail to init
-    coins.filter(coin => !coin.isToken).forEach(coin => bitGo.coin(coin.name));
+    coins.filter(coin => !coin.isToken && !['dot', 'tdot'].includes(coin.name)).forEach(coin => bitGo.coin(coin.name));
+  });
+  describe('Polkadot Mainnet', () => {
+    const dot = coins.get('dot');
+    dot.network.name.should.equal('Polkadot');
+    dot.network.type.should.equal('mainnet');
+    dot.network.family.should.equal('dot');
+    dot.decimalPlaces.should.equal(10);
+    dot.primaryKeyCurve.should.equal('ed25519');
+  });
+
+  describe('Polkadot Westend', () => {
+    const dot = coins.get('tdot');
+    dot.network.name.should.equal('Westend');
+    dot.network.type.should.equal('testnet');
+    dot.network.family.should.equal('dot');
+    dot.decimalPlaces.should.equal(12);
+    dot.primaryKeyCurve.should.equal('ed25519');
   });
 });
