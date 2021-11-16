@@ -288,8 +288,8 @@ class Ethereum extends Mainnet implements EthereumNetwork {
 class Ethereum2 extends Mainnet implements AccountNetwork {
   name = 'Ethereum2';
   family = CoinFamily.ETH2;
-  explorerUrl = 'https://beaconscan.com/tx';
-  accountExplorerUrl = 'https://beaconscan.com/address';
+  explorerUrl = 'https://beaconcha.in/tx';
+  accountExplorerUrl = 'https://beaconcha.in/address';
 }
 
 class Pyrmont extends Testnet implements AccountNetwork {
