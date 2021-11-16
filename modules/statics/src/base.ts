@@ -363,6 +363,7 @@ export enum UnderlyingAsset {
   GNT = 'gnt',
   GODS = 'gods',
   GOG = 'gog',
+  GOGV2 = 'gogv2',
   GOLD = 'gold',
   GOT = 'got',
   GRT = 'grt',
