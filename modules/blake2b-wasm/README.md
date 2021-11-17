@@ -62,7 +62,7 @@ The format of this file is S-Expressions that can be compiled to their binary WA
 wat2wasm blake2b.wat -o blake2b.wasm
 ```
 
-To build the thin Javascript wrapper for the WASM module use `wat2js`:
+To build the thin JavaScript wrapper for the WASM module use `wat2js`:
 
 ```
 # also available as `npm run compile`

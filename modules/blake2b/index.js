@@ -106,7 +106,7 @@ var SIGMA8 = [
 
 // These are offsets into a uint64 buffer.
 // Multiply them all by 2 to make them offsets into a uint32 buffer,
-// because this is Javascript and we don't have uint64s
+// because this is JavaScript and we don't have uint64s
 var SIGMA82 = new Uint8Array(SIGMA8.map(function (x) { return x * 2 }))
 
 // Compression function. 'last' flag indicates last block.
