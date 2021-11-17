@@ -366,7 +366,7 @@ export const coins = CoinMap.fromCoins([
   erc20('gno', 'Gnosis', 18, '0x6810e776880c02933d47db1b9fc05908e5386b96', UnderlyingAsset.GNO),
   erc20('gnt', 'Golem', 18, '0xa74476443119a942de498590fe1f2454d7d4ac0d', UnderlyingAsset.GNT),
   erc20('gods', 'Gods Unchained', 18, '0xccc8cb5229b0ac8069c51fd58367fd1e622afd97', UnderlyingAsset.GODS),
-  erc20('gog', 'Guild of Guardians', 18, '0xfba8dc72d0e1f5067d3b52a1f2cbb27cf6aa673c', UnderlyingAsset.GOG),
+  erc20('gog', 'Guild of Guardians', 18, '0x9ab7bb7fdc60f4357ecfef43986818a2a3569c62', UnderlyingAsset.GOG),
   erc20('gold', 'XBullion Token', 8, '0x0e573fdd3c5acf3a74f1775b0f9823a1a0e2b86b', UnderlyingAsset.GOLD),
   erc20('got', 'GOExchange', 18, '0xf11f2550769dac4226731b7732dd4e17e72b1b01', UnderlyingAsset.GOT),
   erc20('grt', 'The Graph', 18, '0xc944e90c64b2c07662a292be6244bdf05cda44a7', UnderlyingAsset.GRT),
