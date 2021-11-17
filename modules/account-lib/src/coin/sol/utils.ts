@@ -1,34 +1,82 @@
-import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { Keypair, PublicKey } from '@solana/web3.js';
+import bs58 from 'bs58';
+import BigNumber from 'bignumber.js';
 
-export class Utils implements BaseUtils {
-  /** @inheritdoc */
-  isValidAddress(address: string): boolean {
-    throw new NotImplementedError('isValidAddress not implemented');
-  }
+const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
+const DECODED_ADDRESS_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#account-address-format
+const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
+const BASE_58_ENCONDING_REGEX = '[1-9A-HJ-NP-Za-km-z]';
 
-  /** @inheritdoc */
-  isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('isValidBlockId not implemented');
-  }
+/** @inheritdoc */
+export function isValidAddress(address: string): boolean {
+  return isValidPublicKey(address);
+}
 
-  /** @inheritdoc */
-  isValidPrivateKey(key: string): boolean {
-    throw new NotImplementedError('isValidPrivateKey not implemented');
+/** @inheritdoc */
+export function isValidBlockId(hash: string): boolean {
+  try {
+    return (
+      !!hash && new RegExp(BASE_58_ENCONDING_REGEX).test(hash) && bs58.decode(hash).length === DECODED_BLOCK_HASH_LENGTH
+    );
+  } catch (e) {
+    return false;
   }
+}
 
-  /** @inheritdoc */
-  isValidPublicKey(key: string): boolean {
-    throw new NotImplementedError('isValidPublicKey not implemented');
+/** @inheritdoc */
+export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
+  try {
+    const key: Uint8Array = typeof prvKey === 'string' ? this.base58ToUint8Array(prvKey) : prvKey;
+    return !!Keypair.fromSecretKey(key);
+  } catch (e) {
+    return false;
   }
+}
 
-  /** @inheritdoc */
-  isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('isValidSignature not implemented');
+/** @inheritdoc */
+export function isValidPublicKey(pubKey: string): boolean {
+  try {
+    return (
+      !!pubKey &&
+      new RegExp(BASE_58_ENCONDING_REGEX).test(pubKey) &&
+      bs58.decode(pubKey).length === DECODED_ADDRESS_LENGTH &&
+      PublicKey.isOnCurve(new PublicKey(pubKey).toBuffer())
+    );
+  } catch (e) {
+    return false;
   }
+}
 
-  /** @inheritdoc */
-  isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('isValidTransactionId not implemented');
+/** @inheritdoc */
+export function isValidSignature(signature: string): boolean {
+  try {
+    return !!signature && bs58.decode(signature).length === DECODED_SIGNATURE_LENGTH;
+  } catch (e) {
+    return false;
   }
+}
+
+/** @inheritdoc */
+// TransactionId are the first signature on a Transaction
+export function isValidTransactionId(txId: string): boolean {
+  return this.isValidSignature(txId);
+}
+
+/**
+ * Returns whether or not the string is a valid amount of lamports number
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidAmount(amount: string): boolean {
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
+}
+
+export function base58ToUint8Array(key: string): Uint8Array {
+  return new Uint8Array(bs58.decode(key));
+}
+
+export function Uint8ArrayTobase58(key: Uint8Array): string {
+  return bs58.encode(key);
 }
