@@ -3,7 +3,6 @@ import { randomBytes as cryptoRandomBytes } from 'crypto';
 import { Ed25519Curve, UnaryOperation, BinaryOperation } from './curves';
 import * as BigNum from 'bn.js';
 import { sha512 } from 'js-sha512';
-import shamir = require('secrets.js-grempe');
 const sodium = require('libsodium-wrappers-sumo');
 import { split as shamirSplit, combine as shamirCombine } from './shamir';
 
@@ -31,33 +30,28 @@ export default class Eddsa {
     uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
     const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
     const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
-
-    const u_hex = u.toString('hex');
-    let split_u: string[] | Buffer[] = shamir.share(u_hex, numShares, threshold);
-    split_u = split_u.map((uShare) => {
-      return Buffer.from(uShare, 'hex');
-    });
+    const split_u = await shamirSplit(u, threshold, numShares);
     
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
     const P_i = {
-      i: index,
+      i: index.toString(),
       y: y,
-      u: split_u[index - 1],
+      u: split_u[index.toString()],
       prefix: prefix,
     };
     const shares: any = {
       [index]: P_i,
     };
 
-    for (let ind = 0; ind < split_u.length; ind++) {
-      if (ind + 1 === index) {
+    for (const ind in split_u) {
+      if (ind === index.toString()) {
         continue;
       }
-      shares[ind + 1] = {
-        i: ind + 1,
+      shares[ind] = {
+        i: ind,
         j: P_i['i'],
         y: y,
         u: split_u[ind],
@@ -82,15 +76,17 @@ export default class Eddsa {
     const yShares = shares.map(share => share['y']);
     const uShares = shares.map(share => share['u']);
     let y: Buffer = yShares[0];
-    let x: Buffer = uShares[0].slice(0, 32);
+    let x: Buffer = uShares[0];
     for (let ind = 1; ind < yShares.length; ind ++) {
       const share = yShares[ind];
       y = sodium.crypto_core_ed25519_add(y, share);
     }
     for (let ind = 1; ind < uShares.length; ind ++) {
-      const share = uShares[ind].slice(0, 32);
+      const share = uShares[ind];
       x = sodium.crypto_core_ed25519_scalar_add(x, share);
     }
+    x = Buffer.from(x);
+    y = Buffer.from(y);
 
     P_i = {
       i: P_i['i'],
@@ -123,6 +119,7 @@ export default class Eddsa {
     });
     const keys = Object.keys(S_i);
     S_i = S_i[keys[0]];
+    const indices = shares.map((share) => share['i']);
 
     const randomBuffer = Buffer.from(sodium.crypto_core_ed25519_scalar_random());
     const combinedBuffer = Buffer.concat([S_i['prefix'], message, randomBuffer]);
@@ -131,11 +128,7 @@ export default class Eddsa {
     const r = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
     const R = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(r));
 
-    const r_hex = r.toString('hex');
-    let split_r: string[] | Buffer[] = shamir.share(r_hex, numShares, threshold);
-    split_r = split_r.map((rShare) => {
-      return Buffer.from(rShare, 'hex');
-    });
+    const split_r = await shamirSplit(r, shares.length, shares.length, indices);
 
     const resultShares: any = {
       [S_i['i']]: {
@@ -158,7 +151,6 @@ export default class Eddsa {
         };
       }
     }
-
     return resultShares;
   }
 

@@ -1,6 +1,8 @@
 const assert = require('assert');
 import { Ed25519Curve, BinaryOperation } from './curves';
+const sodium = require('libsodium-wrappers-sumo');
 import * as BigNum from 'bn.js';
+import BN = require('bn.js');
 
 /**
  * Perform Shamir sharing on the secret `secret` to the degree `threshold - 1` split `numShares`
@@ -13,29 +15,32 @@ import * as BigNum from 'bn.js';
  * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares 
  * representing that share's free term.
  */
-export async function split(secret: BigNum, threshold: number, numShares: number, indices?: Array<number>) {
+export async function split(secret: Buffer, threshold: number, numShares: number, indices?: Array<number>) {
+  await sodium.ready;
   if (indices === undefined) {
+    // make range(1, n + 1)
     indices = [...Array(numShares).keys()].map(x => x + 1);
   }
   assert(threshold > 1);
   assert(threshold <= numShares);
-  const coefs: BigNum[] = [];
+  const coefs: Buffer[] = [];
   for (let ind = 0; ind < threshold - 1; ind++) {
-    const random_value = await Ed25519Curve.scalarRandom();
+    const random_value = sodium.crypto_core_ed25519_scalar_random();
     coefs.push(random_value);
   }
   coefs.push(secret);
 
-  const shares: Record<number, BigNum > = {};
+  const shares: Record<number, Buffer> = {};
   for (let ind = 0; ind < indices.length; ind++) {
-    const x = new BigNum(indices[ind]);
-    const partial = new BigNum(0);
-    for (let other = 0; other < coefs.length; other++) {
-      const scalar_mult = await Ed25519Curve.binaryOperation(partial, x, BinaryOperation.scalarMultiply);
-      const new_add = await Ed25519Curve.binaryOperation(coefs[other], scalar_mult, BinaryOperation.scalarAdd);
-      partial.add(new_add);
+    const x = indices[ind];
+    const x_buffer = new BN(x).toBuffer('le', 32);
+    let partial = coefs[0];
+    for (let other = 1; other < coefs.length ; other++) {
+      const scalarMult = sodium.crypto_core_ed25519_scalar_mul(partial, x_buffer);
+      const newAdd = sodium.crypto_core_ed25519_scalar_add(coefs[other], scalarMult);
+      partial = newAdd;
     }
-    shares[indices[ind]] = partial;
+    shares[x] = Buffer.from(partial);
   }
   return shares;
 }
