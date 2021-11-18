@@ -24,7 +24,7 @@ describe('TSS EDDSA key generation and signing', () => {
     const B_sign = await Eddsa.sign(message_buffer, [A_sign_share[2], B_sign_share[2]]);
 
     const signature = await Eddsa.signCombine([A_sign, B_sign]);
-    // const result = await Eddsa.verify(message_buffer, signature);
-    // result.should.equal(true);
+    const result = await Eddsa.verify(message_buffer, signature);
+    result.should.equal(true);
   });
 });

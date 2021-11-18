@@ -209,15 +209,10 @@ export default class Eddsa {
     };
   }
 
-  public static async verify(message, signature): Promise<boolean> {
-    const y_buffer = Buffer.alloc(32);
-    const r_buffer = Buffer.alloc(32);
-    const sigma_buffer = Buffer.alloc(32);
-    y_buffer.writeUInt32LE(signature['y'], 0);
-    r_buffer.writeUInt32LE(signature['R'], 0);
-    sigma_buffer.writeUInt32LE(signature['sigma'], 0);
-
-    const combinedBuffer = Buffer.concat([r_buffer, sigma_buffer]);
-    return await Ed25519Curve.verify(y_buffer, message, combinedBuffer);
+  public static async verify(message: Buffer, signature): Promise<boolean> {
+    await sodium.ready;
+    const signedMessage = Buffer.concat([signature['y'], message]);
+    const combinedBuffer = Buffer.concat([signature['R'], signature['sigma']]);
+    return sodium.crypto_sign_open(signedMessage, combinedBuffer);
   }
 }
