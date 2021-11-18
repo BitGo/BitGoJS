@@ -211,8 +211,8 @@ export default class Eddsa {
 
   public static async verify(message: Buffer, signature): Promise<boolean> {
     await sodium.ready;
-    const signedMessage = Buffer.concat([signature['y'], message]);
-    const combinedBuffer = Buffer.concat([signature['R'], signature['sigma']]);
-    return sodium.crypto_sign_open(signedMessage, combinedBuffer);
+    const publicKey = signature['y'];
+    const signedMessage = Buffer.concat([signature['R'], signature['sigma'], message]);
+    return sodium.crypto_sign_open(signedMessage, publicKey);
   }
 }
