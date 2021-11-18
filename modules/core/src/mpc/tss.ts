@@ -190,15 +190,18 @@ export default class Eddsa {
   }
 
   public static async signCombine(shares) {
-    const y = Object.keys(shares)[0]['y'];
-    const R = Object.keys(shares)[0]['R'];
+    await sodium.ready;
+    const keys = Object.keys(shares);
+    const y = shares[keys[0]]['y'];
+    const R = shares[keys[0]]['R'];
 
     const resultShares = {};
-    for (let ind = 0; ind < Object.keys(shares).length; ind++) {
+    for (const ind in shares) {
       const S_i = shares[ind];
       resultShares[S_i['i']] = S_i['gamma'];
     }
-    const sigma = shamirCombine(resultShares);
+    let sigma = await shamirCombine(resultShares);
+    sigma = Buffer.from(sigma);
     return {
       y: y,
       R: R,
