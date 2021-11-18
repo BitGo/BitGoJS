@@ -17,7 +17,7 @@ export default class Eddsa {
 
     const randomNumber = new BigNum(cryptoRandomBytes(32));
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
-    const h = new BigNum(sha512.digest(sk)).toBuffer('be');
+    const h = new BigNum(sha512.digest(sk)).toBuffer('le');
     const zeroBuffer = Buffer.alloc(64 - h.length);
     const combinedBuffer = Buffer.concat([h, zeroBuffer]);
 
