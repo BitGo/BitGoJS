@@ -27,13 +27,13 @@ export default class Eddsa {
     uBuffer[31] |= 64;
 
     const zeroBuffer32 = Buffer.alloc(32);
-    uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
+    uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
     const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
     const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
     const split_u = await shamirSplit(u, threshold, numShares);
     
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
-    prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
+    prefixBuffer = Buffer.concat([prefixBuffer, zeroBuffer32]);
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
     const P_i = {
