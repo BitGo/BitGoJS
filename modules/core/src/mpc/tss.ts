@@ -40,7 +40,7 @@ export default class Eddsa {
     
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
-    const prefix = sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer);
+    const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
     const P_i = {
       i: index,
@@ -116,24 +116,26 @@ export default class Eddsa {
   }
 
 
-  public static async signShare(message: Buffer, shares) {
+  public static async signShare(message: Buffer, shares, threshold, numShares) {
+    await sodium.ready;
     let S_i = shares.filter((share) => {
       return !('j' in share);
     });
-    S_i = Object.keys(S_i)[0];
+    const keys = Object.keys(S_i);
+    S_i = S_i[keys[0]];
 
-    const indices = shares.map(share => share['i']);
-    const prefixBuffer = Buffer.alloc(32);
-    const randomBuffer = Buffer.alloc(32);
-    prefixBuffer.writeInt32BE(S_i['prefxi'], 0);
-    // randomBuffer.writeInt32BE(await Ed25519Curve.scalarRandom(), 0);
+    const randomBuffer = Buffer.from(sodium.crypto_core_ed25519_scalar_random());
+    const combinedBuffer = Buffer.concat([S_i['prefix'], message, randomBuffer]);
+    const digest = Buffer.from(sha512.digest(combinedBuffer));
 
-    const combinedBuffer = Buffer.concat([prefixBuffer, message, randomBuffer]);
-    const digest = sha512.digest(combinedBuffer);
-    const L = new BigNum(digest);
-    const r = await Ed25519Curve.scalarReduce(L);
-    const R = await Ed25519Curve.unaryOperation(r, UnaryOperation.pointBaseMultiply);
-    const split_r = shamirSplit(r, shares.length, shares.length, indices);
+    const r = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
+    const R = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(r));
+
+    const r_hex = r.toString('hex');
+    let split_r: string[] | Buffer[] = shamir.share(r_hex, numShares, threshold);
+    split_r = split_r.map((rShare) => {
+      return Buffer.from(rShare, 'hex');
+    });
 
     const resultShares: any = {
       [S_i['i']]: {
@@ -145,7 +147,7 @@ export default class Eddsa {
       },
     };
 
-    for (let ind = 0; ind < Object.keys(shares).length; ind++) {
+    for (let ind = 0; ind < shares.length; ind++) {
       const S_j = shares[ind];
       if ('j' in S_j) {
         resultShares[S_j['i']] = {
