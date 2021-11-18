@@ -155,40 +155,38 @@ export default class Eddsa {
   }
 
   public static async sign(message: Buffer, shares) {
+    await sodium.ready;
     let S_i = shares.filter((share) => {
       return !('j' in share);
     });
-    S_i = Object.keys(S_i)[0];
+    const keys = Object.keys(S_i);
+    S_i = S_i[keys[0]];
 
     const rShares = shares.map(share => share['R']);
-    const R = rShares.reduce(async (partial, share) => {
-      return await Ed25519Curve.pointAdd(partial, share);
-    });
 
-    const r_buffer = Buffer.alloc(32);
-    const si_buffer = Buffer.alloc(32);
-    r_buffer.writeInt32LE(R, 0);
-    si_buffer.writeInt32LE(S_i['y'], 0);
-    const combinedBuffer = Buffer.concat([r_buffer, si_buffer, message]);
-    const digest = sha512.digest(combinedBuffer);
-    const L = new BigNum(digest);
-    const k = await Ed25519Curve.scalarReduce(L);
+    let R = rShares[0];
+    for (let ind = 1; ind < rShares.length; ind ++) {
+      const share = rShares[ind];
+      R = sodium.crypto_core_ed25519_add(R, share);
+    }
+    R = Buffer.from(R);
 
-    const little_r_shares = shares.map(share => share['r']);
-    const r = little_r_shares.reduce((partial, share) => {
-      return Ed25519Curve.binaryOperation(partial, share, BinaryOperation.scalarAdd);
-    });
-    const gamma = await Ed25519Curve.binaryOperation(r,
-      await Ed25519Curve.binaryOperation(k, S_i['x'], BinaryOperation.scalarMultiply),
-      BinaryOperation.scalarAdd
-    );
-
-    return {
+    const combinedBuffer = Buffer.concat([R, S_i['y'], message]);
+    const digest = Buffer.from(sha512.digest(combinedBuffer));
+    const k = sodium.crypto_core_ed25519_scalar_reduce(digest);
+    let r = rShares[0];
+    for (let ind = 1; ind < rShares.length; ind ++) {
+      const share = rShares[ind];
+      r = sodium.crypto_core_ed25519_add(r, share);
+    }
+    const gamma = Buffer.from(sodium.crypto_core_ed25519_scalar_add(r, sodium.crypto_core_ed25519_scalar_mul(k, S_i['x'])));
+    const result = {
       i: S_i['i'],
       y: S_i['y'],
       gamma: gamma,
       R: R,
     };
+    return result;
   }
 
   public static async signCombine(shares) {
