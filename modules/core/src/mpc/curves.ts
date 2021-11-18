@@ -26,26 +26,24 @@ export class Ed25519Curve {
   private constructor() {}
 
 
-  public static async scalarRandom(): Promise<number> {
+  public static async scalarRandom(): Promise<BigNum> {
     await sodium.ready;
     const random_buffer = cryptoRandomBytes(64);
     const result_buffer = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(random_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
   }
   
-  public static async scalarReduce(a: BigNum): Promise<number> {
+  public static async scalarReduce(a: BigNum): Promise<BigNum> {
     await sodium.ready;
     const a_buffer = a.toBuffer('le', 64);
     const result_buffer = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(a_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
   }
 
-  public static async binaryOperation(a: number, b: number, operation: BinaryOperation): Promise<number> {
+  public static async binaryOperation(a: BigNum, b: BigNum, operation: BinaryOperation): Promise<BigNum> {
     await sodium.ready;
-    const a_buffer = Buffer.alloc(32);
-    const b_buffer = Buffer.alloc(32);
-    a_buffer.writeUInt32LE(a, 0);
-    b_buffer.writeUInt32LE(b, 0);
+    const a_buffer = a.toBuffer('le', 32);
+    const b_buffer = b.toBuffer('le', 32);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     let sodium_function = (_a, _b): Uint8Array => {
       return new Uint8Array();
@@ -62,13 +60,12 @@ export class Ed25519Curve {
         break;
     }
     const result_buffer = Buffer.from(sodium_function(a_buffer, b_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
   }
 
-  public static async unaryOperation(a: number, operation: UnaryOperation): Promise<number> {
+  public static async unaryOperation(a: BigNum, operation: UnaryOperation): Promise<BigNum> {
     await sodium.ready;
-    const a_buffer = Buffer.alloc(32);
-    a_buffer.writeUInt32LE(a, 0);
+    const a_buffer = a.toBuffer('le', 32);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     let sodium_function = (_a): Uint8Array => {
       return new Uint8Array();
@@ -85,27 +82,29 @@ export class Ed25519Curve {
         break;
     }
     const result_buffer = Buffer.from(sodium_function(a_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
   }
 
-  public static async pointAdd(p: number, q: number): Promise<number> {
+  public static async pointAdd(p: BigNum, q: BigNum): Promise<BigNum> {
     await sodium.ready;
-    const p_buffer = Buffer.alloc(32);
-    const q_buffer = Buffer.alloc(32);
-    p_buffer.writeUInt32LE(p, 0);
-    q_buffer.writeUInt32LE(q, 0);
+    const p_buffer = p.toBuffer('le', 32);
+    const q_buffer = q.toBuffer('le', 32);
     const result_buffer = Buffer.from(sodium.crypto_core_ed25519_add(p_buffer, q_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
   }
 
-  public static async pointMultiply(point: number, n: number): Promise<number> {
+  public static async pointMultiply(point: BigNum, n: BigNum): Promise<BigNum> {
     await sodium.ready;
-    const point_buffer = Buffer.alloc(32);
-    const n_buffer = Buffer.alloc(32);
-    point_buffer.writeUInt32LE(point, 0);
-    n_buffer.writeUInt32LE(n, 0);
+    const point_buffer = point.toBuffer('le', 32);
+    const n_buffer = n.toBuffer('le', 32);
     const result_buffer = Buffer.from(sodium.crypto_scalarmult_ed25519_noclamp(point_buffer, n_buffer));
-    return result_buffer.readUInt32LE(0);
+    return new BigNum(result_buffer);
+  }
+
+  public static async isValidPoint(point: BigNum): Promise<boolean> {
+    await sodium.ready;
+    const point_buffer = point.toBuffer('le', 32);
+    return sodium.crypto_core_ed25519_is_valid_point(point_buffer);
   }
 
   public static async verify(y: Buffer, message: Buffer, signature: Buffer): Promise<boolean> {

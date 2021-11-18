@@ -3,6 +3,8 @@ import { randomBytes as cryptoRandomBytes } from 'crypto';
 import { Ed25519Curve, UnaryOperation, BinaryOperation } from './curves';
 import * as BigNum from 'bn.js';
 import { sha512 } from 'js-sha512';
+import shamir = require('secrets.js-grempe');
+const sodium = require('libsodium-wrappers-sumo');
 import { split as shamirSplit, combine as shamirCombine } from './shamir';
 
 export default class Eddsa {
@@ -12,6 +14,8 @@ export default class Eddsa {
 
   public static async keyShare(index: number, threshold, numShares) {
     assert(index > 0 && index <= numShares);
+    await sodium.ready;
+
     const randomNumber = new BigNum(cryptoRandomBytes(32));
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
     const h = new BigNum(sha512.digest(sk)).toBuffer('be');
@@ -25,31 +29,35 @@ export default class Eddsa {
 
     const zeroBuffer32 = Buffer.alloc(32);
     uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
-    const originU = new BigNum(uBuffer, 'be');
-    const u = await Ed25519Curve.scalarReduce(originU);
-    const y = await Ed25519Curve.unaryOperation(u, UnaryOperation.pointBaseMultiply);
+    const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
+    const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
 
-    const split_u: Record<any, any> = await shamirSplit(u, threshold, numShares);
+    const u_hex = u.toString('hex');
+    let split_u: string[] | Buffer[] = shamir.share(u_hex, numShares, threshold);
+    split_u = split_u.map((uShare) => {
+      return Buffer.from(uShare, 'hex');
+    });
+    
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
-    const prefix = await Ed25519Curve.scalarReduce(new BigNum(prefixBuffer, 'be'));
+    const prefix = sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer);
 
     const P_i = {
       i: index,
       y: y,
-      u: split_u[index],
+      u: split_u[index - 1],
       prefix: prefix,
     };
     const shares: any = {
       [index]: P_i,
     };
-    for (const ind in split_u) {
-      // object keys are string values
-      if (ind === index.toString()) {
+
+    for (let ind = 0; ind < split_u.length; ind++) {
+      if (ind + 1 === index) {
         continue;
       }
-      shares[ind] = {
-        i: parseInt(ind, 10),
+      shares[ind + 1] = {
+        i: ind + 1,
         j: P_i['i'],
         y: y,
         u: split_u[ind],
@@ -63,6 +71,8 @@ export default class Eddsa {
    * @param shares 
    */
   public static async keyCombine(shares) {
+    await sodium.ready;
+
     let P_i = shares.filter((share) => {
       return !('j' in share);
     });
@@ -71,12 +81,16 @@ export default class Eddsa {
 
     const yShares = shares.map(share => share['y']);
     const uShares = shares.map(share => share['u']);
-    const y = await yShares.reduce(async (partial, yShare) => {
-      return await Ed25519Curve.pointAdd(partial, yShare);
-    });
-    const x = await uShares.reduce(async (partial, share) => {
-      return await Ed25519Curve.binaryOperation(partial, share, BinaryOperation.scalarAdd);
-    });
+    let y: Buffer = yShares[0];
+    let x: Buffer = uShares[0].slice(0, 32);
+    for (let ind = 1; ind < yShares.length; ind ++) {
+      const share = yShares[ind];
+      y = sodium.crypto_core_ed25519_add(y, share);
+    }
+    for (let ind = 1; ind < uShares.length; ind ++) {
+      const share = uShares[ind].slice(0, 32);
+      x = sodium.crypto_core_ed25519_scalar_add(x, share);
+    }
 
     P_i = {
       i: P_i['i'],
@@ -89,10 +103,9 @@ export default class Eddsa {
       [i]: P_i,
     };
 
-    for (let ind = 0; ind < Object.keys(P_i).length; ind++) {
-      const P_j = P_i[ind];
+    for (let ind = 0; ind < shares.length; ind++) {
+      const P_j = shares[ind];
       if ('j' in P_j) {
-
         players[P_j['j']] = {
           i: P_j['j'],
           j: P_i['i'],
@@ -113,7 +126,7 @@ export default class Eddsa {
     const prefixBuffer = Buffer.alloc(32);
     const randomBuffer = Buffer.alloc(32);
     prefixBuffer.writeInt32BE(S_i['prefxi'], 0);
-    randomBuffer.writeInt32BE(await Ed25519Curve.scalarRandom(), 0);
+    // randomBuffer.writeInt32BE(await Ed25519Curve.scalarRandom(), 0);
 
     const combinedBuffer = Buffer.concat([prefixBuffer, message, randomBuffer]);
     const digest = sha512.digest(combinedBuffer);

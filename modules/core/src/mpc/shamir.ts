@@ -1,5 +1,6 @@
 const assert = require('assert');
 import { Ed25519Curve, BinaryOperation } from './curves';
+import * as BigNum from 'bn.js';
 
 /**
  * Perform Shamir sharing on the secret `secret` to the degree `threshold - 1` split `numShares`
@@ -12,29 +13,29 @@ import { Ed25519Curve, BinaryOperation } from './curves';
  * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares 
  * representing that share's free term.
  */
-export async function split(secret: number, threshold: number, numShares: number, indices?: Array<number>) {
+export async function split(secret: BigNum, threshold: number, numShares: number, indices?: Array<number>) {
   if (indices === undefined) {
     indices = [...Array(numShares).keys()].map(x => x + 1);
   }
   assert(threshold > 1);
   assert(threshold <= numShares);
-  const coefs: number[] = [];
+  const coefs: BigNum[] = [];
   for (let ind = 0; ind < threshold - 1; ind++) {
     const random_value = await Ed25519Curve.scalarRandom();
     coefs.push(random_value);
   }
   coefs.push(secret);
 
-  const shares: Record<number, number> = {};
+  const shares: Record<number, BigNum > = {};
   for (let ind = 0; ind < indices.length; ind++) {
-    const x = indices[ind];
-    let partial = 0;
+    const x = new BigNum(indices[ind]);
+    const partial = new BigNum(0);
     for (let other = 0; other < coefs.length; other++) {
       const scalar_mult = await Ed25519Curve.binaryOperation(partial, x, BinaryOperation.scalarMultiply);
       const new_add = await Ed25519Curve.binaryOperation(coefs[other], scalar_mult, BinaryOperation.scalarAdd);
-      partial += new_add;
+      partial.add(new_add);
     }
-    shares[x] = partial;
+    shares[indices[ind]] = partial;
   }
   return shares;
 }
