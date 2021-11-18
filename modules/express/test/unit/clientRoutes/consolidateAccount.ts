@@ -12,7 +12,7 @@ import { handleV2ConsolidateAccount } from '../../../src/clientRoutes';
 import { BitGo } from 'bitgo';
 
 describe('Consolidate account', () => {
-  it('should fail if coin is not algo', async () => {
+  it('should fail if coin is not algo or tezos', async () => {
     const coinStub = sinon.stub().returns({ getFamily: () => CoinFamily.BTC });
     const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
 
@@ -29,6 +29,46 @@ describe('Consolidate account', () => {
 
     await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
       .should.be.rejectedWith('invalid coin selected');
+  });
+
+  it('should pass if coin is algo', async () => {
+    const result = { failure: [] };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, CoinFamily.ALGO);
+
+    const mockRequest = {
+      bitgo: bitgoStub,
+      params: {
+        coin: 'talgo',
+        id: '23423423423423',
+      },
+      body: {
+        consolidateAddresses: ['someAddr'],
+      },
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
+      .should.be.resolvedWith(result);
+    consolidationStub.should.be.calledOnceWith(mockRequest.body);
+  });
+
+  it('should pass if coin is xtz', async () => {
+    const result = { failure: [] };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, CoinFamily.XTZ);
+
+    const mockRequest = {
+      bitgo: bitgoStub,
+      params: {
+        coin: 'txtz',
+        id: '23423423423423',
+      },
+      body: {
+        consolidateAddresses: ['someAddr'],
+      },
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest)
+      .should.be.resolvedWith(result);
+    consolidationStub.should.be.calledOnceWith(mockRequest.body);
   });
 
   it('should fail on invalid array in body addresses', async () => {
@@ -49,11 +89,11 @@ describe('Consolidate account', () => {
       .should.be.rejectedWith('consolidate address must be an array of addresses');
   });
 
-  function createConsolidateMocks(res) {
+  function createConsolidateMocks(res, coin = CoinFamily.ALGO) {
     const consolidationStub = sinon.stub().returns(res);
     const walletStub = { sendAccountConsolidations: consolidationStub };
     const coinStub = {
-      getFamily: () => CoinFamily.ALGO,
+      getFamily: () => coin,
       wallets: () => ({ get: () => Promise.resolve(walletStub) }),
     };
     return {
