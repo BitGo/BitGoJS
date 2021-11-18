@@ -19,7 +19,7 @@ export default class Eddsa {
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
     const h = new BigNum(sha512.digest(sk)).toBuffer('be');
     const zeroBuffer = Buffer.alloc(64 - h.length);
-    const combinedBuffer = Buffer.concat([zeroBuffer, h]);
+    const combinedBuffer = Buffer.concat([h, zeroBuffer]);
 
     let uBuffer = combinedBuffer.slice(0, 32);
     uBuffer[0] &= 248;
@@ -32,7 +32,7 @@ export default class Eddsa {
     const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
     const split_u = await shamirSplit(u, threshold, numShares);
     
-    let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
+    let prefixBuffer = combinedBuffer.subarray(0, 32);
     prefixBuffer = Buffer.concat([prefixBuffer, zeroBuffer32]);
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
