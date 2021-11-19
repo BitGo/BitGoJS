@@ -25,12 +25,12 @@ export async function split(secret: Buffer, threshold: number, numShares: number
   assert(threshold <= numShares);
   const coefs: Buffer[] = [];
   for (let ind = 0; ind < threshold - 1; ind++) {
-    const random_value = sodium.crypto_core_ed25519_scalar_random();
+    const random_value = new BigNum(500).toBuffer('le', 32);
     coefs.push(random_value);
   }
   coefs.push(secret);
 
-  const shares: Record<number, Buffer> = {};
+  const shares: Record<number, any> = {};
   for (let ind = 0; ind < indices.length; ind++) {
     const x = indices[ind];
     const x_buffer = new BN(x).toBuffer('le', 32);

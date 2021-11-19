@@ -15,17 +15,18 @@ export default class Eddsa {
     assert(index > 0 && index <= numShares);
     await sodium.ready;
 
-    const randomNumber = new BigNum(cryptoRandomBytes(32));
+    const randomNumber = new BigNum(500);
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
-    const h = new BigNum(sha512.digest(sk)).toBuffer('le');
+    const h = new BigNum(sha512.digest(sk)).toBuffer('be');
     const zeroBuffer = Buffer.alloc(64 - h.length);
-    const combinedBuffer = Buffer.concat([h, zeroBuffer]);
+    const combinedBuffer = Buffer.concat([zeroBuffer, h]);
 
     let uBuffer = combinedBuffer.slice(0, 32);
     uBuffer[0] &= 248;
     uBuffer[31] &= 63;
     uBuffer[31] |= 64;
 
+    uBuffer.reverse();
     const zeroBuffer32 = Buffer.alloc(32);
     uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
     const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
@@ -37,7 +38,7 @@ export default class Eddsa {
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
     const P_i = {
-      i: index.toString(),
+      i: index,
       y: y,
       u: split_u[index.toString()],
       prefix: prefix,
