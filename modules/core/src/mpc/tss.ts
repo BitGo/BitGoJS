@@ -26,15 +26,18 @@ export default class Eddsa {
     uBuffer[31] &= 63;
     uBuffer[31] |= 64;
 
-    uBuffer.reverse();
+    // using big endian
     const zeroBuffer32 = Buffer.alloc(32);
-    uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
+    uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
+    uBuffer.reverse();
     const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
     const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
     const split_u = await shamirSplit(u, threshold, numShares);
     
+    // using big endian
     let prefixBuffer = combinedBuffer.subarray(0, 32);
     prefixBuffer = Buffer.concat([prefixBuffer, zeroBuffer32]);
+    prefixBuffer.reverse();
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
     const P_i = {
@@ -124,7 +127,10 @@ export default class Eddsa {
 
     const randomBuffer = Buffer.from(sodium.crypto_core_ed25519_scalar_random());
     const combinedBuffer = Buffer.concat([S_i['prefix'], message, randomBuffer]);
+
+    // using big endian
     const digest = Buffer.from(sha512.digest(combinedBuffer));
+    digest.reverse();
 
     const r = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
     const R = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(r));
