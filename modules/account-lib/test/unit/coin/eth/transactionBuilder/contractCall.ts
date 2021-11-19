@@ -35,7 +35,7 @@ describe('Eth contract call transaction builder', () => {
     should.equal(tx.toBroadcastFormat(), rawTx);
   });
 
-  it('should build a contract call type transaction, deserialize it, sing it and serialize it again', async () => {
+  it('should build a contract call type transaction, deserialize it, sign it and serialize it again', async () => {
     txBuilder.contract('0x7Fc37878DCa69C9AC48397500279305F798b1572');
     txBuilder.data('0x2bf90baacecf367fdc11132a0ccfeb91692cb31ff126083c353459e0572a0b34c48e9523');
     const txUnsigned = await txBuilder.build();
@@ -53,5 +53,24 @@ describe('Eth contract call transaction builder', () => {
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
     txBuilder.contract(contractAddress);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
+  });
+
+  it('should properly build tx for eth2 staking staking deposit', async () => {
+    // Eth2 staking contract
+    txBuilder.contract('0x00000000219ab540356cbb839cbe05303d7705fa');
+    // Sample data from https://etherscan.io/tx/0x4c5c36a2a41843ca0f304f4e5d49f4d97cd7b2654305866ccd747c4d44ea9827
+    const data =
+      '0x22895118000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000' +
+      '000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120c8b2f03a5e' +
+      'd728430b3f87e787b40ab67d208a396b86ac440019d39fab67d4f60000000000000000000000000000000000000000000000000000' +
+      '0000000000308743c17f3454e2214aa5f003e4f628c7015f3f2db3e79891b2449c53e1235642a5e7048ecd36054cba63378555d09a' +
+      'ab000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020002cf4ab' +
+      '587c4394477a6bb0d6c5b113a050212269919ddea3aa5df37d6688e400000000000000000000000000000000000000000000000000' +
+      '0000000000006080a701cfa9672b4b60743f29555344d3160df7cd78e396fe7efb4292da89e68c2a0e7468117af2a0daaf2cde67c7' +
+      'f93b12406b9bf4fac8714f8bf882a2f919929b57d852382bdcb7405949a03dff09e7686521220a51cf495ed53e4c32c538f1';
+    txBuilder.data(data);
+    txBuilder.sign({ key: '064A3BF8B08A3426E8A719AE5E4115228A75E7A1449CB1B734E51C7DC8A867BE' });
+    const tx = await txBuilder.build();
+    should.exist(tx);
   });
 });
