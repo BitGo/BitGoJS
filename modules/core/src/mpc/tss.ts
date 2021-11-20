@@ -35,8 +35,8 @@ export default class Eddsa {
     const split_u = await shamirSplit(u, threshold, numShares);
     
     // using big endian
-    let prefixBuffer = combinedBuffer.subarray(0, 32);
-    prefixBuffer = Buffer.concat([prefixBuffer, zeroBuffer32]);
+    let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
+    prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
     prefixBuffer.reverse();
     const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
 
@@ -125,8 +125,10 @@ export default class Eddsa {
     S_i = S_i[keys[0]];
     const indices = shares.map((share) => share['i']);
 
-    const randomBuffer = Buffer.from(sodium.crypto_core_ed25519_scalar_random());
-    const combinedBuffer = Buffer.concat([S_i['prefix'], message, randomBuffer]);
+    const randomBuffer = new BigNum(500).toBuffer('be', 32);
+    const prefix_reference = Buffer.from(S_i['prefix']);
+    prefix_reference.reverse();
+    const combinedBuffer = Buffer.concat([prefix_reference, message, randomBuffer]);
 
     // using big endian
     const digest = Buffer.from(sha512.digest(combinedBuffer));
@@ -170,6 +172,7 @@ export default class Eddsa {
     S_i = S_i[keys[0]];
 
     const rShares = shares.map(share => share['R']);
+    const littleRShares = shares.map(share => share['r']);
 
     let R = rShares[0];
     for (let ind = 1; ind < rShares.length; ind ++) {
@@ -180,13 +183,15 @@ export default class Eddsa {
 
     const combinedBuffer = Buffer.concat([R, S_i['y'], message]);
     const digest = Buffer.from(sha512.digest(combinedBuffer));
-    const k = sodium.crypto_core_ed25519_scalar_reduce(digest);
-    let r = rShares[0];
-    for (let ind = 1; ind < rShares.length; ind ++) {
-      const share = rShares[ind];
-      r = sodium.crypto_core_ed25519_add(r, share);
+    const k = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
+    let r = littleRShares[0];
+    for (let ind = 1; ind < littleRShares.length; ind ++) {
+      const share = littleRShares[ind];
+      r = sodium.crypto_core_ed25519_scalar_add(r, share);
     }
-    const gamma = Buffer.from(sodium.crypto_core_ed25519_scalar_add(r, sodium.crypto_core_ed25519_scalar_mul(k, S_i['x'])));
+    r = Buffer.from(r);
+    const gamma = Buffer.from(sodium.crypto_core_ed25519_scalar_add(r,
+      sodium.crypto_core_ed25519_scalar_mul(k, S_i['x'])));
     const result = {
       i: S_i['i'],
       y: S_i['y'],
@@ -207,16 +212,17 @@ export default class Eddsa {
       const S_i = shares[ind];
       resultShares[S_i['i']] = S_i['gamma'];
     }
-    let sigma = await shamirCombine(resultShares);
+    let sigma: any = await shamirCombine(resultShares);
     sigma = Buffer.from(sigma);
-    return {
+    const result = {
       y: y,
       R: R,
       sigma: sigma,
     };
+    return result;
   }
 
-  public static async verify(message: Buffer, signature): Promise<boolean> {
+  public static async verify(message: Buffer, signature) {
     await sodium.ready;
     const publicKey = signature['y'];
     const signedMessage = Buffer.concat([signature['R'], signature['sigma'], message]);

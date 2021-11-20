@@ -50,6 +50,7 @@ export async function combine(shares) {
   let s = Buffer.alloc(32);
   for (const xi in shares) {
     const yi = shares[xi];
+    const xi_buffer = new BigNum(xi).toBuffer('le', 32);
     let num_buffer = new BigNum(1).toBuffer('le', 32);
     let denum_buffer = new BigNum(1).toBuffer('le', 32);
 
@@ -59,15 +60,15 @@ export async function combine(shares) {
         num_buffer = sodium.crypto_core_ed25519_scalar_mul(num_buffer, xj_buffer);
       }
     }
-
+    num_buffer = Buffer.from(num_buffer);
     for (const xj in shares) {
       const xj_buffer = new BigNum(xj).toBuffer('le', 32);
       if (xi !== xj) {
         denum_buffer = sodium.crypto_core_ed25519_scalar_mul(denum_buffer,
-          sodium.crypto_core_ed25519_scalar_sub(xj_buffer, yi));
+          sodium.crypto_core_ed25519_scalar_sub(xj_buffer, xi_buffer));
       }
     }
-
+    denum_buffer = Buffer.from(denum_buffer);
     const inverted = sodium.crypto_core_ed25519_scalar_invert(denum_buffer);
     const innerMultiplied = sodium.crypto_core_ed25519_scalar_mul(num_buffer, inverted);
     const multiplied = sodium.crypto_core_ed25519_scalar_mul(innerMultiplied, yi);
