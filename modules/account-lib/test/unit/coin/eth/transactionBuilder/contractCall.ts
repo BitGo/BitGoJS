@@ -1,6 +1,7 @@
 import should from 'should';
 import { Eth, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+import * as testData from '../../../../resources/eth/eth';
 
 describe('Eth contract call transaction builder', () => {
   let txBuilder;
@@ -35,7 +36,7 @@ describe('Eth contract call transaction builder', () => {
     should.equal(tx.toBroadcastFormat(), rawTx);
   });
 
-  it('should build a contract call type transaction, deserialize it, sing it and serialize it again', async () => {
+  it('should build a contract call type transaction, deserialize it, sign it and serialize it again', async () => {
     txBuilder.contract('0x7Fc37878DCa69C9AC48397500279305F798b1572');
     txBuilder.data('0x2bf90baacecf367fdc11132a0ccfeb91692cb31ff126083c353459e0572a0b34c48e9523');
     const txUnsigned = await txBuilder.build();
@@ -53,5 +54,21 @@ describe('Eth contract call transaction builder', () => {
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
     txBuilder.contract(contractAddress);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
+  });
+
+  it('should properly build tx for eth2 staking staking deposit', async () => {
+    txBuilder.contract(testData.ETH2_STAKING_CONTRACT_ADDRESS);
+    txBuilder.data(testData.ETH2_STAKING_CONTRACT_DATA);
+    txBuilder.sign({ key: '064A3BF8B08A3426E8A719AE5E4115228A75E7A1449CB1B734E51C7DC8A867BE' });
+
+    const tx = await txBuilder.build();
+    should.exist(tx);
+
+    const txData = tx.toJson();
+    should.equal(txData.to, testData.ETH2_STAKING_CONTRACT_ADDRESS);
+    should.equal(txData.from, '0x14fc903e3025a3aad66fad7a7862b1ec232f8df2');
+    should.equal(txData.data, testData.ETH2_STAKING_CONTRACT_DATA);
+    should.equal(txData.nonce, 57);
+    should.equal(txData.chainId, '0x2a');
   });
 });
