@@ -385,7 +385,7 @@ class LitecoinTestnet extends BitcoinLikeTestnet {
   pubKeyHash = 0x6f;
   scriptHash = 0x3a;
   family = CoinFamily.LTC;
-  explorerUrl = 'http://explorer.litecointools.com/tx/';
+  explorerUrl = 'https://blockexplorer.one/litecoin/testnet/tx/';
 }
 
 class Ofc extends Mainnet implements OfcNetwork {
