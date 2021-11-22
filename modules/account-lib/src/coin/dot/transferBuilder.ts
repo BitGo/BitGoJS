@@ -14,12 +14,13 @@ import { BaseAddress } from '../baseCoin/iface';
 export class TransferBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _to: string;
-  protected _real: string;
+  protected _owner: string;
   protected _forceProxyType: proxyType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
+
   /**
    *
    * Dispatch the given call from an account that the sender is authorised for through add_proxy.
@@ -38,12 +39,12 @@ export class TransferBuilder extends TransactionBuilder {
       baseTxInfo.baseTxInfo,
       baseTxInfo.options,
     );
-    if (!this._real) {
+    if (!this._owner) {
       return transferTx;
     }
     return methods.proxy.proxy(
       {
-        real: this._real,
+        real: this._owner,
         forceProxyType: this._forceProxyType,
         call: transferTx.method,
       },
@@ -95,9 +96,9 @@ export class TransferBuilder extends TransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#why-use-a-proxy
    */
-  real(real: BaseAddress): this {
-    this.validateAddress({ address: real.address });
-    this._real = real.address;
+  owner(owner: BaseAddress): this {
+    this.validateAddress({ address: owner.address });
+    this._owner = owner.address;
     return this;
   }
 
@@ -156,7 +157,7 @@ export class TransferBuilder extends TransactionBuilder {
       this.to({ address: utils.decodeDotAddress(txMethod.dest.id) });
     } else if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
-      this.real({ address: utils.decodeDotAddress(txMethod.real) });
+      this.owner({ address: utils.decodeDotAddress(txMethod.real) });
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: this._registry,
@@ -180,7 +181,7 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(_: Transaction): void {
     super.validateTransaction(_);
-    this.validateFields(this._to, this._amount, this._real, this._forceProxyType);
+    this.validateFields(this._to, this._amount, this._owner, this._forceProxyType);
   }
 
   private validateFields(to: string, amount: string, real?: string, forceProxyType?: string): void {

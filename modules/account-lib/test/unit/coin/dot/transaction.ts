@@ -45,7 +45,7 @@ describe('Dot Transaction', () => {
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: DotResources.accounts.account1.address });
       const tx = (await builder.build()) as Transaction;
       should.deepEqual(tx.transactionSize(), DotResources.rawTx.transfer.unsigned.length / 2);

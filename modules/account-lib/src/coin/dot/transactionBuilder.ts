@@ -7,7 +7,7 @@ import { isValidEd25519Seed } from '../../utils/crypto';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { AddressValidationError } from './errors';
+import { AddressValidationError, InvalidFeeError } from './errors';
 import { CreateBaseTxInfo, FeeOptions, sequenceId, TxMethod, validityWindow } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
@@ -20,7 +20,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _sender: string;
 
   protected _blockNumber: number;
-  protected _blockHash: string;
+  protected _referenceBlock: string;
   protected _genesisHash: string;
   protected _metadataRpc: string;
   protected _specVersion: number;
@@ -77,8 +77,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  tip(tip: FeeOptions): this {
-    const tipBN = new BigNumber(tip.amount);
+  fee(fee: FeeOptions): this {
+    if (fee.type !== 'tip') {
+      throw new InvalidFeeError(fee.type);
+    }
+    const tipBN = new BigNumber(fee.amount);
     this.validateValue(tipBN);
     this._tip = tipBN.toNumber();
     return this;
@@ -113,8 +116,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    * @see https://wiki.polkadot.network/docs/build-protocol-info#transaction-mortality
    */
-  blockHash(blockHash: string): this {
-    this._blockHash = blockHash;
+  referenceBlock(referenceBlock: string): this {
+    this._referenceBlock = referenceBlock;
     return this;
   }
 
@@ -176,7 +179,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
     if (this.isSigningPayload(decodedTxn)) {
-      this.blockHash(decodedTxn.blockHash);
+      this.referenceBlock(decodedTxn.blockHash);
       this.version(decodedTxn.transactionVersion);
     } else {
       this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
@@ -188,7 +191,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       value: decodedTxn.nonce,
     });
     if (decodedTxn.tip) {
-      this.tip({ amount: `${decodedTxn.tip}`, type: 'tip' });
+      this.fee({ amount: `${decodedTxn.tip}`, type: 'tip' });
     }
     this.method(decodedTxn.method as unknown as TxMethod);
     return this._transaction;
@@ -197,7 +200,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.setTransaction(this.buildTransaction());
-    this.transaction.setTransactionType(this.transactionType);
+    this.transaction.transactionType(this.transactionType);
     this.transaction.registry(this._registry);
     this.transaction.chainName(this._chainName);
     if (this._keyPair) {
@@ -211,7 +214,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return {
       baseTxInfo: {
         address: this._sender,
-        blockHash: this._blockHash,
+        blockHash: this._referenceBlock,
         blockNumber: this._registry.createType('BlockNumber', this._blockNumber).toNumber(),
         eraPeriod: this._eraPeriod,
         genesisHash: this._genesisHash,
@@ -304,7 +307,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.validateBaseFields(
       this._sender,
       this._blockNumber,
-      this._blockHash,
+      this._referenceBlock,
       this._genesisHash,
       this._metadataRpc,
       this._chainName,
