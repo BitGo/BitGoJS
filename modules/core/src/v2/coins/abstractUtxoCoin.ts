@@ -44,7 +44,7 @@ import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
 import { Keychain, KeyIndices } from '../keychains';
 import { promiseProps } from '../promise-utils';
-import { CrossChainRecoveryTool } from '../recovery';
+import { CrossChainRecoverySigned, CrossChainRecoveryTool, CrossChainRecoveryUnsigned } from '../recovery';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
@@ -55,7 +55,7 @@ const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { Unspent } from './utxo/unspent';
+import { PublicUnspent, Unspent } from './utxo/unspent';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -207,11 +207,17 @@ export interface RecoverFromWrongChainOptions {
   txid: string;
   recoveryAddress: string;
   wallet: string;
-  walletPassphrase: string;
-  xprv: string;
+  walletPassphrase?: string;
+  xprv?: string;
+  /** @deprecated */
   coin?: AbstractUtxoCoin;
   recoveryCoin?: AbstractUtxoCoin;
   signed?: boolean;
+}
+
+export interface ExplorerTxInfo {
+  input: { address: string }[];
+  outputs: { address: string }[];
 }
 
 export interface FormattedOfflineVaultTxInfo {
@@ -1684,12 +1690,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
   public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
-  getTxInfoFromExplorer(faultyTxId: string): any {
-    return co(function* getUnspentFromWrongChain() {
-      const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
-      const res = (yield request.get(TX_INFO_URL)) as any;
-      return res.body;
-    }).call(this);
+  async getTxInfoFromExplorer(faultyTxId: string): Promise<ExplorerTxInfo> {
+    const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
+    return ((await request.get(TX_INFO_URL)) as { body: ExplorerTxInfo }).body;
   }
 
   /**
@@ -1697,15 +1700,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param addresses
    * @returns {*}
    */
-  getUnspentInfoForCrossChainRecovery(addresses: string[]): any {
-    const self = this;
-
-    return co(function* getUnspentInfoForCrossChainRecovery() {
-      const ADDRESS_UNSPENTS_URL = self.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-      const addressRes = (yield request.get(ADDRESS_UNSPENTS_URL)) as any;
-      const unspents = addressRes.body;
-      return unspents;
-    }).call(this);
+  async getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<PublicUnspent[]> {
+    const ADDRESS_UNSPENTS_URL = this.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
+    return (await request.get(ADDRESS_UNSPENTS_URL)).body as PublicUnspent[];
   }
 
   /**
@@ -1749,7 +1746,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Recover BTC that was sent to the wrong chain
+   * Recover coin that was sent to wrong chain
    * @param params
    * @param params.txid The txid of the faulty transaction
    * @param params.recoveryAddress address to send recovered funds to
@@ -1761,9 +1758,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  recoverFromWrongChain(params: RecoverFromWrongChainOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  recoverFromWrongChain(
+    params: RecoverFromWrongChainOptions,
+    callback?: NodeCallback<any>
+  ): Bluebird<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
     const self = this;
-    return co(function* recoverFromWrongChain() {
+    return co<CrossChainRecoverySigned | CrossChainRecoveryUnsigned>(function* recoverFromWrongChain() {
       const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
 
       // params.recoveryCoin used to be params.coin, backwards compatibility
