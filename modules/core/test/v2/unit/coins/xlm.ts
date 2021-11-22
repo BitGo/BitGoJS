@@ -32,6 +32,9 @@ describe('XLM:', function () {
     const validMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=5';
     const invalidMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=x';
     const multipleMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=5&memoId=3';
+    // Muxed address of GAFHNUKOZT6QA4WJS6YSDCN6XETEOP7Q6AOHFFLUGLNVM6FY724ULORC
+    const validMuxedAddress = 'MAFHNUKOZT6QA4WJS6YSDCN6XETEOP7Q6AOHFFLUGLNVM6FY724UKAAAAAAAAAAAAEJCO';
+    const validMuxedBaseAddress = 'GAFHNUKOZT6QA4WJS6YSDCN6XETEOP7Q6AOHFFLUGLNVM6FY724ULORC';
 
     it('should get address details without memoId', function () {
       const addressDetails = basecoin.getAddressDetails(noMemoIdAddress);
@@ -62,6 +65,17 @@ describe('XLM:', function () {
       basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8').should.equal(false); // xrp account
     });
 
+    it('should validate muxed address', function() {
+      basecoin.isValidAddress(validMuxedAddress).should.equal(true);
+      const muxedAddressDetails = basecoin.getAddressDetails(validMuxedAddress);
+      muxedAddressDetails.should.deepEqual({
+        baseAddress: validMuxedBaseAddress,
+        address: validMuxedAddress,
+        id: '1',
+        memoId: undefined,
+      });
+    });
+
     it('verifyAddress should work', function () {
       basecoin.verifyAddress({
         address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
@@ -70,6 +84,11 @@ describe('XLM:', function () {
       basecoin.verifyAddress({
         address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1',
         rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2',
+      });
+
+      basecoin.verifyAddress({
+        address: validMuxedAddress,
+        rootAddress: validMuxedBaseAddress,
       });
 
       (() => {

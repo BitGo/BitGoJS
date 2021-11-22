@@ -41,9 +41,17 @@ import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 
 const co = Bluebird.coroutine;
 
+/**
+ * XLM accounts support virtual (muxed) addresses
+ * A base address starts with "G" and is tied to the underlying "real" account
+ * A muxed address starts with "M" and combines the base address with a 64-bit integer ID in order to provide
+ * an alternative to memo ids.
+ */
 interface AddressDetails {
+  baseAddress: string;
   address: string;
-  memoId?: string;
+  id?: string;
+  memoId?: string | undefined;
 }
 
 interface Memo {
@@ -296,6 +304,38 @@ export class Xlm extends BaseCoin {
   }
 
   /**
+   * Create instance of stellar.MuxedAccount from M address
+   * See: https://developers.stellar.org/docs/glossary/muxed-accounts
+   */
+  getMuxedAccount(address: string): stellar.MuxedAccount {
+    try {
+      return stellar.MuxedAccount.fromAddress(address, '0');
+    } catch (e) {
+      throw new Error(`invalid muxed address: ${address}`);
+    }
+  }
+
+  /**
+   * Return boolean indicating whether a muxed address is valid
+   * See: https://developers.stellar.org/docs/glossary/muxed-accounts
+   *
+   * @param address
+   * @returns {boolean}
+   */
+  isValidMuxedAddress(address: string): boolean {
+    if (!_.isString(address) || !address.startsWith('M')) {
+      return false;
+    }
+
+    try {
+      // return true if muxed account is valid or throw
+      return !!stellar.MuxedAccount.fromAddress(address, '0');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Minimum balance of a 2-of-3 multisig wallet
    * @returns minimum balance in stroops
    */
@@ -343,15 +383,31 @@ export class Xlm extends BaseCoin {
    * @returns object containing address and memo id
    */
   getAddressDetails(address: string): AddressDetails {
+    if (address.startsWith('M')) {
+      if (this.isValidMuxedAddress(address)) {
+        const muxedAccount = this.getMuxedAccount(address);
+        return {
+          baseAddress: muxedAccount.baseAccount().accountId(),
+          address,
+          id: muxedAccount.id(),
+          memoId: undefined,
+        };
+      } else {
+        throw new InvalidAddressError(`invalid muxed address: ${address}`);
+      }
+    }
+
     const destinationDetails = url.parse(address);
-    const destinationAddress = destinationDetails.pathname;
+    const destinationAddress = destinationDetails.pathname || '';
     if (!destinationAddress || !stellar.StrKey.isValidEd25519PublicKey(destinationAddress)) {
       throw new Error(`invalid address: ${address}`);
     }
     // address doesn't have a memo id
     if (destinationDetails.pathname === address) {
       return {
+        baseAddress: address,
         address: address,
+        id: undefined,
         memoId: undefined,
       };
     }
@@ -377,25 +433,30 @@ export class Xlm extends BaseCoin {
       throw new InvalidAddressError(`invalid address '${address}', must contain exactly one memoId`);
     }
 
-    const [memoId] = _.castArray(queryDetails.memoId);
+    const [memoId] = _.castArray(queryDetails.memoId) || undefined;
     if (!this.isValidMemoId(memoId)) {
       throw new InvalidMemoIdError(`invalid address: '${address}', memoId is not valid`);
     }
 
     return {
+      baseAddress: destinationAddress,
       address: destinationAddress,
+      id: undefined,
       memoId,
     };
   }
 
   /**
-   * Validate and return address with appended memo id
+   * Validate and return address with appended memo id or muxed address
    *
    * @param address address
    * @param memoId memo id
    * @returns address with memo id
    */
   normalizeAddress({ address, memoId }: AddressDetails): string {
+    if (this.isValidMuxedAddress(address)) {
+      return address;
+    }
     if (!stellar.StrKey.isValidEd25519PublicKey(address)) {
       throw new Error(`invalid address details: ${address}`);
     }
@@ -540,10 +601,9 @@ export class Xlm extends BaseCoin {
 
     const addressDetails = this.getAddressDetails(address);
     const rootAddressDetails = this.getAddressDetails(rootAddress);
-
-    if (addressDetails.address !== rootAddressDetails.address) {
+    if (addressDetails.baseAddress !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(
-        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
+        `address validation failure: ${addressDetails.baseAddress} vs ${rootAddressDetails.address}`
       );
     }
 
@@ -996,16 +1056,18 @@ export class Xlm extends BaseCoin {
       );
 
       if (txParams.type === 'trustline') {
-        this.verifyTrustlineTxOperations(tx.operations, txParams);
+        self.verifyTrustlineTxOperations(tx.operations, txParams);
       } else {
         if (_.isEmpty(outputOperations)) {
           throw new Error('transaction prebuild does not have any operations');
         }
 
         _.forEach(txParams.recipients, (expectedOutput, index) => {
-          const expectedOutputAddress = self.getAddressDetails(expectedOutput.address);
+          const expectedOutputAddressDetails = self.getAddressDetails(expectedOutput.address);
+          // for muxed accounts, the destination will be the baseAddress
+          const expectedOutputAddress = expectedOutputAddressDetails.baseAddress;
           const output = outputOperations[index] as stellar.Operation.Payment | stellar.Operation.CreateAccount;
-          if (output.destination !== expectedOutputAddress.address) {
+          if (output.destination !== expectedOutputAddress) {
             throw new Error('transaction prebuild does not match expected recipient');
           }
 
