@@ -5,10 +5,9 @@ import * as _ from 'lodash';
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Codes } from '@bitgo/unspents';
 
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import { Unspent, WalletUnspent } from '../../../../../src/v2/coins/abstractUtxoCoin';
+import { Unspent, WalletUnspent } from '../../../../../src/v2/coins/utxo/unspent';
 import { getReplayProtectionAddresses } from '../../../../../src/v2/coins/utxo/replayProtection';
 
 import {
@@ -18,11 +17,11 @@ import {
   getFixture,
   getUtxoWallet,
   mockUnspent,
-  mockUnspentReplayProtection,
   InputScriptType,
   TransactionObj,
   transactionToObj,
   transactionHexToObj,
+  createPrebuildTransaction,
   deriveKey,
 } from './util';
 
@@ -39,17 +38,14 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
     const value = 1e8;
     const fullSign = !inputScripts.some((s) => s === 'replayProtection');
 
-    function getUnspent(scriptType: InputScriptType, index: number): Unspent {
-      if (scriptType === 'replayProtection') {
-        return mockUnspentReplayProtection(coin.network);
-      } else {
-        const chain = Codes.forType(scriptType as any).internal;
-        return mockUnspent(coin.network, { chain, value, index }, keychains);
-      }
+    function getUnspents(): Unspent[] {
+      return inputScripts.map((type, i) => mockUnspent(coin.network, type, i, value));
     }
 
-    function getUnspents(): Unspent[] {
-      return inputScripts.map((type, i) => getUnspent(type, i));
+    function getOutputAddress(): string {
+      return coin.generateAddress({
+        keychains: keychains.map((k) => ({ pub: k.neutered().toBase58() })),
+      }).address;
     }
 
     function getSignParams(
@@ -83,19 +79,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       };
     }
 
-    function createPrebuildTransaction(): utxolib.bitgo.UtxoTransaction {
-      const unspents = getUnspents();
-      const txb = utxolib.bitgo.createTransactionBuilderForNetwork(coin.network);
-      unspents.forEach((u) => {
-        const [txid, vin] = u.id.split(':');
-        txb.addInput(txid, Number(vin));
-      });
-      const unspentSum = Math.round(unspents.reduce((sum, u) => sum + u.value, 0));
-      const output = coin.generateAddress({ keychains: keychains.map((k) => ({ pub: k.neutered().toBase58() })) });
-      txb.addOutput(output.address, unspentSum - 1000);
-      return txb.buildIncomplete();
-    }
-
     function createHalfSignedTransaction(
       prebuild: utxolib.bitgo.UtxoTransaction,
       cosigner: bip32.BIP32Interface
@@ -127,7 +110,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
     type TransactionObjStages = Record<keyof TransactionStages, TransactionObj>;
 
     async function getTransactionStages(): Promise<TransactionStages> {
-      const prebuild = createPrebuildTransaction();
+      const prebuild = createPrebuildTransaction(coin.network, getUnspents(), getOutputAddress());
       const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, keychains[1]);
       const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, keychains[2]);
       const fullSignedUserBackup = fullSign

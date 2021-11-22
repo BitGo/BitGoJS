@@ -1,4 +1,9 @@
+/**
+ * @prettier
+ */
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent, isWalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
+import { signWalletTransactionWithUnspent, WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
 
 export type TransactionObj = {
   id: string;
@@ -14,6 +19,13 @@ export type TransactionObj = {
     value: number;
   }[];
 };
+
+function toTxOutput(u: Unspent, network: utxolib.Network): utxolib.TxOutput {
+  return {
+    script: utxolib.address.toOutputScript(u.address, network),
+    value: u.value,
+  };
+}
 
 export function transactionToObj(tx: utxolib.bitgo.UtxoTransaction): TransactionObj {
   return {
@@ -38,4 +50,68 @@ export function transactionHexToObj(txHex: string, network: utxolib.Network): Tr
     throw new Error(`serialized txHex does not match input`);
   }
   return obj;
+}
+
+export function createPrebuildTransaction(
+  network: utxolib.Network,
+  unspents: Unspent[],
+  outputAddress: string
+): utxolib.bitgo.UtxoTransaction {
+  const txb = utxolib.bitgo.createTransactionBuilderForNetwork(network);
+  unspents.forEach((u) => {
+    const [txid, vin] = u.id.split(':');
+    txb.addInput(txid, Number(vin));
+  });
+  const unspentSum = Math.round(unspents.reduce((sum, u) => sum + u.value, 0));
+  txb.addOutput(outputAddress, unspentSum - 1000);
+  return txb.buildIncomplete();
+}
+
+function createTransactionBuilderWithSignedInputs(
+  network: utxolib.Network,
+  unspents: Unspent[],
+  signer: WalletUnspentSigner,
+  inputTransaction: utxolib.bitgo.UtxoTransaction
+): utxolib.bitgo.UtxoTransactionBuilder {
+  const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction(
+    inputTransaction,
+    unspents.map((u) => toTxOutput(u, network))
+  );
+  unspents.forEach((u, inputIndex) => {
+    if (isWalletUnspent(u)) {
+      signWalletTransactionWithUnspent(txBuilder, inputIndex, u, signer);
+    }
+  });
+  return txBuilder;
+}
+
+export function createHalfSignedTransaction(
+  network: utxolib.Network,
+  unspents: Unspent[],
+  outputAddress: string,
+  signer: WalletUnspentSigner,
+  prebuild?: utxolib.bitgo.UtxoTransaction
+): utxolib.bitgo.UtxoTransaction {
+  if (!prebuild) {
+    prebuild = createPrebuildTransaction(network, unspents, outputAddress);
+  }
+  return createTransactionBuilderWithSignedInputs(network, unspents, signer, prebuild).buildIncomplete();
+}
+
+export function createFullSignedTransaction(
+  network: utxolib.Network,
+  unspents: Unspent[],
+  outputAddress: string,
+  signer: WalletUnspentSigner,
+  halfSigned?: utxolib.bitgo.UtxoTransaction
+): utxolib.bitgo.UtxoTransaction {
+  if (!halfSigned) {
+    halfSigned = createHalfSignedTransaction(network, unspents, outputAddress, signer);
+  }
+  return createTransactionBuilderWithSignedInputs(
+    network,
+    unspents,
+    new WalletUnspentSigner(signer.walletKeys, signer.cosigner, signer.signer),
+    halfSigned
+  ).build();
 }

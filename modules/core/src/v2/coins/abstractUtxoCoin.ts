@@ -55,6 +55,7 @@ const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
+import { Unspent } from './utxo/unspent';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -86,24 +87,6 @@ export interface TransactionExplanation {
   inputSignatures: number[];
   signatures: number | false;
 }
-
-export interface WalletUnspent {
-  id: string;
-  address: string;
-  value: number;
-  index: number;
-  chain: number;
-  redeemScript?: string;
-  witnessScript?: string;
-}
-
-export interface ReplayProtectionUnspent {
-  id: string;
-  address: string;
-  value: number;
-}
-
-export type Unspent = WalletUnspent | ReplayProtectionUnspent;
 
 export interface ExplainTransactionOptions {
   txHex: string;
