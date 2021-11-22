@@ -8,7 +8,7 @@ const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
 import * as utxolib from '@bitgo/utxo-lib';
-import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
+import { AbstractUtxoCoin, ExplorerTxInfo } from './coins/abstractUtxoCoin';
 import { Ltc } from './coins/ltc';
 import { Wallet } from './wallet';
 
@@ -21,7 +21,7 @@ interface CrossChainRecoveryToolOptions {
 
 export interface SignRecoveryTransactionOptions {
   prv?: string;
-  passphrase: string;
+  passphrase?: string;
 }
 
 export interface BuildRecoveryTransactionOptions {
@@ -47,6 +47,27 @@ export interface HalfSignedRecoveryTx {
   txHex: string;
   tx?: string;
 }
+
+export interface CrossChainRecoveryUnsigned {
+  txHex: string;
+  txInfo?: RecoveryTxInfo;
+  walletId: string;
+  feeInfo: unknown;
+  address: string;
+  coin: string;
+}
+
+export interface CrossChainRecoverySigned {
+  version: 1 | 2;
+  txHex?: string;
+  txInfo?: RecoveryTxInfo;
+  walletId: string;
+  sourceCoin: string;
+  recoveryCoin: string;
+  recoveryAddress?: string;
+  recoveryAmount?: number;
+}
+
 /**
  * An instance of the recovery tool, which encapsulates the recovery functions
  * Instantiated with parameters:
@@ -187,7 +208,7 @@ export class CrossChainRecoveryTool {
       self._log('Grabbing info for faulty tx...');
 
       // calling source coin's method of exploring transactions
-      const faultyTxInfo = (yield self.sourceCoin.getTxInfoFromExplorer(faultyTxId)) as any;
+      const faultyTxInfo = (yield self.sourceCoin.getTxInfoFromExplorer(faultyTxId)) as unknown as ExplorerTxInfo;
 
       self._log('Getting unspents on output addresses..');
       // Get output addresses that do not belong to wallet
@@ -465,7 +486,10 @@ export class CrossChainRecoveryTool {
 
       const transactionHex = self.recoveryTx.buildIncomplete().toHex();
 
-      const prv: string = _.isString(params.prv) ? params.prv : yield self.getKeys(params.passphrase);
+      const prv = params.prv ? params.prv : params.passphrase ? yield self.getKeys(params.passphrase) : undefined;
+      if (!prv) {
+        throw new Error(`must provide prv or passphrase`);
+      }
 
       const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
       self.halfSignedRecoveryTx = yield self.sourceCoin.signTransaction({ txPrebuild, prv });
@@ -537,9 +561,9 @@ export class CrossChainRecoveryTool {
       .asCallback(callback);
   }
 
-  buildUnsigned(callback?: NodeCallback<any>): Bluebird<any> {
+  buildUnsigned(callback?: NodeCallback<any>): Bluebird<CrossChainRecoveryUnsigned> {
     const self = this;
-    return co(function* () {
+    return co<CrossChainRecoveryUnsigned>(function* () {
       if (_.isUndefined(self.txInfo)) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
@@ -592,7 +616,7 @@ export class CrossChainRecoveryTool {
       .asCallback(callback);
   }
 
-  export() {
+  export(): CrossChainRecoverySigned {
     return {
       version: this.wallet.isV1 ? 1 : 2,
       sourceCoin: this.sourceCoin.type,

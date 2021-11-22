@@ -4,12 +4,13 @@
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/abstractUtxoCoin';
+import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 
 import { getSeed } from '../../../../../lib/keys';
 
 import { keychains, Triple } from './keychains';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
+import { Codes } from '@bitgo/unspents';
 
 export function deriveKey(k: bip32.BIP32Interface, chain: number, index: number): bip32.BIP32Interface {
   return k.derivePath(`0/0/${chain}/${index}`);
@@ -32,7 +33,7 @@ function mockOutputIdForAddress(address: string) {
   return getSeed(address).toString('hex') + ':1';
 }
 
-export function mockUnspent(
+export function mockWalletUnspent(
   network: utxolib.Network,
   { id, chain = 0, index = 0, value, address }: Partial<WalletUnspent>,
   keys: Triple<bip32.BIP32Interface> = keychains
@@ -77,4 +78,18 @@ export function mockUnspentReplayProtection(network: utxolib.Network): ReplayPro
     };
   }
   throw new Error(`${utxolib.coins.getNetworkName(network)} has no replay protection unspetns`);
+}
+
+export function mockUnspent(
+  network: utxolib.Network,
+  scriptType: InputScriptType,
+  index: number,
+  value: number
+): Unspent {
+  if (scriptType === 'replayProtection') {
+    return mockUnspentReplayProtection(network);
+  } else {
+    const chain = Codes.forType(scriptType as any).internal;
+    return mockWalletUnspent(network, { chain, value, index }, keychains);
+  }
 }

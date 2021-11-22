@@ -10,6 +10,8 @@ import { validateParams } from '../common';
 
 const co = Bluebird.coroutine;
 
+export type Triple<T> = [T, T, T];
+
 export interface Keychain {
   id: string;
   pub: string;
