@@ -23,7 +23,7 @@ const Shamir = (curve) => {
     assert(threshold <= numShares);
     const coefs: Buffer[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
-      const random_value = new BigNum(500).toBuffer('le', 32);
+      const random_value = curve.scalarRandom();
       coefs.push(random_value);
     }
     coefs.push(secret);

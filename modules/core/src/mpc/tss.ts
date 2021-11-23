@@ -3,6 +3,7 @@ import Ed25519Curve from './curves';
 import * as BigNum from 'bn.js';
 import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
+import { randomBytes as cryptoRandomBytes } from 'crypto';
 
 
 const Eddsa = async () => {
@@ -12,7 +13,7 @@ const Eddsa = async () => {
   const keyShare = (index: number, threshold: number, numShares: number) => {
     assert(index > 0 && index <= numShares);
 
-    const randomNumber = new BigNum(500);
+    const randomNumber = new BigNum(cryptoRandomBytes(32));
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
     const h = new BigNum(sha512.digest(sk)).toBuffer('be');
     const zeroBuffer = Buffer.alloc(64 - h.length);
