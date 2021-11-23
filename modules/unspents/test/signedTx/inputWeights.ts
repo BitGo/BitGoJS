@@ -63,6 +63,7 @@ describe('Input Script Sizes (Worst-Case)', function () {
 
     describe(`inputType=${inputType} signKeys=${signKeysStr}`, function () {
       it(`component sizes`, function () {
+        this.timeout(10_000);
         let expectedComponents;
         switch (inputType) {
           case 'p2sh':
@@ -90,7 +91,7 @@ describe('Input Script Sizes (Worst-Case)', function () {
             throw new Error(`invalid inputType ${inputType}`);
         }
 
-        const input = getLargestInputWithType(inputType, signKeys);
+        const input = getLargestInputWithType(inputType, signKeys, inputType === 'p2tr' ? 10 : 100);
         const components = getInputComponents(input);
         assert.deepStrictEqual(components, expectedComponents);
         assert.strictEqual(getInputComponentsWeight(components), getInputWeight(input));
