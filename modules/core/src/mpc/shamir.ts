@@ -1,7 +1,7 @@
 const assert = require('assert');
 import * as BigNum from 'bn.js';
 
-const Shamir = async (curve) => {
+const Shamir = (curve) => {
 
   /**
    * Perform Shamir sharing on the secret `secret` to the degree `threshold - 1` split `numShares`

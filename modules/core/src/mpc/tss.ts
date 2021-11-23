@@ -7,7 +7,7 @@ import Shamir from './shamir';
 
 const Eddsa = async () => {
   const ed25519 = await Ed25519Curve();
-  const shamir = await Shamir(ed25519);
+  const shamir = Shamir(ed25519);
 
   const keyShare = (index: number, threshold: number, numShares: number) => {
     assert(index > 0 && index <= numShares);
@@ -69,16 +69,12 @@ const Eddsa = async () => {
 
     const yShares = shares.map(share => share['y']);
     const uShares = shares.map(share => share['u']);
-    let y: Buffer = yShares[0];
-    let x: Buffer = uShares[0];
-    for (let ind = 1; ind < yShares.length; ind ++) {
-      const share = yShares[ind];
-      y = ed25519.pointAdd(y, share);
-    }
-    for (let ind = 1; ind < uShares.length; ind ++) {
-      const share = uShares[ind];
-      x = ed25519.scalarAdd(x, share);
-    }
+    let y = yShares.reduce((partial, share) => {
+      return ed25519.pointAdd(partial, share);
+    });
+    let x = uShares.reduce((partial, share) => {
+      return ed25519.scalarAdd(partial, share);
+    });
     x = Buffer.from(x);
     y = Buffer.from(y);
 
@@ -105,7 +101,7 @@ const Eddsa = async () => {
     return players;
   };
 
-  const signShare = (message: Buffer, shares, threshold, numShares) => {
+  const signShare = (message: Buffer, shares) => {
     let S_i = shares.filter((share) => {
       return !('j' in share);
     });
@@ -161,11 +157,9 @@ const Eddsa = async () => {
     const rShares = shares.map(share => share['R']);
     const littleRShares = shares.map(share => share['r']);
 
-    let R = rShares[0];
-    for (let ind = 1; ind < rShares.length; ind ++) {
-      const share = rShares[ind];
-      R = ed25519.pointAdd(R, share);
-    }
+    let R = rShares.reduce((partial, share) => {
+      return ed25519.pointAdd(partial, share);
+    });
     R = Buffer.from(R);
 
     const combinedBuffer = Buffer.concat([R, S_i['y'], message]);
