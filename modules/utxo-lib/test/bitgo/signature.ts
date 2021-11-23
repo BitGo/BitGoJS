@@ -3,10 +3,10 @@ import * as bip32 from 'bip32';
 
 import { script as bscript, classify } from '../../src';
 import * as networks from '../../src/networks';
-import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
+import { ScriptType, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript, isPlaceholderSignature } from '../../src/bitgo';
 
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import {
@@ -17,18 +17,17 @@ import {
 } from '../transaction_util';
 import { TxOutput } from 'bitcoinjs-lib';
 
-function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2Of3 | 'p2shP2pk') {
+function getFullSignedKeys(scriptType: ScriptType): bip32.BIP32Interface[] {
+  return scriptType === 'p2shP2pk'
+    ? [fixtureKeys[0]]
+    : scriptType === 'p2tr'
+    ? [fixtureKeys[0], fixtureKeys[2]]
+    : [fixtureKeys[0], fixtureKeys[1]];
+}
+
+function runTestScriptStructure(network: Network, scriptType: ScriptType) {
   it(`inputs script structure (${scriptType})`, function () {
-    const tx = getTransactionBuilder(
-      fixtureKeys,
-      scriptType === 'p2shP2pk'
-        ? [fixtureKeys[0]]
-        : scriptType === 'p2tr'
-        ? [fixtureKeys[0], fixtureKeys[2]]
-        : [fixtureKeys[0], fixtureKeys[1]],
-      scriptType,
-      networks.bitcoin
-    ).build();
+    const tx = getTransactionBuilder(fixtureKeys, getFullSignedKeys(scriptType), scriptType, networks.bitcoin).build();
 
     const { script, witness } = tx.ins[0];
     const scriptDecompiled = bscript.decompile(script);
@@ -168,7 +167,57 @@ function runTestCheckSignatureScripts(network: Network, scriptType: ScriptType2O
   });
 }
 
-function runTest(network: Network, scriptType: ScriptType2Of3) {
+function runTestParseScript(network: Network, scriptType: ScriptType) {
+  function testParseSignedInputs(signKeys: bip32.BIP32Interface[]) {
+    const halfSigned = signKeys.length === 1;
+    const txb = getTransactionBuilder(fixtureKeys, signKeys, scriptType, network);
+    const tx = signKeys.length === 2 ? txb.build() : txb.buildIncomplete();
+    tx.ins.forEach((input) => {
+      const parsed = parseSignatureScript(input);
+      assert.strictEqual(parsed.scriptType, scriptType);
+      // assert.strictEqual(parsed.signatures.length, signKeys.length);
+
+      switch (parsed.scriptType) {
+        case 'p2shP2pk':
+          assert.deepStrictEqual(parsed, {
+            scriptType: 'p2shP2pk',
+            inputClassification: 'scripthash',
+            isSegwitInput: false,
+            p2shOutputClassification: 'pubkey',
+          });
+          break;
+        case 'p2sh':
+        case 'p2shP2wsh':
+        case 'p2wsh':
+        case 'p2tr':
+          const expectedKeys =
+            parsed.scriptType === 'p2tr'
+              ? getFullSignedKeys('p2tr').map((k) => k.publicKey.slice(1))
+              : fixtureKeys.map((k) => k.publicKey);
+          assert.deepStrictEqual(
+            parsed.publicKeys.map((k) => k.toString('hex')),
+            expectedKeys.map((k) => k.toString('hex'))
+          );
+          // for half-signed transactions, signatures include placeholders
+          assert.strictEqual(parsed.signatures.length, halfSigned && scriptType !== 'p2tr' ? 3 : 2);
+          assert.strictEqual(parsed.signatures.filter((s) => !isPlaceholderSignature(s)).length, halfSigned ? 1 : 2);
+          break;
+        default:
+          throw new Error(`unexpected script type`);
+      }
+    });
+  }
+
+  it(`parses half-signed inputs [${getNetworkName(network)} ${scriptType}]`, function () {
+    testParseSignedInputs([fixtureKeys[0]]);
+  });
+
+  it(`parses full-signed inputs [${getNetworkName(network)} ${scriptType}]`, function () {
+    testParseSignedInputs(getFullSignedKeys(scriptType));
+  });
+}
+
+function runTestVerifySignature(network: Network, scriptType: ScriptType) {
   function assertVerifySignatureEquals(
     tx: UtxoTransaction,
     value: boolean,
@@ -194,9 +243,6 @@ function runTest(network: Network, scriptType: ScriptType2Of3) {
 
   function checkSignTransaction(signKeys: bip32.BIP32Interface[]) {
     const tx = getTransactionBuilder(fixtureKeys, signKeys, scriptType, network).buildIncomplete();
-
-    // return true iff there are any valid signatures at all
-    assertVerifySignatureEquals(tx, signKeys.length > 0);
 
     fixtureKeys.forEach((k) => {
       // if publicKey is given, return true iff it is included in signKeys
@@ -258,8 +304,9 @@ describe('Signature (scriptTypes2Of3)', function () {
     .filter(isBitcoin)
     .forEach((network) => {
       scriptTypes2Of3.forEach((scriptType) => {
-        runTest(network, scriptType);
-        runTestCheckSignatureScripts(network, scriptType);
+        runTestScriptStructure(network, scriptType);
+        runTestParseScript(network, scriptType);
+        runTestVerifySignature(network, scriptType);
       });
     });
 });
@@ -275,6 +322,7 @@ describe('Signature (p2shP2pk)', function () {
 
     signedTransaction.ins.forEach((input) => {
       assert.deepStrictEqual(parseSignatureScript(input), {
+        scriptType: 'p2shP2pk',
         inputClassification: 'scripthash',
         isSegwitInput: false,
         p2shOutputClassification: 'pubkey',
@@ -282,5 +330,6 @@ describe('Signature (p2shP2pk)', function () {
     });
   });
 
-  runTestCheckSignatureScripts(networks.bitcoin, 'p2shP2pk');
+  runTestParseScript(networks.bitcoin, 'p2shP2pk');
+  runTestScriptStructure(networks.bitcoin, 'p2shP2pk');
 });

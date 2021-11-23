@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import _ from 'lodash';
 import 'lodash.combinations';
@@ -18,15 +18,15 @@ interface IUnspent {
   redeemScript?: Buffer;
   witnessScript?: Buffer;
   value: number;
-  inputType: string;
+  inputType: utxolib.bitgo.outputScripts.ScriptType;
 }
 
 function createUnspent(pubkeys: Buffer[], inputType: string, value: number): IUnspent {
   let spendableScript;
   if (inputType === UnspentTypeP2shP2pk) {
-    spendableScript = bitcoin.bitgo.outputScripts.createOutputScriptP2shP2pk(pubkeys[0]);
-  } else if (bitcoin.bitgo.outputScripts.isScriptType2Of3(inputType)) {
-    spendableScript = bitcoin.bitgo.outputScripts.createOutputScript2of3(pubkeys, inputType);
+    spendableScript = utxolib.bitgo.outputScripts.createOutputScriptP2shP2pk(pubkeys[0]);
+  } else if (utxolib.bitgo.outputScripts.isScriptType2Of3(inputType)) {
+    spendableScript = utxolib.bitgo.outputScripts.createOutputScript2of3(pubkeys, inputType);
   } else {
     throw new Error(`unexpected inputType ${inputType}`);
   }
@@ -51,49 +51,52 @@ const createScriptPubKey = (keys: bip32.BIP32Interface[], unspentType: TestUnspe
     return createUnspent(pubkeys, unspentType, 0).scriptPubKey;
   }
 
-  const pkHash = bitcoin.crypto.hash160(pubkeys[0]);
+  const pkHash = utxolib.crypto.hash160(pubkeys[0]);
   switch (unspentType) {
     case UnspentTypePubKeyHash.p2pkh:
-      return bitcoin.payments.p2pkh({ hash: pkHash }).output!;
+      return utxolib.payments.p2pkh({ hash: pkHash }).output!;
     case UnspentTypePubKeyHash.p2wpkh:
-      return bitcoin.payments.p2wpkh({ hash: pkHash }).output!;
+      return utxolib.payments.p2wpkh({ hash: pkHash }).output!;
   }
 
   if (unspentType instanceof UnspentTypeOpReturn) {
     const payload = Buffer.alloc(unspentType.size).fill(pubkeys[0]);
-    return bitcoin.script.compile([0x6a, payload]);
+    return utxolib.script.compile([0x6a, payload]);
   }
 
   throw new Error(`unsupported output type ${unspentType}`);
 };
 
 const createInputTx = (unspents: any[], inputValue: number) => {
-  const txInputBuilder = new bitcoin.TransactionBuilder(bitcoin.networks.bitcoin);
+  const txInputBuilder = new utxolib.TransactionBuilder(utxolib.networks.bitcoin);
   txInputBuilder.addInput(Array(32).fill('01').join(''), 0);
   unspents.forEach(({ scriptPubKey }) => txInputBuilder.addOutput(scriptPubKey, inputValue));
   return txInputBuilder.buildIncomplete();
 };
 
 function signInput(
-  txBuilder: bitcoin.TransactionBuilder,
+  txBuilder: utxolib.bitgo.UtxoTransactionBuilder,
   index: number,
   keys: bip32.BIP32Interface[],
   unspent: IUnspent
 ) {
   const nKeys = unspent.inputType === 'p2shP2pk' ? 1 : 2;
-  const prevOutScriptType = bitcoin.bitgo.outputScripts.isScriptType2Of3(unspent.inputType)
-    ? bitcoin.bitgo.outputScripts.scriptType2Of3AsPrevOutType(unspent.inputType)
-    : 'p2sh-p2pk';
-  keys.slice(0, nKeys).forEach((keyPair) =>
-    txBuilder.sign({
-      prevOutScriptType,
-      vin: index,
-      keyPair: Object.assign(keyPair, { network: txBuilder.network }),
-      redeemScript: unspent.redeemScript,
-      witnessValue: unspent.inputType === 'p2shP2pk' || unspent.inputType === 'p2sh' ? undefined : unspent.value,
-      witnessScript: unspent.witnessScript,
-    })
-  );
+  keys.slice(0, nKeys).forEach((keyPair) => {
+    if (unspent.inputType === 'p2shP2pk') {
+      utxolib.bitgo.signInputP2shP2pk(txBuilder, index, keyPair);
+    } else {
+      const cosigner = keyPair === keys[0] ? keys[1] : keys[0];
+      utxolib.bitgo.signInput2Of3(
+        txBuilder,
+        index,
+        unspent.inputType,
+        keys.map((k) => k.publicKey) as utxolib.bitgo.Triple<Buffer>,
+        keyPair,
+        cosigner.publicKey,
+        unspent.value
+      );
+    }
+  });
 }
 
 class TxCombo {
@@ -117,8 +120,8 @@ class TxCombo {
     this.inputTx = createInputTx(this.unspents, inputValue);
   }
 
-  public getBuilderWithUnsignedTx(): bitcoin.TransactionBuilder {
-    const txBuilder = new bitcoin.TransactionBuilder(bitcoin.networks.bitcoin);
+  public getBuilderWithUnsignedTx(): utxolib.bitgo.UtxoTransactionBuilder {
+    const txBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(utxolib.networks.bitcoin);
     this.inputTx.outs.forEach(({}, i: number) => txBuilder.addInput(this.inputTx, i));
     this.outputTypes.forEach((unspentType) =>
       txBuilder.addOutput(createScriptPubKey(this.keys, unspentType), this.inputValue)
@@ -126,11 +129,11 @@ class TxCombo {
     return txBuilder;
   }
 
-  public getUnsignedTx(): bitcoin.Transaction {
+  public getUnsignedTx(): utxolib.bitgo.UtxoTransaction {
     return this.getBuilderWithUnsignedTx().buildIncomplete();
   }
 
-  public getSignedTx(): bitcoin.Transaction {
+  public getSignedTx(): utxolib.Transaction {
     const txBuilder = this.getBuilderWithUnsignedTx();
     this.unspents.forEach((unspent, i) => {
       signInput(txBuilder, i, this.keys, unspent);
@@ -212,7 +215,7 @@ class Histogram {
 
 const getKeyTriplets = (prefix: string, count: number) =>
   [...Array(count)].map((v, i) =>
-    [1, 2, 3].map((j) => bip32.fromSeed(Buffer.alloc(16, `${prefix}/${i}/${j}`), bitcoin.networks.bitcoin))
+    [1, 2, 3].map((j) => bip32.fromSeed(Buffer.alloc(16, `${prefix}/${i}/${j}`), utxolib.networks.bitcoin))
   );
 
 /**
@@ -263,10 +266,10 @@ const runSignedTransactions = (
       const outputs = outputKeyTriplets.map((outputKeys) => createScriptPubKey(outputKeys, outputType));
 
       const txs = {
-        forEach(cb: (tx: bitcoin.Transaction) => void) {
+        forEach(cb: (tx: utxolib.Transaction) => void) {
           inputTxs.forEach(({ inputKeys, unspents, inputTx }) => {
             outputs.forEach((scriptPubKey) => {
-              const txBuilder = new bitcoin.TransactionBuilder(bitcoin.networks.bitcoin, Infinity);
+              const txBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(utxolib.networks.bitcoin);
               inputTx.outs.forEach((v: any, i: number) => txBuilder.addInput(inputTx, i));
               txBuilder.addOutput(scriptPubKey, outputValue);
               unspents.forEach((unspent, i) => {

@@ -7,3 +7,4 @@ export * from './UtxoTransaction';
 export * from './UtxoTransactionBuilder';
 export * from './zcash';
 export * from './dash';
+export * from './types';
