@@ -96,10 +96,11 @@ export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
   // Two signatures indicate a scriptPath spend.
   publicKeys: [Buffer] | [Buffer, Buffer];
   signatures: [Buffer] | [Buffer, Buffer];
-  // For scriptpath signatures, this indicates level. For keypath signatures this is undefined.
+  // For scriptpath signatures, this contains the control block data. For keypath signatures this is undefined.
+  controlBlock: Buffer | undefined;
+  // For scriptpath signatures, this indicates the level inside the taptree. For keypath signatures this is undefined.
   scriptPathLevel: number | undefined;
   pubScript: Buffer;
-  controlBlock: Buffer;
 }
 
 export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
@@ -202,6 +203,11 @@ export function parseSignatureScript(
     }) as [Buffer, Buffer];
 
     const scriptPathLevel = controlBlock.length === 65 ? 1 : controlBlock.length === 97 ? 2 : undefined;
+
+    /* istanbul ignore next */
+    if (scriptPathLevel === undefined) {
+      throw new Error(`unexpected control block length ${controlBlock.length}`);
+    }
 
     return {
       scriptType: 'p2tr',
@@ -472,6 +478,9 @@ export function getSignatureVerifications(
       }
 
       const { controlBlock, pubScript } = parsedScript as ParsedSignatureScriptTaproot;
+      if (!controlBlock) {
+        throw new Error('expected controlBlock');
+      }
       const leafHash = taproot.getTapleafHash(controlBlock, pubScript);
       const signatureHash = transaction.hashForWitnessV1(
         inputIndex,
