@@ -100,6 +100,8 @@ describe('Input Script Sizes (Worst-Case)', function () {
 
   [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk].forEach((inputType: string) => {
     runTestComponentSizes(inputType, inputType === 'p2shP2pk' ? [keys[0]] : [keys[0], keys[2]]);
-    runTestComponentSizes(inputType, inputType === 'p2shP2pk' ? [keys[0]] : [keys[0], keys[1]]);
+    if (inputType !== 'p2shP2pk') {
+      runTestComponentSizes(inputType, [keys[0], keys[1]]);
+    }
   });
 });
