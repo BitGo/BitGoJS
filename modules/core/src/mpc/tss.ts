@@ -1,19 +1,16 @@
 const assert = require('assert');
-import { randomBytes as cryptoRandomBytes } from 'crypto';
-import { Ed25519Curve, UnaryOperation, BinaryOperation } from './curves';
+import Ed25519Curve from './curves';
 import * as BigNum from 'bn.js';
 import { sha512 } from 'js-sha512';
-const sodium = require('libsodium-wrappers-sumo');
-import { split as shamirSplit, combine as shamirCombine } from './shamir';
+import Shamir from './shamir';
 
-export default class Eddsa {
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  constructor() {}
+const Eddsa = async () => {
+  const ed25519 = await Ed25519Curve();
+  const shamir = await Shamir(ed25519);
 
-  public static async keyShare(index: number, threshold, numShares) {
+  const keyShare = (index: number, threshold: number, numShares: number) => {
     assert(index > 0 && index <= numShares);
-    await sodium.ready;
 
     const randomNumber = new BigNum(500);
     const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
@@ -30,15 +27,15 @@ export default class Eddsa {
     const zeroBuffer32 = Buffer.alloc(32);
     uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
     uBuffer.reverse();
-    const u = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(uBuffer));
-    const y = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(u));
-    const split_u = await shamirSplit(u, threshold, numShares);
+    const u = Buffer.from(ed25519.scalarReduce(uBuffer));
+    const y = Buffer.from(ed25519.basePointMult(u));
+    const split_u = shamir.split(u, threshold, numShares);
     
     // using big endian
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
     prefixBuffer.reverse();
-    const prefix = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(prefixBuffer));
+    const prefix = Buffer.from(ed25519.scalarReduce(prefixBuffer));
 
     const P_i = {
       i: index,
@@ -62,15 +59,8 @@ export default class Eddsa {
       };
     }
     return shares;
-  }
-
-  /**
-   * Combine data shared during the key generation protocol. 
-   * @param shares 
-   */
-  public static async keyCombine(shares) {
-    await sodium.ready;
-
+  };
+  const keyCombine = (shares) => {
     let P_i = shares.filter((share) => {
       return !('j' in share);
     });
@@ -83,11 +73,11 @@ export default class Eddsa {
     let x: Buffer = uShares[0];
     for (let ind = 1; ind < yShares.length; ind ++) {
       const share = yShares[ind];
-      y = sodium.crypto_core_ed25519_add(y, share);
+      y = ed25519.pointAdd(y, share);
     }
     for (let ind = 1; ind < uShares.length; ind ++) {
       const share = uShares[ind];
-      x = sodium.crypto_core_ed25519_scalar_add(x, share);
+      x = ed25519.scalarAdd(x, share);
     }
     x = Buffer.from(x);
     y = Buffer.from(y);
@@ -113,11 +103,9 @@ export default class Eddsa {
       }
     }
     return players;
-  }
+  };
 
-
-  public static async signShare(message: Buffer, shares, threshold, numShares) {
-    await sodium.ready;
+  const signShare = (message: Buffer, shares, threshold, numShares) => {
     let S_i = shares.filter((share) => {
       return !('j' in share);
     });
@@ -134,10 +122,10 @@ export default class Eddsa {
     const digest = Buffer.from(sha512.digest(combinedBuffer));
     digest.reverse();
 
-    const r = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
-    const R = Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(r));
+    const r = Buffer.from(ed25519.scalarReduce(digest));
+    const R = Buffer.from(ed25519.basePointMult(r));
 
-    const split_r = await shamirSplit(r, shares.length, shares.length, indices);
+    const split_r = shamir.split(r, shares.length, shares.length, indices);
 
     const resultShares: any = {
       [S_i['i']]: {
@@ -161,10 +149,9 @@ export default class Eddsa {
       }
     }
     return resultShares;
-  }
+  };
 
-  public static async sign(message: Buffer, shares) {
-    await sodium.ready;
+  const sign = (message: Buffer, shares) => {
     let S_i = shares.filter((share) => {
       return !('j' in share);
     });
@@ -177,21 +164,21 @@ export default class Eddsa {
     let R = rShares[0];
     for (let ind = 1; ind < rShares.length; ind ++) {
       const share = rShares[ind];
-      R = sodium.crypto_core_ed25519_add(R, share);
+      R = ed25519.pointAdd(R, share);
     }
     R = Buffer.from(R);
 
     const combinedBuffer = Buffer.concat([R, S_i['y'], message]);
     const digest = Buffer.from(sha512.digest(combinedBuffer));
-    const k = Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(digest));
+    const k = Buffer.from(ed25519.scalarReduce(digest));
     let r = littleRShares[0];
     for (let ind = 1; ind < littleRShares.length; ind ++) {
       const share = littleRShares[ind];
-      r = sodium.crypto_core_ed25519_scalar_add(r, share);
+      r = ed25519.scalarAdd(r, share);
     }
     r = Buffer.from(r);
-    const gamma = Buffer.from(sodium.crypto_core_ed25519_scalar_add(r,
-      sodium.crypto_core_ed25519_scalar_mul(k, S_i['x'])));
+    const gamma = Buffer.from(ed25519.scalarAdd(r,
+      ed25519.scalarMult(k, S_i['x'])));
     const result = {
       i: S_i['i'],
       y: S_i['y'],
@@ -199,10 +186,9 @@ export default class Eddsa {
       R: R,
     };
     return result;
-  }
+  };
 
-  public static async signCombine(shares) {
-    await sodium.ready;
+  const signCombine = (shares) => {
     const keys = Object.keys(shares);
     const y = shares[keys[0]]['y'];
     const R = shares[keys[0]]['R'];
@@ -212,7 +198,7 @@ export default class Eddsa {
       const S_i = shares[ind];
       resultShares[S_i['i']] = S_i['gamma'];
     }
-    let sigma: any = await shamirCombine(resultShares);
+    let sigma: any = shamir.combine(resultShares);
     sigma = Buffer.from(sigma);
     const result = {
       y: y,
@@ -220,12 +206,15 @@ export default class Eddsa {
       sigma: sigma,
     };
     return result;
-  }
+  };
 
-  public static async verify(message: Buffer, signature) {
-    await sodium.ready;
+  const verify = (message: Buffer, signature) => {
     const publicKey = signature['y'];
     const signedMessage = Buffer.concat([signature['R'], signature['sigma'], message]);
-    return sodium.crypto_sign_open(signedMessage, publicKey);
-  }
-}
+    return ed25519.verify(publicKey, signedMessage);
+  };
+
+  return { keyShare, keyCombine, signShare, sign, signCombine, verify };
+};
+
+export default Eddsa;
