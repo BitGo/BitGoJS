@@ -31,15 +31,16 @@ export function getKeyTriple(seed: string): KeyTriple {
   return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
 }
 
-export function getDefaultCosigner(pubkeys: Triple<Buffer>, signer: Buffer): Buffer {
-  const [user, backup, bitgo] = pubkeys;
-  if (signer.equals(user)) {
+export function getDefaultCosigner<T>(keyset: Triple<T>, signer: T): T {
+  const eq = (a: T, b: T) => a === b || (Buffer.isBuffer(a) && Buffer.isBuffer(b) && a.equals(b));
+  const [user, backup, bitgo] = keyset;
+  if (eq(signer, user)) {
     return bitgo;
   }
-  if (signer.equals(backup)) {
+  if (eq(signer, backup)) {
     return bitgo;
   }
-  if (signer.equals(bitgo)) {
+  if (eq(signer, bitgo)) {
     return user;
   }
   throw new Error(`signer not in pubkeys`);

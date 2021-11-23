@@ -61,12 +61,7 @@ const testDimensionsFromTx = (txCombo: any) => {
 
 describe(`Dimensions for transaction combinations`, function () {
   const params = {
-    inputTypes: [
-      ...Object.keys(UnspentTypeScript2of3)
-        // TODO: remove when p2tr signing is supported,
-        .filter((scriptType) => scriptType !== 'p2tr'),
-      UnspentTypeP2shP2pk,
-    ],
+    inputTypes: [...Object.keys(UnspentTypeScript2of3), UnspentTypeP2shP2pk],
     maxNInputs: 2,
     outputTypes: [...Object.keys(UnspentTypeScript2of3), ...Object.keys(UnspentTypePubKeyHash)],
     maxNOutputs: 2,

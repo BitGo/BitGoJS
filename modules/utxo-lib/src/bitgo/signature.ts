@@ -57,7 +57,6 @@ export interface ParsedSignatureScript {
   isSegwitInput: boolean;
   inputClassification: InputType;
   p2shOutputClassification?: string;
-  publicKeys?: Buffer[];
 }
 
 export interface ParsedSignatureScriptUnknown extends ParsedSignatureScript {
@@ -80,23 +79,28 @@ export interface ParsedSignatureScriptP2PKH extends ParsedSignatureScript {
 export interface ParsedSignatureScript2Of3 extends ParsedSignatureScript {
   scriptType: 'p2sh' | 'p2shP2wsh' | 'p2wsh';
   inputClassification: 'scripthash' | 'witnessscripthash';
+  publicKeys: [Buffer, Buffer, Buffer];
   signatures:
     | [Buffer, Buffer] // fully-signed transactions with signatures
     /* Partially signed transactions with placeholder signatures.
        For p2sh, the placeholder is OP_0 (number 0) */
     | [Buffer | 0, Buffer | 0, Buffer | 0];
-  publicKeys: [Buffer, Buffer, Buffer];
   pubScript: Buffer;
 }
 
 export interface ParsedSignatureScriptTaproot extends ParsedSignatureScript {
   scriptType: 'p2tr';
   inputClassification: 'taproot';
-  // P2TR tapscript spends are for 2-of-2 multisig scripts
-  signatures: [Buffer, Buffer]; // missing signature is encoded as empty buffer
-  publicKeys: [Buffer, Buffer];
+  // P2TR tapscript spends are for keypath spends or 2-of-2 multisig scripts
+  // A single signature indicates a keypath spend.
+  // Two signatures indicate a scriptPath spend.
+  publicKeys: [Buffer] | [Buffer, Buffer];
+  signatures: [Buffer] | [Buffer, Buffer];
+  // For scriptpath signatures, this contains the control block data. For keypath signatures this is undefined.
+  controlBlock: Buffer | undefined;
+  // For scriptpath signatures, this indicates the level inside the taptree. For keypath signatures this is undefined.
+  scriptPathLevel: number | undefined;
   pubScript: Buffer;
-  controlBlock: Buffer;
 }
 
 export function getDefaultSigHash(network: Network, scriptType?: ScriptType2Of3): number {
@@ -191,20 +195,30 @@ export function parseSignatureScript(
       throw new Error('expected 2 pubkeys');
     }
 
+    const signatures = [sig1, sig2].map((b) => {
+      if (Buffer.isBuffer(b)) {
+        return b;
+      }
+      throw new Error(`unexpected signature element ${b}`);
+    }) as [Buffer, Buffer];
+
+    const scriptPathLevel = controlBlock.length === 65 ? 1 : controlBlock.length === 97 ? 2 : undefined;
+
+    /* istanbul ignore next */
+    if (scriptPathLevel === undefined) {
+      throw new Error(`unexpected control block length ${controlBlock.length}`);
+    }
+
     return {
       scriptType: 'p2tr',
       isSegwitInput,
       inputClassification,
-      signatures: [sig1, sig2].map((b) => {
-        if (Buffer.isBuffer(b)) {
-          return b;
-        }
-        throw new Error(`unexpected signature element ${b}`);
-      }),
-      publicKeys,
+      publicKeys: publicKeys as [Buffer, Buffer],
+      signatures,
       pubScript: tapscript,
       controlBlock,
-    } as ParsedSignatureScriptTaproot;
+      scriptPathLevel,
+    };
   }
 
   // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
@@ -464,6 +478,9 @@ export function getSignatureVerifications(
       }
 
       const { controlBlock, pubScript } = parsedScript as ParsedSignatureScriptTaproot;
+      if (!controlBlock) {
+        throw new Error('expected controlBlock');
+      }
       const leafHash = taproot.getTapleafHash(controlBlock, pubScript);
       const signatureHash = transaction.hashForWitnessV1(
         inputIndex,

@@ -77,20 +77,23 @@ const createInputTx = (unspents: any[], inputValue: number) => {
 function signInput(
   txBuilder: utxolib.bitgo.UtxoTransactionBuilder,
   index: number,
-  keys: bip32.BIP32Interface[],
-  unspent: IUnspent
+  walletKeys: bip32.BIP32Interface[],
+  unspent: IUnspent,
+  signKeys: bip32.BIP32Interface[] = unspent.inputType === 'p2shP2pk' ? [walletKeys[0]] : [walletKeys[0], walletKeys[2]]
 ) {
-  const nKeys = unspent.inputType === 'p2shP2pk' ? 1 : 2;
-  keys.slice(0, nKeys).forEach((keyPair) => {
+  signKeys.forEach((keyPair) => {
     if (unspent.inputType === 'p2shP2pk') {
       utxolib.bitgo.signInputP2shP2pk(txBuilder, index, keyPair);
     } else {
-      const cosigner = keyPair === keys[0] ? keys[1] : keys[0];
+      if (signKeys.length !== 2) {
+        throw new Error(`invalid signKeys length`);
+      }
+      const cosigner = keyPair === signKeys[0] ? signKeys[1] : signKeys[0];
       utxolib.bitgo.signInput2Of3(
         txBuilder,
         index,
         unspent.inputType,
-        keys.map((k) => k.publicKey) as utxolib.bitgo.Triple<Buffer>,
+        walletKeys.map((k) => k.publicKey) as utxolib.bitgo.Triple<Buffer>,
         keyPair,
         cosigner.publicKey,
         unspent.value
@@ -104,15 +107,16 @@ class TxCombo {
   public inputTx: any;
 
   constructor(
-    public keys: bip32.BIP32Interface[],
+    public walletKeys: bip32.BIP32Interface[],
     public inputTypes: string[],
     public outputTypes: TestUnspentType[],
     public expectedDims: IDimensions = Dimensions.zero(),
+    public signKeys?: bip32.BIP32Interface[],
     public inputValue: number = 10
   ) {
     this.unspents = inputTypes.map((inputType) =>
       createUnspent(
-        keys.map((key) => key.publicKey),
+        walletKeys.map((key) => key.publicKey),
         inputType,
         this.inputValue
       )
@@ -124,7 +128,7 @@ class TxCombo {
     const txBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(utxolib.networks.bitcoin);
     this.inputTx.outs.forEach(({}, i: number) => txBuilder.addInput(this.inputTx, i));
     this.outputTypes.forEach((unspentType) =>
-      txBuilder.addOutput(createScriptPubKey(this.keys, unspentType), this.inputValue)
+      txBuilder.addOutput(createScriptPubKey(this.walletKeys, unspentType), this.inputValue)
     );
     return txBuilder;
   }
@@ -136,7 +140,7 @@ class TxCombo {
   public getSignedTx(): utxolib.Transaction {
     const txBuilder = this.getBuilderWithUnsignedTx();
     this.unspents.forEach((unspent, i) => {
-      signInput(txBuilder, i, this.keys, unspent);
+      signInput(txBuilder, i, this.walletKeys, unspent, this.signKeys);
     });
     return txBuilder.build();
   }
