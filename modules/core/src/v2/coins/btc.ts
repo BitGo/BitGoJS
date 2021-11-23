@@ -3,7 +3,6 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { BitGo } from '../../bitgo';
 import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
-import { KeyIndices } from '../keychains';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string,
@@ -44,10 +43,5 @@ export class Btc extends AbstractUtxoCoin {
 
   supportsP2tr(): boolean {
     return true;
-  }
-
-  /* BTC needs all keys to sign for P2TR */
-  keyIdsForSigning(): number[] {
-    return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
   }
 }

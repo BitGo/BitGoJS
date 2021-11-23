@@ -1021,6 +1021,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
   }
 
+  keyIdsForSigning(): number[] {
+    return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
+  }
+
   /**
    * TODO(BG-11487): Remove addressType, segwit, and bech32 params in SDKv6
    * Generate an address for a wallet based on a set of configurations
