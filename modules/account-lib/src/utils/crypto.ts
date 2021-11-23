@@ -1,7 +1,6 @@
 import * as bip32 from 'bip32';
 import { ECPair, networks } from 'bitcoinjs-lib';
 import * as nacl from 'tweetnacl';
-import * as hex from '@stablelib/hex';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 import { toUint8Array } from '../coin/hbar/utils';
 
@@ -155,14 +154,4 @@ export function isValidEd25519PublicKey(pub: string): boolean {
   } catch (e) {
     return false;
   }
-}
-
-/**
- * Returns an hex string of the given buffer
- *
- * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
- * @returns {string} - the hex value
- */
-export function toHex(buffer: Buffer | Uint8Array): string {
-  return hex.encode(buffer, true);
 }
