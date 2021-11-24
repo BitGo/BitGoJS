@@ -1,6 +1,5 @@
 const assert = require('assert');
 import Ed25519Curve from './curves';
-import * as BigNum from 'bn.js';
 import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
@@ -88,10 +87,8 @@ const Eddsa = async () => {
 
   const keyShare = (index: number, threshold: number, numShares: number): KeyShare => {
     assert(index > 0 && index <= numShares);
-
-    const randomNumber = new BigNum(cryptoRandomBytes(32));
-    const sk = randomNumber.toBuffer('be', Math.floor((randomNumber.bitLength() + 7) / 8));
-    const h = new BigNum(sha512.digest(sk)).toBuffer('be');
+    const sk = cryptoRandomBytes(32);
+    const h = Buffer.from(sha512.digest(sk));
     const zeroBuffer = Buffer.alloc(64 - h.length);
     const combinedBuffer = Buffer.concat([zeroBuffer, h]);
 
@@ -174,7 +171,7 @@ const Eddsa = async () => {
     const shares = [convertObjectHexToBuffer(privateShare, ['x', 'y']), ...publicShares];
     const indices = shares.map((share) => share['i']);
 
-    const randomBuffer = new BigNum(cryptoRandomBytes(32)).toBuffer('be', 32);
+    const randomBuffer = cryptoRandomBytes(32);
     const prefix_reference = Buffer.from(privateShare['prefix'], 'hex');
     prefix_reference.reverse();
     const combinedBuffer = Buffer.concat([prefix_reference, message, randomBuffer]);
