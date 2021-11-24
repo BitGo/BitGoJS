@@ -25,7 +25,7 @@ describe('TSS EDDSA key generation and signing', () => {
     const B_sign = MPC.sign(message_buffer, B_sign_share.private, [A_sign_share.public[2]]);
 
     const signature = MPC.signCombine([A_sign, B_sign]);
-    const result = Buffer.from(MPC.verify(message_buffer, signature)).toString();
+    const result = MPC.verify(message_buffer, signature).toString();
     result.should.equal(message);
   });
 });

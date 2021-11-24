@@ -5,7 +5,7 @@ import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 
-const convertObjectHexToBuffer = (object: Record<string, string>, keys: string[]) => {
+const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) => {
   const result: any = object;
   keys.forEach(key => {
     result[key] = Buffer.from(object[key], 'hex');
@@ -13,14 +13,14 @@ const convertObjectHexToBuffer = (object: Record<string, string>, keys: string[]
   return result;
 };
 
-interface PrivateShare {
+interface PrivateKeyShare {
   i: string,
   y: string,
   u: string,
   prefix: string,
 }
 
-interface PublicShare {
+interface PublicKeyShare {
   i: string,
   j: string,
   y: string,
@@ -28,25 +28,25 @@ interface PublicShare {
 }
 
 interface KeyShare {
-  private: PrivateShare,
-  public: Record<string, PublicShare>
+  private: PrivateKeyShare,
+  public: Record<string, PublicKeyShare>
 }
 
-interface PrivateCombine {
+interface PrivateKeyCombine {
   i: string,
   x: string,
   y: string,
   prefix: string,
 }
 
-interface PublicCombine {
+interface PublicKeyCombine {
   i: string,
   j: string,
 }
 
 interface KeyCombine {
-  private: PrivateCombine,
-  public: Record<string, PublicCombine>
+  private: PrivateKeyCombine,
+  public: Record<string, PublicKeyCombine>
 }
 
 interface PrivateSignShare {
@@ -69,11 +69,24 @@ interface SignShare {
   public: Record<string, PublicSignShare>,
 }
 
+interface GShare {
+  i: string,
+  y: string,
+  gamma: string,
+  R: string,
+}
+
+interface Signature {
+  y: string,
+  R: string,
+  sigma: string,
+}
+
 const Eddsa = async () => {
   const ed25519 = await Ed25519Curve();
   const shamir = Shamir(ed25519);
 
-  const keyShare = (index: number, threshold: number, numShares: number) => {
+  const keyShare = (index: number, threshold: number, numShares: number): KeyShare => {
     assert(index > 0 && index <= numShares);
 
     const randomNumber = new BigNum(cryptoRandomBytes(32));
@@ -101,7 +114,7 @@ const Eddsa = async () => {
     prefixBuffer.reverse();
     const prefix = Buffer.from(ed25519.scalarReduce(prefixBuffer));
 
-    const P_i: PrivateShare = {
+    const P_i: PrivateKeyShare = {
       i: index.toString(),
       y: y.toString('hex'),
       u: split_u[index.toString()].toString('hex'),
@@ -125,7 +138,7 @@ const Eddsa = async () => {
     }
     return shares;
   };
-  const keyCombine = (privateShare: PrivateShare, publicShares) => {
+  const keyCombine = (privateShare: PrivateKeyShare, publicShares: PublicKeyShare[]): KeyCombine => {
     // u-shares and y-shares required buffer format for curve functions
     const shares = [privateShare, ...publicShares].map(share => convertObjectHexToBuffer(share, ['y', 'u']));
     const yShares = shares.map(share => share['y']);
@@ -133,7 +146,7 @@ const Eddsa = async () => {
     const y = Buffer.from(yShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
     const x = Buffer.from(uShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
 
-    const P_i: PrivateCombine = {
+    const P_i: PrivateKeyCombine = {
       i: privateShare['i'],
       y: y.toString('hex'),
       x: x.toString('hex'),
@@ -154,15 +167,15 @@ const Eddsa = async () => {
     return players;
   };
 
-  const signShare = (message: Buffer, privateShare, publicShares) => {
+  const signShare = (message: Buffer, privateShare: PrivateKeyCombine,
+    publicShares: PublicKeyCombine[]): SignShare => {
+
     // x-shares and y-shares required buffer format for curve functions
-    privateShare = convertObjectHexToBuffer(privateShare, ['x', 'y']);
-    const shares = [privateShare, ...publicShares];
-    const S_i = privateShare;
+    const shares = [convertObjectHexToBuffer(privateShare, ['x', 'y']), ...publicShares];
     const indices = shares.map((share) => share['i']);
 
     const randomBuffer = new BigNum(cryptoRandomBytes(32)).toBuffer('be', 32);
-    const prefix_reference = Buffer.from(S_i['prefix'], 'hex');
+    const prefix_reference = Buffer.from(privateShare['prefix'], 'hex');
     prefix_reference.reverse();
     const combinedBuffer = Buffer.concat([prefix_reference, message, randomBuffer]);
 
@@ -175,10 +188,10 @@ const Eddsa = async () => {
     const split_r = shamir.split(r, shares.length, shares.length, indices);
 
     const P_i: PrivateSignShare = {
-      i: S_i['i'],
-      y: S_i['y'].toString('hex'),
-      x: S_i['x'].toString('hex'),
-      r: split_r[S_i['i']].toString('hex'),
+      i: privateShare['i'],
+      y: privateShare['y'],
+      x: privateShare['x'],
+      r: split_r[privateShare['i']].toString('hex'),
       R: R.toString('hex'),
     };
 
@@ -191,7 +204,7 @@ const Eddsa = async () => {
       const S_j = publicShares[ind];
       resultShares['public'][S_j['i']] = {
         i: S_j['i'],
-        j: S_i['i'],
+        j: privateShare['i'],
         r: split_r[S_j['i']].toString('hex'),
         R: R.toString('hex'),
       };
@@ -199,9 +212,8 @@ const Eddsa = async () => {
     return resultShares;
   };
 
-  const sign = (message: Buffer, privateShare, publicShares) => {
+  const sign = (message: Buffer, privateShare: PrivateSignShare, publicShares: PublicSignShare[]): GShare => {
     // x, y, r, R required buffer format for curve functions
-    privateShare = convertObjectHexToBuffer(privateShare, ['x', 'y']);
     const shares = [privateShare, ...publicShares].map(share => convertObjectHexToBuffer(share, ['R', 'r']));
     const S_i = privateShare;
 
@@ -211,22 +223,22 @@ const Eddsa = async () => {
     const R = Buffer.from(rShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
     const r = Buffer.from(littleRShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
 
-    const combinedBuffer = Buffer.concat([R, S_i['y'], message]);
+    const combinedBuffer = Buffer.concat([R, Buffer.from(S_i['y'], 'hex'), message]);
     const digest = Buffer.from(sha512.digest(combinedBuffer));
     const k = Buffer.from(ed25519.scalarReduce(digest));
 
     const gamma = Buffer.from(ed25519.scalarAdd(r,
-      ed25519.scalarMult(k, S_i['x'])));
+      ed25519.scalarMult(k, Buffer.from(S_i['x'], 'hex'))));
     const result = {
-      i: S_i['i'],
-      y: S_i['y'].toString('hex'),
+      i: privateShare['i'],
+      y: privateShare['y'],
       gamma: gamma.toString('hex'),
       R: R.toString('hex'),
     };
     return result;
   };
 
-  const signCombine = (shares) => {
+  const signCombine = (shares: GShare[]): Signature => {
     shares = shares.map(share => convertObjectHexToBuffer(share, ['y', 'gamma', 'R']));
     const keys = Object.keys(shares);
     const y = shares[keys[0]]['y'];
@@ -237,7 +249,7 @@ const Eddsa = async () => {
       const S_i = shares[ind];
       resultShares[S_i['i']] = S_i['gamma'];
     }
-    let sigma: any = shamir.combine(resultShares);
+    let sigma: Buffer = shamir.combine(resultShares);
     sigma = Buffer.from(sigma);
     const result = {
       y: y.toString('hex'),
@@ -247,11 +259,11 @@ const Eddsa = async () => {
     return result;
   };
 
-  const verify = (message: Buffer, signature) => {
-    signature = convertObjectHexToBuffer(signature, ['y', 'R', 'sigma']);
-    const publicKey = signature['y'];
-    const signedMessage = Buffer.concat([signature['R'], signature['sigma'], message]);
-    return ed25519.verify(publicKey, signedMessage);
+  const verify = (message: Buffer, signature: Signature): Buffer => {
+    const publicKey = Buffer.from(signature['y'], 'hex');
+    const signedMessage = Buffer.concat([Buffer.from(signature['R'], 'hex'),
+      Buffer.from(signature['sigma'], 'hex'), message]);
+    return Buffer.from(ed25519.verify(publicKey, signedMessage));
   };
 
   return { keyShare, keyCombine, signShare, sign, signCombine, verify };
