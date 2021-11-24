@@ -39,17 +39,3 @@ export function getFirstPendingTransaction(
     return bitgo.get(baseCoin.url('/tx/pending/first')).query(params).result();
   }).call(this);
 }
-
-/**
- * convert a 4 element Uint8Array to a 4 byte Number
- *
- * @param bytes
- * @return 4 byte number
- */
-export function bytesToWord(bytes?: Uint8Array): number {
-  if (!(bytes instanceof Uint8Array) || bytes.length !== 4) {
-    throw new Error('bytes must be a Uint8Array with length 4');
-  }
-
-  return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
-}

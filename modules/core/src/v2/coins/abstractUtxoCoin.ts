@@ -664,7 +664,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     let userPrv = userKeychain.prv;
     if (_.isEmpty(userPrv)) {
       const encryptedPrv = userKeychain.encryptedPrv;
-      if (!_.isEmpty(encryptedPrv)) {
+      if (encryptedPrv && !_.isEmpty(encryptedPrv)) {
         // if the decryption fails, it will throw an error
         userPrv = this.bitgo.decrypt({
           input: encryptedPrv,
