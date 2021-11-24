@@ -5,8 +5,8 @@ import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 
-const convertObjectHexToBuffer = (object: Record<any, any>, keys: string[]) => {
-  const result = object;
+const convertObjectHexToBuffer = (object: Record<string, string>, keys: string[]) => {
+  const result: any = object;
   keys.forEach(key => {
     result[key] = Buffer.from(object[key], 'hex');
   });
@@ -20,11 +20,53 @@ interface PrivateShare {
   prefix: string,
 }
 
+interface PublicShare {
+  i: string,
+  j: string,
+  y: string,
+  u: string,
+}
+
+interface KeyShare {
+  private: PrivateShare,
+  public: Record<string, PublicShare>
+}
+
 interface PrivateCombine {
   i: string,
   x: string,
   y: string,
   prefix: string,
+}
+
+interface PublicCombine {
+  i: string,
+  j: string,
+}
+
+interface KeyCombine {
+  private: PrivateCombine,
+  public: Record<string, PublicCombine>
+}
+
+interface PrivateSignShare {
+  i: string,
+  y: string,
+  x: string,
+  r: string,
+  R: string,
+}
+
+interface PublicSignShare {
+  i: string,
+  j: string,
+  r: string,
+  R: string,
+}
+
+interface SignShare {
+  private: PrivateSignShare,
+  public: Record<string, PublicSignShare>,
 }
 
 const Eddsa = async () => {
@@ -65,7 +107,7 @@ const Eddsa = async () => {
       u: split_u[index.toString()].toString('hex'),
       prefix: prefix.toString('hex'),
     };
-    const shares: any = {
+    const shares: KeyShare = {
       private: P_i,
       public: {},
     };
@@ -74,7 +116,7 @@ const Eddsa = async () => {
       if (ind === index.toString()) {
         continue;
       }
-      shares.public[ind] = {
+      shares['public'][ind] = {
         i: ind,
         j: P_i['i'],
         y: y.toString('hex'),
@@ -97,7 +139,7 @@ const Eddsa = async () => {
       x: x.toString('hex'),
       prefix: privateShare['prefix'],
     };
-    const players: any = {
+    const players: KeyCombine = {
       private: P_i,
       public: {},
     };
@@ -132,28 +174,29 @@ const Eddsa = async () => {
 
     const r = Buffer.from(ed25519.scalarReduce(digest));
     const R = Buffer.from(ed25519.basePointMult(r));
-
     const split_r = shamir.split(r, shares.length, shares.length, indices);
 
-    const resultShares: any = {
-      private: {
-        i: S_i['i'],
-        y: S_i['y'],
-        x: S_i['x'],
-        r: split_r[S_i['i']],
-        R: R,
-      },
+    const P_i: PrivateSignShare = {
+      i: S_i['i'],
+      y: S_i['y'].toString('hex'),
+      x: S_i['x'].toString('hex'),
+      r: split_r[S_i['i']].toString('hex'),
+      R: R.toString('hex'),
+    };
+
+    const resultShares: SignShare = {
+      private: P_i,
       public: {},
     };
 
     for (let ind = 0; ind < shares.length; ind++) {
       const S_j = shares[ind];
       if ('j' in S_j) {
-        resultShares.public[S_j['i']] = {
+        resultShares['public'][S_j['i']] = {
           i: S_j['i'],
           j: S_i['i'],
-          r: split_r[S_j['i']],
-          R: R,
+          r: split_r[S_j['i']].toString('hex'),
+          R: R.toString('hex'),
         };
       }
     }
