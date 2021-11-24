@@ -14,7 +14,8 @@ const Shamir = (curve) => {
    * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares 
    * representing that share's free term.
    */
-  const split = (secret: Buffer, threshold: number, numShares: number, indices?: Array<number>) => {
+  const split = (secret: Buffer, threshold: number, numShares: number,
+    indices?: Array<number>): Record<number, Buffer> => {
     if (indices === undefined) {
       // make range(1, n + 1)
       indices = [...Array(numShares).keys()].map(x => x + 1);
@@ -28,7 +29,7 @@ const Shamir = (curve) => {
     }
     coefs.push(secret);
   
-    const shares: Record<number, any> = {};
+    const shares: Record<number, Buffer> = {};
     for (let ind = 0; ind < indices.length; ind++) {
       const x = indices[ind];
       const x_buffer = new BigNum(x).toBuffer('le', 32);
@@ -43,7 +44,14 @@ const Shamir = (curve) => {
     return shares;
   };
 
-  const combine = (shares) => {
+  /**
+   * Reconstitute a secret from a dictionary of shares. The number of shares must
+   * be equal to `t` to reconstitute the original secret.
+   * 
+   * @param shares dictionary of shares. each key is the free term of the share
+   * @returns secret
+   */
+  const combine = (shares: Record<number, Buffer>): Buffer => {
     let s = Buffer.alloc(32);
     for (const xi in shares) {
       const yi = shares[xi];
