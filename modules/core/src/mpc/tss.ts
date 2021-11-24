@@ -144,14 +144,12 @@ const Eddsa = async () => {
       public: {},
     };
 
-    for (let ind = 0; ind < shares.length; ind++) {
-      const P_j = shares[ind];
-      if ('j' in P_j) {
-        players.public[P_j['j']] = {
-          i: P_j['j'],
-          j: P_i['i'],
-        };
-      }
+    for (let ind = 0; ind < publicShares.length; ind++) {
+      const P_j = publicShares[ind];
+      players.public[P_j['j']] = {
+        i: P_j['j'],
+        j: P_i['i'],
+      };
     }
     return players;
   };
@@ -189,16 +187,14 @@ const Eddsa = async () => {
       public: {},
     };
 
-    for (let ind = 0; ind < shares.length; ind++) {
-      const S_j = shares[ind];
-      if ('j' in S_j) {
-        resultShares['public'][S_j['i']] = {
-          i: S_j['i'],
-          j: S_i['i'],
-          r: split_r[S_j['i']].toString('hex'),
-          R: R.toString('hex'),
-        };
-      }
+    for (let ind = 0; ind < publicShares.length; ind++) {
+      const S_j = publicShares[ind];
+      resultShares['public'][S_j['i']] = {
+        i: S_j['i'],
+        j: S_i['i'],
+        r: split_r[S_j['i']].toString('hex'),
+        R: R.toString('hex'),
+      };
     }
     return resultShares;
   };
