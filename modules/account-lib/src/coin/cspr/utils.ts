@@ -64,7 +64,7 @@ export function isValidPublicKey(pub: string): boolean {
  * @param hex the hex value to validate
  */
 export function isValidHex(hex: string): boolean {
-  return /^([0-9a-f])+$/i.test(hex);
+  return /^([a-fA-F0-9])+$/.test(hex);
 }
 
 /**
