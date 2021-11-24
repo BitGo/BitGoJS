@@ -153,7 +153,11 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     });
 
     after(function () {
-      nocks.forEach((n) => n.isDone());
+      nocks.forEach((n) => n.done());
+    });
+
+    after(function () {
+      nock.cleanAll();
     });
 
     let signedRecovery: CrossChainRecoverySigned;
