@@ -25,9 +25,8 @@ import moment = require('moment');
 import * as _ from 'lodash';
 import * as urlLib from 'url';
 import * as config from './config';
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac } from 'crypto';
 import * as debugLib from 'debug';
-import { bytesToWord } from './v2/internal/internal';
 
 const TransactionBuilder = require('./transactionBuilder');
 const Blockchain = require('./blockchain');
@@ -48,6 +47,7 @@ import {
 } from './api';
 import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
+import { decrypt, encrypt } from './encrypt';
 
 const debug = debugLib('bitgo:index');
 
@@ -101,12 +101,12 @@ export interface VerifyPasswordOptions {
 }
 
 export interface EncryptOptions {
-  input?: string;
+  input: string;
   password?: string;
 }
 
 export interface DecryptOptions {
-  input?: string;
+  input: string;
   password?: string;
 }
 
@@ -763,37 +763,25 @@ export class BitGo {
   /**
    * Utility function to encrypt locally.
    */
-  encrypt(params: EncryptOptions = {}): string {
+  encrypt(params: EncryptOptions): string {
     common.validateParams(params, ['input', 'password'], []);
-
-    const randomSalt = randomBytes(8);
-    const randomIV = randomBytes(16);
-    const encryptOptions = {
-      iter: 10000,
-      ks: 256,
-      salt: [
-        bytesToWord(randomSalt.slice(0, 4)),
-        bytesToWord(randomSalt.slice(4)),
-      ],
-      iv: [
-        bytesToWord(randomIV.slice(0, 4)),
-        bytesToWord(randomIV.slice(4, 8)),
-        bytesToWord(randomIV.slice(8, 12)),
-        bytesToWord(randomIV.slice(12, 16)),
-      ],
-    };
-
-    return sjcl.encrypt(params.password, params.input, encryptOptions);
+    if (!params.password) {
+      throw new Error(`cannot encrypt without password`);
+    }
+    return encrypt(params.password, params.input);
   }
 
   /**
    * Decrypt an encrypted string locally.
    */
-  decrypt(params: DecryptOptions = {}): string {
+  decrypt(params: DecryptOptions): string {
     params = params || {};
     common.validateParams(params, ['input', 'password'], []);
+    if (!params.password) {
+      throw new Error(`cannot decrypt without password`);
+    }
     try {
-      return sjcl.decrypt(params.password, params.input);
+      return decrypt(params.password, params.input);
     } catch (error) {
       if (error.message.includes('ccm: tag doesn\'t match')) {
         error.message = 'password error - ' + error.message;
