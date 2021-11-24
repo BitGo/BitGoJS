@@ -1,5 +1,4 @@
 const assert = require('assert');
-import * as BigNum from 'bn.js';
 
 const Shamir = (curve) => {
 
@@ -32,7 +31,8 @@ const Shamir = (curve) => {
     const shares: Record<number, Buffer> = {};
     for (let ind = 0; ind < indices.length; ind++) {
       const x = indices[ind];
-      const x_buffer = new BigNum(x).toBuffer('le', 32);
+      const x_buffer = Buffer.alloc(32);
+      x_buffer.writeUInt32LE(x, 0);
       let partial = coefs[0];
       for (let other = 1; other < coefs.length ; other++) {
         const scalarMult = curve.scalarMult(partial, x_buffer);
@@ -55,19 +55,24 @@ const Shamir = (curve) => {
     let s = Buffer.alloc(32);
     for (const xi in shares) {
       const yi = shares[xi];
-      const xi_buffer = new BigNum(xi).toBuffer('le', 32);
-      let num_buffer = new BigNum(1).toBuffer('le', 32);
-      let denum_buffer = new BigNum(1).toBuffer('le', 32);
+      const xi_buffer = Buffer.alloc(32);
+      let num_buffer = Buffer.alloc(32);
+      let denum_buffer = Buffer.alloc(32);
+      xi_buffer.writeUInt32LE(parseInt(xi, 10), 0);
+      num_buffer.writeUInt32LE(1, 0);
+      denum_buffer.writeUInt32LE(1, 0);
   
       for (const xj in shares) {
-        const xj_buffer = new BigNum(xj).toBuffer('le', 32);
+        const xj_buffer = Buffer.alloc(32);
+        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
         if (xi !== xj) {
           num_buffer = curve.scalarMult(num_buffer, xj_buffer);
         }
       }
       num_buffer = Buffer.from(num_buffer);
       for (const xj in shares) {
-        const xj_buffer = new BigNum(xj).toBuffer('le', 32);
+        const xj_buffer = Buffer.alloc(32);
+        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
         if (xi !== xj) {
           denum_buffer = curve.scalarMult(denum_buffer,
             curve.scalarSub(xj_buffer, xi_buffer));
