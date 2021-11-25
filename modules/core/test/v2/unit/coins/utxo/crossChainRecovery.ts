@@ -21,12 +21,7 @@ import {
 import { getSeed } from '../../../../lib/keys';
 import { createFullSignedTransaction } from './util/transaction';
 import { getDefaultWalletUnspentSigner } from './util/keychains';
-import {
-  nockBitGoPublicAddressUnspents,
-  nockBitGoPublicTransaction,
-  nockLitecointoolsAddressUnspents,
-  nockLitecointoolsTransaction,
-} from './util/nockIndexerAPI';
+import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from './util/nockIndexerAPI';
 import { CrossChainRecoverySigned } from '../../../../../src/v2/recovery';
 import { nockBitGo } from './util/nockBitGo';
 import { Unspent } from '../../../../../src/v2/coins/utxo/unspent';
@@ -64,25 +59,16 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
     .persist();
 }
 
-function nockThirdpartyExplorerTxInfo(
+function nockBitGoPublicTransactionInfo(
   coin: AbstractUtxoCoin,
   depositTx: utxolib.bitgo.UtxoTransaction,
   depositUnspents: Unspent[],
   depositAddress: string
 ): nock.Scope[] {
-  switch (coin.getChain()) {
-    case 'ltc':
-    case 'tltc':
-      return [
-        nockLitecointoolsTransaction(coin, depositTx, depositUnspents).persist(),
-        nockLitecointoolsAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
-      ];
-    default:
-      return [
-        nockBitGoPublicTransaction(coin, depositTx, depositUnspents).persist(),
-        nockBitGoPublicAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
-      ];
-  }
+  return [
+    nockBitGoPublicTransaction(coin, depositTx, depositUnspents).persist(),
+    nockBitGoPublicAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
+  ];
 }
 
 /**
@@ -134,7 +120,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       nocks.push(nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
       nocks.push(nockWalletAddress(recoveryCoin, recoveryWalletId, depositAddressRecoveryCoin));
       nocks.push(
-        ...nockThirdpartyExplorerTxInfo(sourceCoin, depositTx, getDepositUnspents(), depositAddressSourceCoin.address)
+        ...nockBitGoPublicTransactionInfo(sourceCoin, depositTx, getDepositUnspents(), depositAddressSourceCoin.address)
       );
     });
 

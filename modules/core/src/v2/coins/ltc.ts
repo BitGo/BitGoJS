@@ -4,32 +4,15 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
-import * as _ from 'lodash';
 
-import { AbstractUtxoCoin, ExplorerTxInfo, UtxoNetwork } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import { InvalidAddressError } from '../../errors';
 import { toBitgoRequest } from '../../api';
-import { PublicUnspent } from './utxo/unspent';
 
 const co = Bluebird.coroutine;
-
-export type LitecointoolsVin = { addr: string };
-export type LitecointoolsVout = { scriptPubKey: { addresses: string[] } };
-export type LitecointoolsTx = {
-  vin: LitecointoolsVin[];
-  vout: LitecointoolsVout[];
-};
-
-export type LitecointoolsUnspent = {
-  txid: string;
-  vout: number;
-  satoshis: number;
-  address: string;
-  height: number;
-};
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -146,50 +129,5 @@ export class Ltc extends AbstractUtxoCoin {
 
       return unspents;
     }).call(this);
-  }
-
-  async getTxInfoFromExplorer(faultyTxId: string): Promise<ExplorerTxInfo> {
-    const res = (await request.get(this.recoveryBlockchainExplorerUrl(`/tx/${faultyTxId}`))) as unknown as {
-      body: LitecointoolsTx & ExplorerTxInfo;
-    };
-    const faultyTxInfo: LitecointoolsTx & ExplorerTxInfo = res.body;
-
-    faultyTxInfo.input = faultyTxInfo.vin as any;
-    faultyTxInfo.outputs = faultyTxInfo.vout as any;
-
-    faultyTxInfo.input.forEach(function processTxInput(input: any) {
-      input.address = input.addr;
-    });
-    faultyTxInfo.outputs.forEach(function processTxOutputs(output: any) {
-      output.address = output.scriptPubKey.addresses[0];
-    });
-    return faultyTxInfo as ExplorerTxInfo;
-  }
-
-  /**
-   * Fetch unspent transaction outputs using litecoin explorer
-   * @param addresses
-   * @returns {{id: string, address: string, value: number, valueString: string, blockHeight: number}}
-   */
-  async getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<PublicUnspent[]> {
-    addresses = addresses.map((address) => this.canonicalAddress(address, 2));
-
-    const unspents = await toBitgoRequest(
-      request.get(this.recoveryBlockchainExplorerUrl(`/addrs/${_.uniq(addresses).join(',')}/utxo`))
-    ).result();
-
-    if (!unspents) {
-      return [];
-    }
-
-    return (unspents as LitecointoolsUnspent[]).map((unspent): PublicUnspent => {
-      return {
-        id: `${unspent.txid}:${unspent.vout}`,
-        address: unspent.address,
-        value: unspent.satoshis,
-        valueString: unspent.satoshis.toString(),
-        blockHeight: unspent.height,
-      };
-    });
   }
 }
