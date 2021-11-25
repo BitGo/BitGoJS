@@ -200,12 +200,6 @@ export interface MultiSigAddress {
   address: string;
 }
 
-export interface OfflineVaultTxInfo {
-  inputs: {
-    chainPath: string;
-  }[];
-}
-
 export interface RecoverFromWrongChainOptions {
   txid: string;
   recoveryAddress: string;
@@ -216,19 +210,6 @@ export interface RecoverFromWrongChainOptions {
   coin?: AbstractUtxoCoin;
   recoveryCoin?: AbstractUtxoCoin;
   signed?: boolean;
-}
-
-export interface FormattedOfflineVaultTxInfo {
-  txInfo: {
-    unspents: {
-      chainPath: string;
-      index?: string;
-      chain?: string;
-    }[];
-  };
-  txHex: string;
-  feeInfo: Record<string, never>;
-  coin: string;
 }
 
 export interface AddressInfo {
@@ -1658,31 +1639,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       return response[coinGeckoId]['usd'];
     }).call(this);
-  }
-
-  /**
-   * Helper function for recover()
-   * This transforms the txInfo from recover into the format that offline-signing-tool expects
-   * @param txInfo
-   * @param txHex
-   * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
-   */
-  formatForOfflineVault(txInfo: OfflineVaultTxInfo, txHex: string): FormattedOfflineVaultTxInfo {
-    const response: FormattedOfflineVaultTxInfo = {
-      txHex,
-      txInfo: {
-        unspents: txInfo.inputs,
-      },
-      feeInfo: {},
-      coin: this.getChain(),
-    };
-    _.map(response.txInfo.unspents, function (unspent) {
-      const pathArray = unspent.chainPath.split('/');
-      // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
-      unspent.index = pathArray[4];
-      unspent.chain = pathArray[3];
-    });
-    return response;
   }
 
   /**

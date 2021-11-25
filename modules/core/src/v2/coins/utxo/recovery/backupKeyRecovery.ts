@@ -21,6 +21,25 @@ import { InsightApi } from './insightApi';
 import { ApiNotImplementedError, ApiRequestError } from './errors';
 import { SmartbitApi } from './smartbitApi';
 
+export interface OfflineVaultTxInfo {
+  inputs: {
+    chainPath: string;
+  }[];
+}
+
+export interface FormattedOfflineVaultTxInfo {
+  txInfo: {
+    unspents: {
+      chainPath: string;
+      index?: string;
+      chain?: string;
+    }[];
+  };
+  txHex: string;
+  feeInfo: Record<string, never>;
+  coin: string;
+}
+
 interface SignatureAddressInfo extends RecoveryAccountData {
   backupKey: bip32.BIP32Interface;
   userKey: bip32.BIP32Interface;
@@ -51,6 +70,35 @@ function getRecoveryProvider(coinName: string, apiKey?: string): RecoveryProvide
   }
 
   throw new ApiNotImplementedError(coinName);
+}
+
+/**
+ * This transforms the txInfo from recover into the format that offline-signing-tool expects
+ * @param coinName
+ * @param txInfo
+ * @param txHex
+ * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
+ */
+function formatForOfflineVault(
+  coinName: string,
+  txInfo: OfflineVaultTxInfo,
+  txHex: string
+): FormattedOfflineVaultTxInfo {
+  const response: FormattedOfflineVaultTxInfo = {
+    txHex,
+    txInfo: {
+      unspents: txInfo.inputs,
+    },
+    feeInfo: {},
+    coin: coinName,
+  };
+  _.map(response.txInfo.unspents, function (unspent) {
+    const pathArray = unspent.chainPath.split('/');
+    // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
+    unspent.index = pathArray[4];
+    unspent.chain = pathArray[3];
+  });
+  return response;
 }
 
 /**
@@ -372,7 +420,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
 
   if (isUnsignedSweep) {
     const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-    return coin.formatForOfflineVault(txInfo, txHex);
+    return formatForOfflineVault(coin.getChain(), txInfo, txHex);
   } else {
     const signedTx = signRecoveryTransaction(
       transactionBuilder,
