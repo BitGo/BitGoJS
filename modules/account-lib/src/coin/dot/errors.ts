@@ -6,3 +6,10 @@ export class AddressValidationError extends BuildTransactionError {
     this.name = AddressValidationError.name;
   }
 }
+
+export class InvalidFeeError extends BuildTransactionError {
+  constructor(type?: string, expectedType?: string) {
+    super(`The specified type: "${type}" is not valid. Please provide the type: "${expectedType}"`);
+    this.name = InvalidFeeError.name;
+  }
+}

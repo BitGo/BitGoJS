@@ -16,7 +16,7 @@ export enum MethodNames {
  */
 export interface TxData {
   sender: string;
-  blockHash: string;
+  referenceBlock: string;
   blockNumber: number;
   genesisHash: string;
   metadataRpc: string;

@@ -20,10 +20,10 @@ describe('Dot Transfer Builder', () => {
     it('should validate real address', () => {
       const spy = sinon.spy(builder, 'validateAddress');
       should.throws(
-        () => builder.real({ address: 'asd' }),
+        () => builder.owner({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
-      should.doesNotThrow(() => builder.real({ address: sender.address }));
+      should.doesNotThrow(() => builder.owner({ address: sender.address }));
       assert.calledTwice(spy);
     });
     it('should validate to address', () => {
@@ -53,9 +53,9 @@ describe('Dot Transfer Builder', () => {
         .to({ address: receiver.address })
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
@@ -64,7 +64,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -88,9 +88,9 @@ describe('Dot Transfer Builder', () => {
         .to({ address: receiver.address })
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -98,7 +98,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -112,7 +112,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.transfer.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -120,7 +120,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -134,7 +134,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: sender.address })
         .sign({ key: sender.secretKey });
       const tx = await builder.build();
@@ -143,7 +143,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -159,7 +159,7 @@ describe('Dot Transfer Builder', () => {
       westendBuilder.from(DotResources.rawTx.transfer.westendSigned);
       westendBuilder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .version(7);
       const tx = await westendBuilder.build();
       const txJson = tx.toJson();
@@ -167,7 +167,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
@@ -179,15 +179,15 @@ describe('Dot Transfer Builder', () => {
   describe('build proxy transfer transaction', () => {
     it('should build a proxy transaction', async () => {
       builder
-        .real({ address: sender.address })
+        .owner({ address: sender.address })
         .forceProxyType('Any')
         .to({ address: receiver.address })
         .amount('90034235235322')
         .sender({ address: proxySender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       builder.sign({ key: proxySender.secretKey });
       const tx = await builder.build();
@@ -197,7 +197,7 @@ describe('Dot Transfer Builder', () => {
       // should.deepEqual(txJson.call, DotResources.rawTx.proxy.transferCall);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -217,15 +217,15 @@ describe('Dot Transfer Builder', () => {
 
     it('should build an unsigned proxy transaction', async () => {
       builder
-        .real({ address: sender.address })
+        .owner({ address: sender.address })
         .forceProxyType('Any')
         .to({ address: receiver.address })
         .amount('90034235235322')
         .sender({ address: proxySender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -234,7 +234,7 @@ describe('Dot Transfer Builder', () => {
       // should.deepEqual(txJson.call, DotResources.rawTx.proxy.transferCall);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -248,7 +248,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.proxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -257,7 +257,7 @@ describe('Dot Transfer Builder', () => {
       // should.deepEqual(txJson.call, DotResources.rawTx.proxy.transferCall);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -271,7 +271,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.proxy.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: proxySender.address })
         .sign({ key: proxySender.secretKey });
       const tx = await builder.build();
@@ -281,7 +281,7 @@ describe('Dot Transfer Builder', () => {
       // should.deepEqual(txJson.call, DotResources.rawTx.proxy.transferCall);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);

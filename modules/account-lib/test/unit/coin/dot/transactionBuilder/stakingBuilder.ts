@@ -57,9 +57,9 @@ describe('Dot Stake Builder', () => {
         .payee('Staked')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
@@ -69,7 +69,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -86,9 +86,9 @@ describe('Dot Stake Builder', () => {
         .payee('Staked')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -97,7 +97,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -111,7 +111,7 @@ describe('Dot Stake Builder', () => {
       builder.from(DotResources.rawTx.stake.signed);
       builder
         .validity({ firstValid: 3933 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -120,7 +120,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -134,7 +134,7 @@ describe('Dot Stake Builder', () => {
       builder.from(DotResources.rawTx.stake.unsigned);
       builder
         .validity({ firstValid: 3933 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: sender.address })
         .sign({ key: sender.secretKey });
       const tx = await builder.build();
@@ -144,7 +144,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, 'Staked');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -158,7 +158,7 @@ describe('Dot Stake Builder', () => {
       builder.from(DotResources.rawTx.stake.signedAlt);
       builder
         .validity({ firstValid: 3933 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .version(7);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -167,7 +167,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
@@ -181,7 +181,7 @@ describe('Dot Stake Builder', () => {
       builder.from(DotResources.rawTx.stake.unsignedAlt);
       builder
         .validity({ firstValid: 3933 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: sender.address })
         .sign({ key: sender.secretKey });
       const tx = await builder.build();
@@ -191,7 +191,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.payee, receiver.address);
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
-      should.deepEqual(txJson.blockHash, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
       should.deepEqual(txJson.specVersion, 9100);
       should.deepEqual(txJson.nonce, 200);
