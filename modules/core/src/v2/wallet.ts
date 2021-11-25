@@ -12,7 +12,6 @@ import {
   SignedTransaction, TransactionPrebuild,
   VerificationOptions, VerifyAddressOptions,
 } from './baseCoin';
-import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
 import * as internal from './internal/internal';
 import { drawKeycard } from './internal/keycard';
@@ -1071,7 +1070,7 @@ export class Wallet {
 
       // The sweep API endpoint is only available to utxo-based coins
 
-      if (!(self.baseCoin as any instanceof AbstractUtxoCoin)) {
+      if (!(self.baseCoin.sweepWithSendMany())) {
         if (self.confirmedBalanceString() !== self.balanceString()) {
           throw new Error('cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm');
         }
@@ -1740,9 +1739,8 @@ export class Wallet {
         .send(whitelistedParams)
         .result();
 
-      const utxoCoin = self.baseCoin as AbstractUtxoCoin;
-      const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
-        utxoCoin.getLatestBlockHeight(params.reqId) :
+      const blockHeightQuery = _.isFunction((self.baseCoin as any).getLatestBlockHeight) ?
+        (self.baseCoin as any).getLatestBlockHeight(params.reqId) :
         Promise.resolve(undefined);
       const queries = [buildQuery, blockHeightQuery];
       const [buildResponse, blockHeight] = (yield Promise.all(queries)) as any;
