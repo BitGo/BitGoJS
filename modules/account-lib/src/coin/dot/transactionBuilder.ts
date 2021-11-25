@@ -79,7 +79,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   fee(fee: FeeOptions): this {
     if (fee.type !== 'tip') {
-      throw new InvalidFeeError(fee.type);
+      throw new InvalidFeeError(fee.type, 'tip');
     }
     const tipBN = new BigNumber(fee.amount);
     this.validateValue(tipBN);

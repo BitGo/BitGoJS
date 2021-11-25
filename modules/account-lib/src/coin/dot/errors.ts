@@ -8,8 +8,8 @@ export class AddressValidationError extends BuildTransactionError {
 }
 
 export class InvalidFeeError extends BuildTransactionError {
-  constructor(type?: string) {
-    super(`The specified type: "${type}" is not valid. Please provide the type: "tip"`);
+  constructor(type?: string, expectedType?: string) {
+    super(`The specified type: "${type}" is not valid. Please provide the type: "${expectedType}"`);
     this.name = InvalidFeeError.name;
   }
 }
