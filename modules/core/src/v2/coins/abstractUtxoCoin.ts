@@ -58,7 +58,7 @@ const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { PublicUnspent, Unspent } from './utxo/unspent';
+import { Unspent } from './utxo/unspent';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -216,11 +216,6 @@ export interface RecoverFromWrongChainOptions {
   coin?: AbstractUtxoCoin;
   recoveryCoin?: AbstractUtxoCoin;
   signed?: boolean;
-}
-
-export interface ExplorerTxInfo {
-  input: { address: string }[];
-  outputs: { address: string }[];
 }
 
 export interface FormattedOfflineVaultTxInfo {
@@ -1696,21 +1691,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
   public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
-
-  async getTxInfoFromExplorer(faultyTxId: string): Promise<ExplorerTxInfo> {
-    const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
-    return ((await request.get(TX_INFO_URL)) as { body: ExplorerTxInfo }).body;
-  }
-
-  /**
-   * Fetch unspent transaction outputs using IMS unspents API
-   * @param addresses
-   * @returns {*}
-   */
-  async getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<PublicUnspent[]> {
-    const ADDRESS_UNSPENTS_URL = this.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-    return (await request.get(ADDRESS_UNSPENTS_URL)).body as PublicUnspent[];
-  }
 
   /**
    * Builds a funds recovery transaction without BitGo

@@ -3,10 +3,12 @@
  */
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import { PublicUnspent, Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
+import { ExplorerTxInfo } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
+
 import { nockBitGo } from './nockBitGo';
-import { ExplorerTxInfo } from '../../../../../../src/v2/coins/abstractUtxoCoin';
 
 export function nockBitGoPublicTransaction(
   coin: AbstractUtxoCoin,

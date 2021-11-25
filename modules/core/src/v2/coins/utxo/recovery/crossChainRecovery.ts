@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as _ from 'lodash';
+import * as request from 'superagent';
 import { VirtualSizes } from '@bitgo/unspents';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
@@ -9,9 +10,36 @@ const co = Bluebird.coroutine;
 
 import { NodeCallback } from '../../../types';
 import { BitGo } from '../../../../bitgo';
-import { AbstractUtxoCoin, ExplorerTxInfo } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { Ltc } from '../../ltc';
 import { Wallet } from '../../../wallet';
+
+import { PublicUnspent } from '../unspent';
+import { BaseCoin } from '../../../baseCoin';
+
+export interface ExplorerTxInfo {
+  input: { address: string }[];
+  outputs: { address: string }[];
+}
+
+class BitgoPublicApi {
+  constructor(public coin: BaseCoin) {}
+
+  async getTransactionInfo(txid: string): Promise<ExplorerTxInfo> {
+    const url = this.coin.url(`/public/tx/${txid}`);
+    return ((await request.get(url)) as { body: ExplorerTxInfo }).body;
+  }
+
+  /**
+   * Fetch unspent transaction outputs using IMS unspents API
+   * @param addresses
+   * @returns {*}
+   */
+  async getUnspentInfo(addresses: string[]): Promise<PublicUnspent[]> {
+    const url = this.coin.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
+    return (await request.get(url)).body as PublicUnspent[];
+  }
+}
 
 interface CrossChainRecoveryToolOptions {
   bitgo: BitGo;
@@ -78,6 +106,7 @@ export interface CrossChainRecoverySigned {
  */
 export class CrossChainRecoveryTool {
   bitgo: BitGo;
+  bitgoPublicApi: BitgoPublicApi;
   sourceCoin: AbstractUtxoCoin;
   recoveryCoin: AbstractUtxoCoin;
   logging: boolean;
@@ -107,6 +136,7 @@ export class CrossChainRecoveryTool {
       throw new Error('Please set a valid source coin');
     }
     this.sourceCoin = opts.sourceCoin;
+    this.bitgoPublicApi = new BitgoPublicApi(this.sourceCoin);
 
     if (_.isUndefined(opts.recoveryCoin) || !this.supportedCoins.includes(opts.recoveryCoin.getFamily())) {
       throw new Error('Please set a valid recovery type');
@@ -209,7 +239,7 @@ export class CrossChainRecoveryTool {
       self._log('Grabbing info for faulty tx...');
 
       // calling source coin's method of exploring transactions
-      const faultyTxInfo = (yield self.sourceCoin.getTxInfoFromExplorer(faultyTxId)) as unknown as ExplorerTxInfo;
+      const faultyTxInfo = (yield self.bitgoPublicApi.getTransactionInfo(faultyTxId)) as unknown as ExplorerTxInfo;
 
       self._log('Getting unspents on output addresses..');
       // Get output addresses that do not belong to wallet
@@ -260,7 +290,7 @@ export class CrossChainRecoveryTool {
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
       // Get unspents for addresses. Calling source coin's method of fetching unspents
-      const unspents = (yield self.sourceCoin.getUnspentInfoForCrossChainRecovery(outputAddresses)) as any;
+      const unspents = (yield self.bitgoPublicApi.getUnspentInfo(outputAddresses)) as any;
 
       self.unspents = unspents;
       return unspents;
