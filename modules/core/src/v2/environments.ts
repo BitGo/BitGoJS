@@ -14,8 +14,6 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
-  blockstreamBaseUrl: string;
-  smartbitBaseUrl: string;
   btcExplorerBaseUrl: string;
   etherscanBaseUrl: string;
   etherscanApiToken?: string;
@@ -83,8 +81,6 @@ const mainnetBase: EnvironmentTemplate = {
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
-  blockstreamBaseUrl: 'https://blockstream.info/api',
-  smartbitBaseUrl: 'https://api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
@@ -105,8 +101,6 @@ const testnetBase: EnvironmentTemplate = {
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
-  blockstreamBaseUrl: 'https://blockstream.info/testnet/api',
-  smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   etherscanBaseUrl: 'https://api-kovan.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
@@ -161,8 +155,6 @@ export const Environments: Environments = {
   }),
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
-    blockstreamBaseUrl: 'https://blockstream.info.fakeurl/testnet/api',
-    smartbitBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://api-kovan.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
@@ -193,14 +185,6 @@ export const Environments: Environments = {
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
-    smartbitBaseUrl:
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://testnet-api.smartbit.com.au/v1'
-        : 'https://api.smartbit.com.au/v1',
-    blockstreamBaseUrl:
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://blockstream.info/testnet/api'
-        : 'https://blockstream.info/api',
     btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://blockstream.info/testnet/api'

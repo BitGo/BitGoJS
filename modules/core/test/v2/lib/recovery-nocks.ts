@@ -7,18 +7,6 @@ import { BlockchairApi } from '../../../src/v2/coins/utxo/recovery/blockchairApi
 import { InsightApi } from '../../../src/v2/coins/utxo/recovery/insightApi';
 const fixtures = require('../../../test/v2/fixtures/coins/recovery');
 const blockchairContext = fixtures.blockchairContext;
-const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
-const btcNonKrsRecoveryDecodedTx = fixtures.btcNonKrsRecoveryDecodedTx;
-
-export function nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline = true) {
-  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
-  const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
-  if (smartbitOnline) {
-    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).reply(200, decodedTx);
-  } else {
-    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).socketDelay(10000).replyWithError(503); // "server unavailable"
-  }
-}
 
 export function nockbitcoinFees(fastestFee: number, halfHourFee: number, hourFee: number) {
   nock('https://bitcoinfees.earn.com').get('/api/v1/fees/recommended').reply(200, {
