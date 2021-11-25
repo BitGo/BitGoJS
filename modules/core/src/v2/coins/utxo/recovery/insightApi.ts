@@ -4,6 +4,7 @@
 import * as request from 'superagent';
 
 import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
+import { ApiNotImplementedError } from './errors';
 
 /**
  * https://explorer.api.bitcoin.com/docs/bch/v1/
@@ -31,7 +32,7 @@ export class InsightApi implements RecoveryProvider {
   static forCoin(coinName: string): InsightApi {
     const baseUrl = InsightApi.baseUrl(coinName);
     if (!baseUrl) {
-      throw new Error(`could not find baseUrl for ${coinName}`);
+      throw new ApiNotImplementedError(coinName);
     }
     return new InsightApi(baseUrl);
   }

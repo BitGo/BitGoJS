@@ -1,6 +1,7 @@
 import * as request from 'superagent';
 
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import { ApiNotImplementedError } from './errors';
 
 export class BlockchairApi implements RecoveryProvider {
   public readonly baseUrl: string;
@@ -41,7 +42,7 @@ export class BlockchairApi implements RecoveryProvider {
         blockchain = 'mock-' + coinName;
         break;
       default:
-        throw new Error(`no baseUrl for coin ${coinName}`);
+        throw new ApiNotImplementedError(coinName);
     }
     return new BlockchairApi(`https://api.blockchair.com/${blockchain}`, apiToken);
   }

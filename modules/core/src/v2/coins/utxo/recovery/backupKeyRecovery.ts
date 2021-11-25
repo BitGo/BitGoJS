@@ -50,7 +50,7 @@ function getRecoveryProvider(coinName: string, apiKey?: string): RecoveryProvide
       return InsightApi.forCoin(coinName);
   }
 
-  throw new Error(`could not get recovery provider for ${coinName}`);
+  throw new ApiNotImplementedError(coinName);
 }
 
 /**

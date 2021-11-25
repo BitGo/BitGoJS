@@ -2,6 +2,7 @@ import * as request from 'superagent';
 
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
 import { BlockExplorerUnavailable } from '../../../../errors';
+import { ApiNotImplementedError } from './errors';
 
 export class BlockstreamApi implements RecoveryProvider {
   protected readonly baseUrl: string;
@@ -14,7 +15,7 @@ export class BlockstreamApi implements RecoveryProvider {
         return new BlockstreamApi('https://blockstream.info/testnet/api');
     }
 
-    throw new Error(`no BlockstreamApi for ${coinName}`);
+    throw new ApiNotImplementedError(coinName);
   }
 
   constructor(baseUrl: string) {
