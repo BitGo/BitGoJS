@@ -18,6 +18,8 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
+import { ApiNotImplementedError, ApiRequestError } from './errors';
+import { SmartbitApi } from './smartbitApi';
 
 interface SignatureAddressInfo extends RecoveryAccountData {
   backupKey: bip32.BIP32Interface;
@@ -378,16 +380,16 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
       unspents,
       addressesById,
       !isKrsRecovery
-    );
-    txInfo.transactionHex = signedTx.buildIncomplete().toBuffer().toString('hex');
+    ).buildIncomplete();
+    txInfo.transactionHex = signedTx.toBuffer().toString('hex');
     try {
-      txInfo.tx = await coin.verifyRecoveryTransaction(txInfo);
+      txInfo.tx = await SmartbitApi.forCoin(coin.getChain()).verifyRecoveryTransaction(signedTx);
     } catch (e) {
       // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
       // could be unavailable due to service outage, so we continue without verification for those coins, but we will
       // let users know that they should verify their own
       // this message should be piped to WRW and displayed on the UI
-      if (e instanceof errors.MethodNotImplementedError || e instanceof errors.BlockExplorerUnavailable) {
+      if (e instanceof ApiNotImplementedError || e instanceof ApiRequestError) {
         console.log('Please verify your transaction by decoding the tx hex using a third-party api of your choice');
       } else {
         throw e;

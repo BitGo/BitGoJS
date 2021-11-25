@@ -5,11 +5,9 @@ import * as request from 'superagent';
 const co = Bluebird.coroutine;
 
 import { BitGo } from '../../bitgo';
-import { BlockExplorerUnavailable } from '../../errors';
 import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import { KeyIndices } from '../keychains';
-import * as common from '../../common';
 import { toBitgoRequest } from '../../api';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
@@ -84,47 +82,4 @@ export class Btc extends AbstractUtxoCoin {
     return Bluebird.resolve('https://mempool.space/api/v1/fees/recommended');
   }
 
-  /**
-   * Verify that the txhex user signs correspond to the correct tx they intended
-   * by 1) getting back the decoded transaction based on the txhex
-   * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
-   * to the txid (hash) of the transaction (including unspent info) we constructed
-   * @param {TransactionInfo} txInfo
-   * @returns {Bluebird<any>}
-   */
-  public verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
-    return co(function *verifyRecoveryTransaction() {
-      const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
-      let res;
-      try {
-        res = yield toBitgoRequest(request.post(smartbitURL))
-          .send({ hex: txInfo.transactionHex })
-          .result();
-      } catch (e) {
-        if ( e || !res) { // if smartbit fails to respond
-          throw new BlockExplorerUnavailable(e);
-        }
-      }
-
-      /**
-       * Smartbit's response when something goes wrong
-       * {"success":false,"error":{"code":"REQ_ERROR","message":"TX decode failed"}}
-       * we should process the error message here
-       * interpret the res from smartbit
-       */
-      if (!res.success) {
-        throw new Error(res.error.message);
-      }
-
-      const transactionDetails = res.transaction;
-
-      const tx = this.createTransactionFromHex(txInfo.transactionHex);
-      if (transactionDetails.TxId !== tx.getId()) {
-        console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
-        console.log('txhash/txid of the transaction bitgo constructed', tx.getId());
-        throw new Error('inconsistent recovery transaction id');
-      }
-      return transactionDetails;
-    }).call(this);
-  }
 }

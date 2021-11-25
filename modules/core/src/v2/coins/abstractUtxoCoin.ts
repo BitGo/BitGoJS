@@ -1831,8 +1831,4 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   valuelessTransferAllowed(): boolean {
     return false;
   }
-
-  verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
-    return Bluebird.reject(new errors.MethodNotImplementedError());
-  }
 }
