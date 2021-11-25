@@ -126,20 +126,6 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       );
     }
 
-    before('setup krsProviders', function () {
-      // pretend that Keyternal accepts recoveries for all coins
-      config.krsProviders.keyternal.supportedCoins = ['btc', 'bch', 'bsv', 'bcha', 'ltc', 'zec', 'dash'];
-      config.krsProviders.keyternal.feeAddresses = {
-        tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbsv: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbcha: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tltc: 'QffXMViM8DYgPRf1Hoczjw7BS5CVdSWaBL',
-        tzec: 't2ATLAhBP1uTuyiWs5DY5CPH1VuYkGUindt',
-        tdash: '8euHug4dbmPy3CLawwWdeTjGLqPYEGz3Kt',
-      };
-    });
-
     before('prepare deposit tx', function () {
       depositTx = getDepositTransaction();
     });
