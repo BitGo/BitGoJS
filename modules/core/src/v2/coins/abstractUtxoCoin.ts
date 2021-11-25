@@ -1689,8 +1689,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return response;
   }
 
-  public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
-  public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
+  public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Promise<AddressInfo>;
+  public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Promise<UnspentInfo[]>;
 
   /**
    * Builds a funds recovery transaction without BitGo

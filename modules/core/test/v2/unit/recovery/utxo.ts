@@ -43,7 +43,7 @@ describe('UTXO Recovery', function () {
     };
   });
 
-  describe('Recover Bitcoin', function () {
+  describe('Recover TBTC', function () {
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
@@ -65,7 +65,7 @@ describe('UTXO Recovery', function () {
       sandbox.restore();
     });
 
-    it('should generate BTC recovery tx', async function () {
+    it('should generate TBTC recovery tx', async function () {
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
@@ -83,7 +83,7 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'btc-recovery-tx.json');
     });
 
-    it('should generate BTC recovery tx with unencrypted keys', async function () {
+    it('should generate TBTC recovery tx with unencrypted keys', async function () {
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
@@ -100,7 +100,7 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'btc-recovery-tx.json');
     });
 
-    it('should generate BTC recovery tx with KRS', async function () {
+    it('should generate TBTC recovery tx with KRS', async function () {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
       sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
@@ -231,7 +231,7 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Bitcoin SV', function () {
+  describe('Recover TBSV', function () {
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
@@ -256,7 +256,7 @@ describe('UTXO Recovery', function () {
       sandbox.restore();
     });
 
-    it('should generate BSV recovery tx', async function () {
+    it('should generate TBSV recovery tx', async function () {
       const basecoin = bitgo.coin('tbsv');
       const recovery = await basecoin.recover({
         userKey:
@@ -277,7 +277,7 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'bch-recovery-tx.json');
     });
 
-    it('should generate BSV recovery tx with KRS', async function () {
+    it('should generate TBSV recovery tx with KRS', async function () {
       recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
       const basecoin = bitgo.coin('tbsv');
       const recovery = await basecoin.recover({
@@ -298,7 +298,7 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Bitcoin Cash And Bitcoin ABC (BCHA)', function () {
+  describe('Recover TBCH and TBCHA', function () {
     // Todo (kevin): fix test for other recovery source
     for (const coinName of ['tbch', 'tbcha']) {
       let sandbox: sinon.SinonSandbox;
@@ -386,9 +386,9 @@ describe('UTXO Recovery', function () {
     }
   });
 
-  describe('Recover Litecoin', function () {
-    it('should generate LTC recovery tx', async function () {
-      recoveryNocks.nockLtcRecovery(false);
+  describe('Recover TLTC', function () {
+    it('should generate TLTC recovery tx', async function () {
+      recoveryNocks.nockTltcRecovery(false);
 
       const basecoin = bitgo.coin('tltc');
       const recovery = await basecoin.recover({
@@ -405,8 +405,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'ltc-recovery-nokrs.json');
     });
 
-    it('should generate LTC recovery tx with KRS', async function () {
-      recoveryNocks.nockLtcRecovery(true);
+    it('should generate TLTC recovery tx with KRS', async function () {
+      recoveryNocks.nockTltcRecovery(true);
 
       const basecoin = bitgo.coin('tltc');
       const recovery = await basecoin.recover({
@@ -426,8 +426,8 @@ describe('UTXO Recovery', function () {
   });
 
   describe('Recover ZCash', function () {
-    it('should generate ZEC recovery tx', async function () {
-      recoveryNocks.nockZecRecovery(bitgo);
+    it('should generate TZEC recovery tx', async function () {
+      recoveryNocks.nockTzecRecovery(false);
 
       const basecoin = bitgo.coin('tzec');
 
@@ -454,8 +454,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'zec-recovery-nokrs.json');
     });
 
-    it('should generate ZEC recovery tx with KRS', async function () {
-      recoveryNocks.nockZecRecovery(bitgo, true);
+    it('should generate TZEC recovery tx with KRS', async function () {
+      recoveryNocks.nockTzecRecovery(true);
 
       const basecoin = bitgo.coin('tzec');
       const recovery = await basecoin.recover({
@@ -478,9 +478,9 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Dash', function () {
-    it('should generate DASH recovery tx', async function () {
-      recoveryNocks.nockDashRecovery(bitgo, false);
+  describe('Recover TDASH', function () {
+    it('should generate TDASH recovery tx', async function () {
+      recoveryNocks.nockTdashRecovery(false);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = await basecoin.recover({
@@ -497,8 +497,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'recovery-tdash-nokrs.json');
     });
 
-    it('should generate DASH recovery tx with KRS', async function () {
-      recoveryNocks.nockDashRecovery(bitgo, true);
+    it('should generate TDASH recovery tx with KRS', async function () {
+      recoveryNocks.nockTdashRecovery(true);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = await basecoin.recover({

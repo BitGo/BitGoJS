@@ -10,9 +10,6 @@ import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransac
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import { KeyIndices } from '../keychains';
 import * as common from '../../common';
-import { BlockstreamApi } from './utxo/recovery/blockstreamApi';
-import { BlockchairApi } from './utxo/recovery/blockchairApi';
-import { RecoveryAccountData, RecoveryUnspent } from './utxo/recovery/RecoveryProvider';
 import { toBitgoRequest } from '../../api';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
@@ -85,22 +82,6 @@ export class Btc extends AbstractUtxoCoin {
 
   getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
     return Bluebird.resolve('https://mempool.space/api/v1/fees/recommended');
-  }
-
-  recoveryBlockchainExplorerUrl(url: string): string {
-    return BlockchairApi.getBaseUrl(this.bitgo.getEnv(), 'bitcoin');
-  }
-
-  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryAccountData> {
-    // TODO: allow users to choose the API to use
-    const api = new BlockstreamApi(this.bitgo, apiKey);
-    return Bluebird.resolve(api.getAccountInfo(addressBase58));
-  }
-
-  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryUnspent[]> {
-    // TODO: allow users to choose the API to use
-    const api = new BlockstreamApi(this.bitgo, apiKey);
-    return Bluebird.resolve(api.getUnspents(addressBase58));
   }
 
   /**

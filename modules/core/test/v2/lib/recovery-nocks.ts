@@ -2,8 +2,9 @@
  * @prettier
  */
 import * as nock from 'nock';
-import { Environment, Environments } from '../../../src/v2/environments';
+import { Environments } from '../../../src/v2/environments';
 import { BlockchairApi } from '../../../src/v2/coins/utxo/recovery/blockchairApi';
+import { InsightApi } from '../../../src/v2/coins/utxo/recovery/insightApi';
 const fixtures = require('../../../test/v2/fixtures/coins/recovery');
 const blockchairContext = fixtures.blockchairContext;
 const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
@@ -444,8 +445,8 @@ module.exports.nockEtherscanRateLimitError = function () {
   nock('https://api-kovan.etherscan.io').get('/api').query(params).reply(200, response);
 };
 
-module.exports.nockLtcRecovery = function (isKrsRecovery) {
-  nock('http://explorer.litecointools.com/api')
+module.exports.nockTltcRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tltc') as string)
     .get('/addr/QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d')
     .reply(200, {
       addrStr: 'QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d',
@@ -709,9 +710,8 @@ module.exports.nockLtcRecovery = function (isKrsRecovery) {
   }
 };
 
-module.exports.nockZecRecovery = function (bitgo, isKrsRecovery) {
-  const env = Environments[bitgo.getEnv()] as Environment;
-  nock(env.zecExplorerBaseUrl)
+module.exports.nockTzecRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tzec') as string)
     .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS')
     .reply(200, {
       addrStr: 't2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS',
@@ -903,9 +903,8 @@ module.exports.nockZecRecovery = function (bitgo, isKrsRecovery) {
   }
 };
 
-module.exports.nockDashRecovery = function (bitgo, isKrsRecovery) {
-  const env = Environments[bitgo.getEnv()] as Environment;
-  nock(env.dashExplorerBaseUrl)
+module.exports.nockTdashRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tdash') as string)
     .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW')
     .reply(200, {
       addrStr: '8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW',

@@ -2,17 +2,12 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import * as Bluebird from 'bluebird';
-import * as request from 'superagent';
 
-import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import * as common from '../../common';
 import { InvalidAddressError } from '../../errors';
-import { toBitgoRequest } from '../../api';
-
-const co = Bluebird.coroutine;
+import { InsightApi } from './utxo/recovery/insightApi';
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -95,39 +90,11 @@ export class Ltc extends AbstractUtxoCoin {
     return this.canonicalAddress(bitgoAddress, 1);
   }
 
-  recoveryBlockchainExplorerUrl(url: string): string {
-    return common.Environments[this.bitgo.env].ltcExplorerBaseUrl + url;
+  getAddressInfoFromExplorer(addressBase58: string): Promise<AddressInfo> {
+    return InsightApi.forCoin(this).getAddressInfo(addressBase58);
   }
 
-  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    return co(function* getAddressInfoFromExplorer() {
-      const address = this.canonicalAddress(addressBase58, 2);
-
-      const addrInfo = yield toBitgoRequest(
-        request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`))
-      ).result();
-
-      (addrInfo as any).txCount = (addrInfo as any).txApperances;
-      (addrInfo as any).totalBalance = (addrInfo as any).balanceSat;
-
-      return addrInfo;
-    }).call(this);
-  }
-
-  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    return co(function* getUnspentInfoFromExplorer() {
-      const address = this.canonicalAddress(addressBase58, 2);
-
-      const unspents = yield toBitgoRequest(
-        request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`))
-      ).result();
-
-      (unspents as any).forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.satoshis;
-        unspent.n = unspent.vout;
-      });
-
-      return unspents;
-    }).call(this);
+  getUnspentInfoFromExplorer(addressBase58: string): Promise<UnspentInfo[]> {
+    return InsightApi.forCoin(this).getUnspentInfo(addressBase58);
   }
 }
