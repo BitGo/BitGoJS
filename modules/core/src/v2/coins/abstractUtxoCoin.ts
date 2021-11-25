@@ -10,7 +10,6 @@ import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
-import * as request from 'superagent';
 
 import { BitGo } from '../../bitgo';
 import * as config from '../../config';
@@ -40,7 +39,6 @@ import {
   TransactionRecipient,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
   HalfSignedUtxoTransaction,
 } from '../baseCoin';
@@ -50,7 +48,6 @@ import { Keychain, KeyIndices } from '../keychains';
 import { promiseProps } from '../promise-utils';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import { toBitgoRequest } from '../../api';
 import { sanitizeLegacyPath } from '../../bip32path';
 
 const debug = debugLib('bitgo:v2:utxo');
@@ -1593,92 +1590,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Get the current market price from a third party to be used for recovery
-   * This function is only intended for non-bitgo recovery transactions, when it is necessary
-   * to calculate the rough fee needed to pay to Keyternal. We are okay with approximating,
-   * because the resulting price of this function only has less than 1 dollar influence on the
-   * fee that needs to be paid to Keyternal.
-   *
-   * See calculateFeeAmount function:  return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
-   *
-   * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
-   */
-  getRecoveryMarketPrice(): Bluebird<string> {
-    const self = this;
-    return co<string>(function* getRecoveryMarketPrice() {
-      const familyNamesToCoinGeckoIds = new Map()
-        .set('BTC', 'bitcoin')
-        .set('LTC', 'litecoin')
-        .set('BCH', 'bitcoin-cash')
-        .set('ZEC', 'zcash')
-        .set('DASH', 'dash')
-        // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
-        // it out for a better source when it becomes available.  TODO BG-26359.
-        .set('BCHA', 'bitcoin-cash')
-        .set('BSV', 'bitcoin-cash');
-
-      const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
-      if (!coinGeckoId) {
-        throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);
-      }
-      const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
-      const response = yield toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
-
-      // An example of response
-      // {
-      //   "ethereum": {
-      //     "usd": 220.64
-      //   }
-      // }
-      if (!response) {
-        throw new Error('Unable to reach Coin Gecko API for price data');
-      }
-      if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
-        throw new Error('Unexpected response from Coin Gecko API for price data');
-      }
-
-      return response[coinGeckoId]['usd'];
-    }).call(this);
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.resolve(backupKeyRecovery(this, this.bitgo, params)).asCallback(callback);
-  }
-
-  /**
-   * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
-   * @param params
-   * @param params.provider {String} the KRS provider that holds the backup key
-   * @param params.amount {Number} amount (in base units) to be recovered
-   * @param callback
-   * @returns {*}
-   */
-  calculateFeeAmount(params: { provider: string; amount?: number }, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* calculateFeeAmount() {
-      const krsProvider = config.krsProviders[params.provider];
-
-      if (krsProvider === undefined) {
-        throw new Error(`no fee structure specified for provider ${params.provider}`);
-      }
-
-      if (krsProvider.feeType === 'flatUsd') {
-        const feeAmountUsd = krsProvider.feeAmount;
-        const currentPrice: number = (yield self.getRecoveryMarketPrice()) as any;
-
-        return Math.round((feeAmountUsd / currentPrice) * self.getBaseFactor());
-      } else {
-        // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
-        throw new Error('Fee structure not implemented');
-      }
-    })
-      .call(this)
-      .asCallback(callback);
   }
 
   /**

@@ -5,6 +5,7 @@
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
+import * as request from 'superagent';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
@@ -20,6 +21,8 @@ import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
 import { ApiNotImplementedError, ApiRequestError } from './errors';
 import { SmartbitApi } from './smartbitApi';
+import * as config from '../../../../config';
+import { toBitgoRequest } from '../../../../api';
 
 export interface OfflineVaultTxInfo {
   inputs: {
@@ -99,6 +102,82 @@ function formatForOfflineVault(
     unspent.chain = pathArray[3];
   });
   return response;
+}
+
+/**
+ * Get the current market price from a third party to be used for recovery
+ * This function is only intended for non-bitgo recovery transactions, when it is necessary
+ * to calculate the rough fee needed to pay to Keyternal. We are okay with approximating,
+ * because the resulting price of this function only has less than 1 dollar influence on the
+ * fee that needs to be paid to Keyternal.
+ *
+ * See calculateFeeAmount function:  return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
+ *
+ * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
+ */
+async function getRecoveryMarketPrice(coin: AbstractUtxoCoin): Promise<string> {
+  const familyNamesToCoinGeckoIds = new Map()
+    .set('BTC', 'bitcoin')
+    .set('LTC', 'litecoin')
+    .set('BCH', 'bitcoin-cash')
+    .set('ZEC', 'zcash')
+    .set('DASH', 'dash')
+    // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
+    // it out for a better source when it becomes available.  TODO BG-26359.
+    .set('BCHA', 'bitcoin-cash')
+    .set('BSV', 'bitcoin-cash');
+
+  const coinGeckoId = familyNamesToCoinGeckoIds.get(coin.getFamily().toUpperCase());
+  if (!coinGeckoId) {
+    throw new Error(`There is no CoinGecko id for family name ${coin.getFamily().toUpperCase()}.`);
+  }
+  const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
+  const response = await toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
+
+  // An example of response
+  // {
+  //   "ethereum": {
+  //     "usd": 220.64
+  //   }
+  // }
+  if (!response) {
+    throw new Error('Unable to reach Coin Gecko API for price data');
+  }
+  if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
+    throw new Error('Unexpected response from Coin Gecko API for price data');
+  }
+
+  return response[coinGeckoId]['usd'];
+}
+
+/**
+ * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
+ * @params coin
+ * @param params
+ * @param params.provider {String} the KRS provider that holds the backup key
+ * @param params.amount {Number} amount (in base units) to be recovered
+ * @param callback
+ * @returns {*}
+ */
+async function calculateFeeAmount(
+  coin: AbstractUtxoCoin,
+  params: { provider: string; amount?: number }
+): Promise<number> {
+  const krsProvider = config.krsProviders[params.provider];
+
+  if (krsProvider === undefined) {
+    throw new Error(`no fee structure specified for provider ${params.provider}`);
+  }
+
+  if (krsProvider.feeType === 'flatUsd') {
+    const feeAmountUsd = krsProvider.feeAmount;
+    const currentPrice: number = (await getRecoveryMarketPrice(coin)) as any;
+
+    return Math.round((feeAmountUsd / currentPrice) * coin.getBaseFactor());
+  } else {
+    // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
+    throw new Error('Fee structure not implemented');
+  }
 }
 
 /**
@@ -384,7 +463,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
   let krsFee;
   if (isKrsRecovery) {
     try {
-      krsFee = await coin.calculateFeeAmount({
+      krsFee = await calculateFeeAmount(coin, {
         provider: params.krsProvider,
         amount: recoveryAmount,
       });
