@@ -1575,21 +1575,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Get a static fee rate which is used in recovery situations
-   * @deprecated
-   */
-  getRecoveryFeePerBytes(): Bluebird<number> {
-    return Bluebird.resolve(100);
-  }
-
-  /**
-   * Get a url which can be used for determining recovery fee rates
-   */
-  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
-    return Bluebird.reject(new Error('AbtractUtxoCoin method not implemented'));
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback

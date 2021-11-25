@@ -23,6 +23,7 @@ import { ApiNotImplementedError, ApiRequestError } from './errors';
 import { SmartbitApi } from './smartbitApi';
 import * as config from '../../../../config';
 import { toBitgoRequest } from '../../../../api';
+import { MempoolApi } from './mempoolApi';
 
 export interface OfflineVaultTxInfo {
   inputs: {
@@ -334,6 +335,18 @@ async function queryBlockchainUnspentsPath(
   return walletUnspents;
 }
 
+async function getRecoveryFeePerBytes(
+  coin: AbstractUtxoCoin,
+  { defaultValue }: { defaultValue: number }
+): Promise<number> {
+  try {
+    return await MempoolApi.forCoin(coin.getChain()).getRecoveryFeePerBytes();
+  } catch (e) {
+    console.dir(e);
+    return defaultValue;
+  }
+}
+
 /**
  * Builds a funds recovery transaction without BitGo
  * @param coin
@@ -436,7 +449,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
   const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(coin.network);
   const txInfo: any = {};
 
-  const feePerByte: number = (await coin.getRecoveryFeePerBytes()) as any;
+  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
   // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
