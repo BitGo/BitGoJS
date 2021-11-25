@@ -1,6 +1,6 @@
 import * as nock from 'nock';
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { BlockstreamApi } from '../../../../src/v2/recovery/blockstreamApi';
+import { TestBitGo } from '../../../../../lib/test_bitgo';
+import { BlockstreamApi } from '../../../../../../src/v2/coins/utxo/recovery/blockstreamApi';
 
 nock.disableNetConnect();
 

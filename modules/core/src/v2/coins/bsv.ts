@@ -10,7 +10,7 @@ import { Bch } from './bch';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import * as errors from '../../errors';
-import { BlockchairApi } from '../recovery/blockchairApi';
+import { BlockchairApi } from './utxo/recovery/blockchairApi';
 
 export class Bsv extends Bch {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {

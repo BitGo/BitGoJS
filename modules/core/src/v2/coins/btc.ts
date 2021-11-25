@@ -10,9 +10,9 @@ import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransac
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import { KeyIndices } from '../keychains';
 import * as common from '../../common';
-import { BlockstreamApi } from '../recovery/blockstreamApi';
-import { BlockchairApi } from '../recovery/blockchairApi';
-import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
+import { BlockstreamApi } from './utxo/recovery/blockstreamApi';
+import { BlockchairApi } from './utxo/recovery/blockchairApi';
+import { RecoveryAccountData, RecoveryUnspent } from './utxo/recovery/RecoveryProvider';
 import { toBitgoRequest } from '../../api';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {

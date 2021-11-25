@@ -1,6 +1,6 @@
 import * as nock from 'nock';
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { BlockchairApi } from '../../../../src/v2/recovery/blockchairApi';
+import { TestBitGo } from '../../../../../lib/test_bitgo';
+import { BlockchairApi } from '../../../../../../src/v2/coins/utxo/recovery/blockchairApi';
 
 const coinNames = ['bitcoin', 'bitcoin-sv', 'ecash'];
 

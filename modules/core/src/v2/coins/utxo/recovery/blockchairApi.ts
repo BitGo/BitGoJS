@@ -1,6 +1,7 @@
-import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './types';
 import * as request from 'superagent';
-import { BitGo } from '../../bitgo';
+
+import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import { BitGo } from '../../../../bitgo';
 
 const BlockchairCoin = [
   'bitcoin',

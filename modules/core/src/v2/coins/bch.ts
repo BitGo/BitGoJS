@@ -7,7 +7,7 @@ import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
-import { BlockchairApi } from '../recovery/blockchairApi';
+import { BlockchairApi } from './utxo/recovery/blockchairApi';
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',

@@ -3,7 +3,7 @@
  */
 import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
-import { BlockchairApi } from '../../../src/v2/recovery/blockchairApi';
+import { BlockchairApi } from '../../../src/v2/coins/utxo/recovery/blockchairApi';
 const fixtures = require('../../../test/v2/fixtures/coins/recovery');
 const blockchairContext = fixtures.blockchairContext;
 const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;

@@ -1,4 +1,4 @@
-import { UnspentInfo } from '../coins/abstractUtxoCoin';
+import { UnspentInfo } from '../../abstractUtxoCoin';
 
 /**
  * An unspent with bear minimum information required for recoveries.

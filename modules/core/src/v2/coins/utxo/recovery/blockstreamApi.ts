@@ -1,8 +1,9 @@
-import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './types';
-import * as common from '../../common';
 import * as request from 'superagent';
-import { BitGo } from '../../bitgo';
-import { BlockExplorerUnavailable } from '../../errors';
+
+import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import * as common from '../../../../common';
+import { BitGo } from '../../../../bitgo';
+import { BlockExplorerUnavailable } from '../../../../errors';
 
 export class BlockstreamApi implements RecoveryProvider {
   protected readonly bitgo: BitGo;

@@ -6,7 +6,7 @@ import { Bch } from './bch';
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
 import { AddressInfo, UnspentInfo } from './abstractUtxoCoin';
-import { BlockchairApi } from '../recovery/blockchairApi';
+import { BlockchairApi } from './utxo/recovery/blockchairApi';
 
 export class Bcha extends Bch {
   static createInstance(bitgo: BitGo): BaseCoin {
