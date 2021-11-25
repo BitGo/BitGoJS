@@ -1566,15 +1566,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * @param scriptHashScript
-   * @deprecated
-   */
-  // TODO(BG-11638): remove in next SDK major version release
-  calculateRecoveryAddress(scriptHashScript: Buffer) {
-    return utxolib.address.fromOutputScript(scriptHashScript, this.network);
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback
