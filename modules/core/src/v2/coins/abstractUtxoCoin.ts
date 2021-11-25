@@ -236,10 +236,6 @@ export interface AddressInfo {
   totalBalance: number;
 }
 
-export interface UnspentInfo {
-  address: string;
-}
-
 export interface VerifyKeySignaturesOptions {
   userKeychain?: Keychain;
   keychainToVerify?: Keychain;
@@ -1688,9 +1684,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     });
     return response;
   }
-
-  public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Promise<AddressInfo>;
-  public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Promise<UnspentInfo[]>;
 
   /**
    * Builds a funds recovery transaction without BitGo

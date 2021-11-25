@@ -4,8 +4,7 @@ import * as _ from 'lodash';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin, AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
-import { BlockchairApi } from './utxo/recovery/blockchairApi';
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',
@@ -139,15 +138,5 @@ export class Bch extends AbstractUtxoCoin {
 
     const rawBytes = cashaddress.decode(address);
     return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]], this.network);
-  }
-
-  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Promise<AddressInfo> {
-    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-cash', apiKey);
-    return explorer.getAccountInfo(addressBase58);
-  }
-
-  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Promise<UnspentInfo[]> {
-    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-cash', apiKey);
-    return explorer.getUnspents(addressBase58);
   }
 }

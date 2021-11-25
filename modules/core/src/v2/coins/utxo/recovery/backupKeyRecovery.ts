@@ -9,17 +9,46 @@ import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
 import * as errors from '../../../../errors';
+import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { sanitizeLegacyPath } from '../../../../bip32path';
-import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, Output } from '../../abstractUtxoCoin';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { BlockstreamApi } from './blockstreamApi';
+import { BlockchairApi } from './blockchairApi';
+import { InsightApi } from './insightApi';
 
-interface SignatureAddressInfo extends AddressInfo {
+interface SignatureAddressInfo extends RecoveryAccountData {
   backupKey: bip32.BIP32Interface;
   userKey: bip32.BIP32Interface;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
+}
+
+function getRecoveryProvider(coinName: string, apiKey?: string): RecoveryProvider {
+  switch (coinName) {
+    case 'btc':
+    case 'tbtc':
+      return BlockstreamApi.forCoin(coinName);
+    case 'bch':
+    case 'tbch':
+    case 'bcha':
+    case 'tbcha': // this coin only exists in tests
+    case 'bsv':
+    case 'tbsv':
+      return BlockchairApi.forCoin(coinName, apiKey);
+    case 'btg':
+    case 'dash':
+    case 'tdash':
+    case 'ltc':
+    case 'tltc':
+    case 'zec':
+    case 'tzec':
+      return InsightApi.forCoin(coinName);
+  }
+
+  throw new Error(`could not get recovery provider for ${coinName}`);
 }
 
 /**
@@ -117,6 +146,7 @@ async function queryBlockchainUnspentsPath(
   basePath: string,
   addressesById
 ) {
+  const recoveryProvider = getRecoveryProvider(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
 
@@ -127,7 +157,7 @@ async function queryBlockchainUnspentsPath(
     const keys = derivedKeys.map((k) => k.publicKey);
     const address: any = coin.createMultiSigAddress(Codes.typeForCode(chain) as ScriptType2Of3, 2, keys);
 
-    const addrInfo: AddressInfo = await coin.getAddressInfoFromExplorer(address.address, params.apiKey);
+    const addrInfo: RecoveryAccountData = await recoveryProvider.getAccountInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
@@ -143,7 +173,7 @@ async function queryBlockchainUnspentsPath(
         addressesById[address.address] = address;
 
         // Try to find unspents on it.
-        const addressUnspents: UnspentInfo[] = await coin.getUnspentInfoFromExplorer(address.address, params.apiKey);
+        const addressUnspents: RecoveryUnspent[] = await recoveryProvider.getUnspents(address.address);
 
         addressUnspents.forEach(function addAddressToUnspent(unspent) {
           unspent.address = address.address;
@@ -163,7 +193,7 @@ async function queryBlockchainUnspentsPath(
 
   // get unspents for these addresses
 
-  const walletUnspents: UnspentInfo[] = [];
+  const walletUnspents: RecoveryUnspent[] = [];
   // This will populate walletAddresses
   await gatherUnspents(0);
 

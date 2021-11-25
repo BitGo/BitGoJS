@@ -7,7 +7,7 @@ import * as sinon from 'sinon';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as config from '../../../../src/config';
-import { Bch, Bsv, Btc } from '../../../../src/v2/coins';
+import { Btc } from '../../../../src/v2/coins';
 import {
   addressInfos,
   addressUnspents,
@@ -15,8 +15,9 @@ import {
   btcNonKrsRecoveryDecodedTx,
   emptyAddressInfo,
 } from '../../fixtures/coins/recovery';
-import { Bcha } from '../../../../src/v2/coins/bcha';
 import { FixtureDir } from '../../../lib/fixtures';
+import { BlockchairApi } from '../../../../src/v2/coins/utxo/recovery/blockchairApi';
+import { BlockstreamApi } from '../../../../src/v2/coins/utxo/recovery/blockstreamApi';
 nock.disableNetConnect();
 
 const recoveryNocks = require('../../lib/recovery-nocks');
@@ -49,12 +50,12 @@ describe('UTXO Recovery', function () {
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(600, 600, 100);
-      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      const callBack1 = sandbox.stub(BlockstreamApi.prototype, 'getAccountInfo');
       callBack1.resolves(emptyAddressInfo);
       callBack1
         .withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
         .resolves(addressInfos['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']);
-      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      const callBack2 = sandbox.stub(BlockstreamApi.prototype, 'getUnspents');
       callBack2
         .withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
         .resolves([addressUnspents['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']]);
@@ -237,7 +238,7 @@ describe('UTXO Recovery', function () {
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(600, 600, 100);
-      const callBack1 = sandbox.stub(Bsv.prototype, 'getAddressInfoFromExplorer');
+      const callBack1 = sandbox.stub(BlockchairApi.prototype, 'getAccountInfo');
       callBack1.resolves(emptyAddressInfo);
       callBack1
         .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
@@ -245,7 +246,7 @@ describe('UTXO Recovery', function () {
       callBack1
         .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
         .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-      const callBack2 = sandbox.stub(Bsv.prototype, 'getUnspentInfoFromExplorer');
+      const callBack2 = sandbox.stub(BlockchairApi.prototype, 'getUnspents');
       callBack2
         .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
         .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
@@ -298,44 +299,25 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover TBCH and TBCHA', function () {
-    // Todo (kevin): fix test for other recovery source
-    for (const coinName of ['tbch', 'tbcha']) {
-      let sandbox: sinon.SinonSandbox;
+  for (const coinName of ['tbch', 'tbcha']) {
+    describe('Recover ' + coinName, function () {
+      // Todo (kevin): fix test for other recovery source
+      const sandbox = sinon.createSandbox();
       beforeEach(() => {
-        if (coinName === 'tbch') {
-          recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
-          sandbox = sinon.createSandbox();
-          const callBack1 = sandbox.stub(Bch.prototype, 'getAddressInfoFromExplorer');
-          callBack1.resolves(emptyAddressInfo);
-          callBack1
-            .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
-            .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
-          callBack1
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
-            .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-          const callBack2 = sandbox.stub(Bch.prototype, 'getUnspentInfoFromExplorer');
-          callBack2
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
-            .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
-          callBack2.resolves([]);
-        } else {
-          recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
-          sandbox = sinon.createSandbox();
-          const callBack1bcha = sandbox.stub(Bcha.prototype, 'getAddressInfoFromExplorer');
-          callBack1bcha.resolves(emptyAddressInfo);
-          callBack1bcha
-            .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN', 'myKey')
-            .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
-          callBack1bcha
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey')
-            .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-          const callBack2bcha = sandbox.stub(Bcha.prototype, 'getUnspentInfoFromExplorer');
-          callBack2bcha
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey')
-            .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
-          callBack2bcha.resolves([]);
-        }
+        recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
+        const callBack1 = sandbox.stub(BlockchairApi.prototype, 'getAccountInfo');
+        callBack1.resolves(emptyAddressInfo);
+        callBack1
+          .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
+          .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+        callBack1
+          .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
+          .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+        const callBack2 = sandbox.stub(BlockchairApi.prototype, 'getUnspents');
+        callBack2
+          .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
+          .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+        callBack2.resolves([]);
       });
 
       afterEach(() => {
@@ -383,8 +365,8 @@ describe('UTXO Recovery', function () {
 
         await fixtures.shouldEqualJSONFixture(recovery, coinName + '-recovery-tx-nokrs.json');
       });
-    }
-  });
+    });
+  }
 
   describe('Recover TLTC', function () {
     it('should generate TLTC recovery tx', async function () {

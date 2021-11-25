@@ -1456,7 +1456,7 @@ module.exports.nockEmptyAddressInfo = function (emptyAddrs: Array<string>, env: 
       transactions: [],
       utxo: [],
     };
-    nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+    nock(BlockchairApi.forCoin('btc').baseUrl)
       .get('/dashboards/address/' + addr)
       .reply(200, {
         data: data,
@@ -1479,7 +1479,7 @@ module.exports.nockBtcSegwitRecovery = function (bitgo) {
     '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
   ];
   this.nockEmptyAddressInfo(emptyAddrs, env);
-  nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+  nock(BlockchairApi.forCoin('btc').baseUrl)
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws') // unspent
     .times(2)
     .reply(200, {

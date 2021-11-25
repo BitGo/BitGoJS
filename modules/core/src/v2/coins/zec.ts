@@ -4,8 +4,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin, AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
-import { InsightApi } from './utxo/recovery/insightApi';
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 
 export class Zec extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -30,13 +29,5 @@ export class Zec extends AbstractUtxoCoin {
 
   supportsBlockTarget() {
     return false;
-  }
-
-  getAddressInfoFromExplorer(addressBase58: string): Promise<AddressInfo> {
-    return InsightApi.forCoin(this).getAddressInfo(addressBase58);
-  }
-
-  getUnspentInfoFromExplorer(addressBase58: string): Promise<UnspentInfo[]> {
-    return InsightApi.forCoin(this).getUnspentInfo(addressBase58);
   }
 }

@@ -1,12 +1,14 @@
-import { AbstractUtxoCoin } from '../../index';
-import { AddressInfo, UnspentInfo } from '../../abstractUtxoCoin';
-
+/**
+ * @prettier
+ */
 import * as request from 'superagent';
+
+import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
 
 /**
  * https://explorer.api.bitcoin.com/docs/bch/v1/
  */
-export class InsightApi {
+export class InsightApi implements RecoveryProvider {
   static baseUrl(coinName: string): string | undefined {
     switch (coinName) {
       case 'dash':
@@ -26,10 +28,10 @@ export class InsightApi {
     }
   }
 
-  static forCoin(coin: AbstractUtxoCoin): InsightApi {
-    const baseUrl = InsightApi.baseUrl(coin.getChain());
+  static forCoin(coinName: string): InsightApi {
+    const baseUrl = InsightApi.baseUrl(coinName);
     if (!baseUrl) {
-      throw new Error(`could not find baseUrl for ${coin.getChain()}`);
+      throw new Error(`could not find baseUrl for ${coinName}`);
     }
     return new InsightApi(baseUrl);
   }
@@ -55,16 +57,16 @@ export class InsightApi {
     return result.body as T;
   }
 
-  async getAddressInfo(addr: string): Promise<AddressInfo> {
+  async getAccountInfo(addr: string): Promise<RecoveryAccountData> {
     const addrInfo: any = await this.get(`/addr/${addr}`);
 
     addrInfo.txCount = addrInfo.txApperances;
     addrInfo.totalBalance = addrInfo.balanceSat;
 
-    return addrInfo as AddressInfo;
+    return addrInfo as RecoveryAccountData;
   }
 
-  async getUnspentInfo(addr: string): Promise<UnspentInfo[]> {
+  async getUnspents(addr: string): Promise<RecoveryUnspent[]> {
     const unspents: any[] = await this.get(`/addr/${addr}/utxo`);
 
     unspents.forEach((unspent: any) => {
@@ -72,6 +74,6 @@ export class InsightApi {
       unspent.n = unspent.vout;
     });
 
-    return unspents as UnspentInfo[];
+    return unspents as RecoveryUnspent[];
   }
 }
