@@ -16,8 +16,7 @@ import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import * as errors from '../../errors';
 
-import { recover, RecoverParams } from './utxo/recover';
-export { RecoverParams } from './utxo/recover';
+import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
 
 import {
   AddressCoinSpecific,
@@ -1715,7 +1714,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(recover(this, this.bitgo, params)).asCallback(callback);
+    return Bluebird.resolve(backupKeyRecovery(this, this.bitgo, params)).asCallback(callback);
   }
 
   /**

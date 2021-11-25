@@ -7,11 +7,11 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
-import { BitGo } from '../../../bitgo';
-import * as errors from '../../../errors';
-import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
-import { sanitizeLegacyPath } from '../../../bip32path';
-import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo } from '../abstractUtxoCoin';
+import { BitGo } from '../../../../bitgo';
+import * as errors from '../../../../errors';
+import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
+import { sanitizeLegacyPath } from '../../../../bip32path';
+import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo } from '../../abstractUtxoCoin';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -190,7 +190,7 @@ async function queryBlockchainUnspentsPath(
  * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
-export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
+export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }
