@@ -1,16 +1,17 @@
 /**
  * @prettier
  */
+import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import { NodeCallback } from './types';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
-import * as utxolib from '@bitgo/utxo-lib';
-import { AbstractUtxoCoin, ExplorerTxInfo } from './coins/abstractUtxoCoin';
-import { Ltc } from './coins/ltc';
-import { Wallet } from './wallet';
+
+import { NodeCallback } from '../../../types';
+import { BitGo } from '../../../../bitgo';
+import { AbstractUtxoCoin, ExplorerTxInfo } from '../../abstractUtxoCoin';
+import { Ltc } from '../../ltc';
+import { Wallet } from '../../../wallet';
 
 interface CrossChainRecoveryToolOptions {
   bitgo: BitGo;

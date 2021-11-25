@@ -17,6 +17,11 @@ import * as config from '../../config';
 import * as errors from '../../errors';
 
 import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
+import {
+  CrossChainRecoverySigned,
+  CrossChainRecoveryTool,
+  CrossChainRecoveryUnsigned,
+} from './utxo/recovery/crossChainRecovery';
 
 import {
   AddressCoinSpecific,
@@ -43,7 +48,6 @@ import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
 import { Keychain, KeyIndices } from '../keychains';
 import { promiseProps } from '../promise-utils';
-import { CrossChainRecoverySigned, CrossChainRecoveryTool, CrossChainRecoveryUnsigned } from '../recovery';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';

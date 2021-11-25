@@ -5,8 +5,9 @@ import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import * as config from '../../../../../src/config';
+import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
+import * as config from '../../../../../../src/config';
+import { CrossChainRecoverySigned } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import {
   getFixture,
@@ -17,14 +18,13 @@ import {
   shouldEqualJSON,
   utxoCoins,
   transactionHexToObj,
-} from './util';
-import { getSeed } from '../../../../lib/keys';
-import { createFullSignedTransaction } from './util/transaction';
-import { getDefaultWalletUnspentSigner } from './util/keychains';
-import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from './util/nockIndexerAPI';
-import { CrossChainRecoverySigned } from '../../../../../src/v2/recovery';
-import { nockBitGo } from './util/nockBitGo';
-import { Unspent } from '../../../../../src/v2/coins/utxo/unspent';
+} from '../util';
+import { getSeed } from '../../../../../lib/keys';
+import { createFullSignedTransaction } from '../util/transaction';
+import { getDefaultWalletUnspentSigner } from '../util/keychains';
+import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
+import { nockBitGo } from '../util/nockBitGo';
+import { Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
 
 function nockWallet(coin: AbstractUtxoCoin, walletId: string, walletKeys: Triple<KeychainBase58>): nock.Scope {
   return nockBitGo()
@@ -150,7 +150,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       };
       shouldEqualJSON(
         signedRecoveryObj,
-        await getFixture(sourceCoin, `recovery/${recoveryCoin.getChain()}`, signedRecoveryObj)
+        await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}`, signedRecoveryObj)
       );
     });
 
