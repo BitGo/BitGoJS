@@ -5,25 +5,24 @@
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as request from 'superagent';
+import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
+import * as config from '../../../../config';
 import * as errors from '../../../../errors';
-import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { sanitizeLegacyPath } from '../../../../bip32path';
 import { AbstractUtxoCoin, Output } from '../../abstractUtxoCoin';
 
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
 import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
 import { ApiNotImplementedError, ApiRequestError } from './errors';
 import { SmartbitApi } from './smartbitApi';
-import * as config from '../../../../config';
-import { toBitgoRequest } from '../../../../api';
 import { MempoolApi } from './mempoolApi';
+import { CoingeckoApi } from './coingeckoApi';
 
 export interface OfflineVaultTxInfo {
   inputs: {
@@ -116,48 +115,16 @@ function formatForOfflineVault(
  *
  * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
  */
-async function getRecoveryMarketPrice(coin: AbstractUtxoCoin): Promise<string> {
-  const familyNamesToCoinGeckoIds = new Map()
-    .set('BTC', 'bitcoin')
-    .set('LTC', 'litecoin')
-    .set('BCH', 'bitcoin-cash')
-    .set('ZEC', 'zcash')
-    .set('DASH', 'dash')
-    // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
-    // it out for a better source when it becomes available.  TODO BG-26359.
-    .set('BCHA', 'bitcoin-cash')
-    .set('BSV', 'bitcoin-cash');
-
-  const coinGeckoId = familyNamesToCoinGeckoIds.get(coin.getFamily().toUpperCase());
-  if (!coinGeckoId) {
-    throw new Error(`There is no CoinGecko id for family name ${coin.getFamily().toUpperCase()}.`);
-  }
-  const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
-  const response = await toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
-
-  // An example of response
-  // {
-  //   "ethereum": {
-  //     "usd": 220.64
-  //   }
-  // }
-  if (!response) {
-    throw new Error('Unable to reach Coin Gecko API for price data');
-  }
-  if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
-    throw new Error('Unexpected response from Coin Gecko API for price data');
-  }
-
-  return response[coinGeckoId]['usd'];
+async function getRecoveryMarketPrice(coin: AbstractUtxoCoin): Promise<number> {
+  return await new CoingeckoApi().getUSDPrice(coin.getFamily());
 }
 
 /**
  * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
- * @params coin
+ * @param coin
  * @param params
  * @param params.provider {String} the KRS provider that holds the backup key
  * @param params.amount {Number} amount (in base units) to be recovered
- * @param callback
  * @returns {*}
  */
 async function calculateFeeAmount(
@@ -172,7 +139,7 @@ async function calculateFeeAmount(
 
   if (krsProvider.feeType === 'flatUsd') {
     const feeAmountUsd = krsProvider.feeAmount;
-    const currentPrice: number = (await getRecoveryMarketPrice(coin)) as any;
+    const currentPrice: number = await getRecoveryMarketPrice(coin);
 
     return Math.round((feeAmountUsd / currentPrice) * coin.getBaseFactor());
   } else {

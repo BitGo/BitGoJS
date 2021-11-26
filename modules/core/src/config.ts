@@ -282,8 +282,6 @@ export const krsProviders: Record<string, KrsProvider> = {
   },
 };
 
-export const coinGeckoBaseUrl = 'https://api.coingecko.com/api/v3/';
-
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
 /**
  * Get the default (hardcoded) constants for a particular network.
