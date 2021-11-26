@@ -1,0 +1,31 @@
+{
+  "txHex": "010000000302370152303d138f02bedc9447f45455aecbc3cc9871b1a6f0a8e6aa6dab0bef0100000000ffffffff9e51fdef08fa0db14c85acd1c203bd12b0ee4aaeff561d2515c4746d0fe1bfcb0100000000ffffffff01edc21b246b329eb960a1d5511ee117bb65ab74d275af3a71b98ac2a356c3410100000000ffffffff01b0d3c1230000000017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
+  "txInfo": {
+    "unspents": [
+      {
+        "chainPath": "/0/0/21/0",
+        "witnessScript": "52210391e76285ad55895309f6fa7db9fb359489daaf235bb4cb50608f9562122af1ab210285ddd6b1e84e37a9f222737d8b80a8a980a193a783b75b9e82d6e239eb52818c2103a13ee160d79d43201ef5e65b6df4e0842de3b640904d049e64daaaa84a306bb853ae",
+        "value": 100000000,
+        "index": "0",
+        "chain": "21"
+      },
+      {
+        "chainPath": "/0/0/21/2",
+        "witnessScript": "5221027db35d325fb6b20e7990d5e5ca33144c270a2b149b4b4158a6e16a090b276f8a2102003243d889cec7c4c55042d6c10091a536eef3894f573759c5d26a727e96f036210257f6aee3214f76ff02748de7d291866642a913b0d346ccc976d6a77d9aa00de253ae",
+        "value": 200000000,
+        "index": "2",
+        "chain": "21"
+      },
+      {
+        "chainPath": "/0/0/21/3",
+        "witnessScript": "522102b587356915a019e64745d1e8b75a9109a762feeec08607e46ec83681a608a90521032edf1b3c4b31a0757e1122d558b6dabebdc0b2a39f040dcd4f89ac3e4d5811a42102da0f05c67ffa785717242a75a2f8635fcc1d767b5d88dd772da0547d287021ff53ae",
+        "value": 300000000,
+        "index": "3",
+        "chain": "21"
+      }
+    ]
+  },
+  "feeInfo": {},
+  "coin": "btc",
+  "txid": "dc9295cfa0f659af44fa78619502b296a8398502d6b67f6daf6e853dffb4f8a4"
+}

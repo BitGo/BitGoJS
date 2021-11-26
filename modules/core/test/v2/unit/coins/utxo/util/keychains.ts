@@ -5,6 +5,8 @@ import * as bip32 from 'bip32';
 import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 import { WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
 import { Triple } from '../../../../../../src';
+import { encrypt } from '../../../../../../src/encrypt';
+import { getSeed } from '../../../../../lib/keys';
 
 export type KeychainBase58 = {
   pub: string;
@@ -56,4 +58,14 @@ export function getDefaultWalletKeys(): RootWalletKeys {
 
 export function getDefaultWalletUnspentSigner(): WalletUnspentSigner<RootWalletKeys> {
   return getWalletUnspentSignerUserBitGo(keychains);
+}
+
+export function encryptKeychain(password: string, keychain: KeychainBase58): string {
+  return encrypt(password, keychain.prv);
+}
+
+export function getWalletKeys(seed: string): RootWalletKeys {
+  return new RootWalletKeys(
+    Array.from({ length: 3 }).map((_, i) => bip32.fromSeed(getSeed(`${seed}/${i}`))) as Triple<bip32.BIP32Interface>
+  );
 }
