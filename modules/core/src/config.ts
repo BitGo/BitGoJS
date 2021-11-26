@@ -298,3 +298,7 @@ export const defaultConstants = (env: EnvironmentName) => {
   const network = Environments[env].network;
   return _.merge({}, defaults, tokens[network]);
 };
+
+export type Config = {
+  krsProviders: Record<string, KrsProvider>
+}
