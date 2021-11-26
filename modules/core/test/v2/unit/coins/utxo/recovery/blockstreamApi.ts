@@ -79,13 +79,13 @@ describe('Blockstream API:', function () {
     it('to get an account information for an invalid address', async () => {
       const api = BlockstreamApi.forCoin('tbtc');
       await api.getAccountInfo('invalidAddress')
-        .should.be.rejectedWith('Failed to get address information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
+        .should.be.rejectedWith(/Error: Bad Request/);
     });
 
     it('to get an account unspents for an invalid address', async () => {
       const api = BlockstreamApi.forCoin('tbtc');
       await api.getUnspents('invalidAddress')
-        .should.be.rejectedWith('Failed to get unspents information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
+        .should.be.rejectedWith(/Error: Bad Request/);
     });
   });
 });

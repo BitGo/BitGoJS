@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import * as request from 'superagent';
-import { toBitgoRequest } from '../../../../api';
+import { BaseApi } from './baseApi';
 
 const familyNamesToCoinGeckoIds = new Map()
   .set('BTC', 'bitcoin')
@@ -15,30 +14,33 @@ const familyNamesToCoinGeckoIds = new Map()
   .set('BCHA', 'bitcoin-cash')
   .set('BSV', 'bitcoin-cash');
 
-export class CoingeckoApi {
-  baseUrl = 'https://api.coingecko.com/api/v3/';
+export class CoingeckoApi extends BaseApi {
+  constructor() {
+    super('https://api.coingecko.com/api/v3');
+  }
 
   async getUSDPrice(coinFamily: string): Promise<number> {
     const coinGeckoId = familyNamesToCoinGeckoIds.get(coinFamily.toUpperCase());
     if (!coinGeckoId) {
       throw new Error(`There is no CoinGecko id for family name ${coinFamily.toUpperCase()}.`);
     }
-    const coinGeckoUrl = this.baseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
-    const response = await toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
+    const coinGeckoUrl = `/simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
+    const res = await this.get<any>(coinGeckoUrl, { retry: 2 });
+    return res.map((body) => {
+      // An example of response
+      // {
+      //   "ethereum": {
+      //     "usd": 220.64
+      //   }
+      // }
+      if (!body) {
+        throw new Error('Unable to reach Coin Gecko API for price data');
+      }
+      if (!body[coinGeckoId]['usd'] || typeof body[coinGeckoId]['usd'] !== 'number') {
+        throw new Error('Unexpected response from Coin Gecko API for price data');
+      }
 
-    // An example of response
-    // {
-    //   "ethereum": {
-    //     "usd": 220.64
-    //   }
-    // }
-    if (!response) {
-      throw new Error('Unable to reach Coin Gecko API for price data');
-    }
-    if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
-      throw new Error('Unexpected response from Coin Gecko API for price data');
-    }
-
-    return response[coinGeckoId]['usd'];
+      return body[coinGeckoId]['usd'];
+    });
   }
 }

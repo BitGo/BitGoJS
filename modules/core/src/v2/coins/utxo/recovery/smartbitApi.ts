@@ -1,11 +1,10 @@
 /**
  * @prettier
  */
-import * as request from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
-import { ApiNotImplementedError, ApiRequestError } from './errors';
+import { ApiNotImplementedError, BaseApi } from './baseApi';
 
-export class SmartbitApi {
+export class SmartbitApi extends BaseApi {
   static forCoin(coinName: string): SmartbitApi {
     switch (coinName) {
       case 'btc':
@@ -16,26 +15,13 @@ export class SmartbitApi {
     throw new ApiNotImplementedError(coinName);
   }
 
-  constructor(public baseUrl: string) {}
+  constructor(baseUrl: string) {
+    super(baseUrl);
+  }
 
-  /**
-   * Verify that the txhex user signs correspond to the correct tx they intended
-   * by 1) getting back the decoded transaction based on the txhex
-   * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
-   * to the txid (hash) of the transaction (including unspent info) we constructed
-   */
-  async verifyRecoveryTransaction(tx: utxolib.bitgo.UtxoTransaction): Promise<unknown> {
-    const url = this.baseUrl + '/blockchain/decodetx';
-    let res;
-    try {
-      res = await request.post(url).send({ hex: tx.toBuffer().toString('hex') });
-    } catch (e) {
-      throw new ApiRequestError(url, e);
-    }
-
-    if (res.ok) {
-      throw new ApiRequestError(url, res.status);
-    }
+  async getTransactionDetails(tx: utxolib.bitgo.UtxoTransaction): Promise<unknown> {
+    const path = '/blockchain/decodetx';
+    const res = await this.post<any>(path, { hex: tx.toBuffer().toString('hex') });
 
     /**
      * Smartbit's response when something goes wrong
@@ -43,17 +29,12 @@ export class SmartbitApi {
      * we should process the error message here
      * interpret the res from smartbit
      */
-    if (!res.body.success) {
-      throw new Error(res.body.error.message);
-    }
 
-    const transactionDetails = res.body.transaction;
-
-    if (transactionDetails.TxId !== tx.getId()) {
-      console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
-      console.log('txhash/txid of the transaction bitgo constructed', tx.getId());
-      throw new Error('inconsistent recovery transaction id');
-    }
-    return transactionDetails;
+    return res.map((body) => {
+      if (!body.success) {
+        throw new Error(body.error.message);
+      }
+      return body.transaction;
+    });
   }
 }
