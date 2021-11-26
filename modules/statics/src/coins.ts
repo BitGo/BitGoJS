@@ -42,6 +42,7 @@ export const coins = CoinMap.fromCoins([
   utxo('btc', 'Bitcoin', Networks.main.bitcoin, UnderlyingAsset.BTC),
   utxo('tbtc', 'Testnet Bitcoin', Networks.test.bitcoin, UnderlyingAsset.BTC),
   utxo('btg', 'Bitcoin Gold', Networks.main.bitcoinGold, UnderlyingAsset.BTG),
+  utxo('tbtg', 'Testnet Bitcoin Gold', Networks.test.bitcoinGold, UnderlyingAsset.BTG),
   utxo('ltc', 'Litecoin', Networks.main.litecoin, UnderlyingAsset.LTC),
   utxo('tltc', 'Testnet Litecoin', Networks.test.litecoin, UnderlyingAsset.LTC),
   utxo('dash', 'Dash', Networks.main.dash, UnderlyingAsset.DASH),

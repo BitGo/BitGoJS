@@ -13,29 +13,9 @@ export abstract class BaseNetwork {
   public abstract readonly explorerUrl: string | undefined;
 }
 
-/*
-The values for the various fork coins can be found in these files:
-
-property       filename             varname                           notes
-------------------------------------------------------------------------------------------------------------------------
-messagePrefix  src/validation.cpp   strMessageMagic                   Format `${CoinName} Signed Message`
-bech32_hrp     src/chainparams.cpp  bech32_hrp                        Only for some networks
-bip32.public   src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]    Mainnets have same value, testnets have same value
-bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]    Mainnets have same value, testnets have same value
-pubKeyHash     src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
-scriptHash     src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
-wif            src/chainparams.cpp  base58Prefixes[SECRET_KEY]        Testnets have same value
- */
 export interface UtxoNetwork extends BaseNetwork {
-  messagePrefix: string;
-  bech32?: string;
-  bip32: {
-    public: number;
-    private: number;
-  };
-  pubKeyHash: number;
-  scriptHash: number;
-  wif: number;
+  // Network name as defined in @bitgo/utxo-lib networks.ts
+  utxolibName: string;
 }
 
 export interface AccountNetwork extends BaseNetwork {
@@ -84,50 +64,6 @@ abstract class Testnet extends BaseNetwork {
   type = NetworkType.TESTNET;
 }
 
-/**
- * Mainnet abstract class for Bitcoin forks. These are the constants from the Bitcoin main network,
- * which are overridden to various degrees by each Bitcoin fork.
- *
- * This allows us to not redefine these properties for forks which haven't changed them from Bitcoin.
- *
- * However, if a coin network has changed one of these properties, and you accidentally forget to override,
- * you'll inherit the incorrect values from the Bitcoin network. Be wary, and double check your network constant
- * overrides to ensure you're not missing any changes.
- */
-abstract class BitcoinLikeMainnet extends Mainnet implements UtxoNetwork {
-  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
-  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
-  messagePrefix = '\x18Bitcoin Signed Message:\n';
-  bip32 = {
-    // base58 'xpub'
-    public: 0x0488b21e,
-    // base58 'xprv'
-    private: 0x0488ade4,
-  };
-  pubKeyHash = 0x00;
-  scriptHash = 0x05;
-  wif = 0x80;
-  type = NetworkType.MAINNET;
-}
-
-/**
- * Testnet abstract class for Bitcoin forks. Works exactly the same as `BitcoinLikeMainnet`,
- * except the constants are taken from the Bitcoin test network.
- */
-abstract class BitcoinLikeTestnet extends Testnet implements UtxoNetwork {
-  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
-  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
-  messagePrefix = '\x18Bitcoin Signed Message:\n';
-  bip32 = {
-    public: 0x043587cf,
-    private: 0x04358394,
-  };
-  pubKeyHash = 0x6f;
-  scriptHash = 0xc4;
-  wif = 0xef;
-  type = NetworkType.TESTNET;
-}
-
 class Algorand extends Mainnet implements AccountNetwork {
   name = 'Algorand';
   family = CoinFamily.ALGO;
@@ -158,90 +94,87 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   chainId = 43113;
 }
 
-class Bitcoin extends BitcoinLikeMainnet {
+class Bitcoin extends Mainnet implements UtxoNetwork {
   name = 'Bitcoin';
   family = CoinFamily.BTC;
+  utxolibName = 'bitcoin';
   explorerUrl = 'https://blockstream.info/tx/';
-  bech32 = 'bc';
 }
 
-class BitcoinTestnet extends BitcoinLikeTestnet {
+class BitcoinTestnet extends Mainnet implements UtxoNetwork {
   name = 'BitcoinTestnet';
   family = CoinFamily.BTC;
+  utxolibName = 'testnet';
   explorerUrl = 'https://blockstream.info/testnet/tx/';
-  bech32 = 'tb';
 }
 
-// https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
-// https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
-class BitcoinCash extends BitcoinLikeMainnet {
+class BitcoinCash extends Mainnet implements UtxoNetwork {
   name = 'BitcoinCash';
   family = CoinFamily.BCH;
+  utxolibName = 'bitcoincash';
   explorerUrl = 'http://blockdozer.com/tx/';
 }
 
-class BitcoinCashTestnet extends BitcoinLikeTestnet {
+class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinCashTestnet';
   family = CoinFamily.BCH;
+  utxolibName = 'bitcoincashTestnet';
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 
-class BitcoinABC extends BitcoinLikeMainnet {
+class BitcoinABC extends Mainnet implements UtxoNetwork {
   name = 'BitcoinABC';
   family = CoinFamily.BCHA;
+  utxolibName = 'bitcoincash';
   explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
 }
 
-class BitcoinABCTestnet extends BitcoinLikeTestnet {
+class BitcoinABCTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinABCTestnet';
   family = CoinFamily.BCHA;
+  utxolibName = 'bitcoincashTestnet';
   explorerUrl = undefined;
 }
 
-// https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
-// https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
-class BitcoinSV extends BitcoinLikeMainnet {
+class BitcoinSV extends Mainnet implements UtxoNetwork {
   name = 'BitcoinSV';
   family = CoinFamily.BSV;
+  utxolibName = 'bitcoinsv';
   explorerUrl = 'https://blockchair.com/bitcoin-sv/transaction/';
 }
 
-class BitcoinSVTestnet extends BitcoinLikeTestnet {
+class BitcoinSVTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinSVTestnet';
   family = CoinFamily.BSV;
+  utxolibName = 'bitcoinsvTestnet';
   explorerUrl = undefined;
 }
 
-// https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
-// https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
-class BitcoinGold extends BitcoinLikeMainnet {
+class BitcoinGold extends Mainnet implements UtxoNetwork {
   name = 'BitcoinGold';
-  messagePrefix = '\x18Bitcoin Gold Signed Message:\n';
-  bech32 = 'btg';
-  pubKeyHash = 0x26;
-  scriptHash = 0x17;
   family = CoinFamily.BTG;
+  utxolibName = 'bitcoingold';
   explorerUrl = 'https://btgexplorer.com/tx/';
 }
 
-// https://github.com/dashpay/dash/blob/master/src/validation.cpp
-// https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
-class Dash extends BitcoinLikeMainnet {
+class BitcoinGoldTestnet extends Mainnet implements UtxoNetwork {
+  name = 'BitcoinGoldTestnet';
+  family = CoinFamily.BTG;
+  utxolibName = 'bitcoingoldTestnet';
+  explorerUrl = 'https://btgexplorer.com/tx/';
+}
+
+class Dash extends Mainnet implements UtxoNetwork {
   name = 'Dash';
-  messagePrefix = '\x19DarkCoin Signed Message:\n';
-  pubKeyHash = 0x4c;
-  scriptHash = 0x10;
-  wif = 0xcc;
   family = CoinFamily.DASH;
+  utxolibName = 'dash';
   explorerUrl = 'https://insight.dashevo.org/insight/tx/';
 }
 
-class DashTestnet extends BitcoinLikeTestnet {
+class DashTestnet extends Testnet implements UtxoNetwork {
   name = 'DashTestnet';
-  messagePrefix = '\x19DarkCoin Signed Message:\n';
-  pubKeyHash = 0x8c;
-  scriptHash = 0x13;
   family = CoinFamily.DASH;
+  utxolibName = 'dashTest';
   explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
 
@@ -391,26 +324,17 @@ class HederaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.kabuto.sh/testnet/transaction/';
 }
 
-// https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
-// https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
-class Litecoin extends BitcoinLikeMainnet {
+class Litecoin extends Mainnet implements UtxoNetwork {
   name = 'Litecoin';
-  messagePrefix = '\x19Litecoin Signed Message:\n';
-  bech32 = 'ltc';
-  pubKeyHash = 0x30;
-  scriptHash = 0x32;
-  wif = 0xb0;
   family = CoinFamily.LTC;
+  utxolibName = 'litecoin';
   explorerUrl = 'https://live.blockcypher.com/ltc/tx/';
 }
 
-class LitecoinTestnet extends BitcoinLikeTestnet {
+class LitecoinTestnet extends Testnet implements UtxoNetwork {
   name = 'LitecoinTestnet';
-  messagePrefix = '\x19Litecoin Signed Message:\n';
-  bech32 = 'tltc';
-  pubKeyHash = 0x6f;
-  scriptHash = 0x3a;
   family = CoinFamily.LTC;
+  utxolibName = 'litecoinTest';
   explorerUrl = 'https://blockexplorer.one/litecoin/testnet/tx/';
 }
 
@@ -532,23 +456,17 @@ class XtzTestnet extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
 }
 
-// https://github.com/zcash/zcash/blob/master/src/validation.cpp
-// https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
-class ZCash extends BitcoinLikeMainnet {
+class ZCash extends Mainnet implements UtxoNetwork {
   name = 'ZCash';
-  messagePrefix = '\x18ZCash Signed Message:\n';
-  pubKeyHash = 0x1cb8;
-  scriptHash = 0x1cbd;
   family = CoinFamily.ZEC;
+  utxolibName = 'zcash';
   explorerUrl = 'https://zcash.blockexplorer.com/tx/';
 }
 
-class ZCashTestnet extends BitcoinLikeTestnet {
+class ZCashTestnet extends Testnet implements UtxoNetwork {
   name = 'ZCashTestnet';
-  messagePrefix = '\x18ZCash Signed Message:\n';
-  pubKeyHash = 0x1d25;
-  scriptHash = 0x1cba;
   family = CoinFamily.ZEC;
+  utxolibName = 'zcashTest';
   explorerUrl = 'https://explorer.testnet.z.cash/tx/';
 }
 
@@ -587,6 +505,7 @@ export const Networks = {
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
+    bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinABC: Object.freeze(new BitcoinABCTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     casper: Object.freeze(new CasperTestnet()),
