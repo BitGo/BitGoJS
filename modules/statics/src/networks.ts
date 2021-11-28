@@ -157,11 +157,11 @@ class BitcoinGold extends Mainnet implements UtxoNetwork {
   explorerUrl = 'https://btgexplorer.com/tx/';
 }
 
-class BitcoinGoldTestnet extends Mainnet implements UtxoNetwork {
+class BitcoinGoldTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinGoldTestnet';
   family = CoinFamily.BTG;
   utxolibName = 'bitcoingoldTestnet';
-  explorerUrl = 'https://btgexplorer.com/tx/';
+  explorerUrl = undefined;
 }
 
 class Dash extends Mainnet implements UtxoNetwork {
