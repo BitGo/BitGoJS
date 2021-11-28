@@ -279,6 +279,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return this._network;
   }
 
+  sweepWithSendMany(): boolean {
+    return true;
+  }
+
   static get validAddressTypes(): UnspentType[] {
     const validAddressTypes: UnspentType[] = [];
     // best way I could find to loop over enum values

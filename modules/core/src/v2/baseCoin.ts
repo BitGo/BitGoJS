@@ -286,6 +286,14 @@ export abstract class BaseCoin {
   }
 
   /**
+   * Use `sendMany()` to perform wallet sweep.
+   * FIXME(BG-39738): add coin.sweepWallet() instead
+   */
+  sweepWithSendMany(): boolean {
+    return false;
+  }
+
+  /**
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
