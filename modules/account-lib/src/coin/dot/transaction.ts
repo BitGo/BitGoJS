@@ -1,13 +1,21 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey } from '../baseCoin/iface';
+import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import Keyring, { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
-import { TxData, DecodedTx, StakeArgs, StakeArgsPayeeRaw, AddProxyArgs, UnstakeArgs } from './iface';
+import {
+  TxData,
+  DecodedTx,
+  StakeArgs,
+  StakeArgsPayeeRaw,
+  AddProxyArgs,
+  UnstakeArgs,
+  TransactionExplanation,
+} from './iface';
 import utils from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -97,6 +105,7 @@ export class Transaction extends BaseTransaction {
     }) as unknown as DecodedTx;
 
     const result: TxData = {
+      id: construct.txHash(this.toBroadcastFormat()),
       sender: decodedTx.address,
       referenceBlock: decodedTx.blockHash,
       blockNumber: decodedTx.blockNumber,
@@ -172,6 +181,94 @@ export class Transaction extends BaseTransaction {
     }
 
     return result;
+  }
+
+  explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    explanationResult.displayOrder.push('owner', 'forceProxyType');
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.to?.toString() || '',
+          amount: json.amount?.toString() || '',
+        },
+      ],
+      owner: json.owner,
+      forceProxyType: json.forceProxyType,
+    };
+  }
+
+  explainStakingActivateTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    explanationResult.displayOrder.push('payee', 'forceProxyType');
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.controller?.toString() || '',
+          amount: json.amount || '',
+        },
+      ],
+      payee: json.payee,
+      forceProxyType: json.forceProxyType,
+    };
+  }
+
+  explainWalletInitializationTransaction(
+    json: TxData,
+    explanationResult: TransactionExplanation,
+  ): TransactionExplanation {
+    explanationResult.displayOrder.push('owner', 'proxyType', 'delay');
+    return {
+      ...explanationResult,
+      owner: json.owner,
+      proxyType: json.proxyType,
+      delay: json.delay,
+    };
+  }
+
+  explainStakingUnlockTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.sender.toString(),
+          amount: json.amount || '',
+        },
+      ],
+    };
+  }
+
+  /** @inheritdoc */
+  explainTransaction(): TransactionExplanation {
+    const result = this.toJson();
+    const displayOrder = ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    const outputs: TransactionRecipient[] = [];
+    const explanationResult: TransactionExplanation = {
+      // txhash used to identify the transactions
+      id: result.id,
+      displayOrder,
+      outputAmount: result.amount?.toString() || '0',
+      changeAmount: '0',
+      changeOutputs: [],
+      outputs,
+      fee: {
+        fee: result.tip?.toString() || '',
+        type: 'tip',
+      },
+      type: this.type,
+    };
+    switch (this.type) {
+      case TransactionType.Send:
+        return this.explainTransferTransaction(result, explanationResult);
+      case TransactionType.StakingActivate:
+        return this.explainStakingActivateTransaction(result, explanationResult);
+      case TransactionType.WalletInitialization:
+        return this.explainWalletInitializationTransaction(result, explanationResult);
+      case TransactionType.StakingUnlock:
+        return this.explainStakingUnlockTransaction(result, explanationResult);
+      default:
+        throw new InvalidTransactionError('Transaction type not supported');
+    }
   }
 
   /**
