@@ -11,7 +11,6 @@ import { MethodNames } from './iface';
 import { UnstakeBuilder } from '.';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
-  protected _metadataRpc: string;
   protected _registry: TypeRegistry;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -44,7 +43,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected staticsConfig(): void {
     const networkConfig = this._coinConfig.network as DotNetwork;
     const { specName, specVersion, chainName, metadataRpc } = networkConfig;
-    this._metadataRpc = metadataRpc;
     this._registry = getRegistry({
       chainName: chainName,
       specName: specName,
@@ -54,11 +52,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
-    if (!this._registry || !this._metadataRpc) {
+    const { metadataRpc } = this._coinConfig.network as DotNetwork;
+    if (!this._registry) {
       throw new BuildTransactionError('Please set the network before parsing the transaction');
     }
     const decodedTxn = decode(rawTxn, {
-      metadataRpc: this._metadataRpc,
+      metadataRpc,
       registry: this._registry,
     });
     const methodName = decodedTxn.method?.name;

@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { decode, methods } from '@substrate/txwrapper-polkadot';
+import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
+import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import { TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
@@ -42,10 +42,10 @@ export class UnstakeBuilder extends TransactionBuilder {
 
   /**
    *
-   * The amount to stake.
+   * The amount to unstake.
    *
    * @param {string} amount
-   * @returns {StakeBuilder} This transfer builder.
+   * @returns {StakeBuilder} This stake builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-nominator#required-minimum-stake
    */
@@ -56,12 +56,7 @@ export class UnstakeBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    super.validateRawTransaction(rawTransaction);
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
-    });
+  validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
     if (decodedTxn.method?.name === MethodNames.Unbond) {
       const txMethod = decodedTxn.method.args as unknown as UnstakeArgs;
       const value = txMethod.value;

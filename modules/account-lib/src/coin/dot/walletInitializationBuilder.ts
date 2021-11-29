@@ -1,10 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { decode, methods } from '@substrate/txwrapper-polkadot';
+import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
+import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
 import { AddProxyArgs, MethodNames, proxyType } from './iface';
 import { WalletInitializationSchema } from './txnSchema';
@@ -88,12 +88,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    super.validateRawTransaction(rawTransaction);
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
-    });
+  validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
     if (decodedTxn.method?.name === MethodNames.AddProxy) {
       const txMethod = decodedTxn.method.args as unknown as AddProxyArgs;
       const delegate = txMethod.delegate;
