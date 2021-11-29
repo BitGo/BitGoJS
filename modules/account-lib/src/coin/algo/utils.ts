@@ -7,8 +7,8 @@ import sha512 from 'js-sha512';
 import _ from 'lodash';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
 import { BaseUtils } from '../baseCoin';
-import { InvalidKey, NotImplementedError, InvalidTransactionError } from '../baseCoin/errors';
-import { EncodedTx, Address, Seed } from './ifaces';
+import { InvalidKey, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { Address, EncodedTx, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 import { SeedEncoding } from './seedEncoding';
 import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
@@ -21,7 +21,7 @@ const ALGORAND_TRANSACTION_LENGTH = 52;
 const SEED_BYTES_LENGTH = 32;
 
 /**
- * Determines whether the string is a composed of hex chars only.
+ * Determines whether the string is only composed of hex chars.
  *
  * @param {string} maybe The string to be validated.
  * @returns {boolean} true if the string consists of only hex characters, otherwise false.
@@ -33,11 +33,11 @@ function allHexChars(maybe: string): boolean {
 /**
  * ConcatArrays takes two array and returns a joint array of both
  *
- * @param a {Buffer}
- * @param b {Buffer}
- * @returns {Uint8Array} [a,b]
+ * @param a {Uint8Array} first array to concat
+ * @param b {Uint8Array} second array
+ * @returns {Uint8Array} a new array containing all elements of 'a' followed by all elements of 'b'
  */
-function concatArrays(a: Buffer, b: Buffer): Uint8Array {
+function concatArrays(a: Uint8Array, b: Uint8Array): Uint8Array {
   const c = new Uint8Array(a.length + b.length);
   c.set(a);
   c.set(b, a.length);
@@ -72,10 +72,10 @@ export class Utils implements BaseUtils {
   /**
    * Returns an hex string of the given buffer
    *
-   * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
+   * @param {Uint8Array} buffer - the buffer to be converted to hex
    * @returns {string} - the hex value
    */
-  toHex(buffer: Buffer | Uint8Array): string {
+  toHex(buffer: Uint8Array): string {
     return hex.encode(buffer, true);
   }
 
@@ -159,12 +159,12 @@ export class Utils implements BaseUtils {
   /**
    * decodeSeed decodes an algo seed
    *
-   * Decoding algo seed is sane as decoding address.
-   * Latest version of algo sdk (1.9, at this writing) does not expose explicit method for decoding seed
-   * hence, this routine uses decodeAddress and changes the return structure
+   * Decoding algo seed is same as decoding address.
+   * Latest version of algo sdk (1.9, at this writing) does not expose explicit method for decoding seed.
+   * Parameter is decoded and split into seed and checksum.
    *
-   * @param {string} seed - the seed to be validated.
-   * @returns {Seed} - the object Seed
+   * @param {string} seed - hex or base64 encoded seed to be validated
+   * @returns {Seed} - validated object Seed
    */
   decodeSeed(seed: string): Seed {
     // try to decode
@@ -211,7 +211,7 @@ export class Utils implements BaseUtils {
     try {
       algosdk.decodeUnsignedTransaction(txn);
       return true;
-    } catch (_: unknown) {
+    } catch {
       return false;
     }
   }
@@ -226,7 +226,7 @@ export class Utils implements BaseUtils {
     try {
       algosdk.decodeSignedTransaction(txn);
       return true;
-    } catch (_: unknown) {
+    } catch {
       return false;
     }
   }
@@ -238,16 +238,10 @@ export class Utils implements BaseUtils {
    * @returns {EncodedTx} The decoded transaction.
    */
   decodeAlgoTxn(txnBytes: Uint8Array | string): EncodedTx {
-    let buffer: Buffer;
-    if (typeof txnBytes === 'string') {
-      if (allHexChars(txnBytes)) {
-        buffer = Buffer.from(txnBytes, 'hex');
-      } else {
-        buffer = Buffer.from(txnBytes, 'base64');
-      }
-    } else {
-      buffer = Buffer.from(txnBytes);
-    }
+    let buffer =
+      typeof txnBytes === 'string'
+        ? Buffer.from(txnBytes, allHexChars(txnBytes) ? 'hex' : 'base64')
+        : Buffer.from(txnBytes);
 
     // In order to maintain backward compatibility with old keyreg transactions encoded with
     // forked algosdk 1.2.0 (https://github.com/BitGo/algosdk-bitgo),
@@ -261,42 +255,67 @@ export class Utils implements BaseUtils {
       buffer = decodedTx.msig || decodedTx.sig ? encoding.encode(decodedTx) : encoding.encode(decodedTx.txn);
     }
 
-    if (this.isDecodableUnsignedAlgoTxn(buffer)) {
-      return {
-        rawTransaction: new Uint8Array(buffer),
-        txn: algosdk.decodeUnsignedTransaction(buffer),
-        signed: false,
-      };
-    } else if (this.isDecodableSignedTransaction(buffer)) {
-      // TODO: Replace with
-      // return algosdk.Transaction.from_obj_for_encoding(algosdk.decodeSignedTransaction(buffer).txn);
-      // see: https://github.com/algorand/js-algorand-sdk/issues/364
-      // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
-      // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
-      const tx = algosdk.decodeSignedTransaction(buffer);
+    try {
+      return this.tryToDecodeUnsignedTransaction(buffer);
+    } catch {
+      // Ignore error to try different format
+    }
 
-      const signers: string[] = [];
-      const signedBy: string[] = [];
-      if (tx.msig && tx.msig.subsig) {
-        for (const sig of tx.msig.subsig) {
-          const addr = algosdk.encodeAddress(sig.pk);
-          signers.push(addr);
-          if (sig.s) {
-            signedBy.push(addr);
-          }
-        }
-      }
-
-      return {
-        rawTransaction: new Uint8Array(buffer),
-        txn: tx.txn,
-        signed: true,
-        signers: signers,
-        signedBy: signedBy,
-      };
-    } else {
+    try {
+      return this.tryToDecodeSignedTransaction(buffer);
+    } catch {
       throw new InvalidTransactionError('Transaction cannot be decoded');
     }
+  }
+
+  /**
+   * Try to decode a signed Algo transaction
+   * @param buffer the encoded transaction
+   * @returns { EncodedTx } the decoded signed transaction
+   * @throws error if it is not a valid encoded signed transaction
+   */
+  tryToDecodeSignedTransaction(buffer: Buffer): EncodedTx {
+    // TODO: Replace with
+    // return algosdk.Transaction.from_obj_for_encoding(algosdk.decodeSignedTransaction(buffer).txn);
+    // see: https://github.com/algorand/js-algorand-sdk/issues/364
+    // "...some parts of the codebase treat the output of Transaction.from_obj_for_encoding as EncodedTransaction.
+    // They need to be fixed(or we at least need to make it so Transaction conforms to EncodedTransaction)."
+    const tx = algosdk.decodeSignedTransaction(buffer);
+
+    const signers: string[] = [];
+    const signedBy: string[] = [];
+    if (tx.msig && tx.msig.subsig) {
+      for (const sig of tx.msig.subsig) {
+        const addr = algosdk.encodeAddress(sig.pk);
+        signers.push(addr);
+        if (sig.s) {
+          signedBy.push(addr);
+        }
+      }
+    }
+
+    return {
+      rawTransaction: new Uint8Array(buffer),
+      txn: tx.txn,
+      signed: true,
+      signers: signers,
+      signedBy: signedBy,
+    };
+  }
+
+  /**
+   * Try to decode an unsigned Algo transaction
+   * @param buffer the encoded transaction
+   * @returns {EncodedTx} the decoded unsigned transaction
+   * @throws error if it is not a valid encoded unsigned transaction
+   */
+  tryToDecodeUnsignedTransaction(buffer: Buffer): EncodedTx {
+    const txn = algosdk.decodeUnsignedTransaction(buffer);
+    return {
+      rawTransaction: new Uint8Array(buffer),
+      txn,
+      signed: false,
+    };
   }
 
   /*
@@ -320,7 +339,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * secretKeyToMnemonic take an Algorant secret key and returns the corressponding mnemonic
+   * secretKeyToMnemonic takes an Algorant secret key and returns the corresponding mnemonic
    *
    * @param sk - Algorant secret key
    * @return Secret key is associated mnemonic
@@ -365,8 +384,7 @@ export class Utils implements BaseUtils {
    */
   protected createKeyPair(base64PrivateKey: Uint8Array): KeyPair {
     const sk = base64PrivateKey.slice(0, 32);
-    const keyPair = new KeyPair({ prv: Buffer.from(sk).toString('hex') });
-    return keyPair;
+    return new KeyPair({ prv: Buffer.from(sk).toString('hex') });
   }
 
   /**
@@ -380,17 +398,17 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * isValidEd25519PublicKeyStellar validate the key with the stellar-sdk
+   * Validates the key with the stellar-sdk
    *
    * @param publicKey
-   * @returns booldean
+   * @returns boolean
    */
   protected isValidEd25519PublicKeyStellar(publicKey: string): boolean {
     return stellar.StrKey.isValidEd25519PublicKey(publicKey);
   }
 
   /**
-   * decodeEd25519PublicKeyStellar decode the key with the stellar-sdk
+   * Decodes the key with the stellar-sdk
    *
    * @param publicKey
    * @returns Buffer
@@ -410,17 +428,17 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * encodeAddress return an addres encoding with algosdk
+   * Returns an address encoded with algosdk
    *
    * @param addr
    * @returns string
    */
-  encodeAddress(addr: Buffer): string {
+  encodeAddress(addr: Uint8Array): string {
     return algosdk.encodeAddress(addr);
   }
 
   /**
-   * decodeAddress return an addres decoding with algosdk
+   * Return an address decoded with algosdk
    *
    * @param addr
    * @returns Address
@@ -430,11 +448,11 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   *stellarAddressToAlgoAddress returns an address algo of algo
-   *if is sent an xmlAddress if it does not return the same address.
+   * Converts an address into an ALGO one
+   * If the given data is a Stellar address or public key, it is converted to ALGO address.
    *
-   * @param addressOrPubKey
-   * @returns address algo string
+   * @param addressOrPubKey an ALGO address, or an Stellar address or public key
+   * @returns address algo address string
    */
   stellarAddressToAlgoAddress(addressOrPubKey: string): string {
     // we have an Algorand address
@@ -509,9 +527,12 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * returns if a tx is an enable or disable token tx
-   * @param tx - tx in JSON format
-   * @returns true if it's a token tx
+   * Determines if a given transaction data is to enable or disable a token
+   * @param amount the amount in transaction
+   * @param from the originated address
+   * @param to the target address
+   * @param closeRemainderTo (optional) address to send remaining units in originated address
+   * @returns 'enableToken' or 'disableToken'
    */
   getTokenTxType(amount: string, from: string, to: string, closeRemainderTo?: string): string {
     let type = 'transferToken';
