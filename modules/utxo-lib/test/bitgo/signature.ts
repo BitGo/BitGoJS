@@ -6,7 +6,7 @@ import * as networks from '../../src/networks';
 import { ScriptType, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript } from '../../src/bitgo';
+import { verifySignature, UtxoTransaction, parseSignatureScript, getSignatureVerifications } from '../../src/bitgo';
 
 import * as fixtureUtil from '../fixture.util';
 
@@ -18,6 +18,7 @@ import {
   getHalfSignedTransaction2Of3,
   getPrevOutputs,
   getSignKeyCombinations,
+  getUnsignedTransaction2Of3,
 } from '../transaction_util';
 
 async function readFixture<T>(
@@ -42,9 +43,9 @@ function runTestCheckScriptStructure(
   signer1: bip32.BIP32Interface,
   signer2?: bip32.BIP32Interface
 ) {
-  it(`inputs script structure (${scriptType} ${keyName(signer1)} ${
+  it(`has expected script structure [${getNetworkName(network)} ${scriptType} ${keyName(signer1)} ${
     signer2 ? keyName(signer2) : ''
-  })`, async function () {
+  }]`, async function () {
     let tx;
 
     if (scriptType === 'p2shP2pk') {
@@ -112,9 +113,9 @@ function runTestParseScript(
   k1: bip32.BIP32Interface,
   k2: bip32.BIP32Interface
 ) {
-  async function testParseSignedInputs(tx: UtxoTransaction, name: string) {
+  async function testParseSignedInputs(tx: UtxoTransaction, name: string, expectedScriptType: string | undefined) {
     const parsed = parseSignatureScript(tx.ins[0]);
-    assert.strictEqual(parsed.scriptType, scriptType);
+    assert.strictEqual(parsed.scriptType, expectedScriptType);
     fixtureUtil.assertEqualJSON(
       parsed,
       await readFixture(network, scriptType, ['parsed', keyName(k1), keyName(k2), name].join('-'), parsed)
@@ -123,89 +124,107 @@ function runTestParseScript(
 
   if (scriptType !== 'p2shP2pk') {
     it(`parses half-signed inputs [${getNetworkName(network)} ${scriptType}]`, async function () {
-      await testParseSignedInputs(getHalfSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), 'halfSigned');
+      await testParseSignedInputs(
+        getHalfSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network),
+        'halfSigned',
+        scriptType
+      );
     });
   }
 
   it(`parses full-signed inputs [${getNetworkName(network)} ${scriptType}]`, async function () {
     if (scriptType === 'p2shP2pk') {
-      await testParseSignedInputs(getFullSignedTransactionP2shP2pk(fixtureKeys, k1, network), 'fullSigned');
+      await testParseSignedInputs(getFullSignedTransactionP2shP2pk(fixtureKeys, k1, network), 'fullSigned', scriptType);
     } else {
-      await testParseSignedInputs(getFullSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), 'fullSigned');
+      await testParseSignedInputs(
+        getFullSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network),
+        'fullSigned',
+        scriptType
+      );
     }
+  });
+}
+
+function assertVerifySignatureEquals(
+  tx: UtxoTransaction,
+  scriptType: ScriptType2Of3,
+  value: boolean,
+  verificationSettings?: {
+    publicKey?: Buffer;
+    signatureIndex?: number;
+  }
+) {
+  const prevOutputs = getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[];
+  tx.ins.forEach((input, i) => {
+    assert.doesNotThrow(() => {
+      getSignatureVerifications(tx, i, defaultTestOutputAmount, verificationSettings, prevOutputs);
+    });
+    assert.strictEqual(
+      verifySignature(tx, i, defaultTestOutputAmount, verificationSettings, prevOutputs),
+      value,
+      JSON.stringify(verificationSettings)
+    );
+  });
+}
+
+function checkSignTransaction(tx: UtxoTransaction, scriptType: ScriptType2Of3, signKeys: bip32.BIP32Interface[]) {
+  // return true iff there are any valid signatures at all
+  assertVerifySignatureEquals(tx, scriptType, signKeys.length > 0);
+
+  fixtureKeys.forEach((k) => {
+    // if publicKey is given, return true iff it is included in signKeys
+    assertVerifySignatureEquals(tx, scriptType, signKeys.includes(k), { publicKey: k.publicKey });
+  });
+
+  // When transactions are signed, the signatures have the same order as the public keys in the outputScript.
+  const orderedSigningKeys = fixtureKeys.filter((fixtureKey) => signKeys.includes(fixtureKey));
+
+  [0, 1, 2].forEach((signatureIndex) => {
+    if (scriptType === 'p2tr') {
+      // signatureIndex parameter not support for p2tr verification
+      return;
+    }
+    fixtureKeys.forEach((k) => {
+      // If no public key is given, return true iff any valid signature with given index exists.
+      assertVerifySignatureEquals(tx, scriptType, signatureIndex < signKeys.length, {
+        signatureIndex,
+      });
+
+      // If publicKey and signatureIndex are provided only return if both match.
+      assertVerifySignatureEquals(tx, scriptType, signatureIndex === orderedSigningKeys.indexOf(k), {
+        publicKey: k.publicKey,
+        signatureIndex,
+      });
+    });
   });
 }
 
 function runTestCheckSignatureVerify(
   network: Network,
   scriptType: ScriptType2Of3,
-  k1: bip32.BIP32Interface,
-  k2: bip32.BIP32Interface
+  k1?: bip32.BIP32Interface,
+  k2?: bip32.BIP32Interface
 ) {
-  function assertVerifySignatureEquals(
-    tx: UtxoTransaction,
-    value: boolean,
-    verificationSettings?: {
-      publicKey?: Buffer;
-      signatureIndex?: number;
-    }
-  ) {
-    tx.ins.forEach((input, i) => {
-      assert.strictEqual(
-        verifySignature(
-          tx,
-          i,
-          defaultTestOutputAmount,
-          verificationSettings,
-          getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[]
-        ),
-        value,
-        JSON.stringify(verificationSettings)
-      );
+  if (k1 && k2) {
+    describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)}`, function () {
+      it(`verifies half-signed`, function () {
+        checkSignTransaction(getHalfSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), scriptType, [k1]);
+      });
+
+      it(`verifies full-signed`, function () {
+        checkSignTransaction(getFullSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), scriptType, [
+          k1,
+          k2,
+        ]);
+      });
     });
-  }
-
-  function checkSignTransaction(tx: UtxoTransaction, signKeys: bip32.BIP32Interface[]) {
-    // return true iff there are any valid signatures at all
-    assertVerifySignatureEquals(tx, signKeys.length > 0);
-
-    fixtureKeys.forEach((k) => {
-      // if publicKey is given, return true iff it is included in signKeys
-      assertVerifySignatureEquals(tx, signKeys.includes(k), { publicKey: k.publicKey });
-    });
-
-    // When transactions are signed, the signatures have the same order as the public keys in the outputScript.
-    const orderedSigningKeys = fixtureKeys.filter((fixtureKey) => signKeys.includes(fixtureKey));
-
-    [0, 1, 2].forEach((signatureIndex) => {
-      if (scriptType === 'p2tr') {
-        // signatureIndex parameter not support for p2tr verification
-        return;
-      }
-      fixtureKeys.forEach((k) => {
-        // If no public key is given, return true iff any valid signature with given index exists.
-        assertVerifySignatureEquals(tx, signatureIndex < signKeys.length, {
-          signatureIndex,
-        });
-
-        // If publicKey and signatureIndex are provided only return if both match.
-        assertVerifySignatureEquals(tx, signatureIndex === orderedSigningKeys.indexOf(k), {
-          publicKey: k.publicKey,
-          signatureIndex,
-        });
+  } else {
+    describe(`verifySignature ${getNetworkName(network)} ${scriptType} unsigned`, function () {
+      it(`verifies unsigned`, function () {
+        checkSignTransaction(getUnsignedTransaction2Of3(fixtureKeys, scriptType, network), scriptType, []);
       });
     });
   }
-
-  describe(`verifySignature ${getNetworkName(network)} ${scriptType} ${keyName(k1)} ${keyName(k2)}`, function () {
-    it(`verifies half-signed`, function () {
-      checkSignTransaction(getHalfSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), [k1]);
-    });
-
-    it(`verifies full-signed`, function () {
-      checkSignTransaction(getFullSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network), [k1, k2]);
-    });
-  });
 }
 
 describe('Signature (scriptTypes2Of3)', function () {
@@ -217,6 +236,8 @@ describe('Signature (scriptTypes2Of3)', function () {
     .filter(isBitcoin)
     .forEach((network) => {
       scriptTypes2Of3.forEach((scriptType) => {
+        runTestCheckSignatureVerify(network, scriptType);
+
         getSignKeyCombinations(2).map(([k1, k2]) => {
           runTestCheckSignatureVerify(network, scriptType, k1, k2);
           runTestCheckScriptStructure(network, scriptType, k1, k2);

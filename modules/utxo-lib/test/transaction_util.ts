@@ -123,6 +123,14 @@ export function getTransactionBuilder(
   return txBuilder;
 }
 
+export function getUnsignedTransaction2Of3(
+  keys: KeyTriple,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  network: Network
+): UtxoTransaction {
+  return getTransactionBuilder(keys, [], scriptType, network).buildIncomplete();
+}
+
 export function getHalfSignedTransaction2Of3(
   keys: KeyTriple,
   signer1: bip32.BIP32Interface,
