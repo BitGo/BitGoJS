@@ -2,8 +2,10 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+const co = Bluebird.coroutine;
 
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import * as accountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   KeyPair,
@@ -27,10 +29,7 @@ export interface TransactionFee {
 export type SolTransactionExplanation = TransactionExplanation;
 
 export interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
+  txBase64: string;
   publicKeys?: string[];
   feeInfo: TransactionFee;
 }
@@ -47,7 +46,7 @@ export interface SolSignTransactionOptions extends SignTransactionOptions {
   pubKeys?: string[];
 }
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
+  txBase64: string;
   txInfo: TxInfo;
   source: string;
 }
@@ -82,12 +81,13 @@ export class Sol extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  // TODO (https://bitgoinc.atlassian.net/browse/STLX-10202)
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     throw new MethodNotImplementedError('verifyTransaction method not implemented');
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError('verifyAddress method not implemented');
+    return this.isValidAddress(params.address);
   }
 
   /**
@@ -96,8 +96,9 @@ export class Sol extends BaseCoin {
    * @param {Buffer} seed - Seed from which the new keypair should be generated, otherwise a random seed is used
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new MethodNotImplementedError('generateKeyPair method not implemented');
+  generateKeyPair(seed?: Buffer | undefined): KeyPair {
+    const result = seed ? new accountLib.Sol.KeyPair({ seed }).getKeys() : new accountLib.Sol.KeyPair().getKeys();
+    return result as KeyPair;
   }
 
   /**
@@ -107,7 +108,7 @@ export class Sol extends BaseCoin {
    * @returns is it valid?
    */
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError('isValidPub method not implemented');
+    return accountLib.Sol.Utils.isValidPublicKey(pub);
   }
 
   /**
@@ -117,11 +118,11 @@ export class Sol extends BaseCoin {
    * @returns is it valid?
    */
   isValidPrv(prv: string): boolean {
-    throw new MethodNotImplementedError('isValidPrv method not implemented');
+    return accountLib.Sol.Utils.isValidPrivateKey(prv);
   }
 
   isValidAddress(address: string): boolean {
-    throw new MethodNotImplementedError('isValidAddress method not implemented');
+    return accountLib.Sol.Utils.isValidAddress(address);
   }
 
   /**
@@ -133,7 +134,23 @@ export class Sol extends BaseCoin {
     params: SolSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    throw new MethodNotImplementedError('signTransaction method not implemented');
+    const self = this;
+    return co<SignedTransaction>(function* () {
+      const factory = accountLib.register(self.getChain(), accountLib.Sol.TransactionBuilderFactory);
+      const txBuilder = factory.from(params.txPrebuild.txBase64);
+      txBuilder.sign({ key: params.prv });
+      const transaction: accountLib.BaseCoin.BaseTransaction | undefined = yield txBuilder.build();
+
+      if (!transaction) {
+        throw new Error('Invalid transaction');
+      }
+
+      return {
+        txBase64: (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat(),
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
@@ -141,7 +158,7 @@ export class Sol extends BaseCoin {
   }
 
   /**
-   * Explain a Solana transaction from txHex
+   * Explain a Solana transaction from txBase64
    * @param params
    * @param callback
    */

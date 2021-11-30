@@ -1,15 +1,20 @@
 import { Sol, Tsol } from '../../../../src/v2/coins/';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as should from 'should';
+import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 
 describe('SOL:', function () {
   let bitgo;
   let basecoin;
-
+  let keyPair;
+  const badAddresses = resources.addresses.invalidAddresses;
+  const goodAddresses = resources.addresses.validAddresses;
+  
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tsol');
+    keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);
   });
 
   it('should instantiate the coin', function () {
@@ -27,24 +32,37 @@ describe('SOL:', function () {
     basecoin.getBaseFactor().should.equal(1000000000);
   });
 
-  it('should verify transactions', (function () {
+  it('should verify transactions', async function () {
     should.throws(() => basecoin.verifyTransaction('placeholder'), 'verifyTransaction method not implemented');
+  });
+
+  it('should verify valid address', (function () {
+    const params = { address: goodAddresses[0] };
+    basecoin.verifyAddress(params).should.equal(true);
   }));
 
-  it('should verify addresses', (function () {
-    should.throws(() => basecoin.verifyAddress('placeholder'), 'verifyAddress method not implemented');
-  }));
-
-  it('should check valid addresses', (function () {
-    should.throws(() => basecoin.isValidAddress('placeholder'), 'isValidAddress method not implemented');
+  it('should check invalid address', (function () {
+    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
   }));
 
   it('should check valid pub keys', (function () {
-    should.throws(() => basecoin.isValidPub('placeholder'), 'isValidPub method not implemented');
+    keyPair.should.have.property('pub');
+    basecoin.isValidPub(keyPair.pub).should.equal(true);
+  }));
+
+  it('should check an invalid pub keys', (function () {
+    const badPubKey = keyPair.pub.slice(0, keyPair.pub.length - 1) + '-';
+    basecoin.isValidPub(badPubKey).should.equal(false);
   }));
 
   it('should check valid prv keys', (function () {
-    should.throws(() => basecoin.isValidPrv('placeholder'), 'isValidPrv method not implemented');
+    keyPair.should.have.property('prv');
+    basecoin.isValidPrv(keyPair.prv).should.equal(true);
+  }));
+
+  it('should check an invalid prv keys', (function () {
+    const badPrvKey = keyPair.prv ? keyPair.prv.slice(0, keyPair.prv.length - 1) + '-' : undefined;
+    basecoin.isValidPrv(badPrvKey).should.equal(false);
   }));
 
   describe('Parse Transactions:', () => {
@@ -75,7 +93,24 @@ describe('SOL:', function () {
 
   describe('Sign transaction:', () => {
     it('should sign transaction', async function () {
-      await should.throws(() => basecoin.signTransaction('placeholder'), 'signTransaction method not implemented');
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txBase64: resources.RAW_TX_UNSIGNED,
+          keys: [resources.accountWithSeed.publicKey.toString()],
+        },
+        prv: resources.accountWithSeed.privateKey.base58,
+      });
+      signed.txBase64.should.equal(resources.RAW_TX_SIGNED);
+    });
+
+    it('should throw invalid transaction when sign with public key', async function () {
+      await basecoin.signTransaction({
+        txPrebuild: {
+          txBase64: resources.RAW_TX_UNSIGNED,
+          keys: [resources.accountWithSeed.publicKey.toString()],
+        },
+        prv: resources.accountWithSeed.publicKey,
+      }).should.be.rejectedWith('Invalid private key');
     });
   });
 });
