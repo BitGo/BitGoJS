@@ -29,15 +29,21 @@ describe('EOS:', function () {
     addressDetails.address.should.equal('ks13k3hdui24');
     addressDetails.memoId.should.equal('1');
 
-    (() => { basecoin.getAddressDetails('ks13k3hdui24?memoId=x'); }).should.throw();
     (() => { basecoin.getAddressDetails('ks13k3hdui24?memoId=1&memoId=2'); }).should.throw();
+  });
+
+  it('should get address details with alphanumeric memoid', function () {
+    const addressDetails = basecoin.getAddressDetails('i1skda3kso43?memoId=123abc');
+
+    addressDetails.address.should.equal('i1skda3kso43');
+    addressDetails.memoId.should.equal('123abc');
   });
 
   it('should validate address', function () {
     basecoin.isValidAddress('i1skda3kso43').should.equal(true);
     basecoin.isValidAddress('ks13kdh245ls').should.equal(true);
     basecoin.isValidAddress('ks13k3hdui24?memoId=1').should.equal(true);
-    basecoin.isValidAddress('ks13k3hdui24?memoId=x').should.equal(false);
+    basecoin.isValidAddress('ks13k3hdui24?memoId=x').should.equal(true);
   });
 
   it('verifyAddress should work', function () {
@@ -78,11 +84,18 @@ describe('EOS:', function () {
     }
   });
 
-  it('isValidMemoId should work', function () {
+  it('isValidMemo should work', function () {
     basecoin.isValidMemo({ value: '1' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno' }).should.equal(true);
     const string257CharsLong = '4WMNlu0fFU8N94AwukfpfPPQn2Myo80JdmLNF5rgeKAab9XLD93KUQipcT6US0LRwWWIGbUt89fjmdwpg3CBklNi8QIeBI2i8UDJCEuQKYobR5m4ismm1RooTXUnw5OPjmfLuuajYV4e5cS1jpC6hez5X43PZ5SsGaHNYX2YYXY03ir54cWWx5QW5VCPKPKUzfq2UYK5fjAG2Fe3xCUOzqgoR6KaAiuOOnDSyhZygLJyaoJpOXZM9olblNtAW75Ed';
     basecoin.isValidMemo({ value: string257CharsLong }).should.equal(false);
+  });
+
+  it('isValidMemoId should work', function () {
+    basecoin.isValidMemoId('1').should.equal(true);
+    basecoin.isValidMemoId('123abc').should.equal(true);
+    const string257CharsLong = '4WMNlu0fFU8N94AwukfpfPPQn2Myo80JdmLNF5rgeKAab9XLD93KUQipcT6US0LRwWWIGbUt89fjmdwpg3CBklNi8QIeBI2i8UDJCEuQKYobR5m4ismm1RooTXUnw5OPjmfLuuajYV4e5cS1jpC6hez5X43PZ5SsGaHNYX2YYXY03ir54cWWx5QW5VCPKPKUzfq2UYK5fjAG2Fe3xCUOzqgoR6KaAiuOOnDSyhZygLJyaoJpOXZM9olblNtAW75Ed';
+    basecoin.isValidMemoId( string257CharsLong).should.equal(false);
   });
 
   it('should validate pub key', () => {
