@@ -1,12 +1,17 @@
 # BitGo Account Lib
 
-This library is responsible for building and signing transactions for account-based coins (for example, Ethereum, Algorand, EOS, Tron, etc.). Account Lib was developed for BitGo and BitGo's multi-sig wallets, but it can also be used independently, outside of our wallet ecosystem.
+This library is responsible for building and signing transactions for
+account-based coins (for example, Ethereum, Algorand, EOS, Tron, etc.). Account
+Lib was developed for BitGo and BitGo's multi-sig wallets, but it can also be
+used independently, outside of our wallet ecosystem.
 
-> Account lib was intended to be used in an offline environment, for offline signings.
+> Account Lib was intended to be used in an offline environment, for offline
+> signings.
 
 ## Supported Coins
 
-Below is the list of coins supported by this library -- as well as those that are on the roadmap.
+Below is the list of coins supported by this library -- as well as those that
+are on the roadmap.
 
 | Coin             | Mainnet Ticker | Testnet Ticker | Supported In Library |
 | :--------------- | :------------- | :------------- | :------------------- |
@@ -25,11 +30,16 @@ Below is the list of coins supported by this library -- as well as those that ar
 
 ### TransactionBuilder
 
-The `TranssactionBuilder` class guides a user through the construction of a transaction. The purpose of the `TransactionBuilder` is to yield a `Transaction` object that can broadcast to the network.
+The `TranssactionBuilder` class guides a user through the construction of a
+transaction. The purpose of the `TransactionBuilder` is to yield a `Transaction`
+object that can broadcast to the network.
 
 ### Transaction
 
-`Transaction` objects are JavaScript representations of blockchain transactions that implement protocol specific validation rules. `Transactions` provide encoding mechanisms that allow them to be validly broadcast to their respective network.
+`Transaction` objects are JavaScript representations of blockchain transactions
+that implement protocol specific validation rules. `Transactions` provide
+encoding mechanisms that allow them to be validly broadcast to their respective
+network.
 
 #### Transaction Types
 
@@ -46,21 +56,26 @@ Transfers funds from a wallet.
 
 ##### Wallet Initialization
 
-Initializes a wallet's account on the network (e.g., multi-sig contract deployment).
+Initializes a wallet's account on the network (e.g., multi-sig contract
+deployment).
 
 ##### Address Initialization
 
-Initializes a wallet's address on the network (e.g., forwarder contract deployment).
+Initializes a wallet's address on the network (e.g., forwarder contract
+deployment).
 
 ##### Account Update
 
-Updates an account on the network (e.g., public key revelation operation for Tezos).
+Updates an account on the network (e.g., public key revelation operation for
+Tezos).
 
 ---
 
 ## Installation
 
-Install the library with npm. If you plan on contributing to the project, you may wish to follow different installation instructions [outlined in this doc](DEVELOPER.md).
+Install the library with npm. If you plan on contributing to the project, you
+may wish to follow different installation instructions
+[outlined in this doc](DEVELOPER.md).
 
 ```
 $ cd <your_project>
@@ -69,7 +84,8 @@ $ npm install @bitgo/account-lib
 
 ## Usage
 
-Below is an example that demonstrates how the library can be used to build and sign a Tron testnet transaction.
+Below is an example that demonstrates how the library can be used to build and
+sign a Tron testnet transaction.
 
 ### Instantiation
 
@@ -87,7 +103,8 @@ const txBuilder = accountLib.getBuilder('ttrx');
 
 ### Transaction Construction and Signing
 
-Use the transaction builder instance (created in the previous step) to sign a transaction:
+Use the transaction builder instance (created in the previous step) to sign a
+transaction:
 
 ```javascript
 // Define an unsigned Tron transaction object
@@ -132,6 +149,9 @@ More examples:
 
 ## Developers
 
-If you'd like to contribute to this project, see the [developer guide](DEVELOPER.md) for contribution norms and expectations.
+If you'd like to contribute to this project, see the
+[developer guide](DEVELOPER.md) for contribution norms and expectations.
 
-There is a near-term goal to move this library toward a plugin-based architecture for coin registration. Until then, PRs adding support for new coins will be put on hold.
+There is a near-term goal to move this library toward a plugin-based
+architecture for coin registration. Until then, PRs adding support for new coins
+will be put on hold.

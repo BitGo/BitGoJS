@@ -1,6 +1,7 @@
 # Developer Guide
 
-Thanks for contributing to this library. Below are some tips to help you understand:
+Thanks for contributing to this library. Below are some tips to help you
+understand:
 
 - the structure of the project
 - the important classes and how they are used
@@ -11,12 +12,15 @@ Thanks for contributing to this library. Below are some tips to help you underst
 
 ### Base Classes
 
-As specified in [the project README](README.md), there are two main classes that users will interact with:
+As specified in [the project README](README.md), there are two main classes that
+users will interact with:
 
-- `TransactionBuilder`: A class that implements coin specific logic to handle the construction, validation, and signing of blockchain transactions.
+- `TransactionBuilder`: A class that implements coin specific logic to handle
+  the construction, validation, and signing of blockchain transactions.
 - `Transaction`: JavaScript representations of blockchain transactions.
 
-The `TransactionBuilder`'s job is to build and sign `transactions` for a specific blockchain.
+The `TransactionBuilder`'s job is to build and sign `transactions` for a
+specific blockchain.
 
 The flow typically looks something like:
 
@@ -42,19 +46,31 @@ const signedTxJson = tx.toJson();
 
 ### Coin Specific Implementations
 
-If you have spent time poking around the project, you likely noticed that we have base `TransactionBuilder` and base `Transaction` classes - they live in `src/coin/baseCoin`. These classes define the core interfaces that all subclasses will extend and implement.
+If you have spent time poking around the project, you likely noticed that we
+have base `TransactionBuilder` and base `Transaction` classes - they live in
+`src/coin/baseCoin`. These classes define the core interfaces that all
+subclasses will extend and implement.
 
-Coin specific implementations of the `TransactionBuilder` and `Transaction` classes live under the coin's ticker symbol in `src/coin` (ie: `src/coin/trx` for Tron). This is where the meat of the signing, validation, and encoding logic lives for each blockchain supported by the library.
+Coin specific implementations of the `TransactionBuilder` and `Transaction`
+classes live under the coin's ticker symbol in `src/coin` (ie: `src/coin/trx`
+for Tron). This is where the meat of the signing, validation, and encoding logic
+lives for each blockchain supported by the library.
 
 We recommend that you follow this pattern when adding a new coin to the library:
 
 ### Test Structure
 
-Accoutn Lib comes with unit tests and it is expected that all changes introduced to the library increase test coverage. Tests live in `test`. Coin specific tests live in `test/unit/coin/<coin-ticker>/<coin-ticker.js>`.
+Account Lib comes with unit tests and it is expected that all changes introduced
+to the library increase test coverage. Tests live in `test`. Coin specific tests
+live in `test/unit/coin/<coin-ticker>/<coin-ticker.js>`.
 
 ## (External) Resources
 
-There are situations in which this library requires upstream dependencies, but you might not want to pull in the entire library only to use the tiny slice of functionality that we require. Rather, you can take snippets of the external code and stick them in `resources/`. See [the README in that directory for more information](resources/README.md).
+There are situations in which this library requires upstream dependencies, but
+you might not want to pull in the entire library only to use the tiny slice of
+functionality that we require. Rather, you can take snippets of the external
+code and stick them in `resources/`. See
+[the README in that directory for more information](resources/README.md).
 
 ## Running Tests
 
@@ -66,8 +82,12 @@ npm test
 
 ## Coding Norms & Expectations
 
-When contributing, we recommend that you follow the existing patterns defined in the project. Pull requests that break these norms will likely be rejected or require a round of feedback.
+When contributing, we recommend that you follow the existing patterns defined in
+the project. Pull requests that break these norms will likely be rejected or
+require a round of feedback.
 
 Take note:
 
-> Do not specify default accessors. In Typescript, the default accessor for a class attribute is `public`, so specifying it for functions and attributes is redundant.
+> Do not specify default accessors. In Typescript, the default accessor for a
+> class attribute is `public`, so specifying it for functions and attributes is
+> redundant.
