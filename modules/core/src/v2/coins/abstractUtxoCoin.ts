@@ -10,14 +10,17 @@ import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
-import * as request from 'superagent';
 
 import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import * as errors from '../../errors';
 
-import { recover, RecoverParams } from './utxo/recover';
-export { RecoverParams } from './utxo/recover';
+import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
+import {
+  CrossChainRecoverySigned,
+  CrossChainRecoveryTool,
+  CrossChainRecoveryUnsigned,
+} from './utxo/recovery/crossChainRecovery';
 
 import {
   AddressCoinSpecific,
@@ -36,7 +39,6 @@ import {
   TransactionRecipient,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
   HalfSignedUtxoTransaction,
 } from '../baseCoin';
@@ -44,10 +46,8 @@ import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
 import { Keychain, KeyIndices } from '../keychains';
 import { promiseProps } from '../promise-utils';
-import { CrossChainRecoverySigned, CrossChainRecoveryTool, CrossChainRecoveryUnsigned } from '../recovery';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import { toBitgoRequest } from '../../api';
 import { sanitizeLegacyPath } from '../../bip32path';
 
 const debug = debugLib('bitgo:v2:utxo');
@@ -55,7 +55,7 @@ const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { PublicUnspent, Unspent } from './utxo/unspent';
+import { Unspent } from './utxo/unspent';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -197,12 +197,6 @@ export interface MultiSigAddress {
   address: string;
 }
 
-export interface OfflineVaultTxInfo {
-  inputs: {
-    chainPath: string;
-  }[];
-}
-
 export interface RecoverFromWrongChainOptions {
   txid: string;
   recoveryAddress: string;
@@ -215,31 +209,9 @@ export interface RecoverFromWrongChainOptions {
   signed?: boolean;
 }
 
-export interface ExplorerTxInfo {
-  input: { address: string }[];
-  outputs: { address: string }[];
-}
-
-export interface FormattedOfflineVaultTxInfo {
-  txInfo: {
-    unspents: {
-      chainPath: string;
-      index?: string;
-      chain?: string;
-    }[];
-  };
-  txHex: string;
-  feeInfo: Record<string, never>;
-  coin: string;
-}
-
 export interface AddressInfo {
   txCount: number;
   totalBalance: number;
-}
-
-export interface UnspentInfo {
-  address: string;
 }
 
 export interface VerifyKeySignaturesOptions {
@@ -1594,159 +1566,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * @param scriptHashScript
-   * @deprecated
-   */
-  // TODO(BG-11638): remove in next SDK major version release
-  calculateRecoveryAddress(scriptHashScript: Buffer) {
-    return utxolib.address.fromOutputScript(scriptHashScript, this.network);
-  }
-
-  /**
-   * Get a static fee rate which is used in recovery situations
-   * @deprecated
-   */
-  getRecoveryFeePerBytes(): Bluebird<number> {
-    return Bluebird.resolve(100);
-  }
-
-  /**
-   * Get a url which can be used for determining recovery fee rates
-   */
-  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
-    return Bluebird.reject(new Error('AbtractUtxoCoin method not implemented'));
-  }
-
-  /**
-   * Get the current market price from a third party to be used for recovery
-   * This function is only intended for non-bitgo recovery transactions, when it is necessary
-   * to calculate the rough fee needed to pay to Keyternal. We are okay with approximating,
-   * because the resulting price of this function only has less than 1 dollar influence on the
-   * fee that needs to be paid to Keyternal.
-   *
-   * See calculateFeeAmount function:  return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
-   *
-   * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
-   */
-  getRecoveryMarketPrice(): Bluebird<string> {
-    const self = this;
-    return co<string>(function* getRecoveryMarketPrice() {
-      const familyNamesToCoinGeckoIds = new Map()
-        .set('BTC', 'bitcoin')
-        .set('LTC', 'litecoin')
-        .set('BCH', 'bitcoin-cash')
-        .set('ZEC', 'zcash')
-        .set('DASH', 'dash')
-        // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
-        // it out for a better source when it becomes available.  TODO BG-26359.
-        .set('BCHA', 'bitcoin-cash')
-        .set('BSV', 'bitcoin-cash');
-
-      const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
-      if (!coinGeckoId) {
-        throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);
-      }
-      const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
-      const response = yield toBitgoRequest(request.get(coinGeckoUrl).retry(2)).result();
-
-      // An example of response
-      // {
-      //   "ethereum": {
-      //     "usd": 220.64
-      //   }
-      // }
-      if (!response) {
-        throw new Error('Unable to reach Coin Gecko API for price data');
-      }
-      if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
-        throw new Error('Unexpected response from Coin Gecko API for price data');
-      }
-
-      return response[coinGeckoId]['usd'];
-    }).call(this);
-  }
-
-  /**
-   * Helper function for recover()
-   * This transforms the txInfo from recover into the format that offline-signing-tool expects
-   * @param txInfo
-   * @param txHex
-   * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
-   */
-  formatForOfflineVault(txInfo: OfflineVaultTxInfo, txHex: string): FormattedOfflineVaultTxInfo {
-    const response: FormattedOfflineVaultTxInfo = {
-      txHex,
-      txInfo: {
-        unspents: txInfo.inputs,
-      },
-      feeInfo: {},
-      coin: this.getChain(),
-    };
-    _.map(response.txInfo.unspents, function (unspent) {
-      const pathArray = unspent.chainPath.split('/');
-      // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
-      unspent.index = pathArray[4];
-      unspent.chain = pathArray[3];
-    });
-    return response;
-  }
-
-  public abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
-  public abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
-
-  async getTxInfoFromExplorer(faultyTxId: string): Promise<ExplorerTxInfo> {
-    const TX_INFO_URL = this.url(`/public/tx/${faultyTxId}`);
-    return ((await request.get(TX_INFO_URL)) as { body: ExplorerTxInfo }).body;
-  }
-
-  /**
-   * Fetch unspent transaction outputs using IMS unspents API
-   * @param addresses
-   * @returns {*}
-   */
-  async getUnspentInfoForCrossChainRecovery(addresses: string[]): Promise<PublicUnspent[]> {
-    const ADDRESS_UNSPENTS_URL = this.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-    return (await request.get(ADDRESS_UNSPENTS_URL)).body as PublicUnspent[];
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see recover}
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(recover(this, this.bitgo, params)).asCallback(callback);
-  }
-
-  /**
-   * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
-   * @param params
-   * @param params.provider {String} the KRS provider that holds the backup key
-   * @param params.amount {Number} amount (in base units) to be recovered
-   * @param callback
-   * @returns {*}
-   */
-  calculateFeeAmount(params: { provider: string; amount?: number }, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* calculateFeeAmount() {
-      const krsProvider = config.krsProviders[params.provider];
-
-      if (krsProvider === undefined) {
-        throw new Error(`no fee structure specified for provider ${params.provider}`);
-      }
-
-      if (krsProvider.feeType === 'flatUsd') {
-        const feeAmountUsd = krsProvider.feeAmount;
-        const currentPrice: number = (yield self.getRecoveryMarketPrice()) as any;
-
-        return Math.round((feeAmountUsd / currentPrice) * self.getBaseFactor());
-      } else {
-        // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
-        throw new Error('Fee structure not implemented');
-      }
-    })
-      .call(this)
-      .asCallback(callback);
+    return Bluebird.resolve(backupKeyRecovery(this, this.bitgo, params)).asCallback(callback);
   }
 
   /**
@@ -1854,9 +1679,5 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   valuelessTransferAllowed(): boolean {
     return false;
-  }
-
-  verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
-    return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 }

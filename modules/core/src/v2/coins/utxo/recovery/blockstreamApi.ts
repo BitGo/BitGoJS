@@ -1,24 +1,29 @@
-import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './types';
-import * as common from '../../common';
 import * as request from 'superagent';
-import { BitGo } from '../../bitgo';
-import { BlockExplorerUnavailable } from '../../errors';
+
+import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import { BlockExplorerUnavailable } from '../../../../errors';
+import { ApiNotImplementedError } from './errors';
 
 export class BlockstreamApi implements RecoveryProvider {
-  protected readonly bitgo: BitGo;
-  protected readonly apiToken?: string;
+  protected readonly baseUrl: string;
 
-  constructor(bitgo: BitGo, apiToken?: string) {
-    this.bitgo = bitgo;
-    this.apiToken = apiToken;
+  static forCoin(coinName: string): BlockstreamApi {
+    switch (coinName) {
+      case 'btc':
+        return new BlockstreamApi('https://blockstream.info/api');
+      case 'tbtc':
+        return new BlockstreamApi('https://blockstream.info/testnet/api');
+    }
+
+    throw new ApiNotImplementedError(coinName);
   }
 
-  /** @inheritDoc */
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
   getExplorerUrl(query: string): string {
-    if (this.apiToken) {
-      // TODO: Blockstream does not require an API key for now, howeveer, at some point they may
-    }
-    return common.Environments[this.bitgo.getEnv()].blockstreamBaseUrl + query;
+    return this.baseUrl + query;
   }
 
   /** @inheritDoc */

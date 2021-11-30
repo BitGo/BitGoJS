@@ -1,10 +1,7 @@
-import { UnspentInfo } from '../coins/abstractUtxoCoin';
-
 /**
  * An unspent with bear minimum information required for recoveries.
  */
-// TODO: consolidate RecoveryUnspent and UnspentInfo
-export interface RecoveryUnspent extends UnspentInfo {
+export interface RecoveryUnspent {
   amount: number,
   n: number,
   txid: string,
@@ -23,7 +20,6 @@ export interface RecoveryAccountData {
  * Methods required to perform different recovery actions in UTXO coins.
  */
 export interface RecoveryProvider {
-  getExplorerUrl(query: string): string;
   getAccountInfo(address: string): Promise<RecoveryAccountData>
   getUnspents(address: string): Promise<RecoveryUnspent[]>;
 }

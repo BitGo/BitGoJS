@@ -1,14 +1,12 @@
+import 'should';
 import * as nock from 'nock';
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { BlockstreamApi } from '../../../../src/v2/recovery/blockstreamApi';
+
+import { BlockstreamApi } from '../../../../../../src/v2/coins/utxo/recovery/blockstreamApi';
 
 nock.disableNetConnect();
 
 describe('Blockstream API:', function () {
-  let bitgo;
-
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
     const accountInfoResponse = {
       address: '2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT',
       chain_stats: {
@@ -60,14 +58,14 @@ describe('Blockstream API:', function () {
 
   describe('should succeed', function () {
     it('to get an account information', async () => {
-      const api = new BlockstreamApi(bitgo);
+      const api = BlockstreamApi.forCoin('tbtc');
       const response = await api.getAccountInfo('2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT');
       response.txCount.should.equal(3);
       response.totalBalance.should.equal(1000000);
     });
 
     it('to get an account unspents', async () => {
-      const api = new BlockstreamApi(bitgo, 'randomKey');
+      const api = BlockstreamApi.forCoin('tbtc');
       const response = await api.getUnspents('2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT');
       response.length.should.equal(1);
       response[0].amount.should.equal(1000000);
@@ -79,13 +77,13 @@ describe('Blockstream API:', function () {
 
   describe('should fail', function () {
     it('to get an account information for an invalid address', async () => {
-      const api = new BlockstreamApi(bitgo);
+      const api = BlockstreamApi.forCoin('tbtc');
       await api.getAccountInfo('invalidAddress')
         .should.be.rejectedWith('Failed to get address information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
     });
 
     it('to get an account unspents for an invalid address', async () => {
-      const api = new BlockstreamApi(bitgo, 'randomKey');
+      const api = BlockstreamApi.forCoin('tbtc');
       await api.getUnspents('invalidAddress')
         .should.be.rejectedWith('Failed to get unspents information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
     });

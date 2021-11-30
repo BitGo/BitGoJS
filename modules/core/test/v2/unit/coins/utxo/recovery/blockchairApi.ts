@@ -1,11 +1,12 @@
+import 'should';
 import * as nock from 'nock';
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { BlockchairApi } from '../../../../src/v2/recovery/blockchairApi';
 
-const coinNames = ['bitcoin', 'bitcoin-sv', 'ecash'];
+import { BlockchairApi } from '../../../../../../src/v2/coins/utxo/recovery/blockchairApi';
 
-function nockBlockchair(env, coinName) {
-  const baseUrl = BlockchairApi.getBaseUrl(env, coinName);
+const coinNames = ['btc', 'bsv', 'bcha'];
+
+function nockBlockchair(coinName) {
+  const baseUrl = BlockchairApi.forCoin(coinName).baseUrl;
   nock(baseUrl)
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws?key=my____ApiKey') // unspent
     .reply(200, {
@@ -48,20 +49,18 @@ function nockBlockchair(env, coinName) {
 
 describe('blockchair api', function () {
   const apiKey = 'my____ApiKey';
-  const bitgo = new TestBitGo({ env: 'test' });
-  const env = bitgo.getEnv() as string;
   for (const coinName of coinNames) {
     describe(`${coinName} should succeed`, function () {
       it('should get address information from blockchair', async function () {
-        nockBlockchair(env, coinName);
-        const blockchair = new BlockchairApi(bitgo, coinName, apiKey);
+        nockBlockchair(coinName);
+        const blockchair = BlockchairApi.forCoin(coinName, apiKey);
         const address = await blockchair.getAccountInfo('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
         address.txCount.should.equal(2);
         address.totalBalance.should.equal(20000);
       });
       it('should get utxo information from blockchair', async function () {
-        nockBlockchair(env, coinName);
-        const blockchair = new BlockchairApi(bitgo, coinName, apiKey);
+        nockBlockchair(coinName);
+        const blockchair = BlockchairApi.forCoin(coinName, apiKey);
         const response = await blockchair.getUnspents('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
         response.length.should.equal(1);
         response[0].amount.should.equal(20000);
@@ -72,10 +71,9 @@ describe('blockchair api', function () {
     });
     describe(`${coinName} should fail`, function () {
       it('should throw if the address value is an empty string', async function () {
-        const blockchair = new BlockchairApi(bitgo, coinName);
+        const blockchair = BlockchairApi.forCoin(coinName);
         await blockchair.getUnspents('').should.be.rejectedWith('invalid address');
       });
     });
   }
-
 });

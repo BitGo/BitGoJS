@@ -7,7 +7,6 @@ import * as sinon from 'sinon';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as config from '../../../../src/config';
-import { Bch, Bsv, Btc } from '../../../../src/v2/coins';
 import {
   addressInfos,
   addressUnspents,
@@ -15,8 +14,10 @@ import {
   btcNonKrsRecoveryDecodedTx,
   emptyAddressInfo,
 } from '../../fixtures/coins/recovery';
-import { Bcha } from '../../../../src/v2/coins/bcha';
 import { FixtureDir } from '../../../lib/fixtures';
+import { BlockchairApi } from '../../../../src/v2/coins/utxo/recovery/blockchairApi';
+import { BlockstreamApi } from '../../../../src/v2/coins/utxo/recovery/blockstreamApi';
+import { SmartbitApi } from '../../../../src/v2/coins/utxo/recovery/smartbitApi';
 nock.disableNetConnect();
 
 const recoveryNocks = require('../../lib/recovery-nocks');
@@ -43,18 +44,18 @@ describe('UTXO Recovery', function () {
     };
   });
 
-  describe('Recover Bitcoin', function () {
+  describe('Recover TBTC', function () {
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(600, 600, 100);
-      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      const callBack1 = sandbox.stub(BlockstreamApi.prototype, 'getAccountInfo');
       callBack1.resolves(emptyAddressInfo);
       callBack1
         .withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
         .resolves(addressInfos['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']);
-      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      const callBack2 = sandbox.stub(BlockstreamApi.prototype, 'getUnspents');
       callBack2
         .withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
         .resolves([addressUnspents['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']]);
@@ -65,8 +66,8 @@ describe('UTXO Recovery', function () {
       sandbox.restore();
     });
 
-    it('should generate BTC recovery tx', async function () {
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
+    it('should generate TBTC recovery tx', async function () {
+      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:
@@ -83,8 +84,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'btc-recovery-tx.json');
     });
 
-    it('should generate BTC recovery tx with unencrypted keys', async function () {
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
+    it('should generate TBTC recovery tx with unencrypted keys', async function () {
+      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:
@@ -100,9 +101,9 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'btc-recovery-tx.json');
     });
 
-    it('should generate BTC recovery tx with KRS', async function () {
+    it('should generate TBTC recovery tx with KRS', async function () {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
+      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:
@@ -231,13 +232,13 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Bitcoin SV', function () {
+  describe('Recover TBSV', function () {
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(600, 600, 100);
-      const callBack1 = sandbox.stub(Bsv.prototype, 'getAddressInfoFromExplorer');
+      const callBack1 = sandbox.stub(BlockchairApi.prototype, 'getAccountInfo');
       callBack1.resolves(emptyAddressInfo);
       callBack1
         .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
@@ -245,7 +246,7 @@ describe('UTXO Recovery', function () {
       callBack1
         .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
         .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-      const callBack2 = sandbox.stub(Bsv.prototype, 'getUnspentInfoFromExplorer');
+      const callBack2 = sandbox.stub(BlockchairApi.prototype, 'getUnspents');
       callBack2
         .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
         .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
@@ -256,7 +257,7 @@ describe('UTXO Recovery', function () {
       sandbox.restore();
     });
 
-    it('should generate BSV recovery tx', async function () {
+    it('should generate TBSV recovery tx', async function () {
       const basecoin = bitgo.coin('tbsv');
       const recovery = await basecoin.recover({
         userKey:
@@ -277,7 +278,7 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'bch-recovery-tx.json');
     });
 
-    it('should generate BSV recovery tx with KRS', async function () {
+    it('should generate TBSV recovery tx with KRS', async function () {
       recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
       const basecoin = bitgo.coin('tbsv');
       const recovery = await basecoin.recover({
@@ -298,44 +299,25 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Bitcoin Cash And Bitcoin ABC (BCHA)', function () {
-    // Todo (kevin): fix test for other recovery source
-    for (const coinName of ['tbch', 'tbcha']) {
-      let sandbox: sinon.SinonSandbox;
+  for (const coinName of ['tbch', 'tbcha']) {
+    describe('Recover ' + coinName, function () {
+      // Todo (kevin): fix test for other recovery source
+      const sandbox = sinon.createSandbox();
       beforeEach(() => {
-        if (coinName === 'tbch') {
-          recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
-          sandbox = sinon.createSandbox();
-          const callBack1 = sandbox.stub(Bch.prototype, 'getAddressInfoFromExplorer');
-          callBack1.resolves(emptyAddressInfo);
-          callBack1
-            .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
-            .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
-          callBack1
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
-            .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-          const callBack2 = sandbox.stub(Bch.prototype, 'getUnspentInfoFromExplorer');
-          callBack2
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
-            .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
-          callBack2.resolves([]);
-        } else {
-          recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
-          sandbox = sinon.createSandbox();
-          const callBack1bcha = sandbox.stub(Bcha.prototype, 'getAddressInfoFromExplorer');
-          callBack1bcha.resolves(emptyAddressInfo);
-          callBack1bcha
-            .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN', 'myKey')
-            .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
-          callBack1bcha
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey')
-            .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
-          const callBack2bcha = sandbox.stub(Bcha.prototype, 'getUnspentInfoFromExplorer');
-          callBack2bcha
-            .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey')
-            .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
-          callBack2bcha.resolves([]);
-        }
+        recoveryNocks.nockCoingecko(1000, 'bitcoin-cash');
+        const callBack1 = sandbox.stub(BlockchairApi.prototype, 'getAccountInfo');
+        callBack1.resolves(emptyAddressInfo);
+        callBack1
+          .withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
+          .resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+        callBack1
+          .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
+          .resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+        const callBack2 = sandbox.stub(BlockchairApi.prototype, 'getUnspents');
+        callBack2
+          .withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
+          .resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+        callBack2.resolves([]);
       });
 
       afterEach(() => {
@@ -383,12 +365,12 @@ describe('UTXO Recovery', function () {
 
         await fixtures.shouldEqualJSONFixture(recovery, coinName + '-recovery-tx-nokrs.json');
       });
-    }
-  });
+    });
+  }
 
-  describe('Recover Litecoin', function () {
-    it('should generate LTC recovery tx', async function () {
-      recoveryNocks.nockLtcRecovery(false);
+  describe('Recover TLTC', function () {
+    it('should generate TLTC recovery tx', async function () {
+      recoveryNocks.nockTltcRecovery(false);
 
       const basecoin = bitgo.coin('tltc');
       const recovery = await basecoin.recover({
@@ -405,8 +387,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'ltc-recovery-nokrs.json');
     });
 
-    it('should generate LTC recovery tx with KRS', async function () {
-      recoveryNocks.nockLtcRecovery(true);
+    it('should generate TLTC recovery tx with KRS', async function () {
+      recoveryNocks.nockTltcRecovery(true);
 
       const basecoin = bitgo.coin('tltc');
       const recovery = await basecoin.recover({
@@ -426,8 +408,8 @@ describe('UTXO Recovery', function () {
   });
 
   describe('Recover ZCash', function () {
-    it('should generate ZEC recovery tx', async function () {
-      recoveryNocks.nockZecRecovery(bitgo);
+    it('should generate TZEC recovery tx', async function () {
+      recoveryNocks.nockTzecRecovery(false);
 
       const basecoin = bitgo.coin('tzec');
 
@@ -454,8 +436,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'zec-recovery-nokrs.json');
     });
 
-    it('should generate ZEC recovery tx with KRS', async function () {
-      recoveryNocks.nockZecRecovery(bitgo, true);
+    it('should generate TZEC recovery tx with KRS', async function () {
+      recoveryNocks.nockTzecRecovery(true);
 
       const basecoin = bitgo.coin('tzec');
       const recovery = await basecoin.recover({
@@ -478,9 +460,9 @@ describe('UTXO Recovery', function () {
     });
   });
 
-  describe('Recover Dash', function () {
-    it('should generate DASH recovery tx', async function () {
-      recoveryNocks.nockDashRecovery(bitgo, false);
+  describe('Recover TDASH', function () {
+    it('should generate TDASH recovery tx', async function () {
+      recoveryNocks.nockTdashRecovery(false);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = await basecoin.recover({
@@ -497,8 +479,8 @@ describe('UTXO Recovery', function () {
       await fixtures.shouldEqualJSONFixture(recovery, 'recovery-tdash-nokrs.json');
     });
 
-    it('should generate DASH recovery tx with KRS', async function () {
-      recoveryNocks.nockDashRecovery(bitgo, true);
+    it('should generate TDASH recovery tx with KRS', async function () {
+      recoveryNocks.nockTdashRecovery(true);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = await basecoin.recover({

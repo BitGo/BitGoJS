@@ -1,56 +1,63 @@
-import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './types';
 import * as request from 'superagent';
-import { BitGo } from '../../bitgo';
 
-const BlockchairCoin = [
-  'bitcoin',
-  'bitcoin-sv',
-  'bitcoin-cash',
-  'ecash',
-];
-
-const devBase = ['dev', 'latest', 'local', 'localNonSecure', 'adminDev', 'adminLatest'];
-const testnetBase = ['test', 'adminTest'];
-const mainnetBase = ['prod', 'staging', 'adminProd'];
+import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import { ApiNotImplementedError } from './errors';
 
 export class BlockchairApi implements RecoveryProvider {
-  protected readonly bitgo: BitGo;
+  public readonly baseUrl: string;
   protected readonly apiToken?: string;
-  protected readonly coin: string;
 
-
-  constructor(bitgo: BitGo, coin: string, apiToken?: string ) {
-    if (!BlockchairCoin.includes(coin)) {
-      throw new Error(`coin ${coin} not supported by blockchair`);
+  static forCoin(coinName: string, apiToken?: string): BlockchairApi {
+    // https://blockchair.com/api/docs#link_M0
+    let blockchain;
+    switch (coinName) {
+      case 'btc':
+        blockchain = 'bitcoin';
+        break;
+      case 'tbtc':
+        blockchain = 'bitcoin/testnet';
+        break;
+      case 'bsv':
+        blockchain = 'bitcoin-sv';
+        break;
+      case 'bch':
+        blockchain = 'bitcoin-cash';
+        break;
+      case 'bcha':
+        blockchain = 'ecash';
+        break;
+      case 'ltc':
+        blockchain = 'litecoin';
+        break;
+      case 'dash':
+        blockchain = 'dash';
+        break;
+      case 'zec':
+        blockchain = 'zcash';
+        break;
+      case 'tbsv':
+      case 'tbch':
+      case 'tbcha':
+        // FIXME: these only exist to satisfy tests
+        blockchain = 'mock-' + coinName;
+        break;
+      default:
+        throw new ApiNotImplementedError(coinName);
     }
-    this.bitgo = bitgo;
-    this.coin = coin;
-    this.apiToken = apiToken;
+    return new BlockchairApi(`https://api.blockchair.com/${blockchain}`, apiToken);
   }
 
-  static getBaseUrl(env: string, coin: string): string {
-    let url;
-    if (mainnetBase.includes(env)) {
-      url = `https://api.blockchair.com/${coin}`;
-    } else if (testnetBase.includes(env) || devBase.includes((env))) {
-      url = `https://api.blockchair.com/${coin}/testnet`;
-    } else if (env === 'mock') {
-      url = 'https://api.blockchair.fakeurl/${coin}/testnet';
-    } else {
-      throw new Error(`Environment ${env} unsupported`);
-    }
-    return url;
+  constructor(baseUrl: string, apiToken?: string ) {
+    this.baseUrl = baseUrl;
+    this.apiToken = apiToken;
   }
 
   /** @inheritdoc */
   getExplorerUrl(query: string): string {
-    const env = this.bitgo.getEnv();
-    const baseUrl = BlockchairApi.getBaseUrl(env, this.coin);
-
     if (this.apiToken) {
-      return baseUrl + query + `?key=${this.apiToken}`;
+      return this.baseUrl + query + `?key=${this.apiToken}`;
     }
-    return baseUrl + query;
+    return this.baseUrl + query;
   }
 
   /** @inheritDoc */

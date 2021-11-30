@@ -5,21 +5,147 @@
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
+import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
-import { BitGo } from '../../../bitgo';
-import * as errors from '../../../errors';
-import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../recovery/initiate';
-import { sanitizeLegacyPath } from '../../../bip32path';
-import { AbstractUtxoCoin, AddressInfo, Output, UnspentInfo } from '../abstractUtxoCoin';
+import { BitGo } from '../../../../bitgo';
+import * as config from '../../../../config';
+import * as errors from '../../../../errors';
+import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
+import { sanitizeLegacyPath } from '../../../../bip32path';
+import { AbstractUtxoCoin, Output } from '../../abstractUtxoCoin';
 
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
+import { BlockstreamApi } from './blockstreamApi';
+import { BlockchairApi } from './blockchairApi';
+import { InsightApi } from './insightApi';
+import { ApiNotImplementedError, ApiRequestError } from './errors';
+import { SmartbitApi } from './smartbitApi';
+import { MempoolApi } from './mempoolApi';
+import { CoingeckoApi } from './coingeckoApi';
 
-interface SignatureAddressInfo extends AddressInfo {
+export interface OfflineVaultTxInfo {
+  inputs: {
+    chainPath: string;
+  }[];
+}
+
+export interface FormattedOfflineVaultTxInfo {
+  txInfo: {
+    unspents: {
+      chainPath: string;
+      index?: string;
+      chain?: string;
+    }[];
+  };
+  txHex: string;
+  feeInfo: Record<string, never>;
+  coin: string;
+}
+
+interface SignatureAddressInfo extends RecoveryAccountData {
   backupKey: bip32.BIP32Interface;
   userKey: bip32.BIP32Interface;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
+}
+
+function getRecoveryProvider(coinName: string, apiKey?: string): RecoveryProvider {
+  switch (coinName) {
+    case 'btc':
+    case 'tbtc':
+      return BlockstreamApi.forCoin(coinName);
+    case 'bch':
+    case 'tbch':
+    case 'bcha':
+    case 'tbcha': // this coin only exists in tests
+    case 'bsv':
+    case 'tbsv':
+      return BlockchairApi.forCoin(coinName, apiKey);
+    case 'btg':
+    case 'dash':
+    case 'tdash':
+    case 'ltc':
+    case 'tltc':
+    case 'zec':
+    case 'tzec':
+      return InsightApi.forCoin(coinName);
+  }
+
+  throw new ApiNotImplementedError(coinName);
+}
+
+/**
+ * This transforms the txInfo from recover into the format that offline-signing-tool expects
+ * @param coinName
+ * @param txInfo
+ * @param txHex
+ * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
+ */
+function formatForOfflineVault(
+  coinName: string,
+  txInfo: OfflineVaultTxInfo,
+  txHex: string
+): FormattedOfflineVaultTxInfo {
+  const response: FormattedOfflineVaultTxInfo = {
+    txHex,
+    txInfo: {
+      unspents: txInfo.inputs,
+    },
+    feeInfo: {},
+    coin: coinName,
+  };
+  _.map(response.txInfo.unspents, function (unspent) {
+    const pathArray = unspent.chainPath.split('/');
+    // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
+    unspent.index = pathArray[4];
+    unspent.chain = pathArray[3];
+  });
+  return response;
+}
+
+/**
+ * Get the current market price from a third party to be used for recovery
+ * This function is only intended for non-bitgo recovery transactions, when it is necessary
+ * to calculate the rough fee needed to pay to Keyternal. We are okay with approximating,
+ * because the resulting price of this function only has less than 1 dollar influence on the
+ * fee that needs to be paid to Keyternal.
+ *
+ * See calculateFeeAmount function:  return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
+ *
+ * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
+ */
+async function getRecoveryMarketPrice(coin: AbstractUtxoCoin): Promise<number> {
+  return await new CoingeckoApi().getUSDPrice(coin.getFamily());
+}
+
+/**
+ * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
+ * @param coin
+ * @param params
+ * @param params.provider {String} the KRS provider that holds the backup key
+ * @param params.amount {Number} amount (in base units) to be recovered
+ * @returns {*}
+ */
+async function calculateFeeAmount(
+  coin: AbstractUtxoCoin,
+  params: { provider: string; amount?: number }
+): Promise<number> {
+  const krsProvider = config.krsProviders[params.provider];
+
+  if (krsProvider === undefined) {
+    throw new Error(`no fee structure specified for provider ${params.provider}`);
+  }
+
+  if (krsProvider.feeType === 'flatUsd') {
+    const feeAmountUsd = krsProvider.feeAmount;
+    const currentPrice: number = await getRecoveryMarketPrice(coin);
+
+    return Math.round((feeAmountUsd / currentPrice) * coin.getBaseFactor());
+  } else {
+    // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
+    throw new Error('Fee structure not implemented');
+  }
 }
 
 /**
@@ -117,6 +243,7 @@ async function queryBlockchainUnspentsPath(
   basePath: string,
   addressesById
 ) {
+  const recoveryProvider = getRecoveryProvider(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
 
@@ -127,7 +254,7 @@ async function queryBlockchainUnspentsPath(
     const keys = derivedKeys.map((k) => k.publicKey);
     const address: any = coin.createMultiSigAddress(Codes.typeForCode(chain) as ScriptType2Of3, 2, keys);
 
-    const addrInfo: AddressInfo = await coin.getAddressInfoFromExplorer(address.address, params.apiKey);
+    const addrInfo: RecoveryAccountData = await recoveryProvider.getAccountInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
@@ -143,7 +270,7 @@ async function queryBlockchainUnspentsPath(
         addressesById[address.address] = address;
 
         // Try to find unspents on it.
-        const addressUnspents: UnspentInfo[] = await coin.getUnspentInfoFromExplorer(address.address, params.apiKey);
+        const addressUnspents: RecoveryUnspent[] = await recoveryProvider.getUnspents(address.address);
 
         addressUnspents.forEach(function addAddressToUnspent(unspent) {
           unspent.address = address.address;
@@ -163,7 +290,7 @@ async function queryBlockchainUnspentsPath(
 
   // get unspents for these addresses
 
-  const walletUnspents: UnspentInfo[] = [];
+  const walletUnspents: RecoveryUnspent[] = [];
   // This will populate walletAddresses
   await gatherUnspents(0);
 
@@ -173,6 +300,18 @@ async function queryBlockchainUnspentsPath(
   }
 
   return walletUnspents;
+}
+
+async function getRecoveryFeePerBytes(
+  coin: AbstractUtxoCoin,
+  { defaultValue }: { defaultValue: number }
+): Promise<number> {
+  try {
+    return await MempoolApi.forCoin(coin.getChain()).getRecoveryFeePerBytes();
+  } catch (e) {
+    console.dir(e);
+    return defaultValue;
+  }
 }
 
 /**
@@ -190,7 +329,7 @@ async function queryBlockchainUnspentsPath(
  * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
-export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
+export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }
@@ -277,7 +416,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(coin.network);
   const txInfo: any = {};
 
-  const feePerByte: number = (await coin.getRecoveryFeePerBytes()) as any;
+  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
   // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
@@ -304,7 +443,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
   let krsFee;
   if (isKrsRecovery) {
     try {
-      krsFee = await coin.calculateFeeAmount({
+      krsFee = await calculateFeeAmount(coin, {
         provider: params.krsProvider,
         amount: recoveryAmount,
       });
@@ -340,7 +479,7 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
 
   if (isUnsignedSweep) {
     const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-    return coin.formatForOfflineVault(txInfo, txHex);
+    return formatForOfflineVault(coin.getChain(), txInfo, txHex);
   } else {
     const signedTx = signRecoveryTransaction(
       transactionBuilder,
@@ -348,16 +487,16 @@ export async function recover(coin: AbstractUtxoCoin, bitgo: BitGo, params: Reco
       unspents,
       addressesById,
       !isKrsRecovery
-    );
-    txInfo.transactionHex = signedTx.buildIncomplete().toBuffer().toString('hex');
+    ).buildIncomplete();
+    txInfo.transactionHex = signedTx.toBuffer().toString('hex');
     try {
-      txInfo.tx = await coin.verifyRecoveryTransaction(txInfo);
+      txInfo.tx = await SmartbitApi.forCoin(coin.getChain()).verifyRecoveryTransaction(signedTx);
     } catch (e) {
       // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
       // could be unavailable due to service outage, so we continue without verification for those coins, but we will
       // let users know that they should verify their own
       // this message should be piped to WRW and displayed on the UI
-      if (e instanceof errors.MethodNotImplementedError || e instanceof errors.BlockExplorerUnavailable) {
+      if (e instanceof ApiNotImplementedError || e instanceof ApiRequestError) {
         console.log('Please verify your transaction by decoding the tx hex using a third-party api of your choice');
       } else {
         throw e;

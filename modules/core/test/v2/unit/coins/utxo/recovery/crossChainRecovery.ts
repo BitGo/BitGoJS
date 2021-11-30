@@ -5,8 +5,9 @@ import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import * as config from '../../../../../src/config';
+import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
+import * as config from '../../../../../../src/config';
+import { CrossChainRecoverySigned } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import {
   getFixture,
@@ -17,19 +18,13 @@ import {
   shouldEqualJSON,
   utxoCoins,
   transactionHexToObj,
-} from './util';
-import { getSeed } from '../../../../lib/keys';
-import { createFullSignedTransaction } from './util/transaction';
-import { getDefaultWalletUnspentSigner } from './util/keychains';
-import {
-  nockBitGoPublicAddressUnspents,
-  nockBitGoPublicTransaction,
-  nockLitecointoolsAddressUnspents,
-  nockLitecointoolsTransaction,
-} from './util/nockIndexerAPI';
-import { CrossChainRecoverySigned } from '../../../../../src/v2/recovery';
-import { nockBitGo } from './util/nockBitGo';
-import { Unspent } from '../../../../../src/v2/coins/utxo/unspent';
+} from '../util';
+import { getSeed } from '../../../../../lib/keys';
+import { createFullSignedTransaction } from '../util/transaction';
+import { getDefaultWalletUnspentSigner } from '../util/keychains';
+import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
+import { nockBitGo } from '../util/nockBitGo';
+import { Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
 
 function nockWallet(coin: AbstractUtxoCoin, walletId: string, walletKeys: Triple<KeychainBase58>): nock.Scope {
   return nockBitGo()
@@ -64,25 +59,16 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
     .persist();
 }
 
-function nockThirdpartyExplorerTxInfo(
+function nockBitGoPublicTransactionInfo(
   coin: AbstractUtxoCoin,
   depositTx: utxolib.bitgo.UtxoTransaction,
   depositUnspents: Unspent[],
   depositAddress: string
 ): nock.Scope[] {
-  switch (coin.getChain()) {
-    case 'ltc':
-    case 'tltc':
-      return [
-        nockLitecointoolsTransaction(coin, depositTx, depositUnspents).persist(),
-        nockLitecointoolsAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
-      ];
-    default:
-      return [
-        nockBitGoPublicTransaction(coin, depositTx, depositUnspents).persist(),
-        nockBitGoPublicAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
-      ];
-  }
+  return [
+    nockBitGoPublicTransaction(coin, depositTx, depositUnspents).persist(),
+    nockBitGoPublicAddressUnspents(coin, depositTx.getId(), depositAddress, depositTx.outs).persist(),
+  ];
 }
 
 /**
@@ -126,20 +112,6 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       );
     }
 
-    before('setup krsProviders', function () {
-      // pretend that Keyternal accepts recoveries for all coins
-      config.krsProviders.keyternal.supportedCoins = ['btc', 'bch', 'bsv', 'bcha', 'ltc', 'zec', 'dash'];
-      config.krsProviders.keyternal.feeAddresses = {
-        tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbsv: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tbcha: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
-        tltc: 'QffXMViM8DYgPRf1Hoczjw7BS5CVdSWaBL',
-        tzec: 't2ATLAhBP1uTuyiWs5DY5CPH1VuYkGUindt',
-        tdash: '8euHug4dbmPy3CLawwWdeTjGLqPYEGz3Kt',
-      };
-    });
-
     before('prepare deposit tx', function () {
       depositTx = getDepositTransaction();
     });
@@ -148,7 +120,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       nocks.push(nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
       nocks.push(nockWalletAddress(recoveryCoin, recoveryWalletId, depositAddressRecoveryCoin));
       nocks.push(
-        ...nockThirdpartyExplorerTxInfo(sourceCoin, depositTx, getDepositUnspents(), depositAddressSourceCoin.address)
+        ...nockBitGoPublicTransactionInfo(sourceCoin, depositTx, getDepositUnspents(), depositAddressSourceCoin.address)
       );
     });
 
@@ -178,7 +150,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       };
       shouldEqualJSON(
         signedRecoveryObj,
-        await getFixture(sourceCoin, `recovery/${recoveryCoin.getChain()}`, signedRecoveryObj)
+        await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}`, signedRecoveryObj)
       );
     });
 
