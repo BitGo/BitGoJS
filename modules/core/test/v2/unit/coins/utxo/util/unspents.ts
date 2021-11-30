@@ -1,29 +1,30 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Codes } from '@bitgo/unspents';
 
 import { getSeed } from '../../../../../lib/keys';
-import { Triple } from '../../../../../../src';
-import { deriveKey } from '../../../../../../src/v2/coins/utxo/sign';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
 import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 
-import { keychains } from './keychains';
+import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 
 export function getOutputScript(
-  keys: Triple<bip32.BIP32Interface>,
-  chain: number,
-  index: number
+  walletKeys: RootWalletKeys,
+  chain = 0,
+  index = 0
 ): utxolib.bitgo.outputScripts.SpendableScript {
   return utxolib.bitgo.outputScripts.createOutputScript2of3(
-    keys.map((k) => deriveKey(k, chain, index).publicKey),
+    walletKeys.deriveForChainAndIndex(chain, index).publicKeys,
     utxolib.bitgo.outputScripts.scriptTypeForChain(chain)
   );
+}
+
+export function getWalletAddress(network: utxolib.Network, walletKeys: RootWalletKeys, chain = 0, index = 0): string {
+  return utxolib.address.fromOutputScript(getOutputScript(walletKeys, chain, index).scriptPubKey, network);
 }
 
 function mockOutputIdForAddress(address: string) {
@@ -32,8 +33,8 @@ function mockOutputIdForAddress(address: string) {
 
 export function mockWalletUnspent(
   network: utxolib.Network,
-  { id, chain = 0, index = 0, value, address }: Partial<WalletUnspent>,
-  keys: Triple<bip32.BIP32Interface> = keychains
+  walletKeys: RootWalletKeys,
+  { id, chain = 0, index = 0, value, address }: Partial<WalletUnspent>
 ): Unspent {
   if (value === undefined) {
     throw new Error(`unspent value must be set`);
@@ -41,7 +42,7 @@ export function mockWalletUnspent(
   if (chain === undefined) {
     throw new Error(`unspent chain must be set`);
   }
-  const derived = getOutputScript(keys, chain, index);
+  const derived = getOutputScript(walletKeys, chain, index);
   const deriveAddress = utxolib.address.fromOutputScript(derived.scriptPubKey, network);
   if (address) {
     if (address !== deriveAddress) {
@@ -79,14 +80,15 @@ export function mockUnspentReplayProtection(network: utxolib.Network): ReplayPro
 
 export function mockUnspent(
   network: utxolib.Network,
-  scriptType: InputScriptType,
+  walletKeys: RootWalletKeys,
+  chain: number | InputScriptType,
   index: number,
   value: number
 ): Unspent {
-  if (scriptType === 'replayProtection') {
+  if (chain === 'replayProtection') {
     return mockUnspentReplayProtection(network);
   } else {
-    const chain = Codes.forType(scriptType as any).internal;
-    return mockWalletUnspent(network, { chain, value, index }, keychains);
+    chain = typeof chain === 'number' ? chain : Codes.forType(chain as any).internal;
+    return mockWalletUnspent(network, walletKeys, { chain, value, index });
   }
 }

@@ -12,7 +12,6 @@ import { getReplayProtectionAddresses } from '../../../../../src/v2/coins/utxo/r
 
 import {
   utxoCoins,
-  keychains,
   shouldEqualJSON,
   getFixture,
   getUtxoWallet,
@@ -22,25 +21,25 @@ import {
   transactionToObj,
   transactionHexToObj,
   createPrebuildTransaction,
+  getDefaultWalletKeys,
 } from './util';
 
 import { FullySignedTransaction, HalfSignedUtxoTransaction, WalletSignTransactionOptions } from '../../../../../src';
 
-import { deriveKey } from '../../../../../src/v2/coins/utxo/sign';
-
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {
     const wallet = getUtxoWallet(coin);
+    const walletKeys = getDefaultWalletKeys();
     const value = 1e8;
     const fullSign = !inputScripts.some((s) => s === 'replayProtection');
 
     function getUnspents(): Unspent[] {
-      return inputScripts.map((type, i) => mockUnspent(coin.network, type, i, value));
+      return inputScripts.map((type, i) => mockUnspent(coin.network, walletKeys, type, i, value));
     }
 
     function getOutputAddress(): string {
       return coin.generateAddress({
-        keychains: keychains.map((k) => ({ pub: k.neutered().toBase58() })),
+        keychains: walletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
       }).address;
     }
 
@@ -58,7 +57,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           txInfo,
         },
         prv: signer.toBase58(),
-        pubs: keychains.map((k) => k.neutered().toBase58()),
+        pubs: walletKeys.triple.map((k) => k.neutered().toBase58()),
         cosignerPub: cosigner.neutered().toBase58(),
       };
     }
@@ -97,13 +96,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     async function getTransactionStages(): Promise<TransactionStages> {
       const prebuild = createPrebuildTransaction(coin.network, getUnspents(), getOutputAddress());
-      const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, keychains[0], keychains[1]);
+      const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.backup);
       const fullSignedUserBackup = fullSign
-        ? await createFullSignedTransaction(halfSignedUserBackup, keychains[1], keychains[0])
+        ? await createFullSignedTransaction(halfSignedUserBackup, walletKeys.backup, walletKeys.user)
         : undefined;
-      const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, keychains[0], keychains[2]);
+      const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.bitgo);
       const fullSignedUserBitGo = fullSign
-        ? await createFullSignedTransaction(halfSignedUserBitGo, keychains[2], keychains[0])
+        ? await createFullSignedTransaction(halfSignedUserBitGo, walletKeys.bitgo, walletKeys.user)
         : undefined;
 
       return {
@@ -158,7 +157,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
         }
 
         const unspent = unspents[index] as WalletUnspent;
-        const pubkeys = keychains.map((k) => deriveKey(k, unspent.chain, unspent.index).publicKey);
+        const pubkeys = walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys;
 
         pubkeys.forEach((pk, pkIndex) => {
           utxolib.bitgo
@@ -171,14 +170,14 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
               },
               prevOutputs
             )
-            .should.eql(signedBy.includes(keychains[pkIndex]));
+            .should.eql(signedBy.includes(walletKeys.triple[pkIndex]));
         });
       });
     }
 
     it('have valid signature for half-signed transaction', function () {
-      testValidSignatures(transactionStages.halfSignedUserBackup, [keychains[0]]);
-      testValidSignatures(transactionStages.halfSignedUserBitGo, [keychains[0]]);
+      testValidSignatures(transactionStages.halfSignedUserBackup, [walletKeys.user]);
+      testValidSignatures(transactionStages.halfSignedUserBitGo, [walletKeys.user]);
     });
 
     it('have valid signatures for full-signed transaction', function () {
@@ -186,8 +185,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
         return this.skip();
       }
       assert(transactionStages.fullSignedUserBackup && transactionStages.fullSignedUserBitGo);
-      testValidSignatures(transactionStages.fullSignedUserBackup, [keychains[0], keychains[1]]);
-      testValidSignatures(transactionStages.fullSignedUserBitGo, [keychains[0], keychains[2]]);
+      testValidSignatures(transactionStages.fullSignedUserBackup, [walletKeys.user, walletKeys.backup]);
+      testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo]);
     });
 
     it('have correct results for explainTransaction', async function () {

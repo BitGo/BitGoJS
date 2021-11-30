@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as bip32 from 'bip32';
+import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 import { WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
 import { Triple } from '../../../../../../src';
 
@@ -9,6 +10,16 @@ export type KeychainBase58 = {
   pub: string;
   prv: string;
 };
+
+export function toKeychainBase58(k: bip32.BIP32Interface): KeychainBase58 {
+  if (k.isNeutered()) {
+    throw new Error(`must provide private key`);
+  }
+  return {
+    prv: k.toBase58(),
+    pub: k.neutered().toBase58(),
+  };
+}
 
 export const keychainsBase58: Triple<KeychainBase58> = [
   {
@@ -33,10 +44,16 @@ export const keychains: Triple<bip32.BIP32Interface> = keychainsBase58.map(({ pu
   return k;
 }) as Triple<bip32.BIP32Interface>;
 
-function getWalletUnspentSignerUserBitGo(): WalletUnspentSigner {
-  return new WalletUnspentSigner(keychains, keychains[0], keychains[2]);
+export function getWalletUnspentSignerUserBitGo(
+  keys: Triple<bip32.BIP32Interface>
+): WalletUnspentSigner<RootWalletKeys> {
+  return new WalletUnspentSigner(keys, keys[0], keys[2]);
 }
 
-export function getDefaultWalletUnspentSigner(): WalletUnspentSigner {
-  return getWalletUnspentSignerUserBitGo();
+export function getDefaultWalletKeys(): RootWalletKeys {
+  return new RootWalletKeys(keychains);
+}
+
+export function getDefaultWalletUnspentSigner(): WalletUnspentSigner<RootWalletKeys> {
+  return getWalletUnspentSignerUserBitGo(keychains);
 }
