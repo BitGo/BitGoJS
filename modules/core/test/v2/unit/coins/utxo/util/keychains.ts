@@ -3,7 +3,7 @@
  */
 import * as bip32 from 'bip32';
 import { WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
-export type Triple<T> = [T, T, T];
+import { Triple } from '../../../../../../src';
 
 export type KeychainBase58 = {
   pub: string;

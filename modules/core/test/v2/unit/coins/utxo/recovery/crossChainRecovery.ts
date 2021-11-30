@@ -5,37 +5,49 @@ import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import * as config from '../../../../../../src/config';
+import { Triple } from '../../../../../../src';
+import { Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
+import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import { CrossChainRecoverySigned } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import {
   getFixture,
   keychainsBase58,
   KeychainBase58,
-  Triple,
   mockUnspent,
   shouldEqualJSON,
   utxoCoins,
   transactionHexToObj,
 } from '../util';
 import { getSeed } from '../../../../../lib/keys';
+import { nockBitGo } from '../util/nockBitGo';
+import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
 import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
-import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
-import { nockBitGo } from '../util/nockBitGo';
-import { Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
 
-function nockWallet(coin: AbstractUtxoCoin, walletId: string, walletKeys: Triple<KeychainBase58>): nock.Scope {
-  return nockBitGo()
-    .get(`/api/v2/${coin.getChain()}/wallet/${walletId}`)
-    .reply(200, {
-      id: walletId,
-      coin: coin.getChain(),
-      label: 'crossChainRecovery',
-      keys: walletKeys.map((k) => getSeed(k.pub).toString('hex')),
-    })
-    .persist();
+function getKeyId(k: KeychainBase58): string {
+  return getSeed(k.pub).toString('hex');
+}
+
+function nockWallet(coin: AbstractUtxoCoin, walletId: string, walletKeys: Triple<KeychainBase58>): nock.Scope[] {
+  return [
+    nockBitGo()
+      .get(`/api/v2/${coin.getChain()}/wallet/${walletId}`)
+      .reply(200, {
+        id: walletId,
+        coin: coin.getChain(),
+        label: 'crossChainRecovery',
+        keys: walletKeys.map((k) => getKeyId(k)),
+      })
+      .persist(),
+    ...walletKeys.map((k) =>
+      nockBitGo()
+        .get(`/api/v2/${coin.getChain()}/key/${getKeyId(k)}`)
+        .reply(200, k)
+        .persist()
+    ),
+  ];
 }
 
 type Address = {
@@ -117,7 +129,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     });
 
     before('setup nocks', function () {
-      nocks.push(nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
+      nocks.push(...nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
       nocks.push(nockWalletAddress(recoveryCoin, recoveryWalletId, depositAddressRecoveryCoin));
       nocks.push(
         ...nockBitGoPublicTransactionInfo(sourceCoin, depositTx, getDepositUnspents(), depositAddressSourceCoin.address)

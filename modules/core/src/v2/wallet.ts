@@ -121,9 +121,8 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
 export interface WalletSignTransactionOptions {
     txPrebuild?: TransactionPrebuild;
     prv?: string;
-    userKeychain?: Keychain,
-    backupKeychain?: Keychain,
-    bitgoKeychain?: Keychain,
+    pubs?: string[];
+    cosignerPub?: string;
     isLastSignature?: boolean;
     [index: string]: unknown;
 }
@@ -959,16 +958,13 @@ export class Wallet {
         .send(filteredParams)
         .result();
 
-      // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId })) as any;
+      const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId })) as unknown as Keychain[];
 
       const transactionParams = {
         ...params,
         txPrebuild: response,
         keychain: keychains[0],
-        userKeychain: keychains[0],
-        backupKeychain: (keychains.length > 1) ? keychains[1] : null,
-        bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+        pubs: keychains.map(k => k.pub),
       };
       const signedTransaction = yield self.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
@@ -1096,7 +1092,6 @@ export class Wallet {
         .result();
       // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
-      // retrieve our keychains needed to run the prebuild - some coins use all pubs
       const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId })) as any;
 
       const transactionParams = {
@@ -1106,7 +1101,7 @@ export class Wallet {
         userKeychain: keychains[0],
         backupKeychain: (keychains.length > 1) ? keychains[1] : null,
         bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
-        prv: params.xprv
+        prv: params.xprv,
       };
       const signedTransaction = yield self.signTransaction(transactionParams);
 
@@ -1783,6 +1778,12 @@ export class Wallet {
       }
       const presign = yield self.baseCoin.presignTransaction(params);
       const userPrv = self.getUserPrv(presign);
+
+      if (!params.pubs && self.baseCoin.keyIdsForSigning().length > 1) {
+        const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self })) as unknown as Keychain[];
+        params.pubs = keychains.map(k => k.pub);
+      }
+
       const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
       return self.baseCoin.signTransaction(signingParams);
     }).call(this).asCallback(callback);
@@ -1867,7 +1868,6 @@ export class Wallet {
       // the prebuild can be overridden by providing an explicit tx
       const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : self.prebuildTransaction(params);
 
-      // retrieve our keychains needed to run the prebuild - some coins use all pubs
       const keychains = (yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId: params.reqId })) as any;
 
       const txPrebuild = (yield txPrebuildQuery) as any;
@@ -1896,9 +1896,7 @@ export class Wallet {
           addressVersion: self._wallet.coinSpecific.addressVersion,
         },
         keychain: keychains[0],
-        userKeychain: keychains[0],
-        backupKeychain: (keychains.length > 1) ? keychains[1] : null,
-        bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+        pubs: keychains.map(k => k.pub),
       });
 
       try {
