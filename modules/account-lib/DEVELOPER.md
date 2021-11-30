@@ -60,7 +60,7 @@ We recommend that you follow this pattern when adding a new coin to the library:
 
 ### Test Structure
 
-Accoutn Lib comes with unit tests and it is expected that all changes introduced
+Account Lib comes with unit tests and it is expected that all changes introduced
 to the library increase test coverage. Tests live in `test`. Coin specific tests
 live in `test/unit/coin/<coin-ticker>/<coin-ticker.js>`.
 
