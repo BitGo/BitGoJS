@@ -268,6 +268,7 @@ export interface CreateAddressOptions {
   lowPriority?: boolean;
   forwarderVersion?: number;
   format?: 'base58' | 'cashaddr';
+  rootAddress?: string;
 }
 
 export interface UpdateAddressOptions {
@@ -1278,6 +1279,7 @@ export class Wallet {
         forwarderVersion,
         format,
         count = 1,
+        rootAddress: paramRootAddress,
       } = params;
 
       if (!_.isUndefined(chain)) {
@@ -1326,11 +1328,18 @@ export class Wallet {
         addressParams.format = format;
       }
 
+      if (!_.isUndefined(paramRootAddress)) {
+        if (!_.isString(paramRootAddress)) {
+          throw new Error('rootAddress has to be a string');
+        }
+        addressParams.rootAddress = paramRootAddress;
+      }
+
       // get keychains for address verification
       const keychains = yield Bluebird.map(self._wallet.keys as string[],
         k => self.baseCoin.keychains().get({ id: k, reqId })
       );
-      const rootAddress = _.get(self._wallet, 'receiveAddress.address');
+      const rootAddress = self.getRootAddress(addressParams);
 
       const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
         self.bitgo.setRequestTracer(reqId);
@@ -1372,6 +1381,14 @@ export class Wallet {
         addresses: yield Promise.all(newAddresses),
       };
     }).call(this).asCallback(callback);
+  }
+
+  private getRootAddress(addressParams: CreateAddressOptions) {
+    if (!_.isUndefined(addressParams.rootAddress) ) {
+      return addressParams.rootAddress;
+    }
+
+    return _.get(this._wallet, 'receiveAddress.address');
   }
 
   /**
