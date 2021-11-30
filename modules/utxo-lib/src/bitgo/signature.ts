@@ -439,6 +439,11 @@ export function getSignatureVerifications(
     throw new Error(`no input at index ${inputIndex}`);
   }
 
+  if ((!input.script || input.script.length === 0) && input.witness.length === 0) {
+    // Unsigned input: no signatures.
+    return [];
+  }
+
   const parsedScript = parseSignatureScript2Of3(input);
 
   const signatures = parsedScript.signatures
