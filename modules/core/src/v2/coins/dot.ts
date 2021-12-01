@@ -15,6 +15,8 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 
+const co = Bluebird.coroutine;
+
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -27,7 +29,7 @@ export interface TransactionPrebuild {
   validity: {
     firstValid: number;
   };
-  blockHash: string;
+  referenceBlock: string;
   version: number;
 }
 
@@ -195,7 +197,26 @@ export class Dot extends BaseCoin {
     params: SignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    throw new MethodNotImplementedError('Dot recovery not implemented');
+    const self = this;
+    return co<SignedTransaction>(function* () {
+      const { txHex, signer, prv } = self.verifySignTransactionParams(params);
+      const factory = accountLib.register(self.getChain(), accountLib.Dot.TransactionBuilderFactory);
+      const txBuilder = factory.from(txHex);
+      txBuilder
+        .validity(params.txPrebuild.validity)
+        .referenceBlock(params.txPrebuild.referenceBlock)
+        .version(params.txPrebuild.version)
+        .sender({ address: signer })
+        .sign({ key: prv });
+      const transaction: any = yield txBuilder.build();
+      if (!transaction) {
+        throw new Error('Invalid transaction');
+      }
+      const signedTxHex = transaction.toBroadcastFormat();
+      return { txHex: signedTxHex };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

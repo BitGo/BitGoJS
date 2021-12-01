@@ -66,6 +66,8 @@ import { tokens } from '../config';
 import * as errors from '../errors';
 import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
+import { Dot } from './coins/dot';
+import { Tdot } from './coins/tdot';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
 
@@ -132,6 +134,8 @@ GlobalCoinFactory.registerCoinConstructor('tbcha', Tbcha.createInstance);
 GlobalCoinFactory.registerCoinConstructor('bsv', Bsv.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tbsv', Tbsv.createInstance);
 GlobalCoinFactory.registerCoinConstructor('btg', Btg.createInstance);
+GlobalCoinFactory.registerCoinConstructor('dot', Dot.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tdot', Tdot.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ltc', Ltc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tltc', Tltc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('eos', Eos.createInstance);
