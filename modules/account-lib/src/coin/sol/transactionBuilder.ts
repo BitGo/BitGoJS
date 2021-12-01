@@ -4,7 +4,7 @@ import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
-import { Transaction as SolTransaction, Blockhash, PublicKey } from '@solana/web3.js';
+import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { isValidAddress, isValidBlockId, isValidMemo, isValidPublicKey, validateRawTransaction } from './utils';
 import { KeyPair } from '.';
 import { InstructionBuilderTypes } from './constants';
@@ -16,11 +16,12 @@ import base58 from 'bs58';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
-  protected _feePayer: string;
+  protected _sender: string;
   protected _recentBlockhash: Blockhash;
   protected _nonceInfo: Nonce;
   protected _instructionsData: InstructionParams[] = [];
   protected _signers: KeyPair[] = [];
+  protected _memo?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -40,9 +41,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
     const txData = tx.toJson();
-    this.feePayer(txData.feePayer as string);
+    this.sender(txData.feePayer as string);
     this.nonce(txData.nonce);
     this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions);
+
+    for (const instruction of this._instructionsData) {
+      if (instruction.type === InstructionBuilderTypes.Memo) {
+        const memoInstruction: Memo = instruction;
+        this.memo(memoInstruction.params.memo);
+      }
+
+      if (instruction.type === InstructionBuilderTypes.NonceAdvance) {
+        const advanceNonceInstruction: Nonce = instruction;
+        this.nonce(txData.nonce, advanceNonceInstruction.params);
+      }
+    }
   }
 
   /** @inheritdoc */
@@ -73,8 +86,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._transaction?.solTransaction?.signatures) {
       tx.signatures = this._transaction?.solTransaction?.signatures;
     }
-    assert(this._feePayer, new BuildTransactionError('feePayer is required before building'));
-    tx.feePayer = new PublicKey(this._feePayer);
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    tx.feePayer = new PublicKey(this._sender);
 
     if (this._nonceInfo) {
       tx.nonceInfo = {
@@ -87,6 +100,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     for (const instruction of this._instructionsData) {
       tx.add(...solInstructionFactory(instruction));
     }
+
+    if (this._memo) {
+      const memoData: Memo = {
+        type: InstructionBuilderTypes.Memo,
+        params: {
+          memo: this._memo,
+        },
+      };
+      this._instructionsData.push(memoData);
+      tx.add(...solInstructionFactory(memoData));
+    }
+
     for (const signer of this._signers) {
       const publicKey = new PublicKey(signer.getKeys().pub);
       const secretKey = signer.getKeys(true).prv;
@@ -119,16 +144,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Set the transaction fee payer
+   * Sets the sender of this transaction.
+   * This account will be responsible for paying transaction fees.
    *
-   * @param {string} feePayerAddress the fee payer account
+   * @param {string} senderAddress the account that is sending this transaction
    * @returns {TransactionBuilder} This transaction builder
    */
-  feePayer(feePayerAddress: string): this {
-    if (!feePayerAddress || !isValidPublicKey(feePayerAddress)) {
-      throw new BuildTransactionError('Invalid or missing feePayerAddress, got: ' + feePayerAddress);
+  sender(senderAddress: string): this {
+    if (!senderAddress || !isValidPublicKey(senderAddress)) {
+      throw new BuildTransactionError('Invalid or missing sender, got: ' + senderAddress);
     }
-    this._feePayer = feePayerAddress;
+    this._sender = senderAddress;
     return this;
   }
 
@@ -175,11 +201,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   memo(memo: string): this {
     this.validateMemo(memo);
-    const memoData: Memo = {
-      type: InstructionBuilderTypes.Memo,
-      params: { memo },
-    };
-    this._instructionsData.push(memoData);
+    this._memo = memo;
     return this;
   }
 
@@ -208,7 +230,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    this.validateFeePayer();
+    this.validateSender();
     this.validateNonce();
   }
 
@@ -223,20 +245,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string} memo - the memo as string
    */
   validateMemo(memo: string): void {
-    if (
-      this._instructionsData.length === 0 ||
-      !this._instructionsData.some(
-        (instruction) =>
-          instruction.type === InstructionBuilderTypes.CreateNonceAccount ||
-          instruction.type === InstructionBuilderTypes.Transfer,
-      )
-    ) {
-      throw new BuildTransactionError('Cannot use memo before adding other operation');
-    }
-
-    if (this._instructionsData.some((instruction) => instruction.type === InstructionBuilderTypes.Memo)) {
-      throw new BuildTransactionError('Only 1 memo is allowed');
-    }
     if (!memo) {
       throw new BuildTransactionError('Invalid memo, got: ' + memo);
     }
@@ -259,11 +267,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Validates that the feePayer field is defined
+   * Validates that the sender field is defined
    */
-  private validateFeePayer(): void {
-    if (this._feePayer === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing feePayer');
+  private validateSender(): void {
+    if (this._sender === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing sender');
     }
   }
 

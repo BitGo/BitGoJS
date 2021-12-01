@@ -63,11 +63,11 @@ describe('Sol Transaction', () => {
       const txJson = tx.toJson();
       txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData']);
       txJson.id?.should.equal(
-        '5q66yfSJ5HGHjhgvjFf8ZnG95HSMz6s3qVuCyeJqSHkius64U44zD2dNcr1hrPmgxAKLyCPU9KoAL6NNwfnetzPb',
+        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
       );
       txJson.feePayer?.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
-      txJson.numSignatures.should.equal(6);
+      txJson.numSignatures.should.equal(1);
       txJson.instructionsData.length.should.equal(8);
       txJson.instructionsData.should.deepEqual([
         {
@@ -88,7 +88,15 @@ describe('Sol Transaction', () => {
         {
           type: 'Transfer',
           params: {
-            fromAddress: '6B55XMiaS6tUZw5Tt3G1RaXAqdrvN38yXVDJmWvKLkiM',
+            fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            toAddress: '6B55XMiaS6tUZw5Tt3G1RaXAqdrvN38yXVDJmWvKLkiM',
+            amount: '300000',
+          },
+        },
+        {
+          type: 'Transfer',
+          params: {
+            fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
             toAddress: 'C1UjpxcXNBpp1UyvYsuNBNZ5Da1G1i49g3yTvC23Ny7e',
             amount: '300000',
           },
@@ -96,7 +104,7 @@ describe('Sol Transaction', () => {
         {
           type: 'Transfer',
           params: {
-            fromAddress: 'C1UjpxcXNBpp1UyvYsuNBNZ5Da1G1i49g3yTvC23Ny7e',
+            fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
             toAddress: 'CpUYXh9xXoWfkBVaBQRZ8nAgDbT16GZeQdqveeBS1hmk',
             amount: '300000',
           },
@@ -104,7 +112,7 @@ describe('Sol Transaction', () => {
         {
           type: 'Transfer',
           params: {
-            fromAddress: 'CpUYXh9xXoWfkBVaBQRZ8nAgDbT16GZeQdqveeBS1hmk',
+            fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
             toAddress: '64s6NjmEokdhicHEd432X5Ut2EDfDmVqdvGh4rASn1gd',
             amount: '300000',
           },
@@ -112,16 +120,8 @@ describe('Sol Transaction', () => {
         {
           type: 'Transfer',
           params: {
-            fromAddress: '64s6NjmEokdhicHEd432X5Ut2EDfDmVqdvGh4rASn1gd',
+            fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
             toAddress: '6nXxL2jMSdkgfHm13Twvn1gzRAPdrWnWLfu89PJL3Aqe',
-            amount: '300000',
-          },
-        },
-        {
-          type: 'Transfer',
-          params: {
-            fromAddress: '6nXxL2jMSdkgfHm13Twvn1gzRAPdrWnWLfu89PJL3Aqe',
-            toAddress: '6B55XMiaS6tUZw5Tt3G1RaXAqdrvN38yXVDJmWvKLkiM',
             amount: '300000',
           },
         },

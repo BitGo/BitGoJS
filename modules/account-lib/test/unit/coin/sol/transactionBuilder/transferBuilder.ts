@@ -9,7 +9,7 @@ describe('Sol Transfer Builder', () => {
   const transferBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.nonce(recentBlockHash);
-    txBuilder.feePayer(authAccount.pub);
+    txBuilder.sender(authAccount.pub);
     return txBuilder;
   };
 
@@ -25,8 +25,8 @@ describe('Sol Transfer Builder', () => {
     it('build a transfer tx unsigned with memo', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash);
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
@@ -49,8 +49,8 @@ describe('Sol Transfer Builder', () => {
     it('build a transfer tx unsigned with durable nonce', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -72,8 +72,8 @@ describe('Sol Transfer Builder', () => {
     it('build a transfer tx unsigned with memo and durable nonce', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
@@ -96,8 +96,8 @@ describe('Sol Transfer Builder', () => {
     it('build a transfer tx unsigned without memo or durable nonce', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash);
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -119,8 +119,8 @@ describe('Sol Transfer Builder', () => {
     it('build a transfer tx signed with memo and durable nonce', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
       txBuilder.memo(memo);
       txBuilder.sign({ key: authAccount.prv });
       const tx = await txBuilder.build();
@@ -150,20 +150,15 @@ describe('Sol Transfer Builder', () => {
 
       const txBuilder = factory.getTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
-      txBuilder.feePayer(authAccount.pub);
-      txBuilder.transfer(authAccount.pub, otherAccount.pub, amount);
-      txBuilder.transfer(account1.pub, account2.pub, amount);
-      txBuilder.transfer(account2.pub, account3.pub, amount);
-      txBuilder.transfer(account3.pub, account4.pub, amount);
-      txBuilder.transfer(account4.pub, account5.pub, amount);
-      txBuilder.transfer(account5.pub, account1.pub, amount);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
+      txBuilder.send({ address: account1.pub, amount });
+      txBuilder.send({ address: account2.pub, amount });
+      txBuilder.send({ address: account3.pub, amount });
+      txBuilder.send({ address: account4.pub, amount });
+      txBuilder.send({ address: account5.pub, amount });
       txBuilder.memo(memo);
       txBuilder.sign({ key: authAccount.prv });
-      txBuilder.sign({ key: account1.prv });
-      txBuilder.sign({ key: account2.prv });
-      txBuilder.sign({ key: account3.prv });
-      txBuilder.sign({ key: account4.prv });
-      txBuilder.sign({ key: account5.prv });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(6);
       tx.inputs[0].should.deepEqual({
@@ -172,27 +167,27 @@ describe('Sol Transfer Builder', () => {
         coin: 'tsol',
       });
       tx.inputs[1].should.deepEqual({
-        address: account1.pub,
+        address: authAccount.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.inputs[2].should.deepEqual({
-        address: account2.pub,
+        address: authAccount.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.inputs[3].should.deepEqual({
-        address: account3.pub,
+        address: authAccount.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.inputs[4].should.deepEqual({
-        address: account4.pub,
+        address: authAccount.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.inputs[5].should.deepEqual({
-        address: account5.pub,
+        address: authAccount.pub,
         value: amount,
         coin: 'tsol',
       });
@@ -203,27 +198,27 @@ describe('Sol Transfer Builder', () => {
         coin: 'tsol',
       });
       tx.outputs[1].should.deepEqual({
-        address: account2.pub,
+        address: account1.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.outputs[2].should.deepEqual({
-        address: account3.pub,
+        address: account2.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.outputs[3].should.deepEqual({
-        address: account4.pub,
+        address: account3.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.outputs[4].should.deepEqual({
-        address: account5.pub,
+        address: account4.pub,
         value: amount,
         coin: 'tsol',
       });
       tx.outputs[5].should.deepEqual({
-        address: account1.pub,
+        address: account5.pub,
         value: amount,
         coin: 'tsol',
       });
@@ -234,40 +229,24 @@ describe('Sol Transfer Builder', () => {
   });
 
   describe('Fail', () => {
-    it('for invalid fromAddress', () => {
+    it('for invalid sender', () => {
       const txBuilder = transferBuilder();
-      should(() => txBuilder.transfer(invalidPubKey, nonceAccount.pub, amount)).throwError(
-        'Invalid or missing fromAddress, got: ' + invalidPubKey,
-      );
+      should(() => txBuilder.sender(invalidPubKey)).throwError('Invalid or missing sender, got: ' + invalidPubKey);
     });
 
     it('for invalid toAddress', () => {
       const txBuilder = transferBuilder();
-      should(() => txBuilder.transfer(authAccount.pub, invalidPubKey, amount)).throwError(
-        'Invalid or missing toAddress, got: ' + invalidPubKey,
+      should(() => txBuilder.send({ address: invalidPubKey, amount })).throwError(
+        'Invalid or missing address, got: ' + invalidPubKey,
       );
     });
 
     it('for invalid amount', () => {
       const invalidAmount = 'randomstring';
       const txBuilder = transferBuilder();
-      should(() => txBuilder.transfer(authAccount.pub, nonceAccount.pub, invalidAmount)).throwError(
+      should(() => txBuilder.send({ address: nonceAccount.pub, amount: invalidAmount })).throwError(
         'Invalid or missing amount, got: ' + invalidAmount,
       );
-    });
-
-    it('to add memo without other operation', async () => {
-      const txBuilder = transferBuilder();
-      should(() => txBuilder.memo('test memo please ignore')).throwError(
-        'Cannot use memo before adding other operation',
-      );
-    });
-
-    it('to add a second memo', async () => {
-      const txBuilder = transferBuilder();
-      txBuilder.transfer(nonceAccount.pub, authAccount.pub, amount);
-      txBuilder.memo('test memo please ignore');
-      should(() => txBuilder.memo('second memo')).throwError('Only 1 memo is allowed');
     });
 
     it('to sign twice with the same key', () => {

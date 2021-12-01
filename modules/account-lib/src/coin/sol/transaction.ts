@@ -142,10 +142,13 @@ export class Transaction extends BaseTransaction {
    * Throws if not set
    */
   private getNonce(): Blockhash {
-    if (!this._solTransaction.recentBlockhash) {
+    if (this._solTransaction.recentBlockhash) {
+      return this._solTransaction.recentBlockhash;
+    } else if (this._solTransaction.nonceInfo) {
+      return this._solTransaction.nonceInfo.nonce;
+    } else {
       throw new InvalidTransactionError('Nonce is not set');
     }
-    return this._solTransaction.recentBlockhash;
   }
 
   /**

@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
@@ -8,6 +10,9 @@ import { WalletInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
+  private _nonceAddress: string;
+  private _amount: string;
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -15,46 +20,66 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     return TransactionType.WalletInitialization;
   }
 
+  /** @inheritDoc */
+  initBuilder(tx: Transaction): void {
+    super.initBuilder(tx);
+
+    for (const instruction of this._instructionsData) {
+      if (instruction.type === InstructionBuilderTypes.CreateNonceAccount) {
+        const walletInitInstruction: WalletInit = instruction;
+
+        this.address(walletInitInstruction.params.nonceAddress);
+        this.amount(walletInitInstruction.params.amount);
+        this.sender(walletInitInstruction.params.authAddress);
+      }
+    }
+  }
+
   /**
-   *  Creates a nonce account for an address
+   * Sets the amount to fund the nonce account
    *
-   * @param {string} nonceAddress - the nonce address to be created
-   * @param {string} authAddress - the address whos gonna own the nonce
-   * @param {string} amount - the amount sent to cover the rent of the nonce address
-   * @returns {TransactionBuilder} This transaction builder
+   * @param amount amount in lamports to fund the nonce account
    */
-  walletInit(nonceAddress: string, authAddress: string, amount: string): this {
-    if (!nonceAddress || !isValidPublicKey(nonceAddress)) {
-      throw new BuildTransactionError('Invalid or missing nonceAddress, got: ' + nonceAddress);
-    }
-    if (!authAddress || !isValidPublicKey(authAddress)) {
-      throw new BuildTransactionError('Invalid or missing authAddress, got: ' + authAddress);
-    }
-    if (authAddress === nonceAddress) {
-      throw new BuildTransactionError('nonceAddress cant be equal to fromAddress');
-    }
+  amount(amount: string): this {
     if (!amount || !isValidAmount(amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + amount);
     }
-    if (this._instructionsData.some((instruction) => instruction.type === InstructionBuilderTypes.CreateNonceAccount)) {
-      throw new BuildTransactionError('Cannot use walletInit method more than once');
+
+    this._amount = amount;
+    return this;
+  }
+
+  /**
+   * Sets the address for the nonce account
+   * @param nonceAddress address of the new nonce account
+   */
+  address(nonceAddress: string): this {
+    if (!nonceAddress || !isValidPublicKey(nonceAddress)) {
+      throw new BuildTransactionError('Invalid or missing nonceAddress, got: ' + nonceAddress);
     }
 
-    const walletInitData: WalletInit = {
-      type: InstructionBuilderTypes.CreateNonceAccount,
-      params: {
-        fromAddress: authAddress,
-        nonceAddress,
-        authAddress,
-        amount,
-      },
-    };
-    this._instructionsData.push(walletInitData);
+    this._nonceAddress = nonceAddress;
+
     return this;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    assert(this._sender, 'Sender must be set before building the transaction');
+    assert(this._amount, 'Amount must be set before building the transaction');
+    assert(this._nonceAddress, 'Nonce Address must be set before building the transaction');
+
+    const walletInitData: WalletInit = {
+      type: InstructionBuilderTypes.CreateNonceAccount,
+      params: {
+        fromAddress: this._sender,
+        nonceAddress: this._nonceAddress,
+        authAddress: this._sender,
+        amount: this._amount,
+      },
+    };
+    this._instructionsData = [walletInitData];
+
     return await super.buildImplementation();
   }
 }

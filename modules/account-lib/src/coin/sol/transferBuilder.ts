@@ -7,13 +7,38 @@ import { TransactionType } from '../baseCoin';
 import { InstructionBuilderTypes } from './constants';
 import { Transfer } from './iface';
 
+import assert from 'assert';
+
+export interface SendParams {
+  address: string;
+  amount: string;
+}
+
 export class TransferBuilder extends TransactionBuilder {
+  private _sendParams: SendParams[] = [];
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
     return TransactionType.Send;
+  }
+
+  initBuilder(tx: Transaction): void {
+    super.initBuilder(tx);
+
+    for (const instruction of this._instructionsData) {
+      if (instruction.type === InstructionBuilderTypes.Transfer) {
+        const transferInstruction: Transfer = instruction;
+
+        this.sender(transferInstruction.params.fromAddress);
+        this.send({
+          address: transferInstruction.params.toAddress,
+          amount: transferInstruction.params.amount,
+        });
+      }
+    }
   }
 
   /**
@@ -24,27 +49,35 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {string} amount - the amount sent
    * @returns {TransactionBuilder} This transaction builder
    */
-  transfer(fromAddress: string, toAddress: string, amount: string): this {
-    if (!fromAddress || !isValidPublicKey(fromAddress)) {
-      throw new BuildTransactionError('Invalid or missing fromAddress, got: ' + fromAddress);
-    }
-    if (!toAddress || !isValidPublicKey(toAddress)) {
-      throw new BuildTransactionError('Invalid or missing toAddress, got: ' + toAddress);
+  send({ address, amount }: SendParams): this {
+    if (!address || !isValidPublicKey(address)) {
+      throw new BuildTransactionError('Invalid or missing address, got: ' + address);
     }
     if (!amount || !isValidAmount(amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + amount);
     }
 
-    const transferData: Transfer = {
-      type: InstructionBuilderTypes.Transfer,
-      params: { fromAddress, toAddress, amount },
-    };
-    this._instructionsData.push(transferData);
+    this._sendParams.push({ address, amount });
+
     return this;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    assert(this._sender, 'Sender must be set before building the transaction');
+
+    const transferData = this._sendParams.map((sendParams: SendParams): Transfer => {
+      return {
+        type: InstructionBuilderTypes.Transfer,
+        params: {
+          fromAddress: this._sender,
+          toAddress: sendParams.address,
+          amount: sendParams.amount,
+        },
+      };
+    });
+    this._instructionsData = transferData;
+
     return await super.buildImplementation();
   }
 }

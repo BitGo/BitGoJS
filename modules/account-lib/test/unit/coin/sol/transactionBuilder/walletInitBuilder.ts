@@ -9,7 +9,7 @@ describe('Sol Wallet Initialization Builder', () => {
   const walletInitBuilder = () => {
     const txBuilder = factory.getWalletInitializationBuilder();
     txBuilder.nonce(recentBlockHash);
-    txBuilder.feePayer(authAccount.pub);
+    txBuilder.sender(authAccount.pub);
     return txBuilder;
   };
 
@@ -24,7 +24,9 @@ describe('Sol Wallet Initialization Builder', () => {
     describe('Succeed', () => {
       it('build a wallet init tx unsigned', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         const tx = await txBuilder.build();
         tx.inputs.length.should.equal(1);
         tx.inputs[0].should.deepEqual({
@@ -40,7 +42,9 @@ describe('Sol Wallet Initialization Builder', () => {
 
       it('build a wallet init tx unsigned with memo', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.memo('test memo please ignore');
         const tx = await txBuilder.build();
         tx.inputs.length.should.equal(1);
@@ -57,7 +61,9 @@ describe('Sol Wallet Initialization Builder', () => {
 
       it('build a wallet init tx unsigned with amount 0', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, '0');
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount('0');
         const tx = await txBuilder.build();
         tx.inputs.length.should.equal(1);
         tx.inputs[0].should.deepEqual({
@@ -73,7 +79,9 @@ describe('Sol Wallet Initialization Builder', () => {
 
       it('build a wallet init tx and sign it', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.sign({ key: authAccount.prv });
         txBuilder.sign({ key: nonceAccount.prv });
         const tx = await txBuilder.build();
@@ -91,7 +99,9 @@ describe('Sol Wallet Initialization Builder', () => {
 
       it('build a wallet init tx with memo and sign it', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.memo('test memo please ignore');
         txBuilder.sign({ key: authAccount.prv });
         txBuilder.sign({ key: nonceAccount.prv });
@@ -110,7 +120,9 @@ describe('Sol Wallet Initialization Builder', () => {
 
       it('build a wallet init tx with zero amount and sign it', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, '0');
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount('0');
         txBuilder.sign({ key: authAccount.prv });
         txBuilder.sign({ key: nonceAccount.prv });
         const tx = await txBuilder.build();
@@ -129,75 +141,41 @@ describe('Sol Wallet Initialization Builder', () => {
     describe('Fail', () => {
       it('for invalid nonceAddress', () => {
         const txBuilder = walletInitBuilder();
-        should(() => txBuilder.walletInit(invalidPubKey, authAccount.pub, amount)).throwError(
+        should(() => txBuilder.address(invalidPubKey)).throwError(
           'Invalid or missing nonceAddress, got: ' + invalidPubKey,
-        );
-      });
-
-      it('for invalid authAddress', () => {
-        const txBuilder = walletInitBuilder();
-        should(() => txBuilder.walletInit(nonceAccount.pub, invalidPubKey, amount)).throwError(
-          'Invalid or missing authAddress, got: ' + invalidPubKey,
-        );
-      });
-
-      it('build a wallet init tx when the nonceAddress is equal to the fromAddress', () => {
-        const txBuilder = walletInitBuilder();
-        should(() => txBuilder.walletInit(authAccount.pub, authAccount.pub, amount)).throwError(
-          'nonceAddress cant be equal to fromAddress',
         );
       });
 
       it('build a wallet init tx when amount is invalid', () => {
         const txBuilder = walletInitBuilder();
-        should(() => txBuilder.walletInit(nonceAccount.pub, authAccount.pub, 'randomstring')).throwError(
-          'Invalid or missing amount, got: randomstring',
-        );
+        should(() => txBuilder.amount('randomstring')).throwError('Invalid or missing amount, got: randomstring');
       });
 
       it('build a wallet init tx and sign with an incorrect account', async () => {
         const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.sign({ key: wrongAccount.prv });
         await txBuilder.build().should.rejectedWith('unknown signer: CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S');
       });
 
       it('build when nonce is not provided', async () => {
         const txBuilder = factory.getWalletInitializationBuilder();
-        txBuilder.feePayer(authAccount.pub);
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.sender(authAccount.pub);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.sign({ key: authAccount.prv });
         await txBuilder.build().should.rejectedWith('Invalid transaction: missing nonce blockhash');
       });
 
-      it('build when feePayer is not provided', async () => {
+      it('build when sender is not provided', async () => {
         const txBuilder = factory.getWalletInitializationBuilder();
         txBuilder.nonce(recentBlockHash);
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
+        txBuilder.address(nonceAccount.pub);
+        txBuilder.amount(amount);
         txBuilder.sign({ key: authAccount.prv });
-        await txBuilder.build().should.rejectedWith('Invalid transaction: missing feePayer');
-      });
-
-      it('to use wallet Init method more than once', async () => {
-        const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
-        should(() => txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount)).throwError(
-          'Cannot use walletInit method more than once',
-        );
-      });
-
-      it('to add memo without other operation', async () => {
-        const txBuilder = walletInitBuilder();
-        should(() => txBuilder.memo('test memo please ignore')).throwError(
-          'Cannot use memo before adding other operation',
-        );
-      });
-
-      it('to add a second memo', async () => {
-        const txBuilder = walletInitBuilder();
-        txBuilder.walletInit(nonceAccount.pub, authAccount.pub, amount);
-        txBuilder.memo('test memo please ignore');
-        should(() => txBuilder.memo('second memo')).throwError('Only 1 memo is allowed');
+        await txBuilder.build().should.rejectedWith('Invalid transaction: missing sender');
       });
 
       it('to sign twice with the same key', () => {
