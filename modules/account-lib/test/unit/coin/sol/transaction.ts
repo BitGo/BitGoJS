@@ -25,6 +25,7 @@ describe('Sol Transaction', () => {
     it('succeed for a unsigned transfer tx', () => {
       const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
+      tx.signature.should.be.empty();
       const txJson = tx.toJson();
       txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData']);
       txJson.id?.should.equal(undefined);
@@ -65,6 +66,9 @@ describe('Sol Transaction', () => {
       txJson.id?.should.equal(
         '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
       );
+      tx.signature.should.deepEqual([
+        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
+      ]);
       txJson.feePayer?.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
       txJson.numSignatures.should.equal(1);

@@ -4,7 +4,7 @@ import { InvalidTransactionError, ParseTransactionError, SigningError } from '..
 import { Blockhash, PublicKey, Signer, Transaction as SolTransaction } from '@solana/web3.js';
 import { TxData } from './iface';
 import base58 from 'bs58';
-import { countNotNullSignatures, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
@@ -32,6 +32,19 @@ export class Transaction extends BaseTransaction {
 
   get id(): string {
     return this._id as string;
+  }
+
+  /** @inheritDoc */
+  get signature(): string[] {
+    const signatures: string[] = [];
+
+    for (const solSignature of this._solTransaction.signatures) {
+      if (solSignature.signature) {
+        signatures.push(base58.encode(solSignature.signature));
+      }
+    }
+
+    return signatures;
   }
 
   /**
@@ -131,7 +144,7 @@ export class Transaction extends BaseTransaction {
       id: this.id,
       feePayer: this._solTransaction.feePayer?.toString(),
       nonce: this.getNonce(),
-      numSignatures: countNotNullSignatures(this._solTransaction.signatures),
+      numSignatures: this.signature.length,
       instructionsData: instructionParamsFactory(this._type, this._solTransaction.instructions),
     };
     return result;
