@@ -16,7 +16,7 @@ import {
   BackupKeyRecoveryTransansaction,
   FormattedOfflineVaultTxInfo,
 } from '../../../../../../src/v2/coins/utxo/recovery/backupKeyRecovery';
-import { WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
+import { toOutput, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { CoingeckoApi } from '../../../../../../src/v2/coins/utxo/recovery/coingeckoApi';
 
 import {
@@ -111,11 +111,6 @@ function run(
     return;
   }
 
-  if (scriptType === 'p2tr') {
-    // FIXME(BG-39171): add p2tr support
-    return;
-  }
-
   describe(`Backup Key Recovery [${[coin.getChain(), ...tags].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
@@ -180,11 +175,12 @@ function run(
       rootKey: bip32.BIP32Interface,
       expectCount: number
     ) {
+      const prevOutputs = recoverUnspents.map((u) => toOutput(u, coin.network));
       tx.ins.forEach((input, inputIndex) => {
         const unspent = recoverUnspents[inputIndex] as WalletUnspent;
         const { publicKey } = rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index));
         const signatures = utxolib.bitgo
-          .getSignatureVerifications(tx, inputIndex, unspent.value, { publicKey })
+          .getSignatureVerifications(tx, inputIndex, unspent.value, { publicKey }, prevOutputs)
           .filter((s) => s.signedBy !== undefined);
         signatures.length.should.eql(expectCount);
       });

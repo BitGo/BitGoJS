@@ -313,7 +313,13 @@ export async function backupKeyRecovery(
 
   unspents.forEach((unspent) => {
     const { txid, vout } = parseOutputId(unspent.id);
-    transactionBuilder.addInput(txid, vout, 0xffffffff, utxolib.address.toOutputScript(unspent.address, coin.network));
+    transactionBuilder.addInput(
+      txid,
+      vout,
+      0xffffffff,
+      utxolib.address.toOutputScript(unspent.address, coin.network),
+      unspent.value
+    );
   });
 
   let recoveryAmount = totalInputAmount - approximateFee;
