@@ -1,14 +1,15 @@
+import BigNumber from 'bignumber.js';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { Blockhash, PublicKey, Signer, Transaction as SolTransaction } from '@solana/web3.js';
-import { TxData } from './iface';
+import { Memo, Transfer, TransactionExplanation, TxData, WalletInit, Nonce, DurableNonceParams } from './iface';
 import base58 from 'bs58';
 import { countNotNullSignatures, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
-import { Entry } from '../baseCoin/iface';
+import { Entry, TransactionRecipient } from '../baseCoin/iface';
 
 export class Transaction extends BaseTransaction {
   private _solTransaction: SolTransaction;
@@ -187,5 +188,76 @@ export class Transaction extends BaseTransaction {
     }
     this._outputs = outputs;
     this._inputs = inputs;
+  }
+
+  /** @inheritDoc */
+  explainTransaction(): TransactionExplanation {
+    const decodedInstructions = instructionParamsFactory(this._type, this._solTransaction.instructions);
+
+    let memo: string | undefined = undefined;
+    let durableNonce: DurableNonceParams | undefined = undefined;
+
+    let outputAmount = new BigNumber(0);
+    const outputs: TransactionRecipient[] = [];
+
+    for (const instruction of decodedInstructions) {
+      switch (instruction.type) {
+        case InstructionBuilderTypes.NonceAdvance:
+          durableNonce = (instruction as Nonce).params;
+          break;
+        case InstructionBuilderTypes.Memo:
+          memo = (instruction as Memo).params.memo;
+          break;
+        case InstructionBuilderTypes.Transfer:
+          const transferInstruction = instruction as Transfer;
+          outputs.push({
+            address: transferInstruction.params.toAddress,
+            amount: transferInstruction.params.amount,
+          });
+          outputAmount = outputAmount.plus(transferInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.CreateNonceAccount:
+          const createInstruction = instruction as WalletInit;
+          outputs.push({
+            address: createInstruction.params.nonceAddress,
+            amount: createInstruction.params.amount,
+          });
+          outputAmount = outputAmount.plus(createInstruction.params.amount);
+          break;
+        default:
+          continue;
+      }
+    }
+
+    const explainedTransaction = {
+      displayOrder: [
+        'id',
+        'type',
+        'blockhash',
+        'durableNonce',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'memo',
+      ],
+      // TODO (STLX-8791): Need to figure out what id to use for unsigned transactions.
+      id: this.id || 'undefined',
+      type: TransactionType[this.type].toString(),
+      changeOutputs: [],
+      changeAmount: '0',
+      outputAmount: outputAmount.toFixed(0),
+      outputs: outputs,
+      fee: {
+        // TODO(STLX-8791): need to figure out how to get fee information.
+        fee: '0',
+      },
+      memo: memo,
+      blockhash: this.getNonce(),
+      durableNonce: durableNonce,
+    };
+
+    return explainedTransaction;
   }
 }

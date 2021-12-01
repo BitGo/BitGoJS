@@ -2,8 +2,9 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/sol/transaction';
 import * as testData from '../../../resources/sol/sol';
-import { KeyPair } from '../../../../src/coin/sol';
+import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/sol';
 import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import { register } from '../../../../src';
 
 describe('Sol Transaction', () => {
   const coin = coins.get('tsol');
@@ -204,6 +205,233 @@ describe('Sol Transaction', () => {
       const keypair = new KeyPair({ prv: testData.accountWithSeed.privateKey.base58 });
       await tx.sign(keypair);
       should.equal(tx.toBroadcastFormat(), testData.RAW_TX_SIGNED);
+    });
+  });
+
+  describe('explain transaction', function () {
+    const factory = register('tsol', TransactionBuilderFactory);
+    const blockHash = testData.blockHashes.validBlockHashes[0];
+    const sender = testData.authAccount.pub;
+    const address = testData.addresses.validAddresses[0];
+    const amount = '10000';
+
+    it('should explain single transfer transaction', async function () {
+      const tx = await factory.getTransferBuilder().nonce(blockHash).sender(sender).send({ address, amount }).build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'undefined',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '0',
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain single transfer with durable nonce transaction', async function () {
+      const tx = await factory
+        .getTransferBuilder()
+        .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
+        .sender(sender)
+        .send({ address, amount })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'undefined',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '0',
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain multi transfer with durable nonce and memo transaction', async function () {
+      const tx = await factory
+        .getTransferBuilder()
+        .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
+        .sender(sender)
+        .memo('memo text')
+        .send({ address, amount })
+        .send({ address: testData.addresses.validAddresses[1], amount })
+        .send({ address: testData.addresses.validAddresses[2], amount })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'undefined',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '30000',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+          },
+          {
+            address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
+            amount: '10000',
+          },
+          {
+            address: '2n2xqWM9Z18LqxfJzkNrMMFWiDUFYA2k6WSgSnf6EnJs',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '0',
+        },
+        memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain wallet init transaction', async function () {
+      const tx = await factory
+        .getWalletInitializationBuilder()
+        .sender(sender)
+        .nonce(blockHash)
+        .address(testData.addresses.validAddresses[1])
+        .amount(amount)
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'undefined',
+        type: 'WalletInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '0',
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain wallet init with durable nonce and memo transaction', async function () {
+      const tx = await factory
+        .getWalletInitializationBuilder()
+        .sender(sender)
+        .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
+        .memo('memo text')
+        .address(testData.addresses.validAddresses[1])
+        .amount(amount)
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'undefined',
+        type: 'WalletInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '0',
+        },
+        memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
     });
   });
 });
