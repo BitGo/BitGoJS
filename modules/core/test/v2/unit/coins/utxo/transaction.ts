@@ -22,15 +22,11 @@ import {
   transactionToObj,
   transactionHexToObj,
   createPrebuildTransaction,
-  deriveKey,
 } from './util';
 
-import {
-  FullySignedTransaction,
-  HalfSignedUtxoTransaction,
-  Keychain,
-  WalletSignTransactionOptions,
-} from '../../../../../src';
+import { FullySignedTransaction, HalfSignedUtxoTransaction, WalletSignTransactionOptions } from '../../../../../src';
+
+import { deriveKey } from '../../../../../src/v2/coins/utxo/sign';
 
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {
@@ -50,51 +46,41 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     function getSignParams(
       prebuildHex: string,
-      privateKey: bip32.BIP32Interface,
+      signer: bip32.BIP32Interface,
       cosigner: bip32.BIP32Interface
     ): WalletSignTransactionOptions {
       const txInfo = {
         unspents: getUnspents(),
       };
-      const [userKeychain, backupKeychain, bitgoKeychain] = keychains.map((k) => ({
-        pub: k.neutered().toBase58(),
-      })) as Keychain[];
-
-      const taprootRedeemIndex = cosigner === keychains[1] ? 1 : cosigner === keychains[2] ? 0 : undefined;
-
-      if (taprootRedeemIndex === undefined) {
-        throw new Error(`could not determine taprootRedeemIndex`);
-      }
-
       return {
         txPrebuild: {
           txHex: prebuildHex,
           txInfo,
         },
-        prv: privateKey.toBase58(),
-        userKeychain,
-        backupKeychain,
-        bitgoKeychain,
-        taprootRedeemIndex,
+        prv: signer.toBase58(),
+        pubs: keychains.map((k) => k.neutered().toBase58()),
+        cosignerPub: cosigner.neutered().toBase58(),
       };
     }
 
     function createHalfSignedTransaction(
       prebuild: utxolib.bitgo.UtxoTransaction,
+      signer: bip32.BIP32Interface,
       cosigner: bip32.BIP32Interface
     ): Promise<HalfSignedUtxoTransaction> {
       // half-sign with the user key
       return wallet.signTransaction(
-        getSignParams(prebuild.toBuffer().toString('hex'), keychains[0], cosigner)
+        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner)
       ) as Promise<HalfSignedUtxoTransaction>;
     }
 
     async function createFullSignedTransaction(
       halfSigned: HalfSignedUtxoTransaction,
-      privateKey: bip32.BIP32Interface
+      signer: bip32.BIP32Interface,
+      cosigner: bip32.BIP32Interface
     ): Promise<FullySignedTransaction> {
       return (await wallet.signTransaction({
-        ...getSignParams(halfSigned.txHex, privateKey, privateKey),
+        ...getSignParams(halfSigned.txHex, signer, cosigner),
         isLastSignature: true,
       })) as FullySignedTransaction;
     }
@@ -111,13 +97,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     async function getTransactionStages(): Promise<TransactionStages> {
       const prebuild = createPrebuildTransaction(coin.network, getUnspents(), getOutputAddress());
-      const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, keychains[1]);
-      const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, keychains[2]);
+      const halfSignedUserBackup = await createHalfSignedTransaction(prebuild, keychains[0], keychains[1]);
       const fullSignedUserBackup = fullSign
-        ? await createFullSignedTransaction(halfSignedUserBackup, keychains[1])
+        ? await createFullSignedTransaction(halfSignedUserBackup, keychains[1], keychains[0])
         : undefined;
+      const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, keychains[0], keychains[2]);
       const fullSignedUserBitGo = fullSign
-        ? await createFullSignedTransaction(halfSignedUserBitGo, keychains[2])
+        ? await createFullSignedTransaction(halfSignedUserBitGo, keychains[2], keychains[0])
         : undefined;
 
       return {

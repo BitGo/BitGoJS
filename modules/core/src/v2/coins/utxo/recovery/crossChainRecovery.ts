@@ -3,10 +3,11 @@
  */
 import * as _ from 'lodash';
 import * as request from 'superagent';
-import { VirtualSizes } from '@bitgo/unspents';
-import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+
+import * as utxolib from '@bitgo/utxo-lib';
+import { VirtualSizes } from '@bitgo/unspents';
 
 import { NodeCallback } from '../../../types';
 import { BitGo } from '../../../../bitgo';
@@ -16,6 +17,7 @@ import { Wallet } from '../../../wallet';
 
 import { PublicUnspent } from '../unspent';
 import { BaseCoin } from '../../../baseCoin';
+import { Keychain, Triple } from '../../../keychains';
 
 export interface ExplorerTxInfo {
   input: { address: string }[];
@@ -173,7 +175,7 @@ export class CrossChainRecoveryTool {
   }
 
   /**
-   * Sets the wallet ID of the recoveryCoin wallet. This is needed to find the private keys to sign the transaction.
+   * Sets the wallet ID of the recoveryCoin wallet. This is needed to find the private key to sign the transaction.
    * @param walletId {String} wallet ID
    * @param callback
    */
@@ -517,18 +519,37 @@ export class CrossChainRecoveryTool {
 
       const transactionHex = self.recoveryTx.buildIncomplete().toHex();
 
-      const prv = params.prv ? params.prv : params.passphrase ? yield self.getKeys(params.passphrase) : undefined;
+      const prv = params.prv ? params.prv : params.passphrase ? yield self.getXprv(params.passphrase) : undefined;
       if (!prv) {
         throw new Error(`must provide prv or passphrase`);
       }
+      const pubs: Triple<string> = yield self.getXpubs();
 
       const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
-      self.halfSignedRecoveryTx = yield self.sourceCoin.signTransaction({ txPrebuild, prv });
+      self.halfSignedRecoveryTx = yield self.sourceCoin.signTransaction({
+        txPrebuild,
+        prv,
+        pubs,
+        cosignerPub: pubs[2],
+      });
 
       return self.halfSignedRecoveryTx;
     })
       .call(this)
       .asCallback(callback);
+  }
+
+  async getXpubs(): Promise<Triple<string>> {
+    if (this.wallet.isV1) {
+      return this.wallet.keychains.map((k) => k.xpub);
+    }
+    const keychains = (await this.recoveryCoin
+      .keychains()
+      .getKeysForSigning({ wallet: this.wallet })) as unknown as Keychain[];
+    if (keychains.length !== 3) {
+      throw new Error(`expected triple got ${keychains.length}`);
+    }
+    return keychains.map((k) => k.pub) as Triple<string>;
   }
 
   /**
@@ -537,9 +558,9 @@ export class CrossChainRecoveryTool {
    * @param callback
    * @returns {String} decrypted wallet private key
    */
-  getKeys(passphrase: string, callback?: NodeCallback<string>): Bluebird<string> {
+  getXprv(passphrase: string, callback?: NodeCallback<string>): Bluebird<string> {
     const self = this;
-    return co<string>(function* getKeys() {
+    return co<string>(function* getXprv() {
       let prv;
 
       let keychain;
