@@ -44,7 +44,8 @@ import {
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
-import { Keychain, KeyIndices, Triple } from '../keychains';
+import { Keychain, KeyIndices } from '../keychains';
+import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';

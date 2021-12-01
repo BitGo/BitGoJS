@@ -5,7 +5,7 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as debugLib from 'debug';
 
-import { Triple } from '../../keychains';
+import { Triple } from '../../triple';
 import { isReplayProtectionUnspent, toOutput, Unspent, WalletUnspent } from './unspent';
 
 const debug = debugLib('bitgo:v2:utxo');
