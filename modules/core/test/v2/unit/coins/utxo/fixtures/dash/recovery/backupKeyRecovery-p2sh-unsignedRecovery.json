@@ -4,24 +4,24 @@
     "unspents": [
       {
         "id": "af3cc2e4eeb25d9ed826b6513b71f1886f5eedf8801f63496317bb0315a46593:1",
-        "chain": 1,
-        "index": 0,
         "address": "7YZ2BWqzPfj1zeh5JPCMZW1Gcaamj6AKG6",
-        "value": 100000000
+        "value": 100000000,
+        "chain": 1,
+        "index": 0
       },
       {
         "id": "2a6890b46672658eeafd69e66ac8d90684ac215f64a3c9a5464735d625cee1af:1",
-        "chain": 1,
-        "index": 2,
         "address": "7YDQ5f3eWvvTTnnZaxiQvKLPecdv1A4QLF",
-        "value": 200000000
+        "value": 200000000,
+        "chain": 1,
+        "index": 2
       },
       {
         "id": "9fe15864c040c64d4cd63c70f035fd35fb3a26f4918a15249a590099dc4eec67:1",
-        "chain": 1,
-        "index": 3,
         "address": "7Sn4BZWcq1at4bsEkE9pEJVyRVRk2qo5ay",
-        "value": 300000000
+        "value": 300000000,
+        "chain": 1,
+        "index": 3
       }
     ]
   },

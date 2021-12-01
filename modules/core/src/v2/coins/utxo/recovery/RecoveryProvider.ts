@@ -2,16 +2,7 @@ import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
 import { ApiNotImplementedError } from './baseApi';
-
-/**
- * An unspent with bear minimum information required for recoveries.
- */
-export interface RecoveryUnspent {
-  amount: number,
-  n: number,
-  txid: string,
-  address: string,
-}
+import { PublicUnspent } from '../unspent';
 
 /**
  * An account with bear minimum information required for recoveries.
@@ -26,7 +17,7 @@ export interface RecoveryAccountData {
  */
 export abstract class RecoveryProvider {
   abstract getAccountInfo(address: string): Promise<RecoveryAccountData>
-  abstract getUnspents(address: string): Promise<RecoveryUnspent[]>;
+  abstract getUnspents(address: string): Promise<PublicUnspent[]>;
 
   static forCoin(coinName: string, apiKey?: string): RecoveryProvider {
     switch (coinName) {

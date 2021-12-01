@@ -1,8 +1,9 @@
 /**
  * @prettier
  */
-import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
+import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
+import { formatOutputId, PublicUnspent } from '../unspent';
 
 // https://github.com/Blockstream/esplora/blob/master/API.md#get-addressaddress
 type EsploraAddressStats = {
@@ -54,16 +55,15 @@ export class BlockstreamApi extends BaseApi implements RecoveryProvider {
   }
 
   /** @inheritDoc */
-  async getUnspents(address: string): Promise<RecoveryUnspent[]> {
+  async getUnspents(address: string): Promise<PublicUnspent[]> {
     const res = await this.get<EsploraUnspent[]>(`/address/${address}/utxo`);
 
     return res.map((unspents) => {
       return unspents.map((unspent) => {
         return {
-          amount: unspent.value,
-          n: unspent.vout,
-          txid: unspent.txid,
+          id: formatOutputId(unspent.txid, unspent.vout),
           address,
+          value: unspent.value,
         };
       });
     });

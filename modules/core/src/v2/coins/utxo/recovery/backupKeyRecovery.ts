@@ -13,7 +13,7 @@ import * as errors from '../../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 
-import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
+import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
@@ -142,16 +142,14 @@ async function queryBlockchainUnspentsPath(
 
       if (addrInfo.totalBalance > 0) {
         console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`);
-        const addressUnspents: RecoveryUnspent[] = await recoveryProvider.getUnspents(address.address);
+        const addressUnspents = await recoveryProvider.getUnspents(address.address);
 
         walletUnspents.push(
           ...addressUnspents.map(
             (u): WalletUnspent => ({
-              id: `${u.txid}:${u.n}`,
+              ...u,
               chain: chain,
               index: addrIndex,
-              address: u.address,
-              value: u.amount,
             })
           )
         );
