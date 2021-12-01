@@ -3,18 +3,15 @@
  */
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-
-import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
-
-import { getSeed } from '../../../../../lib/keys';
-
-import { keychains, Triple } from './keychains';
-import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
 import { Codes } from '@bitgo/unspents';
 
-export function deriveKey(k: bip32.BIP32Interface, chain: number, index: number): bip32.BIP32Interface {
-  return k.derivePath(`0/0/${chain}/${index}`);
-}
+import { getSeed } from '../../../../../lib/keys';
+import { Triple } from '../../../../../../src';
+import { deriveKey } from '../../../../../../src/v2/coins/utxo/sign';
+import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
+import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
+
+import { keychains } from './keychains';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 

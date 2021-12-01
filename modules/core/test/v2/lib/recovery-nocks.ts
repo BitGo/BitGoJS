@@ -2,22 +2,11 @@
  * @prettier
  */
 import * as nock from 'nock';
-import { Environment, Environments } from '../../../src/v2/environments';
-import { BlockchairApi } from '../../../src/v2/recovery/blockchairApi';
+import { Environments } from '../../../src/v2/environments';
+import { BlockchairApi } from '../../../src/v2/coins/utxo/recovery/blockchairApi';
+import { InsightApi } from '../../../src/v2/coins/utxo/recovery/insightApi';
 const fixtures = require('../../../test/v2/fixtures/coins/recovery');
 const blockchairContext = fixtures.blockchairContext;
-const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
-const btcNonKrsRecoveryDecodedTx = fixtures.btcNonKrsRecoveryDecodedTx;
-
-export function nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline = true) {
-  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
-  const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
-  if (smartbitOnline) {
-    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).reply(200, decodedTx);
-  } else {
-    nock(smartbitBaseUrl).post('/decodetx', { hex: txHex }).socketDelay(10000).replyWithError(503); // "server unavailable"
-  }
-}
 
 export function nockbitcoinFees(fastestFee: number, halfHourFee: number, hourFee: number) {
   nock('https://bitcoinfees.earn.com').get('/api/v1/fees/recommended').reply(200, {
@@ -38,221 +27,6 @@ export function nockCoingecko(usd: number, coinGeckoName: string) {
   body[coinGeckoName] = { usd };
   nock('https://api.coingecko.com').get(`/api/v3/simple/price?ids=${coinGeckoName}&vs_currencies=USD`).reply(200, body);
 }
-
-module.exports.nockBchRecovery = function nockBchRecovery(bitgo, isKrsRecovery) {
-  const env = Environments[bitgo.getEnv()] as Environment;
-  nock(env.bchExplorerBaseUrl)
-    .get('/addr/2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
-    .reply(200, {
-      addrStr: 'pr5ktpkt6verkhadrkw2sddk9lkqmcj4eyqp4uacsj',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 13,
-      totalReceivedSat: 1300000000,
-      totalSent: 13,
-      totalSentSat: 1300000000,
-      unconfirmedBalance: -13,
-      unconfirmedBalanceSat: -1300000000,
-      unconfirmedTxApperances: 0,
-      txApperances: 1,
-      transactions: [
-        'dfa6e8fb31dcbcb4adb36ed247ceb37d32f44335f662b0bb41372a9e9419335a',
-        '6b7e8df8e4d15fa210bb0551646f227888ad63e57e027c7ab360fc3413104cc0',
-      ],
-    })
-    .get('/addr/2NBPjxjd2N7kjRNjfBfh7w1s7w5ZymVhkcr')
-    .reply(200, {
-      addrStr: 'prrsa89uaggdltcmkkemtqykjdsrjz385ggj894ynj',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2NFnu7v18D7wyJXUmtYMpFSmHFDkSLAZ1F3')
-    .reply(200, {
-      addrStr: 'prm4q57nfn9ne0n6xkefmcrg09yn3zgy4vuhfurlhx',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2MtWF8gbfSayRXd6MWuT56uyaFf6r4hdfQd')
-    .reply(200, {
-      addrStr: 'pqxu753reys4w2f7qu8h7h8egf02z4xpuuyu0d8pzk',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2MxVL1RiqsG53LgAdgGQHmCmhj38ENbJyPz')
-    .reply(200, {
-      addrStr: 'pqucx734eass2lx3pvnkal78565nkngvggwzj03lvf',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2NDDCZJvJY3F9d7S2xLknj3TeNihVDmACnA')
-    .reply(200, {
-      addrStr: 'prdsql2n3ws7ltmf7nwefw6d9x8kx4r38ca76cgrzr',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2NFwCuA4X6EGsRteak4smhVxDjT4eAszy3x')
-    .reply(200, {
-      addrStr: 'pruwyl6xd873mn8ke204zy5dzsx3w2dlsgrwxhtpvk',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT')
-    .reply(200, {
-      addrStr: 'ppcv48up7qv7r6epdmy5nn3x3hyf9cjec5aglzm6x4',
-      balance: 11.9999439,
-      balanceSat: 1199994390,
-      totalReceived: 11.9999439,
-      totalReceivedSat: 1199994390,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 11.9999439,
-      unconfirmedBalanceSat: 1199994390,
-      unconfirmedTxApperances: 1,
-      txApperances: 1,
-      transactions: ['dfa6e8fb31dcbcb4adb36ed247ceb37d32f44335f662b0bb41372a9e9419335a'],
-    })
-    .get('/addr/2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT/utxo')
-    .reply(200, [
-      {
-        address: 'ppcv48up7qv7r6epdmy5nn3x3hyf9cjec5aglzm6x4',
-        txid: 'dfa6e8fb31dcbcb4adb36ed247ceb37d32f44335f662b0bb41372a9e9419335a',
-        vout: 0,
-        scriptPubKey: 'a91470ca9f81f019e1eb216ec949ce268dc892e259c587',
-        amount: 11.9999439,
-        satoshis: 1199994390,
-        confirmations: 0,
-      },
-    ])
-    .get('/addr/2N2pAxcYMVDkx2Di3wUWjY38TH6YcpR25Wq')
-    .reply(200, {
-      addrStr: 'pp50g4y68mjs6s2w6ymjgujlkz88dcq0mcepzluwts',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2NCdDSWZvRRVQApYAf1FeyopozfWtLmdBTr')
-    .reply(200, {
-      addrStr: 'pr2fx9t3rfvse6sw9lrsvmmrsurz08wms50h204xtg',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2MuZJzi3CCnKhks9gFaBozD314y7mdBWhtN')
-    .reply(200, {
-      addrStr: 'pqv4h6e4qmaap8whgczs4gc98ky6evcwhudmxm0gec',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2NArEkKFAZYvGQYhDmSaEaqQLiSQkkisG9h')
-    .reply(200, {
-      addrStr: 'prq3j49gl7dwy90fgx9pt29ffea3nye7aufa7vved9',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    })
-    .get('/addr/2N9grcQXvkZuUcH26RKRsuGewRkvXuKZeMz')
-    .reply(200, {
-      addrStr: 'pz6947ukfw0d5ufptll25h805334zfkhdc4agafj2y',
-      balance: 0,
-      balanceSat: 0,
-      totalReceived: 0,
-      totalReceivedSat: 0,
-      totalSent: 0,
-      totalSentSat: 0,
-      unconfirmedBalance: 0,
-      unconfirmedBalanceSat: 0,
-      unconfirmedTxApperances: 0,
-      txApperances: 0,
-    });
-
-  if (isKrsRecovery) {
-    // unnecessary market data removed
-    nock('https://api.coingecko.com')
-      .get('/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=USD')
-      .reply(200, {
-        'bitcoin-cash': {
-          usd: 1000,
-        },
-      });
-  }
-};
 
 module.exports.nockXrpRecovery = function nockXrpRecovery() {
   nock('https://s.altnet.rippletest.net:51234', { allowUnmocked: false })
@@ -659,8 +433,8 @@ module.exports.nockEtherscanRateLimitError = function () {
   nock('https://api-kovan.etherscan.io').get('/api').query(params).reply(200, response);
 };
 
-module.exports.nockLtcRecovery = function (isKrsRecovery) {
-  nock('http://explorer.litecointools.com/api')
+module.exports.nockTltcRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tltc') as string)
     .get('/addr/QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d')
     .reply(200, {
       addrStr: 'QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d',
@@ -924,9 +698,8 @@ module.exports.nockLtcRecovery = function (isKrsRecovery) {
   }
 };
 
-module.exports.nockZecRecovery = function (bitgo, isKrsRecovery) {
-  const env = Environments[bitgo.getEnv()] as Environment;
-  nock(env.zecExplorerBaseUrl)
+module.exports.nockTzecRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tzec') as string)
     .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS')
     .reply(200, {
       addrStr: 't2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS',
@@ -1118,9 +891,8 @@ module.exports.nockZecRecovery = function (bitgo, isKrsRecovery) {
   }
 };
 
-module.exports.nockDashRecovery = function (bitgo, isKrsRecovery) {
-  const env = Environments[bitgo.getEnv()] as Environment;
-  nock(env.dashExplorerBaseUrl)
+module.exports.nockTdashRecovery = function (isKrsRecovery) {
+  nock(InsightApi.baseUrl('tdash') as string)
     .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW')
     .reply(200, {
       addrStr: '8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW',
@@ -1672,7 +1444,7 @@ module.exports.nockEmptyAddressInfo = function (emptyAddrs: Array<string>, env: 
       transactions: [],
       utxo: [],
     };
-    nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+    nock(BlockchairApi.forCoin('btc').baseUrl)
       .get('/dashboards/address/' + addr)
       .reply(200, {
         data: data,
@@ -1695,7 +1467,7 @@ module.exports.nockBtcSegwitRecovery = function (bitgo) {
     '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
   ];
   this.nockEmptyAddressInfo(emptyAddrs, env);
-  nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+  nock(BlockchairApi.forCoin('btc').baseUrl)
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws') // unspent
     .times(2)
     .reply(200, {

@@ -13,12 +13,7 @@ import {
   signInputP2shP2pk,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import {
-  createScriptPubKey,
-  getDefaultCosigner,
-  KeyTriple,
-  TxOutPoint,
-} from './integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey, KeyTriple, TxOutPoint } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import { isTriple } from '../src/bitgo/types';
@@ -82,9 +77,14 @@ export function getPrevOutputs(
   ];
 }
 
+export type HalfSigner = {
+  signer: bip32.BIP32Interface;
+  cosigner?: bip32.BIP32Interface;
+};
+
 export function getTransactionBuilder(
   keys: KeyTriple,
-  signKeys: bip32.BIP32Interface[],
+  halfSigners: HalfSigner[],
   scriptType: ScriptType2Of3 | 'p2shP2pk',
   network: Network,
   {
@@ -108,22 +108,61 @@ export function getTransactionBuilder(
   assert(isTriple(pubkeys));
 
   prevOutputs.forEach(({ value }, vin) => {
-    signKeys.forEach((key) => {
+    halfSigners.forEach(({ signer, cosigner }) => {
       if (scriptType === 'p2shP2pk') {
-        signInputP2shP2pk(txBuilder, vin, key);
+        signInputP2shP2pk(txBuilder, vin, signer);
       } else {
-        signInput2Of3(
-          txBuilder,
-          vin,
-          scriptType as ScriptType2Of3,
-          pubkeys,
-          key,
-          getDefaultCosigner(pubkeys, key.publicKey),
-          value
-        );
+        if (!cosigner) {
+          throw new Error(`must set cosigner`);
+        }
+        signInput2Of3(txBuilder, vin, scriptType as ScriptType2Of3, pubkeys, signer, cosigner.publicKey, value);
       }
     });
   });
 
   return txBuilder;
+}
+
+export function getUnsignedTransaction2Of3(
+  keys: KeyTriple,
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  network: Network
+): UtxoTransaction {
+  return getTransactionBuilder(keys, [], scriptType, network).buildIncomplete();
+}
+
+export function getHalfSignedTransaction2Of3(
+  keys: KeyTriple,
+  signer1: bip32.BIP32Interface,
+  signer2: bip32.BIP32Interface,
+  scriptType: ScriptType2Of3,
+  network: Network
+): UtxoTransaction {
+  return getTransactionBuilder(keys, [{ signer: signer1, cosigner: signer2 }], scriptType, network).buildIncomplete();
+}
+
+export function getFullSignedTransactionP2shP2pk(
+  keys: KeyTriple,
+  signer1: bip32.BIP32Interface,
+  network: Network
+): UtxoTransaction {
+  return getTransactionBuilder(keys, [{ signer: signer1 }], 'p2shP2pk', network).build();
+}
+
+export function getFullSignedTransaction2Of3(
+  keys: KeyTriple,
+  signer1: bip32.BIP32Interface,
+  signer2: bip32.BIP32Interface,
+  scriptType: ScriptType2Of3,
+  network: Network
+): UtxoTransaction {
+  return getTransactionBuilder(
+    keys,
+    [
+      { signer: signer1, cosigner: signer2 },
+      { signer: signer2, cosigner: signer1 },
+    ],
+    scriptType,
+    network
+  ).build();
 }

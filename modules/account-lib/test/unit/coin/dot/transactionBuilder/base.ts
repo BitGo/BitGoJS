@@ -48,8 +48,8 @@ class StubTransactionBuilder extends TransactionBuilder {
     return this._blockNumber;
   }
 
-  getBlockHash(): string {
-    return this._blockHash;
+  getReferenceBlock(): string {
+    return this._referenceBlock;
   }
 
   getSpecVersion(): number {
@@ -145,10 +145,10 @@ describe('Dot Transfer Builder', () => {
     it('should validate tip', () => {
       const spy = sinon.spy(builder, 'validateValue');
       should.throws(
-        () => builder.tip({ amount: -1, type: 'tip' }),
+        () => builder.fee({ amount: -1, type: 'tip' }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
-      should.doesNotThrow(() => builder.tip({ amount: 10, type: 'tip' }));
+      should.doesNotThrow(() => builder.fee({ amount: 10, type: 'tip' }));
       assert.calledTwice(spy);
     });
 
@@ -168,9 +168,9 @@ describe('Dot Transfer Builder', () => {
       builder
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .blockHash('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .tip({ amount: 0, type: 'tip' })
+        .fee({ amount: 0, type: 'tip' })
         .version(7);
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
@@ -192,7 +192,10 @@ describe('Dot Transfer Builder', () => {
 
     it('should build from raw unsigned tx', async () => {
       builder.from(DotResources.rawTx.transfer.unsigned);
-      should.deepEqual(builder.getBlockHash(), '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(
+        builder.getReferenceBlock(),
+        '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',
+      );
       should.deepEqual(builder.getTransactionVersion(), 7);
       should.deepEqual(builder.getNonce(), 200);
       should.deepEqual(builder.getEraPeriod(), 64);

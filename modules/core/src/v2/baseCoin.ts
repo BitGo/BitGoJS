@@ -6,7 +6,6 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
-import * as errors from '../errors';
 import { NodeCallback } from './types';
 import { RequestTracer } from './internal/util';
 const co = Bluebird.coroutine;
@@ -286,6 +285,14 @@ export abstract class BaseCoin {
   }
 
   /**
+   * Use `sendMany()` to perform wallet sweep.
+   * FIXME(BG-39738): add coin.sweepWallet() instead
+   */
+  sweepWithSendMany(): boolean {
+    return false;
+  }
+
+  /**
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
@@ -491,11 +498,6 @@ export abstract class BaseCoin {
    */
   initiateRecovery(params: InitiateRecoveryOptions): never {
     throw new Error('deprecated method');
-  }
-
-  // Some coins can have their tx info verified, if a public tx decoder is available
-  verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
-    return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 
   abstract parseTransaction(

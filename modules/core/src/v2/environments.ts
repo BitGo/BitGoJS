@@ -14,18 +14,10 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
-  blockstreamBaseUrl: string;
-  smartbitBaseUrl: string;
   btcExplorerBaseUrl: string;
-  bchExplorerBaseUrl: string;
-  bsvExplorerBaseUrl?: string;
-  btgExplorerBaseUrl?: string;
   etherscanBaseUrl: string;
   etherscanApiToken?: string;
   eth2ExplorerBaseUrl: string;
-  ltcExplorerBaseUrl: string;
-  zecExplorerBaseUrl: string;
-  dashExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   tronNodes: {
@@ -89,17 +81,10 @@ const mainnetBase: EnvironmentTemplate = {
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
-  blockstreamBaseUrl: 'https://blockstream.info/api',
-  smartbitBaseUrl: 'https://api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/api',
-  bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
-  btgExplorerBaseUrl: 'https://btgexplorer.com/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
-  ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-  zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
-  dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   tronNodes: {
     full: 'https://api.trongrid.io',
@@ -116,16 +101,10 @@ const testnetBase: EnvironmentTemplate = {
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
-  blockstreamBaseUrl: 'https://blockstream.info/testnet/api',
-  smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
-  bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://api-kovan.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
-  ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-  zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
-  dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api',
   // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
   eosNodeUrls: [
     'https://jungle3.cryptolions.io:443',
@@ -176,17 +155,10 @@ export const Environments: Environments = {
   }),
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
-    blockstreamBaseUrl: 'https://blockstream.info.fakeurl/testnet/api',
-    smartbitBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
-    btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
-    bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://api-kovan.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
-    ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.fakeurl/api',
-    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.fakeurl/insight-api',
   }),
   adminProd: Object.assign({}, mainnetBase, {
     uri: 'https://admin.bitgo.com',
@@ -213,39 +185,14 @@ export const Environments: Environments = {
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
-    smartbitBaseUrl:
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://testnet-api.smartbit.com.au/v1'
-        : 'https://api.smartbit.com.au/v1',
-    blockstreamBaseUrl:
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://blockstream.info/testnet/api'
-        : 'https://blockstream.info/api',
     btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://blockstream.info/testnet/api'
         : 'https://blockstream.info/api',
-    bchExplorerBaseUrl:
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://test-bch-insight.bitpay.com/api'
-        : 'https://blockdozer.com/insight-api',
-    btgExplorerBaseUrl: process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? null : 'https://btgexplorer.com/api',
-    ltcExplorerBaseUrl:
-      process.env.BITGO_CUSTOM_LITECOIN_NETWORK !== 'litecoin'
-        ? 'http://explorer.litecointools.com/api'
-        : 'https://insight.litecore.io/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
         ? 'https://api-kovan.etherscan.io'
         : 'https://api.etherscan.io',
-    zecExplorerBaseUrl:
-      process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash'
-        ? 'https://explorer.testnet.z.cash/api'
-        : 'https://zcashnetwork.info/api',
-    dashExplorerBaseUrl:
-      process.env.BITGO_CUSTOM_DASH_NETWORK !== 'dash'
-        ? 'https://testnet-insight.dashevo.org/insight-api'
-        : 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl:
       process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar'
         ? `https://${process.env.BITGO_CUSTOM_ROOT_URI}/api/v2/txlm/federation`

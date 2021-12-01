@@ -46,7 +46,7 @@ const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): utxo.ID
     case UnspentTypeScript2of3.p2wsh:
       return utxo.Dimensions.sum({ nP2wshInputs: 1 });
     case UnspentTypeScript2of3.p2tr:
-      return utxo.Dimensions.sum({ nP2trKeypathInputs: 1 });
+      return utxo.Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
     case UnspentTypeP2shP2pk:
       return utxo.Dimensions.sum({ nP2shP2pkInputs: 1 });
   }

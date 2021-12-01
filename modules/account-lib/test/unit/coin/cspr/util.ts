@@ -76,6 +76,7 @@ describe('CSPR util library', function () {
       const validAddresses = [
         '0203DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3',
         '020385D724A9A3E7E32BADF40F3279AF5A190CB2CFCAB6639BF532A0069E0E3824D0',
+        '02029E23C8a1EDB0a0c5e78C086A4829611202A5cDEDF8aBeC45C72bA8e46f8A79e4',
         '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa', // ed25519
       ];
 
@@ -132,6 +133,31 @@ describe('CSPR util library', function () {
 
       for (const address of validAddresses) {
         Utils.isValidAddressWithPaymentId(address).should.be.true();
+      }
+    });
+
+    it('should validate hex strings', function () {
+      const validAddresses = [
+        '02029E23C8a1EDB0a0c5e78C086A4829611202A5cDEDF8aBeC45C72bA8e46f8A79e4', // mixed cased
+        '020385D724A9A3E7E32BADF40F3279AF5A190CB2CFCAB6639BF532A0069E0E3824D0', // uppercase
+        '020385d724a9a3e7e32badf40f3279af5a190cb2cfcab6639bf532a0069e0e3824d0', // lowercase
+        '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa', // ed25519
+      ];
+
+      for (const address of validAddresses) {
+        Utils.isValidHex(address).should.be.true();
+      }
+    });
+
+    it('should fail to validate invalid hex strings', function () {
+      const validAddresses = [
+        '02029E23C8a1EDB0a0c5e78C086A48296112==G5cDEDF8aBeC45C72bA8e46f8A79e4',
+        '020385D724A9A3E7E32BADF40F3279AF5A190CB2HCFCAB6639BF532A0==9E0E3824D0',
+        '020385d724a9a3e7e32badf40f327tfcab6639bf532a0069e0e3824d0',
+      ];
+
+      for (const address of validAddresses) {
+        Utils.isValidHex(address).should.be.false();
       }
     });
   });

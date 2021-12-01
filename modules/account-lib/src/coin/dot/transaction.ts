@@ -98,7 +98,7 @@ export class Transaction extends BaseTransaction {
 
     const result: TxData = {
       sender: decodedTx.address,
-      blockHash: decodedTx.blockHash,
+      referenceBlock: decodedTx.blockHash,
       blockNumber: decodedTx.blockNumber,
       genesisHash: decodedTx.genesisHash,
       metadataRpc: decodedTx.metadataRpc,
@@ -236,15 +236,12 @@ export class Transaction extends BaseTransaction {
     this._dotTransaction = tx;
   }
 
-  getTransaction(): UnsignedTransaction | undefined {
-    return this._dotTransaction;
-  }
-
-  setTransactionType(transactionType: TransactionType): void {
+  /**
+   * Set the transaction type.
+   *
+   * @param {TransactionType} transactionType The transaction type to be set.
+   */
+  transactionType(transactionType: TransactionType): void {
     this._type = transactionType;
-  }
-
-  getTransactionType(): TransactionType | undefined {
-    return this._type;
   }
 }
