@@ -1,18 +1,24 @@
 {
   "inputs": [
     {
-      "chainPath": "/0/0/21/0",
-      "witnessScript": "52210391e76285ad55895309f6fa7db9fb359489daaf235bb4cb50608f9562122af1ab210285ddd6b1e84e37a9f222737d8b80a8a980a193a783b75b9e82d6e239eb52818c2103a13ee160d79d43201ef5e65b6df4e0842de3b640904d049e64daaaa84a306bb853ae",
+      "id": "c134901031c7dc789eb05f6c9000fb8022f684361298db79be0de0c99cffde89:1",
+      "chain": 21,
+      "index": 0,
+      "address": "btg1q5e7nvvypt2qpjxq74zwtry9klsqkcyvcee85anaa3pax7ae207gsgkznkj",
       "value": 100000000
     },
     {
-      "chainPath": "/0/0/21/2",
-      "witnessScript": "5221027db35d325fb6b20e7990d5e5ca33144c270a2b149b4b4158a6e16a090b276f8a2102003243d889cec7c4c55042d6c10091a536eef3894f573759c5d26a727e96f036210257f6aee3214f76ff02748de7d291866642a913b0d346ccc976d6a77d9aa00de253ae",
+      "id": "d19986a8b745892442a2d58b0e7ab9e903966ff433702a35c724cb12209a17e6:1",
+      "chain": 21,
+      "index": 2,
+      "address": "btg1q3v9yjlrzkufgd99d07806262dhqgfjf2zjdx5sfrw8uslnjs2uts6rglj3",
       "value": 200000000
     },
     {
-      "chainPath": "/0/0/21/3",
-      "witnessScript": "522102b587356915a019e64745d1e8b75a9109a762feeec08607e46ec83681a608a90521032edf1b3c4b31a0757e1122d558b6dabebdc0b2a39f040dcd4f89ac3e4d5811a42102da0f05c67ffa785717242a75a2f8635fcc1d767b5d88dd772da0547d287021ff53ae",
+      "id": "7ffd092e5baa2e25c71614607110825f7d1037f205f725e9f27dd5be1447b22f:1",
+      "chain": 21,
+      "index": 3,
+      "address": "btg1qyerx34sx9a2a4zz7w320tuxz3hq84xn0hm6tzr6tek77tsknfg0sysc5ap",
       "value": 300000000
     }
   ],
