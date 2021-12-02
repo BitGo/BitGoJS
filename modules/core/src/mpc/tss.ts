@@ -128,18 +128,14 @@ const Eddsa = async () => {
     uBuffer[31] &= 63;
     uBuffer[31] |= 64;
  
-    // using big endian
     const zeroBuffer32 = Buffer.alloc(32);
-    uBuffer = Buffer.concat([zeroBuffer32, uBuffer]);
-    uBuffer.reverse();
+    uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
     const u = Buffer.from(ed25519.scalarReduce(uBuffer));
     const y = Buffer.from(ed25519.basePointMult(u));
     const split_u = shamir.split(u, threshold, numShares);
  
-    // using big endian
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
-    prefixBuffer.reverse();
     const prefix = Buffer.from(ed25519.scalarReduce(prefixBuffer));
  
     const P_i: PlayerKeyShare = {
