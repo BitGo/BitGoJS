@@ -4,6 +4,30 @@
 import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
 
+// https://explorer.api.bitcoin.com/docs/bch/v1/#/addr/addrGetUtxo
+type InsightUnspent = {
+  address: string;
+  txid: string;
+  vout: number;
+  satoshis: number;
+};
+
+// https://explorer.api.bitcoin.com/docs/bch/v1/#/addr/addr
+export type InsightAddr = {
+  addrStr: string;
+  balanceSat: number;
+  txAppearances: number;
+};
+
+// https://explorer.api.bitcoin.com/docs/bch/v1/#/addrs/addrsGetUtxo
+export type InsightAddrUtxo = {
+  txid: string;
+  vout: number;
+  address: string;
+  scriptPubKey: string;
+  satoshis: number;
+};
+
 /**
  * https://explorer.api.bitcoin.com/docs/bch/v1/
  */
@@ -40,23 +64,27 @@ export class InsightApi extends BaseApi implements RecoveryProvider {
   }
 
   async getAccountInfo(addr: string): Promise<RecoveryAccountData> {
-    const res = await this.get<any>(`/addr/${addr}`);
+    const res = await this.get<InsightAddr>(`/addr/${addr}`);
 
     return res.map((body) => {
-      body.txCount = body.txApperances;
-      body.totalBalance = body.balanceSat;
-      return body;
+      return {
+        txCount: body.txAppearances,
+        totalBalance: body.balanceSat,
+      };
     });
   }
 
   async getUnspents(addr: string): Promise<RecoveryUnspent[]> {
-    const res = await this.get<any>(`/addr/${addr}/utxo`);
+    const res = await this.get<InsightUnspent[]>(`/addr/${addr}/utxo`);
     return res.map((body) => {
-      body.forEach((unspent: any) => {
-        unspent.amount = unspent.satoshis;
-        unspent.n = unspent.vout;
-      });
-      return body as RecoveryUnspent[];
+      return body.map(
+        (unspent): RecoveryUnspent => ({
+          txid: unspent.txid,
+          address: unspent.address,
+          amount: unspent.satoshis,
+          n: unspent.vout,
+        })
+      );
     });
   }
 }
