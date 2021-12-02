@@ -79,11 +79,12 @@ export interface TransactionFee {
 export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
+  locktime: number;
   outputs: Output[];
   changeOutputs: Output[];
-  outputAmount: string;
+  outputAmount: number;
   changeAmount: number;
-  fee: TransactionFee;
+  fee: TransactionFee | string;
 
   inputSignatures: number[];
   signatures: number | false;
@@ -1258,12 +1259,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (txInfo && txInfo.changeAddresses) {
       changeAddresses = txInfo.changeAddresses;
     }
-    const explanation: any = {
+    const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
-      outputs: [],
-      changeOutputs: [],
-    };
+      outputs: [] as Output[],
+      changeOutputs: [] as Output[],
+    } as TransactionExplanation;
 
     transaction.outs.forEach((currentOutput) => {
       const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
@@ -1302,7 +1303,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
     // get information on tx inputs
-    const inputSignatures = transaction.ins.map((input, idx) => {
+    const inputSignatures = transaction.ins.map((input, idx): number => {
       if (!txInfo || txInfo.unspents.length !== transaction.ins.length) {
         return 0;
       }
@@ -1321,7 +1322,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     });
 
     explanation.inputSignatures = inputSignatures;
-    explanation.signatures = _.max(inputSignatures);
+    explanation.signatures = _.max(inputSignatures) as number;
     return explanation;
   }
 
