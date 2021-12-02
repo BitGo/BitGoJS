@@ -1,10 +1,10 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { decode, methods } from '@substrate/txwrapper-polkadot';
+import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
+import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
+import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
 import { MethodNames, ProxyArgs, proxyType, TransferArgs } from './iface';
 import { ProxyTransactionSchema, TransferTransactionSchema } from './txnSchema';
@@ -117,12 +117,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    super.validateRawTransaction(rawTransaction);
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
-    });
+  validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction: string): void {
     if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = decodedTxn.method.args as unknown as TransferArgs;
       const amount = `${txMethod.value}`;
@@ -132,12 +127,13 @@ export class TransferBuilder extends TransactionBuilder {
         throw new InvalidTransactionError(`Transfer Transaction validation failed: ${validationResult.error.message}`);
       }
     } else if (decodedTxn.method?.name === MethodNames.Proxy) {
+      const { metadataRpc } = this._coinConfig.network as DotNetwork;
       const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
       const real = txMethod.real;
       const forceProxyType = txMethod.forceProxyType;
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: this._registry,
-        metadataRpc: this._metadataRpc,
+        metadataRpc,
       });
       const amount = `${decodedCall.value}`;
       const to = decodedCall.dest.id;
@@ -150,6 +146,7 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
+    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     const tx = super.fromImplementation(rawTransaction);
     if (this._method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = this._method.args as TransferArgs;
@@ -161,7 +158,7 @@ export class TransferBuilder extends TransactionBuilder {
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: this._registry,
-        metadataRpc: this._metadataRpc,
+        metadataRpc,
       });
       if (!decodedCall.value || !decodedCall.dest) {
         throw new InvalidTransactionError(

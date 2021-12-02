@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { decode, methods } from '@substrate/txwrapper-polkadot';
+import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
+import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
 import { TransactionType } from '../baseCoin';
@@ -93,12 +93,7 @@ export class StakingBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    super.validateRawTransaction(rawTransaction);
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
-      registry: this._registry,
-    });
+  validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
     if (decodedTxn.method?.name === MethodNames.Bond) {
       const txMethod = decodedTxn.method.args as unknown as StakeArgs;
       const value = txMethod.value;

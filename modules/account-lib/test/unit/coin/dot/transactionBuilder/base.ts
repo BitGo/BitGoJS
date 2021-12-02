@@ -1,11 +1,10 @@
 import { BaseCoin as CoinConfig, coins, DotNetwork, PolkadotSpecNameType } from '@bitgo/statics';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
+import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import should from 'should';
 import sinon, { assert } from 'sinon';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
-import { Transaction } from '../../../../../src/coin/dot/transaction';
-import { TransactionBuilder } from '../../../../../src/coin/dot/transactionBuilder';
+import { TransactionBuilder, Transaction } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 
 export interface TestDotNetwork extends DotNetwork {
@@ -32,6 +31,9 @@ export const buildTestConfig = (): Readonly<CoinConfig> => {
 };
 
 class StubTransactionBuilder extends TransactionBuilder {
+  protected validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
+    return;
+  }
   protected buildTransaction(): UnsignedTransaction {
     throw new Error('Method not implemented.');
   }

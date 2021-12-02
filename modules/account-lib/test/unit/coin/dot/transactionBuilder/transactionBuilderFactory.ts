@@ -47,6 +47,7 @@ describe('dot Transaction Builder Factory', () => {
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.transfer.signed);
   });
+
   it('should parse an unsigned add proxy txn and return an Add Proxy builder', async () => {
     const builder = factory.from(rawTx.addProxy.unsigned);
     should(builder).instanceOf(WalletInitializationBuilder);
@@ -82,6 +83,7 @@ describe('dot Transaction Builder Factory', () => {
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.unsigned);
   });
+
   it('should parse a signed proxy txn and return a proxy builder', async () => {
     const builder = factory.from(rawTx.proxy.signed);
     should(builder).instanceOf(TransferBuilder);
@@ -105,6 +107,7 @@ describe('dot Transaction Builder Factory', () => {
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.stake.unsigned);
   });
+
   it('should parse a signed stake txn and return a stake builder', async () => {
     const builder = factory.from(rawTx.stake.signed);
     should(builder).instanceOf(StakingBuilder);
@@ -128,6 +131,7 @@ describe('dot Transaction Builder Factory', () => {
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.unstake.unsigned);
   });
+
   it('should parse a signed unstake txn and return an unstake builder', async () => {
     const builder = factory.from(rawTx.unstake.signed);
     should(builder).instanceOf(UnstakeBuilder);
