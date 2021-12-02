@@ -101,7 +101,7 @@ class Bitcoin extends Mainnet implements UtxoNetwork {
   explorerUrl = 'https://blockstream.info/tx/';
 }
 
-class BitcoinTestnet extends Mainnet implements UtxoNetwork {
+class BitcoinTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinTestnet';
   family = CoinFamily.BTC;
   utxolibName = 'testnet';
