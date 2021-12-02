@@ -48,6 +48,8 @@ export interface VerifiedTransactionParameters {
   signer: string;
 }
 
+const dotUtils = accountLib.Dot.Utils.default;
+
 export class Dot extends BaseCoin {
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -93,7 +95,7 @@ export class Dot extends BaseCoin {
    */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed
-      ? accountLib.Dot.Utils.default.keyPairFromSeed(new Uint8Array(seed))
+      ? dotUtils.keyPairFromSeed(new Uint8Array(seed))
       : new accountLib.Dot.KeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {
@@ -112,7 +114,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Dot.Utils.default.isValidPublicKey(pub);
+    return dotUtils.isValidPublicKey(pub);
   }
 
   /**
@@ -122,7 +124,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Dot.Utils.default.isValidPrivateKey(prv);
+    return dotUtils.isValidPrivateKey(prv);
   }
 
   /**
@@ -132,7 +134,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidAddress(address: string): boolean {
-    return accountLib.Dot.Utils.default.isValidAddress(address);
+    return dotUtils.isValidAddress(address);
   }
 
   /**
@@ -177,10 +179,11 @@ export class Dot extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
+    const pubKey = params.txPrebuild.key;
     // if we are receiving addresses do not try to convert them
-    const signer = !accountLib.Dot.Utils.default.isValidAddress(params.txPrebuild.key)
-      ? new accountLib.Dot.KeyPair({ pub: params.txPrebuild.key }).getAddress()
-      : params.txPrebuild.key;
+    const signer = dotUtils.isValidAddress(pubKey)
+      ? pubKey :
+      new accountLib.Dot.KeyPair({ pub: pubKey }).getAddress();
     return { txHex, addressVersion, prv, signer };
   }
 
@@ -236,7 +239,7 @@ export class Dot extends BaseCoin {
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+    return this.isValidAddress(params.address);
   }
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
