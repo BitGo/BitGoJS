@@ -19,7 +19,7 @@ import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './Recove
 import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
-import { ApiNotImplementedError, ApiRequestError } from './errors';
+import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
@@ -489,8 +489,10 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
       !isKrsRecovery
     ).buildIncomplete();
     txInfo.transactionHex = signedTx.toBuffer().toString('hex');
+
+    let transactionDetails;
     try {
-      txInfo.tx = await SmartbitApi.forCoin(coin.getChain()).verifyRecoveryTransaction(signedTx);
+      transactionDetails = await SmartbitApi.forCoin(coin.getChain()).getTransactionDetails(signedTx);
     } catch (e) {
       // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
       // could be unavailable due to service outage, so we continue without verification for those coins, but we will
@@ -501,6 +503,21 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
       } else {
         throw e;
       }
+    }
+
+    if (transactionDetails) {
+      /**
+       * Verify that the txhex user signs correspond to the correct tx they intended
+       * by 1) getting back the decoded transaction based on the txhex
+       * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
+       * to the txid (hash) of the transaction (including unspent info) we constructed
+       */
+      if (transactionDetails.TxId !== signedTx.getId()) {
+        console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
+        console.log('txhash/txid of the transaction bitgo constructed', signedTx.getId());
+        throw new Error('inconsistent recovery transaction id');
+      }
+      txInfo.tx = transactionDetails;
     }
   }
 

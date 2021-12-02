@@ -1,12 +1,7 @@
-import * as request from 'superagent';
-
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
-import { BlockExplorerUnavailable } from '../../../../errors';
-import { ApiNotImplementedError } from './errors';
+import { ApiNotImplementedError, BaseApi } from './baseApi';
 
-export class BlockstreamApi implements RecoveryProvider {
-  protected readonly baseUrl: string;
-
+export class BlockstreamApi extends BaseApi implements RecoveryProvider {
   static forCoin(coinName: string): BlockstreamApi {
     switch (coinName) {
       case 'btc':
@@ -19,11 +14,7 @@ export class BlockstreamApi implements RecoveryProvider {
   }
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
-  }
-
-  getExplorerUrl(query: string): string {
-    return this.baseUrl + query;
+    super(baseUrl);
   }
 
   /** @inheritDoc */
@@ -47,19 +38,14 @@ export class BlockstreamApi implements RecoveryProvider {
     //       "tx_count":0
     //    }
     // }
-    try {
-      const response = await request.get(this.getExplorerUrl(`/address/${address}`));
-      const totalBalance = response.body.chain_stats.funded_txo_sum - response.body.chain_stats.spent_txo_sum;
+    const response = await this.get<any>(`/address/${address}`);
+    return response.map(body => {
+      const totalBalance = body.chain_stats.funded_txo_sum - body.chain_stats.spent_txo_sum;
       return {
-        txCount: response.body.chain_stats.tx_count,
+        txCount: body.chain_stats.tx_count,
         totalBalance,
       };
-    } catch (e) {
-      let errorMessage = `Failed to get address information for ${address} from ${this.getExplorerUrl('')}`;
-      errorMessage += (e.response.status) ? ` - ${e.response.status}` : '';
-      errorMessage += (e.response.text) ? `: ${e.response.text}` : '';
-      throw new BlockExplorerUnavailable(errorMessage);
-    }
+    });
   }
 
   /** @inheritDoc */
@@ -79,11 +65,10 @@ export class BlockstreamApi implements RecoveryProvider {
     //       "value":1000000
     //    }
     // ]
-    try {
-      const response = await request.get(this.getExplorerUrl(`/address/${address}/utxo`));
-      const rawUnspents = response.body;
+    const res = await this.get<any>(`/address/${address}/utxo`);
 
-      return rawUnspents.map(unspent => {
+    return res.map(unspents => {
+      return unspents.map(unspent => {
         return {
           amount: unspent.value,
           n: unspent.vout,
@@ -91,11 +76,6 @@ export class BlockstreamApi implements RecoveryProvider {
           address,
         };
       });
-    } catch (e) {
-      let errorMessage = `Failed to get unspents information for ${address} from ${this.getExplorerUrl('')}`;
-      errorMessage += (e.response.status) ? ` - ${e.response.status}` : '';
-      errorMessage += (e.response.text) ? `: ${e.response.text}` : '';
-      throw new BlockExplorerUnavailable(errorMessage);
-    }
+    });
   }
 }
