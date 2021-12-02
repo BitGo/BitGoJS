@@ -54,7 +54,7 @@ const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { ReplayProtectionUnspent, Unspent } from './utxo/unspent';
+import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
 import { signAndVerifyWalletTransaction, WalletUnspentSigner } from './utxo/sign';
 
@@ -1299,59 +1299,25 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       explanation.displayOrder.push('locktime');
     }
 
-    const unspentValues = {};
+    const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
     // get information on tx inputs
     const inputSignatures = transaction.ins.map((input, idx) => {
-      const hasSigScript = !_.isEmpty(input.script);
-      const hasWitnessScript = !_.isEmpty(input.witness);
-
-      if (!hasSigScript && !hasWitnessScript) {
-        // no sig script or witness data for this input
-        debug('no signature script or witness script data for input %s', idx);
+      if (!txInfo || txInfo.unspents.length !== transaction.ins.length) {
         return 0;
       }
 
-      let parsedSigScript;
+      if (!prevOutputs) {
+        throw new Error(`invalid state`);
+      }
+
       try {
-        parsedSigScript = utxolib.bitgo.parseSignatureScript(transaction.ins[idx]);
+        return utxolib.bitgo
+          .getSignatureVerifications(transaction, idx, txInfo.unspents[idx].value, {}, prevOutputs)
+          .filter((v) => v.signedBy !== undefined).length;
       } catch (e) {
-        return false;
+        return 0;
       }
-
-      if (hasWitnessScript) {
-        if (!txInfo || !txInfo.unspents) {
-          // segwit txs require input values, cannot validate signatures
-          debug('unable to retrieve input amounts from unspents - cannot validate segwit input signatures');
-          return 0;
-        }
-
-        // lazily populate unspent values
-        if (_.isEmpty(unspentValues)) {
-          txInfo.unspents.forEach((unspent) => {
-            unspentValues[unspent.id] = unspent.value;
-          });
-        }
-      }
-
-      const nonEmptySignatures = parsedSigScript.signatures?.filter((sig) => !_.isEmpty(sig)) ?? [];
-      const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
-        if (_.isEmpty(sig)) {
-          return false;
-        }
-
-        const parentTxId = (Buffer.from(input.hash).reverse() as Buffer).toString('hex');
-        const inputId = `${parentTxId}:${input.index}`;
-        const amount = unspentValues[inputId];
-
-        try {
-          return utxolib.bitgo.verifySignature(transaction, idx, amount, { signatureIndex: sigIndex });
-        } catch (e) {
-          return false;
-        }
-      });
-
-      return validSignatures.reduce((validCount, isValid) => (isValid ? validCount + 1 : validCount), 0);
     });
 
     explanation.inputSignatures = inputSignatures;

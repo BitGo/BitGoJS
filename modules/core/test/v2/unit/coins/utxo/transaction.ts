@@ -221,11 +221,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           'signatures'
         );
 
-        if (inputScripts.some((t) => t === 'p2tr')) {
-          // FIXME(BG-38946): explainTransaction does not work for p2tr yet
-          return;
-        }
-
         switch (coin.getChain()) {
           case 'bch':
           case 'tbch':
