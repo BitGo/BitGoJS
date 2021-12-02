@@ -2,12 +2,10 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import * as request from 'superagent';
 
-import { toBitgoRequest } from '../../../../api';
-import { ApiNotImplementedError, ApiRequestError } from './errors';
+import { ApiNotImplementedError, BaseApi } from './baseApi';
 
-export class MempoolApi {
+export class MempoolApi extends BaseApi {
   static forCoin(coinName: string): MempoolApi {
     switch (coinName) {
       case 'btc':
@@ -18,18 +16,17 @@ export class MempoolApi {
     throw new ApiNotImplementedError(coinName);
   }
 
-  constructor(public baseUrl: string) {}
+  constructor(baseUrl: string) {
+    super(baseUrl);
+  }
 
   async getRecoveryFeePerBytes(): Promise<number> {
-    const recoveryFeeUrl = this.baseUrl + '/fees/recommended';
-
-    const publicFeeDataReq = request.get(recoveryFeeUrl);
-    publicFeeDataReq.forceV1Auth = true;
-    const publicFeeData = await toBitgoRequest(publicFeeDataReq).result();
-    if (publicFeeData && publicFeeData.hourFee && _.isInteger(publicFeeData.hourFee)) {
-      return publicFeeData.hourFee;
-    }
-
-    throw new ApiRequestError(recoveryFeeUrl, 'unexpected response');
+    const res = await this.get<any>('/fees/recommended');
+    return res.map((body) => {
+      if (body.publicFeeData && body.publicFeeData.hourFee && _.isInteger(body.publicFeeData.hourFee)) {
+        return body.publicFeeData.hourFee;
+      }
+      throw new Error('unexpected response');
+    });
   }
 }

@@ -7,13 +7,7 @@ import * as sinon from 'sinon';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as config from '../../../../src/config';
-import {
-  addressInfos,
-  addressUnspents,
-  btcKrsRecoveryDecodedTx,
-  btcNonKrsRecoveryDecodedTx,
-  emptyAddressInfo,
-} from '../../fixtures/coins/recovery';
+import { addressInfos, addressUnspents, emptyAddressInfo } from '../../fixtures/coins/recovery';
 import { FixtureDir } from '../../../lib/fixtures';
 import { BlockchairApi } from '../../../../src/v2/coins/utxo/recovery/blockchairApi';
 import { BlockstreamApi } from '../../../../src/v2/coins/utxo/recovery/blockstreamApi';
@@ -67,7 +61,9 @@ describe('UTXO Recovery', function () {
     });
 
     it('should generate TBTC recovery tx', async function () {
-      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
+      sandbox.stub(SmartbitApi.prototype, 'getTransactionDetails').resolves({
+        TxId: '27b1eb12ef9c43056af922f6bcb4b863b35a3ffea9cae37bcdde4c513a51c57e',
+      });
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:
@@ -85,7 +81,9 @@ describe('UTXO Recovery', function () {
     });
 
     it('should generate TBTC recovery tx with unencrypted keys', async function () {
-      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
+      sandbox.stub(SmartbitApi.prototype, 'getTransactionDetails').resolves({
+        TxId: '27b1eb12ef9c43056af922f6bcb4b863b35a3ffea9cae37bcdde4c513a51c57e',
+      });
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:
@@ -103,7 +101,6 @@ describe('UTXO Recovery', function () {
 
     it('should generate TBTC recovery tx with KRS', async function () {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
-      sandbox.stub(SmartbitApi.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = await basecoin.recover({
         userKey:

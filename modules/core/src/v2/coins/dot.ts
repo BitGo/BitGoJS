@@ -15,6 +15,8 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 
+const co = Bluebird.coroutine;
+
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -27,7 +29,7 @@ export interface TransactionPrebuild {
   validity: {
     firstValid: number;
   };
-  blockHash: string;
+  referenceBlock: string;
   version: number;
 }
 
@@ -45,6 +47,8 @@ export interface VerifiedTransactionParameters {
   prv: string;
   signer: string;
 }
+
+const dotUtils = accountLib.Dot.Utils.default;
 
 export class Dot extends BaseCoin {
   constructor(bitgo: BitGo) {
@@ -91,7 +95,7 @@ export class Dot extends BaseCoin {
    */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed
-      ? accountLib.Dot.Utils.default.keyPairFromSeed(new Uint8Array(seed))
+      ? dotUtils.keyPairFromSeed(new Uint8Array(seed))
       : new accountLib.Dot.KeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {
@@ -110,7 +114,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Dot.Utils.default.isValidPublicKey(pub);
+    return dotUtils.isValidPublicKey(pub);
   }
 
   /**
@@ -120,7 +124,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Dot.Utils.default.isValidPrivateKey(prv);
+    return dotUtils.isValidPrivateKey(prv);
   }
 
   /**
@@ -130,7 +134,7 @@ export class Dot extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidAddress(address: string): boolean {
-    return accountLib.Dot.Utils.default.isValidAddress(address);
+    return dotUtils.isValidAddress(address);
   }
 
   /**
@@ -175,10 +179,11 @@ export class Dot extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
+    const pubKey = params.txPrebuild.key;
     // if we are receiving addresses do not try to convert them
-    const signer = !accountLib.Dot.Utils.default.isValidAddress(params.txPrebuild.key)
-      ? new accountLib.Dot.KeyPair({ pub: params.txPrebuild.key }).getAddress()
-      : params.txPrebuild.key;
+    const signer = dotUtils.isValidAddress(pubKey)
+      ? pubKey :
+      new accountLib.Dot.KeyPair({ pub: pubKey }).getAddress();
     return { txHex, addressVersion, prv, signer };
   }
 
@@ -195,7 +200,26 @@ export class Dot extends BaseCoin {
     params: SignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    throw new MethodNotImplementedError('Dot recovery not implemented');
+    const self = this;
+    return co<SignedTransaction>(function* () {
+      const { txHex, signer, prv } = self.verifySignTransactionParams(params);
+      const factory = accountLib.register(self.getChain(), accountLib.Dot.TransactionBuilderFactory);
+      const txBuilder = factory.from(txHex);
+      txBuilder
+        .validity(params.txPrebuild.validity)
+        .referenceBlock(params.txPrebuild.referenceBlock)
+        .version(params.txPrebuild.version)
+        .sender({ address: signer })
+        .sign({ key: prv });
+      const transaction: any = yield txBuilder.build();
+      if (!transaction) {
+        throw new Error('Invalid transaction');
+      }
+      const signedTxHex = transaction.toBroadcastFormat();
+      return { txHex: signedTxHex };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -215,7 +239,7 @@ export class Dot extends BaseCoin {
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+    return this.isValidAddress(params.address);
   }
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {

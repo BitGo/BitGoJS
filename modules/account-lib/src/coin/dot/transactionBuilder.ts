@@ -22,7 +22,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _blockNumber: number;
   protected _referenceBlock: string;
   protected _genesisHash: string;
-  protected _metadataRpc: string;
   protected _specVersion: number;
   protected _transactionVersion: number;
   protected _specName: PolkadotSpecNameType;
@@ -149,7 +148,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._specVersion = specVersion;
     this._chainName = chainName;
     this._specName = specName;
-    this._metadataRpc = metadataRpc;
     this._registry = getRegistry({
       chainName: chainName,
       specName: specName,
@@ -174,8 +172,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
+    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
+      metadataRpc,
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
     if (this.isSigningPayload(decodedTxn)) {
@@ -211,6 +210,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected createBaseTxInfo(): CreateBaseTxInfo {
+    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     return {
       baseTxInfo: {
         address: this._sender,
@@ -218,14 +218,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         blockNumber: this._registry.createType('BlockNumber', this._blockNumber).toNumber(),
         eraPeriod: this._eraPeriod,
         genesisHash: this._genesisHash,
-        metadataRpc: this._metadataRpc,
+        metadataRpc,
         nonce: this._nonce,
         specVersion: this._specVersion,
         tip: this._tip,
         transactionVersion: this._transactionVersion,
       },
       options: {
-        metadataRpc: this._metadataRpc,
+        metadataRpc,
         registry: this._registry,
       },
     };
@@ -266,10 +266,20 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError(`Key validation failed`);
     }
   }
+
+  /**
+   * Validates the specific transaction builder internally
+   */
+  protected abstract validateDecodedTransaction(
+    decodedTxn: DecodedSigningPayload | DecodedSignedTx,
+    rawTransaction?: string,
+  ): void;
+
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
+    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc: this._metadataRpc,
+      metadataRpc,
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
 
@@ -300,6 +310,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
       }
     }
+
+    this.validateDecodedTransaction(decodedTxn, rawTransaction);
   }
 
   /** @inheritdoc */
@@ -309,7 +321,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._blockNumber,
       this._referenceBlock,
       this._genesisHash,
-      this._metadataRpc,
       this._chainName,
       this._nonce,
       this._specVersion,
@@ -325,7 +336,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     blockNumber: number,
     blockHash: string,
     genesisHash: string,
-    metadataRpc: string,
     chainName: string,
     nonce: number,
     specVersion: number,
@@ -339,7 +349,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       blockNumber,
       blockHash,
       genesisHash,
-      metadataRpc,
       chainName,
       nonce,
       specVersion,

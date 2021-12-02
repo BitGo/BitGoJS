@@ -101,7 +101,6 @@ export class Transaction extends BaseTransaction {
       referenceBlock: decodedTx.blockHash,
       blockNumber: decodedTx.blockNumber,
       genesisHash: decodedTx.genesisHash,
-      metadataRpc: decodedTx.metadataRpc,
       nonce: decodedTx.nonce,
       specVersion: decodedTx.specVersion,
       transactionVersion: decodedTx.transactionVersion,
@@ -116,7 +115,7 @@ export class Transaction extends BaseTransaction {
         const keypairReal = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
         });
-        result.real = keypairReal.getAddress();
+        result.owner = keypairReal.getAddress();
         result.forceProxyType = txMethod.forceProxyType;
         const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
           metadataRpc: this._dotTransaction.metadataRpc,

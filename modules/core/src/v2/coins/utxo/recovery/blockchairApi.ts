@@ -1,10 +1,7 @@
-import * as request from 'superagent';
-
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
-import { ApiNotImplementedError } from './errors';
+import { ApiNotImplementedError, BaseApi, RequestOptions, Response } from './baseApi';
 
-export class BlockchairApi implements RecoveryProvider {
-  public readonly baseUrl: string;
+export class BlockchairApi extends BaseApi implements RecoveryProvider {
   protected readonly apiToken?: string;
 
   static forCoin(coinName: string, apiToken?: string): BlockchairApi {
@@ -48,16 +45,12 @@ export class BlockchairApi implements RecoveryProvider {
   }
 
   constructor(baseUrl: string, apiToken?: string ) {
-    this.baseUrl = baseUrl;
+    super(baseUrl);
     this.apiToken = apiToken;
   }
 
-  /** @inheritdoc */
-  getExplorerUrl(query: string): string {
-    if (this.apiToken) {
-      return this.baseUrl + query + `?key=${this.apiToken}`;
-    }
-    return this.baseUrl + query;
+  request<T>(method: string, path: string, body: unknown, params: RequestOptions): Promise<Response<T>> {
+    return super.request(method, path + (this.apiToken ? `?key=${this.apiToken}` : ''), body, params);
   }
 
   /** @inheritDoc */
@@ -67,11 +60,13 @@ export class BlockchairApi implements RecoveryProvider {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
-    const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
-    return {
-      txCount: response.body.data[address].address.transaction_count,
-      totalBalance: response.body.data[address].address.balance,
-    };
+    const res = await this.get<any>(`/dashboards/address/${address}`);
+    return res.map(body => {
+      return {
+        txCount: body.data[address].address.transaction_count,
+        totalBalance: body.data[address].address.balance,
+      };
+    });
   }
 
   /** @inheritDoc */
@@ -83,17 +78,17 @@ export class BlockchairApi implements RecoveryProvider {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
-    const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
+    const res = await this.get<any>(`/dashboards/address/${address}`);
 
-    const rawUnspents = response.body.data[address].utxo;
-
-    return rawUnspents.map(unspent => {
-      return {
-        amount: unspent.value,
-        n: unspent.index,
-        txid: unspent.transaction_hash,
-        address,
-      };
+    return res.map(body => {
+      return body.data[address].utxo.map(unspent => {
+        return {
+          amount: unspent.value,
+          n: unspent.index,
+          txid: unspent.transaction_hash,
+          address,
+        };
+      });
     });
   }
 }

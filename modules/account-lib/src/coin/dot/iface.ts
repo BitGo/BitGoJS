@@ -19,7 +19,6 @@ export interface TxData {
   referenceBlock: string;
   blockNumber: number;
   genesisHash: string;
-  metadataRpc: string;
   nonce: number;
   specVersion: number;
   transactionVersion: number;
