@@ -190,7 +190,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       testValidSignatures(transactionStages.fullSignedUserBitGo, [keychains[0], keychains[2]]);
     });
 
-    it('have correct results for explainTransaction', async function () {
+    it('have correct results for explainTransaction', function () {
       for (const [stageName, stageTx] of Object.entries(transactionStages)) {
         if (!stageTx) {
           continue;
@@ -203,7 +203,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           txHex = stageTx.txHex;
         }
 
-        const explanation = await coin.explainTransaction({
+        const explanation = coin.explainTransaction({
           txHex,
           txInfo: {
             unspents: getUnspents(),
