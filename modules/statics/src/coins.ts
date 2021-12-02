@@ -238,7 +238,7 @@ export const coins = CoinMap.fromCoins([
   erc20('burp', 'Burp', 18, '0x33f391f4c4fe802b70b77ae37670037a92114a7c', UnderlyingAsset.BURP),
   erc20('busd', 'Binance USD', 18, '0x4fabb145d64652a948d72533023f6e7a623c7c53', UnderlyingAsset.BUSD),
   erc20('buy', 'buying.com', 18, '0x0d7f0fa3a79bfedbab291da357958596c74e27d7', UnderlyingAsset.BUY),
-  erc20('bxx', 'Baanx', 18, '0x6b1a8f210Ec6b7B6643cea3583Fb0c079f367898', UnderlyingAsset.BXX),
+  erc20('bxx', 'Baanx', 18, '0x6b1a8f210ec6b7b6643cea3583fb0c079f367898', UnderlyingAsset.BXX),
   erc20('bzz', 'BZZ', 16, '0x19062190b1925b5b6689d7073fdfc8c2976ef8cb', UnderlyingAsset.BZZ),
   erc20('c8p', 'C8 Plus', 18, '0x6930d2299964bcc81b8bcb453a522791e6488be1', UnderlyingAsset.C8P),
   erc20('cacxt', 'Cacxt', 18, '0xe2b8c4938a3103c1ab5c19a6b93d07ab6f9da2ba', UnderlyingAsset.CACXT),
