@@ -57,7 +57,8 @@ const co = Bluebird.coroutine;
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction, WalletUnspentSigner } from './utxo/sign';
+import { signAndVerifyWalletTransaction, verifyWalletTransactionWithUnspents, WalletUnspentSigner } from './utxo/sign';
+import { RootWalletKeys } from './utxo/WalletKeys';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -89,7 +90,6 @@ export interface TransactionExplanation {
 
   /**
    * Number of input signatures per input.
-   * NOTE: only counts valid signatures, not the public keys they belong to
    */
   inputSignatures: number[];
 
@@ -103,6 +103,7 @@ export interface ExplainTransactionOptions {
   txHex: string;
   txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
   feeInfo?: string;
+  pubs: Triple<string>;
 }
 
 export interface UtxoNetwork {
@@ -518,7 +519,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('keychains are required, but could not be fetched');
       }
 
-      const keychainArray: [Keychain, Keychain, Keychain] = [keychains.user, keychains.backup, keychains.bitgo];
+      const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
 
       const keySignatures = _.get(wallet, '_wallet.keySignatures');
 
@@ -529,6 +530,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const explanation: TransactionExplanation = self.explainTransaction({
         txHex: txPrebuild.txHex,
         txInfo: txPrebuild.txInfo,
+        pubs: keychainArray.map((k) => k.pub) as Triple<string>,
       });
 
       const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
@@ -1268,6 +1270,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('failed to parse transaction hex');
     }
 
+    const walletKeys = new RootWalletKeys(
+      params.pubs.map((xpub) => bip32.fromBase58(xpub)) as Triple<bip32.BIP32Interface>
+    );
+
     const id = transaction.getId();
     let spendAmount = 0;
     let changeAmount = 0;
@@ -1317,8 +1323,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
     // get the number of signatures per input
-    // FIXME: does not check if signature belongs to wallet keys
-    // FIXME: does not check if signatures are distinct
     const inputSignatureCounts = transaction.ins.map((input, idx): number => {
       if (unspents.length !== transaction.ins.length) {
         return 0;
@@ -1329,9 +1333,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        return utxolib.bitgo
-          .getSignatureVerifications(transaction, idx, unspents[idx].value, {}, prevOutputs)
-          .filter((v) => v.signedBy !== undefined).length;
+        return verifyWalletTransactionWithUnspents(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
         return 0;
       }

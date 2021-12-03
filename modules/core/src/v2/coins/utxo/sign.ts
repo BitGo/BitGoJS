@@ -107,17 +107,16 @@ export function verifyWalletTransactionWithUnspents(
   if (tx.ins.length !== unspents.length) {
     throw new Error(`input length must match unspents length`);
   }
-  const prevOutputs = unspents.map((u) => toOutput(u, tx.network));
   const unspent = unspents[inputIndex];
   if (!isWalletUnspent(unspent)) {
     return [false, false, false];
   }
-  const verifications = utxolib.bitgo.getSignatureVerifications(tx, inputIndex, unspent.value, {}, prevOutputs);
-  return walletKeys
-    .deriveForChainAndIndex(unspent.chain, unspent.index)
-    .publicKeys.map(
-      (publicKey) => !!verifications.find((s) => s.signedBy && s.signedBy.equals(publicKey))
-    ) as Triple<boolean>;
+  return utxolib.bitgo.verifySignatureWithPublicKeys(
+    tx,
+    inputIndex,
+    unspents.map((u) => toOutput(u, tx.network)),
+    walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys
+  ) as Triple<boolean>;
 }
 
 export class InputSigningError extends Error {
