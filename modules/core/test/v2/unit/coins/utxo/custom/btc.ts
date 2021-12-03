@@ -1,7 +1,7 @@
 import 'should';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { Btc } from '../../../../src/v2/coins';
+import { TestBitGo } from '../../../../../lib/test_bitgo';
+import { Btc } from '../../../../../../src/v2/coins';
 
 describe('BTC:', function () {
   let bitgo;
