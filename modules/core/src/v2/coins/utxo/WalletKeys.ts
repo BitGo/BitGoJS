@@ -21,11 +21,15 @@ export function eqPublicKey(a: bip32.BIP32Interface, b: bip32.BIP32Interface): b
 }
 
 /**
- * Base method for
+ * Base class for RootWalletKeys and DerivedWalletKeys.
+ * Keys can be either public keys or private keys.
  */
 export class WalletKeys {
   public readonly publicKeys: Triple<Buffer>;
 
+  /**
+   * @param triple - bip32 key triple
+   */
   constructor(public readonly triple: Triple<bip32.BIP32Interface>) {
     triple.forEach((a, i) => {
       triple.forEach((b, j) => {
@@ -51,14 +55,32 @@ export class WalletKeys {
   }
 }
 
+/**
+ * Set of WalletKeys derived from RootWalletKeys. Suitable for signing transaction inputs.
+ * Contains reference to the RootWalletKeys this was derived from as well as the paths used
+ * for derivation.
+ */
 export class DerivedWalletKeys extends WalletKeys {
+  /**
+   * @param parent - wallet keys to derive from
+   * @param paths - paths to derive with
+   */
   constructor(public parent: RootWalletKeys, public paths: Triple<string>) {
     super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<bip32.BIP32Interface>);
   }
 }
 
+/**
+ * Set of root wallet keys, typically instantiated using the wallet xpub triple.
+ */
 export class RootWalletKeys extends WalletKeys {
   static readonly defaultPrefix = '0/0';
+
+  /**
+   * @param triple - bip32 key triple
+   * @param derivationPrefixes - Certain v1 wallets or their migrated v2 counterparts
+   *                             can have a nonstandard prefix.
+   */
   constructor(
     triple: Triple<bip32.BIP32Interface>,
     public readonly derivationPrefixes: Triple<string> = [
@@ -76,6 +98,12 @@ export class RootWalletKeys extends WalletKeys {
     });
   }
 
+  /**
+   * @param key
+   * @param chain
+   * @param index
+   * @return full derivation path for key, including key-specific prefix
+   */
   getDerivationPath(key: bip32.BIP32Interface, chain: number, index: number): string {
     if (!this.derivationPrefixes) {
       throw new Error(`no derivation prefixes`);
@@ -87,6 +115,11 @@ export class RootWalletKeys extends WalletKeys {
     return `${prefix}/${chain}/${index}`;
   }
 
+  /**
+   * @param chain
+   * @param index
+   * @return walletKeys for a particular address identified by (chain, index)
+   */
   deriveForChainAndIndex(chain: number, index: number): DerivedWalletKeys {
     return new DerivedWalletKeys(
       this,
