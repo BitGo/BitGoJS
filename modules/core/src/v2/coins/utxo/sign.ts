@@ -5,32 +5,33 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as debugLib from 'debug';
 
-import { Triple } from '../../keychains';
+import { Triple } from '../../triple';
+
+import { DerivedWalletKeys, eqPublicKey, RootWalletKeys, WalletKeys } from './WalletKeys';
 import { isReplayProtectionUnspent, toOutput, Unspent, WalletUnspent } from './unspent';
 
 const debug = debugLib('bitgo:v2:utxo');
 
-export function deriveKey(k: bip32.BIP32Interface, chain: number, index: number): bip32.BIP32Interface {
-  return k.derivePath(`0/0/${chain}/${index}`);
-}
-
-export function derivePubkeys(keychain: Triple<bip32.BIP32Interface>, chain: number, index: number): Triple<Buffer> {
-  return keychain.map((k) => deriveKey(k, chain, index).publicKey) as Triple<Buffer>;
-}
-
-export class WalletUnspentSigner {
+export class WalletUnspentSigner<T extends WalletKeys> {
+  public readonly walletKeys: T;
   constructor(
-    public walletKeys: Triple<bip32.BIP32Interface>,
+    walletKeys: WalletKeys | Triple<bip32.BIP32Interface>,
     public signer: bip32.BIP32Interface,
     public cosigner: bip32.BIP32Interface
   ) {
-    if (!walletKeys.some((k) => WalletUnspentSigner.eqPublicKey(k, signer))) {
+    if (Array.isArray(walletKeys)) {
+      walletKeys = new RootWalletKeys(walletKeys);
+    }
+    if (!walletKeys.triple.some((k) => eqPublicKey(k, signer))) {
       throw new Error(`signer not part of walletKeys`);
     }
-    if (!walletKeys.some((k) => WalletUnspentSigner.eqPublicKey(k, cosigner))) {
+    if (!walletKeys.triple.some((k) => eqPublicKey(k, cosigner))) {
       throw new Error(`cosigner not part of walletKeys`);
     }
-    if (WalletUnspentSigner.eqPublicKey(signer, cosigner)) {
+
+    this.walletKeys = walletKeys as T;
+
+    if (eqPublicKey(signer, cosigner)) {
       throw new Error(`signer must not equal cosigner`);
     }
     if (signer.isNeutered()) {
@@ -38,20 +39,20 @@ export class WalletUnspentSigner {
     }
   }
 
-  static eqPublicKey(a: bip32.BIP32Interface, b: bip32.BIP32Interface): boolean {
-    return a.publicKey.equals(b.publicKey);
-  }
+  deriveForUnspent(chain: number, index: number): WalletUnspentSigner<DerivedWalletKeys> {
+    if (this.walletKeys instanceof DerivedWalletKeys) {
+      throw new Error(`cannot derive again from DerivedWalletKeys`);
+    }
 
-  derive(chain: number, index: number): WalletUnspentSigner {
-    return new WalletUnspentSigner(
-      this.walletKeys.map((k) => deriveKey(k, chain, index)) as Triple<bip32.BIP32Interface>,
-      deriveKey(this.signer, chain, index),
-      deriveKey(this.cosigner, chain, index)
-    );
-  }
+    if (this.walletKeys instanceof RootWalletKeys) {
+      return new WalletUnspentSigner(
+        this.walletKeys.deriveForChainAndIndex(chain, index),
+        this.signer.derivePath(this.walletKeys.getDerivationPath(this.signer, chain, index)),
+        this.cosigner.derivePath(this.walletKeys.getDerivationPath(this.cosigner, chain, index))
+      );
+    }
 
-  publicKeys(): Triple<Buffer> {
-    return this.walletKeys.map((k) => k.publicKey) as Triple<Buffer>;
+    throw new Error(`invalid state`);
   }
 }
 
@@ -68,12 +69,11 @@ export function signWalletTransactionWithUnspent(
   txBuilder: utxolib.bitgo.UtxoTransactionBuilder,
   inputIndex: number,
   unspent: WalletUnspent,
-  walletSigner: WalletUnspentSigner
+  walletSigner: WalletUnspentSigner<RootWalletKeys>
 ): void {
-  const walletUnspentSigner = walletSigner.derive(unspent.chain, unspent.index);
-  const publicKeys = walletUnspentSigner.publicKeys();
+  const { walletKeys, signer, cosigner } = walletSigner.deriveForUnspent(unspent.chain, unspent.index);
   const scriptType = utxolib.bitgo.outputScripts.scriptTypeForChain(unspent.chain);
-  const pubScript = utxolib.bitgo.outputScripts.createOutputScript2of3(publicKeys, scriptType).scriptPubKey;
+  const pubScript = utxolib.bitgo.outputScripts.createOutputScript2of3(walletKeys.publicKeys, scriptType).scriptPubKey;
   const pubScriptExpected = utxolib.address.toOutputScript(unspent.address, txBuilder.network as utxolib.Network);
   if (!pubScript.equals(pubScriptExpected)) {
     throw new Error(
@@ -84,9 +84,9 @@ export function signWalletTransactionWithUnspent(
     txBuilder,
     inputIndex,
     scriptType,
-    publicKeys,
-    walletUnspentSigner.signer,
-    walletUnspentSigner.cosigner.publicKey,
+    walletKeys.publicKeys,
+    signer,
+    cosigner.publicKey,
     unspent.value
   );
 }
@@ -119,7 +119,7 @@ export class TransactionSigningError extends Error {
 export function signAndVerifyWalletTransaction(
   transaction: utxolib.bitgo.UtxoTransaction,
   unspents: Unspent[],
-  walletSigner: WalletUnspentSigner,
+  walletSigner: WalletUnspentSigner<RootWalletKeys>,
   { isLastSignature }: { isLastSignature: boolean }
 ): utxolib.Transaction {
   if (transaction.ins.length !== unspents.length) {
@@ -157,7 +157,7 @@ export function signAndVerifyWalletTransaction(
           );
           return;
         }
-        const publicKey = deriveKey(walletSigner.signer, unspent.chain, unspent.index).publicKey;
+        const publicKey = walletSigner.deriveForUnspent(unspent.chain, unspent.index).signer.publicKey;
         if (!utxolib.bitgo.verifySignature(signedTransaction, inputIndex, unspent.value, { publicKey }, prevOutputs)) {
           return new InputSigningError(inputIndex, unspent, new Error(`invalid signature`));
         }

@@ -1,6 +1,36 @@
 import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi, RequestOptions, Response } from './baseApi';
 
+export type BlockchairResponse<T> = {
+  data: T;
+};
+
+// https://blockchair.com/api/docs#link_300
+export type BlockchairUnspent = {
+  transaction_hash: string;
+  index: number;
+  address: string;
+  value: number;
+  block_id: number;
+};
+
+// https://blockchair.com/api/docs#link_300
+export type BlockchairAddress = {
+  [address: string]: {
+    address: {
+      transaction_hash: string;
+      // vout
+      index: number;
+      value: number;
+      block_id: number;
+      transaction_count: number;
+      balance: number;
+    };
+    utxo: BlockchairUnspent[];
+  };
+};
+
+
 export class BlockchairApi extends BaseApi implements RecoveryProvider {
   protected readonly apiToken?: string;
 
@@ -55,12 +85,11 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
 
   /** @inheritDoc */
   async getAccountInfo(address: string): Promise<RecoveryAccountData> {
-    // we are using blockchair api: https://blockchair.com/api/docs#link_300
-    // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
-    const res = await this.get<any>(`/dashboards/address/${address}`);
+    // https://blockchair.com/api/docs#link_300
+    const res = await this.get<BlockchairResponse<BlockchairAddress>>(`/dashboards/address/${address}`);
     return res.map(body => {
       return {
         txCount: body.data[address].address.transaction_count,
@@ -78,8 +107,8 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
-    const res = await this.get<any>(`/dashboards/address/${address}`);
-
+    // https://blockchair.com/api/docs#link_300
+    const res = await this.get<BlockchairResponse<BlockchairUnspent[]>>(`/dashboards/address/${address}`);
     return res.map(body => {
       return body.data[address].utxo.map(unspent => {
         return {

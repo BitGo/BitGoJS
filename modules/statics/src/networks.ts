@@ -328,7 +328,7 @@ class Litecoin extends Mainnet implements UtxoNetwork {
   name = 'Litecoin';
   family = CoinFamily.LTC;
   utxolibName = 'litecoin';
-  explorerUrl = 'https://live.blockcypher.com/ltc/tx/';
+  explorerUrl = 'https://blockchair.com/litecoin/transaction/';
 }
 
 class LitecoinTestnet extends Testnet implements UtxoNetwork {

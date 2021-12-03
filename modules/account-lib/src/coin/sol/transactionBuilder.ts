@@ -42,7 +42,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = tx;
     const txData = tx.toJson();
     this.sender(txData.feePayer as string);
-    this.nonce(txData.nonce);
+    this.nonce(txData.nonce, txData.durableNonce);
     this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions);
 
     for (const instruction of this._instructionsData) {

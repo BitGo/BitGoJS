@@ -19,6 +19,7 @@ import {
   shouldEqualJSON,
   utxoCoins,
   transactionHexToObj,
+  getDefaultWalletKeys,
 } from '../util';
 import { getSeed } from '../../../../../lib/keys';
 import { nockBitGo } from '../util/nockBitGo';
@@ -100,6 +101,7 @@ function nockBitGoPublicTransactionInfo(
  */
 function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
   describe(`Cross-Chain Recovery [sourceCoin=${sourceCoin.getChain()} recoveryCoin=${recoveryCoin.getChain()}]`, function () {
+    const walletKeys = getDefaultWalletKeys();
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
     const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) =>
@@ -112,7 +114,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     let depositTx: utxolib.bitgo.UtxoTransaction;
 
     function getDepositUnspents() {
-      return [mockUnspent(sourceCoin.network, 'p2sh', 0, 1e8)];
+      return [mockUnspent(sourceCoin.network, walletKeys, 'p2sh', 0, 1e8)];
     }
 
     function getDepositTransaction(): utxolib.bitgo.UtxoTransaction {

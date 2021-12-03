@@ -44,7 +44,8 @@ import {
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
-import { Keychain, KeyIndices, Triple } from '../keychains';
+import { Keychain, KeyIndices } from '../keychains';
+import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -54,7 +55,7 @@ const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { ReplayProtectionUnspent, Unspent } from './utxo/unspent';
+import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
 import { signAndVerifyWalletTransaction, WalletUnspentSigner } from './utxo/sign';
 
@@ -79,11 +80,12 @@ export interface TransactionFee {
 export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
+  locktime: number;
   outputs: Output[];
   changeOutputs: Output[];
-  outputAmount: string;
+  outputAmount: number;
   changeAmount: number;
-  fee: TransactionFee;
+  fee: TransactionFee | string;
 
   inputSignatures: number[];
   signatures: number | false;
@@ -516,7 +518,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('missing required txPrebuild property txHex');
       }
       // obtain all outputs
-      const explanation: TransactionExplanation = yield self.explainTransaction({
+      const explanation: TransactionExplanation = self.explainTransaction({
         txHex: txPrebuild.txHex,
         txInfo: txPrebuild.txInfo,
       });
@@ -987,7 +989,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports wrapped segwit outputs
+   * Indicates whether a coin supports spending from wrapped segwit outputs
    * @returns {boolean}
    */
   supportsP2shP2wsh() {
@@ -995,7 +997,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports native segwit outputs
+   * Indicates whether a coin supports spending from native segwit outputs
    * @returns {boolean}
    */
   supportsP2wsh() {
@@ -1003,13 +1005,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports segwit v1 taproot outputs
+   * Indicates whether a coin supports spending from segwit v1 taproot outputs
    * @returns {boolean}
    */
   supportsP2tr() {
     return false;
   }
 
+  /**
+   * @param addressType
+   * @returns true iff coin supports spending from unspentType
+   */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
     switch (addressType) {
       case 'p2sh':
@@ -1024,6 +1030,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     throw new errors.UnsupportedAddressTypeError();
   }
 
+  /**
+   * @param chain
+   * @return true iff coin supports spending from chain
+   */
   supportsAddressChain(chain: number) {
     return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
   }
@@ -1236,136 +1246,93 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Decompose a raw transaction into useful information, such as the total amounts,
    * change amounts, and transaction outputs.
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const txHex = _.get(params, 'txHex');
-      if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
-        throw new Error('invalid transaction hex, must be a valid hex string');
-      }
+  explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
+    const txHex = _.get(params, 'txHex');
+    if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
+      throw new Error('invalid transaction hex, must be a valid hex string');
+    }
 
-      let transaction;
-      try {
-        transaction = self.createTransactionFromHex(txHex);
-      } catch (e) {
-        throw new Error('failed to parse transaction hex');
-      }
+    let transaction;
+    try {
+      transaction = this.createTransactionFromHex(txHex);
+    } catch (e) {
+      throw new Error('failed to parse transaction hex');
+    }
 
-      const id = transaction.getId();
-      let changeAddresses: string[] = [];
-      let spendAmount = 0;
-      let changeAmount = 0;
-      const txInfo = _.get(params, 'txInfo');
-      if (txInfo && txInfo.changeAddresses) {
-        changeAddresses = txInfo.changeAddresses;
-      }
-      const explanation: any = {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
-        id: id,
-        outputs: [],
-        changeOutputs: [],
-      };
+    const id = transaction.getId();
+    let changeAddresses: string[] = [];
+    let spendAmount = 0;
+    let changeAmount = 0;
+    const txInfo = _.get(params, 'txInfo');
+    if (txInfo && txInfo.changeAddresses) {
+      changeAddresses = txInfo.changeAddresses;
+    }
+    const explanation = {
+      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
+      id: id,
+      outputs: [] as Output[],
+      changeOutputs: [] as Output[],
+    } as TransactionExplanation;
 
-      transaction.outs.forEach((currentOutput) => {
-        const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, self.network);
-        const currentAmount = currentOutput.value;
+    transaction.outs.forEach((currentOutput) => {
+      const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
+      const currentAmount = currentOutput.value;
 
-        if (changeAddresses.indexOf(currentAddress) !== -1) {
-          // this is change
-          changeAmount += currentAmount;
-          explanation.changeOutputs.push({
-            address: currentAddress,
-            amount: currentAmount,
-          });
-          return;
-        }
-
-        spendAmount += currentAmount;
-        explanation.outputs.push({
+      if (changeAddresses.indexOf(currentAddress) !== -1) {
+        // this is change
+        changeAmount += currentAmount;
+        explanation.changeOutputs.push({
           address: currentAddress,
           amount: currentAmount,
         });
-      });
-      explanation.outputAmount = spendAmount;
-      explanation.changeAmount = changeAmount;
-
-      // add fee info if available
-      if (params.feeInfo) {
-        explanation.displayOrder.push('fee');
-        explanation.fee = params.feeInfo;
+        return;
       }
 
-      if (_.isInteger(transaction.locktime) && transaction.locktime > 0) {
-        explanation.locktime = transaction.locktime;
-        explanation.displayOrder.push('locktime');
+      spendAmount += currentAmount;
+      explanation.outputs.push({
+        address: currentAddress,
+        amount: currentAmount,
+      });
+    });
+    explanation.outputAmount = spendAmount;
+    explanation.changeAmount = changeAmount;
+
+    // add fee info if available
+    if (params.feeInfo) {
+      explanation.displayOrder.push('fee');
+      explanation.fee = params.feeInfo;
+    }
+
+    if (_.isInteger(transaction.locktime) && transaction.locktime > 0) {
+      explanation.locktime = transaction.locktime;
+      explanation.displayOrder.push('locktime');
+    }
+
+    const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
+
+    // get information on tx inputs
+    const inputSignatures = transaction.ins.map((input, idx): number => {
+      if (!txInfo || txInfo.unspents.length !== transaction.ins.length) {
+        return 0;
       }
 
-      const unspentValues = {};
+      if (!prevOutputs) {
+        throw new Error(`invalid state`);
+      }
 
-      // get information on tx inputs
-      const inputSignatures = transaction.ins.map((input, idx) => {
-        const hasSigScript = !_.isEmpty(input.script);
-        const hasWitnessScript = !_.isEmpty(input.witness);
+      try {
+        return utxolib.bitgo
+          .getSignatureVerifications(transaction, idx, txInfo.unspents[idx].value, {}, prevOutputs)
+          .filter((v) => v.signedBy !== undefined).length;
+      } catch (e) {
+        return 0;
+      }
+    });
 
-        if (!hasSigScript && !hasWitnessScript) {
-          // no sig script or witness data for this input
-          debug('no signature script or witness script data for input %s', idx);
-          return 0;
-        }
-
-        let parsedSigScript;
-        try {
-          parsedSigScript = utxolib.bitgo.parseSignatureScript(transaction.ins[idx]);
-        } catch (e) {
-          return false;
-        }
-
-        if (hasWitnessScript) {
-          if (!txInfo || !txInfo.unspents) {
-            // segwit txs require input values, cannot validate signatures
-            debug('unable to retrieve input amounts from unspents - cannot validate segwit input signatures');
-            return 0;
-          }
-
-          // lazily populate unspent values
-          if (_.isEmpty(unspentValues)) {
-            txInfo.unspents.forEach((unspent) => {
-              unspentValues[unspent.id] = unspent.value;
-            });
-          }
-        }
-
-        const nonEmptySignatures = parsedSigScript.signatures?.filter((sig) => !_.isEmpty(sig)) ?? [];
-        const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
-          if (_.isEmpty(sig)) {
-            return false;
-          }
-
-          const parentTxId = (Buffer.from(input.hash).reverse() as Buffer).toString('hex');
-          const inputId = `${parentTxId}:${input.index}`;
-          const amount = unspentValues[inputId];
-
-          try {
-            return utxolib.bitgo.verifySignature(transaction, idx, amount, { signatureIndex: sigIndex });
-          } catch (e) {
-            return false;
-          }
-        });
-
-        return validSignatures.reduce((validCount, isValid) => (isValid ? validCount + 1 : validCount), 0);
-      });
-
-      explanation.inputSignatures = inputSignatures;
-      explanation.signatures = _.max(inputSignatures);
-      return explanation;
-    })
-      .call(this)
-      .asCallback(callback);
+    explanation.inputSignatures = inputSignatures;
+    explanation.signatures = _.max(inputSignatures) as number;
+    return explanation;
   }
 
   /**
@@ -1375,12 +1342,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param keys
    */
   createMultiSigAddress(addressType: ScriptType2Of3, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
-    if (signatureThreshold !== 2) {
-      throw new Error(`signatureThreshold must be 2, got ${signatureThreshold}`);
-    }
-    if (keys.length !== 3) {
-      throw new Error(`key array length must be 3, got ${keys.length}`);
-    }
     const {
       scriptPubKey: outputScript,
       redeemScript,
@@ -1396,8 +1357,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * @deprecated - use {@see backupKeyRecovery}
    * Builds a funds recovery transaction without BitGo
-   * @param params - {@see recover}
+   * @param params - {@see backupKeyRecovery}
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {

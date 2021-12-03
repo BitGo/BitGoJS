@@ -20,8 +20,7 @@ import {
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-
-// const co = Bluebird.coroutine;
+import base58 = require('bs58');
 
 export interface TransactionFee {
   fee: string;
@@ -123,6 +122,19 @@ export class Sol extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     return accountLib.Sol.Utils.isValidAddress(address);
+  }
+
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const solKeypair = new accountLib.Sol.KeyPair({ prv: key.prv });
+      if (Buffer.isBuffer(message)) {
+        message = base58.encode(message);
+      }
+
+      return Buffer.from(solKeypair.signMessage(message));
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
