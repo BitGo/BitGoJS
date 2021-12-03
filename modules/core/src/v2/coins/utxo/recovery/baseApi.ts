@@ -56,8 +56,7 @@ export class BaseApi {
     try {
       response = await superagent(method, url)
         .retry(params.retry)
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        .send(requestBody as object);
+        .send(requestBody as Record<string, unknown>);
     } catch (e) {
       throw new ApiRequestError(url, e);
     }

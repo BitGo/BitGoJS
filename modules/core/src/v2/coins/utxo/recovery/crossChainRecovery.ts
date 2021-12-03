@@ -17,7 +17,8 @@ import { Wallet } from '../../../wallet';
 
 import { PublicUnspent } from '../unspent';
 import { BaseCoin } from '../../../baseCoin';
-import { Keychain, Triple } from '../../../keychains';
+import { Keychain } from '../../../keychains';
+import { Triple } from '../../../triple';
 
 export interface ExplorerTxInfo {
   input: { address: string }[];

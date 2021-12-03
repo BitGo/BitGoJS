@@ -10,5 +10,6 @@ export * from './types';
 export * from './wallet';
 export * from './wallets';
 export * from './webhooks';
+export * from './triple';
 import * as Coin from './coins';
 export { Coin };

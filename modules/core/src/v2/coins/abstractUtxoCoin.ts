@@ -44,7 +44,8 @@ import {
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
-import { Keychain, KeyIndices, Triple } from '../keychains';
+import { Keychain, KeyIndices } from '../keychains';
+import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -987,7 +988,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports wrapped segwit outputs
+   * Indicates whether a coin supports spending from wrapped segwit outputs
    * @returns {boolean}
    */
   supportsP2shP2wsh() {
@@ -995,7 +996,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports native segwit outputs
+   * Indicates whether a coin supports spending from native segwit outputs
    * @returns {boolean}
    */
   supportsP2wsh() {
@@ -1003,13 +1004,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports segwit v1 taproot outputs
+   * Indicates whether a coin supports spending from segwit v1 taproot outputs
    * @returns {boolean}
    */
   supportsP2tr() {
     return false;
   }
 
+  /**
+   * @param addressType
+   * @returns true iff coin supports spending from unspentType
+   */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
     switch (addressType) {
       case 'p2sh':
@@ -1024,6 +1029,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     throw new errors.UnsupportedAddressTypeError();
   }
 
+  /**
+   * @param chain
+   * @return true iff coin supports spending from chain
+   */
   supportsAddressChain(chain: number) {
     return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
   }
@@ -1375,12 +1384,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param keys
    */
   createMultiSigAddress(addressType: ScriptType2Of3, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
-    if (signatureThreshold !== 2) {
-      throw new Error(`signatureThreshold must be 2, got ${signatureThreshold}`);
-    }
-    if (keys.length !== 3) {
-      throw new Error(`key array length must be 3, got ${keys.length}`);
-    }
     const {
       scriptPubKey: outputScript,
       redeemScript,
@@ -1396,8 +1399,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * @deprecated - use {@see backupKeyRecovery}
    * Builds a funds recovery transaction without BitGo
-   * @param params - {@see recover}
+   * @param params - {@see backupKeyRecovery}
    * @param callback
    */
   recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {

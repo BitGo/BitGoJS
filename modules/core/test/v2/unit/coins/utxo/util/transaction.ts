@@ -4,6 +4,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Unspent, isWalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { signWalletTransactionWithUnspent, WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
+import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 
 export type TransactionObj = {
   id: string;
@@ -70,7 +71,7 @@ export function createPrebuildTransaction(
 function createTransactionBuilderWithSignedInputs(
   network: utxolib.Network,
   unspents: Unspent[],
-  signer: WalletUnspentSigner,
+  signer: WalletUnspentSigner<RootWalletKeys>,
   inputTransaction: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransactionBuilder {
   const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction(
@@ -89,7 +90,7 @@ export function createHalfSignedTransaction(
   network: utxolib.Network,
   unspents: Unspent[],
   outputAddress: string,
-  signer: WalletUnspentSigner,
+  signer: WalletUnspentSigner<RootWalletKeys>,
   prebuild?: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransaction {
   if (!prebuild) {
@@ -102,7 +103,7 @@ export function createFullSignedTransaction(
   network: utxolib.Network,
   unspents: Unspent[],
   outputAddress: string,
-  signer: WalletUnspentSigner,
+  signer: WalletUnspentSigner<RootWalletKeys>,
   halfSigned?: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransaction {
   if (!halfSigned) {
