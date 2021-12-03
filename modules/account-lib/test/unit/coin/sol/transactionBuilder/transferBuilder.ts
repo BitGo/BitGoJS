@@ -67,6 +67,11 @@ describe('Sol Transfer Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.TRANSFER_UNSIGNED_TX_WITH_DURABLE_NONCE);
+      const txJson = tx.toJson();
+      txJson.durableNonce.should.deepEqual({
+        walletNonceAddress: nonceAccount.pub,
+        authWalletAddress: authAccount.pub,
+      });
     });
 
     it('build a transfer tx unsigned with memo and durable nonce', async () => {
