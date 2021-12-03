@@ -18,6 +18,8 @@ export interface TxData {
   feePayer?: string;
   numSignatures: number;
   nonce: Blockhash;
+  // only populated when nonce is from a durable nonce account
+  durableNonce?: DurableNonceParams;
   instructionsData: InstructionParams[];
 }
 

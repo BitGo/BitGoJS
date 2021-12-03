@@ -74,7 +74,7 @@ describe('Sol Transaction Builder', async () => {
   });
 
   // STLX-10065: fails right now due to issues with deserializing. Will fix as follow up.
-  xit('build a send from rawTx', async () => {
+  it('build a send from rawTx', async () => {
     const txBuilder = factory.from(testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
@@ -99,14 +99,11 @@ describe('Sol Transaction Builder', async () => {
     jsonTx.feePayer.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);
+    jsonTx.durableNonce.should.deepEqual({
+      walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+      authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+    });
     jsonTx.instructionsData.should.deepEqual([
-      {
-        type: 'NonceAdvance',
-        params: {
-          walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-          authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
-        },
-      },
       {
         type: 'Transfer',
         params: {

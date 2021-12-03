@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
-import { Blockhash, PublicKey, Signer, Transaction as SolTransaction } from '@solana/web3.js';
+import { Blockhash, PublicKey, Signer, Transaction as SolTransaction, SystemInstruction } from '@solana/web3.js';
 import { Memo, Transfer, TransactionExplanation, TxData, WalletInit, Nonce, DurableNonceParams } from './iface';
 import base58 from 'bs58';
 import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
@@ -141,10 +141,21 @@ export class Transaction extends BaseTransaction {
     if (!this._solTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
+
+    let durableNonce: DurableNonceParams | undefined;
+    if (this._solTransaction.nonceInfo) {
+      const nonceInstruction = SystemInstruction.decodeNonceAdvance(this._solTransaction.nonceInfo.nonceInstruction);
+      durableNonce = {
+        walletNonceAddress: nonceInstruction.noncePubkey.toString(),
+        authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
+      };
+    }
+
     const result: TxData = {
       id: this.id,
       feePayer: this._solTransaction.feePayer?.toString(),
       nonce: this.getNonce(),
+      durableNonce: durableNonce,
       numSignatures: this.signature.length,
       instructionsData: instructionParamsFactory(this._type, this._solTransaction.instructions),
     };
