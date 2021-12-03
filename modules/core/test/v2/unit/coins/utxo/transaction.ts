@@ -189,7 +189,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo]);
     });
 
-    it('have correct results for explainTransaction', async function () {
+    it('have correct results for explainTransaction', function () {
       for (const [stageName, stageTx] of Object.entries(transactionStages)) {
         if (!stageTx) {
           continue;
@@ -202,7 +202,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           txHex = stageTx.txHex;
         }
 
-        const explanation = await coin.explainTransaction({
+        const explanation = coin.explainTransaction({
           txHex,
           txInfo: {
             unspents: getUnspents(),
@@ -220,25 +220,6 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           'signatures'
         );
 
-        if (inputScripts.some((t) => t === 'p2tr')) {
-          // FIXME(BG-38946): explainTransaction does not work for p2tr yet
-          return;
-        }
-
-        switch (coin.getChain()) {
-          case 'bch':
-          case 'tbch':
-          case 'bsv':
-          case 'tbsv':
-          case 'btg':
-          case 'zec':
-          case 'tzec':
-            // FIXME(BG-38946): explainTransaction signature check not implemented correctly
-            if (inputScripts.some((s) => s === 'p2sh')) {
-              return;
-            }
-        }
-
         const expectedSignatureCount =
           stageName === 'prebuild'
             ? 0
@@ -248,7 +229,10 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
             ? 2
             : undefined;
 
-        explanation.inputSignatures.should.eql(inputScripts.map(() => expectedSignatureCount));
+        explanation.inputSignatures.should.eql(
+          // FIXME(BG-35154): implement signature verification for replay protection inputs
+          inputScripts.map((type) => (type === 'replayProtection' ? 0 : expectedSignatureCount))
+        );
         explanation.signatures.should.eql(expectedSignatureCount);
       }
     });

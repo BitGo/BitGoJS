@@ -7,7 +7,11 @@ import { Wallet } from '../../../../src/v2';
 import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as errors from '../../../../src/errors';
-import { TransactionParams } from '../../../../src/v2/coins/abstractUtxoCoin';
+import {
+  Output,
+  TransactionExplanation,
+  TransactionParams,
+} from '../../../../src/v2/coins/abstractUtxoCoin';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -35,13 +39,13 @@ describe('Abstract UTXO Coin:', () => {
     const outputAmount = 0.01 * 1e8;
 
     async function runClassifyOutputsTest(outputAddress, verification, expectExternal, txParams: TransactionParams = {}) {
-      sinon.stub(coin, 'explainTransaction').resolves({
-        outputs: [],
+      sinon.stub(coin, 'explainTransaction').returns({
+        outputs: [] as Output[],
         changeOutputs: [{
           address: outputAddress,
           amount: outputAmount,
         }],
-      } as any);
+      } as TransactionExplanation);
 
       if (!txParams.changeAddress) {
         sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
@@ -171,7 +175,7 @@ describe('Abstract UTXO Coin:', () => {
       const outputAmount = 10000;
       const recipients = [];
 
-      sinon.stub(coin, 'explainTransaction').resolves({
+      sinon.stub(coin, 'explainTransaction').returns({
         outputs: [],
         changeOutputs: [
           {
