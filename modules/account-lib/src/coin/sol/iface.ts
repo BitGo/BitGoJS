@@ -2,7 +2,7 @@ import { Blockhash, SystemInstructionType, TransactionSignature } from '@solana/
 import { InstructionBuilderTypes } from './constants';
 import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
-// TODO(STLX-9890): Add the interfaces for validityWindow, feeOptions and SequenceId
+// TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
   prv?: Uint8Array | string;
   pub: string;
@@ -16,6 +16,7 @@ export interface DurableNonceParams {
 export interface TxData {
   id?: TransactionSignature;
   feePayer?: string;
+  lamportsPerSignature?: number;
   numSignatures: number;
   nonce: Blockhash;
   // only populated when nonce is from a durable nonce account

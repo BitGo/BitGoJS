@@ -11,8 +11,11 @@ import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
 import { Entry, TransactionRecipient } from '../baseCoin/iface';
 
+const UNAVAILABLE_TEXT = 'UNAVAILABLE';
+
 export class Transaction extends BaseTransaction {
   private _solTransaction: SolTransaction;
+  private _lamportsPerSignature: number | undefined;
   protected _type: TransactionType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -27,12 +30,22 @@ export class Transaction extends BaseTransaction {
     this._solTransaction = tx;
   }
 
-  set id(id: string) {
-    this._id = id;
+  /** @inheritDoc **/
+  get id(): string {
+    // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id
+    if (this._solTransaction.signature) {
+      return base58.encode(this._solTransaction.signature);
+    } else {
+      return UNAVAILABLE_TEXT;
+    }
   }
 
-  get id(): string {
-    return this._id as string;
+  get lamportsPerSignature(): number | undefined {
+    return this._lamportsPerSignature;
+  }
+
+  set lamportsPerSignature(lamportsPerSignature: number | undefined) {
+    this._lamportsPerSignature = lamportsPerSignature;
   }
 
   /** @inheritDoc */
@@ -152,8 +165,9 @@ export class Transaction extends BaseTransaction {
     }
 
     const result: TxData = {
-      id: this.id,
+      id: this._solTransaction.signature ? this.id : undefined,
       feePayer: this._solTransaction.feePayer?.toString(),
+      lamportsPerSignature: this.lamportsPerSignature,
       nonce: this.getNonce(),
       durableNonce: durableNonce,
       numSignatures: this.signature.length,
@@ -253,6 +267,10 @@ export class Transaction extends BaseTransaction {
       }
     }
 
+    const feeString = this.lamportsPerSignature
+      ? new BigNumber(this.lamportsPerSignature).multipliedBy(this._solTransaction.signatures.length).toFixed(0)
+      : UNAVAILABLE_TEXT;
+
     const explainedTransaction = {
       displayOrder: [
         'id',
@@ -266,16 +284,15 @@ export class Transaction extends BaseTransaction {
         'fee',
         'memo',
       ],
-      // TODO (STLX-8791): Need to figure out what id to use for unsigned transactions.
-      id: this.id || 'undefined',
+      id: this.id,
       type: TransactionType[this.type].toString(),
       changeOutputs: [],
       changeAmount: '0',
       outputAmount: outputAmount.toFixed(0),
       outputs: outputs,
       fee: {
-        // TODO(STLX-8791): need to figure out how to get fee information.
-        fee: '0',
+        fee: feeString,
+        feeRate: this.lamportsPerSignature,
       },
       memo: memo,
       blockhash: this.getNonce(),
