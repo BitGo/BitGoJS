@@ -14,6 +14,7 @@ describe('Dot Stake Builder', () => {
     const config = buildTestConfig();
     builder = new StakingBuilder(config);
   });
+
   describe('setter validation', () => {
     it('should validate stake amount', () => {
       const spy = sinon.spy(builder, 'validateValue');

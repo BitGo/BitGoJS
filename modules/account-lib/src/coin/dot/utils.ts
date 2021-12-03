@@ -5,9 +5,14 @@ import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
+import { toTxMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
+import {
+  TypeRegistry,
+  DecodedUnsignedTx,
+  DecodedSignedTx,
+  DecodedSigningPayload,
+} from '@substrate/txwrapper-core/lib/types';
+import { construct } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
@@ -99,12 +104,8 @@ export class Utils implements BaseUtils {
    * @param { metadataRpc: string; registry: TypeRegistry } options
    * @returns {TransferArgs}
    */
-  decodeCallMethod(
-    tx: string | UnsignedTransaction,
-    options: { metadataRpc: string; registry: TypeRegistry },
-  ): TransferArgs {
-    const { metadataRpc, registry } = options;
-    registry.setMetadata(createMetadata(registry, metadataRpc));
+  decodeCallMethod(tx: string | UnsignedTransaction, options: { registry: TypeRegistry }): TransferArgs {
+    const { registry } = options;
     let methodCall: any;
     if (typeof tx === 'string') {
       try {
@@ -144,9 +145,6 @@ export class Utils implements BaseUtils {
    */
   createSignedTx(pair: KeyringPair, signingPayload: string, transaction: UnsignedTransaction, options): string {
     const { registry, metadataRpc } = options;
-    // Important! The registry needs to be updated with latest metadata, so make
-    // sure to run `registry.setMetadata(metadata)` before signing.
-    registry.setMetadata(createMetadata(registry, metadataRpc));
     const { signature } = registry
       .createType('ExtrinsicPayload', signingPayload, {
         version: EXTRINSIC_VERSION,
@@ -180,6 +178,87 @@ export class Utils implements BaseUtils {
    */
   encodeDotAddress(address: string, ss58Format?: number): string {
     return encodeAddress(address, ss58Format);
+  }
+
+  decodeSigningPayload(
+    signingPayload: string,
+    options: { registry: TypeRegistry },
+  ): Omit<DecodedSigningPayload, 'metadataRpc'> {
+    const { registry } = options;
+    const payload = createTypeUnsafe(registry, 'ExtrinsicPayload', [
+      signingPayload,
+      {
+        version: EXTRINSIC_VERSION,
+      },
+    ]);
+    const methodCall = createTypeUnsafe(registry, 'Call', [payload.method]);
+    const method = toTxMethod(registry, methodCall);
+    return {
+      blockHash: payload.blockHash.toHex(),
+      eraPeriod: payload.era.asMortalEra.period.toNumber(),
+      genesisHash: payload.genesisHash.toHex(),
+      method,
+      nonce: payload.nonce.toNumber(),
+      specVersion: payload.specVersion.toNumber(),
+      tip: payload.tip.toNumber(),
+      transactionVersion: payload.transactionVersion.toNumber(),
+    };
+  }
+
+  decodeSignedTx(signedTx: string, options: { registry: TypeRegistry }): Omit<DecodedSignedTx, 'metadataRpc'> {
+    const { registry } = options;
+    const tx = registry.createType('Extrinsic', hexToU8a(signedTx), {
+      isSigned: true,
+    });
+    const methodCall = registry.createType('Call', tx.method);
+    const method = toTxMethod(registry, methodCall);
+    return {
+      address: tx.signer.toString(),
+      eraPeriod: tx.era.asMortalEra.period.toNumber(),
+      method,
+      nonce: tx.nonce.toNumber(),
+      tip: tx.tip.toNumber(),
+    };
+  }
+
+  decodeUnsignedTx(
+    unsigned: UnsignedTransaction,
+    options: { registry: TypeRegistry },
+  ): Omit<DecodedUnsignedTx, 'metadataRpc'> {
+    const { registry } = options;
+    const methodCall = registry.createType('Call', unsigned.method);
+    const method = toTxMethod(registry, methodCall);
+    return {
+      address: unsigned.address,
+      blockHash: unsigned.blockHash,
+      blockNumber: registry.createType('BlockNumber', unsigned.blockNumber).toNumber(),
+      eraPeriod: registry.createType('MortalEra', unsigned.era).period.toNumber(),
+      genesisHash: unsigned.genesisHash,
+      method,
+      nonce: registry.createType('Compact<Index>', unsigned.nonce).toNumber(),
+      specVersion: registry.createType('u32', unsigned.specVersion).toNumber(),
+      tip: registry.createType('Compact<Balance>', unsigned.tip).toNumber(),
+      transactionVersion: registry.createType('u32', unsigned.transactionVersion).toNumber(),
+    };
+  }
+
+  decode(
+    data: string | UnsignedTransaction,
+    options: { registry: TypeRegistry },
+  ):
+    | Omit<DecodedUnsignedTx, 'metadataRpc'>
+    | Omit<DecodedSigningPayload, 'metadataRpc'>
+    | Omit<DecodedSignedTx, 'metadataRpc'> {
+    if (typeof data === 'string') {
+      let decodedInfo;
+      try {
+        decodedInfo = this.decodeSigningPayload(data, options);
+      } catch {
+        decodedInfo = this.decodeSignedTx(data, options);
+      }
+      return decodedInfo;
+    }
+    return this.decodeUnsignedTx(data, options);
   }
 }
 

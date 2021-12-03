@@ -1,14 +1,15 @@
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { BuildTransactionError, NotSupported } from '../baseCoin/errors';
-import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
+import { getRegistry } from '@substrate/txwrapper-polkadot';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { MethodNames } from './iface';
-import { UnstakeBuilder } from '.';
+import { UnstakeBuilder } from './unstakeBuilder';
+import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _registry: TypeRegistry;
@@ -52,12 +53,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     if (!this._registry) {
       throw new BuildTransactionError('Please set the network before parsing the transaction');
     }
-    const decodedTxn = decode(rawTxn, {
-      metadataRpc,
+    const decodedTxn = utils.decode(rawTxn, {
       registry: this._registry,
     });
     const methodName = decodedTxn.method?.name;

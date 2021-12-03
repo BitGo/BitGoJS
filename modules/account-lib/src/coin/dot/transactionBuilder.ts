@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig, DotNetwork, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
+import { getRegistry } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
@@ -12,7 +12,7 @@ import { CreateBaseTxInfo, FeeOptions, sequenceId, TxMethod, validityWindow } fr
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
-import { default as Utils, default as utils } from './utils';
+import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -172,9 +172,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc,
+    const decodedTxn = utils.decode(rawTransaction, {
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
     if (this.isSigningPayload(decodedTxn)) {
@@ -245,7 +243,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    if (!Utils.isValidAddress(address.address)) {
+    if (!utils.isValidAddress(address.address)) {
       throw new AddressValidationError(address.address);
     }
   }
@@ -256,7 +254,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const isValidPrivateKeyFromHex = isValidEd25519Seed(key);
     const isValidPrivateKeyFromBase64 = isValidEd25519Seed(Buffer.from(key, 'base64').toString('hex'));
     try {
-      const decodedSeed = Utils.decodeSeed(key);
+      const decodedSeed = utils.decodeSeed(key);
       isValidPrivateKeyFromBytes = isValidEd25519Seed(Buffer.from(decodedSeed.seed).toString('hex'));
     } catch (err) {
       isValidPrivateKeyFromBytes = false;
@@ -277,9 +275,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
-    const decodedTxn = decode(rawTransaction, {
-      metadataRpc,
+    const decodedTxn = utils.decode(rawTransaction, {
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
 

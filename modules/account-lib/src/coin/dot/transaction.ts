@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
-import { construct, decode } from '@substrate/txwrapper-polkadot';
+import { construct } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import Keyring, { decodeAddress } from '@polkadot/keyring';
@@ -43,7 +43,6 @@ export class Transaction extends BaseTransaction {
     const signingPayload = construct.signingPayload(this._dotTransaction, {
       registry: this._registry,
     });
-    // Sign a payload. This operation should be performed on an offline device.
     const keyring = new Keyring({ type: 'ed25519' });
     const secretKey = new Uint8Array(Buffer.from(prv, 'hex'));
     const publicKey = new Uint8Array(Buffer.from(pub, 'hex'));
@@ -52,7 +51,6 @@ export class Transaction extends BaseTransaction {
       metadataRpc: this._dotTransaction.metadataRpc,
       registry: this._registry,
     });
-
     this._signedTransaction = txHex;
   }
 
@@ -91,8 +89,7 @@ export class Transaction extends BaseTransaction {
     if (!this._dotTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const decodedTx = decode(this._dotTransaction, {
-      metadataRpc: this._dotTransaction.metadataRpc,
+    const decodedTx = utils.decode(this._dotTransaction, {
       registry: this._registry,
     }) as unknown as DecodedTx;
 
@@ -118,7 +115,6 @@ export class Transaction extends BaseTransaction {
         result.owner = keypairReal.getAddress();
         result.forceProxyType = txMethod.forceProxyType;
         const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
-          metadataRpc: this._dotTransaction.metadataRpc,
           registry: this._registry,
         });
         const keypairDest = new KeyPair({
@@ -181,19 +177,16 @@ export class Transaction extends BaseTransaction {
     if (!this._dotTransaction) {
       return;
     }
-    const decodedTx = decode(this._dotTransaction, {
-      metadataRpc: this._dotTransaction.metadataRpc,
-      registry: this._registry,
-    }) as unknown as DecodedTx;
-
     if (this.type === TransactionType.Send) {
+      const decodedTx = utils.decode(this._dotTransaction, {
+        registry: this._registry,
+      }) as unknown as DecodedTx;
       const txMethod = decodedTx.method.args as any;
       let to: string;
       let value: string;
       let from: string;
       if (txMethod.real) {
         const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
-          metadataRpc: this._dotTransaction.metadataRpc,
           registry: this._registry,
         });
         const keypairDest = new KeyPair({

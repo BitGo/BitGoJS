@@ -1,7 +1,7 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
-import { TransferBuilder } from '../../../../../src/coin/dot';
+import { Transaction, TransferBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 
@@ -285,6 +285,18 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, 7);
       should.deepEqual(txJson.chainName, 'Polkadot');
+    });
+  });
+
+  describe('should build from raw unsigned tx', async () => {
+    it('Transaction size validation', async () => {
+      builder.from(DotResources.rawTx.transfer.unsigned);
+      builder
+        .validity({ firstValid: 3933 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sender({ address: DotResources.accounts.account1.address });
+      const tx = (await builder.build()) as Transaction;
+      should.deepEqual(tx.transactionSize(), DotResources.rawTx.transfer.unsigned.length / 2);
     });
   });
 });
