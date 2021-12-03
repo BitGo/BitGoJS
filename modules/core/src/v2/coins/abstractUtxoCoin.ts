@@ -87,8 +87,16 @@ export interface TransactionExplanation {
   changeAmount: number;
   fee: TransactionFee | string;
 
+  /**
+   * Number of input signatures per input.
+   * NOTE: only counts valid signatures, not the public keys they belong to
+   */
   inputSignatures: number[];
-  signatures: number | false;
+
+  /**
+   * Highest input signature count for the transaction
+   */
+  signatures: number;
 }
 
 export interface ExplainTransactionOptions {
@@ -1261,13 +1269,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     const id = transaction.getId();
-    let changeAddresses: string[] = [];
     let spendAmount = 0;
     let changeAmount = 0;
-    const txInfo = _.get(params, 'txInfo');
-    if (txInfo && txInfo.changeAddresses) {
-      changeAddresses = txInfo.changeAddresses;
-    }
     const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
@@ -1275,11 +1278,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       changeOutputs: [] as Output[],
     } as TransactionExplanation;
 
+    const { changeAddresses = [], unspents = [] } = params.txInfo ?? {};
+
     transaction.outs.forEach((currentOutput) => {
       const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
       const currentAmount = currentOutput.value;
 
-      if (changeAddresses.indexOf(currentAddress) !== -1) {
+      if (changeAddresses.includes(currentAddress)) {
         // this is change
         changeAmount += currentAmount;
         explanation.changeOutputs.push({
@@ -1311,9 +1316,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
-    // get information on tx inputs
-    const inputSignatures = transaction.ins.map((input, idx): number => {
-      if (!txInfo || txInfo.unspents.length !== transaction.ins.length) {
+    // get the number of signatures per input
+    // FIXME: does not check if signature belongs to wallet keys
+    // FIXME: does not check if signatures are distinct
+    const inputSignatureCounts = transaction.ins.map((input, idx): number => {
+      if (unspents.length !== transaction.ins.length) {
         return 0;
       }
 
@@ -1323,15 +1330,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       try {
         return utxolib.bitgo
-          .getSignatureVerifications(transaction, idx, txInfo.unspents[idx].value, {}, prevOutputs)
+          .getSignatureVerifications(transaction, idx, unspents[idx].value, {}, prevOutputs)
           .filter((v) => v.signedBy !== undefined).length;
       } catch (e) {
         return 0;
       }
     });
 
-    explanation.inputSignatures = inputSignatures;
-    explanation.signatures = _.max(inputSignatures) as number;
+    explanation.inputSignatures = inputSignatureCounts;
+    explanation.signatures = _.max(inputSignatureCounts) as number;
     return explanation;
   }
 
