@@ -73,7 +73,6 @@ export interface PrebuildTransactionOptions {
         amount: string | number;
     }[];
     numBlocks?: number;
-    feeRate?: number;
     maxFeeRate?: number;
     minConfirms?: number;
     enforceMinConfirmsForChange?: boolean;
@@ -103,6 +102,9 @@ export interface PrebuildTransactionOptions {
     };
     offlineVerification?: boolean;
     walletContractAddress?: string;
+    idfSignedTimestamp?: string;
+    idfUserId?: string;
+    idfVersion?: number;
     [index: string]: unknown;
 }
 
