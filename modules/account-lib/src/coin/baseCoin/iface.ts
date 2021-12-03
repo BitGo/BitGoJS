@@ -87,3 +87,36 @@ export interface Entry extends BaseAddress {
 export interface BaseFee {
   fee: string;
 }
+
+export interface TransactionRecipient {
+  address: string;
+  amount: string | number;
+  memo?: string;
+}
+
+export interface TransactionFee {
+  fee: string;
+  feeRate?: number;
+  size?: number;
+  type?: string;
+}
+
+export interface TransactionOutputs {
+  outputs: TransactionRecipient[];
+  outputAmount: string;
+}
+
+export interface TransactionChanges {
+  changeOutputs: TransactionRecipient[];
+  changeAmount: string;
+}
+
+export interface TransactionExplanation {
+  displayOrder: string[];
+  id: string;
+  outputs: TransactionRecipient[];
+  outputAmount: string;
+  changeOutputs: TransactionRecipient[];
+  changeAmount: string;
+  fee: TransactionFee;
+}

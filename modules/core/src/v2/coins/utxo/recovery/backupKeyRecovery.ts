@@ -16,9 +16,6 @@ import { sanitizeLegacyPath } from '../../../../bip32path';
 import { AbstractUtxoCoin, Output } from '../../abstractUtxoCoin';
 
 import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
-import { BlockstreamApi } from './blockstreamApi';
-import { BlockchairApi } from './blockchairApi';
-import { InsightApi } from './insightApi';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
@@ -48,31 +45,6 @@ interface SignatureAddressInfo extends RecoveryAccountData {
   userKey: bip32.BIP32Interface;
   redeemScript?: Buffer;
   witnessScript?: Buffer;
-}
-
-function getRecoveryProvider(coinName: string, apiKey?: string): RecoveryProvider {
-  switch (coinName) {
-    case 'btc':
-    case 'tbtc':
-      return BlockstreamApi.forCoin(coinName);
-    case 'bch':
-    case 'tbch':
-    case 'bcha':
-    case 'tbcha': // this coin only exists in tests
-    case 'bsv':
-    case 'tbsv':
-      return BlockchairApi.forCoin(coinName, apiKey);
-    case 'btg':
-    case 'dash':
-    case 'tdash':
-    case 'ltc':
-    case 'tltc':
-    case 'zec':
-    case 'tzec':
-      return InsightApi.forCoin(coinName);
-  }
-
-  throw new ApiNotImplementedError(coinName);
 }
 
 /**
@@ -227,10 +199,10 @@ export interface RecoverParams {
   scan?: number;
   userKey: string;
   backupKey: string;
-  recoveryDestination: string;
-  krsProvider: string;
-  ignoreAddressTypes: string[];
   bitgoKey: string;
+  recoveryDestination: string;
+  krsProvider?: string;
+  ignoreAddressTypes: string[];
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
@@ -243,7 +215,7 @@ async function queryBlockchainUnspentsPath(
   basePath: string,
   addressesById
 ) {
-  const recoveryProvider = getRecoveryProvider(coin.getChain(), params.apiKey);
+  const recoveryProvider = RecoveryProvider.forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
 
@@ -314,6 +286,21 @@ async function getRecoveryFeePerBytes(
   }
 }
 
+export type BackupKeyRecoveryTransansaction = {
+  inputs: {
+    chainPath: string;
+    redeemScript?: string;
+    witnessScript?: string;
+    value: number;
+  }[];
+  transactionHex: string;
+  coin: string;
+  backupKey: string;
+  recoveryAmount: number;
+  // smartbit api response
+  tx?: unknown;
+};
+
 /**
  * Builds a funds recovery transaction without BitGo
  * @param coin
@@ -329,7 +316,11 @@ async function getRecoveryFeePerBytes(
  * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
-export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, params: RecoverParams) {
+export async function backupKeyRecovery(
+  coin: AbstractUtxoCoin,
+  bitgo: BitGo,
+  params: RecoverParams
+): Promise<BackupKeyRecoveryTransansaction | FormattedOfflineVaultTxInfo> {
   if (_.isUndefined(params.userKey)) {
     throw new Error('missing userKey');
   }
@@ -356,7 +347,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
 
   const [userKey, backupKey, bitgoKey] = keys;
   let derivedUserKey;
-  let baseKeyPath;
+  let baseKeyPath: bip32.BIP32Interface[];
   if (params.userKeyPath) {
     derivedUserKey = userKey.derivePath(sanitizeLegacyPath(params.userKeyPath));
     const twoKeys = deriveKeys(deriveKeys([backupKey, bitgoKey], 0), 0);
@@ -414,7 +405,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
 
   // Build the transaction
   const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(coin.network);
-  const txInfo: any = {};
+  const txInfo = {} as BackupKeyRecoveryTransansaction;
 
   const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
 
@@ -441,7 +432,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
 
   let recoveryAmount = totalInputAmount - approximateFee;
   let krsFee;
-  if (isKrsRecovery) {
+  if (isKrsRecovery && params.krsProvider) {
     try {
       krsFee = await calculateFeeAmount(coin, {
         provider: params.krsProvider,
@@ -479,7 +470,7 @@ export async function backupKeyRecovery(coin: AbstractUtxoCoin, bitgo: BitGo, pa
 
   if (isUnsignedSweep) {
     const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-    return formatForOfflineVault(coin.getChain(), txInfo, txHex);
+    return formatForOfflineVault(coin.getChain(), txInfo as OfflineVaultTxInfo, txHex);
   } else {
     const signedTx = signRecoveryTransaction(
       transactionBuilder,

@@ -1,5 +1,6 @@
 import { Blockhash, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
+import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow, feeOptions and SequenceId
 export interface SolanaKeys {
@@ -45,3 +46,11 @@ export interface Transfer {
 }
 
 export type ValidInstructionTypes = SystemInstructionType | 'Memo';
+
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: string;
+  blockhash: Blockhash;
+  // only populated if blockhash is from a nonce account
+  durableNonce?: DurableNonceParams;
+  memo?: string;
+}
