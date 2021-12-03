@@ -10,6 +10,11 @@ describe('SOL:', function () {
   const badAddresses = resources.addresses.invalidAddresses;
   const goodAddresses = resources.addresses.validAddresses;
   
+  const keypair = {
+    pub: resources.accountWithSeed.publicKey,
+    prv: resources.accountWithSeed.privateKey.base58,
+  };
+
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
@@ -113,4 +118,20 @@ describe('SOL:', function () {
       }).should.be.rejectedWith('Invalid private key');
     });
   });
+
+  describe('Sign message', () => {
+    it('should sign message', async function () {
+      const signed = await basecoin.signMessage(
+        keypair,
+        'signed message',
+      );
+      signed.toString('base64').should.equal('s+7d/8aW/twfM/0wLSKOGxd9+LhDIiz/g0FfJ39ylJhQIkjK0RYPm/Y+gdeJ5DIy6K6h6gCXXESDomlv12DBBQ==');
+    });
+    it('shouldnt sign message when message is undefined', async function () {
+      await basecoin.signMessage(
+        keypair,
+      ).should.be.rejectedWith('The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined');
+    });
+  });
+
 });
