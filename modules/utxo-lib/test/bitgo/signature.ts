@@ -6,7 +6,14 @@ import * as networks from '../../src/networks';
 import { ScriptType, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
 import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
 import { Network } from '../../src/networkTypes';
-import { verifySignature, UtxoTransaction, parseSignatureScript, getSignatureVerifications } from '../../src/bitgo';
+import {
+  verifySignature,
+  UtxoTransaction,
+  parseSignatureScript,
+  getSignatureVerifications,
+  verifySignatureWithPublicKeys,
+  verifySignatureWithPublicKey,
+} from '../../src/bitgo';
 
 import * as fixtureUtil from '../fixture.util';
 
@@ -147,14 +154,13 @@ function runTestParseScript(
 
 function assertVerifySignatureEquals(
   tx: UtxoTransaction,
-  scriptType: ScriptType2Of3,
+  prevOutputs: TxOutput[],
   value: boolean,
   verificationSettings?: {
     publicKey?: Buffer;
     signatureIndex?: number;
   }
 ) {
-  const prevOutputs = getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[];
   tx.ins.forEach((input, i) => {
     assert.doesNotThrow(() => {
       getSignatureVerifications(tx, i, defaultTestOutputAmount, verificationSettings, prevOutputs);
@@ -164,16 +170,21 @@ function assertVerifySignatureEquals(
       value,
       JSON.stringify(verificationSettings)
     );
+    if (verificationSettings?.signatureIndex === undefined && verificationSettings?.publicKey) {
+      assert.strictEqual(verifySignatureWithPublicKey(tx, i, prevOutputs, verificationSettings.publicKey), value);
+    }
   });
 }
 
 function checkSignTransaction(tx: UtxoTransaction, scriptType: ScriptType2Of3, signKeys: bip32.BIP32Interface[]) {
+  const prevOutputs = getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[];
+
   // return true iff there are any valid signatures at all
-  assertVerifySignatureEquals(tx, scriptType, signKeys.length > 0);
+  assertVerifySignatureEquals(tx, prevOutputs, signKeys.length > 0);
 
   fixtureKeys.forEach((k) => {
     // if publicKey is given, return true iff it is included in signKeys
-    assertVerifySignatureEquals(tx, scriptType, signKeys.includes(k), { publicKey: k.publicKey });
+    assertVerifySignatureEquals(tx, prevOutputs, signKeys.includes(k), { publicKey: k.publicKey });
   });
 
   // When transactions are signed, the signatures have the same order as the public keys in the outputScript.
@@ -186,16 +197,28 @@ function checkSignTransaction(tx: UtxoTransaction, scriptType: ScriptType2Of3, s
     }
     fixtureKeys.forEach((k) => {
       // If no public key is given, return true iff any valid signature with given index exists.
-      assertVerifySignatureEquals(tx, scriptType, signatureIndex < signKeys.length, {
+      assertVerifySignatureEquals(tx, prevOutputs, signatureIndex < signKeys.length, {
         signatureIndex,
       });
 
       // If publicKey and signatureIndex are provided only return if both match.
-      assertVerifySignatureEquals(tx, scriptType, signatureIndex === orderedSigningKeys.indexOf(k), {
+      assertVerifySignatureEquals(tx, prevOutputs, signatureIndex === orderedSigningKeys.indexOf(k), {
         publicKey: k.publicKey,
         signatureIndex,
       });
     });
+  });
+
+  tx.ins.forEach((input, i) => {
+    assert.deepStrictEqual(
+      verifySignatureWithPublicKeys(
+        tx,
+        i,
+        prevOutputs,
+        fixtureKeys.map((k) => k.publicKey)
+      ),
+      fixtureKeys.map((k) => signKeys.includes(k))
+    );
   });
 }
 
