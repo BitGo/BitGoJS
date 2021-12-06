@@ -67,3 +67,18 @@ export const rawTx = {
       '0x2407020b00203d88792dd5012103008c230000070000002b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',
   },
 };
+
+export const jsonTransactions = {
+  transfer:
+    '{"id":"0xecb860905342cf985b39276a07d6e6696746de4623c07df863f69cba153f939a","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"to":"5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq","amount":"1000000000000"}',
+  proxyTransfer:
+    '{"id":"0x31ce82eb3d76a2d9814ad2f9499195a3bd9d2b16489834f8fd1c5615d9f1897f","sender":"5GsG6P9EqkbmTrM1GE5bcQx9nsSq74KueiLa1kNZiwagFxW4","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"owner":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","forceProxyType":"Any","to":"5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq","amount":90034235235322}',
+  walletInitialization:
+    '{"id":"0x181d71aa09c861b88b44c6252f8c68bf66d5bbad3b6ec551bbb1e715b6f8bc28","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"owner":"5GsG6P9EqkbmTrM1GE5bcQx9nsSq74KueiLa1kNZiwagFxW4","proxyType":"Any","delay":"0"}',
+  staking:
+    '{"id":"0xd95bb6cef42b931e0ee45b87a57dac7d42108e3b6798fd3788758482bbd69ff1","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"controller":"5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq","amount":"50000000000000","payee":"Staked"}',
+  stakingPayee:
+    '{"id":"0x5e308428590cd19f576d7a3836b9f661633dd3a19025a7f0d26ed27cbf73b408","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"controller":"5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq","amount":"50000000000000","payee":"5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq"}',
+  unstaking:
+    '{"id":"0xcfc19a1c80041f807c321d381579bbfddbf0a76713d6d631e27d4ddda89f3699","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"amount":"50000000000000"}',
+};
