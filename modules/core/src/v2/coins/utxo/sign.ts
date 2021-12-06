@@ -8,7 +8,7 @@ import * as debugLib from 'debug';
 import { Triple } from '../../triple';
 
 import { DerivedWalletKeys, eqPublicKey, RootWalletKeys, WalletKeys } from './WalletKeys';
-import { isReplayProtectionUnspent, toOutput, Unspent, WalletUnspent } from './unspent';
+import { isReplayProtectionUnspent, isWalletUnspent, toOutput, Unspent, WalletUnspent } from './unspent';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -91,6 +91,34 @@ export function signWalletTransactionWithUnspent(
   );
 }
 
+/**
+ * @param tx
+ * @param inputIndex
+ * @param unspents
+ * @param walletKeys
+ * @return triple of booleans indicating a valid signature for each pubkey
+ */
+export function verifyWalletTransactionWithUnspents(
+  tx: utxolib.bitgo.UtxoTransaction,
+  inputIndex: number,
+  unspents: Unspent[],
+  walletKeys: RootWalletKeys
+): Triple<boolean> {
+  if (tx.ins.length !== unspents.length) {
+    throw new Error(`input length must match unspents length`);
+  }
+  const unspent = unspents[inputIndex];
+  if (!isWalletUnspent(unspent)) {
+    return [false, false, false];
+  }
+  return utxolib.bitgo.verifySignatureWithPublicKeys(
+    tx,
+    inputIndex,
+    unspents.map((u) => toOutput(u, tx.network)),
+    walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys
+  ) as Triple<boolean>;
+}
+
 export class InputSigningError extends Error {
   constructor(public inputIndex: number, public unspent: Unspent, public reason: Error | string) {
     super(`signing error at input ${inputIndex}: unspentId=${unspent.id}: ${reason}`);
@@ -167,7 +195,7 @@ export function signAndVerifyWalletTransaction(
           return;
         }
         const publicKey = walletSigner.deriveForUnspent(unspent.chain, unspent.index).signer.publicKey;
-        if (!utxolib.bitgo.verifySignature(signedTransaction, inputIndex, unspent.value, { publicKey }, prevOutputs)) {
+        if (!utxolib.bitgo.verifySignatureWithPublicKey(signedTransaction, inputIndex, prevOutputs, publicKey)) {
           return new InputSigningError(inputIndex, unspent, new Error(`invalid signature`));
         }
       } catch (e) {
