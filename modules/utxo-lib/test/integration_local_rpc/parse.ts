@@ -13,7 +13,6 @@ import {
 
 import {
   createSpendTransactionFromPrevOutputs,
-  getDefaultCosigner,
   isSupportedDepositType,
   isSupportedSpendType,
   ScriptType,
@@ -32,6 +31,7 @@ import {
 } from '../../src/bitgo';
 import { Triple } from '../../src/bitgo/types';
 import { TxOutput } from 'bitcoinjs-lib';
+import { getDefaultCosigner } from '../testutil';
 
 const utxolib = require('../../src');
 

@@ -13,10 +13,11 @@ import {
   signInputP2shP2pk,
   UtxoTransactionBuilder,
 } from '../src/bitgo';
-import { createScriptPubKey, KeyTriple, TxOutPoint } from './integration_local_rpc/generate/outputScripts.util';
+import { createScriptPubKey, TxOutPoint } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import { isTriple } from '../src/bitgo/types';
+import { KeyTriple } from './testutil';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
   if (length === 0) {

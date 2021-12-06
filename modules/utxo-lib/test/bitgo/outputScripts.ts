@@ -1,3 +1,4 @@
+import { ECPair, networks } from 'bitcoinjs-lib';
 import * as assert from 'assert';
 
 import {
@@ -7,8 +8,8 @@ import {
   scriptTypeForChain,
   scriptTypes2Of3,
 } from '../../src/bitgo/outputScripts';
-import { getKeyTriple } from '../integration_local_rpc/generate/outputScripts.util';
-import { ECPair, networks } from 'bitcoinjs-lib';
+
+import { getKeyTriple } from '../testutil';
 
 describe('createOutputScript2of3()', function () {
   const keys = getKeyTriple('utxo');
