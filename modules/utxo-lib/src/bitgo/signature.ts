@@ -581,7 +581,7 @@ function isSignatureByPublicKey(v: SignatureVerification, publicKey: Buffer): bo
  * @param inputIndex
  * @param prevOutputs - transaction outputs for inputs
  * @param publicKeys - public keys to check signatures for
- * @return array with signature verification result for each public key in publicKeys
+ * @return array of booleans indicating a valid signature for every pubkey in _publicKeys_
  */
 export function verifySignatureWithPublicKeys(
   transaction: UtxoTransaction,
@@ -610,6 +610,7 @@ export function verifySignatureWithPublicKeys(
  * @param inputIndex
  * @param prevOutputs
  * @param publicKey
+ * @return true iff signature is valid
  */
 export function verifySignatureWithPublicKey(
   transaction: UtxoTransaction,

@@ -96,7 +96,7 @@ export function signWalletTransactionWithUnspent(
  * @param inputIndex
  * @param unspents
  * @param walletKeys
- * @return signature verification result for each key
+ * @return triple of booleans indicating a valid signature for each pubkey
  */
 export function verifyWalletTransactionWithUnspents(
   tx: utxolib.bitgo.UtxoTransaction,
