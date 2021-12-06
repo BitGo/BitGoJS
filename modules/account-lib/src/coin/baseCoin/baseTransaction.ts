@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, Entry, TransactionExplanation } from './iface';
+import { BaseKey, Entry } from './iface';
 import { TransactionType } from './enum';
 
 /**
@@ -83,12 +83,10 @@ export abstract class BaseTransaction {
   abstract toBroadcastFormat(): any;
 
   /**
-   * Explain/parse a given coin transaction.
-   *
+   * Explain/parse a given coin transaction
    * TODO: Move all previous explainTransactions from 'core' to 'account-lib' for other coins,
    * TODO: convert to abstract
    */
-  explainTransaction(): TransactionExplanation {
-    throw new Error('explainTransaction is not implemented');
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  explainTransaction(): any {}
 }

@@ -112,7 +112,6 @@ describe('SOL:', function () {
         fee: {
           fee: '5000',
           feeRate: 5000,
-          type: 'perSignature',
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
@@ -154,7 +153,6 @@ describe('SOL:', function () {
         fee: {
           fee: '5000',
           feeRate: 5000,
-          type: 'perSignature',
         },
         memo: 'test memo',
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
@@ -197,7 +195,6 @@ describe('SOL:', function () {
         fee: {
           fee: '10000',
           feeRate: 5000,
-          type: 'perSignature',
         },
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
@@ -240,7 +237,6 @@ describe('SOL:', function () {
         fee: {
           fee: '10000',
           feeRate: 5000,
-          type: 'perSignature',
         },
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
