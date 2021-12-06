@@ -68,10 +68,9 @@ describe('Blockstream API:', function () {
       const api = BlockstreamApi.forCoin('tbtc');
       const response = await api.getUnspents('2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT');
       response.length.should.equal(1);
-      response[0].amount.should.equal(1000000);
-      response[0].n.should.equal(0);
-      response[0].txid.should.equal('5353100563d6a07d7d7085281222ced09cfb4dfd6e327da3168eac9de6b541fa');
+      response[0].id.should.equal('5353100563d6a07d7d7085281222ced09cfb4dfd6e327da3168eac9de6b541fa:0');
       response[0].address.should.equal('2NBWFbV93FQE52yEV6C7QYQ6DKTbiMoDKuT');
+      response[0].value.should.equal(1000000);
     });
   });
 

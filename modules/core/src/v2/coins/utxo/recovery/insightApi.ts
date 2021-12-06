@@ -1,8 +1,9 @@
 /**
  * @prettier
  */
-import { RecoveryAccountData, RecoveryProvider, RecoveryUnspent } from './RecoveryProvider';
+import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
+import { formatOutputId, PublicUnspent } from '../unspent';
 
 // https://explorer.api.bitcoin.com/docs/bch/v1/#/addr/addrGetUtxo
 type InsightUnspent = {
@@ -74,17 +75,16 @@ export class InsightApi extends BaseApi implements RecoveryProvider {
     });
   }
 
-  async getUnspents(addr: string): Promise<RecoveryUnspent[]> {
+  async getUnspents(addr: string): Promise<PublicUnspent[]> {
     const res = await this.get<InsightUnspent[]>(`/addr/${addr}/utxo`);
     return res.map((body) => {
-      return body.map(
-        (unspent): RecoveryUnspent => ({
-          txid: unspent.txid,
+      return body.map((unspent) => {
+        return {
+          id: formatOutputId(unspent.txid, unspent.vout),
           address: unspent.address,
-          amount: unspent.satoshis,
-          n: unspent.vout,
-        })
-      );
+          value: unspent.satoshis,
+        };
+      });
     });
   }
 }

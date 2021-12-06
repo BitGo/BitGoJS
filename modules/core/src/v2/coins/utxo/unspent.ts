@@ -8,8 +8,6 @@ export interface PublicUnspent {
   id: string;
   address: string;
   value: number;
-  valueString: string;
-  blockHeight: number;
 }
 
 export interface WalletUnspent {

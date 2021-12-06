@@ -16,7 +16,7 @@ import {
   BackupKeyRecoveryTransansaction,
   FormattedOfflineVaultTxInfo,
 } from '../../../../../../src/v2/coins/utxo/recovery/backupKeyRecovery';
-import { WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
+import { toOutput, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { CoingeckoApi } from '../../../../../../src/v2/coins/utxo/recovery/coingeckoApi';
 
 import {
@@ -111,11 +111,6 @@ function run(
     return;
   }
 
-  if (scriptType === 'p2tr') {
-    // FIXME(BG-39171): add p2tr support
-    return;
-  }
-
   describe(`Backup Key Recovery [${[coin.getChain(), ...tags].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
@@ -180,13 +175,12 @@ function run(
       rootKey: bip32.BIP32Interface,
       expectCount: number
     ) {
+      const prevOutputs = recoverUnspents.map((u) => toOutput(u, coin.network));
       tx.ins.forEach((input, inputIndex) => {
         const unspent = recoverUnspents[inputIndex] as WalletUnspent;
+        const { publicKey } = rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index));
         const signatures = utxolib.bitgo
-          .getSignatureVerifications(tx, inputIndex, unspent.value, {
-            publicKey: rootKey.derivePath(walletKeys.getDerivationPath(rootKey, unspent.chain, unspent.index))
-              .publicKey,
-          })
+          .getSignatureVerifications(tx, inputIndex, unspent.value, { publicKey }, prevOutputs)
           .filter((s) => s.signedBy !== undefined);
         signatures.length.should.eql(expectCount);
       });
@@ -199,6 +193,28 @@ function run(
     it((params.hasBackupSignature ? 'has' : 'has no') + ' backup signature', function () {
       checkInputsSignedBy(recoveryTx, walletKeys.backup, params.hasBackupSignature ? 1 : 0);
     });
+
+    if (params.hasUserSignature && params.hasBackupSignature) {
+      it('has no placeholder signatures', function () {
+        recoveryTx.ins.forEach((input) => {
+          const parsed = utxolib.bitgo.parseSignatureScript(input);
+          switch (parsed.scriptType) {
+            case 'p2sh':
+            case 'p2shP2wsh':
+            case 'p2wsh':
+            case 'p2tr':
+              parsed.signatures.forEach((signature, i) => {
+                if (utxolib.bitgo.isPlaceholderSignature(signature)) {
+                  throw new Error(`placeholder signature at index ${i}`);
+                }
+              });
+              break;
+            default:
+              throw new Error(`unexpected scriptType ${scriptType}`);
+          }
+        });
+      });
+    }
 
     it((params.hasKrsOutput ? 'has' : 'has no') + ' key recovery service output', function () {
       recoveryTx.outs.length.should.eql(params.hasKrsOutput ? 2 : 1);
