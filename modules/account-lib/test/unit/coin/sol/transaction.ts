@@ -34,6 +34,7 @@ describe('Sol Transaction', () => {
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
       txJson.numSignatures.should.equal(0);
       txJson.instructionsData.length.should.equal(3);
+      txJson.lamportsPerSignature?.should.be.undefined();
       txJson.instructionsData.should.deepEqual([
         {
           type: 'NonceAdvance',
@@ -73,6 +74,7 @@ describe('Sol Transaction', () => {
       txJson.feePayer?.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
       txJson.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
       txJson.numSignatures.should.equal(1);
+      txJson.lamportsPerSignature?.should.be.undefined();
       txJson.instructionsData.length.should.equal(8);
       txJson.instructionsData.should.deepEqual([
         {
@@ -220,7 +222,13 @@ describe('Sol Transaction', () => {
     const amount = '10000';
 
     it('should explain single transfer transaction', async function () {
-      const tx = await factory.getTransferBuilder().nonce(blockHash).sender(sender).send({ address, amount }).build();
+      const tx = await factory
+        .getTransferBuilder()
+        .nonce(blockHash)
+        .sender(sender)
+        .send({ address, amount })
+        .fee({ amount: 5000 })
+        .build();
 
       const explainedTransaction = tx.explainTransaction();
       explainedTransaction.should.deepEqual({
@@ -236,7 +244,7 @@ describe('Sol Transaction', () => {
           'fee',
           'memo',
         ],
-        id: 'undefined',
+        id: 'UNAVAILABLE',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -249,6 +257,7 @@ describe('Sol Transaction', () => {
         ],
         fee: {
           fee: '0',
+          feeRate: 5000,
         },
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
@@ -278,7 +287,7 @@ describe('Sol Transaction', () => {
           'fee',
           'memo',
         ],
-        id: 'undefined',
+        id: 'UNAVAILABLE',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -290,7 +299,8 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: '0',
+          fee: 'UNAVAILABLE',
+          feeRate: undefined,
         },
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
@@ -323,7 +333,7 @@ describe('Sol Transaction', () => {
           'fee',
           'memo',
         ],
-        id: 'undefined',
+        id: 'UNAVAILABLE',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -343,9 +353,55 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: '0',
+          fee: 'UNAVAILABLE',
+          feeRate: undefined,
         },
         memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain signed transfer transaction', async function () {
+      const tx = await factory
+        .getTransferBuilder()
+        .fee({ amount: 5000 })
+        .nonce(blockHash)
+        .sender(sender)
+        .send({ address, amount })
+        .build();
+      await (tx as Transaction).sign(new KeyPair({ prv: testData.authAccount.prv }));
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: tx.id,
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
       });
@@ -354,6 +410,7 @@ describe('Sol Transaction', () => {
     it('should explain wallet init transaction', async function () {
       const tx = await factory
         .getWalletInitializationBuilder()
+        .fee({ amount: 5000 })
         .sender(sender)
         .nonce(blockHash)
         .address(testData.addresses.validAddresses[1])
@@ -374,7 +431,7 @@ describe('Sol Transaction', () => {
           'fee',
           'memo',
         ],
-        id: 'undefined',
+        id: 'UNAVAILABLE',
         type: 'WalletInitialization',
         changeOutputs: [],
         changeAmount: '0',
@@ -387,6 +444,7 @@ describe('Sol Transaction', () => {
         ],
         fee: {
           fee: '0',
+          feeRate: 5000,
         },
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
@@ -418,7 +476,7 @@ describe('Sol Transaction', () => {
           'fee',
           'memo',
         ],
-        id: 'undefined',
+        id: 'UNAVAILABLE',
         type: 'WalletInitialization',
         changeOutputs: [],
         changeAmount: '0',
@@ -430,9 +488,56 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: '0',
+          fee: 'UNAVAILABLE',
+          feeRate: undefined,
         },
         memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain signed wallet init transaction', async function () {
+      const tx = await factory
+        .getWalletInitializationBuilder()
+        .fee({ amount: 5000 })
+        .sender(sender)
+        .nonce(blockHash)
+        .address(testData.addresses.validAddresses[1])
+        .amount(amount)
+        .build();
+      await (tx as Transaction).sign(new KeyPair({ prv: testData.authAccount.prv }));
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: tx.id,
+        type: 'WalletInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '10000',
+          feeRate: 5000,
+        },
+        memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
       });

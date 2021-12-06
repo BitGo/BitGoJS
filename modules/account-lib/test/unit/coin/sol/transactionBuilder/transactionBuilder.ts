@@ -17,15 +17,19 @@ describe('Sol Transaction Builder', async () => {
     done();
   });
 
-  it('start and build an empty a transfer tx', async () => {
+  it('start and build an empty a transfer tx with fee', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(authAccount.pub);
     txBuilder.nonce(validBlockhash);
+    txBuilder.fee({ amount: 5000 });
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
+
+    const txJson = tx.toJson();
+    txJson.lamportsPerSignature?.should.equal(5000);
   });
 
-  it('should fail to build if missing feePayer', async () => {
+  it('should fail to build if missing sender', async () => {
     for (const txBuilder of builders) {
       txBuilder.nonce(validBlockhash);
       await txBuilder.build().should.rejectedWith('Invalid transaction: missing sender');

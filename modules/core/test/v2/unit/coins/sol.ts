@@ -1,5 +1,6 @@
 import { Sol, Tsol } from '../../../../src/v2/coins/';
 import { TestBitGo } from '../../../lib/test_bitgo';
+import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 
@@ -9,7 +10,7 @@ describe('SOL:', function () {
   let keyPair;
   const badAddresses = resources.addresses.invalidAddresses;
   const goodAddresses = resources.addresses.validAddresses;
-  
+
   const keypair = {
     pub: resources.accountWithSeed.publicKey,
     prv: resources.accountWithSeed.privateKey.base58,
@@ -77,12 +78,170 @@ describe('SOL:', function () {
   });
 
   describe('Explain Transactions:', () => {
-    it('should explain a transfer transaction', async function () {
-      await should.throws(() => basecoin.explainTransaction('placeholder'), 'explainTransaction method not implemented');
+    it('should explain an unsigned transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.transfer.unsigned,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '300000',
+        outputs: [
+          {
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        durableNonce: undefined,
+      });
     });
 
-    it('should explain an unsigned transaction', async function () {
-      await should.throws(() => basecoin.explainTransaction('placeholder'), 'explainTransaction method not implemented');
+    it('should explain a signed transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.transfer.signed,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '300000',
+        outputs: [
+          {
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: '300000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain an unsigned wallet init transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.walletInit.unsigned,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'WalletInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '300000',
+        outputs: [
+          {
+            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+            amount: '300000',
+          },
+        ],
+        fee: {
+          fee: '10000',
+          feeRate: 5000,
+        },
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        durableNonce: undefined,
+        memo: undefined,
+      });
+    });
+
+    it('should explain a signed wallet init transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.walletInit.signed,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: '2QdKALq4adaTahJH13AGzM5bAFuNshw43iQBdVS9D2Loq736zUgPXfHj32cNJKX6FyjUzYJhGfEyAAB5FgYUW6zR',
+        type: 'WalletInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '300000',
+        outputs: [
+          {
+            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+            amount: '300000',
+          },
+        ],
+        fee: {
+          fee: '10000',
+          feeRate: 5000,
+        },
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        durableNonce: undefined,
+        memo: undefined,
+      });
     });
   });
 
