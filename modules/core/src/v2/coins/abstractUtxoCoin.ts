@@ -615,6 +615,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const result: ParsedTransaction = {
         keychains,
         keySignatures,
+        inputs: [],
         outputs: allOutputDetails,
         missingOutputs,
         explicitExternalOutputs,

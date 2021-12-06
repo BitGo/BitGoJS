@@ -18,8 +18,6 @@ import * as rippleKeypairs from 'ripple-keypairs';
 import {
   BaseCoin,
   KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
   TransactionExplanation,
   TransactionPrebuild,
   SignTransactionOptions as BaseSignTransactionOptions,
@@ -649,12 +647,5 @@ export class Xrp extends BaseCoin {
       pub: xpub,
       prv: extendedKey.toBase58(),
     };
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 }

@@ -14,8 +14,6 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
-  ParseTransactionOptions,
-  ParsedTransaction,
   VerifyAddressOptions as BaseVerifyAddressOptions,
 } from '../baseCoin';
 
@@ -218,13 +216,6 @@ export class Cspr extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**

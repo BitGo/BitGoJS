@@ -7,8 +7,6 @@ import {
   BaseCoin,
   TransactionExplanation,
   KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
@@ -1063,13 +1061,6 @@ export class Eos extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**

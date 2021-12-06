@@ -5,8 +5,6 @@ import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -58,13 +56,6 @@ export class Susd extends BaseCoin {
 
   isValidPub(pub: string): boolean {
     throw new MethodNotImplementedError();
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

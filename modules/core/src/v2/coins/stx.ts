@@ -199,10 +199,6 @@ export class Stx extends BaseCoin {
       .asCallback(callback);
   }
 
-  parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve({}).asCallback(callback);
-  }
-
   /**
    * Explain a Stacks transaction from txHex
    * @param params

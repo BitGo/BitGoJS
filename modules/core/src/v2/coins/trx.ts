@@ -15,8 +15,6 @@ import * as common from '../../common';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -193,13 +191,6 @@ export class Trx extends BaseCoin {
       return true;
     }
     return new RegExp('^04[a-zA-Z0-9]{128}$').test(pub);
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

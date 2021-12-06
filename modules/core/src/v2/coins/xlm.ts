@@ -27,8 +27,6 @@ import {
   KeyPair,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
-  ParseTransactionOptions,
-  ParsedTransaction,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams as BaseTransactionParams,
@@ -1147,11 +1145,4 @@ export class Xlm extends BaseCoin {
    */
   protected static txToString = (tx: stellar.Transaction): string =>
     (tx.toEnvelope().toXDR as (_: string) => string)('base64');
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
-  }
 }

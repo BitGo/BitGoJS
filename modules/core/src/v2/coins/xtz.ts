@@ -10,8 +10,6 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -144,13 +142,6 @@ export class Xtz extends BaseCoin {
       pub: keys.xpub,
       prv: keys.xprv,
     };
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

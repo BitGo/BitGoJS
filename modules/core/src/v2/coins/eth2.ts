@@ -12,8 +12,6 @@ import {
   BaseCoin,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -326,13 +324,6 @@ export class Eth2 extends BaseCoin {
       pub: keyPair.getKeys().pub,
       prv: keyPair.getKeys().prv || '',
     };
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

@@ -9,6 +9,8 @@ import * as accountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   KeyPair,
+  ParseTransactionOptions,
+  ParsedTransaction,
   SignedTransaction,
   TransactionExplanation,
   TransactionRecipient,
@@ -165,7 +167,10 @@ export class Sol extends BaseCoin {
       .asCallback(callback);
   }
 
-  parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
     throw new MethodNotImplementedError('parseTransaction method not implemented');
   }
 

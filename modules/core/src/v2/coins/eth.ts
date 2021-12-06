@@ -16,8 +16,6 @@ import {
   FeeEstimateOptions,
   HalfSignedAccountTransaction,
   KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
   PresignTransactionOptions as BasePresignTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
@@ -1640,13 +1638,6 @@ export class Eth extends BaseCoin {
       pub: xpub,
       prv: extendedKey.toBase58(),
     };
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**

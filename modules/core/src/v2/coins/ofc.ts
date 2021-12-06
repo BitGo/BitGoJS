@@ -7,8 +7,6 @@ import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -83,13 +81,6 @@ export class Ofc extends BaseCoin {
 
   getBaseFactor(): number | string {
     return 0;
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

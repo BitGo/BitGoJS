@@ -12,8 +12,6 @@ import {
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -128,13 +126,6 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
       pub: xpub,
       prv: extendedKey.toBase58(),
     };
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress({ address }: VerifyAddressOptions): boolean {

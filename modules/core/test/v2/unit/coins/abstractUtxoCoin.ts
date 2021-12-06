@@ -359,6 +359,7 @@ describe('Abstract UTXO Coin:', () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
         keychains: {},
         keySignatures: {},
+        inputs: [],
         outputs: [],
         missingOutputs: [],
         explicitExternalOutputs: [],
@@ -384,6 +385,7 @@ describe('Abstract UTXO Coin:', () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
         keychains: {},
         keySignatures: {},
+        inputs: [],
         outputs: [],
         missingOutputs: [],
         explicitExternalOutputs: [],
@@ -415,6 +417,7 @@ describe('Abstract UTXO Coin:', () => {
         keychains: {
         },
         keySignatures: {},
+        inputs: [],
         outputs: [],
         missingOutputs: [],
         explicitExternalOutputs: [],
@@ -445,6 +448,7 @@ describe('Abstract UTXO Coin:', () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
         keychains: {},
         keySignatures: {},
+        inputs: [],
         outputs: [],
         missingOutputs: [],
         explicitExternalOutputs: [],

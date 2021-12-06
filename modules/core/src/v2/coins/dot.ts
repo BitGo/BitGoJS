@@ -6,8 +6,6 @@ import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
@@ -229,13 +227,6 @@ export class Dot extends BaseCoin {
    */
   recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
     throw new MethodNotImplementedError('Dot recovery not implemented');
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

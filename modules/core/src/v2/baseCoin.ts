@@ -151,9 +151,19 @@ export interface ParseTransactionOptions {
   [index: string]: unknown;
 }
 
-// TODO (SDKT-9): reverse engineer and add options
+export interface TransactionOutput {
+  address: string;
+  amount: number | string;
+}
+
+export type TransactionInput = TransactionOutput;
+
 export interface ParsedTransaction {
-  [index: string]: unknown;
+  // captures assets being spent in this transaction (includes fees)
+  inputs: TransactionInput[];
+
+  // captures where assets are being sent to (excludes fees)
+  outputs: TransactionOutput[];
 }
 
 // TODO (SDKT-9): reverse engineer and add options
@@ -500,10 +510,12 @@ export abstract class BaseCoin {
     throw new Error('deprecated method');
   }
 
-  abstract parseTransaction(
+  parseTransaction(
     params: ParseTransactionOptions,
     callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction>;
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({ inputs: [], outputs: [] }).asCallback(callback);
+  }
 
   /**
    * Generate a key pair on the curve used by the coin

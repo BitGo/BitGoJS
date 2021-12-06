@@ -12,8 +12,6 @@ import {
   BaseCoin,
   TransactionExplanation,
   KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
   SignedTransaction,
@@ -460,13 +458,6 @@ export class Algo extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
-  }
-
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
