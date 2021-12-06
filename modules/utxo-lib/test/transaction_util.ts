@@ -4,19 +4,23 @@ import { TxOutput } from 'bitcoinjs-lib';
 
 import * as networks from '../src/networks';
 import { Network } from '../src/networkTypes';
-import { UtxoTransaction } from '../src/bitgo/UtxoTransaction';
+
+import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import {
+  isTriple,
   createTransactionBuilderForNetwork,
   createTransactionBuilderFromTransaction,
   createTransactionFromBuffer,
   signInput2Of3,
   signInputP2shP2pk,
+  TxOutPoint,
+  UtxoTransaction,
   UtxoTransactionBuilder,
+  PrevOutput,
 } from '../src/bitgo';
-import { createScriptPubKey, TxOutPoint } from './integration_local_rpc/generate/outputScripts.util';
+
+import { createScriptPubKey } from './integration_local_rpc/generate/outputScripts.util';
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
-import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
-import { isTriple } from '../src/bitgo/types';
 import { KeyTriple } from './testutil';
 
 export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
@@ -45,7 +49,7 @@ export function parseTransactionRoundTrip<T extends UtxoTransaction>(
 
   // Test `TransactionBuilder.fromTransaction()` implementation
   if (inputs) {
-    inputs.forEach(({ txid, index, value }, i) => {
+    inputs.forEach(({ value }, i) => {
       (tx.ins[i] as any).value = value;
     });
     assert.strictEqual(
@@ -59,23 +63,35 @@ export function parseTransactionRoundTrip<T extends UtxoTransaction>(
 
 export const defaultTestOutputAmount = 1e8;
 
-export function getPrevOutputs(
+export function mockTransactionId(v = 0xff): string {
+  return Buffer.alloc(32).fill(v).toString('hex');
+}
+
+export function getPrevOutput(
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  vout = 0,
   value = defaultTestOutputAmount,
-  scriptType: ScriptType2Of3 | 'p2shP2pk'
-): (TxOutPoint & TxOutput)[] {
-  return [
-    {
-      txid: Buffer.alloc(32).fill(0xff).toString('hex'),
-      index: 0,
-      script: isScriptType2Of3(scriptType)
-        ? createOutputScript2of3(
-            fixtureKeys.map((k) => k.publicKey),
-            scriptType
-          ).scriptPubKey
-        : Buffer.from([]),
-      value,
-    },
-  ];
+  keys: KeyTriple = fixtureKeys
+): PrevOutput {
+  return {
+    txid: mockTransactionId(),
+    vout,
+    script: isScriptType2Of3(scriptType)
+      ? createOutputScript2of3(
+          keys.map((k) => k.publicKey),
+          scriptType
+        ).scriptPubKey
+      : Buffer.from([]),
+    value,
+  };
+}
+
+export function getPrevOutputs(
+  scriptType: ScriptType2Of3 | 'p2shP2pk',
+  value = defaultTestOutputAmount,
+  keys: KeyTriple = fixtureKeys
+): PrevOutput[] {
+  return [getPrevOutput(scriptType, 0, value, keys)];
 }
 
 export type HalfSigner = {
@@ -90,16 +106,16 @@ export function getTransactionBuilder(
   network: Network,
   {
     outputAmount = defaultTestOutputAmount,
-    prevOutputs = getPrevOutputs(outputAmount, scriptType),
+    prevOutputs = getPrevOutputs(scriptType, outputAmount),
   }: {
     outputAmount?: number;
-    prevOutputs?: (TxOutPoint & TxOutput)[];
+    prevOutputs?: PrevOutput[];
   } = {}
 ): UtxoTransactionBuilder {
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(({ txid, index }) => {
-    txBuilder.addInput(txid, index);
+  prevOutputs.forEach(({ txid, vout }) => {
+    txBuilder.addInput(txid, vout);
   });
 
   const recipientScript = createScriptPubKey(fixtureKeys, 'p2pkh', networks.bitcoin);

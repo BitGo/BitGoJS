@@ -3,13 +3,23 @@ import * as bip32 from 'bip32';
 
 import { Network } from '../../src/networkTypes';
 import { isTestnet } from '../../src/coins';
+import { TxOutput } from '../../src';
+
 import {
   verifySignature,
   parseSignatureScript,
   parseSignatureScript2Of3,
   ParsedSignatureScript2Of3,
   signInput2Of3,
-} from '../../src/bitgo/signature';
+  Triple,
+  UtxoTransaction,
+  getOutputIdForInput,
+  TxOutPoint,
+  createTransactionBuilderForNetwork,
+  createTransactionBuilderFromTransaction,
+  createTransactionFromBuffer,
+} from '../../src/bitgo';
+import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
 import {
   createSpendTransactionFromPrevOutputs,
@@ -17,30 +27,16 @@ import {
   isSupportedSpendType,
   ScriptType,
   scriptTypes,
-  TxOutPoint,
 } from './generate/outputScripts.util';
 import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
-import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
-import { UtxoTransaction } from '../../src/bitgo/UtxoTransaction';
-import {
-  createTransactionBuilderForNetwork,
-  createTransactionBuilderFromTransaction,
-  createTransactionFromBuffer,
-} from '../../src/bitgo';
-import { Triple } from '../../src/bitgo/types';
-import { TxOutput } from 'bitcoinjs-lib';
 import { getDefaultCosigner } from '../testutil';
 
 const utxolib = require('../../src');
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
-
-function getTxidFromHash(buf: Buffer): string {
-  return Buffer.from(buf).reverse().toString('hex');
-}
 
 function runTestParse(network: Network, txType: FixtureTxType, scriptType: ScriptType) {
   if (txType === 'deposit' && !isSupportedDepositType(network, scriptType)) {
@@ -67,7 +63,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       if (input.hash) {
         input = {
           ...input,
-          txid: getTxidFromHash(input.hash),
+          ...getOutputIdForInput(input as { hash: Buffer; index: number }),
         };
       }
 
@@ -92,8 +88,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 
     function getPrevOutputs(): (TxOutPoint & TxOutput)[] {
       return parsedTx.ins.map((i) => ({
-        txid: getTxidFromHash(i.hash),
-        index: i.index,
+        ...getOutputIdForInput(i),
         script: getPrevOutputScript(i),
         value: getPrevOutputValue(i),
       }));
@@ -109,7 +104,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
       }
       const txbUnsigned = createTransactionBuilderForNetwork(network);
       getPrevOutputs().forEach((o) => {
-        txbUnsigned.addInput(o.txid, o.index);
+        txbUnsigned.addInput(o.txid, o.vout);
       });
       fixture.transaction.vout.forEach((o) => {
         txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);

@@ -177,7 +177,7 @@ function assertVerifySignatureEquals(
 }
 
 function checkSignTransaction(tx: UtxoTransaction, scriptType: ScriptType2Of3, signKeys: bip32.BIP32Interface[]) {
-  const prevOutputs = getPrevOutputs(defaultTestOutputAmount, scriptType) as TxOutput[];
+  const prevOutputs = getPrevOutputs(scriptType, defaultTestOutputAmount) as TxOutput[];
 
   // return true iff there are any valid signatures at all
   assertVerifySignatureEquals(tx, prevOutputs, signKeys.length > 0);

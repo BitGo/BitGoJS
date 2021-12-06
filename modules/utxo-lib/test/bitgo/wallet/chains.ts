@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import {
   chainCodes,
-  getChainExternal,
-  getChainInternal,
+  getExternalChainCode,
+  getInternalChainCode,
   isChainCode,
-  isChainExternal,
-  isChainInternal,
+  isExternalChainCode,
+  isInternalChainCode,
   scriptTypeForChain,
   toChainPair,
 } from '../../../src/bitgo';
@@ -38,8 +38,8 @@ describe('chain codes', function () {
     );
 
     scriptTypes2Of3.forEach((t) => {
-      assert.strictEqual(t, scriptTypeForChain(getChainExternal(t)));
-      assert.strictEqual(t, scriptTypeForChain(getChainInternal(t)));
+      assert.strictEqual(t, scriptTypeForChain(getExternalChainCode(t)));
+      assert.strictEqual(t, scriptTypeForChain(getInternalChainCode(t)));
     });
 
     assert.deepStrictEqual(
@@ -48,9 +48,9 @@ describe('chain codes', function () {
     );
 
     chainCodes.forEach((c) => {
-      assert.strict(isChainExternal(c) || isChainInternal(c));
-      assert.strictEqual(isChainExternal(c) && isChainInternal(c), false);
-      assert.strictEqual(isChainExternal(c) ? getChainExternal(c) : getChainInternal(c), c);
+      assert.strict(isExternalChainCode(c) || isInternalChainCode(c));
+      assert.strictEqual(isExternalChainCode(c) && isInternalChainCode(c), false);
+      assert.strictEqual(isExternalChainCode(c) ? getExternalChainCode(c) : getInternalChainCode(c), c);
     });
   });
 });

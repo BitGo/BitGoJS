@@ -6,8 +6,13 @@ import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../.
 import { isTriple } from '../../../src/bitgo/types';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
-import { createTransactionBuilderForNetwork, createTransactionFromBuffer, signInput2Of3 } from '../../../src/bitgo';
-import { UtxoTransaction } from '../../../src/bitgo/UtxoTransaction';
+import {
+  createTransactionBuilderForNetwork,
+  createTransactionFromBuffer,
+  signInput2Of3,
+  TxOutPoint,
+  UtxoTransaction,
+} from '../../../src/bitgo';
 import { getDefaultCosigner, KeyTriple } from '../../testutil';
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
@@ -81,8 +86,8 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
 
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(({ txid, index, script, value }, i) => {
-    txBuilder.addInput(txid, index, undefined, script, value);
+  prevOutputs.forEach(({ txid, vout, script, value }, i) => {
+    txBuilder.addInput(txid, vout, undefined, script, value);
   });
 
   const inputSum = prevOutputs.reduce((sum, { value }) => sum + value, 0);
@@ -107,11 +112,6 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   return txBuilder.build() as T;
 }
 
-export type TxOutPoint = {
-  txid: string;
-  index: number;
-};
-
 export function createSpendTransaction(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
@@ -135,7 +135,7 @@ export function createSpendTransaction(
           }
           return {
             txid: inputTx.getId(),
-            index: vout,
+            vout,
             value: o.value,
             script: o.script,
           };

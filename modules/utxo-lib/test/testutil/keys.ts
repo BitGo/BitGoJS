@@ -2,6 +2,7 @@ import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 
 import { Triple } from '../../src/bitgo';
+import { RootWalletKeys } from '../../src/bitgo/wallet/WalletKeys';
 
 export type KeyTriple = Triple<bip32.BIP32Interface>;
 
@@ -26,4 +27,8 @@ export function getDefaultCosigner<T>(keyset: Triple<T>, signer: T): T {
     return user;
   }
   throw new Error(`signer not in pubkeys`);
+}
+
+export function getDefaultWalletKeys(): RootWalletKeys {
+  return new RootWalletKeys(getKeyTriple('default'));
 }

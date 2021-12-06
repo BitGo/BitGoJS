@@ -14,7 +14,7 @@ export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
 
 export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
 
-export { scriptTypeForChain } from './wallet';
+export { scriptTypeForChain } from './wallet/chains';
 
 /**
  * @param t

@@ -74,27 +74,27 @@ export function scriptTypeForChain(chain: number): ScriptType2Of3 {
 /**
  * @return chain code intended for external addresses
  */
-export function getChainExternal(v: ChainCodePair | ScriptType2Of3 | ChainCode): ChainCode {
+export function getExternalChainCode(v: ChainCodePair | ScriptType2Of3 | ChainCode): ChainCode {
   return toChainPair(v)[0];
 }
 
 /**
  * @return chain code intended for change outputs
  */
-export function getChainInternal(v: ChainCodePair | ScriptType2Of3 | ChainCode): ChainCode {
+export function getInternalChainCode(v: ChainCodePair | ScriptType2Of3 | ChainCode): ChainCode {
   return toChainPair(v)[1];
 }
 
 /**
  * @return true iff chain code is external
  */
-export function isChainExternal(v: ChainCode): boolean {
+export function isExternalChainCode(v: ChainCode): boolean {
   return toChainPair(v).indexOf(v) === 0;
 }
 
 /**
  * @return true iff chain code is internal
  */
-export function isChainInternal(v: ChainCode): boolean {
+export function isInternalChainCode(v: ChainCode): boolean {
   return toChainPair(v).indexOf(v) === 1;
 }
