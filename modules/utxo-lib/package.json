@@ -17,6 +17,10 @@
     "browserify",
     "javascript"
   ],
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./src/bitgo": "./dist/src/bitgo/index.js"
+  },
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc --project tsconfig.build.json",
