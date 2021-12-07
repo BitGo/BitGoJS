@@ -3,12 +3,10 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 import { Codes } from '@bitgo/unspents';
+import { RootWalletKeys, Unspent, WalletUnspent } from '@bitgo/utxo-lib/src/bitgo';
 
 import { getSeed } from '../../../../../lib/keys';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
-import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
-
-import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 
@@ -35,7 +33,7 @@ export function mockWalletUnspent(
   network: utxolib.Network,
   walletKeys: RootWalletKeys,
   { id, chain = 0, index = 0, value, address }: Partial<WalletUnspent>
-): Unspent {
+): WalletUnspent {
   if (value === undefined) {
     throw new Error(`unspent value must be set`);
   }
@@ -65,7 +63,7 @@ export function mockWalletUnspent(
   };
 }
 
-export function mockUnspentReplayProtection(network: utxolib.Network): ReplayProtectionUnspent {
+export function mockUnspentReplayProtection(network: utxolib.Network): Unspent {
   const addresses = getReplayProtectionAddresses(network);
   if (addresses.length) {
     const address = addresses[0];

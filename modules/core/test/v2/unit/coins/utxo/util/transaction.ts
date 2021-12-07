@@ -2,9 +2,13 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent, isWalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
-import { signWalletTransactionWithUnspent, WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
-import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
+import {
+  isWalletUnspent,
+  RootWalletKeys,
+  signInputWithUnspent,
+  Unspent,
+  WalletUnspentSigner,
+} from '@bitgo/utxo-lib/src/bitgo';
 
 export type TransactionObj = {
   id: string;
@@ -80,7 +84,7 @@ function createTransactionBuilderWithSignedInputs(
   );
   unspents.forEach((u, inputIndex) => {
     if (isWalletUnspent(u)) {
-      signWalletTransactionWithUnspent(txBuilder, inputIndex, u, signer);
+      signInputWithUnspent(txBuilder, inputIndex, u, signer);
     }
   });
   return txBuilder;

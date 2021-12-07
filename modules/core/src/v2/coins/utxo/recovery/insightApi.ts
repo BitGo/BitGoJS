@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import { formatOutputId, Unspent } from '@bitgo/utxo-lib/src/bitgo';
 import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
-import { formatOutputId, PublicUnspent } from '../unspent';
 
 // https://explorer.api.bitcoin.com/docs/bch/v1/#/addr/addrGetUtxo
 type InsightUnspent = {
@@ -75,12 +75,12 @@ export class InsightApi extends BaseApi implements RecoveryProvider {
     });
   }
 
-  async getUnspents(addr: string): Promise<PublicUnspent[]> {
+  async getUnspents(addr: string): Promise<Unspent[]> {
     const res = await this.get<InsightUnspent[]>(`/addr/${addr}/utxo`);
     return res.map((body) => {
       return body.map((unspent) => {
         return {
-          id: formatOutputId(unspent.txid, unspent.vout),
+          id: formatOutputId(unspent),
           address: unspent.address,
           value: unspent.satoshis,
         };

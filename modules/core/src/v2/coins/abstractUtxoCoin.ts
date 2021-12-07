@@ -3,8 +3,15 @@
  */
 import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
-import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as utxolib from '@bitgo/utxo-lib';
+import {
+  RootWalletKeys,
+  toOutput,
+  Unspent,
+  verifySignatureWithUnspent,
+  WalletUnspentSigner,
+} from '@bitgo/utxo-lib/src/bitgo';
+import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
@@ -55,10 +62,8 @@ const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
-import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction, verifyWalletTransactionWithUnspents, WalletUnspentSigner } from './utxo/sign';
-import { RootWalletKeys } from './utxo/WalletKeys';
+import { isReplayProtectionUnspent } from './utxo/replayProtection';
+import { signAndVerifyWalletTransaction } from './utxo/sign';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -1203,7 +1208,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const signedTransaction = signAndVerifyWalletTransaction(
         transaction,
         txPrebuild.txInfo.unspents as Unspent[],
-        new WalletUnspentSigner(keychains, signerKeychain, cosignerKeychain),
+        new WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
         { isLastSignature }
       );
 
@@ -1219,8 +1224,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param unspent
    * @returns {boolean}
    */
-  isBitGoTaintedUnspent(unspent: Unspent): unspent is ReplayProtectionUnspent {
-    return getReplayProtectionAddresses(this.network).includes(unspent.address);
+  isBitGoTaintedUnspent(unspent: Unspent): boolean {
+    return isReplayProtectionUnspent(unspent, this.network);
   }
 
   /**
@@ -1333,7 +1338,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        return verifyWalletTransactionWithUnspents(transaction, idx, unspents, walletKeys).filter((v) => v).length;
+        return verifySignatureWithUnspent(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
         return 0;
       }

@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import { formatOutputId, Unspent } from '@bitgo/utxo-lib/src/bitgo';
 import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
-import { formatOutputId, PublicUnspent } from '../unspent';
 
 // https://github.com/Blockstream/esplora/blob/master/API.md#get-addressaddress
 type EsploraAddressStats = {
@@ -55,13 +55,13 @@ export class BlockstreamApi extends BaseApi implements RecoveryProvider {
   }
 
   /** @inheritDoc */
-  async getUnspents(address: string): Promise<PublicUnspent[]> {
+  async getUnspents(address: string): Promise<Unspent[]> {
     const res = await this.get<EsploraUnspent[]>(`/address/${address}/utxo`);
 
     return res.map((unspents) => {
       return unspents.map((unspent) => {
         return {
-          id: formatOutputId(unspent.txid, unspent.vout),
+          id: formatOutputId(unspent),
           address,
           value: unspent.value,
         };

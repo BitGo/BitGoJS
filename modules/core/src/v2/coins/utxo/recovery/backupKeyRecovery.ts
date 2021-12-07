@@ -4,6 +4,8 @@
 
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
+import { parseOutputId, RootWalletKeys, WalletUnspent, WalletUnspentSigner } from '@bitgo/utxo-lib/src/bitgo';
+
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
@@ -18,10 +20,8 @@ import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { RootWalletKeys } from '../WalletKeys';
 import { isTriple } from '../../../triple';
-import { signAndVerifyWalletTransaction, WalletUnspentSigner } from '../sign';
-import { parseOutputId, WalletUnspent } from '../unspent';
+import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface OfflineVaultTxInfo {
   inputs: WalletUnspent[];

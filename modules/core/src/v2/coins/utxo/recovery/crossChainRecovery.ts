@@ -7,6 +7,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
 import { VirtualSizes } from '@bitgo/unspents';
 
 import { NodeCallback } from '../../../types';
@@ -15,7 +16,6 @@ import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { Ltc } from '../../ltc';
 import { Wallet } from '../../../wallet';
 
-import { PublicUnspent } from '../unspent';
 import { BaseCoin } from '../../../baseCoin';
 import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
@@ -38,9 +38,9 @@ class BitgoPublicApi {
    * @param addresses
    * @returns {*}
    */
-  async getUnspentInfo(addresses: string[]): Promise<PublicUnspent[]> {
+  async getUnspentInfo(addresses: string[]): Promise<Unspent[]> {
     const url = this.coin.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-    return (await request.get(url)).body as PublicUnspent[];
+    return (await request.get(url)).body as Unspent[];
   }
 }
 

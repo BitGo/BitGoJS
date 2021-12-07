@@ -5,9 +5,9 @@ import * as _ from 'lodash';
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/src/bitgo';
 
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import { Unspent, WalletUnspent } from '../../../../../src/v2/coins/utxo/unspent';
 import { getReplayProtectionAddresses } from '../../../../../src/v2/coins/utxo/replayProtection';
 
 import {

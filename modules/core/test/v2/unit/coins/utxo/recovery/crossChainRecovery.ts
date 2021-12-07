@@ -4,10 +4,10 @@
 import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
 
 import * as config from '../../../../../../src/config';
 import { Triple } from '../../../../../../src';
-import { Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import { CrossChainRecoverySigned } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
