@@ -7,6 +7,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { ContractBuilder } from './contractBuilder';
 import { Utils } from '.';
+import { SendmanyBuilder } from './sendmanyBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -22,6 +23,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case PayloadType.TokenTransfer:
           return this.getTransferBuilder(tx);
         case PayloadType.ContractCall:
+          if (SendmanyBuilder.isValidContractCall(this._coinConfig, tx.stxTransaction.payload)) {
+            return this.getSendmanyBuilder(tx);
+          }
           return this.getContractBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
@@ -42,7 +46,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction) {
+  getWalletInitializationBuilder(tx?: Transaction): void {
     throw new NotImplementedError('method not implemented');
   }
 
@@ -53,6 +57,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getContractBuilder(tx?: Transaction): ContractBuilder {
     return TransactionBuilderFactory.initializeBuilder(new ContractBuilder(this._coinConfig), tx);
+  }
+
+  getSendmanyBuilder(tx?: Transaction): SendmanyBuilder {
+    return TransactionBuilderFactory.initializeBuilder(new SendmanyBuilder(this._coinConfig), tx);
   }
 
   /**

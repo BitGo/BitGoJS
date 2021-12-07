@@ -152,7 +152,6 @@ describe('Stx Contract call Builder', () => {
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
       builder.functionArgs([{ type: 'optional', val: { type: 'int128', val: '123' } }]);
-      builder.network(new StacksTestnet());
 
       builder.sign({ key: testData.prv1 });
       builder.sign({ key: testData.prv2 });
@@ -259,31 +258,21 @@ describe('Stx Contract call Builder', () => {
     describe('should fail', () => {
       it('a contract call with an invalid key', () => {
         const builder = initTxBuilder();
-        should.throws(
-          () => builder.sign({ key: 'invalidKey' }),
-          (e) => e.message === 'Unsupported private key',
-        );
+        should.throws(() => builder.sign({ key: 'invalidKey' }), 'Unsupported private key');
       });
       it('a contract call with an invalid contract address', () => {
         const builder = initTxBuilder();
-        builder.network(new StacksMainnet());
-        should.throws(
-          () => builder.contractAddress(testData.ACCOUNT_1.address),
-          (e) => e.message === 'Invalid contract address',
-        );
+        should.throws(() => builder.contractAddress(testData.ACCOUNT_1.address), 'Invalid contract address');
       });
       it('a contract call with an invalid contract name', () => {
         const builder = initTxBuilder();
-        should.throws(
-          () => builder.contractName('test'),
-          (e) => e.message === 'Only pox contract supported',
-        );
+        should.throws(() => builder.contractName('test'), 'Only pox and send-many-memo contracts supported');
       });
       it('a contract call with an invalid contract function name', () => {
         const builder = initTxBuilder();
         should.throws(
           () => builder.functionName('test-function'),
-          (e) => e.message === 'test-function is not supported contract function name',
+          'test-function is not supported contract function name',
         );
       });
     });

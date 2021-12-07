@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import {
   AuthType,
   BufferReader,
@@ -28,9 +28,11 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
 import { isValidAddress, removeHexPrefix, isValidMemo, isValidPublicKey } from './utils';
+import { ANCHOR_MODE, DEFAULT_MULTISIG_SIG_NUMBER } from './constants';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
+  protected _anchorMode: number;
   protected _fee: BaseFee;
   protected _nonce: number;
   protected _memo: string;
@@ -42,11 +44,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._anchorMode = ANCHOR_MODE;
     this._multiSignerKeyPairs = [];
     this._fromPubKeys = [];
     this._signatures = [];
-    this._numberSignatures = 2;
-    this._network = _coinConfig.network.type === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+    this._numberSignatures = DEFAULT_MULTISIG_SIG_NUMBER;
+    this._network = _coinConfig.network.type === NetworkType.MAINNET ? new StacksMainnet() : new StacksTestnet();
     this._transaction = new Transaction(_coinConfig);
   }
 
@@ -193,11 +196,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   fee(fee: BaseFee): this {
     this.validateValue(new BigNumber(fee.fee));
     this._fee = fee;
-    return this;
-  }
-
-  network(stacksNetwork: StacksNetwork): this {
-    this._network = stacksNetwork;
     return this;
   }
 

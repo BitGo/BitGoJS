@@ -53,6 +53,11 @@ export interface TronNetwork extends AccountNetwork {
   contractCallFeeLimit: string;
 }
 
+export interface StacksNetwork extends AccountNetwork {
+  readonly sendmanymemoContractAddress: string;
+  readonly stakingContractAddress: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
@@ -390,16 +395,20 @@ class SolTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.solana.com/?cluster=devnet';
 }
 
-class Stx extends Mainnet implements AccountNetwork {
+class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/';
+  sendmanymemoContractAddress = 'SP3HVG0704NNCN0DHYJ0SFHE87XPJWMVTXG4B30BD';
+  stakingContractAddress = 'SP000000000000000000002Q6VF78';
 }
 
-class StxTestnet extends Testnet implements AccountNetwork {
+class StxTestnet extends Testnet implements StacksNetwork {
   name = 'StxTestnet';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/?chain=testnet';
+  sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
+  stakingContractAddress = 'ST000000000000000000002AMW42H';
 }
 
 class SUSD extends Mainnet implements AccountNetwork {
