@@ -1,4 +1,6 @@
 import { BaseTxInfo, TypeRegistry, DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
+import { TransactionType } from '../baseCoin';
+import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'bond' for the staking transaction
@@ -15,6 +17,7 @@ export enum MethodNames {
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface TxData {
+  id: string;
   sender: string;
   referenceBlock: string;
   blockNumber: number;
@@ -33,9 +36,7 @@ export interface TxData {
   owner?: string;
   proxyType?: string;
   delay?: string;
-  real?: string;
   forceProxyType?: proxyType;
-  call?: string;
 }
 
 /**
@@ -160,12 +161,12 @@ export interface validityWindow {
   unit?: 'block' | 'seconds' | 'milliseconds';
 }
 
-/**
- * Fee options based on the BitgoJS standard doc.
- */
-export type FeeOptions = {
-  amount: number | string;
-  unit?: 'baseUnit' | 'cpu' | 'ram';
-  formula?: 'fixed' | 'feeRate' | 'perKB' | 'custom';
-  type?: 'base' | 'max' | 'tip';
-};
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: TransactionType;
+  forceProxyType?: proxyType;
+  controller?: string;
+  payee?: string;
+  owner?: string;
+  proxyType?: string;
+  delay?: string;
+}

@@ -178,6 +178,22 @@ export class Sol extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<SolTransactionExplanation>
   ): Bluebird<SolTransactionExplanation> {
-    throw new MethodNotImplementedError('explainTransaction method not implemented');
+    const self = this;
+    return co<SolTransactionExplanation>(function* () {
+      const factory = accountLib.register(self.getChain(), accountLib.Sol.TransactionBuilderFactory);
+      let rebuiltTransaction;
+
+      try {
+        rebuiltTransaction = yield factory.from(params.txBase64).fee({ amount: params.feeInfo.fee }).build();
+      } catch {
+        throw new Error('Invalid transaction');
+      }
+
+      const explainedTransaction = (rebuiltTransaction as accountLib.BaseCoin.BaseTransaction).explainTransaction();
+
+      return explainedTransaction as SolTransactionExplanation;
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

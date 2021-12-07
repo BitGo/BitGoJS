@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, FeeOptions } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { isValidAddress, isValidBlockId, isValidMemo, isValidPublicKey, validateRawTransaction } from './utils';
@@ -12,10 +12,11 @@ import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
 import { DurableNonceParams, InstructionParams, Memo, Nonce } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
-import base58 from 'bs58';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
+  private _lamportsPerSignature: number;
+
   protected _sender: string;
   protected _recentBlockhash: Blockhash;
   protected _nonceInfo: Nonce;
@@ -71,9 +72,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.solTransaction = this.buildSolTransaction();
     this.transaction.setTransactionType(this.transactionType);
-    if (this.transaction.solTransaction.signature) {
-      this.transaction.id = base58.encode(this.transaction.solTransaction.signature);
-    }
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
@@ -82,11 +80,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Builds the solana transaction.
    */
   protected buildSolTransaction(): SolTransaction {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
+
     const tx = new SolTransaction();
     if (this._transaction?.solTransaction?.signatures) {
       tx.signatures = this._transaction?.solTransaction?.signatures;
     }
-    assert(this._sender, new BuildTransactionError('sender is required before building'));
+
     tx.feePayer = new PublicKey(this._sender);
 
     if (this._nonceInfo) {
@@ -111,6 +112,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._instructionsData.push(memoData);
       tx.add(...solInstructionFactory(memoData));
     }
+
+    this._transaction.lamportsPerSignature = this._lamportsPerSignature;
 
     for (const signer of this._signers) {
       const publicKey = new PublicKey(signer.getKeys().pub);
@@ -202,6 +205,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   memo(memo: string): this {
     this.validateMemo(memo);
     this._memo = memo;
+    return this;
+  }
+
+  fee(feeOptions: FeeOptions): this {
+    this._lamportsPerSignature = Number(feeOptions.amount);
     return this;
   }
 

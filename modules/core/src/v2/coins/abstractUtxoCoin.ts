@@ -57,7 +57,8 @@ const co = Bluebird.coroutine;
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
 import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction, WalletUnspentSigner } from './utxo/sign';
+import { signAndVerifyWalletTransaction, verifyWalletTransactionWithUnspents, WalletUnspentSigner } from './utxo/sign';
+import { RootWalletKeys } from './utxo/WalletKeys';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -87,14 +88,22 @@ export interface TransactionExplanation {
   changeAmount: number;
   fee: TransactionFee | string;
 
+  /**
+   * Number of input signatures per input.
+   */
   inputSignatures: number[];
-  signatures: number | false;
+
+  /**
+   * Highest input signature count for the transaction
+   */
+  signatures: number;
 }
 
 export interface ExplainTransactionOptions {
   txHex: string;
   txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
   feeInfo?: string;
+  pubs: Triple<string>;
 }
 
 export interface UtxoNetwork {
@@ -510,7 +519,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('keychains are required, but could not be fetched');
       }
 
-      const keychainArray: [Keychain, Keychain, Keychain] = [keychains.user, keychains.backup, keychains.bitgo];
+      const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
 
       const keySignatures = _.get(wallet, '_wallet.keySignatures');
 
@@ -521,6 +530,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const explanation: TransactionExplanation = self.explainTransaction({
         txHex: txPrebuild.txHex,
         txInfo: txPrebuild.txInfo,
+        pubs: keychainArray.map((k) => k.pub) as Triple<string>,
       });
 
       const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
@@ -1260,14 +1270,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('failed to parse transaction hex');
     }
 
+    const walletKeys = new RootWalletKeys(
+      params.pubs.map((xpub) => bip32.fromBase58(xpub)) as Triple<bip32.BIP32Interface>
+    );
+
     const id = transaction.getId();
-    let changeAddresses: string[] = [];
     let spendAmount = 0;
     let changeAmount = 0;
-    const txInfo = _.get(params, 'txInfo');
-    if (txInfo && txInfo.changeAddresses) {
-      changeAddresses = txInfo.changeAddresses;
-    }
     const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
@@ -1275,11 +1284,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       changeOutputs: [] as Output[],
     } as TransactionExplanation;
 
+    const { changeAddresses = [], unspents = [] } = params.txInfo ?? {};
+
     transaction.outs.forEach((currentOutput) => {
       const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, this.network);
       const currentAmount = currentOutput.value;
 
-      if (changeAddresses.indexOf(currentAddress) !== -1) {
+      if (changeAddresses.includes(currentAddress)) {
         // this is change
         changeAmount += currentAmount;
         explanation.changeOutputs.push({
@@ -1311,9 +1322,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
-    // get information on tx inputs
-    const inputSignatures = transaction.ins.map((input, idx): number => {
-      if (!txInfo || txInfo.unspents.length !== transaction.ins.length) {
+    // get the number of signatures per input
+    const inputSignatureCounts = transaction.ins.map((input, idx): number => {
+      if (unspents.length !== transaction.ins.length) {
         return 0;
       }
 
@@ -1322,16 +1333,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        return utxolib.bitgo
-          .getSignatureVerifications(transaction, idx, txInfo.unspents[idx].value, {}, prevOutputs)
-          .filter((v) => v.signedBy !== undefined).length;
+        return verifyWalletTransactionWithUnspents(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
         return 0;
       }
     });
 
-    explanation.inputSignatures = inputSignatures;
-    explanation.signatures = _.max(inputSignatures) as number;
+    explanation.inputSignatures = inputSignatureCounts;
+    explanation.signatures = _.max(inputSignatureCounts) as number;
     return explanation;
   }
 

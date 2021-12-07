@@ -33,8 +33,6 @@ export function nockBitGoPublicAddressUnspents(
       id: `${txid}:${vout}`,
       address: utxolib.address.fromOutputScript(o.script, coin.network),
       value: o.value,
-      valueString: String(o.value),
-      blockHeight: 1001,
     })
   );
   return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(200, payload);

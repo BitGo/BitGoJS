@@ -24,7 +24,12 @@ import {
   getDefaultWalletKeys,
 } from './util';
 
-import { FullySignedTransaction, HalfSignedUtxoTransaction, WalletSignTransactionOptions } from '../../../../../src';
+import {
+  FullySignedTransaction,
+  HalfSignedUtxoTransaction,
+  Triple,
+  WalletSignTransactionOptions,
+} from '../../../../../src';
 
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {
@@ -207,6 +212,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           txInfo: {
             unspents: getUnspents(),
           },
+          pubs: walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
         });
 
         explanation.should.have.properties(

@@ -1,5 +1,6 @@
-import { RecoveryAccountData, RecoveryUnspent, RecoveryProvider } from './RecoveryProvider';
+import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi, RequestOptions, Response } from './baseApi';
+import { formatOutputId, PublicUnspent } from '../unspent';
 
 export type BlockchairResponse<T> = {
   data: T;
@@ -99,23 +100,18 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
   }
 
   /** @inheritDoc */
-  async getUnspents(address: string): Promise<RecoveryUnspent[]> {
-    // using blockchair api: https://blockchair.com/api/docs#link_300
-    // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
-    // example utxo from response:
-    // {block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
+  async getUnspents(address: string): Promise<PublicUnspent[]> {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
     // https://blockchair.com/api/docs#link_300
     const res = await this.get<BlockchairResponse<BlockchairUnspent[]>>(`/dashboards/address/${address}`);
     return res.map(body => {
-      return body.data[address].utxo.map(unspent => {
+      return body.data[address].utxo.map((unspent): PublicUnspent => {
         return {
-          amount: unspent.value,
-          n: unspent.index,
-          txid: unspent.transaction_hash,
+          id: formatOutputId(unspent.transaction_hash, unspent.index),
           address,
+          value: unspent.value,
         };
       });
     });

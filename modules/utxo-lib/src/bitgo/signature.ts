@@ -399,7 +399,7 @@ export type VerificationSettings = {
    */
   signatureIndex?: number;
   /**
-   * The hex of the public key to verify.
+   * The public key to verify.
    */
   publicKey?: Buffer;
 };
@@ -413,6 +413,7 @@ export type SignatureVerification = {
 };
 
 /**
+ * @deprecated - use {@see verifySignaturesWithPublicKeys} instead
  * Get signature verifications for multsig transaction
  * @param transaction
  * @param inputIndex
@@ -528,6 +529,7 @@ export function getSignatureVerifications(
 }
 
 /**
+ * @deprecated use {@see verifySignatureWithPublicKeys} instead
  * @param transaction
  * @param inputIndex
  * @param amount
@@ -558,6 +560,65 @@ export function verifySignature(
   );
 
   return signatureVerifications.length > 0 && signatureVerifications.every((v) => v.signedBy !== undefined);
+}
+
+/**
+ * @param v
+ * @param publicKey
+ * @return true iff signature is by publicKey (or xonly variant of publicKey)
+ */
+function isSignatureByPublicKey(v: SignatureVerification, publicKey: Buffer): boolean {
+  return (
+    !!v.signedBy &&
+    (v.signedBy.equals(publicKey) ||
+      /* for p2tr signatures, we pass the pubkey in 33-byte format recover it from the signature in 32-byte format */
+      (publicKey.length === 33 && isSignatureByPublicKey(v, publicKey.slice(1))))
+  );
+}
+
+/**
+ * @param transaction
+ * @param inputIndex
+ * @param prevOutputs - transaction outputs for inputs
+ * @param publicKeys - public keys to check signatures for
+ * @return array of booleans indicating a valid signature for every pubkey in _publicKeys_
+ */
+export function verifySignatureWithPublicKeys(
+  transaction: UtxoTransaction,
+  inputIndex: number,
+  prevOutputs: TxOutput[],
+  publicKeys: Buffer[]
+): boolean[] {
+  if (transaction.ins.length !== prevOutputs.length) {
+    throw new Error(`input length must match prevOutputs length`);
+  }
+
+  const signatureVerifications = getSignatureVerifications(
+    transaction,
+    inputIndex,
+    prevOutputs[inputIndex].value,
+    {},
+    prevOutputs
+  );
+
+  return publicKeys.map((publicKey) => !!signatureVerifications.find((v) => isSignatureByPublicKey(v, publicKey)));
+}
+
+/**
+ * Wrapper for {@see verifySignatureWithPublicKeys} for single pubkey
+ * @param transaction
+ * @param inputIndex
+ * @param prevOutputs
+ * @param publicKey
+ * @return true iff signature is valid
+ */
+export function verifySignatureWithPublicKey(
+  transaction: UtxoTransaction,
+  inputIndex: number,
+  prevOutputs: TxOutput[],
+  publicKey: Buffer
+): boolean {
+  return verifySignatureWithPublicKeys(transaction, inputIndex, prevOutputs, [publicKey])[0];
 }
 
 export function signInputP2shP2pk(txBuilder: UtxoTransactionBuilder, vin: number, keyPair: bip32.BIP32Interface): void {

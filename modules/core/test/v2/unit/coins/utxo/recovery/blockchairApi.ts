@@ -63,10 +63,9 @@ describe('blockchair api', function () {
         const blockchair = BlockchairApi.forCoin(coinName, apiKey);
         const response = await blockchair.getUnspents('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
         response.length.should.equal(1);
-        response[0].amount.should.equal(20000);
-        response[0].n.should.equal(0);
-        response[0].txid.should.equal('9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0');
+        response[0].id.should.equal('9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0:0');
         response[0].address.should.equal('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
+        response[0].value.should.equal(20000);
       });
     });
     describe(`${coinName} should fail`, function () {
