@@ -30,6 +30,10 @@ export class Transaction extends BaseTransaction {
     this._solTransaction = tx;
   }
 
+  private get numberOfRequiredSignatures(): number {
+    return this._solTransaction.compileMessage().header.numRequiredSignatures;
+  }
+
   /** @inheritDoc **/
   get id(): string {
     // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id
@@ -268,7 +272,7 @@ export class Transaction extends BaseTransaction {
     }
 
     const feeString = this.lamportsPerSignature
-      ? new BigNumber(this.lamportsPerSignature).multipliedBy(this._solTransaction.signatures.length).toFixed(0)
+      ? new BigNumber(this.lamportsPerSignature).multipliedBy(this.numberOfRequiredSignatures).toFixed(0)
       : UNAVAILABLE_TEXT;
 
     const explainedTransaction = {

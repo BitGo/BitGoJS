@@ -1,14 +1,18 @@
 /**
  * @prettier
  */
+
+import BigNumber from 'bignumber.js';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
+import base58 = require('bs58');
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import * as accountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   KeyPair,
+  ParsedTransaction as BaseParsedTransaction,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   TransactionExplanation,
   TransactionRecipient,
@@ -20,7 +24,8 @@ import {
 import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-import base58 = require('bs58');
+
+const co = Bluebird.coroutine;
 
 export interface TransactionFee {
   fee: string;
@@ -29,7 +34,6 @@ export type SolTransactionExplanation = TransactionExplanation;
 
 export interface ExplainTransactionOptions {
   txBase64: string;
-  publicKeys?: string[];
   feeInfo: TransactionFee;
 }
 
@@ -48,6 +52,25 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txBase64: string;
   txInfo: TxInfo;
   source: string;
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: number | string;
+}
+type TransactionInput = TransactionOutput;
+
+export interface SolParsedTransaction extends BaseParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
+}
+
+export interface SolParseTransactionOptions extends BaseParseTransactionOptions {
+  txBase64: string;
+  feeInfo: TransactionFee;
 }
 
 export class Sol extends BaseCoin {
@@ -165,8 +188,52 @@ export class Sol extends BaseCoin {
       .asCallback(callback);
   }
 
-  parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    throw new MethodNotImplementedError('parseTransaction method not implemented');
+  parseTransaction(
+    params: SolParseTransactionOptions,
+    callback?: NodeCallback<SolParsedTransaction>
+  ): Bluebird<SolParsedTransaction> {
+    const self = this;
+    return co<SolParsedTransaction>(function* () {
+      const transactionExplanation = yield self.explainTransaction({
+        txBase64: params.txBase64,
+        feeInfo: params.feeInfo,
+      });
+
+      if (!transactionExplanation) {
+        throw new Error('Invalid transaction');
+      }
+
+      const solTransaction = transactionExplanation as SolTransactionExplanation;
+      if (solTransaction.outputs.length <= 0) {
+        return {
+          inputs: [],
+          outputs: [],
+        };
+      }
+
+      const senderAddress = solTransaction.outputs[0].address;
+      const feeAmount = new BigNumber(solTransaction.fee.fee);
+
+      // assume 1 sender, who is also the fee payer
+      const inputs = {
+        address: senderAddress,
+        amount: new BigNumber(solTransaction.outputAmount).plus(feeAmount).toNumber(),
+      };
+
+      const outputs: TransactionOutput[] = solTransaction.outputs.map((output) => {
+        return {
+          address: output.address,
+          amount: output.amount,
+        };
+      });
+
+      return {
+        inputs,
+        outputs,
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
