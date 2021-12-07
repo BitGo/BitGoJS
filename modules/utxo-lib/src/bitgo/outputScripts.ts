@@ -14,24 +14,7 @@ export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
 
 export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
 
-export function scriptTypeForChain(chain: number): ScriptType2Of3 {
-  switch (chain) {
-    case 0:
-    case 1:
-      return 'p2sh';
-    case 10:
-    case 11:
-      return 'p2shP2wsh';
-    case 20:
-    case 21:
-      return 'p2wsh';
-    case 30:
-    case 31:
-      return 'p2tr';
-    default:
-      throw new Error(`invalid chain ${chain}`);
-  }
-}
+export { scriptTypeForChain } from './wallet';
 
 /**
  * @param t
