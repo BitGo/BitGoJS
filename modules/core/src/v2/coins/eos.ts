@@ -300,18 +300,7 @@ export class Eos extends BaseCoin {
    * @param memoId - the memo id to be checked
    */
   isValidMemoId(memoId: string): boolean {
-    if (!this.isValidMemo({ value: memoId })) {
-      return false;
-    }
-
-    let memoIdNumber;
-    try {
-      memoIdNumber = new BigNumber(memoId);
-    } catch (e) {
-      return false;
-    }
-
-    return memoIdNumber.gte(0);
+    return this.isValidMemo({ value: memoId });
   }
 
   /**
