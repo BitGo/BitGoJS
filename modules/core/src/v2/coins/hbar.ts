@@ -115,7 +115,10 @@ export class Hbar extends BaseCoin {
         // we want addresses to normalize without a memoId
         address = address.replace('?memoId=', '');
       }
-      return address === this.normalizeAddress(addressDetails);
+      return (
+        address === this.normalizeAddress(addressDetails) &&
+        bitgoAccountLib.Hbar.Utils.isValidAddress(addressDetails.address)
+      );
     } catch (e) {
       return false;
     }
