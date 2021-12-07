@@ -4,7 +4,7 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
-import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
+import { isValidEd25519PublicKey, isValidEd25519SecretKey, isValidEd25519Seed } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
@@ -37,6 +37,16 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidPrivateKey(key: string): boolean {
     return isValidEd25519SecretKey(key);
+  }
+
+  /**
+   * Returns whether or not the string is a valid protocol seed
+   *
+   * @param {string} seed - seed to be validated
+   * @returns {boolean} - the validation result
+   */
+  isValidSeed(seed: string): boolean {
+    return isValidEd25519Seed(seed);
   }
 
   /** @inheritdoc */
