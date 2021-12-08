@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
@@ -21,9 +20,7 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
-import { NodeCallback, TokenManagementType } from '../types';
-
-const co = Bluebird.coroutine;
+import { TokenManagementType } from '../types';
 
 export interface AlgoTransactionExplanation extends TransactionExplanation {
   memo?: string;
@@ -203,16 +200,12 @@ export class Algo extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      const algoKeypair = new accountLib.Algo.KeyPair({ prv: key.prv });
-      if (Buffer.isBuffer(message)) {
-        message = message.toString('base64');
-      }
-      return Buffer.from(algoKeypair.signMessage(message));
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const algoKeypair = new accountLib.Algo.KeyPair({ prv: key.prv });
+    if (Buffer.isBuffer(message)) {
+      message = message.toString('base64');
+    }
+    return Buffer.from(algoKeypair.signMessage(message));
   }
 
   /**
@@ -225,119 +218,110 @@ export class Algo extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<AlgoTransactionExplanation>
-  ): Bluebird<AlgoTransactionExplanation> {
-    return co<AlgoTransactionExplanation>(function* () {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.feeInfo) {
-        throw new Error('missing explain tx parameters');
-      }
+  async explainTransaction(params: ExplainTransactionOptions): Promise<AlgoTransactionExplanation | undefined> {
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex || !params.feeInfo) {
+      throw new Error('missing explain tx parameters');
+    }
 
-      const factory = accountLib.getBuilder(
-        this.getBaseChain()
-      ) as unknown as accountLib.Algo.TransactionBuilderFactory;
+    const factory = accountLib.getBuilder(this.getBaseChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
-      const txBuilder = factory.from(txHex);
-      const tx = (yield txBuilder.build()) as any;
-      const txJson = tx.toJson();
+    const txBuilder = factory.from(txHex);
+    const tx = (await txBuilder.build()) as any;
+    const txJson = tx.toJson();
 
-      if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
-        const outputs: TransactionRecipient[] = [
-          {
-            address: txJson.to,
-            amount: txJson.amount,
-            memo: txJson.note,
-          },
-        ];
-        const operations: TransactionOperation[] = [];
-
-        const isTokenTx = this.isTokenTx(txJson.type);
-        if (isTokenTx) {
-          const type = accountLib.Algo.algoUtils.getTokenTxType(
-            txJson.amount,
-            txJson.from,
-            txJson.to,
-            txJson.closeRemainderTo
-          );
-          operations.push({
-            type: type,
-            coin: `${this.getChain()}:${txJson.tokenId}`,
-          });
-        }
-
-        const displayOrder = [
-          'id',
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'memo',
-          'type',
-          'operations',
-        ];
-
-        const explanationResult: AlgoTransactionExplanation = {
-          displayOrder,
-          id: txJson.id,
-          outputAmount: txJson.amount.toString(),
-          changeAmount: '0',
-          outputs,
-          changeOutputs: [],
-          fee: txJson.fee,
+    if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+      const outputs: TransactionRecipient[] = [
+        {
+          address: txJson.to,
+          amount: txJson.amount,
           memo: txJson.note,
-          type: tx.type,
-          operations,
-        };
+        },
+      ];
+      const operations: TransactionOperation[] = [];
 
-        if (txJson.tokenId) explanationResult.tokenId = txJson.tokenId;
-
-        return explanationResult;
+      const isTokenTx = this.isTokenTx(txJson.type);
+      if (isTokenTx) {
+        const type = accountLib.Algo.algoUtils.getTokenTxType(
+          txJson.amount,
+          txJson.from,
+          txJson.to,
+          txJson.closeRemainderTo
+        );
+        operations.push({
+          type: type,
+          coin: `${this.getChain()}:${txJson.tokenId}`,
+        });
       }
 
-      if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
-        const displayOrder = [
-          'id',
-          'fee',
-          'memo',
-          'type',
-          'voteKey',
-          'selectionKey',
-          'voteFirst',
-          'voteLast',
-          'voteKeyDilution',
-        ];
+      const displayOrder = [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'memo',
+        'type',
+        'operations',
+      ];
 
-        const explanationResult: AlgoTransactionExplanation = {
-          displayOrder,
-          id: txJson.id,
-          outputAmount: '0',
-          changeAmount: '0',
-          outputs: [],
-          changeOutputs: [],
-          fee: txJson.fee,
-          memo: txJson.note,
-          type: tx.type,
-          voteKey: txJson.voteKey,
-          selectionKey: txJson.selectionKey,
-          voteFirst: txJson.voteFirst,
-          voteLast: txJson.voteLast,
-          voteKeyDilution: txJson.voteKeyDilution,
-        };
-        return explanationResult;
+      const explanationResult: AlgoTransactionExplanation = {
+        displayOrder,
+        id: txJson.id,
+        outputAmount: txJson.amount.toString(),
+        changeAmount: '0',
+        outputs,
+        changeOutputs: [],
+        fee: txJson.fee,
+        memo: txJson.note,
+        type: tx.type,
+        operations,
+      };
+
+      if (txJson.tokenId) {
+        explanationResult.tokenId = txJson.tokenId;
       }
-    })
-      .call(this)
-      .asCallback(callback);
+
+      return explanationResult;
+    }
+
+    if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
+      const displayOrder = [
+        'id',
+        'fee',
+        'memo',
+        'type',
+        'voteKey',
+        'selectionKey',
+        'voteFirst',
+        'voteLast',
+        'voteKeyDilution',
+      ];
+
+      return {
+        displayOrder,
+        id: txJson.id,
+        outputAmount: '0',
+        changeAmount: '0',
+        outputs: [],
+        changeOutputs: [],
+        fee: txJson.fee,
+        memo: txJson.note,
+        type: tx.type,
+        voteKey: txJson.voteKey,
+        selectionKey: txJson.selectionKey,
+        voteFirst: txJson.voteFirst,
+        voteLast: txJson.voteLast,
+        voteKeyDilution: txJson.voteKeyDilution,
+      };
+    }
   }
 
   /**
    * returns if a tx is a token tx
-   * @param tx - tx in JSON format
+   * @param type {string} - tx type
    * @returns true if it's a token tx
    */
   isTokenTx(type: string): boolean {
@@ -430,51 +414,39 @@ export class Algo extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param callback
    * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const { txHex, signers, prv, isHalfSigned, numberSigners } = self.verifySignTransactionParams(params);
-      const factory = accountLib.register(self.getChain(), accountLib.Algo.TransactionBuilderFactory);
-      const txBuilder = factory.from(txHex);
-      txBuilder.numberOfRequiredSigners(numberSigners);
-      txBuilder.sign({ key: prv });
-      txBuilder.setSigners(signers);
-      const transaction: any = yield txBuilder.build();
-      if (!transaction) {
-        throw new Error('Invalid transaction');
-      }
-      const signedTxHex = Buffer.from(transaction.toBroadcastFormat()).toString('base64');
-      if (numberSigners === 1) {
-        return { txHex: signedTxHex };
-      } else if (isHalfSigned) {
-        return { txHex: signedTxHex };
-      } else {
-        return { halfSigned: { txHex: signedTxHex } };
-      }
-    })
-      .call(this)
-      .asCallback(callback);
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const { txHex, signers, prv, isHalfSigned, numberSigners } = this.verifySignTransactionParams(params);
+    const factory = accountLib.register(this.getChain(), accountLib.Algo.TransactionBuilderFactory);
+    const txBuilder = factory.from(txHex);
+    txBuilder.numberOfRequiredSigners(numberSigners);
+    txBuilder.sign({ key: prv });
+    txBuilder.setSigners(signers);
+    const transaction: any = await txBuilder.build();
+    if (!transaction) {
+      throw new Error('Invalid transaction');
+    }
+    const signedTxHex = Buffer.from(transaction.toBroadcastFormat()).toString('base64');
+    if (numberSigners === 1) {
+      return { txHex: signedTxHex };
+    } else if (isHalfSigned) {
+      return { txHex: signedTxHex };
+    } else {
+      return { halfSigned: { txHex: signedTxHex } };
+    }
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
   decodeTx(txn: Buffer): unknown {

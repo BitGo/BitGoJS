@@ -6,7 +6,6 @@ import { Codes } from '@bitgo/unspents';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
@@ -47,12 +46,10 @@ import { RequestTracer } from '../internal/util';
 import { Keychain, KeyIndices } from '../keychains';
 import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
-import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { sanitizeLegacyPath } from '../../bip32path';
 
 const debug = debugLib('bitgo:v2:utxo');
-const co = Bluebird.coroutine;
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
@@ -390,46 +387,31 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   /**
    * Get the latest block height
    * @param reqId
-   * @param callback
    */
-  getLatestBlockHeight(reqId?: RequestTracer, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      if (reqId) {
-        this.bitgo._reqId = reqId;
-      }
-      const chainhead = yield self.bitgo.get(self.url('/public/block/latest')).result();
-      return (chainhead as any).height;
-    })
-      .call(this)
-      .asCallback(callback);
+  async getLatestBlockHeight(reqId?: RequestTracer): Promise<number> {
+    if (reqId) {
+      this.bitgo.setRequestTracer(reqId);
+    }
+    const chainhead = await this.bitgo.get(this.url('/public/block/latest')).result();
+    return (chainhead as any).height;
   }
 
   /**
    * Run custom coin logic after a transaction prebuild has been received from BitGo
    * @param prebuild
-   * @param callback
    */
-  postProcessPrebuild(
-    prebuild: TransactionPrebuild,
-    callback?: NodeCallback<TransactionPrebuild>
-  ): Bluebird<TransactionPrebuild> {
-    const self = this;
-    return co<TransactionPrebuild>(function* (): any {
-      if (_.isUndefined(prebuild.txHex)) {
-        throw new Error('missing required txPrebuild property txHex');
-      }
-      const transaction = self.createTransactionFromHex(prebuild.txHex);
-      if (_.isUndefined(prebuild.blockHeight)) {
-        prebuild.blockHeight = (yield self.getLatestBlockHeight()) as number;
-      }
-      // Lock transaction to the next block to discourage fee sniping
-      // See: https://github.com/bitcoin/bitcoin/blob/fb0ac482eee761ec17ed2c11df11e054347a026d/src/wallet/wallet.cpp#L2133
-      transaction.locktime = prebuild.blockHeight;
-      return _.extend({}, prebuild, { txHex: transaction.toHex() });
-    })
-      .call(this)
-      .asCallback(callback);
+  async postProcessPrebuild(prebuild: TransactionPrebuild): Promise<TransactionPrebuild> {
+    if (_.isUndefined(prebuild.txHex)) {
+      throw new Error('missing required txPrebuild property txHex');
+    }
+    const transaction = this.createTransactionFromHex(prebuild.txHex);
+    if (_.isUndefined(prebuild.blockHeight)) {
+      prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
+    }
+    // Lock transaction to the next block to discourage fee sniping
+    // See: https://github.com/bitcoin/bitcoin/blob/fb0ac482eee761ec17ed2c11df11e054347a026d/src/wallet/wallet.cpp#L2133
+    transaction.locktime = prebuild.blockHeight;
+    return _.extend({}, prebuild, { txHex: transaction.toHex() });
   }
 
   /**
@@ -482,105 +464,101 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   /**
    * Extract and fill transaction details such as internal/change spend, external spend (explicit vs. implicit), etc.
    * @param params
-   * @param callback
    * @returns {*}
    */
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    const self = this;
-    return co<ParsedTransaction>(function* (): any {
-      const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
-      if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
-        throw new Error('verification.disableNetworking must be a boolean');
-      }
-      const disableNetworking = verification.disableNetworking;
+    if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
+      throw new Error('verification.disableNetworking must be a boolean');
+    }
+    const disableNetworking = verification.disableNetworking;
 
-      async function fetchKeychains(wallet: Wallet): Promise<VerificationOptions['keychains']> {
-        return promiseProps({
-          user: self.keychains().get({ id: wallet.keyIds()[KeyIndices.USER], reqId }),
-          backup: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP], reqId }),
-          bitgo: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BITGO], reqId }),
-        });
-      }
-
-      // obtain the keychains and key signatures
-      let keychains: VerificationOptions['keychains'] | undefined = verification.keychains;
-      if (!keychains) {
-        if (disableNetworking) {
-          throw new Error('cannot fetch keychains without networking');
-        }
-        keychains = yield fetchKeychains(wallet);
-      }
-
-      if (!keychains || !keychains.user || !keychains.backup || !keychains.bitgo) {
-        throw new Error('keychains are required, but could not be fetched');
-      }
-
-      const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
-
-      const keySignatures = _.get(wallet, '_wallet.keySignatures');
-
-      if (_.isUndefined(txPrebuild.txHex)) {
-        throw new Error('missing required txPrebuild property txHex');
-      }
-      // obtain all outputs
-      const explanation: TransactionExplanation = self.explainTransaction({
-        txHex: txPrebuild.txHex,
-        txInfo: txPrebuild.txInfo,
-        pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+    const fetchKeychains = async (wallet: Wallet): Promise<VerificationOptions['keychains']> => {
+      return promiseProps({
+        user: this.keychains().get({ id: wallet.keyIds()[KeyIndices.USER], reqId }),
+        backup: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP], reqId }),
+        bitgo: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BITGO], reqId }),
       });
+    };
 
-      const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
+    // obtain the keychains and key signatures
+    let keychains: VerificationOptions['keychains'] | undefined = verification.keychains;
+    if (!keychains) {
+      if (disableNetworking) {
+        throw new Error('cannot fetch keychains without networking');
+      }
+      keychains = await fetchKeychains(wallet);
+    }
 
-      // verify that each recipient from txParams has their own output
-      const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
-        return { ...output, address: this.canonicalAddress(output.address) };
-      });
+    if (!keychains || !keychains.user || !keychains.backup || !keychains.bitgo) {
+      throw new Error('keychains are required, but could not be fetched');
+    }
 
-      const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
+    const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
 
-      // get the keychains from the custom change wallet if needed
-      let customChange: CustomChangeOptions | undefined;
-      const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
-      if (customChangeWalletId) {
-        // fetch keychains from custom change wallet for deriving addresses.
-        // These keychains should be signed and this should be verified in verifyTransaction
-        const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures', {});
-        const customChangeWallet: Wallet = yield self.wallets().get({ id: customChangeWalletId });
-        const customChangeKeys = yield fetchKeychains(customChangeWallet);
+    const keySignatures = _.get(wallet, '_wallet.keySignatures');
 
-        if (!customChangeKeys) {
-          throw new Error('failed to fetch keychains for custom change wallet');
-        }
+    if (_.isUndefined(txPrebuild.txHex)) {
+      throw new Error('missing required txPrebuild property txHex');
+    }
+    // obtain all outputs
+    const explanation: TransactionExplanation = this.explainTransaction({
+      txHex: txPrebuild.txHex,
+      txInfo: txPrebuild.txInfo,
+      pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+    });
+
+    const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
+
+    // verify that each recipient from txParams has their own output
+    const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
+      return { ...output, address: this.canonicalAddress(output.address) };
+    });
+
+    const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
+
+    // get the keychains from the custom change wallet if needed
+    let customChange: CustomChangeOptions | undefined;
+    const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
+    if (customChangeWalletId) {
+      // fetch keychains from custom change wallet for deriving addresses.
+      // These keychains should be signed and this should be verified in verifyTransaction
+      const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures', {});
+      const customChangeWallet: Wallet = await this.wallets().get({ id: customChangeWalletId });
+      const customChangeKeys = await fetchKeychains(customChangeWallet);
+
+      if (!customChangeKeys) {
+        throw new Error('failed to fetch keychains for custom change wallet');
+      }
+
+      if (customChangeKeys.user && customChangeKeys.backup && customChangeKeys.bitgo && customChangeWallet) {
         const customChangeKeychains: [Keychain, Keychain, Keychain] = [
           customChangeKeys.user,
           customChangeKeys.backup,
           customChangeKeys.bitgo,
         ];
 
-        if (customChangeKeychains && customChangeWallet) {
-          customChange = {
-            keys: customChangeKeychains,
-            signatures: [
-              customChangeKeySignatures.user,
-              customChangeKeySignatures.backup,
-              customChangeKeySignatures.bitgo,
-            ],
-          };
-        }
+        customChange = {
+          keys: customChangeKeychains,
+          signatures: [
+            customChangeKeySignatures.user,
+            customChangeKeySignatures.backup,
+            customChangeKeySignatures.bitgo,
+          ],
+        };
       }
+    }
 
-      /**
-       * Loop through all the outputs and classify each of them as either internal spends
-       * or external spends by setting the "external" property to true or false on the output object.
-       */
-      const allOutputDetails: Output[] = yield Bluebird.map(allOutputs, (currentOutput) => {
+    /**
+     * Loop through all the outputs and classify each of them as either internal spends
+     * or external spends by setting the "external" property to true or false on the output object.
+     */
+    const allOutputDetails: Output[] = await Promise.all(
+      allOutputs.map((currentOutput) => {
         return parseOutput({
           currentOutput,
-          coin: self,
+          coin: this,
           txPrebuild,
           verification,
           keychainArray,
@@ -589,56 +567,53 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           customChange,
           reqId,
         });
-      });
+      })
+    );
 
-      const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
-        (output) => output.needsCustomChangeKeySignatureVerification
-      );
+    const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
+      (output) => output.needsCustomChangeKeySignatureVerification
+    );
 
-      const changeOutputs = _.filter(allOutputDetails, { external: false });
+    const changeOutputs = _.filter(allOutputDetails, { external: false });
 
-      // these are all the outputs that were not originally explicitly specified in recipients
-      const implicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, expectedOutputs);
+    // these are all the outputs that were not originally explicitly specified in recipients
+    const implicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, expectedOutputs);
 
-      const explicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, implicitOutputs);
+    const explicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, implicitOutputs);
 
-      // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-      const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
+    // these are all the non-wallet outputs that had been originally explicitly specified in recipients
+    const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
 
-      // this is the sum of all the originally explicitly specified non-wallet output values
-      const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
+    // this is the sum of all the originally explicitly specified non-wallet output values
+    const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
 
-      /**
-       * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
-       * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
-       * in that we compare the external spend amount that was specified explicitly by the user to the portion
-       * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
-       * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
-       * external spend.
-       */
+    /**
+     * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
+     * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
+     * in that we compare the external spend amount that was specified explicitly by the user to the portion
+     * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
+     * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
+     * external spend.
+     */
 
-      // make sure that all the extra addresses are change addresses
-      // get all the additional external outputs the server added and calculate their values
-      const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
-      const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
+    // make sure that all the extra addresses are change addresses
+    // get all the additional external outputs the server added and calculate their values
+    const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
+    const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
 
-      const result: ParsedTransaction = {
-        keychains,
-        keySignatures,
-        outputs: allOutputDetails,
-        missingOutputs,
-        explicitExternalOutputs,
-        implicitExternalOutputs,
-        changeOutputs,
-        explicitExternalSpendAmount,
-        implicitExternalSpendAmount,
-        needsCustomChangeKeySignatureVerification,
-        customChange,
-      };
-      return result;
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      keychains,
+      keySignatures,
+      outputs: allOutputDetails,
+      missingOutputs,
+      explicitExternalOutputs,
+      implicitExternalOutputs,
+      changeOutputs,
+      explicitExternalSpendAmount,
+      implicitExternalSpendAmount,
+      needsCustomChangeKeySignatureVerification,
+      customChange,
+    };
   }
 
   /**
@@ -790,152 +765,142 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
    * @param params.verification.keychains Pass keychains manually rather than fetching them by id
    * @param params.verification.addresses Address details to pass in for out-of-band verification
-   * @param callback
    * @returns {boolean}
    */
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    const self = this;
-    return co<boolean>(function* (): any {
-      const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
-      const disableNetworking = !!verification.disableNetworking;
-      const parsedTransaction: ParsedTransaction = yield self.parseTransaction({
-        txParams,
-        txPrebuild,
-        wallet,
-        verification,
-        reqId,
-      });
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
+    const disableNetworking = !!verification.disableNetworking;
+    const parsedTransaction: ParsedTransaction = await this.parseTransaction({
+      txParams,
+      txPrebuild,
+      wallet,
+      verification,
+      reqId,
+    });
 
-      const keychains = parsedTransaction.keychains;
+    const keychains = parsedTransaction.keychains;
 
-      // verify that the claimed user public key corresponds to the wallet's user private key
-      let userPublicKeyVerified = false;
-      try {
-        // verify the user public key matches the private key - this will throw if there is no match
-        userPublicKeyVerified = self.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
-      } catch (e) {
-        debug('failed to verify user public key!', e);
+    // verify that the claimed user public key corresponds to the wallet's user private key
+    let userPublicKeyVerified = false;
+    try {
+      // verify the user public key matches the private key - this will throw if there is no match
+      userPublicKeyVerified = this.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
+    } catch (e) {
+      debug('failed to verify user public key!', e);
+    }
+
+    // let's verify these keychains
+    const keySignatures = parsedTransaction.keySignatures;
+    if (!_.isEmpty(keySignatures)) {
+      const verify = (key, pub) =>
+        this.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: key, keySignature: pub });
+      const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
+      const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
+      if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
+        throw new Error('secondary public key signatures invalid');
       }
+      debug('successfully verified backup and bitgo key signatures');
+    } else if (!disableNetworking) {
+      // these keys were obtained online and their signatures were not verified
+      // this could be dangerous
+      console.log('unsigned keys obtained online are being used for address verification');
+    }
 
-      // let's verify these keychains
-      const keySignatures = parsedTransaction.keySignatures;
-      if (!_.isEmpty(keySignatures)) {
-        const verify = (key, pub) =>
-          self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: key, keySignature: pub });
-        const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
-        const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
-        if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
-          throw new Error('secondary public key signatures invalid');
-        }
-        debug('successfully verified backup and bitgo key signatures');
-      } else if (!disableNetworking) {
-        // these keys were obtained online and their signatures were not verified
-        // this could be dangerous
-        console.log('unsigned keys obtained online are being used for address verification');
+    if (parsedTransaction.needsCustomChangeKeySignatureVerification) {
+      if (!keychains.user || !userPublicKeyVerified) {
+        throw new Error('transaction requires verification of user public key, but it was unable to be verified');
       }
-
-      if (parsedTransaction.needsCustomChangeKeySignatureVerification) {
-        if (!keychains.user || !userPublicKeyVerified) {
-          throw new Error('transaction requires verification of user public key, but it was unable to be verified');
-        }
-        const customChangeKeySignaturesVerified = self.verifyCustomChangeKeySignatures(
-          parsedTransaction,
-          keychains.user
-        );
-        if (!customChangeKeySignaturesVerified) {
-          throw new Error(
-            'transaction requires verification of custom change key signatures, but they were unable to be verified'
-          );
-        }
-        debug('successfully verified user public key and custom change key signatures');
-      }
-
-      const missingOutputs = parsedTransaction.missingOutputs;
-      if (missingOutputs.length !== 0) {
-        // there are some outputs in the recipients list that have not made it into the actual transaction
-        throw new Error('expected outputs missing in transaction prebuild');
-      }
-
-      const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
-
-      // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-      const payAsYouGoLimit = intendedExternalSpend * self.getPayGoLimit(verification.allowPaygoOutput);
-
-      /*
-      Some explanation for why we're doing what we're doing:
-      Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
-      it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
-      threshold for the output's value above which we'll throw an error, because the paygo output should never be that
-      high.
-       */
-
-      // make sure that all the extra addresses are change addresses
-      // get all the additional external outputs the server added and calculate their values
-      const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
-
-      debug(
-        'Intended spend is %s, Non-change amount is %s, paygo limit is %s',
-        intendedExternalSpend,
-        nonChangeAmount,
-        payAsYouGoLimit
-      );
-
-      // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-      if (nonChangeAmount > payAsYouGoLimit) {
-        // there are some addresses that are outside the scope of intended recipients that are not change addresses
-        throw new Error('prebuild attempts to spend to unintended external recipients');
-      }
-
-      const allOutputs = parsedTransaction.outputs;
-      if (!txPrebuild.txHex) {
-        throw new Error(`txPrebuild.txHex not set`);
-      }
-      const transaction = self.createTransactionFromHex(txPrebuild.txHex);
-      const transactionCache = {};
-      const inputs = yield Bluebird.map(
-        transaction.ins,
-        co(function* (currentInput) {
-          const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
-          const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
-          if (txHex) {
-            const localTx = self.createTransactionFromHex(txHex);
-            if (localTx.getId() !== transactionId) {
-              throw new Error('input transaction hex does not match id');
-            }
-            const currentOutput = localTx.outs[currentInput.index];
-            const address = utxolib.address.fromOutputScript(currentOutput.script, self.network);
-            return {
-              address,
-              value: currentOutput.value,
-            };
-          } else if (!transactionCache[transactionId]) {
-            if (disableNetworking) {
-              throw new Error('attempting to retrieve transaction details externally with networking disabled');
-            }
-            if (reqId) {
-              self.bitgo.setRequestTracer(reqId);
-            }
-            transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
-          }
-          const transactionDetails = transactionCache[transactionId];
-          return transactionDetails.outputs[currentInput.index];
-        }).bind(this)
-      );
-
-      const inputAmount = _.sumBy(inputs, 'value');
-      const outputAmount = _.sumBy(allOutputs, 'amount');
-      const fee = inputAmount - outputAmount;
-
-      if (fee < 0) {
+      const customChangeKeySignaturesVerified = this.verifyCustomChangeKeySignatures(parsedTransaction, keychains.user);
+      if (!customChangeKeySignaturesVerified) {
         throw new Error(
-          `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
+          'transaction requires verification of custom change key signatures, but they were unable to be verified'
         );
       }
+      debug('successfully verified user public key and custom change key signatures');
+    }
 
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+    const missingOutputs = parsedTransaction.missingOutputs;
+    if (missingOutputs.length !== 0) {
+      // there are some outputs in the recipients list that have not made it into the actual transaction
+      throw new Error('expected outputs missing in transaction prebuild');
+    }
+
+    const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
+
+    // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
+    const payAsYouGoLimit = intendedExternalSpend * this.getPayGoLimit(verification.allowPaygoOutput);
+
+    /*
+    Some explanation for why we're doing what we're doing:
+    Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
+    it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
+    threshold for the output's value above which we'll throw an error, because the paygo output should never be that
+    high.
+     */
+
+    // make sure that all the extra addresses are change addresses
+    // get all the additional external outputs the server added and calculate their values
+    const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
+
+    debug(
+      'Intended spend is %s, Non-change amount is %s, paygo limit is %s',
+      intendedExternalSpend,
+      nonChangeAmount,
+      payAsYouGoLimit
+    );
+
+    // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
+    if (nonChangeAmount > payAsYouGoLimit) {
+      // there are some addresses that are outside the scope of intended recipients that are not change addresses
+      throw new Error('prebuild attempts to spend to unintended external recipients');
+    }
+
+    const allOutputs = parsedTransaction.outputs;
+    if (!txPrebuild.txHex) {
+      throw new Error(`txPrebuild.txHex not set`);
+    }
+    const transaction = this.createTransactionFromHex(txPrebuild.txHex);
+    const transactionCache = {};
+    const inputs = await Promise.all(
+      transaction.ins.map(async (currentInput) => {
+        const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
+        const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
+        if (txHex) {
+          const localTx = this.createTransactionFromHex(txHex);
+          if (localTx.getId() !== transactionId) {
+            throw new Error('input transaction hex does not match id');
+          }
+          const currentOutput = localTx.outs[currentInput.index];
+          const address = utxolib.address.fromOutputScript(currentOutput.script, this.network);
+          return {
+            address,
+            value: currentOutput.value,
+          };
+        } else if (!transactionCache[transactionId]) {
+          if (disableNetworking) {
+            throw new Error('attempting to retrieve transaction details externally with networking disabled');
+          }
+          if (reqId) {
+            this.bitgo.setRequestTracer(reqId);
+          }
+          transactionCache[transactionId] = await this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
+        }
+        const transactionDetails = transactionCache[transactionId];
+        return transactionDetails.outputs[currentInput.index];
+      })
+    );
+
+    const inputAmount = _.sumBy(inputs, 'value');
+    const outputAmount = _.sumBy(allOutputs, 'amount');
+    const fee = inputAmount - outputAmount;
+
+    if (fee < 0) {
+      throw new Error(
+        `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
+      );
+    }
+
+    return true;
   }
 
   /**
@@ -1149,70 +1114,61 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params - {@see SignTransactionOptions}
-   * @param callback
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction | HalfSignedUtxoTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction | HalfSignedUtxoTransaction>
-  ): Bluebird<SignedTransaction | HalfSignedUtxoTransaction> {
-    const self = this;
-    return co<SignedTransaction | HalfSignedUtxoTransaction>(function* () {
-      const txPrebuild = params.txPrebuild;
-      const userPrv = params.prv;
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
+    const txPrebuild = params.txPrebuild;
+    const userPrv = params.prv;
 
-      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-        }
-        throw new Error('missing txPrebuild parameter');
+    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
       }
-      const transaction = self.createTransactionFromHex(txPrebuild.txHex);
+      throw new Error('missing txPrebuild parameter');
+    }
+    const transaction = this.createTransactionFromHex(txPrebuild.txHex);
 
-      if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
-        throw new Error('length of unspents array should equal to the number of transaction inputs');
+    if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
+      throw new Error('length of unspents array should equal to the number of transaction inputs');
+    }
+
+    let isLastSignature = false;
+    if (_.isBoolean(params.isLastSignature)) {
+      // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
+      isLastSignature = params.isLastSignature;
+    }
+
+    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+      if (!_.isUndefined(userPrv)) {
+        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
       }
+      throw new Error('missing prv parameter to sign transaction');
+    }
 
-      let isLastSignature = false;
-      if (_.isBoolean(params.isLastSignature)) {
-        // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
-        isLastSignature = params.isLastSignature;
-      }
+    if (!params.pubs || params.pubs.length !== 3) {
+      throw new Error(`must provide xpub array`);
+    }
 
-      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-        if (!_.isUndefined(userPrv)) {
-          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
-        }
-        throw new Error('missing prv parameter to sign transaction');
-      }
+    const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
+    if (signerKeychain.isNeutered()) {
+      throw new Error('expected user private key but received public key');
+    }
+    debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
 
-      if (!params.pubs || params.pubs.length !== 3) {
-        throw new Error(`must provide xpub array`);
-      }
+    const cosignerPub = params.cosignerPub ?? params.pubs[2];
+    const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<bip32.BIP32Interface>;
+    const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
-      const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
-      if (signerKeychain.isNeutered()) {
-        throw new Error('expected user private key but received public key');
-      }
-      debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
+    const signedTransaction = signAndVerifyWalletTransaction(
+      transaction,
+      txPrebuild.txInfo.unspents as Unspent[],
+      new WalletUnspentSigner(keychains, signerKeychain, cosignerKeychain),
+      { isLastSignature }
+    );
 
-      const cosignerPub = params.cosignerPub ?? params.pubs[2];
-      const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<bip32.BIP32Interface>;
-      const cosignerKeychain = bip32.fromBase58(cosignerPub);
-
-      const signedTransaction = signAndVerifyWalletTransaction(
-        transaction,
-        txPrebuild.txInfo.unspents as Unspent[],
-        new WalletUnspentSigner(keychains, signerKeychain, cosignerKeychain),
-        { isLastSignature }
-      );
-
-      return {
-        txHex: signedTransaction.toBuffer().toString('hex'),
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      txHex: signedTransaction.toBuffer().toString('hex'),
+    };
   }
 
   /**
@@ -1369,10 +1325,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @deprecated - use {@see backupKeyRecovery}
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see backupKeyRecovery}
-   * @param callback
    */
-  recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(backupKeyRecovery(this, this.bitgo, params)).asCallback(callback);
+  async recover(params: RecoverParams): ReturnType<typeof backupKeyRecovery> {
+    return backupKeyRecovery(this, this.bitgo, params);
   }
 
   /**
@@ -1385,57 +1340,48 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.signed return a half-signed transaction (default=true)
    * @param params.walletPassphrase the wallet passphrase
    * @param params.xprv the unencrypted xprv (used instead of wallet passphrase)
-   * @param callback
    * @returns {*}
    */
-  recoverFromWrongChain(
-    params: RecoverFromWrongChainOptions,
-    callback?: NodeCallback<any>
-  ): Bluebird<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
-    const self = this;
-    return co<CrossChainRecoverySigned | CrossChainRecoveryUnsigned>(function* recoverFromWrongChain() {
-      const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
+  async recoverFromWrongChain(
+    params: RecoverFromWrongChainOptions
+  ): Promise<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
+    const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
 
-      // params.recoveryCoin used to be params.coin, backwards compatibility
-      const recoveryCoin = params.coin || params.recoveryCoin;
-      if (!recoveryCoin) {
-        throw new Error('missing required object recoveryCoin');
-      }
-      // signed should default to true, and only be disabled if explicitly set to false (not undefined)
-      const signed = params.signed !== false;
+    // params.recoveryCoin used to be params.coin, backwards compatibility
+    const recoveryCoin = params.coin || params.recoveryCoin;
+    if (!recoveryCoin) {
+      throw new Error('missing required object recoveryCoin');
+    }
+    // signed should default to true, and only be disabled if explicitly set to false (not undefined)
+    const signed = params.signed !== false;
 
-      const sourceCoinFamily = self.getFamily();
-      const recoveryCoinFamily = recoveryCoin.getFamily();
-      const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
+    const sourceCoinFamily = this.getFamily();
+    const recoveryCoinFamily = recoveryCoin.getFamily();
+    const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
 
-      if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
-        throw new Error(
-          `Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`
-        );
-      }
+    if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
+      throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
+    }
 
-      const recoveryTool = new CrossChainRecoveryTool({
-        bitgo: self.bitgo,
-        sourceCoin: self,
-        recoveryCoin: recoveryCoin,
-        logging: true,
-      });
+    const recoveryTool = new CrossChainRecoveryTool({
+      bitgo: this.bitgo,
+      sourceCoin: this,
+      recoveryCoin: recoveryCoin,
+      logging: true,
+    });
 
-      yield recoveryTool.buildTransaction({
-        wallet: wallet,
-        faultyTxId: txid,
-        recoveryAddress: recoveryAddress,
-      });
+    await recoveryTool.buildTransaction({
+      wallet: wallet,
+      faultyTxId: txid,
+      recoveryAddress: recoveryAddress,
+    });
 
-      if (signed) {
-        yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
-        return recoveryTool.export();
-      } else {
-        return yield recoveryTool.buildUnsigned();
-      }
-    })
-      .call(this)
-      .asCallback(callback);
+    if (signed) {
+      await recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
+      return recoveryTool.export();
+    } else {
+      return await recoveryTool.buildUnsigned();
+    }
   }
 
   /**
@@ -1458,20 +1404,23 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<any> {
+    return {};
   }
 
   preCreateBitGo(params: PrecreateBitGoOptions): void {
     return;
   }
 
-  presignTransaction(params: PresignTransactionOptions, callback?: (err: Error, res: any) => void): Bluebird<any> {
-    return Bluebird.resolve(params).asCallback(callback);
+  async presignTransaction(params: PresignTransactionOptions): Promise<any> {
+    return params;
   }
 
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Bluebird<any> {
-    return Bluebird.resolve(walletParams);
+  async supplementGenerateWallet(
+    walletParams: SupplementGenerateWalletOptions,
+    keychains: KeychainsTriplet
+  ): Promise<any> {
+    return walletParams;
   }
 
   transactionDataAllowed(): boolean {

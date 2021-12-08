@@ -430,11 +430,15 @@ export const EosResponses = {
   explainRefundOutput,
 } as const;
 
+const string257CharsLong =
+  '4WMNlu0fFU8N94AwukfpfPPQn2Myo80JdmLNF5rgeKAab9XLD93KUQipcT6US0LRwWWIGbUt89fjmdwpg3CBklNi8QIeBI2i8UDJCEuQKYobR5m4ismm1RooTXUnw5OPjmfLuuajYV4e5cS1jpC6hez5X43PZ5SsGaHNYX2YYXY03ir54cWWx5QW5VCPKPKUzfq2UYK5fjAG2Fe3xCUOzqgoR6KaAiuOOnDSyhZygLJyaoJpOXZM9olblNtAW75Ed';
+
 export const EosInputs = {
   explainTransactionInputChex,
   explainTransactionInputNative,
   explainUnstakeInput1,
   explainUnstakeInput2,
   explainRefundInput,
-  unsignedTransaction
+  unsignedTransaction,
+  string257CharsLong,
 } as const;

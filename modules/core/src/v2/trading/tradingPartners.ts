@@ -2,16 +2,10 @@
  * @prettier
  */
 
-/**
- */
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
 
-import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
 import { TradingPartner, TradingPartnerType } from './tradingPartner';
-
-const co = Bluebird.coroutine;
 
 // Side of the requester (if they should be considered the primary or the secondary)
 // Only important for agency partnerships
@@ -41,22 +35,16 @@ export class TradingPartners {
 
   /**
    * List all trading partners of your trading account. Your trading partners are the accounts you are allowed to settle with.
-   * @param callback
    */
-  list(callback?: NodeCallback<TradingPartner[]>): Bluebird<TradingPartner[]> {
-    const self = this;
-    return co<TradingPartner[]>(function* list() {
-      const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
-      );
-      const response = (yield self.bitgo.get(url).result()) as any;
+  async list(): Promise<TradingPartner[]> {
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners`
+    );
+    const response = (await this.bitgo.get(url).result()) as any;
 
-      return response.tradingPartners.map(
-        (partner) => new TradingPartner(partner, self.bitgo, self.enterpriseId, self.account)
-      );
-    })
-      .call(this)
-      .asCallback(callback);
+    return response.tradingPartners.map(
+      (partner) => new TradingPartner(partner, this.bitgo, this.enterpriseId, this.account)
+    );
   }
 
   /**
@@ -65,20 +53,11 @@ export class TradingPartners {
    * @param params.referralCode unique referral code provided by counterparty
    * @param params.type type of trading partnership
    * @param params.requesterSide side of the requester (primary or secondary) important for agency relationships
-   * @param callback
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  addByCode(params: TradingPartnerAddByCodeParameters, callback?: NodeCallback<{}>): Bluebird<TradingPartner> {
-    const self = this;
-    return co<TradingPartner>(function* refer() {
-      const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
-      );
-      const response = yield self.bitgo.post(url).send(params).result();
-
-      return response;
-    })
-      .call(this)
-      .asCallback(callback);
+  async addByCode(params: TradingPartnerAddByCodeParameters): Promise<TradingPartner> {
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners`
+    );
+    return await this.bitgo.post(url).send(params).result();
   }
 }

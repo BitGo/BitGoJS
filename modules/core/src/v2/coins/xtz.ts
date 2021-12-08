@@ -2,9 +2,7 @@
  * @prettier
  */
 import * as bip32 from 'bip32';
-import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import {
@@ -23,7 +21,6 @@ import {
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
 
@@ -146,19 +143,16 @@ export class Xtz extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
   /**
@@ -180,44 +174,35 @@ export class Xtz extends BaseCoin {
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
    * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
-   * @param callback
    * @returns Bluebird<SignedTransaction>
    */
-  signTransaction(
-    params: XtzSignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const txBuilder: any = bitgoAccountLib.getBuilder(self.getChain());
-      txBuilder.from(params.txPrebuild.txHex);
-      txBuilder.source(params.txPrebuild.source);
-      if (params.txPrebuild.dataToSign) {
-        txBuilder.overrideDataToSign({ dataToSign: params.txPrebuild.dataToSign });
-      }
-      // The path /0/0/0/0 is used by the wallet base address
-      // Derive the user key only if the transaction is sent from a receive address
-      let key;
-      const { chain, index } = params.txPrebuild.addressInfo;
-      if (chain === 0 && index === 0) {
-        key = params.prv;
-      } else {
-        const derivationPath = `0/0/${chain}/${index}`;
-        key = self.deriveKeyWithPath({ key: params.prv, path: derivationPath });
-      }
-      txBuilder.sign({ key });
+  async signTransaction(params: XtzSignTransactionOptions): Promise<SignedTransaction> {
+    const txBuilder: any = bitgoAccountLib.getBuilder(this.getChain());
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder.source(params.txPrebuild.source);
+    if (params.txPrebuild.dataToSign) {
+      txBuilder.overrideDataToSign({ dataToSign: params.txPrebuild.dataToSign });
+    }
+    // The path /0/0/0/0 is used by the wallet base address
+    // Derive the user key only if the transaction is sent from a receive address
+    let key;
+    const { chain, index } = params.txPrebuild.addressInfo;
+    if (chain === 0 && index === 0) {
+      key = params.prv;
+    } else {
+      const derivationPath = `0/0/${chain}/${index}`;
+      key = this.deriveKeyWithPath({ key: params.prv, path: derivationPath });
+    }
+    txBuilder.sign({ key });
 
-      const transaction: any = yield txBuilder.build();
-      if (!transaction) {
-        throw new Error('Invalid messaged passed to signMessage');
-      }
-      const response = {
-        txHex: transaction.toBroadcastFormat(),
-      };
-      return transaction.signature.length >= 2 ? response : { halfSigned: response };
-    })
-      .call(this)
-      .asCallback(callback);
+    const transaction = await txBuilder.build();
+    if (!transaction) {
+      throw new Error('Invalid messaged passed to signMessage');
+    }
+    const response = {
+      txHex: transaction.toBroadcastFormat(),
+    };
+    return transaction.signature.length >= 2 ? response : { halfSigned: response };
   }
 
   /**
@@ -226,15 +211,11 @@ export class Xtz extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
-      const messageHex = message instanceof Buffer ? message.toString('hex') : Buffer.from(message).toString('hex');
-      const signatureData = (yield bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex)) as any;
-      return Buffer.from(signatureData.sig).toString('hex');
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
+    const messageHex = message instanceof Buffer ? message.toString('hex') : Buffer.from(message).toString('hex');
+    const signatureData = await bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex);
+    return Buffer.from(signatureData.sig);
   }
 
   /**
@@ -244,51 +225,41 @@ export class Xtz extends BaseCoin {
    * 2) Build transaction - build our transaction for the amount
    * 3) Send signed build - send our signed build to a public node
    * @param params
-   * @param callback
    */
-  recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+  async recover(params: any): Promise<any> {
     throw new MethodNotImplementedError();
   }
 
   /**
    * Explain a Tezos transaction from txHex
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.feeInfo) {
-        throw new Error('missing explain tx parameters');
-      }
-      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
-      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
-      }
-      txBuilder.from(txHex);
-      const tx: any = yield txBuilder.build();
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex || !params.feeInfo) {
+      throw new Error('missing explain tx parameters');
+    }
+    const txBuilder = bitgoAccountLib.getBuilder(this.getChain());
+    // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
+    if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
+      throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+    }
+    txBuilder.from(txHex);
+    const tx = await txBuilder.build();
 
-      const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
 
-      return {
-        displayOrder,
-        id: tx.id,
-        outputs: tx.outputs,
-        outputAmount: tx.outputs
-          .reduce((accumulator, output) => accumulator.plus(output.value), new BigNumber('0'))
-          .toFixed(0),
-        changeOutputs: [], // account based does not use change outputs
-        changeAmount: '0', // account base does not make change
-        fee: params.feeInfo,
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      displayOrder,
+      id: tx.id,
+      outputs: tx.outputs,
+      outputAmount: tx.outputs
+        .reduce((accumulator, output) => accumulator.plus(output.value), new BigNumber('0'))
+        .toFixed(0),
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
+      fee: params.feeInfo,
+    } as any;
   }
 
   isValidPub(pub: string): boolean {

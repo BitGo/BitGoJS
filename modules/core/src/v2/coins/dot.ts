@@ -1,5 +1,4 @@
 import * as accountLib from '@bitgo/account-lib';
-import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
@@ -13,9 +12,6 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
-import { NodeCallback } from '../types';
-
-const co = Bluebird.coroutine;
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -103,7 +99,7 @@ export class Dot extends BaseCoin {
     }
     return {
       pub: keys.pub,
-      prv: keys.prv + keys.pub,
+      prv: keys.prv,
     };
   }
 
@@ -144,8 +140,7 @@ export class Dot extends BaseCoin {
    */
   explainTransaction(
     params: ExplainTransactionOptions,
-    callback?: NodeCallback<any>
-  ): Bluebird<any> {
+  ): Promise<any> {
     throw new MethodNotImplementedError('Dot recovery not implemented');
   }
 
@@ -193,57 +188,46 @@ export class Dot extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param callback
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const { txHex, signer, prv } = self.verifySignTransactionParams(params);
-      const factory = accountLib.register(self.getChain(), accountLib.Dot.TransactionBuilderFactory);
-      const txBuilder = factory.from(txHex);
-      txBuilder
-        .validity(params.txPrebuild.validity)
-        .referenceBlock(params.txPrebuild.referenceBlock)
-        .version(params.txPrebuild.version)
-        .sender({ address: signer })
-        .sign({ key: prv });
-      const transaction: any = yield txBuilder.build();
-      if (!transaction) {
-        throw new Error('Invalid transaction');
-      }
-      const signedTxHex = transaction.toBroadcastFormat();
-      return { txHex: signedTxHex };
-    })
-      .call(this)
-      .asCallback(callback);
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const { txHex, signer, prv } = this.verifySignTransactionParams(params);
+    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
+    const txBuilder = factory.from(txHex);
+    txBuilder
+      .validity(params.txPrebuild.validity)
+      .referenceBlock(params.txPrebuild.referenceBlock)
+      .version(params.txPrebuild.version)
+      .sender({ address: signer })
+      .sign({ key: prv });
+    const transaction: any = await txBuilder.build();
+    if (!transaction) {
+      throw new Error('Invalid transaction');
+    }
+    const signedTxHex = transaction.toBroadcastFormat();
+    return { txHex: signedTxHex };
   }
 
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
-   * @param callback
    */
-  recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+  async recover(params: any): Promise<any> {
     throw new MethodNotImplementedError('Dot recovery not implemented');
   }
 
-  parseTransaction(
+  async parseTransaction(
     params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  ): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return this.isValidAddress(params.address);
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
   getAddressFromPublicKey(Pubkey: string): string {

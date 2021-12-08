@@ -1,7 +1,17 @@
 /**
  * @prettier
  */
+import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
+import { createHash, randomBytes } from 'crypto';
+import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
+import * as ecc from 'eosjs-ecc';
+import * as _ from 'lodash';
+import * as moment from 'moment';
+import * as querystring from 'querystring';
+import * as request from 'superagent';
+import * as url from 'url';
+
 import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
@@ -15,22 +25,10 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   VerificationOptions,
 } from '../baseCoin';
-import { NodeCallback } from '../types';
-import { BigNumber } from 'bignumber.js';
-import { createHash, randomBytes } from 'crypto';
-import * as moment from 'moment';
-import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
-import * as ecc from 'eosjs-ecc';
-import * as url from 'url';
-import * as querystring from 'querystring';
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from '../../stringTextDecoder';
-const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { Environments } from '../environments';
-import * as request from 'superagent';
 import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import { Wallet } from '../wallet';
 import { RequestTracer } from '../internal/util';
@@ -300,18 +298,7 @@ export class Eos extends BaseCoin {
    * @param memoId - the memo id to be checked
    */
   isValidMemoId(memoId: string): boolean {
-    if (!this.isValidMemo({ value: memoId })) {
-      return false;
-    }
-
-    let memoIdNumber;
-    try {
-      memoIdNumber = new BigNumber(memoId);
-    } catch (e) {
-      return false;
-    }
-
-    return memoIdNumber.gte(0);
+    return this.isValidMemo({ value: memoId });
   }
 
   /**
@@ -441,38 +428,30 @@ export class Eos extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param callback
-   * @returns {Bluebird<EosSignedTransaction>}
+   * @returns {Promise<EosSignedTransaction>}
    */
-  signTransaction(
-    params: EosSignTransactionParams,
-    callback?: NodeCallback<EosSignedTransaction>
-  ): Bluebird<EosSignedTransaction> {
-    return co<EosSignedTransaction>(function* () {
-      const prv: string = params.prv;
-      const txHex: string = params.txPrebuild.txHex;
-      const transaction: EosTx = params.txPrebuild.transaction;
+  async signTransaction(params: EosSignTransactionParams): Promise<EosSignedTransaction> {
+    const prv: string = params.prv;
+    const txHex: string = params.txPrebuild.txHex;
+    const transaction: EosTx = params.txPrebuild.transaction;
 
-      const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-      const privateKeyBuffer = bip32.fromBase58(prv).privateKey;
-      if (!privateKeyBuffer) {
-        throw new Error('no privateKey');
-      }
-      const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
+    const signBuffer: Buffer = Buffer.from(txHex, 'hex');
+    const privateKeyBuffer = bip32.fromBase58(prv).privateKey;
+    if (!privateKeyBuffer) {
+      throw new Error('no privateKey');
+    }
+    const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
-      transaction.signatures.push(signature);
+    transaction.signatures.push(signature);
 
-      const txParams = {
-        transaction,
-        txHex,
-        recipients: params.txPrebuild.recipients,
-        headers: params.txPrebuild.headers,
-        txid: params.txPrebuild.txid,
-      };
-      return { halfSigned: txParams };
-    })
-      .call(this)
-      .asCallback(callback);
+    const txParams = {
+      transaction,
+      txHex,
+      recipients: params.txPrebuild.recipients,
+      headers: params.txPrebuild.headers,
+      txid: params.txPrebuild.txid,
+    };
+    return { halfSigned: txParams };
   }
 
   private validateStakeActionData(stakeActionData: StakeActionData): any {
@@ -530,260 +509,248 @@ export class Eos extends BaseCoin {
    * @param transaction
    * @param headers
    */
-  private deserializeTransaction({
+  private async deserializeTransaction({
     transaction,
     headers,
-  }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
-    const self = this;
-    return co<DeserializedEosTransaction>(function* () {
-      // create an eosjs API client
-      const api = new Api({
-        abiProvider: new OfflineAbiProvider(),
-        rpc: new NoopJsonRpc(),
-        signatureProvider: new NoopSignatureProvider(),
-        chainId: self.getChainId(),
-        // Use a custom TextDecoder as the global TextDecoder leads to crashes in OVC / Electron.
-        textDecoder: new StringTextDecoder(),
-        textEncoder: new TextEncoder(),
-      });
+  }: ExplainTransactionOptions): Promise<DeserializedEosTransaction> {
+    // create an eosjs API client
+    const api = new Api({
+      abiProvider: new OfflineAbiProvider(),
+      rpc: new NoopJsonRpc(),
+      signatureProvider: new NoopSignatureProvider(),
+      chainId: this.getChainId(),
+      // Use a custom TextDecoder as the global TextDecoder leads to crashes in OVC / Electron.
+      textDecoder: new StringTextDecoder(),
+      textEncoder: new TextEncoder(),
+    });
 
-      // type guards
-      const isTransferActionData = (txActionData: any): txActionData is TransferActionData => {
-        return (
-          (txActionData as TransferActionData).from !== undefined &&
-          (txActionData as TransferActionData).to !== undefined &&
-          (txActionData as TransferActionData).quantity !== undefined
+    // type guards
+    const isTransferActionData = (txActionData: any): txActionData is TransferActionData => {
+      return (
+        (txActionData as TransferActionData).from !== undefined &&
+        (txActionData as TransferActionData).to !== undefined &&
+        (txActionData as TransferActionData).quantity !== undefined
+      );
+    };
+    const isStakeActionData = (txActionData: any): txActionData is StakeActionData => {
+      return (
+        (txActionData as StakeActionData).from !== undefined &&
+        (txActionData as StakeActionData).receiver !== undefined &&
+        (txActionData as StakeActionData).transfer !== undefined &&
+        (txActionData as StakeActionData).stake_cpu_quantity !== undefined
+      );
+    };
+    const isUnstakeActionData = (txActionData: any): txActionData is UnstakeActionData => {
+      return (
+        (txActionData as UnstakeActionData).from !== undefined &&
+        (txActionData as UnstakeActionData).receiver !== undefined &&
+        (txActionData as UnstakeActionData).unstake_cpu_quantity !== undefined &&
+        (txActionData as UnstakeActionData).unstake_net_quantity !== undefined
+      );
+    };
+    const isVoteActionData = (txActionData: any): txActionData is VoteActionData => {
+      return (txActionData as VoteActionData).voter !== undefined;
+    };
+    const isRefundActionData = (txActionData: any): txActionData is RefundActionData => {
+      return (txActionData as RefundActionData).owner !== undefined;
+    };
+
+    // deserializeTransaction
+    const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
+    const deserializedTxJsonFromPackedTrx = await api.deserializeTransactionWithActions(serializedTxBuffer);
+
+    if (!deserializedTxJsonFromPackedTrx) {
+      throw new Error('could not process transaction from txHex');
+    }
+    const tx: DeserializedEosTransaction = deserializedTxJsonFromPackedTrx;
+
+    // validate context free actions
+    if (tx.context_free_actions.length !== 0) {
+      if (tx.context_free_actions.length !== 1) {
+        throw new Error('number of context free actions must be 1');
+      }
+
+      if (
+        !_.isEqual(_.pick(tx.context_free_actions[0], ['account', 'authorization', 'name']), {
+          account: 'eosio.null',
+          authorization: [],
+          name: 'nonce',
+        }) ||
+        _.isEmpty(tx.context_free_actions[0].data)
+      ) {
+        throw new Error('the context free action is invalid');
+      }
+    }
+
+    // Only support transactions with one (transfer | voteproducer) or two (delegatebw & voteproducer) actions
+    if (tx.actions.length !== 1 && tx.actions.length !== 2) {
+      throw new Error(`invalid number of actions: ${tx.actions.length}`);
+    }
+
+    const txAction = tx.actions[0];
+    if (!txAction) {
+      throw new Error('missing transaction action');
+    }
+    if (txAction.name === 'transfer') {
+      // Transfers should only have 1 action
+      if (tx.actions.length !== 1) {
+        throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
+      }
+
+      if (!isTransferActionData(txAction.data)) {
+        throw new Error('Invalid or incomplete transfer action data');
+      }
+      const transferActionData = txAction.data;
+
+      tx.address = transferActionData.to;
+      tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+      tx.memo = transferActionData.memo;
+    } else if (txAction.name === 'delegatebw') {
+      // The delegatebw action should only be part of voting transactions
+      if (tx.actions.length !== 2) {
+        throw new Error(
+          `staking transactions that include the delegatebw action should have 2 actions: ${tx.actions.length} given`
         );
-      };
-      const isStakeActionData = (txActionData: any): txActionData is StakeActionData => {
-        return (
-          (txActionData as StakeActionData).from !== undefined &&
-          (txActionData as StakeActionData).receiver !== undefined &&
-          (txActionData as StakeActionData).transfer !== undefined &&
-          (txActionData as StakeActionData).stake_cpu_quantity !== undefined
+      }
+
+      const txAction2 = tx.actions[1];
+      if (txAction2.name !== 'voteproducer') {
+        throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: voteproducer`);
+      }
+
+      if (!isStakeActionData(txAction.data) || !isVoteActionData(txAction2.data)) {
+        throw new Error('Invalid or incomplete stake or vote action data');
+      }
+      const stakeActionData = txAction.data;
+      const voteActionData = txAction2.data;
+
+      const deserializedStakeAction = this.validateStakeActionData(stakeActionData);
+      const deserializedVoteAction = Eos.validateVoteActionData(voteActionData);
+      if (deserializedStakeAction.address !== deserializedVoteAction.address) {
+        throw new Error(
+          `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
         );
-      };
-      const isUnstakeActionData = (txActionData: any): txActionData is UnstakeActionData => {
-        return (
-          (txActionData as UnstakeActionData).from !== undefined &&
-          (txActionData as UnstakeActionData).receiver !== undefined &&
-          (txActionData as UnstakeActionData).unstake_cpu_quantity !== undefined &&
-          (txActionData as UnstakeActionData).unstake_net_quantity !== undefined
-        );
-      };
-      const isVoteActionData = (txActionData: any): txActionData is VoteActionData => {
-        return (txActionData as VoteActionData).voter !== undefined;
-      };
-      const isRefundActionData = (txActionData: any): txActionData is RefundActionData => {
-        return (txActionData as RefundActionData).owner !== undefined;
-      };
-
-      // deserializeTransaction
-      const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
-      const deserializedTxJsonFromPackedTrx = yield api.deserializeTransactionWithActions(serializedTxBuffer);
-
-      if (!deserializedTxJsonFromPackedTrx) {
-        throw new Error('could not process transaction from txHex');
-      }
-      const tx: DeserializedEosTransaction = deserializedTxJsonFromPackedTrx;
-
-      // validate context free actions
-      if (tx.context_free_actions.length !== 0) {
-        if (tx.context_free_actions.length !== 1) {
-          throw new Error('number of context free actions must be 1');
-        }
-
-        if (
-          !_.isEqual(_.pick(tx.context_free_actions[0], ['account', 'authorization', 'name']), {
-            account: 'eosio.null',
-            authorization: [],
-            name: 'nonce',
-          }) ||
-          _.isEmpty(tx.context_free_actions[0].data)
-        ) {
-          throw new Error('the context free action is invalid');
-        }
       }
 
-      // Only support transactions with one (transfer | voteproducer) or two (delegatebw & voteproducer) actions
-      if (tx.actions.length !== 1 && tx.actions.length !== 2) {
-        throw new Error(`invalid number of actions: ${tx.actions.length}`);
+      tx.amount = deserializedStakeAction.amount;
+      tx.proxy = deserializedVoteAction.proxy;
+      tx.producers = deserializedVoteAction.producers;
+    } else if (txAction.name === 'voteproducer') {
+      if (tx.actions.length > 2) {
+        throw new Error('voting transactions should not have more than 2 actions');
       }
 
-      const txAction = tx.actions[0];
-      if (!txAction) {
-        throw new Error('missing transaction action');
-      }
-      if (txAction.name === 'transfer') {
-        // Transfers should only have 1 action
-        if (tx.actions.length !== 1) {
-          throw new Error(`transfers should only have 1 action: ${tx.actions.length} given`);
-        }
-
-        if (!isTransferActionData(txAction.data)) {
-          throw new Error('Invalid or incomplete transfer action data');
-        }
-        const transferActionData = txAction.data;
-
-        tx.address = transferActionData.to;
-        tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
-        tx.memo = transferActionData.memo;
-      } else if (txAction.name === 'delegatebw') {
-        // The delegatebw action should only be part of voting transactions
-        if (tx.actions.length !== 2) {
-          throw new Error(
-            `staking transactions that include the delegatebw action should have 2 actions: ${tx.actions.length} given`
-          );
-        }
-
+      let deserializedStakeAction;
+      if (tx.actions.length === 2) {
         const txAction2 = tx.actions[1];
-        if (txAction2.name !== 'voteproducer') {
-          throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: voteproducer`);
+        if (txAction2.name !== 'delegatebw') {
+          throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: delegatebw`);
         }
-
-        if (!isStakeActionData(txAction.data) || !isVoteActionData(txAction2.data)) {
-          throw new Error('Invalid or incomplete stake or vote action data');
+        if (!isStakeActionData(txAction.data)) {
+          throw new Error('Invalid or incomplete stake action data');
         }
         const stakeActionData = txAction.data;
-        const voteActionData = txAction2.data;
-
-        const deserializedStakeAction = self.validateStakeActionData(stakeActionData);
-        const deserializedVoteAction = Eos.validateVoteActionData(voteActionData);
-        if (deserializedStakeAction.address !== deserializedVoteAction.address) {
-          throw new Error(
-            `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-          );
-        }
-
-        tx.amount = deserializedStakeAction.amount;
-        tx.proxy = deserializedVoteAction.proxy;
-        tx.producers = deserializedVoteAction.producers;
-      } else if (txAction.name === 'voteproducer') {
-        if (tx.actions.length > 2) {
-          throw new Error('voting transactions should not have more than 2 actions');
-        }
-
-        let deserializedStakeAction;
-        if (tx.actions.length === 2) {
-          const txAction2 = tx.actions[1];
-          if (txAction2.name !== 'delegatebw') {
-            throw new Error(`invalid staking transaction action: ${txAction2.name}, expecting: delegatebw`);
-          }
-          if (!isStakeActionData(txAction.data)) {
-            throw new Error('Invalid or incomplete stake action data');
-          }
-          const stakeActionData = txAction.data;
-          deserializedStakeAction = self.validateStakeActionData(stakeActionData);
-        }
-
-        if (!isVoteActionData(txAction.data)) {
-          throw new Error('Invalid or incomplete vote action data');
-        }
-        const voteActionData = txAction.data;
-        const deserializedVoteAction = Eos.validateVoteActionData(voteActionData);
-
-        if (!!deserializedStakeAction && deserializedStakeAction.address !== deserializedVoteAction.address) {
-          throw new Error(
-            `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
-          );
-        }
-
-        tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
-        tx.proxy = deserializedVoteAction.proxy;
-        tx.producers = deserializedVoteAction.producers;
-      } else if (txAction.name === 'undelegatebw') {
-        if (tx.actions.length !== 1) {
-          throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
-        }
-
-        if (!isUnstakeActionData(txAction.data)) {
-          throw new Error('Invalid or incomplete unstake action data');
-        }
-        const unstakeActionData = txAction.data;
-        const deserializedUnstakeAction = self.validateUnstakeActionData(unstakeActionData);
-
-        tx.amount = deserializedUnstakeAction.amount;
-        tx.address = deserializedUnstakeAction.address;
-      } else if (txAction.name === 'refund') {
-        if (tx.actions.length !== 1) {
-          throw new Error(`refund should only have 1 action: ${tx.actions.length} given`);
-        }
-
-        if (!isRefundActionData(txAction.data)) {
-          throw new Error('Invalid or incomplete refund action data');
-        }
-
-        const refundActionData = txAction.data;
-        tx.address = refundActionData.owner;
-        tx.amount = '0';
-      } else {
-        throw new Error(`invalid action: ${txAction.name}`);
+        deserializedStakeAction = this.validateStakeActionData(stakeActionData);
       }
 
-      // Get the tx id if tx headers were provided
-      if (headers) {
-        let rebuiltTransaction;
-        try {
-          // remove Z at the end
-          if ((headers.expiration as string).endsWith('Z')) {
-            headers.expiration = (headers.expiration as string).slice(0, -1);
-          }
-          rebuiltTransaction = yield api.transact({ ...tx, ...headers }, { sign: false, broadcast: false });
-        } catch (e) {
-          throw new Error(
-            'Could not build transaction to get transaction_id. Please check transaction or headers format.'
-          );
-        }
+      if (!isVoteActionData(txAction.data)) {
+        throw new Error('Invalid or incomplete vote action data');
+      }
+      const voteActionData = txAction.data;
+      const deserializedVoteAction = Eos.validateVoteActionData(voteActionData);
 
-        tx.transaction_id = Eos.createTransactionIdHex((rebuiltTransaction as any).serializedTransaction);
+      if (!!deserializedStakeAction && deserializedStakeAction.address !== deserializedVoteAction.address) {
+        throw new Error(
+          `staker (${deserializedStakeAction.address}) and voter (${deserializedVoteAction.address}) must be the same`
+        );
       }
 
-      return tx;
-    }).call(this);
+      tx.amount = !!deserializedStakeAction ? deserializedStakeAction.amount : '0';
+      tx.proxy = deserializedVoteAction.proxy;
+      tx.producers = deserializedVoteAction.producers;
+    } else if (txAction.name === 'undelegatebw') {
+      if (tx.actions.length !== 1) {
+        throw new Error(`unstake should only have 1 action: ${tx.actions.length} given`);
+      }
+
+      if (!isUnstakeActionData(txAction.data)) {
+        throw new Error('Invalid or incomplete unstake action data');
+      }
+      const unstakeActionData = txAction.data;
+      const deserializedUnstakeAction = this.validateUnstakeActionData(unstakeActionData);
+
+      tx.amount = deserializedUnstakeAction.amount;
+      tx.address = deserializedUnstakeAction.address;
+    } else if (txAction.name === 'refund') {
+      if (tx.actions.length !== 1) {
+        throw new Error(`refund should only have 1 action: ${tx.actions.length} given`);
+      }
+
+      if (!isRefundActionData(txAction.data)) {
+        throw new Error('Invalid or incomplete refund action data');
+      }
+
+      const refundActionData = txAction.data;
+      tx.address = refundActionData.owner;
+      tx.amount = '0';
+    } else {
+      throw new Error(`invalid action: ${txAction.name}`);
+    }
+
+    // Get the tx id if tx headers were provided
+    if (headers) {
+      let rebuiltTransaction;
+      try {
+        // remove Z at the end
+        if ((headers.expiration as string).endsWith('Z')) {
+          headers.expiration = (headers.expiration as string).slice(0, -1);
+        }
+        rebuiltTransaction = await api.transact({ ...tx, ...headers }, { sign: false, broadcast: false });
+      } catch (e) {
+        throw new Error(
+          'Could not build transaction to get transaction_id. Please check transaction or headers format.'
+        );
+      }
+
+      tx.transaction_id = Eos.createTransactionIdHex((rebuiltTransaction as any).serializedTransaction);
+    }
+
+    return tx;
   }
 
   /**
    * Explain/parse transaction
    * @param params - ExplainTransactionOptions
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      let transaction;
-      try {
-        transaction = yield self.deserializeTransaction(params);
-      } catch (e) {
-        throw new Error('invalid EOS transaction or headers: ' + e.toString());
-      }
-      return {
-        displayOrder: [
-          'id',
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'memo',
-          'proxy',
-          'producers',
-        ],
-        id: transaction.transaction_id,
-        changeOutputs: [],
-        outputAmount: transaction.amount,
-        changeAmount: 0,
-        outputs: !!transaction.address ? [{ address: transaction.address, amount: transaction.amount }] : [],
-        fee: {},
-        memo: transaction.memo,
-        proxy: transaction.proxy,
-        producers: transaction.producers,
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    let transaction;
+    try {
+      transaction = await this.deserializeTransaction(params);
+    } catch (e) {
+      throw new Error('invalid EOS transaction or headers: ' + e.toString());
+    }
+    return {
+      displayOrder: [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'memo',
+        'proxy',
+        'producers',
+      ],
+      id: transaction.transaction_id,
+      changeOutputs: [],
+      outputAmount: transaction.amount,
+      changeAmount: 0,
+      outputs: !!transaction.address ? [{ address: transaction.address, amount: transaction.amount }] : [],
+      fee: {},
+      memo: transaction.memo,
+      proxy: transaction.proxy,
+      producers: transaction.producers,
+    } as any;
   }
 
   /**
@@ -798,92 +765,80 @@ export class Eos extends BaseCoin {
    * @param params.endpoint
    * @param params.payload
    */
-  protected getDataFromNode(params: { endpoint: string; payload?: Record<string, unknown> }): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const nodeUrls = self.getPublicNodeUrls();
-      for (const nodeUrl of nodeUrls) {
-        try {
-          return yield request.post(nodeUrl + params.endpoint).send(params.payload);
-        } catch (e) {
-          // let's hope another call succeeds
-        }
+  protected async getDataFromNode(params: {
+    endpoint: string;
+    payload?: Record<string, unknown>;
+  }): Promise<request.Response> {
+    const nodeUrls = this.getPublicNodeUrls();
+    for (const nodeUrl of nodeUrls) {
+      try {
+        return await request.post(nodeUrl + params.endpoint).send(params.payload);
+      } catch (e) {
+        // let's hope another call succeeds
       }
-      throw new Error(`Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
-    }).call(this);
+    }
+    throw new Error(`Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
   }
 
   /**
    * Get EOS chain info from a public node
    */
-  protected getChainInfoFromNode(): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const response = yield self.getDataFromNode({ endpoint: '/v1/chain/get_info' });
-      if ((response as any).status !== 200) {
-        throw new Error('Unable to fetch chain info');
-      }
-      return (response as any).body;
-    }).call(this);
+  protected async getChainInfoFromNode(): Promise<any> {
+    const response = await this.getDataFromNode({ endpoint: '/v1/chain/get_info' });
+    if (response.status !== 200) {
+      throw new Error('Unable to fetch chain info');
+    }
+    return response.body;
   }
 
   /**
    * Get data specific to an account from a public node
    * @param address
    */
-  protected getAccountFromNode({ address }: { address: string }): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const response = yield self.getDataFromNode({
-        endpoint: '/v1/chain/get_account',
-        payload: { account_name: address },
-      });
-      if ((response as any).status !== 200) {
-        throw new Error('Account not found');
-      }
-      return (response as any).body;
-    }).call(this);
+  protected async getAccountFromNode({ address }: { address: string }): Promise<any> {
+    const response = await this.getDataFromNode({
+      endpoint: '/v1/chain/get_account',
+      payload: { account_name: address },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return response.body;
   }
 
   /**
    * Get block data from a public node using its block number or block id
    * @param blockNumOrId
    */
-  protected getBlockFromNode({ blockNumOrId }: { blockNumOrId: string }): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const response = yield self.getDataFromNode({
-        endpoint: '/v1/chain/get_block',
-        payload: { block_num_or_id: blockNumOrId },
-      });
-      if ((response as any).status !== 200) {
-        throw new Error('Block not found');
-      }
-      return (response as any).body;
-    }).call(this);
+  protected async getBlockFromNode({ blockNumOrId }: { blockNumOrId: string }): Promise<any> {
+    const response = await this.getDataFromNode({
+      endpoint: '/v1/chain/get_block',
+      payload: { block_num_or_id: blockNumOrId },
+    });
+    if (response.status !== 200) {
+      throw new Error('Block not found');
+    }
+    return response.body;
   }
 
   /**
    * Get headers for an EOS tx from a public node
    */
-  protected getTransactionHeadersFromNode(): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const chainInfo = (yield self.getChainInfoFromNode()) as any;
-      const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
-      const expireSeconds = 28800; // maximum tx expire time of 8h
-      const chainDate = moment((chainInfo as any).head_block_time + 'Z', moment.ISO_8601);
-      const expirationDate = chainDate.add(moment.duration(expireSeconds * 1000), 'milliseconds');
+  protected async getTransactionHeadersFromNode(): Promise<any> {
+    const chainInfo = await this.getChainInfoFromNode();
+    const headBlockInfoResult = await this.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
+    const expireSeconds = 28800; // maximum tx expire time of 8h
+    const chainDate = moment(chainInfo.head_block_time + 'Z', moment.ISO_8601);
+    const expirationDate = chainDate.add(moment.duration(expireSeconds * 1000), 'milliseconds');
 
-      return {
-        expiration: expirationDate.toISOString(),
-        ref_block_num: (chainInfo as any).head_block_num & 0xffff,
-        ref_block_prefix: (headBlockInfoResult as any).ref_block_prefix,
-      };
-    }).call(this);
+    return {
+      expiration: expirationDate.toISOString(),
+      ref_block_num: chainInfo.head_block_num & 0xffff,
+      ref_block_prefix: headBlockInfoResult.ref_block_prefix,
+    };
   }
 
-  protected getTransferAction({ recipient, sender, amount, memo }): EosTransactionAction {
+  protected getTransferAction({ recipient, sender, amount, memo }: any): EosTransactionAction {
     return {
       account: 'eosio.token',
       name: 'transfer',
@@ -916,160 +871,151 @@ export class Eos extends BaseCoin {
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
-   * @param callback
    */
-  recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
-    const self = this;
-    return co<RecoveryTransaction>(function* () {
-      if (!params.rootAddress) {
-        throw new Error('missing required string rootAddress');
+  async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
+    if (!params.rootAddress) {
+      throw new Error('missing required string rootAddress');
+    }
+
+    const isKrsRecovery = getIsKrsRecovery(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    const { krsProvider } = params;
+    if (getIsKrsRecovery(params)) {
+      checkKrsProvider(this, krsProvider);
+    }
+
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+
+    const rootAddressDetails = this.getAddressDetails(params.rootAddress);
+    const account = await this.getAccountFromNode({ address: rootAddressDetails.address });
+
+    if (!account.core_liquid_balance) {
+      throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
+    }
+
+    if (!account.permissions) {
+      throw new Error('Could not find permissions for ' + params.rootAddress);
+    }
+    const userPub = ecc.PublicKey.fromBuffer(keys[0].publicKey).toString();
+    const backupPub = ecc.PublicKey.fromBuffer(keys[1].publicKey).toString();
+
+    const activePermission = _.find(account.permissions, { perm_name: 'active' });
+    const requiredAuth = _.get(activePermission, 'required_auth');
+    if (!requiredAuth) {
+      throw new Error('Required auth for active permission not found in account');
+    }
+    if (requiredAuth.threshold !== 2) {
+      throw new Error('Unexpected active permission threshold');
+    }
+
+    const foundPubs = {};
+    const requiredAuthKeys = requiredAuth.keys;
+    for (const signer of requiredAuthKeys) {
+      if (signer.weight !== 1) {
+        throw new Error('invalid signer weight');
       }
-
-      const isKrsRecovery = getIsKrsRecovery(params);
-      const isUnsignedSweep = getIsUnsignedSweep(params);
-
-      const { krsProvider } = params;
-      if (getIsKrsRecovery(params)) {
-        checkKrsProvider(self, krsProvider);
+      // if it's a dupe of a pub we already know, block
+      if (foundPubs[signer.key]) {
+        throw new Error('duplicate signer key');
       }
+      foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
+    }
+    if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
+      throw new Error('unexpected incidence frequency of user signer key');
+    }
 
-      if (!self.isValidAddress(params.recoveryDestination)) {
-        throw new Error('Invalid destination address!');
-      }
+    const accountBalance = account.core_liquid_balance.split(' ')[0];
+    const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance).toFixed());
 
-      const keys = getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
+    const destinationAddress = params.recoveryDestination;
+    const destinationAddressDetails = this.getAddressDetails(destinationAddress);
+    const destinationAccount = await this.getAccountFromNode({ address: destinationAddressDetails.address });
+    if (!destinationAccount) {
+      throw new Error('Destination account not found');
+    }
 
-      const rootAddressDetails = self.getAddressDetails(params.rootAddress);
-      const account = (yield self.getAccountFromNode({ address: rootAddressDetails.address })) as any;
+    const transactionHeaders = await this.getTransactionHeadersFromNode();
+    if (!transactionHeaders) {
+      throw new Error('Could not get transaction headers from node');
+    }
+    const headers: EosTransactionHeaders = transactionHeaders;
 
-      if (!account.core_liquid_balance) {
-        throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
-      }
+    // drop milliseconds and trailing Z from expiration
+    const date = moment(headers.expiration as string);
+    const expiration = date.milliseconds(0).toISOString();
+    if (expiration.endsWith('Z')) {
+      headers.expiration = expiration.slice(0, -1);
+    }
 
-      if (!account.permissions) {
-        throw new Error('Could not find permissions for ' + params.rootAddress);
-      }
-      const userPub = ecc.PublicKey.fromBuffer(keys[0].publicKey).toString();
-      const backupPub = ecc.PublicKey.fromBuffer(keys[1].publicKey).toString();
+    // create an offline eosjs API client
+    const api = new Api({
+      rpc: new NoopJsonRpc(),
+      signatureProvider: new NoopSignatureProvider(),
+      abiProvider: new OfflineAbiProvider(),
+      chainId: this.getChainId(),
+      textDecoder: new TextDecoder(),
+      textEncoder: new TextEncoder(),
+    });
 
-      const activePermission = _.find(account.permissions, { perm_name: 'active' });
-      const requiredAuth = _.get(activePermission, 'required_auth');
-      if (!requiredAuth) {
-        throw new Error('Required auth for active permission not found in account');
-      }
-      if (requiredAuth.threshold !== 2) {
-        throw new Error('Unexpected active permission threshold');
-      }
+    const transferAction = this.getTransferAction({
+      recipient: destinationAddressDetails.address,
+      sender: rootAddressDetails.address,
+      amount: new BigNumber(recoveryAmount),
+      memo: destinationAddressDetails.memoId,
+    });
 
-      const foundPubs = {};
-      const requiredAuthKeys = requiredAuth.keys;
-      for (const signer of requiredAuthKeys) {
-        if (signer.weight !== 1) {
-          throw new Error('invalid signer weight');
-        }
-        // if it's a dupe of a pub we already know, block
-        if (foundPubs[signer.key]) {
-          throw new Error('duplicate signer key');
-        }
-        foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
-      }
-      if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
-        throw new Error('unexpected incidence frequency of user signer key');
-      }
+    let serializedTransaction;
+    const tx = { actions: [transferAction] };
+    try {
+      serializedTransaction = await api.transact({ ...tx, ...headers }, { sign: false, broadcast: false });
+    } catch (e) {
+      throw new Error('Eos API error: Could not build transaction');
+    }
 
-      const accountBalance = account.core_liquid_balance.split(' ')[0];
-      const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance));
+    // create transaction object
+    const serializedTransactionHex = Buffer.from(serializedTransaction.serializedTransaction).toString('hex');
+    const transactionId = Eos.createTransactionIdHex(serializedTransaction.serializedTransaction);
+    const txObject = {
+      transaction: {
+        compression: 'none',
+        packed_trx: serializedTransactionHex,
+        signatures: [] as string[],
+      },
+      txid: transactionId,
+      recoveryAmount: accountBalance,
+      coin: this.getChain(),
+      txHex: '',
+    };
 
-      const destinationAddress = params.recoveryDestination;
-      const destinationAddressDetails = self.getAddressDetails(destinationAddress);
-      const destinationAccount = yield self.getAccountFromNode({ address: destinationAddressDetails.address });
-      if (!destinationAccount) {
-        throw new Error('Destination account not found');
-      }
+    const signableTx = Buffer.concat([
+      Buffer.from(this.getChainId(), 'hex'), // The ChainID representing the chain that we are on
+      Buffer.from(serializedTransaction.serializedTransaction), // The serialized unsigned tx
+      Buffer.from(new Uint8Array(32)), // Some padding
+    ]).toString('hex');
 
-      const transactionHeaders = yield self.getTransactionHeadersFromNode();
-      if (!transactionHeaders) {
-        throw new Error('Could not get transaction headers from node');
-      }
-      const headers: EosTransactionHeaders = transactionHeaders;
-
-      // drop milliseconds and trailing Z from expiration
-      const date = moment(headers.expiration as string);
-      const expiration = date.milliseconds(0).toISOString();
-      if (expiration.endsWith('Z')) {
-        headers.expiration = expiration.slice(0, -1);
-      }
-
-      // create an offline eosjs API client
-      const api = new Api({
-        rpc: new NoopJsonRpc(),
-        signatureProvider: new NoopSignatureProvider(),
-        abiProvider: new OfflineAbiProvider(),
-        chainId: self.getChainId(),
-        textDecoder: new TextDecoder(),
-        textEncoder: new TextEncoder(),
-      });
-
-      const transferAction = self.getTransferAction({
-        recipient: destinationAddressDetails.address,
-        sender: rootAddressDetails.address,
-        amount: new BigNumber(recoveryAmount),
-        memo: destinationAddressDetails.memoId,
-      });
-
-      let serializedTransaction;
-      const tx = { actions: [transferAction] };
-      try {
-        serializedTransaction = yield api.transact({ ...tx, ...headers }, { sign: false, broadcast: false });
-      } catch (e) {
-        throw new Error('Eos API error: Could not build transaction');
-      }
-
-      // create transaction object
-      const serializedTransactionHex = Buffer.from(serializedTransaction.serializedTransaction).toString('hex');
-      const transactionId = Eos.createTransactionIdHex(serializedTransaction.serializedTransaction);
-      const txObject = {
-        transaction: {
-          compression: 'none',
-          packed_trx: serializedTransactionHex,
-          signatures: [] as string[],
-        },
-        txid: transactionId,
-        recoveryAmount: accountBalance,
-        coin: self.getChain(),
-        txHex: '',
-      };
-
-      const signableTx = Buffer.concat([
-        Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
-        Buffer.from(serializedTransaction.serializedTransaction), // The serialized unsigned tx
-        Buffer.from(new Uint8Array(32)), // Some padding
-      ]).toString('hex');
-
-      if (isUnsignedSweep) {
-        txObject.txHex = signableTx;
-        return txObject;
-      }
-
-      const userSignature = self.signTx(signableTx, keys[0]);
-      txObject.transaction.signatures.push(userSignature);
-
-      if (!isKrsRecovery) {
-        const backupSignature = self.signTx(signableTx, keys[1]);
-        txObject.transaction.signatures.push(backupSignature);
-      }
-
+    if (isUnsignedSweep) {
+      txObject.txHex = signableTx;
       return txObject;
-    })
-      .call(this)
-      .asCallback(callback);
+    }
+
+    const userSignature = this.signTx(signableTx, keys[0]);
+    txObject.transaction.signatures.push(userSignature);
+
+    if (!isKrsRecovery) {
+      const backupSignature = this.signTx(signableTx, keys[1]);
+      txObject.transaction.signatures.push(backupSignature);
+    }
+
+    return txObject;
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   /**
@@ -1078,131 +1024,125 @@ export class Eos extends BaseCoin {
    * @param params
    * @param params.txParams params used to build the transaction
    * @param params.txPrebuild the prebuilt transaction
-   * @param callback
    */
-  verifyTransaction(params: EosVerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<any> {
-    const self = this;
-    return co<boolean>(function* () {
-      const { txParams: txParams, txPrebuild: txPrebuild } = params;
+  async verifyTransaction(params: EosVerifyTransactionOptions): Promise<any> {
+    const { txParams: txParams, txPrebuild: txPrebuild } = params;
 
-      // check if the transaction has a txHex
-      if (!txPrebuild.txHex) {
-        throw new Error('missing required tx prebuild property txHex');
+    // check if the transaction has a txHex
+    if (!txPrebuild.txHex) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    // construct transaction from txHex
+    const txFromHex = Buffer.from(txPrebuild.txHex, 'hex');
+    const txDataWithPadding = txFromHex.slice(32);
+    const txData = txDataWithPadding.slice(0, txDataWithPadding.length - 32);
+    const deserializedTxJson = await this.deserializeTransaction({
+      transaction: { packed_trx: txData.toString('hex') },
+      headers: txPrebuild.headers,
+    });
+    if (!deserializedTxJson) {
+      throw new Error('could not process transaction from txHex');
+    }
+    const txJsonFromHex: DeserializedEosTransaction = deserializedTxJson;
+
+    // check that if txParams has a txPrebuild, it should be the same as txPrebuild
+    if (txParams.txPrebuild && !_.isEqual(txParams.txPrebuild, txPrebuild)) {
+      throw new Error('inputs txParams.txPrebuild and txPrebuild expected to be equal but were not');
+    }
+
+    // check if prebuild has a transaction
+    if (!txPrebuild.transaction) {
+      throw new Error('missing required transaction in txPrebuild');
+    }
+
+    // check if transaction has a packed_trx
+    if (!txPrebuild.transaction?.packed_trx) {
+      throw new Error('missing required transaction.packed_trx in txPrebuild');
+    }
+
+    // construct transaction using packed_trx
+    const deserializedTxJsonFromPackedTrx = await this.deserializeTransaction({
+      transaction: { packed_trx: txPrebuild.transaction.packed_trx },
+      headers: txPrebuild.headers,
+    });
+    if (!deserializedTxJsonFromPackedTrx) {
+      throw new Error('could not process transaction from packed_trx');
+    }
+    const txJsonFromPackedTrx: DeserializedEosTransaction = deserializedTxJsonFromPackedTrx;
+
+    // deep check of object from packed_trx and txHex
+    if (!_.isEqual(txJsonFromPackedTrx, txJsonFromHex)) {
+      throw new Error('unpacked packed_trx and unpacked txHex are not equal');
+    }
+
+    // check the headers
+    const eosTransactionHeaderFields = ['expiration', 'ref_block_num', 'ref_block_prefix'];
+    const txJsonFromHexHeaders = _.pick(txJsonFromHex, eosTransactionHeaderFields);
+    const txJsonFromPackedTrxHeaders = _.pick(txJsonFromPackedTrx, eosTransactionHeaderFields);
+
+    // dates are rounded to the nearest second in packed_trx and txHex
+    _.map([txJsonFromPackedTrxHeaders, txJsonFromHexHeaders, txPrebuild.headers], (headers) => {
+      const date = moment(headers.expiration as string);
+
+      headers.expiration = date
+        .seconds(date.seconds() + Math.round(date.milliseconds() / 1000))
+        .milliseconds(0)
+        .toISOString();
+      return headers;
+    });
+
+    if (
+      !_.isEqual(txJsonFromPackedTrxHeaders, txJsonFromHexHeaders) ||
+      !_.isEqual(txJsonFromHexHeaders, txPrebuild.headers)
+    ) {
+      throw new Error('the transaction headers are inconsistent');
+    }
+
+    if (txParams.recipients.length > 1) {
+      throw new Error('only 0 or 1 recipients are supported');
+    }
+
+    // check the amounts, recipient, and coin name for transfers
+    if (txParams.recipients.length === 1) {
+      const expectedOutput = txParams.recipients[0];
+
+      // check output address and memoId
+      const expectedOutputAddressAndMemoId = this.getAddressDetails(expectedOutput.address);
+      const txHexAction = txJsonFromHex.actions[0];
+      const txHexTransferAction = txHexAction.data as TransferActionData;
+
+      if (txHexTransferAction.to !== expectedOutputAddressAndMemoId.address) {
+        throw new Error('txHex receive address does not match expected recipient address');
       }
-
-      // construct transaction from txHex
-      const txFromHex = Buffer.from(txPrebuild.txHex, 'hex');
-      const txDataWithPadding = txFromHex.slice(32);
-      const txData = txDataWithPadding.slice(0, txDataWithPadding.length - 32);
-      const deserializedTxJson = yield self.deserializeTransaction({
-        transaction: { packed_trx: txData.toString('hex') },
-        headers: txPrebuild.headers,
-      });
-      if (!deserializedTxJson) {
-        throw new Error('could not process transaction from txHex');
-      }
-      const txJsonFromHex: DeserializedEosTransaction = deserializedTxJson;
-
-      // check that if txParams has a txPrebuild, it should be the same as txPrebuild
-      if (txParams.txPrebuild && !_.isEqual(txParams.txPrebuild, txPrebuild)) {
-        throw new Error('inputs txParams.txPrebuild and txPrebuild expected to be equal but were not');
-      }
-
-      // check if prebuild has a transaction
-      if (!txPrebuild.transaction) {
-        throw new Error('missing required transaction in txPrebuild');
-      }
-
-      // check if transaction has a packed_trx
-      if (!txPrebuild.transaction?.packed_trx) {
-        throw new Error('missing required transaction.packed_trx in txPrebuild');
-      }
-
-      // construct transaction using packed_trx
-      const deserializedTxJsonFromPackedTrx = yield self.deserializeTransaction({
-        transaction: { packed_trx: txPrebuild.transaction.packed_trx },
-        headers: txPrebuild.headers,
-      });
-      if (!deserializedTxJsonFromPackedTrx) {
-        throw new Error('could not process transaction from packed_trx');
-      }
-      const txJsonFromPackedTrx: DeserializedEosTransaction = deserializedTxJsonFromPackedTrx;
-
-      // deep check of object from packed_trx and txHex
-      if (!_.isEqual(txJsonFromPackedTrx, txJsonFromHex)) {
-        throw new Error('unpacked packed_trx and unpacked txHex are not equal');
-      }
-
-      // check the headers
-      const eosTransactionHeaderFields = ['expiration', 'ref_block_num', 'ref_block_prefix'];
-      const txJsonFromHexHeaders = _.pick(txJsonFromHex, eosTransactionHeaderFields);
-      const txJsonFromPackedTrxHeaders = _.pick(txJsonFromPackedTrx, eosTransactionHeaderFields);
-
-      // dates are rounded to the nearest second in packed_trx and txHex
-      _.map([txJsonFromPackedTrxHeaders, txJsonFromHexHeaders, txPrebuild.headers], (headers) => {
-        const date = moment(headers.expiration as string);
-
-        headers.expiration = date
-          .seconds(date.seconds() + Math.round(date.milliseconds() / 1000))
-          .milliseconds(0)
-          .toISOString();
-        return headers;
-      });
-
-      if (
-        !_.isEqual(txJsonFromPackedTrxHeaders, txJsonFromHexHeaders) ||
-        !_.isEqual(txJsonFromHexHeaders, txPrebuild.headers)
-      ) {
-        throw new Error('the transaction headers are inconsistent');
-      }
-
-      if (txParams.recipients.length > 1) {
-        throw new Error('only 0 or 1 recipients are supported');
-      }
-
-      // check the amounts, recipient, and coin name for transfers
-      if (txParams.recipients.length === 1) {
-        const expectedOutput = txParams.recipients[0];
-
-        // check output address and memoId
-        const expectedOutputAddressAndMemoId = self.getAddressDetails(expectedOutput.address);
-        const txHexAction = txJsonFromHex.actions[0];
-        const txHexTransferAction = txHexAction.data as TransferActionData;
-
-        if (txHexTransferAction.to !== expectedOutputAddressAndMemoId.address) {
-          throw new Error('txHex receive address does not match expected recipient address');
-        }
-        // check if txaction memoid is equal to address memo id only if address also has memoid present
-        if (!_.isUndefined(expectedOutputAddressAndMemoId.memoId)) {
-          if (txHexTransferAction.memo !== expectedOutputAddressAndMemoId.memoId) {
-            throw new Error('txHex receive memoId does not match expected recipient memoId');
-          }
-        }
-
-        // check amount and coin
-        const expectedOutputAmount = expectedOutput.amount;
-        const actualAmountAndCoin = txHexTransferAction.quantity.split(' ');
-        const actualOutputAmount = this.bigUnitsToBaseUnits(actualAmountAndCoin[0]);
-        if (expectedOutputAmount !== actualOutputAmount) {
-          throw new Error('txHex receive amount does not match expected recipient amount');
-        }
-
-        if (txPrebuild.coin === 'eos' || txPrebuild.coin === 'teos') {
-          const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : txPrebuild.token.split(':')[1];
-
-          if (actualAmountAndCoin[1] !== expectedSymbol) {
-            throw new Error('txHex receive symbol does not match expected recipient symbol');
-          }
-        } else {
-          // this should never happen
-          throw new Error('txHex coin name does not match expected coin name');
+      // check if txaction memoid is equal to address memo id only if address also has memoid present
+      if (!_.isUndefined(expectedOutputAddressAndMemoId.memoId)) {
+        if (txHexTransferAction.memo !== expectedOutputAddressAndMemoId.memoId) {
+          throw new Error('txHex receive memoId does not match expected recipient memoId');
         }
       }
 
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+      // check amount and coin
+      const expectedOutputAmount = expectedOutput.amount;
+      const actualAmountAndCoin = txHexTransferAction.quantity.split(' ');
+      const actualOutputAmount = this.bigUnitsToBaseUnits(actualAmountAndCoin[0]);
+      if (expectedOutputAmount !== actualOutputAmount) {
+        throw new Error('txHex receive amount does not match expected recipient amount');
+      }
+
+      if (txPrebuild.coin === 'eos' || txPrebuild.coin === 'teos') {
+        const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : txPrebuild.token.split(':')[1];
+
+        if (actualAmountAndCoin[1] !== expectedSymbol) {
+          throw new Error('txHex receive symbol does not match expected recipient symbol');
+        }
+      } else {
+        // this should never happen
+        throw new Error('txHex coin name does not match expected coin name');
+      }
+    }
+
+    return true;
   }
 
   /**

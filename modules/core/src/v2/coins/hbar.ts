@@ -1,9 +1,7 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import {
@@ -22,7 +20,6 @@ import {
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import { InvalidAddressError, InvalidMemoIdError, MethodNotImplementedError } from '../../errors';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from '../internal/seedValidator';
@@ -115,7 +112,10 @@ export class Hbar extends BaseCoin {
         // we want addresses to normalize without a memoId
         address = address.replace('?memoId=', '');
       }
-      return address === this.normalizeAddress(addressDetails);
+      return (
+        address === this.normalizeAddress(addressDetails) &&
+        bitgoAccountLib.Hbar.Utils.isValidAddress(addressDetails.address)
+      );
     } catch (e) {
       return false;
     }
@@ -141,19 +141,16 @@ export class Hbar extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
   /**
@@ -163,32 +160,23 @@ export class Hbar extends BaseCoin {
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
    * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
-   * @param callback
-   * @returns Bluebird<SignedTransaction>
+   * @returns Promise<SignedTransaction>
    */
-  signTransaction(
-    params: HbarSignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const factory = bitgoAccountLib.register(self.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
-      const txBuilder = factory.from(params.txPrebuild.txHex);
-      txBuilder.sign({ key: params.prv });
+  async signTransaction(params: HbarSignTransactionOptions): Promise<SignedTransaction> {
+    const factory = bitgoAccountLib.register(this.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+    const txBuilder = factory.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
 
-      const transaction: any = yield txBuilder.build();
+    const transaction = await txBuilder.build();
 
-      if (!transaction) {
-        throw new Error('Invalid messaged passed to signMessage');
-      }
+    if (!transaction) {
+      throw new Error('Invalid messaged passed to signMessage');
+    }
 
-      const response = {
-        txHex: transaction.toBroadcastFormat(),
-      };
-      return transaction.signature.length >= 2 ? response : { halfSigned: response };
-    })
-      .call(this)
-      .asCallback(callback);
+    const response = {
+      txHex: transaction.toBroadcastFormat(),
+    };
+    return transaction.signature.length >= 2 ? response : { halfSigned: response };
   }
 
   /**
@@ -198,14 +186,10 @@ export class Hbar extends BaseCoin {
    * @param message
    * @return {Buffer} A signature over the given message using the given key
    */
-  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
-      // reconstitute keys and sign
-      return Buffer.from(new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg)).toString('hex');
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
+    // reconstitute keys and sign
+    return Buffer.from(new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg));
   }
 
   /**
@@ -215,90 +199,78 @@ export class Hbar extends BaseCoin {
    * 2) Build transaction - build our transaction for the amount
    * 3) Send signed build - send our signed build to a public node
    * @param params
-   * @param callback
    */
-  recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+  async recover(params: any): Promise<any> {
     throw new MethodNotImplementedError();
   }
 
   /**
    * Explain a Hedera transaction from txHex
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex) {
-        throw new Error('missing explain tx parameters');
-      }
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex) {
+      throw new Error('missing explain tx parameters');
+    }
 
-      if (!params.feeInfo) {
-        throw new Error('missing fee information');
-      }
+    if (!params.feeInfo) {
+      throw new Error('missing fee information');
+    }
 
-      const factory = bitgoAccountLib.register(self.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
-      const txBuilder = factory.from(txHex);
-      const tx = (yield txBuilder.build()) as any;
-      const txJson = tx.toJson();
+    const factory = bitgoAccountLib.register(this.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+    const txBuilder = factory.from(txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
 
-      if (tx._txBody.data !== 'cryptoTransfer') {
-        // don't explain this
-        throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
-      }
+    if ((tx as any)._txBody.data !== 'cryptoTransfer') {
+      // don't explain this
+      throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
+    }
 
-      const displayOrder = [
-        'id',
-        'outputAmount',
-        'changeAmount',
-        'outputs',
-        'changeOutputs',
-        'fee',
-        'timestamp',
-        'expiration',
-        'memo',
-      ];
+    const displayOrder = [
+      'id',
+      'outputAmount',
+      'changeAmount',
+      'outputs',
+      'changeOutputs',
+      'fee',
+      'timestamp',
+      'expiration',
+      'memo',
+    ];
 
-      // TODO(BG-24809): get the memo from the toJson
-      let memo = '';
-      if (params.memo) {
-        memo = params.memo.value;
-      }
+    // TODO(BG-24809): get the memo from the toJson
+    let memo = '';
+    if (params.memo) {
+      memo = params.memo.value;
+    }
 
-      const outputs = [
-        {
-          amount: txJson.amount.toString(),
-          address: txJson.to,
-          memo,
-        },
-      ];
+    const outputs = [
+      {
+        amount: txJson.amount.toString(),
+        address: txJson.to,
+        memo,
+      },
+    ];
 
-      const explanationResult: SignTransactionOptions = {
-        displayOrder,
-        id: txJson.id,
-        outputs,
-        outputAmount: outputs[0].amount,
-        changeOutputs: [], // account based does not use change outputs
-        changeAmount: '0', // account base does not make change
-        fee: params.feeInfo,
-        timestamp: txJson.startTime,
-        expiration: txJson.validDuration,
-      };
-
-      return explanationResult;
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      displayOrder,
+      id: txJson.id,
+      outputs,
+      outputAmount: outputs[0].amount,
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
+      fee: params.feeInfo,
+      timestamp: txJson.startTime,
+      expiration: txJson.validDuration,
+    } as any;
   }
 
   /**
    * Process address into address and memo id
    *
-   * @param address the address
+   * @param rawAddress the address
    * @returns object containing address and memo id
    */
   getAddressDetails(rawAddress: string): AddressDetails {
@@ -348,10 +320,7 @@ export class Hbar extends BaseCoin {
    */
   isValidMemoId(memoId: string) {
     // TODO: change this to account-lib helper once its published
-    if (typeof memoId !== 'undefined' && Buffer.from(memoId).length > 100) {
-      return false;
-    }
-    return true;
+    return !(typeof memoId !== 'undefined' && Buffer.from(memoId).length > 100);
   }
 
   isStellarSeed(seed: string): boolean {

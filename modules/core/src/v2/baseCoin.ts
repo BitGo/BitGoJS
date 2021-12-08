@@ -4,11 +4,9 @@
 import { BigNumber } from 'bignumber.js';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 import { NodeCallback } from './types';
 import { RequestTracer } from './internal/util';
-const co = Bluebird.coroutine;
 
 import { Wallet } from './wallet';
 import { Wallets } from './wallets';
@@ -347,18 +345,14 @@ export abstract class BaseCoin {
    * @param message
    * @param callback
    */
-  signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      return signMessage(message, bip32.fromBase58(key.prv), utxolib.networks.bitcoin);
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Promise<Buffer> {
+    return signMessage(message, bip32.fromBase58(key.prv), utxolib.networks.bitcoin);
   }
 
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  abstract verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean>;
+  abstract verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Promise<boolean>;
 
   /**
    * Verify that an address belongs to a wallet
@@ -389,38 +383,29 @@ export abstract class BaseCoin {
    * @param keychains
    * @return {*}
    */
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Bluebird<any> {
-    return Bluebird.resolve(walletParams);
+  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any> {
+    return Promise.resolve(walletParams);
   }
 
   /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
-  getExtraPrebuildParams(
-    buildParams: ExtraPrebuildParamsOptions,
-    callback?: NodeCallback<Record<string, unknown>>
-  ): Bluebird<Record<string, unknown>> {
-    return Bluebird.resolve({}).asCallback(callback);
+  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>> {
+    return Promise.resolve({});
   }
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(
-    prebuildResponse: TransactionPrebuild,
-    callback?: NodeCallback<TransactionPrebuild>
-  ): Bluebird<TransactionPrebuild> {
-    return Bluebird.resolve(prebuildResponse).asCallback(callback);
+  postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild> {
+    return Promise.resolve(prebuildResponse);
   }
 
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    */
-  presignTransaction(
-    params: PresignTransactionOptions,
-    callback?: NodeCallback<TransactionPrebuild>
-  ): Bluebird<TransactionPrebuild> {
-    return Bluebird.resolve(params).asCallback(callback);
+  presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
+    return Promise.resolve(params);
   }
 
   /**
@@ -435,21 +420,15 @@ export abstract class BaseCoin {
    * Fetch fee estimate information from the server
    * @param {Object} params The params passed into the function
    * @param {Integer} params.numBlocks The number of blocks to target for conformation (Only works for btc)
-   * @param callback
    * @returns {Object} The info returned from the merchant server
    */
-  feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* coFeeEstimate() {
-      const query: any = {};
-      if (params && params.numBlocks) {
-        query.numBlocks = params.numBlocks;
-      }
+  async feeEstimate(params: FeeEstimateOptions): Promise<any> {
+    const query: any = {};
+    if (params && params.numBlocks) {
+      query.numBlocks = params.numBlocks;
+    }
 
-      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
-    })
-      .call(this)
-      .asCallback(callback);
+    return this.bitgo.get(this.url('/tx/fee')).query(query).result();
   }
 
   /**
@@ -503,7 +482,7 @@ export abstract class BaseCoin {
   abstract parseTransaction(
     params: ParseTransactionOptions,
     callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction>;
+  ): Promise<ParsedTransaction>;
 
   /**
    * Generate a key pair on the curve used by the coin

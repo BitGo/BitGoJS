@@ -2,15 +2,9 @@
  * @prettier
  */
 
-/**
- */
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import { Affirmation, AffirmationStatus } from './affirmation';
 import { TradingAccount } from './tradingAccount';
-
-const co = Bluebird.coroutine;
 
 export interface GetAffirmationParameters {
   id: string;
@@ -31,52 +25,40 @@ export class Affirmations {
   /**
    * Lists all affirmations for an enterprise
    * @param status optional status to filter affirmations by
-   * @param callback
    */
-  list(status?: AffirmationStatus, callback?: NodeCallback<Affirmation[]>): Bluebird<Affirmation[]> {
-    const self = this;
-    return co<Affirmation[]>(function* list() {
-      let url;
-      if (self.account) {
-        url = self.bitgo.microservicesUrl(
-          `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/affirmations`
-        );
-      } else {
-        url = self.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${self.enterpriseId}/affirmations`);
-      }
-      if (status) {
-        url = `${url}?status=${status}`;
-      }
+  async list(status?: AffirmationStatus): Promise<Affirmation[]> {
+    let url;
+    if (this.account) {
+      url = this.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/affirmations`
+      );
+    } else {
+      url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/affirmations`);
+    }
+    if (status) {
+      url = `${url}?status=${status}`;
+    }
 
-      const response = (yield self.bitgo.get(url).result()) as any;
+    const response = (await this.bitgo.get(url).result()) as any;
 
-      return response.affirmations.map((affirmation) => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
-    })
-      .call(this)
-      .asCallback(callback);
+    return response.affirmations.map((affirmation) => new Affirmation(affirmation, this.bitgo, this.enterpriseId));
   }
 
   /**
    * Retrieves a single affirmation by its ID
    * @param id ID of the affirmation to retrieve
    * @param accountId ID of the trading account that the affirmation belongs to
-   * @param callback
    */
-  get({ id, accountId }: GetAffirmationParameters, callback?: NodeCallback<Affirmation>): Bluebird<Affirmation> {
-    const self = this;
-    return co<Affirmation>(function* get() {
-      const account = (self.account && self.account.id) || accountId;
-      if (!account) {
-        throw new Error('accountId must be provided in parameters for an enterprise context');
-      }
+  async get({ id, accountId }: GetAffirmationParameters): Promise<Affirmation> {
+    const account = (this.account && this.account.id) || accountId;
+    if (!account) {
+      throw new Error('accountId must be provided in parameters for an enterprise context');
+    }
 
-      const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${account}/affirmations/${id}`
-      );
-      const response = yield self.bitgo.get(url).result();
-      return new Affirmation(response, self.bitgo, self.enterpriseId);
-    })
-      .call(this)
-      .asCallback(callback);
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${account}/affirmations/${id}`
+    );
+    const response = await this.bitgo.get(url).result();
+    return new Affirmation(response, this.bitgo, this.enterpriseId);
   }
 }
