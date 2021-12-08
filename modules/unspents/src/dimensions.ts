@@ -1,8 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { ChainCode, isChainCode, scriptTypeForChain } from '@bitgo/utxo-lib/dist/src/bitgo';
 import * as _ from 'lodash';
 import * as t from 'tcomb';
 
-import Codes, { ChainCode } from './codes';
 import {
   getInputComponentsWeight,
   InputComponents,
@@ -353,10 +353,13 @@ Dimensions.sum = function (...args: Array<Partial<IDimensions>>): IDimensions {
  * @return {Number}
  */
 Dimensions.getOutputScriptLengthForChain = function (chain: ChainCode): number {
-  if (!Codes.isValid(chain)) {
-    throw new TypeError('invalid chain code');
+  switch (scriptTypeForChain(chain)) {
+    case 'p2wsh':
+    case 'p2tr':
+      return 34;
+    default:
+      return 23;
   }
-  return Codes.isP2wsh(chain) || Codes.isP2tr(chain) ? 34 : 23;
 };
 
 /**
@@ -501,34 +504,32 @@ Dimensions.fromOutputOnChain = function (chain) {
  * @return {Dimensions} of the unspent
  * @throws if the chain code is invalid or unsupported
  */
-Dimensions.fromUnspent = ({ chain }, params: IFromUnspentParams = { p2trSpendType: 'scriptpath-level1' }) => {
-  if (!Codes.isValid(chain)) {
+Dimensions.fromUnspent = (
+  { chain },
+  params: IFromUnspentParams = { p2trSpendType: 'scriptpath-level1' }
+): IDimensions => {
+  if (!isChainCode(chain)) {
     throw new TypeError('invalid chain code');
   }
 
-  if (Codes.isP2sh(chain)) {
-    return Dimensions.sum({ nP2shInputs: 1 });
-  }
-
-  if (Codes.isP2shP2wsh(chain)) {
-    return Dimensions.sum({ nP2shP2wshInputs: 1 });
-  }
-
-  if (Codes.isP2wsh(chain)) {
-    return Dimensions.sum({ nP2wshInputs: 1 });
-  }
-
-  if (Codes.isP2tr(chain)) {
-    switch (params.p2trSpendType) {
-      case 'keypath':
-        return Dimensions.sum({ nP2trKeypathInputs: 1 });
-      case 'scriptpath-level1':
-        return Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
-      case 'scriptpath-level2':
-        return Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 });
-      default:
-        throw new Error(`unsupported p2trSpendType: ${params.p2trSpendType}`);
-    }
+  switch (scriptTypeForChain(chain)) {
+    case 'p2sh':
+      return Dimensions.sum({ nP2shInputs: 1 });
+    case 'p2shP2wsh':
+      return Dimensions.sum({ nP2shP2wshInputs: 1 });
+    case 'p2wsh':
+      return Dimensions.sum({ nP2wshInputs: 1 });
+    case 'p2tr':
+      switch (params.p2trSpendType) {
+        case 'keypath':
+          return Dimensions.sum({ nP2trKeypathInputs: 1 });
+        case 'scriptpath-level1':
+          return Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
+        case 'scriptpath-level2':
+          return Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 });
+        default:
+          throw new Error(`unsupported p2trSpendType: ${params.p2trSpendType}`);
+      }
   }
 
   throw new Error(`unsupported chain ${chain}`);
