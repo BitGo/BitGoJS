@@ -14,7 +14,11 @@ import { ScriptType2Of3 } from '../outputScripts';
 /**
  * All valid chain codes
  */
-export const chainCodes = [0, 1, 10, 11, 20, 21, 30, 31];
+export const chainCodesP2sh = [0, 1] as const;
+export const chainCodesP2shP2wsh = [10, 11] as const;
+export const chainCodesP2wsh = [20, 21] as const;
+export const chainCodesP2tr = [30, 31] as const;
+export const chainCodes = [...chainCodesP2sh, ...chainCodesP2shP2wsh, ...chainCodesP2wsh, ...chainCodesP2tr];
 export type ChainCode = typeof chainCodes[number];
 export function isChainCode(n: unknown): n is ChainCode {
   return chainCodes.includes(n as ChainCode);
@@ -28,10 +32,10 @@ export type ChainCodePair = Readonly<[external: ChainCode, internal: ChainCode]>
 
 const map = new Map<ScriptType2Of3, ChainCodePair>(
   [
-    ['p2sh', [0, 1]],
-    ['p2shP2wsh', [10, 11]],
-    ['p2wsh', [20, 21]],
-    ['p2tr', [30, 31]],
+    ['p2sh', chainCodesP2sh],
+    ['p2shP2wsh', chainCodesP2shP2wsh],
+    ['p2wsh', chainCodesP2wsh],
+    ['p2tr', chainCodesP2tr],
   ].map(([k, v]) => [k as ScriptType2Of3, Object.freeze(v) as ChainCodePair])
 );
 
@@ -62,7 +66,7 @@ export function toChainPair(v: ChainCodePair | ChainCode | ScriptType2Of3): Chai
 /**
  * @return ScriptType2Of3 for input
  */
-export function scriptTypeForChain(chain: number): ScriptType2Of3 {
+export function scriptTypeForChain(chain: ChainCode): ScriptType2Of3 {
   for (const [scriptType, pair] of map.entries()) {
     if (pair.includes(chain)) {
       return scriptType;
