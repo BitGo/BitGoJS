@@ -7,7 +7,7 @@ import * as nock from 'nock';
 import * as bip32 from 'bip32';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/src/bitgo';
+import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import * as config from '../../../../../../src/config';
 import { RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';

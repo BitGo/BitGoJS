@@ -8,7 +8,7 @@ import {
   signInputWithUnspent,
   Unspent,
   WalletUnspentSigner,
-} from '@bitgo/utxo-lib/src/bitgo';
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 
 export type TransactionObj = {
   id: string;

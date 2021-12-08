@@ -14,7 +14,7 @@ import {
   WalletUnspentSigner,
   outputScripts,
   getExternalChainCode,
-} from '@bitgo/utxo-lib/src/bitgo';
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { VirtualSizes } from '@bitgo/unspents';
 

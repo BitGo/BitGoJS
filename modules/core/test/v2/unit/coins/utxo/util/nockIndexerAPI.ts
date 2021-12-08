@@ -3,7 +3,7 @@
  */
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import { ExplorerTxInfo } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';

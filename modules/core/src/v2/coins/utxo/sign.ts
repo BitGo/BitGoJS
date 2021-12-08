@@ -9,7 +9,7 @@ import {
   toOutput,
   Unspent,
   WalletUnspentSigner,
-} from '@bitgo/utxo-lib/src/bitgo';
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 import * as debugLib from 'debug';
 
 import { isReplayProtectionUnspent } from './replayProtection';

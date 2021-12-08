@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 export function getReplayProtectionAddresses(network: utxolib.Network): string[] {
   switch (network) {

@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { formatOutputId, Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi } from './baseApi';
 

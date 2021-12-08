@@ -7,7 +7,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { VirtualSizes } from '@bitgo/unspents';
 
 import { NodeCallback } from '../../../types';

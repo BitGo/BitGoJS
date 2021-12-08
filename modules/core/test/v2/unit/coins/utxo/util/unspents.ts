@@ -11,7 +11,7 @@ import {
   chainCodesP2sh,
   getExternalChainCode,
   getInternalChainCode,
-} from '@bitgo/utxo-lib/src/bitgo';
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { getSeed } from '../../../../../lib/keys';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';

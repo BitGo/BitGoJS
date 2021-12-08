@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { RecoveryAccountData, RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';
 
 export class MockRecoveryProvider implements RecoveryProvider {

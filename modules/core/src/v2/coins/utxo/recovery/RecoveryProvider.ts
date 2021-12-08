@@ -1,4 +1,4 @@
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';

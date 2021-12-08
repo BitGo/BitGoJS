@@ -12,7 +12,7 @@ import {
   Unspent,
   verifySignatureWithUnspent,
   WalletUnspentSigner,
-} from '@bitgo/utxo-lib/src/bitgo';
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';

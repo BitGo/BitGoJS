@@ -4,7 +4,7 @@
 import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/src/bitgo';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import * as config from '../../../../../../src/config';
 import { Triple } from '../../../../../../src';
