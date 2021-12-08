@@ -12,8 +12,6 @@ import { toOutput, Unspent } from '../Unspent';
 export interface WalletUnspent extends Unspent {
   index: number;
   chain: number;
-  redeemScript?: string;
-  witnessScript?: string;
 }
 
 export function isWalletUnspent(u: Unspent): u is WalletUnspent {
@@ -64,4 +62,15 @@ export function verifySignatureWithUnspent(
     unspents.map((u) => toOutput(u, tx.network)),
     walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys
   ) as Triple<boolean>;
+}
+
+/**
+ * @deprecated
+ * Used in certain legacy signing methods that do not derive signing data from index/chain
+ */
+export interface WalletUnspentLegacy extends WalletUnspent {
+  /** @deprecated - obviated by signWithUnspent */
+  redeemScript?: string;
+  /** @deprecated - obviated by verifyWithUnspent */
+  witnessScript?: string;
 }

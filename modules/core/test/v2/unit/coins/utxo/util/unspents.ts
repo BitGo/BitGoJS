@@ -58,8 +58,6 @@ export function mockWalletUnspent(
     chain,
     index,
     value,
-    redeemScript: derived.redeemScript?.toString('hex'),
-    witnessScript: derived.witnessScript?.toString('hex'),
   };
 }
 
