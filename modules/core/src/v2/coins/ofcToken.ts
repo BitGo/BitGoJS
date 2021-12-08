@@ -1,15 +1,13 @@
 /**
  * @prettier
  */
+import { isString } from 'lodash';
+
 import { BitGo } from '../../bitgo';
 import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
-import { isString } from 'lodash';
 import { SignTransactionOptions as BaseSignTransactionOptions } from '../baseCoin';
-import { NodeCallback } from '../types';
 import { SignedTransaction } from './eth';
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 
 export interface OfcTokenConfig {
   type: string;
@@ -87,22 +85,14 @@ export class OfcToken extends Ofc {
   /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params
-   * @param callback
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    return co<SignedTransaction>(function* () {
-      const txPrebuild = params.txPrebuild;
-      const payload = txPrebuild.payload;
-      const signatureBuffer = (yield this.signMessage(params, payload)) as any;
-      const signature: string = signatureBuffer.toString('hex');
-      return { halfSigned: { payload, signature } };
-    })
-      .call(this)
-      .asCallback(callback);
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const txPrebuild = params.txPrebuild;
+    const payload = txPrebuild.payload;
+    const signatureBuffer = (await this.signMessage(params, payload)) as any;
+    const signature: string = signatureBuffer.toString('hex');
+    return { halfSigned: { payload, signature } } as any;
   }
 
   /**

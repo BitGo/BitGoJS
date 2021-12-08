@@ -39,7 +39,7 @@ describe('SOL:', function () {
   });
 
   it('should verify transactions', async function () {
-    should.throws(() => basecoin.verifyTransaction('placeholder'), 'verifyTransaction method not implemented');
+    await basecoin.verifyTransaction('placeholder').should.be.rejectedWith('verifyTransaction method not implemented');
   });
 
   it('should verify valid address', (function () {
@@ -81,10 +81,10 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: {
+        inputs: [{
           address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
           amount: 305000,
-        },
+        }],
         outputs: [
           {
             address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
@@ -94,7 +94,7 @@ describe('SOL:', function () {
       });
     });
 
-    it('should parse an signed transfer transaction', async function () {
+    it('should parse a signed transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txBase64: testData.rawTransactions.transfer.signed,
         feeInfo: {
@@ -103,10 +103,10 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: {
+        inputs: [{
           address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
           amount: 305000,
-        },
+        }],
         outputs: [
           {
             address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
@@ -125,10 +125,10 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: {
+        inputs: [{
           address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
           amount: 310000,
-        },
+        }],
         outputs: [
           {
             address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -138,7 +138,7 @@ describe('SOL:', function () {
       });
     });
 
-    it('should parse an signed transfer transaction', async function () {
+    it('should parse a signed transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txBase64: testData.rawTransactions.walletInit.unsigned,
         feeInfo: {
@@ -147,10 +147,10 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: {
+        inputs: [{
           address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
           amount: 310000,
-        },
+        }],
         outputs: [
           {
             address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',

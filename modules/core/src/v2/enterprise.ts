@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
@@ -11,8 +10,6 @@ import { getFirstPendingTransaction } from './internal/internal';
 
 import { Settlements } from './trading/settlements';
 import { Affirmations } from './trading/affirmations';
-
-const co = Bluebird.coroutine;
 
 export class Enterprise {
   private readonly bitgo: BitGo;
@@ -55,63 +52,53 @@ export class Enterprise {
   /**
    * Get the wallets associated with this Enterprise
    * @param params
-   * @param callback
    */
-  coinWallets(params: Record<string, never> = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
-    return co<Wallet[]>(function* coCoinWallets() {
-      const walletData = (yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result()) as any;
-      walletData.wallets = walletData.wallets.map((w) => {
-        return new Wallet(this.bitgo, this.baseCoin, w);
-      });
-      return walletData;
-    })
-      .call(this)
-      .asCallback(callback);
+  async coinWallets(params: Record<string, never> = {}): Promise<Wallet[]> {
+    const walletData = (await this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result()) as any;
+    walletData.wallets = walletData.wallets.map((w) => {
+      return new Wallet(this.bitgo, this.baseCoin, w);
+    });
+    return walletData;
   }
 
   /**
    * Get the users associated with this Enterprise
    * @param params
-   * @param callback
    */
-  users(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.get(this.url('/user')).result()).asCallback(callback);
+  async users(params: Record<string, never> = {}): Promise<any> {
+    return await this.bitgo.get(this.url('/user')).result();
   }
 
   /**
    * Get the fee address balance for this Enterprise
-   * @param _params
-   * @param callback
+   * @param params
    */
-  getFeeAddressBalance(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.get(this.coinUrl('/feeAddressBalance')).result()).asCallback(callback);
+  async getFeeAddressBalance(params: Record<string, never> = {}): Promise<any> {
+    return await this.bitgo.get(this.coinUrl('/feeAddressBalance')).result();
   }
 
   /**
    * Add a user to this Enterprise
    * @param params
-   * @param callback
    */
-  addUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.post(this.url('/user')).send(params).result()).asCallback(callback);
+  async addUser(params: any = {}, callback?: NodeCallback<any>): Promise<any> {
+    return await this.bitgo.post(this.url('/user')).send(params).result();
   }
 
   /**
    * Remove a user from this Enterprise
    * @param params
-   * @param callback
    */
-  removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.del(this.url('/user')).send(params).result()).asCallback(callback);
+  async removeUser(params: any = {}): Promise<any> {
+    return await this.bitgo.del(this.url('/user')).send(params).result();
   }
 
   /**
    * Get the first pending transaction for this Enterprise
    * @param params
-   * @param callback
    */
-  getFirstPendingTransaction(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return getFirstPendingTransaction({ enterpriseId: this.id }, this.baseCoin, this.bitgo).asCallback(callback);
+  async getFirstPendingTransaction(params: Record<string, never> = {}): Promise<any> {
+    return getFirstPendingTransaction({ enterpriseId: this.id }, this.baseCoin, this.bitgo);
   }
 
   /**

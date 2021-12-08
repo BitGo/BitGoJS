@@ -2,15 +2,9 @@
  * @prettier
  */
 
-/**
- */
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
 
-import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
-
-const co = Bluebird.coroutine;
 
 export enum TradingPartnerStatus {
   ACCEPTED = 'accepted',
@@ -39,7 +33,7 @@ export class TradingPartner {
   public status: TradingPartnerStatus;
   public type: TradingPartnerType;
 
-  constructor(tradingPartnerData, bitgo: BitGo, enterpriseId: string, currentAccount: TradingAccount) {
+  constructor(tradingPartnerData: any, bitgo: BitGo, enterpriseId: string, currentAccount: TradingAccount) {
     this.id = tradingPartnerData.id;
     this.primaryEnterpriseName = tradingPartnerData.primaryEnterpriseName;
     this.primaryAccountId = tradingPartnerData.primaryAccountId;
@@ -58,22 +52,16 @@ export class TradingPartner {
    * Check if a trading partner has enough funds to cover the cost of a trade.
    * @param currency the currency to check
    * @param amount the amount of currency to check, represented in base units (such as cents, satoshi, or wei)
-   * @param callback
    */
-  checkBalance(currency: string, amount: string, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    const self = this;
+  async checkBalance(currency: string, amount: string): Promise<boolean> {
     const partnerAccountId =
-      self.primaryAccountId === self.currentAccount.id ? self.secondaryAccountId : self.primaryAccountId;
-    return co<boolean>(function* checkBalance() {
-      const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.currentAccount.id}/tradingpartners/${partnerAccountId}/balance`
-      );
+      this.primaryAccountId === this.currentAccount.id ? this.secondaryAccountId : this.primaryAccountId;
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.currentAccount.id}/tradingpartners/${partnerAccountId}/balance`
+    );
 
-      const response = (yield self.bitgo.get(url).query({ currency, amount }).result()) as any;
+    const response = (await this.bitgo.get(url).query({ currency, amount }).result()) as any;
 
-      return response.check;
-    })
-      .call(this)
-      .asCallback(callback);
+    return response.check;
   }
 }

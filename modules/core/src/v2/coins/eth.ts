@@ -3,7 +3,6 @@
  */
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as Keccak from 'keccak';
@@ -29,7 +28,6 @@ import {
 } from '../baseCoin';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
@@ -46,7 +44,6 @@ import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import * as accountLib from '@bitgo/account-lib';
 
-const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
 
 export const optionalDeps = {
@@ -485,65 +482,49 @@ export class Eth extends BaseCoin {
   /**
    * Query Etherscan for the balance of an address
    * @param address {String} the ETH address
-   * @param callback
    * @returns {BigNumber} address balance
    */
-  queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'balance',
-        address: address,
-      })) as any;
-      // throw if the result does not exist or the result is not a valid number
-      if (!result || !result.result || isNaN(result.result)) {
-        throw new Error(`Could not obtain address balance for ${address} from Etherscan, got: ${result.result}`);
-      }
-      return new optionalDeps.ethUtil.BN(result.result, 10);
-    })
-      .call(this)
-      .asCallback(callback);
+  async queryAddressBalance(address: string): Promise<any> {
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'balance',
+      address: address,
+    });
+    // throw if the result does not exist or the result is not a valid number
+    if (!result || !result.result || isNaN(result.result)) {
+      throw new Error(`Could not obtain address balance for ${address} from Etherscan, got: ${result.result}`);
+    }
+    return new optionalDeps.ethUtil.BN(result.result, 10);
   }
 
   /**
    * Query Etherscan for the balance of an address for a token
    * @param tokenContractAddress {String} address where the token smart contract is hosted
    * @param walletContractAddress {String} address of the wallet
-   * @param callback
    * @returns {BigNumber} token balaance in base units
    */
-  queryAddressTokenBalance(
-    tokenContractAddress: string,
-    walletContractAddress: string,
-    callback?: NodeCallback<any>
-  ): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
-        throw new Error('cannot get balance for invalid token address');
-      }
-      if (!optionalDeps.ethUtil.isValidAddress(walletContractAddress)) {
-        throw new Error('cannot get token balance for invalid wallet address');
-      }
+  async queryAddressTokenBalance(tokenContractAddress: string, walletContractAddress: string): Promise<any> {
+    if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
+      throw new Error('cannot get balance for invalid token address');
+    }
+    if (!optionalDeps.ethUtil.isValidAddress(walletContractAddress)) {
+      throw new Error('cannot get token balance for invalid wallet address');
+    }
 
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'tokenbalance',
-        contractaddress: tokenContractAddress,
-        address: walletContractAddress,
-        tag: 'latest',
-      })) as any;
-      // throw if the result does not exist or the result is not a valid number
-      if (!result || !result.result || isNaN(result.result)) {
-        throw new Error(
-          `Could not obtain token address balance for ${tokenContractAddress} from Etherscan, got: ${result.result}`
-        );
-      }
-      return new optionalDeps.ethUtil.BN(result.result, 10);
-    })
-      .call(this)
-      .asCallback(callback);
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'tokenbalance',
+      contractaddress: tokenContractAddress,
+      address: walletContractAddress,
+      tag: 'latest',
+    });
+    // throw if the result does not exist or the result is not a valid number
+    if (!result || !result.result || isNaN(result.result)) {
+      throw new Error(
+        `Could not obtain token address balance for ${tokenContractAddress} from Etherscan, got: ${result.result}`
+      );
+    }
+    return new optionalDeps.ethUtil.BN(result.result, 10);
   }
 
   /**
@@ -621,31 +602,25 @@ export class Eth extends BaseCoin {
   /**
    * Queries the contract (via Etherscan) for the next sequence ID
    * @param address {String} address of the contract
-   * @param callback
    * @returns {Number} sequence ID
    */
-  querySequenceId(address: string, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      // Get sequence ID using contract call
-      const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
-      const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
-      const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'proxy',
-        action: 'eth_call',
-        to: address,
-        data: sequenceIdData,
-        tag: 'latest',
-      })) as any;
-      if (!result || !result.result) {
-        throw new Error('Could not obtain sequence ID from Etherscan, got: ' + result.result);
-      }
-      const sequenceIdHex = result.result;
-      return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
-    })
-      .call(this)
-      .asCallback(callback);
+  async querySequenceId(address: string): Promise<number> {
+    // Get sequence ID using contract call
+    const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
+    const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
+    const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'proxy',
+      action: 'eth_call',
+      to: address,
+      data: sequenceIdData,
+      tag: 'latest',
+    });
+    if (!result || !result.result) {
+      throw new Error('Could not obtain sequence ID from Etherscan, got: ' + result.result);
+    }
+    const sequenceIdHex = result.result;
+    return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
   }
 
   /**
@@ -713,77 +688,68 @@ export class Eth extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @param callback
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const txPrebuild = params.txPrebuild;
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const txPrebuild = params.txPrebuild;
 
-      const userPrv = params.prv;
-      const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
+    const userPrv = params.prv;
+    const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
-      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-        }
-        throw new Error('missing txPrebuild parameter');
+    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
       }
+      throw new Error('missing txPrebuild parameter');
+    }
 
-      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-        if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
-          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
-        }
-        throw new Error('missing prv parameter to sign transaction');
+    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
       }
+      throw new Error('missing prv parameter to sign transaction');
+    }
 
-      params.recipients = txPrebuild.recipients || params.recipients;
+    params.recipients = txPrebuild.recipients || params.recipients;
 
-      // if no recipients in either params or txPrebuild, then throw an error
-      if (!params.recipients || !Array.isArray(params.recipients)) {
-        throw new Error('recipients missing or not array');
-      }
+    // if no recipients in either params or txPrebuild, then throw an error
+    if (!params.recipients || !Array.isArray(params.recipients)) {
+      throw new Error('recipients missing or not array');
+    }
 
-      // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
-      if (params.isLastSignature) {
-        // In this case when we're doing the second (final) signature, the logic is different.
-        return self.signFinal(params);
-      }
+    // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return this.signFinal(params);
+    }
 
-      const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
-      const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
-      const sequenceId = txPrebuild.nextContractSequenceId;
+    const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
+    const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
+    const sequenceId = txPrebuild.nextContractSequenceId;
 
-      if (_.isUndefined(sequenceId)) {
-        throw new Error('transaction prebuild missing required property nextContractSequenceId');
-      }
+    if (_.isUndefined(sequenceId)) {
+      throw new Error('transaction prebuild missing required property nextContractSequenceId');
+    }
 
-      const operationHash = self.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
-      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+    const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
+    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-      const txParams = {
-        eip1559: params.txPrebuild.eip1559,
-        isBatch: params.txPrebuild.isBatch,
-        recipients: params.recipients,
-        expireTime: expireTime,
-        contractSequenceId: sequenceId,
-        sequenceId: params.sequenceId,
-        operationHash: operationHash,
-        signature: signature,
-        gasLimit: params.gasLimit,
-        gasPrice: params.gasPrice,
-        hopTransaction: txPrebuild.hopTransaction,
-        backupKeyNonce: txPrebuild.backupKeyNonce,
-        custodianTransactionId: params.custodianTransactionId,
-      };
-      return { halfSigned: txParams };
-    })
-      .call(this)
-      .asCallback(callback);
+    const txParams = {
+      eip1559: params.txPrebuild.eip1559,
+      isBatch: params.txPrebuild.isBatch,
+      recipients: params.recipients,
+      expireTime: expireTime,
+      contractSequenceId: sequenceId,
+      sequenceId: params.sequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: params.gasLimit,
+      gasPrice: params.gasPrice,
+      hopTransaction: txPrebuild.hopTransaction,
+      backupKeyNonce: txPrebuild.backupKeyNonce,
+      custodianTransactionId: params.custodianTransactionId,
+    };
+    return { halfSigned: txParams };
   }
 
   /**
@@ -823,33 +789,27 @@ export class Eth extends BaseCoin {
   /**
    * Queries public block explorer to get the next ETH nonce that should be used for the given ETH address
    * @param address
-   * @param callback
    * @returns {*}
    */
-  getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      // Get nonce for backup key (should be 0)
-      let nonce = 0;
+  async getAddressNonce(address: string): Promise<number> {
+    // Get nonce for backup key (should be 0)
+    let nonce = 0;
 
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'txlist',
-        address,
-      })) as any;
-      if (!result || !Array.isArray(result.result)) {
-        throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
-      }
-      const backupKeyTxList = result.result;
-      if (backupKeyTxList.length > 0) {
-        // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
-        nonce = outgoingTxs.length;
-      }
-      return nonce;
-    })
-      .call(this)
-      .asCallback(callback);
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'txlist',
+      address,
+    });
+    if (!result || !Array.isArray(result.result)) {
+      throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
+    }
+    const backupKeyTxList = result.result;
+    if (backupKeyTxList.length > 0) {
+      // Calculate last nonce used
+      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
+      nonce = outgoingTxs.length;
+    }
+    return nonce;
   }
 
   /**
@@ -864,42 +824,36 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {{tx: *, userKey: *, backupKey: *, coin: string, amount: string, gasPrice: string, gasLimit: string, recipients: ({address, amount}|{address: ({address, amount}|string), amount: string}|string)[]}}
    */
-  formatForOfflineVault(
+  async formatForOfflineVault(
     txInfo: UnformattedTxInfo,
     ethTx: EthTxLib.Transaction | EthTxLib.FeeMarketEIP1559Transaction,
     userKey: string,
     backupKey: string,
     gasPrice: Buffer,
-    gasLimit: number,
-    callback?: NodeCallback<OfflineVaultTxInfo>
-  ): Bluebird<OfflineVaultTxInfo> {
-    const self = this;
-    return co<OfflineVaultTxInfo>(function* (): any {
-      if (!ethTx.to) {
-        throw new Error('Eth tx must have a `to` address');
-      }
-      const backupHDNode = bip32.fromBase58(backupKey);
-      const backupSigningKey = backupHDNode.publicKey;
-      const response: OfflineVaultTxInfo = {
-        tx: ethTx.serialize().toString('hex'),
-        userKey,
-        backupKey,
-        coin: self.getChain(),
-        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
-        gasLimit,
-        recipients: [txInfo.recipient],
-        walletContractAddress: ethTx.to.toString(),
-        amount: txInfo.recipient.amount,
-        backupKeyNonce: yield self.getAddressNonce(
-          `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
-        ),
-      };
-      _.extend(response, txInfo);
-      response.nextContractSequenceId = response.contractSequenceId;
-      return response;
-    })
-      .call(this)
-      .asCallback(callback);
+    gasLimit: number
+  ): Promise<OfflineVaultTxInfo> {
+    if (!ethTx.to) {
+      throw new Error('Eth tx must have a `to` address');
+    }
+    const backupHDNode = bip32.fromBase58(backupKey);
+    const backupSigningKey = backupHDNode.publicKey;
+    const response: OfflineVaultTxInfo = {
+      tx: ethTx.serialize().toString('hex'),
+      userKey,
+      backupKey,
+      coin: this.getChain(),
+      gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+      gasLimit,
+      recipients: [txInfo.recipient],
+      walletContractAddress: ethTx.to.toString(),
+      amount: txInfo.recipient.amount,
+      backupKeyNonce: await this.getAddressNonce(
+        `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
+      ),
+    };
+    _.extend(response, txInfo);
+    response.nextContractSequenceId = response.contractSequenceId;
+    return response;
   }
 
   /**
@@ -947,185 +901,176 @@ export class Eth extends BaseCoin {
    * @param params.walletContractAddress {String} the ETH address of the wallet contract
    * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param params.recoveryDestination {String} target address to send recovered funds to
-   * @param callback
    */
-  recover(
-    params: RecoverOptions,
-    callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>
-  ): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
-    const self = this;
-    return co<RecoveryInfo | OfflineVaultTxInfo>(function* recover() {
-      if (_.isUndefined(params.userKey)) {
-        throw new Error('missing userKey');
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const isKrsRecovery = getIsKrsRecovery(params);
+    const isUnsignedSweep = getIsUnsignedSweep(params);
+
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
+    }
+
+    // Clean up whitespace from entered values
+    let userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Set new eth tx fees (using default config values from platform)
+
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userKey = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+    }
+
+    let backupKeyAddress;
+    let backupSigningKey;
+
+    if (isKrsRecovery || isUnsignedSweep) {
+      const backupHDNode = bip32.fromBase58(backupKey);
+      backupSigningKey = backupHDNode.publicKey;
+      backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+    } else {
+      // Decrypt backup private key and get address
+      let backupPrv;
+
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
       }
 
-      if (_.isUndefined(params.backupKey)) {
-        throw new Error('missing backupKey');
+      const backupHDNode = bip32.fromBase58(backupPrv);
+      backupSigningKey = backupHDNode.privateKey;
+      if (!backupHDNode) {
+        throw new Error('no private key');
       }
+      backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+    }
 
-      if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
-        throw new Error('missing wallet passphrase');
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+
+    // get balance of backupKey to ensure funds are available to pay fees
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+
+    const totalGasNeeded = gasPrice.mul(gasLimit);
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
+      );
+    }
+
+    // get balance of wallet and deduct fees to get transaction amount
+    const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+
+    // build recipients object
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: txAmount.toString(10),
+      },
+    ];
+
+    // Get sequence ID using contract call
+    // we need to wait between making two etherscan calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+
+    let operationHash, signature;
+    // Get operation hash and sign it
+    if (!isUnsignedSweep) {
+      operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
+
+      try {
+        Util.ecRecoverEthAddress(operationHash, signature);
+      } catch (e) {
+        throw new Error('Invalid signature');
       }
+    }
 
-      if (_.isUndefined(params.walletContractAddress) || !self.isValidAddress(params.walletContractAddress)) {
-        throw new Error('invalid walletContractAddress');
-      }
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: gasLimit.toString(10),
+    };
 
-      if (_.isUndefined(params.recoveryDestination) || !self.isValidAddress(params.recoveryDestination)) {
-        throw new Error('invalid recoveryDestination');
-      }
+    // calculate send data
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
-      const isKrsRecovery = getIsKrsRecovery(params);
-      const isUnsignedSweep = getIsUnsignedSweep(params);
+    const txParams = {
+      to: params.walletContractAddress,
+      nonce: backupKeyNonce,
+      value: 0,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: sendData,
+      eip1559: params.eip1559,
+      replayProtectionOptions: params.replayProtectionOptions,
+    };
 
-      if (isKrsRecovery) {
-        checkKrsProvider(self, params.krsProvider, { checkCoinFamilySupport: false });
-      }
+    // Build contract call and sign it
+    let tx = Eth.buildTransaction(txParams);
 
-      // Clean up whitespace from entered values
-      let userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
+    if (isUnsignedSweep) {
+      return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
+    }
 
-      // Set new eth tx fees (using default config values from platform)
+    if (!isKrsRecovery) {
+      tx = tx.sign(backupSigningKey);
+    }
 
-      const gasLimit = new optionalDeps.ethUtil.BN(self.setGasLimit(params.gasLimit));
-      const gasPrice = params.eip1559
-        ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
-        : new optionalDeps.ethUtil.BN(self.setGasPrice(params.gasPrice));
-      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
-        try {
-          userKey = self.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
-      }
+    const signedTx: RecoveryInfo = {
+      id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
+      tx: tx.serialize().toString('hex'),
+    };
 
-      let backupKeyAddress;
-      let backupSigningKey;
+    if (isKrsRecovery) {
+      signedTx.backupKey = backupKey;
+      signedTx.coin = this.getChain();
+    }
 
-      if (isKrsRecovery || isUnsignedSweep) {
-        const backupHDNode = bip32.fromBase58(backupKey);
-        backupSigningKey = backupHDNode.publicKey;
-        backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
-      } else {
-        // Decrypt backup private key and get address
-        let backupPrv;
-
-        try {
-          backupPrv = self.bitgo.decrypt({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting backup keychain: ${e.message}`);
-        }
-
-        const backupHDNode = bip32.fromBase58(backupPrv);
-        backupSigningKey = backupHDNode.privateKey;
-        if (!backupHDNode) {
-          throw new Error('no private key');
-        }
-        backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
-      }
-
-      const backupKeyNonce = yield self.getAddressNonce(backupKeyAddress);
-
-      // get balance of backupKey to ensure funds are available to pay fees
-      const backupKeyBalance = (yield self.queryAddressBalance(backupKeyAddress)) as any;
-
-      const totalGasNeeded = gasPrice.mul(gasLimit);
-      const weiToGwei = 10 ** 9;
-      if (backupKeyBalance.lt(totalGasNeeded)) {
-        throw new Error(
-          `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
-            `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
-            ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
-        );
-      }
-
-      // get balance of wallet and deduct fees to get transaction amount
-      const txAmount = (yield self.queryAddressBalance(params.walletContractAddress)) as any;
-
-      // build recipients object
-      const recipients = [
-        {
-          address: params.recoveryDestination,
-          amount: txAmount.toString(10),
-        },
-      ];
-
-      // Get sequence ID using contract call
-      // we need to wait between making two etherscan calls to avoid getting banned
-      yield new Promise((resolve) => setTimeout(resolve, 1000));
-      const sequenceId = (yield self.querySequenceId(params.walletContractAddress)) as any;
-
-      let operationHash, signature;
-      // Get operation hash and sign it
-      if (!isUnsignedSweep) {
-        operationHash = self.getOperationSha3ForExecuteAndConfirm(recipients, self.getDefaultExpireTime(), sequenceId);
-        signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
-
-        try {
-          Util.ecRecoverEthAddress(operationHash, signature);
-        } catch (e) {
-          throw new Error('Invalid signature');
-        }
-      }
-
-      const txInfo = {
-        recipient: recipients[0],
-        expireTime: self.getDefaultExpireTime(),
-        contractSequenceId: sequenceId,
-        operationHash: operationHash,
-        signature: signature,
-        gasLimit: gasLimit.toString(10),
-      };
-
-      // calculate send data
-      const sendMethodArgs = self.getSendMethodArgs(txInfo);
-      const methodSignature = optionalDeps.ethAbi.methodID(self.sendMethodName, _.map(sendMethodArgs, 'type'));
-      const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
-      const sendData = Buffer.concat([methodSignature, encodedArgs]);
-
-      const txParams = {
-        to: params.walletContractAddress,
-        nonce: backupKeyNonce,
-        value: 0,
-        gasPrice: gasPrice,
-        gasLimit: gasLimit,
-        data: sendData,
-        eip1559: params.eip1559,
-        replayProtectionOptions: params.replayProtectionOptions,
-      };
-
-      // Build contract call and sign it
-      let tx = Eth.buildTransaction(txParams);
-
-      if (isUnsignedSweep) {
-        return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
-      }
-
-      if (!isKrsRecovery) {
-        tx = tx.sign(backupSigningKey);
-      }
-
-      const signedTx: RecoveryInfo = {
-        id: optionalDeps.ethUtil.bufferToHex(tx.hash()),
-        tx: tx.serialize().toString('hex'),
-      };
-
-      if (isKrsRecovery) {
-        signedTx.backupKey = backupKey;
-        signedTx.coin = self.getChain();
-      }
-
-      return signedTx;
-    })
-      .call(this)
-      .asCallback(callback);
+    return signedTx;
   }
 
   /**
@@ -1139,155 +1084,141 @@ export class Eth extends BaseCoin {
    * @param params.walletPassphrase the wallet passphrase
    * @param params.prv the xprv
    * @param params.broadcast if true, we will automatically submit the half-signed tx to BitGo for cosigning and broadcasting
-   * @param callback
    */
-  recoverToken(
-    params: RecoverTokenOptions,
-    callback?: NodeCallback<RecoverTokenTransaction>
-  ): Bluebird<RecoverTokenTransaction> {
-    const self = this;
-    return co<RecoverTokenTransaction>(function* (): any {
-      if (!_.isObject(params)) {
-        throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
-      }
+  async recoverToken(params: RecoverTokenOptions): Promise<RecoverTokenTransaction> {
+    if (!_.isObject(params)) {
+      throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
+    }
 
-      if (_.isUndefined(params.tokenContractAddress) || !_.isString(params.tokenContractAddress)) {
-        throw new Error(
-          `tokenContractAddress must be a string, got ${
-            params.tokenContractAddress
-          } (type ${typeof params.tokenContractAddress})`
-        );
-      }
-
-      if (!self.isValidAddress(params.tokenContractAddress)) {
-        throw new Error('tokenContractAddress not a valid address');
-      }
-
-      if (_.isUndefined(params.wallet) || !(params.wallet instanceof Wallet)) {
-        throw new Error(`wallet must be a wallet instance, got ${params.wallet} (type ${typeof params.wallet})`);
-      }
-
-      if (_.isUndefined(params.recipient) || !_.isString(params.recipient)) {
-        throw new Error(`recipient must be a string, got ${params.recipient} (type ${typeof params.recipient})`);
-      }
-
-      if (!self.isValidAddress(params.recipient)) {
-        throw new Error('recipient not a valid address');
-      }
-
-      if (!optionalDeps.ethUtil.bufferToHex || !optionalDeps.ethAbi.soliditySHA3) {
-        throw new Error('ethereum not fully supported in this environment');
-      }
-
-      // Get token balance from external API
-      const coinSpecific = params.wallet.coinSpecific();
-      if (!coinSpecific || !_.isString(coinSpecific.baseAddress)) {
-        throw new Error('missing required coin specific property baseAddress');
-      }
-      const recoveryAmount = yield self.queryAddressTokenBalance(params.tokenContractAddress, coinSpecific.baseAddress);
-
-      if (params.broadcast) {
-        // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
-        // tokenContractAddress and encode the unsupported-token-send data in the data field
-        // #tricksy
-        const sendMethodArgs = [
-          {
-            name: '_to',
-            type: 'address',
-            value: params.recipient,
-          },
-          {
-            name: '_value',
-            type: 'uint256',
-            value: recoveryAmount.toString(10),
-          },
-        ];
-        const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
-        const encodedArgs = optionalDeps.ethAbi.rawEncode(
-          _.map(sendMethodArgs, 'type'),
-          _.map(sendMethodArgs, 'value')
-        );
-        const sendData = Buffer.concat([methodSignature, encodedArgs]);
-
-        const broadcastParams: any = {
-          address: params.tokenContractAddress,
-          amount: '0',
-          data: sendData.toString('hex'),
-        };
-
-        if (params.walletPassphrase) {
-          broadcastParams.walletPassphrase = params.walletPassphrase;
-        } else if (params.prv) {
-          broadcastParams.prv = params.prv;
-        }
-
-        return yield params.wallet.send(broadcastParams);
-      }
-
-      const recipient = {
-        address: params.recipient,
-        amount: recoveryAmount.toString(10),
-      };
-
-      // This signature will be valid for one week
-      const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
-
-      // Get sequence ID. We do this by building a 'fake' eth transaction, so the platform will increment and return us the new sequence id
-      // This _does_ require the user to have a non-zero wallet balance
-      const { nextContractSequenceId, gasPrice, gasLimit } = yield params.wallet.prebuildTransaction({
-        recipients: [
-          {
-            address: params.recipient,
-            amount: '1',
-          },
-        ],
-      });
-
-      // these recoveries need to be processed by support, but if the customer sends any transactions before recovery is
-      // complete the sequence ID will be invalid. artificially inflate the sequence ID to allow more time for processing
-      const safeSequenceId = nextContractSequenceId + 1000;
-
-      // Build sendData for ethereum tx
-      const operationTypes = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
-      const operationArgs = [
-        // "ERC20" has been added here so that ether operation hashes, signatures cannot be re-used for tokenSending
-        'ERC20',
-        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
-        recipient.amount,
-        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
-        expireTime,
-        safeSequenceId,
-      ];
-
-      const operationHash = optionalDeps.ethUtil.bufferToHex(
-        optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs)
+    if (_.isUndefined(params.tokenContractAddress) || !_.isString(params.tokenContractAddress)) {
+      throw new Error(
+        `tokenContractAddress must be a string, got ${
+          params.tokenContractAddress
+        } (type ${typeof params.tokenContractAddress})`
       );
+    }
 
-      const userPrv = yield params.wallet.getPrv({
-        prv: params.prv,
-        walletPassphrase: params.walletPassphrase,
-      });
+    if (!this.isValidAddress(params.tokenContractAddress)) {
+      throw new Error('tokenContractAddress not a valid address');
+    }
 
-      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+    if (_.isUndefined(params.wallet) || !(params.wallet instanceof Wallet)) {
+      throw new Error(`wallet must be a wallet instance, got ${params.wallet} (type ${typeof params.wallet})`);
+    }
 
-      const result: RecoverTokenTransaction = {
-        halfSigned: {
-          recipient: recipient,
-          expireTime: expireTime,
-          contractSequenceId: safeSequenceId,
-          operationHash: operationHash,
-          signature: signature,
-          gasLimit: gasLimit,
-          gasPrice: gasPrice,
-          tokenContractAddress: params.tokenContractAddress,
-          walletId: params.wallet.id(),
+    if (_.isUndefined(params.recipient) || !_.isString(params.recipient)) {
+      throw new Error(`recipient must be a string, got ${params.recipient} (type ${typeof params.recipient})`);
+    }
+
+    if (!this.isValidAddress(params.recipient)) {
+      throw new Error('recipient not a valid address');
+    }
+
+    if (!optionalDeps.ethUtil.bufferToHex || !optionalDeps.ethAbi.soliditySHA3) {
+      throw new Error('ethereum not fully supported in this environment');
+    }
+
+    // Get token balance from external API
+    const coinSpecific = params.wallet.coinSpecific();
+    if (!coinSpecific || !_.isString(coinSpecific.baseAddress)) {
+      throw new Error('missing required coin specific property baseAddress');
+    }
+    const recoveryAmount = await this.queryAddressTokenBalance(params.tokenContractAddress, coinSpecific.baseAddress);
+
+    if (params.broadcast) {
+      // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
+      // tokenContractAddress and encode the unsupported-token-send data in the data field
+      // #tricksy
+      const sendMethodArgs = [
+        {
+          name: '_to',
+          type: 'address',
+          value: params.recipient,
         },
+        {
+          name: '_value',
+          type: 'uint256',
+          value: recoveryAmount.toString(10),
+        },
+      ];
+      const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
+      const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+      const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+      const broadcastParams: any = {
+        address: params.tokenContractAddress,
+        amount: '0',
+        data: sendData.toString('hex'),
       };
 
-      return result;
-    })
-      .call(this)
-      .asCallback(callback);
+      if (params.walletPassphrase) {
+        broadcastParams.walletPassphrase = params.walletPassphrase;
+      } else if (params.prv) {
+        broadcastParams.prv = params.prv;
+      }
+
+      return await params.wallet.send(broadcastParams);
+    }
+
+    const recipient = {
+      address: params.recipient,
+      amount: recoveryAmount.toString(10),
+    };
+
+    // This signature will be valid for one week
+    const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
+
+    // Get sequence ID. We do this by building a 'fake' eth transaction, so the platform will increment and return us the new sequence id
+    // This _does_ require the user to have a non-zero wallet balance
+    const { nextContractSequenceId, gasPrice, gasLimit } = (await params.wallet.prebuildTransaction({
+      recipients: [
+        {
+          address: params.recipient,
+          amount: '1',
+        },
+      ],
+    })) as any;
+
+    // these recoveries need to be processed by support, but if the customer sends any transactions before recovery is
+    // complete the sequence ID will be invalid. artificially inflate the sequence ID to allow more time for processing
+    const safeSequenceId = nextContractSequenceId + 1000;
+
+    // Build sendData for ethereum tx
+    const operationTypes = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
+    const operationArgs = [
+      // "ERC20" has been added here so that ether operation hashes, signatures cannot be re-used for tokenSending
+      'ERC20',
+      new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
+      recipient.amount,
+      new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
+      expireTime,
+      safeSequenceId,
+    ];
+
+    const operationHash = optionalDeps.ethUtil.bufferToHex(
+      optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs)
+    );
+
+    const userPrv = await params.wallet.getPrv({
+      prv: params.prv,
+      walletPassphrase: params.walletPassphrase,
+    });
+
+    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+
+    return {
+      halfSigned: {
+        recipient: recipient,
+        expireTime: expireTime,
+        contractSequenceId: safeSequenceId,
+        operationHash: operationHash,
+        signature: signature,
+        gasLimit: gasLimit,
+        gasPrice: gasPrice,
+        tokenContractAddress: params.tokenContractAddress,
+        walletId: params.wallet.id(),
+      },
+    };
   }
 
   /**
@@ -1334,102 +1265,83 @@ export class Eth extends BaseCoin {
   /**
    * Make a query to Etherscan for information such as balance, token balance, solidity calls
    * @param query {Object} key-value pairs of parameters to append after /api
-   * @param callback
    * @returns {Object} response from Etherscan
    */
-  recoveryBlockchainExplorerQuery(query: Record<string, string>, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const token = common.Environments[self.bitgo.getEnv()].etherscanApiToken;
-      if (token) {
-        query.apikey = token;
-      }
-      const response = (yield request
-        .get(common.Environments[self.bitgo.getEnv()].etherscanBaseUrl + '/api')
-        .query(query)) as any;
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
+    const token = common.Environments[this.bitgo.getEnv()].etherscanApiToken;
+    if (token) {
+      query.apikey = token;
+    }
+    const response = await request.get(common.Environments[this.bitgo.getEnv()].etherscanBaseUrl + '/api').query(query);
 
-      if (!response.ok) {
-        throw new Error('could not reach Etherscan');
-      }
+    if (!response.ok) {
+      throw new Error('could not reach Etherscan');
+    }
 
-      if (response.body.status === '0' && response.body.message === 'NOTOK') {
-        throw new Error('Etherscan rate limit reached');
-      }
-      return response.body;
-    })
-      .call(this)
-      .asCallback(callback);
+    if (response.body.status === '0' && response.body.message === 'NOTOK') {
+      throw new Error('Etherscan rate limit reached');
+    }
+    return response.body;
   }
 
   /**
    * Creates the extra parameters needed to build a hop transaction
    * @param buildParams The original build parameters
-   * @param callback
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  createHopTransactionParams(
-    buildParams: HopTransactionBuildOptions,
-    callback?: NodeCallback<HopParams>
-  ): Bluebird<HopParams> {
-    const self = this;
-    return co<HopParams>(function* (): any {
-      const wallet = buildParams.wallet;
-      const recipients = buildParams.recipients;
-      const walletPassphrase = buildParams.walletPassphrase;
+  async createHopTransactionParams(buildParams: HopTransactionBuildOptions): Promise<HopParams> {
+    const wallet = buildParams.wallet;
+    const recipients = buildParams.recipients;
+    const walletPassphrase = buildParams.walletPassphrase;
 
-      const userKeychain = yield self.keychains().get({ id: wallet.keyIds()[0] });
-      const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-      const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
-      if (!userPrvBuffer) {
-        throw new Error('invalid userPrv');
-      }
-      if (!recipients || !Array.isArray(recipients)) {
-        throw new Error('expecting array of recipients');
-      }
+    const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
+    const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+    const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
+    if (!userPrvBuffer) {
+      throw new Error('invalid userPrv');
+    }
+    if (!recipients || !Array.isArray(recipients)) {
+      throw new Error('expecting array of recipients');
+    }
 
-      // Right now we only support 1 recipient
-      if (recipients.length !== 1) {
-        throw new Error('must send to exactly 1 recipient');
-      }
-      const recipientAddress = recipients[0].address;
-      const recipientAmount = recipients[0].amount;
-      const feeEstimateParams = {
-        recipient: recipientAddress,
-        amount: recipientAmount,
-        hop: true,
-      };
-      const feeEstimate: FeeEstimate = yield self.feeEstimate(feeEstimateParams);
+    // Right now we only support 1 recipient
+    if (recipients.length !== 1) {
+      throw new Error('must send to exactly 1 recipient');
+    }
+    const recipientAddress = recipients[0].address;
+    const recipientAmount = recipients[0].amount;
+    const feeEstimateParams = {
+      recipient: recipientAddress,
+      amount: recipientAmount,
+      hop: true,
+    };
+    const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
 
-      const gasLimit = feeEstimate.gasLimitEstimate;
-      const gasPrice = Math.round(feeEstimate.feeEstimate / gasLimit);
-      const gasPriceMax = gasPrice * 5;
-      // Payment id a random number so its different for every tx
-      const paymentId = Math.floor(Math.random() * 10000000000).toString();
-      const hopDigest: Buffer = Eth.getHopDigest([
-        recipientAddress,
-        recipientAmount,
-        gasPriceMax.toString(),
-        gasLimit.toString(),
+    const gasLimit = feeEstimate.gasLimitEstimate;
+    const gasPrice = Math.round(feeEstimate.feeEstimate / gasLimit);
+    const gasPriceMax = gasPrice * 5;
+    // Payment id a random number so its different for every tx
+    const paymentId = Math.floor(Math.random() * 10000000000).toString();
+    const hopDigest: Buffer = Eth.getHopDigest([
+      recipientAddress,
+      recipientAmount,
+      gasPriceMax.toString(),
+      gasLimit.toString(),
+      paymentId,
+    ]);
+
+    const userReqSig = optionalDeps.ethUtil.addHexPrefix(
+      Buffer.from(secp256k1.ecdsaSign(hopDigest, userPrvBuffer).signature).toString('hex')
+    );
+
+    return {
+      hopParams: {
+        gasPriceMax,
+        userReqSig,
         paymentId,
-      ]);
-
-      const userReqSig = optionalDeps.ethUtil.addHexPrefix(
-        Buffer.from(secp256k1.ecdsaSign(hopDigest, userPrvBuffer).signature).toString('hex')
-      );
-
-      const result: HopParams = {
-        hopParams: {
-          gasPriceMax,
-          userReqSig,
-          paymentId,
-        },
-        gasLimit,
-      };
-
-      return result;
-    })
-      .call(this)
-      .asCallback(callback);
+      },
+      gasLimit,
+    };
   }
 
   /**
@@ -1437,64 +1349,57 @@ export class Eth extends BaseCoin {
    * @param wallet The wallet that the prebuild is for
    * @param hopPrebuild The prebuild to validate
    * @param originalParams The original parameters passed to prebuildTransaction
-   * @param callback
    * @returns void
    * @throws Error if The prebuild is invalid
    */
-  validateHopPrebuild(
+  async validateHopPrebuild(
     wallet: Wallet,
     hopPrebuild: HopPrebuild,
-    originalParams?: { recipients: Recipient[] },
-    callback?: NodeCallback<void>
-  ): Bluebird<void> {
-    const self = this;
-    return co<void>(function* () {
-      const { tx, id, signature } = hopPrebuild;
+    originalParams?: { recipients: Recipient[] }
+  ): Promise<void> {
+    const { tx, id, signature } = hopPrebuild;
 
-      // first, validate the HSM signature
-      const serverXpub = common.Environments[self.bitgo.getEnv()].hsmXpub;
-      const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
-      const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
-      const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
+    // first, validate the HSM signature
+    const serverXpub = common.Environments[this.bitgo.getEnv()].hsmXpub;
+    const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
+    const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
+    const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
-      const sig = new Uint8Array(signatureBuffer.slice(1));
-      const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
-      if (!isValidSignature) {
-        throw new Error(`Hop txid signature invalid`);
+    const sig = new Uint8Array(signatureBuffer.slice(1));
+    const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
+    if (!isValidSignature) {
+      throw new Error(`Hop txid signature invalid`);
+    }
+
+    const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
+    // If original params are given, we can check them against the transaction prebuild params
+    if (!_.isNil(originalParams)) {
+      const { recipients } = originalParams;
+
+      // Then validate that the tx params actually equal the requested params
+      const originalAmount = new BigNumber(recipients[0].amount);
+      const originalDestination: string = recipients[0].address;
+
+      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
+      if (!builtHopTx.to) {
+        throw new Error(`Transaction does not have a destination address`);
       }
-
-      const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
-      // If original params are given, we can check them against the transaction prebuild params
-      if (!_.isNil(originalParams)) {
-        const { recipients } = originalParams;
-
-        // Then validate that the tx params actually equal the requested params
-        const originalAmount = new BigNumber(recipients[0].amount);
-        const originalDestination: string = recipients[0].address;
-
-        const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
-        if (!builtHopTx.to) {
-          throw new Error(`Transaction does not have a destination address`);
-        }
-        const hopDestination = builtHopTx.to.toString();
-        if (!hopAmount.eq(originalAmount)) {
-          throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
-        }
-        if (hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
-          throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
-        }
+      const hopDestination = builtHopTx.to.toString();
+      if (!hopAmount.eq(originalAmount)) {
+        throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
       }
+      if (hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
+        throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
+      }
+    }
 
-      if (!builtHopTx.verifySignature()) {
-        // We dont want to continue at all in this case, at risk of ETH being stuck on the hop address
-        throw new Error(`Invalid hop transaction signature, txid: ${id}`);
-      }
-      if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
-        throw new Error(`Signed hop txid does not equal actual txid`);
-      }
-    })
-      .call(this)
-      .asCallback(callback);
+    if (!builtHopTx.verifySignature()) {
+      // We dont want to continue at all in this case, at risk of ETH being stuck on the hop address
+      throw new Error(`Invalid hop transaction signature, txid: ${id}`);
+    }
+    if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
+      throw new Error(`Signed hop txid does not equal actual txid`);
+    }
   }
 
   /**
@@ -1514,79 +1419,48 @@ export class Eth extends BaseCoin {
    * @param buildParams.recipients The recipients array of this transaction
    * @param buildParams.wallet The wallet sending this tx
    * @param buildParams.walletPassphrase the passphrase for this wallet
-   * @param callback
    */
-  getExtraPrebuildParams(buildParams: BuildOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
-    const self = this;
-    return co<BuildOptions>(function* () {
-      if (
-        !_.isUndefined(buildParams.hop) &&
-        buildParams.hop &&
-        !_.isUndefined(buildParams.wallet) &&
-        !_.isUndefined(buildParams.recipients) &&
-        !_.isUndefined(buildParams.walletPassphrase)
-      ) {
-        if (this instanceof Erc20Token) {
-          throw new Error(
-            `Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`
-          );
-        }
-        return yield self.createHopTransactionParams({
-          wallet: buildParams.wallet,
-          recipients: buildParams.recipients,
-          walletPassphrase: buildParams.walletPassphrase,
-        });
+  async getExtraPrebuildParams(buildParams: BuildOptions): Promise<BuildOptions> {
+    if (
+      !_.isUndefined(buildParams.hop) &&
+      buildParams.hop &&
+      !_.isUndefined(buildParams.wallet) &&
+      !_.isUndefined(buildParams.recipients) &&
+      !_.isUndefined(buildParams.walletPassphrase)
+    ) {
+      if (this instanceof Erc20Token) {
+        throw new Error(
+          `Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`
+        );
       }
-      return {};
-    })
-      .call(this)
-      .asCallback(callback);
+      return (await this.createHopTransactionParams({
+        wallet: buildParams.wallet,
+        recipients: buildParams.recipients,
+        walletPassphrase: buildParams.walletPassphrase,
+      })) as any;
+    }
+    return {};
   }
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(
-    params: TransactionPrebuild,
-    callback?: NodeCallback<TransactionPrebuild>
-  ): Bluebird<TransactionPrebuild> {
-    const self = this;
-    return co<TransactionPrebuild>(function* () {
-      if (
-        !_.isUndefined(params.hopTransaction) &&
-        !_.isUndefined(params.wallet) &&
-        !_.isUndefined(params.buildParams)
-      ) {
-        yield self.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
-      }
-      return params;
-    })
-      .call(this)
-      .asCallback(callback);
+  async postProcessPrebuild(params: TransactionPrebuild): Promise<TransactionPrebuild> {
+    if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+      await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+    }
+    return params;
   }
 
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    * @param params
-   * @param callback
    */
-  presignTransaction(
-    params: PresignTransactionOptions,
-    callback?: NodeCallback<PresignTransactionOptions>
-  ): Bluebird<PresignTransactionOptions> {
-    const self = this;
-    return co<PresignTransactionOptions>(function* () {
-      if (
-        !_.isUndefined(params.hopTransaction) &&
-        !_.isUndefined(params.wallet) &&
-        !_.isUndefined(params.buildParams)
-      ) {
-        yield self.validateHopPrebuild(params.wallet, params.hopTransaction);
-      }
-      return params;
-    })
-      .call(this)
-      .asCallback(callback);
+  async presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
+    if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+      await this.validateHopPrebuild(params.wallet, params.hopTransaction);
+    }
+    return params;
   }
 
   /**
@@ -1595,30 +1469,24 @@ export class Eth extends BaseCoin {
    * @param {Boolean} [params.hop] True if we should estimate fee for a hop transaction
    * @param {String} [params.recipient] The recipient of the transaction to estimate a send to
    * @param {String} [params.data] The ETH tx data to estimate a send for
-   * @param callback
    * @returns {Object} The fee info returned from the server
    */
-  feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<FeeEstimate>): Bluebird<FeeEstimate> {
-    const self = this;
-    return co<FeeEstimate>(function* coFeeEstimate() {
-      const query: FeeEstimateOptions = {};
-      if (params && params.hop) {
-        query.hop = params.hop;
-      }
-      if (params && params.recipient) {
-        query.recipient = params.recipient;
-      }
-      if (params && params.data) {
-        query.data = params.data;
-      }
-      if (params && params.amount) {
-        query.amount = params.amount;
-      }
+  async feeEstimate(params: FeeEstimateOptions): Promise<FeeEstimate> {
+    const query: FeeEstimateOptions = {};
+    if (params && params.hop) {
+      query.hop = params.hop;
+    }
+    if (params && params.recipient) {
+      query.recipient = params.recipient;
+    }
+    if (params && params.data) {
+      query.data = params.data;
+    }
+    if (params && params.amount) {
+      query.amount = params.amount;
+    }
 
-      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
-    })
-      .call(this)
-      .asCallback(callback);
+    return await this.bitgo.get(this.url('/tx/fee')).query(query).result();
   }
 
   /**
@@ -1642,11 +1510,8 @@ export class Eth extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   /**
@@ -1661,18 +1526,17 @@ export class Eth extends BaseCoin {
    * @returns {Boolean} True if address is valid
    */
   verifyAddress(params: VerifyEthAddressOptions): boolean {
-    const self = this;
     let expectedAddress;
     let actualAddress;
 
     const { address, coinSpecific, baseAddress } = params;
 
-    if (address && !self.isValidAddress(address)) {
+    if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
     // base address is required to calculate the salt which is used in calculateForwarderV1Address method
-    if (_.isUndefined(baseAddress) || !self.isValidAddress(baseAddress)) {
+    if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
       throw new InvalidAddressError('invalid base address');
     }
 
@@ -1685,7 +1549,7 @@ export class Eth extends BaseCoin {
     if (coinSpecific.forwarderVersion === 0) {
       return true;
     } else {
-      const ethNetwork = self.getNetwork();
+      const ethNetwork = this.getNetwork();
       const forwarderFactoryAddress = ethNetwork?.forwarderFactoryAddress as string;
       const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
 
@@ -1723,93 +1587,85 @@ export class Eth extends BaseCoin {
    * @param params.txParams params object passed to send
    * @param params.txPrebuild prebuild object returned by server
    * @param params.wallet Wallet object to obtain keys to verify against
-   * @param callback
    * @returns {boolean}
    */
-  verifyTransaction(params: VerifyEthTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    const self = this;
-    const ethNetwork = self.getNetwork();
-    return co<boolean>(function* (): any {
-      const { txParams, txPrebuild, wallet } = params;
-      if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
-        throw new Error(`missing params`);
+  async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const ethNetwork = this.getNetwork();
+    const { txParams, txPrebuild, wallet } = params;
+    if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
+      throw new Error(`missing params`);
+    }
+    if (txParams.hop && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+    if (txPrebuild.recipients.length !== 1) {
+      throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
+    }
+    if (txParams.hop && txPrebuild.hopTransaction) {
+      // Check recipient amount for hop transaction
+      if (txParams.recipients.length !== 1) {
+        throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
       }
-      if (txParams.hop && txParams.recipients.length > 1) {
-        throw new Error(`tx cannot be both a batch and hop transaction`);
-      }
-      if (txPrebuild.recipients.length !== 1) {
-        throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
-      }
-      if (txParams.hop && txPrebuild.hopTransaction) {
-        // Check recipient amount for hop transaction
-        if (txParams.recipients.length !== 1) {
-          throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
-        }
 
-        // Check tx sends to hop address
-        const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
-          optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+      // Check tx sends to hop address
+      const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+        optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+      );
+      const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+      const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
+      if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
+        throw new Error('recipient address of txPrebuild does not match hop address');
+      }
+
+      // Convert TransactionRecipient array to Recipient array
+      const recipients: Recipient[] = txParams.recipients.map((r) => {
+        return {
+          address: r.address,
+          amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
+        };
+      });
+
+      // Check destination address and amount
+      await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
+    } else if (txParams.recipients.length > 1) {
+      // Check total amount for batch transaction
+      let expectedTotalAmount = new BigNumber(0);
+      for (let i = 0; i < txParams.recipients.length; i++) {
+        expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+      }
+      if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+        throw new Error(
+          'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
         );
-        const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
-        const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
-        if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
-          throw new Error('recipient address of txPrebuild does not match hop address');
-        }
-
-        // Convert TransactionRecipient array to Recipient array
-        const recipients: Recipient[] = txParams.recipients.map((r) => {
-          return {
-            address: r.address,
-            amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
-          };
-        });
-
-        // Check destination address and amount
-        yield self.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
-      } else if (txParams.recipients.length > 1) {
-        // Check total amount for batch transaction
-        let expectedTotalAmount = new BigNumber(0);
-        for (let i = 0; i < txParams.recipients.length; i++) {
-          expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
-        }
-        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-
-        // Check batch transaction is sent to the batcher contract address for the chain
-        const batcherContractAddress = ethNetwork?.batcherContractAddress;
-        if (
-          !batcherContractAddress ||
-          batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
-        ) {
-          throw new Error('recipient address of txPrebuild does not match batcher address');
-        }
-      } else {
-        // Check recipient address and amount for normal transaction
-        if (txParams.recipients.length !== 1) {
-          throw new Error(`normal transaction only supports 1 recipient but ${txParams.recipients.length} found`);
-        }
-        const expectedAmount = new BigNumber(txParams.recipients[0].amount);
-        if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throw new Error(
-            'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-          );
-        }
-        if (txParams.recipients[0].address !== txPrebuild.recipients[0].address) {
-          throw new Error(
-            'destination address in normal txPrebuild does not match that in txParams supplied by client'
-          );
-        }
       }
-      // Check coin is correct for all transaction types
-      if (!self.verifyCoin(txPrebuild)) {
-        throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
+
+      // Check batch transaction is sent to the batcher contract address for the chain
+      const batcherContractAddress = ethNetwork?.batcherContractAddress;
+      if (
+        !batcherContractAddress ||
+        batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
+      ) {
+        throw new Error('recipient address of txPrebuild does not match batcher address');
       }
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+    } else {
+      // Check recipient address and amount for normal transaction
+      if (txParams.recipients.length !== 1) {
+        throw new Error(`normal transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+      }
+      const expectedAmount = new BigNumber(txParams.recipients[0].amount);
+      if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+        throw new Error(
+          'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+        );
+      }
+      if (txParams.recipients[0].address !== txPrebuild.recipients[0].address) {
+        throw new Error('destination address in normal txPrebuild does not match that in txParams supplied by client');
+      }
+    }
+    // Check coin is correct for all transaction types
+    if (!this.verifyCoin(txPrebuild)) {
+      throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
+    }
+    return true;
   }
 }
