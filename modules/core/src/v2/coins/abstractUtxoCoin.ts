@@ -2,18 +2,18 @@
  * @prettier
  */
 import * as bip32 from 'bip32';
-import { Codes } from '@bitgo/unspents';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   getExternalChainCode,
   isChainCode,
   RootWalletKeys,
+  scriptTypeForChain,
+  outputScripts,
   toOutput,
   Unspent,
   verifySignatureWithUnspent,
   WalletUnspentSigner,
 } from '@bitgo/utxo-lib/dist/src/bitgo';
-import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -277,23 +277,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return true;
   }
 
-  static get validAddressTypes(): UnspentType[] {
-    const validAddressTypes: UnspentType[] = [];
-    // best way I could find to loop over enum values
-    // https://github.com/Microsoft/TypeScript/issues/17198#issuecomment-423836658
-    // this is a typescript rough corner for sure
-    const unspentTypeKeys: string[] = Object.keys(UnspentType);
-    const unspentTypes: UnspentType[] = unspentTypeKeys.map((k) => UnspentType[k as any]).map((v) => v as UnspentType);
-    for (const addressType of unspentTypes) {
-      try {
-        Codes.forType(addressType);
-        validAddressTypes.push(addressType);
-      } catch (e) {
-        // Do nothing. Codes.forType will throw if the address type has no chain codes, meaning it is invalid on the
-        // BitGo platform and should not be added to the validAddressTypes array.
-      }
-    }
-    return validAddressTypes;
+  /** @deprecated */
+  static get validAddressTypes(): ScriptType2Of3[] {
+    return [...outputScripts.scriptTypes2Of3];
   }
 
   /**
@@ -445,23 +431,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
-  static inferAddressType(addressDetails: { coinSpecific: AddressCoinSpecific; chain: number }): ScriptType2Of3 | null {
-    const { witnessScript, redeemScript } = addressDetails.coinSpecific ?? {};
-    if (_.isString(redeemScript) && _.isString(witnessScript)) {
-      return 'p2shP2wsh';
-    } else if (_.isString(redeemScript)) {
-      return 'p2sh';
-    } else if (_.isString(witnessScript)) {
-      return 'p2wsh';
-    } else if (
-      _.isUndefined(redeemScript) &&
-      _.isUndefined(witnessScript) &&
-      _.isNumber(addressDetails.chain) &&
-      Codes.isP2tr(addressDetails.chain)
-    ) {
-      return 'p2tr';
-    }
-    return null;
+  static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
+    return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
   }
 
   createTransactionFromHex(hex: string) {
