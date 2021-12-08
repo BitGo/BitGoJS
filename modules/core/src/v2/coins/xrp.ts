@@ -4,7 +4,6 @@
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { ECPair } from '@bitgo/utxo-lib';
-import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';
@@ -27,8 +26,8 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
+import { promiseProps } from '../promise-utils';
 import {
   checkKrsProvider,
   getBip32Keys,
@@ -36,8 +35,6 @@ import {
 } from '../recovery/initiate';
 
 const ripple = require('../../ripple');
-
-const co = Bluebird.coroutine;
 
 interface Address {
   address: string;
@@ -223,8 +220,8 @@ export class Xrp extends BaseCoin {
   /**
    * Get fee info from server
    */
-  public getFeeInfo(_?, callback?): Bluebird<FeeInfo> {
-    return Bluebird.resolve(this.bitgo.get(this.url('/public/feeinfo')).result()).nodeify(callback);
+  public async getFeeInfo(): Promise<FeeInfo> {
+    return this.bitgo.get(this.url('/public/feeinfo')).result();
   }
 
   /**
@@ -232,43 +229,35 @@ export class Xrp extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @param callback
    * @returns Bluebird<HalfSignedTransaction>
    */
-  public signTransaction(
-    { txPrebuild, prv }: SignTransactionOptions,
-    callback?: NodeCallback<HalfSignedTransaction>
-  ): Bluebird<HalfSignedTransaction> {
-    return co<HalfSignedTransaction>(function* () {
-      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-        }
-        throw new Error('missing txPrebuild parameter');
+  public async signTransaction({ txPrebuild, prv }: SignTransactionOptions): Promise<HalfSignedTransaction> {
+    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
       }
+      throw new Error('missing txPrebuild parameter');
+    }
 
-      if (_.isUndefined(prv) || !_.isString(prv)) {
-        if (!_.isUndefined(prv) && !_.isString(prv)) {
-          throw new Error(`prv must be a string, got type ${typeof prv}`);
-        }
-        throw new Error('missing prv parameter to sign transaction');
+    if (_.isUndefined(prv) || !_.isString(prv)) {
+      if (!_.isUndefined(prv) && !_.isString(prv)) {
+        throw new Error(`prv must be a string, got type ${typeof prv}`);
       }
+      throw new Error('missing prv parameter to sign transaction');
+    }
 
-      const userKey = bip32.fromBase58(prv);
-      const userPrivateKey = userKey.privateKey;
-      if (!userPrivateKey) {
-        throw new Error(`no privateKey`);
-      }
-      const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
+    const userKey = bip32.fromBase58(prv);
+    const userPrivateKey = userKey.privateKey;
+    if (!userPrivateKey) {
+      throw new Error(`no privateKey`);
+    }
+    const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
 
-      const rippleLib = ripple();
-      const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
-        signAs: userAddress,
-      });
-      return { halfSigned: { txHex: halfSigned.signedTransaction } };
-    })
-      .call(this)
-      .asCallback(callback);
+    const rippleLib = ripple();
+    const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
+      signAs: userAddress,
+    });
+    return { halfSigned: { txHex: halfSigned.signedTransaction } };
   }
 
   /**
@@ -277,93 +266,85 @@ export class Xrp extends BaseCoin {
    * @param walletParams
    * - rootPrivateKey: optional hex-encoded Ripple private key
    */
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
-    return co<SupplementGenerateWalletOptions>(function* () {
-      if (walletParams.rootPrivateKey) {
-        if (walletParams.rootPrivateKey.length !== 64) {
-          throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
-        }
-      } else {
-        const keyPair = ECPair.makeRandom();
-        if (!keyPair.privateKey) {
-          throw new Error('no privateKey');
-        }
-        walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
+  async supplementGenerateWallet(
+    walletParams: SupplementGenerateWalletOptions
+  ): Promise<SupplementGenerateWalletOptions> {
+    if (walletParams.rootPrivateKey) {
+      if (walletParams.rootPrivateKey.length !== 64) {
+        throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
       }
-      return walletParams;
-    }).call(this);
+    } else {
+      const keyPair = ECPair.makeRandom();
+      if (!keyPair.privateKey) {
+        throw new Error('no privateKey');
+      }
+      walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
+    }
+    return walletParams;
   }
 
   /**
    * Explain/parse transaction
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions = {},
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    return co<TransactionExplanation>(function* () {
-      if (!params.txHex) {
-        throw new Error('missing required param txHex');
-      }
-      let transaction;
-      let txHex;
+  async explainTransaction(params: ExplainTransactionOptions = {}): Promise<TransactionExplanation> {
+    if (!params.txHex) {
+      throw new Error('missing required param txHex');
+    }
+    let transaction;
+    let txHex;
+    try {
+      transaction = rippleBinaryCodec.decode(params.txHex);
+      txHex = params.txHex;
+    } catch (e) {
       try {
-        transaction = rippleBinaryCodec.decode(params.txHex);
-        txHex = params.txHex;
+        transaction = JSON.parse(params.txHex);
+        txHex = rippleBinaryCodec.encode(transaction);
       } catch (e) {
-        try {
-          transaction = JSON.parse(params.txHex);
-          txHex = rippleBinaryCodec.encode(transaction);
-        } catch (e) {
-          throw new Error('txHex needs to be either hex or JSON string for XRP');
-        }
+        throw new Error('txHex needs to be either hex or JSON string for XRP');
       }
-      const id = computeBinaryTransactionHash(txHex);
+    }
+    const id = computeBinaryTransactionHash(txHex);
 
-      if (transaction.TransactionType == 'AccountSet') {
-        return {
-          displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
-          id: id,
-          changeOutputs: [],
-          outputAmount: 0,
-          changeAmount: 0,
-          outputs: [],
-          fee: {
-            fee: transaction.Fee,
-            feeRate: null,
-            size: txHex.length / 2,
-          },
-          accountSet: {
-            messageKey: transaction.MessageKey,
-          },
-        };
-      }
-
-      const address =
-        transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
+    if (transaction.TransactionType == 'AccountSet') {
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
         id: id,
         changeOutputs: [],
-        outputAmount: transaction.Amount,
+        outputAmount: 0,
         changeAmount: 0,
-        outputs: [
-          {
-            address,
-            amount: transaction.Amount,
-          },
-        ],
+        outputs: [],
         fee: {
           fee: transaction.Fee,
           feeRate: null,
           size: txHex.length / 2,
         },
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+        accountSet: {
+          messageKey: transaction.MessageKey,
+        },
+      } as any;
+    }
+
+    const address =
+      transaction.Destination + (transaction.DestinationTag >= 0 ? '?dt=' + transaction.DestinationTag : '');
+    return {
+      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+      id: id,
+      changeOutputs: [],
+      outputAmount: transaction.Amount,
+      changeAmount: 0,
+      outputs: [
+        {
+          address,
+          amount: transaction.Amount,
+        },
+      ],
+      fee: {
+        fee: transaction.Fee,
+        feeRate: null,
+        size: txHex.length / 2,
+      },
+    } as any;
   }
 
   /**
@@ -371,36 +352,30 @@ export class Xrp extends BaseCoin {
    * @param txParams params object passed to send
    * @param txPrebuild prebuild object returned by server
    * @param wallet
-   * @param callback
    * @returns {boolean}
    */
-  public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Bluebird<boolean> {
-    const self = this;
-    return co<boolean>(function* () {
-      const explanation = (yield self.explainTransaction({
-        txHex: txPrebuild.txHex,
-      })) as any;
+  public async verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions): Promise<boolean> {
+    const explanation = await this.explainTransaction({
+      txHex: txPrebuild.txHex,
+    });
 
-      const output = [...explanation.outputs, ...explanation.changeOutputs][0];
-      const expectedOutput = txParams.recipients && txParams.recipients[0];
+    const output = [...explanation.outputs, ...explanation.changeOutputs][0];
+    const expectedOutput = txParams.recipients && txParams.recipients[0];
 
-      const comparator = (recipient1, recipient2) => {
-        if (recipient1.address !== recipient2.address) {
-          return false;
-        }
-        const amount1 = new BigNumber(recipient1.amount);
-        const amount2 = new BigNumber(recipient2.amount);
-        return amount1.toFixed() === amount2.toFixed();
-      };
-
-      if (!comparator(output, expectedOutput)) {
-        throw new Error('transaction prebuild does not match expected output');
+    const comparator = (recipient1, recipient2) => {
+      if (recipient1.address !== recipient2.address) {
+        return false;
       }
+      const amount1 = new BigNumber(recipient1.amount);
+      const amount2 = new BigNumber(recipient2.amount);
+      return amount1.toFixed() === amount2.toFixed();
+    };
 
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+    if (!comparator(output, expectedOutput)) {
+      throw new Error('transaction prebuild does not match expected output');
+    }
+
+    return true;
   }
 
   /**
@@ -409,7 +384,7 @@ export class Xrp extends BaseCoin {
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
    */
-  public verifyAddress({ address, rootAddress }: VerifyAddressOptions) {
+  public verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
     }
@@ -443,189 +418,180 @@ export class Xrp extends BaseCoin {
    * - bitgoKey: xpub
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
-   * @param callback
    */
-  public recover(
-    params: RecoveryOptions,
-    callback?: NodeCallback<RecoveryInfo | string>
-  ): Bluebird<RecoveryInfo | string> {
-    const self = this;
-    return co<RecoveryInfo | string>(function* explainTransaction(): any {
-      const rippledUrl = self.getRippledUrl();
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+  public async recover(params: RecoveryOptions): Promise<RecoveryInfo | string> {
+    const rippledUrl = this.getRippledUrl();
+    const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+    const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      const accountInfoParams = {
-        method: 'account_info',
-        params: [
-          {
-            account: params.rootAddress,
-            strict: true,
-            ledger_index: 'current',
-            queue: true,
-            signer_lists: true,
-          },
-        ],
-      };
+    const accountInfoParams = {
+      method: 'account_info',
+      params: [
+        {
+          account: params.rootAddress,
+          strict: true,
+          ledger_index: 'current',
+          queue: true,
+          signer_lists: true,
+        },
+      ],
+    };
 
-      if (isKrsRecovery) {
-        checkKrsProvider(self, params.krsProvider);
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider);
+    }
+
+    // Validate the destination address
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
+
+    const { addressDetails, feeDetails, serverDetails } = await promiseProps({
+      addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),
+      feeDetails: this.bitgo.post(rippledUrl).send({ method: 'fee' }),
+      serverDetails: this.bitgo.post(rippledUrl).send({ method: 'server_info' }),
+    });
+
+    const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
+    const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(
+      this.getBaseFactor()
+    );
+    const reserveDelta = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_inc_xrp).times(
+      this.getBaseFactor()
+    );
+    const currentLedger = serverDetails.body.result.info.validated_ledger.seq;
+    const sequenceId = addressDetails.body.result.account_data.Sequence;
+    const balance = new BigNumber(addressDetails.body.result.account_data.Balance);
+    const signerLists = addressDetails.body.result.account_data.signer_lists;
+    const accountFlags = addressDetails.body.result.account_data.Flags;
+
+    // make sure there is only one signer list set
+    if (signerLists.length !== 1) {
+      throw new Error('unexpected set of signer lists');
+    }
+
+    // make sure the signers are user, backup, bitgo
+    const userAddress = rippleKeypairs.deriveAddress(keys[0].publicKey.toString('hex'));
+    const backupAddress = rippleKeypairs.deriveAddress(keys[1].publicKey.toString('hex'));
+
+    const signerList = signerLists[0];
+    if (signerList.SignerQuorum !== 2) {
+      throw new Error('invalid minimum signature count');
+    }
+    const foundAddresses = {};
+
+    const signerEntries = signerList.SignerEntries;
+    if (signerEntries.length !== 3) {
+      throw new Error('invalid signer list length');
+    }
+    for (const { SignerEntry } of signerEntries) {
+      const weight = SignerEntry.SignerWeight;
+      const address = SignerEntry.Account;
+      if (weight !== 1) {
+        throw new Error('invalid signer weight');
       }
 
-      // Validate the destination address
-      if (!self.isValidAddress(params.recoveryDestination)) {
-        throw new Error('Invalid destination address!');
+      // if it's a dupe of an address we already know, block
+      if (foundAddresses[address] >= 1) {
+        throw new Error('duplicate signer address');
+      }
+      foundAddresses[address] = (foundAddresses[address] || 0) + 1;
+    }
+
+    if (foundAddresses[userAddress] !== 1) {
+      throw new Error('unexpected incidence frequency of user signer address');
+    }
+    if (foundAddresses[backupAddress] !== 1) {
+      throw new Error('unexpected incidence frequency of user signer address');
+    }
+
+    // make sure the flags disable the master key and enforce destination tags
+    const USER_KEY_SETTING_FLAG = 65536;
+    const MASTER_KEY_DEACTIVATION_FLAG = 1048576;
+    const REQUIRE_DESTINATION_TAG_FLAG = 131072;
+    if ((accountFlags & USER_KEY_SETTING_FLAG) !== 0) {
+      throw new Error('a custom user key has been set');
+    }
+    if ((accountFlags & MASTER_KEY_DEACTIVATION_FLAG) !== MASTER_KEY_DEACTIVATION_FLAG) {
+      throw new Error('the master key has not been deactivated');
+    }
+    if ((accountFlags & REQUIRE_DESTINATION_TAG_FLAG) !== REQUIRE_DESTINATION_TAG_FLAG) {
+      throw new Error('the destination flag requirement has not been activated');
+    }
+
+    // recover the funds
+    const reserve = baseReserve.plus(reserveDelta.times(5));
+    const recoverableBalance = balance.minus(reserve);
+
+    const rawDestination = params.recoveryDestination;
+    const destinationDetails = url.parse(rawDestination);
+    const destinationAddress = destinationDetails.pathname;
+
+    // parse destination tag from query
+    let destinationTag: number | undefined;
+    if (destinationDetails.query) {
+      const queryDetails = querystring.parse(destinationDetails.query);
+      if (Array.isArray(queryDetails.dt)) {
+        // if queryDetails.dt is an array, that means dt was given multiple times, which is not valid
+        throw new InvalidAddressError(
+          `destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`
+        );
       }
 
-      const keys = getBip32Keys(self.bitgo, params, { requireBitGoXpub: false });
-
-      const { addressDetails, feeDetails, serverDetails } = yield Bluebird.props({
-        addressDetails: self.bitgo.post(rippledUrl).send(accountInfoParams),
-        feeDetails: self.bitgo.post(rippledUrl).send({ method: 'fee' }),
-        serverDetails: self.bitgo.post(rippledUrl).send({ method: 'server_info' }),
-      });
-
-      const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
-      const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(
-        self.getBaseFactor()
-      );
-      const reserveDelta = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_inc_xrp).times(
-        self.getBaseFactor()
-      );
-      const currentLedger = serverDetails.body.result.info.validated_ledger.seq;
-      const sequenceId = addressDetails.body.result.account_data.Sequence;
-      const balance = new BigNumber(addressDetails.body.result.account_data.Balance);
-      const signerLists = addressDetails.body.result.account_data.signer_lists;
-      const accountFlags = addressDetails.body.result.account_data.Flags;
-
-      // make sure there is only one signer list set
-      if (signerLists.length !== 1) {
-        throw new Error('unexpected set of signer lists');
+      const parsedTag = parseInt(queryDetails.dt, 10);
+      if (Number.isInteger(parsedTag)) {
+        destinationTag = parsedTag;
       }
+    }
 
-      // make sure the signers are user, backup, bitgo
-      const userAddress = rippleKeypairs.deriveAddress(keys[0].publicKey.toString('hex'));
-      const backupAddress = rippleKeypairs.deriveAddress(keys[1].publicKey.toString('hex'));
+    const transaction = {
+      TransactionType: 'Payment',
+      Account: params.rootAddress, // source address
+      Destination: destinationAddress,
+      DestinationTag: destinationTag,
+      Amount: recoverableBalance.toFixed(0),
+      Flags: 2147483648,
+      LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
+      Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
+      Sequence: sequenceId,
+    };
+    const txJSON: string = JSON.stringify(transaction);
 
-      const signerList = signerLists[0];
-      if (signerList.SignerQuorum !== 2) {
-        throw new Error('invalid minimum signature count');
+    if (isUnsignedSweep) {
+      return txJSON;
+    }
+    const rippleLib = ripple();
+    if (!keys[0].privateKey) {
+      throw new Error(`userKey is not a private key`);
+    }
+    const userKey = keys[0].privateKey.toString('hex');
+    const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
+
+    let signedTransaction;
+
+    if (isKrsRecovery) {
+      signedTransaction = userSignature;
+    } else {
+      if (!keys[1].privateKey) {
+        throw new Error(`backupKey is not a private key`);
       }
-      const foundAddresses = {};
+      const backupKey = keys[1].privateKey.toString('hex');
+      const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+      signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+    }
 
-      const signerEntries = signerList.SignerEntries;
-      if (signerEntries.length !== 3) {
-        throw new Error('invalid signer list length');
-      }
-      for (const { SignerEntry } of signerEntries) {
-        const weight = SignerEntry.SignerWeight;
-        const address = SignerEntry.Account;
-        if (weight !== 1) {
-          throw new Error('invalid signer weight');
-        }
+    const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
+      txHex: signedTransaction.signedTransaction,
+    })) as any;
+    transactionExplanation.txHex = signedTransaction.signedTransaction;
 
-        // if it's a dupe of an address we already know, block
-        if (foundAddresses[address] >= 1) {
-          throw new Error('duplicate signer address');
-        }
-        foundAddresses[address] = (foundAddresses[address] || 0) + 1;
-      }
-
-      if (foundAddresses[userAddress] !== 1) {
-        throw new Error('unexpected incidence frequency of user signer address');
-      }
-      if (foundAddresses[backupAddress] !== 1) {
-        throw new Error('unexpected incidence frequency of user signer address');
-      }
-
-      // make sure the flags disable the master key and enforce destination tags
-      const USER_KEY_SETTING_FLAG = 65536;
-      const MASTER_KEY_DEACTIVATION_FLAG = 1048576;
-      const REQUIRE_DESTINATION_TAG_FLAG = 131072;
-      if ((accountFlags & USER_KEY_SETTING_FLAG) !== 0) {
-        throw new Error('a custom user key has been set');
-      }
-      if ((accountFlags & MASTER_KEY_DEACTIVATION_FLAG) !== MASTER_KEY_DEACTIVATION_FLAG) {
-        throw new Error('the master key has not been deactivated');
-      }
-      if ((accountFlags & REQUIRE_DESTINATION_TAG_FLAG) !== REQUIRE_DESTINATION_TAG_FLAG) {
-        throw new Error('the destination flag requirement has not been activated');
-      }
-
-      // recover the funds
-      const reserve = baseReserve.plus(reserveDelta.times(5));
-      const recoverableBalance = balance.minus(reserve);
-
-      const rawDestination = params.recoveryDestination;
-      const destinationDetails = url.parse(rawDestination);
-      const destinationAddress = destinationDetails.pathname;
-
-      // parse destination tag from query
-      let destinationTag: number | undefined;
-      if (destinationDetails.query) {
-        const queryDetails = querystring.parse(destinationDetails.query);
-        if (Array.isArray(queryDetails.dt)) {
-          // if queryDetails.dt is an array, that means dt was given multiple times, which is not valid
-          throw new InvalidAddressError(
-            `destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`
-          );
-        }
-
-        const parsedTag = parseInt(queryDetails.dt, 10);
-        if (Number.isInteger(parsedTag)) {
-          destinationTag = parsedTag;
-        }
-      }
-
-      const transaction = {
-        TransactionType: 'Payment',
-        Account: params.rootAddress, // source address
-        Destination: destinationAddress,
-        DestinationTag: destinationTag,
-        Amount: recoverableBalance.toFixed(0),
-        Flags: 2147483648,
-        LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
-        Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
-        Sequence: sequenceId,
-      };
-      const txJSON: string = JSON.stringify(transaction);
-
-      if (isUnsignedSweep) {
-        return txJSON;
-      }
-      const rippleLib = ripple();
-      if (!keys[0].privateKey) {
-        throw new Error(`userKey is not a private key`);
-      }
-      const userKey = keys[0].privateKey.toString('hex');
-      const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
-
-      let signedTransaction;
-
-      if (isKrsRecovery) {
-        signedTransaction = userSignature;
-      } else {
-        if (!keys[1].privateKey) {
-          throw new Error(`backupKey is not a private key`);
-        }
-        const backupKey = keys[1].privateKey.toString('hex');
-        const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
-        signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
-      }
-
-      const transactionExplanation: RecoveryInfo = yield self.explainTransaction({
-        txHex: signedTransaction.signedTransaction,
-      });
-      transactionExplanation.txHex = signedTransaction.signedTransaction;
-
-      if (isKrsRecovery) {
-        transactionExplanation.backupKey = params.backupKey;
-        transactionExplanation.coin = self.getChain();
-      }
-      return transactionExplanation;
-    })
-      .call(this)
-      .asCallback(callback);
+    if (isKrsRecovery) {
+      transactionExplanation.backupKey = params.backupKey;
+      transactionExplanation.coin = this.getChain();
+    }
+    return transactionExplanation;
   }
 
   initiateRecovery(params: InitiateRecoveryOptions): never {
@@ -651,10 +617,7 @@ export class Xrp extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 }
