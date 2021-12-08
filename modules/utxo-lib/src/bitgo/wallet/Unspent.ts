@@ -9,10 +9,7 @@ import { UtxoTransaction } from '../UtxoTransaction';
 import { Triple } from '../types';
 import { toOutput, Unspent } from '../Unspent';
 
-export interface WalletUnspent {
-  id: string;
-  address: string;
-  value: number;
+export interface WalletUnspent extends Unspent {
   index: number;
   chain: number;
   redeemScript?: string;
