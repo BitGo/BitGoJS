@@ -103,7 +103,7 @@ export class Dot extends BaseCoin {
     }
     return {
       pub: keys.pub,
-      prv: keys.prv + keys.pub,
+      prv: keys.prv,
     };
   }
 
