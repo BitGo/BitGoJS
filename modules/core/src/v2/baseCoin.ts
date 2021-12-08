@@ -404,7 +404,7 @@ export abstract class BaseCoin {
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    */
-  presignTransaction(params: PresignTransactionOptions): Promise<TransactionPrebuild> {
+  presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
     return Promise.resolve(params);
   }
 
