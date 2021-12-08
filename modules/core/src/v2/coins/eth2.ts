@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import * as ethUtil from 'ethereumjs-util';
 import * as request from 'superagent';
@@ -19,10 +18,7 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import * as common from '../../common';
-
-const co = Bluebird.coroutine;
 
 interface Recipient {
   address: string;
@@ -189,21 +185,15 @@ export class Eth2 extends BaseCoin {
   /**
    * Query Beaconscan for the balance of an address
    * @param address {String} the ETH address
-   * @param callback
    * @returns {BigNumber} address balance
    */
-  queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'balance',
-        address: address,
-      })) as any;
-      return new BigNumber(result.result, 10);
-    })
-      .call(this)
-      .asCallback(callback);
+  async queryAddressBalance(address: string): Promise<BigNumber> {
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'balance',
+      address: address,
+    });
+    return new BigNumber(result.result, 10);
   }
 
   /**
@@ -211,10 +201,9 @@ export class Eth2 extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @param callback
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): Bluebird<SignedTransaction> {
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     throw new Error('Method not yet implemented');
   }
 
@@ -242,30 +231,24 @@ export class Eth2 extends BaseCoin {
   /**
    * Queries public block explorer to get the next ETH nonce that should be used for the given ETH address
    * @param address
-   * @param callback
-   * @returns {*}
+   * @returns Promise<number>
    */
-  getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      // Get nonce for backup key (should be 0)
-      let nonce = 0;
+  async getAddressNonce(address: string): Promise<number> {
+    // Get nonce for backup key (should be 0)
+    let nonce = 0;
 
-      const result = (yield self.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'txlist',
-        address,
-      })) as any;
-      const backupKeyTxList = result.result;
-      if (backupKeyTxList.length > 0) {
-        // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
-        nonce = outgoingTxs.length;
-      }
-      return nonce;
-    })
-      .call(this)
-      .asCallback(callback);
+    const result = await this.recoveryBlockchainExplorerQuery({
+      module: 'account',
+      action: 'txlist',
+      address,
+    });
+    const backupKeyTxList = result.result;
+    if (backupKeyTxList.length > 0) {
+      // Calculate last nonce used
+      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
+      nonce = outgoingTxs.length;
+    }
+    return nonce;
   }
 
   /**
@@ -276,35 +259,23 @@ export class Eth2 extends BaseCoin {
    * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
    * @param params.walletContractAddress {String} the ETH address of the wallet contract
    * @param params.recoveryDestination {String} target address to send recovered funds to
-   * @param callback
    */
-  recover(
-    params: RecoverOptions,
-    callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>
-  ): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
+  recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     throw new Error('recover not implemented');
   }
 
   /**
    * Make a query to Etherscan for information such as balance, token balance, solidity calls
    * @param query {Object} key-value pairs of parameters to append after /api
-   * @param callback
    * @returns {Object} response from Etherscan
    */
-  recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const response = (yield request
-        .get(common.Environments[self.bitgo.getEnv()].eth2ExplorerBaseUrl)
-        .query(query)) as any;
+  async recoveryBlockchainExplorerQuery(query: any): Promise<any> {
+    const response = await request.get(common.Environments[this.bitgo.getEnv()].eth2ExplorerBaseUrl).query(query);
 
-      if (!response.ok) {
-        throw new Error('could not reach BeaconScan');
-      }
-      return response.body;
-    })
-      .call(this)
-      .asCallback(callback);
+    if (!response.ok) {
+      throw new Error('could not reach BeaconScan');
+    }
+    return response.body;
   }
 
   /**
@@ -328,19 +299,16 @@ export class Eth2 extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
   /**
@@ -348,24 +316,19 @@ export class Eth2 extends BaseCoin {
    *
    * @param key
    * @param message
-   * @param callback
    */
-  signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      const keyPair = new Eth2AccountLib.KeyPair();
-      keyPair.recordKeysFromPrivateKey(key.prv);
+  async signMessage(key: { prv: string }, message: string): Promise<Buffer> {
+    const keyPair = new Eth2AccountLib.KeyPair();
+    keyPair.recordKeysFromPrivateKey(key.prv);
 
-      let messageToSign: Buffer = Buffer.from(message);
-      if (Eth2AccountLib.KeyPair.isValidPub(message)) {
-        // if we are doing a key signature, we should decode the message as a hex string
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
-        messageToSign = Buffer.from(ethUtil.stripHexPrefix(message), 'hex');
-      }
+    let messageToSign: Buffer = Buffer.from(message);
+    if (Eth2AccountLib.KeyPair.isValidPub(message)) {
+      // if we are doing a key signature, we should decode the message as a hex string
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore BG-34579: known compatibility issue with @types/ethereumjs-util
+      messageToSign = Buffer.from(ethUtil.stripHexPrefix(message), 'hex');
+    }
 
-      return keyPair.sign(messageToSign);
-    })
-      .call(this)
-      .asCallback(callback);
+    return keyPair.sign(messageToSign);
   }
 }
