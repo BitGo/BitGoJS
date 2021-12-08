@@ -1,18 +1,18 @@
 import should from 'should';
 import sinon, { assert } from 'sinon';
-import { WalletInitializationBuilder } from '../../../../../src/coin/dot';
+import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 
 describe('Dot Add Proxy Builder', () => {
-  let builder: WalletInitializationBuilder;
+  let builder: AddressInitializationBuilder;
 
   const sender = DotResources.accounts.account1;
   const receiver = DotResources.accounts.account3;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new WalletInitializationBuilder(config);
+    builder = new AddressInitializationBuilder(config);
   });
   describe('setter validation', () => {
     it('should validate delay', () => {
