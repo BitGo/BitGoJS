@@ -5,7 +5,6 @@ import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
-import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
@@ -34,12 +33,10 @@ import {
   TransactionParams as BaseTransactionParams,
   ExtraPrebuildParamsOptions,
 } from '../baseCoin';
-import { NodeCallback } from '../types';
+import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '../../api';
 import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
-
-const co = Bluebird.coroutine;
 
 /**
  * XLM accounts support virtual (muxed) addresses
@@ -339,41 +336,35 @@ export class Xlm extends BaseCoin {
    * Minimum balance of a 2-of-3 multisig wallet
    * @returns minimum balance in stroops
    */
-  getMinimumReserve(): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      const server = new stellar.Server(self.getHorizonUrl());
+  async getMinimumReserve(): Promise<number> {
+    const server = new stellar.Server(this.getHorizonUrl());
 
-      const horizonLedgerInfo = (yield server.ledgers().order('desc').limit(1).call()) as any;
+    const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
-      if (!horizonLedgerInfo) {
-        throw new Error('unable to connect to Horizon for reserve requirement data');
-      }
+    if (!horizonLedgerInfo) {
+      throw new Error('unable to connect to Horizon for reserve requirement data');
+    }
 
-      const baseReserve: number = horizonLedgerInfo.records[0].base_reserve_in_stroops;
+    const baseReserve = horizonLedgerInfo.records[0].base_reserve_in_stroops;
 
-      // 2-of-3 wallets have a minimum reserve of 5x the base reserve
-      return 5 * baseReserve;
-    }).call(this);
+    // 2-of-3 wallets have a minimum reserve of 5x the base reserve
+    return 5 * baseReserve;
   }
 
   /**
    * Transaction fee for each operation
    * @returns transaction fee in stroops
    */
-  getBaseTransactionFee(): Bluebird<number> {
-    const self = this;
-    return co<number>(function* () {
-      const server = new stellar.Server(self.getHorizonUrl());
+  async getBaseTransactionFee(): Promise<number> {
+    const server = new stellar.Server(this.getHorizonUrl());
 
-      const horizonLedgerInfo = (yield server.ledgers().order('desc').limit(1).call()) as any;
+    const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
-      if (!horizonLedgerInfo) {
-        throw new Error('unable to connect to Horizon for reserve requirement data');
-      }
+    if (!horizonLedgerInfo) {
+      throw new Error('unable to connect to Horizon for reserve requirement data');
+    }
 
-      return horizonLedgerInfo.records[0].base_fee_in_stroops;
-    }).call(this);
+    return horizonLedgerInfo.records[0].base_fee_in_stroops;
   }
 
   /**
@@ -486,7 +477,7 @@ export class Xlm extends BaseCoin {
    * If the asset is XLM, return the chain
    * @param {stellar.Asset} asset - instance of Stellar Asset
    */
-  getTokenNameFromStellarAsset(asset: stellar.Asset) {
+  getTokenNameFromStellarAsset(asset: stellar.Asset): string {
     const code = asset.getCode();
     const issuer = asset.getIssuer();
     if (asset.isNative()) {
@@ -527,33 +518,30 @@ export class Xlm extends BaseCoin {
    * @param {String} [address] - address to look up
    * @param {String} [accountId] - account id to look up
    */
-  private federationLookup({
+  private async federationLookup({
     address,
     accountId,
   }: {
     address?: string;
     accountId?: string;
-  }): Bluebird<stellar.FederationServer.Record> {
-    const self = this;
-    return co<stellar.FederationServer.Record>(function* () {
-      try {
-        const federationServer = self.getBitGoFederationServer();
-        if (address) {
-          return yield federationServer.resolveAddress(address);
-        } else if (accountId) {
-          return yield federationServer.resolveAccountId(accountId);
-        } else {
-          throw new Error('invalid argument - must provide Stellar address or account id');
-        }
-      } catch (e) {
-        const error = _.get(e, 'response.data.detail');
-        if (error) {
-          throw new StellarFederationUserNotFoundError(error);
-        } else {
-          throw e;
-        }
+  }): Promise<stellar.FederationServer.Record> {
+    try {
+      const federationServer = this.getBitGoFederationServer();
+      if (address) {
+        return await federationServer.resolveAddress(address);
+      } else if (accountId) {
+        return await federationServer.resolveAccountId(accountId);
+      } else {
+        throw new Error('invalid argument - must provide Stellar address or account id');
       }
-    }).call(this);
+    } catch (e) {
+      const error = _.get(e, 'response.data.detail');
+      if (error) {
+        throw new StellarFederationUserNotFoundError(error);
+      } else {
+        throw e;
+      }
+    }
   }
 
   /**
@@ -561,15 +549,12 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} address - stellar address to look for
    */
-  federationLookupByName(address: string): Bluebird<stellar.FederationServer.Record> {
-    const self = this;
-    return co<stellar.FederationServer.Record>(function* () {
-      if (!address) {
-        throw new Error('invalid Stellar address');
-      }
+  async federationLookupByName(address: string): Promise<stellar.FederationServer.Record> {
+    if (!address) {
+      throw new Error('invalid Stellar address');
+    }
 
-      return self.federationLookup({ address });
-    }).call(this);
+    return this.federationLookup({ address });
   }
 
   /**
@@ -578,14 +563,11 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} accountId - stellar account id
    */
-  federationLookupByAccountId(accountId: string): Bluebird<stellar.FederationServer.Record> {
-    const self = this;
-    return co<stellar.FederationServer.Record>(function* () {
-      if (!accountId) {
-        throw new Error('invalid Stellar account');
-      }
-      return self.federationLookup({ accountId });
-    }).call(this);
+  async federationLookupByAccountId(accountId: string): Promise<stellar.FederationServer.Record> {
+    if (!accountId) {
+      throw new Error('invalid Stellar account');
+    }
+    return this.federationLookup({ accountId });
   }
 
   /**
@@ -614,15 +596,12 @@ export class Xlm extends BaseCoin {
    * Get extra parameters for prebuilding a tx
    * Set empty recipients array in trustline txs
    */
-  getExtraPrebuildParams(
-    buildParams: ExtraPrebuildParamsOptions,
-    callback?: NodeCallback<BuildOptions>
-  ): Bluebird<BuildOptions> {
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<BuildOptions> {
     const params: { recipients?: Record<string, string>[] } = {};
     if (buildParams.type === 'trustline') {
       params.recipients = [];
     }
-    return Bluebird.resolve(params).asCallback(callback);
+    return params;
   }
 
   /**
@@ -641,109 +620,103 @@ export class Xlm extends BaseCoin {
    * - rootAddress: base address of the wallet to recover funds from
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
-   * @param callback
    */
-  recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
-    const self = this;
-    return co<RecoveryTransaction>(function* () {
-      // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-      const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
-      const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
+  async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
+    // Stellar's Ed25519 public keys start with a G, while private keys start with an S
+    const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
+    const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
-      if (isKrsRecovery) {
-        checkKrsProvider(self, params.krsProvider);
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider);
+    }
+
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new InvalidAddressError('Invalid destination address!');
+    }
+
+    const [userKey, backupKey] = getStellarKeys(this.bitgo, params);
+
+    if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
+      throw new Error(`Invalid wallet address: ${params.rootAddress}`);
+    }
+
+    const accountDataUrl = `${this.getHorizonUrl()}/accounts/${params.rootAddress}`;
+    const destinationUrl = `${this.getHorizonUrl()}/accounts/${params.recoveryDestination}`;
+
+    let accountData;
+    try {
+      accountData = await toBitgoRequest(request.get(accountDataUrl)).result();
+    } catch (e) {
+      throw new Error('Unable to reach the Stellar network via Horizon.');
+    }
+
+    // Now check if the destination account is empty or not
+    let unfundedDestination = false;
+    try {
+      await request.get(destinationUrl);
+    } catch (e) {
+      if (e.status === 404) {
+        // If the destination account does not yet exist, horizon responds with 404
+        unfundedDestination = true;
       }
+    }
 
-      if (!self.isValidAddress(params.recoveryDestination)) {
-        throw new InvalidAddressError('Invalid destination address!');
-      }
+    if (!accountData.sequence || !accountData.balances) {
+      throw new Error('Horizon server error - unable to retrieve sequence ID or account balance');
+    }
 
-      const [userKey, backupKey] = getStellarKeys(self.bitgo, params);
+    const account = new stellar.Account(params.rootAddress, accountData.sequence);
 
-      if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
-        throw new Error(`Invalid wallet address: ${params.rootAddress}`);
-      }
+    // Stellar supports multiple assets on chain, we're only interested in the balances entry whose type is "native" (XLM)
+    const nativeBalanceInfo = accountData.balances.find((assetBalance) => assetBalance['asset_type'] === 'native');
 
-      const accountDataUrl = `${self.getHorizonUrl()}/accounts/${params.rootAddress}`;
-      const destinationUrl = `${self.getHorizonUrl()}/accounts/${params.recoveryDestination}`;
+    if (!nativeBalanceInfo) {
+      throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
+    }
 
-      let accountData;
-      try {
-        accountData = yield toBitgoRequest(request.get(accountDataUrl)).result();
-      } catch (e) {
-        throw new Error('Unable to reach the Stellar network via Horizon.');
-      }
+    const walletBalance = Number(this.bigUnitsToBaseUnits(nativeBalanceInfo.balance));
+    const minimumReserve = await this.getMinimumReserve();
+    const baseTxFee = await this.getBaseTransactionFee();
+    const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
+    const formattedRecoveryAmount = this.baseUnitsToBigUnits(recoveryAmount).toString();
 
-      // Now check if the destination account is empty or not
-      let unfundedDestination = false;
-      try {
-        yield request.get(destinationUrl);
-      } catch (e) {
-        if (e.status === 404) {
-          // If the destination account does not yet exist, horizon responds with 404
-          unfundedDestination = true;
-        }
-      }
+    const txBuilder = new stellar.TransactionBuilder(account, {
+      fee: baseTxFee.toFixed(0),
+      networkPassphrase: this.getStellarNetwork(),
+    });
+    const operation = unfundedDestination
+      ? // In this case, we need to create the account
+        stellar.Operation.createAccount({
+          destination: params.recoveryDestination,
+          startingBalance: formattedRecoveryAmount,
+        })
+      : // Otherwise if the account already exists, we do a normal send
+        stellar.Operation.payment({
+          destination: params.recoveryDestination,
+          asset: stellar.Asset.native(),
+          amount: formattedRecoveryAmount,
+        });
+    const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
 
-      if (!accountData.sequence || !accountData.balances) {
-        throw new Error('Horizon server error - unable to retrieve sequence ID or account balance');
-      }
+    if (!isUnsignedSweep) {
+      tx.sign(userKey);
+    }
 
-      const account = new stellar.Account(params.rootAddress, accountData.sequence);
+    if (!isKrsRecovery && !isUnsignedSweep) {
+      tx.sign(backupKey);
+    }
 
-      // Stellar supports multiple assets on chain, we're only interested in the balances entry whose type is "native" (XLM)
-      const nativeBalanceInfo = accountData.balances.find((assetBalance) => assetBalance['asset_type'] === 'native');
+    const transaction: RecoveryTransaction = {
+      tx: Xlm.txToString(tx),
+      recoveryAmount,
+    };
 
-      if (!nativeBalanceInfo) {
-        throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
-      }
+    if (isKrsRecovery) {
+      transaction.backupKey = params.backupKey;
+      transaction.coin = this.getChain();
+    }
 
-      const walletBalance = Number(self.bigUnitsToBaseUnits(nativeBalanceInfo.balance));
-      const minimumReserve: number = (yield self.getMinimumReserve()) as any;
-      const baseTxFee: number = (yield self.getBaseTransactionFee()) as any;
-      const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
-      const formattedRecoveryAmount = self.baseUnitsToBigUnits(recoveryAmount).toString();
-
-      const txBuilder = new stellar.TransactionBuilder(account, {
-        fee: baseTxFee.toFixed(0),
-        networkPassphrase: self.getStellarNetwork(),
-      });
-      const operation = unfundedDestination
-        ? // In this case, we need to create the account
-          stellar.Operation.createAccount({
-            destination: params.recoveryDestination,
-            startingBalance: formattedRecoveryAmount,
-          })
-        : // Otherwise if the account already exists, we do a normal send
-          stellar.Operation.payment({
-            destination: params.recoveryDestination,
-            asset: stellar.Asset.native(),
-            amount: formattedRecoveryAmount,
-          });
-      const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
-
-      if (!isUnsignedSweep) {
-        tx.sign(userKey);
-      }
-
-      if (!isKrsRecovery && !isUnsignedSweep) {
-        tx.sign(backupKey);
-      }
-
-      const transaction: RecoveryTransaction = {
-        tx: Xlm.txToString(tx),
-        recoveryAmount,
-      };
-
-      if (isKrsRecovery) {
-        transaction.backupKey = params.backupKey;
-        transaction.coin = self.getChain();
-      }
-
-      return transaction;
-    })
-      .call(this)
-      .asCallback(callback);
+    return transaction;
   }
 
   /**
@@ -752,43 +725,34 @@ export class Xlm extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param callback
-   * @returns {Bluebird<HalfSignedTransaction>}
+   * @returns {Promise<HalfSignedTransaction>}
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<HalfSignedTransaction>
-  ): Bluebird<HalfSignedTransaction> {
-    const self = this;
-    return co<HalfSignedTransaction>(function* () {
-      const { txPrebuild, prv } = params;
+  async signTransaction(params: SignTransactionOptions): Promise<HalfSignedTransaction> {
+    const { txPrebuild, prv } = params;
 
-      if (_.isUndefined(txPrebuild)) {
-        throw new Error('missing txPrebuild parameter');
-      }
-      if (!_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-      }
+    if (_.isUndefined(txPrebuild)) {
+      throw new Error('missing txPrebuild parameter');
+    }
+    if (!_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
 
-      if (_.isUndefined(prv)) {
-        throw new Error('missing prv parameter to sign transaction');
-      }
-      if (!_.isString(prv)) {
-        throw new Error(`prv must be a string, got type ${typeof prv}`);
-      }
+    if (_.isUndefined(prv)) {
+      throw new Error('missing prv parameter to sign transaction');
+    }
+    if (!_.isString(prv)) {
+      throw new Error(`prv must be a string, got type ${typeof prv}`);
+    }
 
-      const keyPair = stellar.Keypair.fromSecret(prv);
-      const tx = new stellar.Transaction(txPrebuild.txBase64, self.getStellarNetwork());
-      tx.sign(keyPair);
+    const keyPair = stellar.Keypair.fromSecret(prv);
+    const tx = new stellar.Transaction(txPrebuild.txBase64, this.getStellarNetwork());
+    tx.sign(keyPair);
 
-      return {
-        halfSigned: {
-          txBase64: Xlm.txToString(tx),
-        },
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      halfSigned: {
+        txBase64: Xlm.txToString(tx),
+      },
+    };
   }
 
   /**
@@ -798,22 +762,21 @@ export class Xlm extends BaseCoin {
    * Initially, we need a root prv to generate the account, which must be distinct from all three keychains on the wallet.
    * If a root prv is not provided, a random one is generated.
    */
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
-    const self = this;
-    return co<SupplementGenerateWalletOptions>(function* () {
-      let seed;
-      const rootPrv = walletParams.rootPrivateKey;
-      if (rootPrv) {
-        if (!self.isValidPrv(rootPrv)) {
-          throw new Error('rootPrivateKey needs to be valid ed25519 secret seed');
-        }
-        seed = stellar.StrKey.decodeEd25519SecretSeed(rootPrv);
+  async supplementGenerateWallet(
+    walletParams: SupplementGenerateWalletOptions
+  ): Promise<SupplementGenerateWalletOptions> {
+    let seed;
+    const rootPrv = walletParams.rootPrivateKey;
+    if (rootPrv) {
+      if (!this.isValidPrv(rootPrv)) {
+        throw new Error('rootPrivateKey needs to be valid ed25519 secret seed');
       }
-      const keyPair = self.generateKeyPair(seed);
-      // extend the wallet initialization params
-      walletParams.rootPrivateKey = keyPair.prv;
-      return walletParams;
-    }).call(this);
+      seed = stellar.StrKey.decodeEd25519SecretSeed(rootPrv);
+    }
+    const keyPair = this.generateKeyPair(seed);
+    // extend the wallet initialization params
+    walletParams.rootPrivateKey = keyPair.prv;
+    return walletParams;
   }
 
   /**
@@ -821,22 +784,16 @@ export class Xlm extends BaseCoin {
    *
    * @param key
    * @param message
-   * @param callback
    */
-  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    const self = this;
-    return co<Buffer>(function* cosignMessage() {
-      if (!self.isValidPrv(key.prv)) {
-        throw new Error(`invalid prv: ${key.prv}`);
-      }
-      if (!Buffer.isBuffer(message)) {
-        message = Buffer.from(message);
-      }
-      const keypair = stellar.Keypair.fromSecret(key.prv);
-      return keypair.sign(message);
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    if (!this.isValidPrv(key.prv)) {
+      throw new Error(`invalid prv: ${key.prv}`);
+    }
+    if (!Buffer.isBuffer(message)) {
+      message = Buffer.from(message);
+    }
+    const keypair = stellar.Keypair.fromSecret(key.prv);
+    return keypair.sign(message);
   }
 
   /**
@@ -861,123 +818,114 @@ export class Xlm extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const { txBase64 } = params;
-      let tx: stellar.Transaction;
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const { txBase64 } = params;
+    let tx: stellar.Transaction;
 
-      try {
-        tx = new stellar.Transaction(txBase64, self.getStellarNetwork());
-      } catch (e) {
-        throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
-      }
-      const id = tx.hash().toString('hex');
+    try {
+      tx = new stellar.Transaction(txBase64, this.getStellarNetwork());
+    } catch (e) {
+      throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+    }
+    const id = tx.hash().toString('hex');
 
-      // In a Stellar tx, the _memo property is an object with the methods:
-      // value() and arm() that provide memo value and type, respectively.
-      const memo: TransactionMemo =
-        _.result(tx, '_memo.value') && _.result(tx, '_memo.arm')
-          ? {
-              value: (_.result(tx, '_memo.value') as any).toString(),
-              type: _.result(tx, '_memo.arm'),
-            }
-          : {};
-
-      let spendAmount = new BigNumber(0); // amount of XLM used in XLM-only txs
-      const spendAmounts = {}; // track both xlm and token amounts
-      if (_.isEmpty(tx.operations)) {
-        throw new Error('missing operations');
-      }
-
-      const outputs: TransactionOutput[] = [];
-      const operations: TransactionOperation[] = []; // non-payment operations
-
-      _.forEach(tx.operations, (op: stellar.Operation) => {
-        if (op.type === 'createAccount' || op.type === 'payment') {
-          // TODO Remove memoId from address
-          // Get memo to attach to address, if type is 'id'
-          const memoId = _.get(memo, 'type') === 'id' && !_.get(memo, 'value') ? `?memoId=${memo.value}` : '';
-          let asset;
-          if (op.type === 'payment') {
-            if (op.asset.getAssetType() === 'liquidity_pool_shares') {
-              throw new Error('Invalid asset type');
-            }
-            asset = op.asset as stellar.Asset;
-          } else {
-            asset = stellar.Asset.native();
+    // In a Stellar tx, the _memo property is an object with the methods:
+    // value() and arm() that provide memo value and type, respectively.
+    const memo: TransactionMemo =
+      _.result(tx, '_memo.value') && _.result(tx, '_memo.arm')
+        ? {
+            value: (_.result(tx, '_memo.value') as any).toString(),
+            type: _.result(tx, '_memo.arm'),
           }
-          const coin = self.getTokenNameFromStellarAsset(asset); // coin or token id
-          const output: TransactionOutput = {
-            amount: self.bigUnitsToBaseUnits(
-              (op as stellar.Operation.CreateAccount).startingBalance || (op as stellar.Operation.Payment).amount
-            ),
-            address: op.destination + memoId,
-            coin,
-          };
+        : {};
 
-          if (!_.isUndefined(spendAmounts[coin])) {
-            spendAmounts[coin] = spendAmounts[coin].plus(output.amount);
-          } else {
-            spendAmounts[coin] = new BigNumber(output.amount);
-          }
-          if (asset.isNative()) {
-            spendAmount = spendAmount.plus(output.amount);
-          }
-          outputs.push(output);
-        } else if (op.type === 'changeTrust') {
-          if (op.line.getAssetType() === 'liquidity_pool_shares') {
+    let spendAmount = new BigNumber(0); // amount of XLM used in XLM-only txs
+    const spendAmounts = {}; // track both xlm and token amounts
+    if (_.isEmpty(tx.operations)) {
+      throw new Error('missing operations');
+    }
+
+    const outputs: TransactionOutput[] = [];
+    const operations: TransactionOperation[] = []; // non-payment operations
+
+    _.forEach(tx.operations, (op: stellar.Operation) => {
+      if (op.type === 'createAccount' || op.type === 'payment') {
+        // TODO Remove memoId from address
+        // Get memo to attach to address, if type is 'id'
+        const memoId = _.get(memo, 'type') === 'id' && !_.get(memo, 'value') ? `?memoId=${memo.value}` : '';
+        let asset;
+        if (op.type === 'payment') {
+          if (op.asset.getAssetType() === 'liquidity_pool_shares') {
             throw new Error('Invalid asset type');
           }
-          const asset = op.line as stellar.Asset;
-
-          operations.push({
-            type: op.type,
-            coin: self.getTokenNameFromStellarAsset(asset),
-            asset,
-            limit: self.bigUnitsToBaseUnits(op.limit),
-          });
+          asset = op.asset as stellar.Asset;
+        } else {
+          asset = stellar.Asset.native();
         }
-      });
+        const coin = this.getTokenNameFromStellarAsset(asset); // coin or token id
+        const output: TransactionOutput = {
+          amount: this.bigUnitsToBaseUnits(
+            (op as stellar.Operation.CreateAccount).startingBalance || (op as stellar.Operation.Payment).amount
+          ),
+          address: op.destination + memoId,
+          coin,
+        };
 
-      const outputAmount = spendAmount.toFixed(0);
-      const outputAmounts = _.mapValues(spendAmounts, (amount: BigNumber) => amount.toFixed(0));
-      const fee = {
-        fee: new BigNumber(tx.fee).toFixed(0),
-        feeRate: null,
-        size: null,
-      };
+        if (!_.isUndefined(spendAmounts[coin])) {
+          spendAmounts[coin] = spendAmounts[coin].plus(output.amount);
+        } else {
+          spendAmounts[coin] = new BigNumber(output.amount);
+        }
+        if (asset.isNative()) {
+          spendAmount = spendAmount.plus(output.amount);
+        }
+        outputs.push(output);
+      } else if (op.type === 'changeTrust') {
+        if (op.line.getAssetType() === 'liquidity_pool_shares') {
+          throw new Error('Invalid asset type');
+        }
+        const asset = op.line as stellar.Asset;
 
-      return {
-        displayOrder: [
-          'id',
-          'outputAmount',
-          'outputAmounts',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'memo',
-          'operations',
-        ],
-        id,
-        outputs,
-        outputAmount,
-        outputAmounts,
-        changeOutputs: [],
-        changeAmount: '0',
-        memo,
-        fee,
-        operations,
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+        operations.push({
+          type: op.type,
+          coin: this.getTokenNameFromStellarAsset(asset),
+          asset,
+          limit: this.bigUnitsToBaseUnits(op.limit),
+        });
+      }
+    });
+
+    const outputAmount = spendAmount.toFixed(0);
+    const outputAmounts = _.mapValues(spendAmounts, (amount: BigNumber) => amount.toFixed(0));
+    const fee = {
+      fee: new BigNumber(tx.fee).toFixed(0),
+      feeRate: null,
+      size: null,
+    };
+
+    return {
+      displayOrder: [
+        'id',
+        'outputAmount',
+        'outputAmounts',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'memo',
+        'operations',
+      ],
+      id,
+      outputs,
+      outputAmount,
+      outputAmounts,
+      changeOutputs: [],
+      changeAmount: '0',
+      memo,
+      fee,
+      operations,
+    } as any;
   }
 
   /**
@@ -1030,89 +978,83 @@ export class Xlm extends BaseCoin {
    * @param options.verification specifying some verification parameters
    * @param options.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
    * @param options.verification.keychains Pass keychains manually rather than fetching them by id
-   * @param callback
    */
-  verifyTransaction(options: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+  async verifyTransaction(options: VerifyTransactionOptions): Promise<boolean> {
     // TODO BG-5600 Add parseTransaction / improve verification
-    const self = this;
-    return co<boolean>(function* () {
-      const { txParams, txPrebuild, wallet, verification = {} } = options;
-      const disableNetworking = !!verification.disableNetworking;
+    const { txParams, txPrebuild, wallet, verification = {} } = options;
+    const disableNetworking = !!verification.disableNetworking;
 
-      if (!txPrebuild.txBase64) {
-        throw new Error('missing required tx prebuild property txBase64');
+    if (!txPrebuild.txBase64) {
+      throw new Error('missing required tx prebuild property txBase64');
+    }
+
+    const tx = new stellar.Transaction(txPrebuild.txBase64, this.getStellarNetwork());
+
+    if (txParams.recipients && txParams.recipients.length > 1) {
+      throw new Error('cannot specify more than 1 recipient');
+    }
+
+    // Stellar txs are made up of operations. We only care about Create Account and Payment for sending funds.
+    const outputOperations = _.filter(
+      tx.operations,
+      (operation) => operation.type === 'createAccount' || operation.type === 'payment'
+    );
+
+    if (txParams.type === 'trustline') {
+      this.verifyTrustlineTxOperations(tx.operations, txParams);
+    } else {
+      if (_.isEmpty(outputOperations)) {
+        throw new Error('transaction prebuild does not have any operations');
       }
 
-      const tx = new stellar.Transaction(txPrebuild.txBase64, self.getStellarNetwork());
-
-      if (txParams.recipients && txParams.recipients.length > 1) {
-        throw new Error('cannot specify more than 1 recipient');
-      }
-
-      // Stellar txs are made up of operations. We only care about Create Account and Payment for sending funds.
-      const outputOperations = _.filter(
-        tx.operations,
-        (operation) => operation.type === 'createAccount' || operation.type === 'payment'
-      );
-
-      if (txParams.type === 'trustline') {
-        self.verifyTrustlineTxOperations(tx.operations, txParams);
-      } else {
-        if (_.isEmpty(outputOperations)) {
-          throw new Error('transaction prebuild does not have any operations');
+      _.forEach(txParams.recipients, (expectedOutput, index) => {
+        const expectedOutputAddressDetails = this.getAddressDetails(expectedOutput.address);
+        // for muxed accounts, the destination will be the baseAddress
+        const expectedOutputAddress = expectedOutputAddressDetails.baseAddress;
+        const output = outputOperations[index] as stellar.Operation.Payment | stellar.Operation.CreateAccount;
+        if (output.destination !== expectedOutputAddress) {
+          throw new Error('transaction prebuild does not match expected recipient');
         }
 
-        _.forEach(txParams.recipients, (expectedOutput, index) => {
-          const expectedOutputAddressDetails = self.getAddressDetails(expectedOutput.address);
-          // for muxed accounts, the destination will be the baseAddress
-          const expectedOutputAddress = expectedOutputAddressDetails.baseAddress;
-          const output = outputOperations[index] as stellar.Operation.Payment | stellar.Operation.CreateAccount;
-          if (output.destination !== expectedOutputAddress) {
-            throw new Error('transaction prebuild does not match expected recipient');
-          }
+        const expectedOutputAmount = new BigNumber(expectedOutput.amount);
+        // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
+        const outputAmountString = output.type === 'createAccount' ? output.startingBalance : output.amount;
+        const outputAmount = new BigNumber(this.bigUnitsToBaseUnits(outputAmountString));
 
-          const expectedOutputAmount = new BigNumber(expectedOutput.amount);
-          // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
-          const outputAmountString = output.type === 'createAccount' ? output.startingBalance : output.amount;
-          const outputAmount = new BigNumber(self.bigUnitsToBaseUnits(outputAmountString));
+        if (!outputAmount.eq(expectedOutputAmount)) {
+          throw new Error('transaction prebuild does not match expected amount');
+        }
+      });
+    }
 
-          if (!outputAmount.eq(expectedOutputAmount)) {
-            throw new Error('transaction prebuild does not match expected amount');
-          }
+    // Verify the user signature, if the tx is half-signed
+    if (!_.isEmpty(tx.signatures)) {
+      const userSignature = tx.signatures[0].signature();
+
+      // obtain the keychains and key signatures
+      let keychains = verification.keychains;
+      if (!keychains && disableNetworking) {
+        throw new Error('cannot fetch keychains without networking');
+      } else if (!keychains) {
+        keychains = await promiseProps({
+          user: this.keychains().get({ id: wallet.keyIds()[KeyIndices.USER] }),
+          backup: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP] }),
         });
       }
 
-      // Verify the user signature, if the tx is half-signed
-      if (!_.isEmpty(tx.signatures)) {
-        const userSignature = tx.signatures[0].signature();
-
-        // obtain the keychains and key signatures
-        let keychains = verification.keychains;
-        if (!keychains && disableNetworking) {
-          throw new Error('cannot fetch keychains without networking');
-        } else if (!keychains) {
-          keychains = yield Bluebird.props({
-            user: self.keychains().get({ id: wallet.keyIds()[KeyIndices.USER] }),
-            backup: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP] }),
-          });
-        }
-
-        if (!keychains || !keychains.backup || !keychains.user) {
-          throw new Error('keychains are required, but could not be fetched');
-        }
-
-        if (self.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
-          throw new Error('transaction signed with wrong key');
-        }
-        if (!self.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
-          throw new Error('transaction signature invalid');
-        }
+      if (!keychains || !keychains.backup || !keychains.user) {
+        throw new Error('keychains are required, but could not be fetched');
       }
 
-      return true;
-    })
-      .call(this)
-      .asCallback(callback);
+      if (this.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
+        throw new Error('transaction signed with wrong key');
+      }
+      if (!this.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
+        throw new Error('transaction signature invalid');
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -1148,10 +1090,7 @@ export class Xlm extends BaseCoin {
   protected static txToString = (tx: stellar.Transaction): string =>
     (tx.toEnvelope().toXDR as (_: string) => string)('base64');
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 }
