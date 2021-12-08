@@ -4,7 +4,7 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
-import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
+import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
@@ -14,6 +14,7 @@ import { BaseUtils } from '../baseCoin';
 import { NotImplementedError } from '../baseCoin/errors';
 import { Seed } from '../baseCoin/iface';
 import { ProxyCallArgs, TransferArgs } from './iface';
+import nacl from 'tweetnacl';
 const polkaUtils = require('@polkadot/util');
 const { createTypeUnsafe } = require('@polkadot/types');
 
@@ -36,7 +37,12 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPrivateKey(key: string): boolean {
-    return isValidEd25519SecretKey(key);
+    try {
+      const decodedPrv = hexToU8a(key);
+      return decodedPrv.length === nacl.sign.secretKeyLength / 2;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** @inheritdoc */
