@@ -2,16 +2,10 @@
  * @prettier
  */
 
-/**
- */
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
 
-import { NodeCallback } from '../types';
 import { Lock } from './lock';
 import { Payload } from './payload';
-
-const co = Bluebird.coroutine;
 
 export enum AffirmationStatus {
   PENDING = 'pending',
@@ -35,7 +29,7 @@ export class Affirmation {
   public createdAt?: Date;
   public expireAt?: Date;
 
-  constructor(affirmationData, bitgo: BitGo, enterpriseId: string) {
+  constructor(affirmationData: any, bitgo: BitGo, enterpriseId: string) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
 
@@ -46,48 +40,40 @@ export class Affirmation {
    * Affirms a pending affirmation, authorizing the settlement
    * @param payload payload authorizing the movement of funds from a trading account
    * @param signature signature of the payload with the user key of the trading account
-   * @param callback
    */
-  affirm(payload: Payload, signature: string, callback?: NodeCallback<void>): Bluebird<void> {
+  async affirm(payload: Payload, signature: string): Promise<void> {
     const body = {
       payload: JSON.stringify(payload),
       signature: signature,
     };
 
-    return this.updateStatus(AffirmationStatus.AFFIRMED, body, callback);
+    return await this.updateStatus(AffirmationStatus.AFFIRMED, body);
   }
 
   /**
    * Rejects a pending affirmation, cancelling the settlement
-   * @param callback
    */
-  reject(callback?: NodeCallback<void>): Bluebird<void> {
-    return this.updateStatus(AffirmationStatus.REJECTED, null, callback);
+  async reject(): Promise<void> {
+    return this.updateStatus(AffirmationStatus.REJECTED, null);
   }
 
   /**
    * Cancels a pending affirmation, cancelling the settlement
-   * @param callback
    */
-  cancel(callback?: NodeCallback<void>): Bluebird<void> {
-    return this.updateStatus(AffirmationStatus.CANCELED, null, callback);
+  async cancel(): Promise<void> {
+    return this.updateStatus(AffirmationStatus.CANCELED, null);
   }
 
-  private updateStatus(status: AffirmationStatus, body?, callback?: NodeCallback<void>): Bluebird<void> {
-    const self = this;
-    return co<void>(function* updateStatus() {
-      const bodyWithStatus = { status, ...body };
-      const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.partyAccountId}/affirmations/${self.id}`
-      );
-      const response = yield self.bitgo.put(url).send(bodyWithStatus).result();
-      self.updateAffirmationData(response);
-    })
-      .call(this)
-      .asCallback(callback);
+  private async updateStatus(status: AffirmationStatus, body?: any): Promise<void> {
+    const bodyWithStatus = { status, ...body };
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.partyAccountId}/affirmations/${this.id}`
+    );
+    const response = await this.bitgo.put(url).send(bodyWithStatus).result();
+    this.updateAffirmationData(response);
   }
 
-  private updateAffirmationData(affirmationData) {
+  private updateAffirmationData(affirmationData: any) {
     this.id = affirmationData.id;
     this.partyAccountId = affirmationData.partyAccountId;
     this.status = affirmationData.status;
