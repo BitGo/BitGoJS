@@ -1,14 +1,10 @@
 import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 
 import { BaseCoin, KeyPair } from './baseCoin';
-import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { validateParams } from '../common';
-
-const co = Bluebird.coroutine;
 
 export interface Keychain {
   id: string;
@@ -109,10 +105,9 @@ export class Keychains {
    * @param params.xpub (optional)
    * @param params.ethAddress (optional)
    * @param params.reqId (optional)
-   * @param callback
    */
-  get(params: GetKeychainOptions, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
-    validateParams(params, [], ['xpub', 'ethAddress'], callback);
+  async get(params: GetKeychainOptions): Promise<Keychain> {
+    validateParams(params, [], ['xpub', 'ethAddress']);
 
     if (_.isUndefined(params.id)) {
       throw new Error('id must be defined');
@@ -122,9 +117,7 @@ export class Keychains {
     if (params.reqId) {
       this.bitgo.setRequestTracer(params.reqId);
     }
-    return Bluebird.resolve(
-      this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id))).result()
-    ).nodeify(callback);
+    return await this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id))).result();
   }
 
   /**
@@ -132,29 +125,25 @@ export class Keychains {
    * @param params
    * @param params.limit - Max number of results in a single call.
    * @param params.prevId - Continue iterating (provided by nextBatchPrevId in the previous list)
-   * @param callback
    * @returns {*}
    */
-  list(params: ListKeychainOptions = {}, callback?: NodeCallback<ListKeychainsResult>): Bluebird<ListKeychainsResult> {
-    const self = this;
-    return co<ListKeychainsResult>(function *() {
-      const queryObject: any = {};
+  async list(params: ListKeychainOptions = {}): Promise<ListKeychainsResult> {
+    const queryObject: any = {};
 
-      if (!_.isUndefined(params.limit)) {
-        if (!_.isNumber(params.limit)) {
-          throw new Error('invalid limit argument, expecting number');
-        }
-        queryObject.limit = params.limit;
+    if (!_.isUndefined(params.limit)) {
+      if (!_.isNumber(params.limit)) {
+        throw new Error('invalid limit argument, expecting number');
       }
-      if (!_.isUndefined(params.prevId)) {
-        if (!_.isString(params.prevId)) {
-          throw new Error('invalid prevId argument, expecting string');
-        }
-        queryObject.prevId = params.prevId;
+      queryObject.limit = params.limit;
+    }
+    if (!_.isUndefined(params.prevId)) {
+      if (!_.isString(params.prevId)) {
+        throw new Error('invalid prevId argument, expecting string');
       }
+      queryObject.prevId = params.prevId;
+    }
 
-      return self.bitgo.get(self.baseCoin.url('/key')).query(queryObject).result();
-    }).call(this).asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
   }
 
   /**
@@ -169,51 +158,47 @@ export class Keychains {
    * @param params
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
-   * @param callback
    * @returns changedKeys Object - e.g.:
    *  {
    *    xpub1: encryptedPrv,
    *    ...
    *  }
    */
-  updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<ChangedKeychains>): Bluebird<ChangedKeychains> {
-    const self = this;
-    return co<ChangedKeychains>(function *(): any {
-      validateParams(params, ['oldPassword', 'newPassword'], [], callback);
-      const changedKeys: ChangedKeychains = {};
-      let prevId;
-      let keysLeft = true;
-      while (keysLeft) {
-        const result: ListKeychainsResult = yield self.list({ limit: 500, prevId });
-        for (const key of result.keys) {
-          const oldEncryptedPrv = key.encryptedPrv;
-          if (_.isUndefined(oldEncryptedPrv)) {
-            continue;
-          }
-          try {
-            const updatedKeychain = self.updateSingleKeychainPassword({
-              keychain: key,
-              oldPassword: params.oldPassword,
-              newPassword: params.newPassword,
-            });
-            if (updatedKeychain.encryptedPrv) {
-              changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
-            }
-          } catch (e) {
-            // if the password was incorrect, silence the error, throw otherwise
-            if (!e.message.includes('private key is incorrect')) {
-              throw e;
-            }
-          }
+  async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
+    validateParams(params, ['oldPassword', 'newPassword'], []);
+    const changedKeys: ChangedKeychains = {};
+    let prevId;
+    let keysLeft = true;
+    while (keysLeft) {
+      const result: ListKeychainsResult = await this.list({ limit: 500, prevId });
+      for (const key of result.keys) {
+        const oldEncryptedPrv = key.encryptedPrv;
+        if (_.isUndefined(oldEncryptedPrv)) {
+          continue;
         }
-        if (result.nextBatchPrevId) {
-          prevId = result.nextBatchPrevId;
-        } else {
-          keysLeft = false;
+        try {
+          const updatedKeychain = this.updateSingleKeychainPassword({
+            keychain: key,
+            oldPassword: params.oldPassword,
+            newPassword: params.newPassword,
+          });
+          if (updatedKeychain.encryptedPrv) {
+            changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
+          }
+        } catch (e) {
+          // if the password was incorrect, silence the error, throw otherwise
+          if (!e.message.includes('private key is incorrect')) {
+            throw e;
+          }
         }
       }
-      return changedKeys;
-    }).call(this).asCallback(callback);
+      if (result.nextBatchPrevId) {
+        prevId = result.nextBatchPrevId;
+      } else {
+        keysLeft = false;
+      }
+    }
+    return changedKeys;
   }
 
   /**
@@ -259,11 +244,10 @@ export class Keychains {
   /**
    * Add a keychain to BitGo's records
    * @param params
-   * @param callback
    */
-  add(params: AddKeychainOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
+  async add(params: AddKeychainOptions = {}): Promise<Keychain> {
     params = params || {};
-    validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed'], callback);
+    validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed']);
 
     if (!_.isUndefined(params.disableKRSEmail)) {
       if (!_.isBoolean(params.disableKRSEmail)) {
@@ -274,77 +258,66 @@ export class Keychains {
     if (params.reqId) {
       this.bitgo.setRequestTracer(params.reqId);
     }
-    return Bluebird.resolve(
-      this.bitgo.post(this.baseCoin.url('/key'))
-        .send({
-          pub: params.pub,
-          encryptedPrv: params.encryptedPrv,
-          type: params.type,
-          source: params.source,
-          provider: params.provider,
-          originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-          enterprise: params.enterprise,
-          derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-          disableKRSEmail: params.disableKRSEmail,
-          krsSpecific: params.krsSpecific,
-        })
-        .result()
-    ).nodeify(callback);
+    return await this.bitgo.post(this.baseCoin.url('/key'))
+      .send({
+        pub: params.pub,
+        encryptedPrv: params.encryptedPrv,
+        type: params.type,
+        source: params.source,
+        provider: params.provider,
+        originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+        enterprise: params.enterprise,
+        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+        disableKRSEmail: params.disableKRSEmail,
+        krsSpecific: params.krsSpecific,
+      })
+      .result();
   }
 
   /**
    * Create a BitGo key
    * @param params (empty)
-   * @param callback
    */
-  createBitGo(params: CreateBitGoOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
+  async createBitGo(params: CreateBitGoOptions = {}): Promise<Keychain> {
     params.source = 'bitgo';
 
     this.baseCoin.preCreateBitGo(params as any);
-    return this.add(params, callback);
+    return await this.add(params);
   }
 
   /**
    * Create a backup key
    * @param params
    * @param params.provider (optional)
-   * @param callback
    */
-  createBackup(params: CreateBackupOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
-    const self = this;
-    return co<Keychain>(function *() {
-      params.source = 'backup';
+  async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
+    params.source = 'backup';
 
-      if (_.isUndefined(params.provider)) {
-        // if the provider is undefined, we generate a local key and add the source details
-        const key = self.create();
-        _.extend(params, key);
-      }
+    if (_.isUndefined(params.provider)) {
+      // if the provider is undefined, we generate a local key and add the source details
+      const key = this.create();
+      _.extend(params, key);
+    }
 
-      const serverResponse = yield self.add(params, callback);
-      return _.extend({}, serverResponse, _.pick(params, ['prv', 'encryptedPrv', 'provider', 'source']));
-    }).call(this).asCallback(callback);
+    const serverResponse = await this.add(params);
+    return _.extend({}, serverResponse, _.pick(params, ['prv', 'encryptedPrv', 'provider', 'source']));
   }
 
   /**
    * Gets keys for signing from a wallet
    * @param params
-   * @param callback
-   * @returns {Bluebird[]}
+   * @returns {Promise<Keychain[]>}
    */
-  getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<Keychain[]>): Bluebird<Keychain[]> {
-    const self = this;
-    return co<Keychain[]>(function *() {
-      if (!_.isObject(params.wallet)) {
-        throw new Error('missing required param wallet');
-      }
-      const wallet = params.wallet;
-      const reqId = params.reqId || new RequestTracer();
-      const ids = wallet.baseCoin.keyIdsForSigning();
-      const keychainQueriesBluebirds = ids.map(
-        id => self.get({ id: wallet.keyIds()[id], reqId })
-      );
-      return Bluebird.all(keychainQueriesBluebirds);
-    }).call(this).asCallback(callback);
+  async getKeysForSigning(params: GetKeysForSigningOptions = {}): Promise<Keychain[]> {
+    if (!_.isObject(params.wallet)) {
+      throw new Error('missing required param wallet');
+    }
+    const wallet = params.wallet;
+    const reqId = params.reqId || new RequestTracer();
+    const ids = wallet.baseCoin.keyIdsForSigning();
+    const keychainQueriesBluebirds = ids.map(
+      (id) => this.get({ id: wallet.keyIds()[id], reqId })
+    );
+    return Promise.all(keychainQueriesBluebirds);
   }
 }
