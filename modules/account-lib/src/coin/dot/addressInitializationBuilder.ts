@@ -7,10 +7,10 @@ import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
 import { AddProxyArgs, MethodNames, proxyType } from './iface';
-import { WalletInitializationSchema } from './txnSchema';
+import { AddressInitializationSchema } from './txnSchema';
 import { BaseAddress } from '../baseCoin/iface';
 
-export class WalletInitializationBuilder extends TransactionBuilder {
+export class AddressInitializationBuilder extends TransactionBuilder {
   protected _delegate: string;
   protected _proxyType: proxyType;
   protected _delay: string;
@@ -40,14 +40,14 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.WalletInitialization;
+    return TransactionType.AddressInitialization;
   }
 
   /**
    * The account to delegate auth to.
    *
    * @param {BaseAddress} owner
-   * @returns {WalletInitializationBuilder} This builder.
+   * @returns {AddressInitializationBuilder} This builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#why-use-a-proxy
    */
@@ -61,7 +61,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * The proxy type to add.
    *
    * @param {proxyType} proxyType
-   * @returns {WalletInitializationBuilder} This builder.
+   * @returns {AddressInitializationBuilder} This builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#proxy-types
    */
@@ -77,7 +77,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * TODO: move to the validity window method once it has been standardized
    *
    * @param {string} delay
-   * @returns {WalletInitializationBuilder} This transfer builder.
+   * @returns {AddressInitializationBuilder} This transfer builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#time-delayed-proxies
    */
@@ -94,7 +94,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       const delegate = txMethod.delegate;
       const proxyType = txMethod.proxyType;
       const delay = txMethod.delay;
-      const validationResult = WalletInitializationSchema.validate({ delegate, proxyType, delay });
+      const validationResult = AddressInitializationSchema.validate({ delegate, proxyType, delay });
       if (validationResult.error) {
         throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
       }
@@ -124,7 +124,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   private validateFields(delegate: string, proxyType: string, delay: string): void {
-    const validationResult = WalletInitializationSchema.validate({
+    const validationResult = AddressInitializationSchema.validate({
       delegate,
       proxyType,
       delay,
@@ -132,7 +132,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
     if (validationResult.error) {
       throw new InvalidTransactionError(
-        `WalletInitialization Transaction validation failed: ${validationResult.error.message}`,
+        `AddressInitialization Transaction validation failed: ${validationResult.error.message}`,
       );
     }
   }

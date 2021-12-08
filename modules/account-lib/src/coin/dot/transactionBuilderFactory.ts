@@ -1,11 +1,11 @@
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { BuildTransactionError, NotSupported } from '../baseCoin/errors';
+import { BuildTransactionError, NotImplementedError, NotSupported } from '../baseCoin/errors';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
-import { WalletInitializationBuilder } from './walletInitializationBuilder';
+import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { MethodNames } from './iface';
 import { UnstakeBuilder } from '.';
@@ -26,8 +26,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new StakingBuilder(this._coinConfig);
   }
 
-  getWalletInitializationBuilder(): WalletInitializationBuilder {
-    return new WalletInitializationBuilder(this._coinConfig);
+  getAddressInitializationBuilder(): AddressInitializationBuilder {
+    return new AddressInitializationBuilder(this._coinConfig);
+  }
+
+  getWalletInitializationBuilder(): void {
+    throw new NotImplementedError(`walletInitialization for ${this._coinConfig.name} not implemented`);
   }
 
   getUnstakeBuilder(): UnstakeBuilder {
@@ -66,7 +70,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else if (methodName === MethodNames.Bond) {
       return this.getStakingBuilder();
     } else if (methodName === MethodNames.AddProxy) {
-      return this.getWalletInitializationBuilder();
+      return this.getAddressInitializationBuilder();
     } else if (methodName === MethodNames.Unbond) {
       return this.getUnstakeBuilder();
     } else {

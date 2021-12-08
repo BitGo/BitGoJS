@@ -5,7 +5,7 @@ export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
 export { StakingBuilder } from './stakingBuilder';
 export { TransferBuilder } from './transferBuilder';
-export { WalletInitializationBuilder } from './walletInitializationBuilder';
+export { AddressInitializationBuilder } from './addressInitializationBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Utils };
