@@ -1,5 +1,5 @@
 import { Network } from '../../../src';
-import { formatOutputId, WalletUnspent } from '../../../src/bitgo';
+import { formatOutputId, WalletUnspent, ChainCode } from '../../../src/bitgo';
 
 import { createOutputScript2of3, scriptTypeForChain } from '../../../src/bitgo/outputScripts';
 import { fromOutputScript } from '../../../src/address';
@@ -17,7 +17,7 @@ export function mockOutputId(vout: number): string {
 export function mockWalletUnspent(
   network: Network,
   {
-    chain = 0,
+    chain = 0 as ChainCode,
     index = 0,
     value = defaultTestOutputAmount,
     keys = getDefaultWalletKeys(),

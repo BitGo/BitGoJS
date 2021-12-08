@@ -5,7 +5,6 @@ import {
   createOutputScript2of3,
   createOutputScriptP2shP2pk,
   createPaymentP2tr,
-  scriptTypeForChain,
   scriptTypes2Of3,
 } from '../../src/bitgo/outputScripts';
 
@@ -87,12 +86,4 @@ describe('createPaymentP2tr', () => {
       assert.strictEqual(p2tr.controlBlock?.toString('hex'), controlBlocks[i]);
     });
   }
-});
-
-describe('scriptTypeForChain', () => {
-  const input = [0, 1, 10, 11, 20, 21, 30, 31];
-  const expected = ['p2sh', 'p2sh', 'p2shP2wsh', 'p2shP2wsh', 'p2wsh', 'p2wsh', 'p2tr', 'p2tr'];
-  it('returns expected values', () => {
-    assert.deepStrictEqual(input.map(scriptTypeForChain), expected);
-  });
 });

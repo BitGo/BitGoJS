@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {
+  ChainCode,
   chainCodes,
   getExternalChainCode,
   getInternalChainCode,
@@ -17,7 +18,7 @@ describe('chain codes', function () {
       assert.strict(isChainCode(c));
       assert.strict(!isChainCode(c + 2));
       assert.strict(toChainPair(c).includes(c));
-      assert.throws(() => toChainPair(c + 2));
+      assert.throws(() => toChainPair((c + 2) as ChainCode));
     });
 
     assert.deepStrictEqual(

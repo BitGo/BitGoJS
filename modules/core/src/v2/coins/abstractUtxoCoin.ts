@@ -5,6 +5,8 @@ import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
+  getExternalChainCode,
+  isChainCode,
   RootWalletKeys,
   toOutput,
   Unspent,
@@ -1049,8 +1051,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param chain
    * @return true iff coin supports spending from chain
    */
-  supportsAddressChain(chain: number) {
-    return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
+  supportsAddressChain(chain: number): boolean {
+    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
   }
 
   keyIdsForSigning(): number[] {
@@ -1072,14 +1074,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   generateAddress(params: GenerateAddressOptions): AddressDetails {
     const { keychains, threshold, chain, index, segwit = false, bech32 = false } = params;
-    let derivationChain = 0;
-    if (_.isNumber(chain) && _.isInteger(chain) && chain > 0) {
+    let derivationChain = getExternalChainCode('p2sh');
+    if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
       derivationChain = chain;
     }
 
     function convertFlagsToAddressType(): ScriptType2Of3 {
-      if (_.isInteger(chain)) {
-        return utxolib.bitgo.outputScripts.scriptTypeForChain(chain as number);
+      if (isChainCode(chain)) {
+        return utxolib.bitgo.scriptTypeForChain(chain);
       }
       if (_.isBoolean(segwit) && segwit) {
         return 'p2shP2wsh';
@@ -1092,7 +1094,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const addressType = params.addressType || convertFlagsToAddressType();
 
-    if (addressType !== utxolib.bitgo.outputScripts.scriptTypeForChain(derivationChain)) {
+    if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
       throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
     }
 

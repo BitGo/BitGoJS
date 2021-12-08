@@ -8,10 +8,11 @@ import { RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { Triple } from '../types';
 import { toOutput, Unspent } from '../Unspent';
+import { ChainCode } from './chains';
 
 export interface WalletUnspent extends Unspent {
+  chain: ChainCode;
   index: number;
-  chain: number;
 }
 
 export function isWalletUnspent(u: Unspent): u is WalletUnspent {
