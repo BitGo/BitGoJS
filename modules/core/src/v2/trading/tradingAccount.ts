@@ -2,20 +2,14 @@
  * @prettier
  */
 
-/**
- */
 import { BigNumber } from 'bignumber.js';
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
 
-import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { Payload } from './payload';
 import { TradingPartners } from './tradingPartners';
 import { Affirmations } from './affirmations';
 import { Settlements } from './settlements';
-
-const co = Bluebird.coroutine;
 
 const TRADE_PAYLOAD_VERSION = '1.2.0';
 
@@ -75,32 +69,25 @@ export class TradingAccount {
    * @param params.amounts[].sendCurrency currency of amount sent by trading account of given accountId
    * @param params.amounts[].receiveAmount amount of currency received by trading account of given accountId
    * @param params.amounts[].receiveCurrency currency of amount received by trading account of given accountId
-   * @param callback
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
-  buildPayload(params: BuildPayloadParameters, callback?: NodeCallback<Payload>): Bluebird<Payload> {
-    return co<Payload>(function* buildTradePayload() {
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/payload`
+  async buildPayload(params: BuildPayloadParameters): Promise<Payload> {
+    const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/payload`);
+
+    const body = {
+      version: TRADE_PAYLOAD_VERSION,
+      amounts: params.amounts,
+    };
+
+    const response = (await this.bitgo.post(url).send(body).result()) as any;
+
+    if (!this.verifyPayload(params, response.payload)) {
+      throw new Error(
+        'Unable to verify trade payload. You may need to update the BitGo SDK, or the payload may have been tampered with.'
       );
+    }
 
-      const body = {
-        version: TRADE_PAYLOAD_VERSION,
-        amounts: params.amounts,
-      };
-
-      const response = (yield this.bitgo.post(url).send(body).result()) as any;
-
-      if (!this.verifyPayload(params, response.payload)) {
-        throw new Error(
-          'Unable to verify trade payload. You may need to update the BitGo SDK, or the payload may have been tampered with.'
-        );
-      }
-
-      return JSON.parse(response.payload) as Payload;
-    })
-      .call(this)
-      .asCallback(callback);
+    return JSON.parse(response.payload) as Payload;
   }
 
   /**
@@ -167,18 +154,14 @@ export class TradingAccount {
    * @param params.sendAmount Amount of currency (in base units such as cents, satoshis, or wei) to be sent
    * @param params.receiveCurrency Currency to be received as part of the settlement
    * @param params.receiveAmount Amount of currency (in base units such as cents, satoshis, or wei) to be received
-   * @param callback
    * @returns Fee rate, currency, and total amount of the described settlement
    */
-  calculateSettlementFees(
-    params: CalculateSettlementFeesParams,
-    callback?: NodeCallback<SettlementFees>
-  ): Bluebird<SettlementFees> {
+  async calculateSettlementFees(params: CalculateSettlementFeesParams): Promise<SettlementFees> {
     const url = this.bitgo.microservicesUrl(
       `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
     );
 
-    return Bluebird.resolve(this.bitgo.post(url).send(params).result()).asCallback(callback);
+    return await this.bitgo.post(url).send(params).result();
   }
 
   /**
@@ -186,22 +169,16 @@ export class TradingAccount {
    * @param params
    * @param params.payload trade payload object from TradingAccount::buildPayload()
    * @param params.walletPassphrase passphrase on this trading account, used to unlock the account user key
-   * @param callback
    * @returns hex-encoded signature of the payload
    */
-  signPayload(params: SignPayloadParameters, callback?: NodeCallback<string>): Bluebird<string> {
-    const self = this;
-    return co<string>(function* signPayload() {
-      const key = (yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] })) as any;
-      const prv = self.wallet.bitgo.decrypt({
-        input: key.encryptedPrv,
-        password: params.walletPassphrase,
-      });
-      const payload = JSON.stringify(params.payload);
-      return ((yield self.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
-    })
-      .call(this)
-      .asCallback(callback);
+  async signPayload(params: SignPayloadParameters): Promise<string> {
+    const key = (await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[0] })) as any;
+    const prv = this.wallet.bitgo.decrypt({
+      input: key.encryptedPrv,
+      password: params.walletPassphrase,
+    });
+    const payload = JSON.stringify(params.payload);
+    return ((await this.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
   }
 
   affirmations(): Affirmations {
