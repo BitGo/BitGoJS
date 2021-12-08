@@ -33,7 +33,7 @@ const TravelRule = require('./travelRule');
 import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
-import { GlobalCoinFactory } from './v2/coinFactory';
+
 import {
   BitGoRequest,
   handleResponseError,
@@ -316,7 +316,7 @@ export interface RegisterPushTokenOptions {
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
-export interface BitGo {
+export interface BitGoBase {
   get(url: string): BitGoRequest;
   post(url: string): BitGoRequest;
   put(url: string): BitGoRequest;
@@ -325,7 +325,7 @@ export interface BitGo {
 }
 
 // eslint-disable-next-line no-redeclare
-export class BitGo {
+export abstract class BitGoBase {
   private static _testnetWarningMessage = false;
   private static _constants: any;
   private static _constantsExpire: any;
@@ -428,8 +428,8 @@ export class BitGo {
       }
     } else {
       env = 'test';
-      if (!BitGo._testnetWarningMessage) {
-        BitGo._testnetWarningMessage = true;
+      if (!BitGoBase._testnetWarningMessage) {
+        BitGoBase._testnetWarningMessage = true;
         console.log('BitGo SDK env not set - defaulting to test at test.bitgo.com.');
       }
       this._baseUrl = common.Environments[env].uri;
@@ -609,9 +609,12 @@ export class BitGo {
    * Create a basecoin object
    * @param coinName
    */
-  coin(coinName: string): BaseCoin {
-    return GlobalCoinFactory.getInstance(this, coinName);
-  }
+   abstract coin(coinName: string): BaseCoin;
+   
+   /**
+    * Provide a coin implementation
+    */
+   abstract loadCoin(coinName: string, coin: BaseCoin): void;
 
   /**
    * Create a basecoin object for a virtual token
@@ -1994,15 +1997,15 @@ export class BitGo {
   async fetchConstants(): Promise<any> {
     const env = this.getEnv();
 
-    if (!BitGo._constants) {
-      BitGo._constants = {};
+    if (!BitGoBase._constants) {
+      BitGoBase._constants = {};
     }
-    if (!BitGo._constantsExpire) {
-      BitGo._constantsExpire = {};
+    if (!BitGoBase._constantsExpire) {
+      BitGoBase._constantsExpire = {};
     }
 
-    if (BitGo._constants[env] && BitGo._constantsExpire[env] && new Date() < BitGo._constantsExpire[env]) {
-      return BitGo._constants[env];
+    if (BitGoBase._constants[env] && BitGoBase._constantsExpire[env] && new Date() < BitGoBase._constantsExpire[env]) {
+      return BitGoBase._constants[env];
     }
 
     // client constants call cannot be authenticated using the normal HMAC validation
@@ -2010,10 +2013,10 @@ export class BitGo {
     // Proxy settings must still be respected however
     const resultPromise = superagent.get(this.url('/client/constants'));
     const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
-    BitGo._constants[env] = result.body.constants;
+    BitGoBase._constants[env] = result.body.constants;
 
-    BitGo._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
-    return BitGo._constants[env];
+    BitGoBase._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
+    return BitGoBase._constants[env];
   }
 
   /**
@@ -2039,7 +2042,7 @@ export class BitGo {
       });
 
     // use defaultConstants as the backup for keys that are not set in this._constants
-    return _.merge({}, config.defaultConstants(this.getEnv()), BitGo._constants[this.getEnv()]);
+    return _.merge({}, config.defaultConstants(this.getEnv()), BitGoBase._constants[this.getEnv()]);
   }
 
   /**
