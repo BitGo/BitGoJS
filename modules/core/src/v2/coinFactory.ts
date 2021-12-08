@@ -2,7 +2,7 @@
  * @prettier
  */
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
-import { BitGo } from '../bitgo';
+import { BitGoBase as BitGo } from '../bitgoBase';
 import { BaseCoin } from './baseCoin';
 import {
   Algo,

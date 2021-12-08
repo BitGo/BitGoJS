@@ -10,7 +10,7 @@ import * as urlLib from 'url';
 import * as querystring from 'querystring';
 
 import { ApiResponseError } from './errors';
-import { BitGo, VerifyResponseOptions } from './bitgo';
+import { BitGoBase as BitGo, VerifyResponseOptions } from './bitgoBase';
 
 const debug = Debug('bitgo:api');
 

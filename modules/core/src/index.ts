@@ -12,6 +12,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 export * from './bitgo';
 
+export { BitGoOptions } from './bitgoBase';
+
 export * as Errors from './errors';
 
 // Expose legacy "bitcoin" API (mostly HDNode)
