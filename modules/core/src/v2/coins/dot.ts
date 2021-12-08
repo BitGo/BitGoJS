@@ -138,6 +138,23 @@ export class Dot extends BaseCoin {
   }
 
   /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   * @return {Buffer} A signature over the given message using the given key
+   */
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
+      // reconstitute keys and sign
+      return Buffer.from(new accountLib.Dot.KeyPair({ prv: key.prv }).signMessage(msg)).toString('hex');
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
    * Explain/parse transaction
    * @param params
    * @param callback

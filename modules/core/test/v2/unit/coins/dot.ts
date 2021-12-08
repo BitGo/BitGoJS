@@ -1,6 +1,8 @@
 import should = require('should');
+import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as DotResources from '../../fixtures/coins/dot';
+import { randomBytes } from 'crypto';
 
 describe('DOT:', function () {
   let bitgo;
@@ -10,6 +12,21 @@ describe('DOT:', function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
+  });
+
+  describe('Sign Message', () => {
+    it('should be performed', async () => {
+      const keyPair = new accountLib.Dot.KeyPair();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
+      keyPair.verifySignature(messageToSign, Uint8Array.from(Buffer.from(signature, 'hex'))).should.equals(true);
+    });
+
+    it('should fail with missing private key', async () => {
+      const keyPair = new accountLib.Dot.KeyPair({ pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7' }).getKeys();
+      const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+      await basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
+    });
   });
 
   describe('Sign transaction', () => {
