@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
 import { ECPair } from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
@@ -19,12 +18,9 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
 } from '../baseCoin';
 
-import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
-
-const co = Bluebird.coroutine;
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -99,9 +95,9 @@ export class Cspr extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     // TODO: Implement when available on the SDK.
-    return Bluebird.resolve(true).asCallback(callback);
+    return true;
   }
 
   /**
@@ -194,37 +190,25 @@ export class Cspr extends BaseCoin {
    * @param {SignTransactionOptions} params data required to rebuild and sign the transaction
    * @param {TransactionPrebuild} params.txPrebuild prebuild object returned by platform
    * @param {String} params.prv user prv used to sign the transaction
-   * @param {NodeCallback<SignedTransaction>} callback
    * @returns Bluebird<SignedTransaction>
    */
-  signTransaction(
-    params: SignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const txBuilder = accountLib.getBuilder(self.getChain()).from(params.txPrebuild.txHex);
-      const key = params.prv;
-      txBuilder.sign({ key });
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    const txBuilder = accountLib.getBuilder(this.getChain()).from(params.txPrebuild.txHex);
+    const key = params.prv;
+    txBuilder.sign({ key });
 
-      const transaction: any = yield txBuilder.build();
-      if (!transaction) {
-        throw new InvalidTransactionError('Error while trying to build transaction');
-      }
-      const response = {
-        txHex: transaction.toBroadcastFormat(),
-      };
-      return transaction.signature.length >= 2 ? response : { halfSigned: response };
-    })
-      .call(this)
-      .asCallback(callback);
+    const transaction: any = await txBuilder.build();
+    if (!transaction) {
+      throw new InvalidTransactionError('Error while trying to build transaction');
+    }
+    const response = {
+      txHex: transaction.toBroadcastFormat(),
+    };
+    return transaction.signature.length >= 2 ? response : { halfSigned: response };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   /**
@@ -235,22 +219,21 @@ export class Cspr extends BaseCoin {
    * If a root private key is not provided, a random one is generated.
    * The root public key is the basis for the wallet root address.
    */
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
-    const self = this;
-    return co<SupplementGenerateWalletOptions>(function* () {
-      if (walletParams.rootPrivateKey) {
-        if (!self.isValidPrv(walletParams.rootPrivateKey) || walletParams.rootPrivateKey.length !== 64) {
-          throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
-        }
-      } else {
-        const keyPair = ECPair.makeRandom();
-        if (!keyPair.privateKey) {
-          throw new Error('no privateKey');
-        }
-        walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
+  async supplementGenerateWallet(
+    walletParams: SupplementGenerateWalletOptions
+  ): Promise<SupplementGenerateWalletOptions> {
+    if (walletParams.rootPrivateKey) {
+      if (!this.isValidPrv(walletParams.rootPrivateKey) || walletParams.rootPrivateKey.length !== 64) {
+        throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
       }
-      return walletParams;
-    }).call(this);
+    } else {
+      const keyPair = ECPair.makeRandom();
+      if (!keyPair.privateKey) {
+        throw new Error('no privateKey');
+      }
+      walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
+    }
+    return walletParams;
   }
 
   /**
@@ -259,15 +242,11 @@ export class Cspr extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
-    return co<Buffer>(function* cosignMessage() {
-      const keyPair = new accountLib.Cspr.KeyPair({ prv: key.prv });
-      const messageHex = message instanceof Buffer ? message.toString('hex') : message;
-      const signatureData = accountLib.Cspr.Utils.signMessage(keyPair, messageHex);
-      return Buffer.from(signatureData.signature).toString('hex');
-    })
-      .call(this)
-      .asCallback(callback);
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const keyPair = new accountLib.Cspr.KeyPair({ prv: key.prv });
+    const messageHex = message instanceof Buffer ? message.toString('hex') : message;
+    const signatureData = accountLib.Cspr.Utils.signMessage(keyPair, messageHex);
+    return Buffer.from(signatureData.signature);
   }
 
   /**
@@ -277,98 +256,89 @@ export class Cspr extends BaseCoin {
    * @param {String} params.txHex raw transaction
    * @param {String} params.halfSigned.txHex raw half signed transaction
    * @param {TransactionFee} fee fee information
-   * @param {Function} callback
    * @returns Bluebird<TransactionExplanation>
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Bluebird<TransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.feeInfo) {
-        throw new Error('missing explain tx parameters');
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex || !params.feeInfo) {
+      throw new Error('missing explain tx parameters');
+    }
+    const txBuilder = accountLib.getBuilder(this.getChain()).from(txHex);
+
+    const tx: any = await txBuilder.build();
+    if (!tx) {
+      throw new InvalidTransactionError('Error while trying to build transaction');
+    }
+    const id = Buffer.from(tx.casperTx.hash).toString('hex');
+    const amount = accountLib.Cspr.Utils.getTransferAmount(tx.casperTx.session);
+    let transferId;
+    const outputs: TransactionOutput[] = [];
+    const operations: TransactionOperation[] = [];
+
+    switch (tx.type) {
+      case accountLib.BaseCoin.TransactionType.Send: {
+        transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
+        const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
+        outputs.push({
+          address: toAddress,
+          amount,
+          coin: this.getChain(),
+        });
+        break;
       }
-      const txBuilder = accountLib.getBuilder(self.getChain()).from(txHex);
-
-      const tx: any = yield txBuilder.build();
-      if (!tx) {
-        throw new InvalidTransactionError('Error while trying to build transaction');
+      case accountLib.BaseCoin.TransactionType.StakingLock: {
+        const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+        operations.push({
+          type: accountLib.BaseCoin.TransactionType.StakingLock,
+          amount,
+          coin: this.getChain(),
+          validator: validator,
+        });
+        break;
       }
-      const id = Buffer.from(tx.casperTx.hash).toString('hex');
-      const amount = accountLib.Cspr.Utils.getTransferAmount(tx.casperTx.session);
-      let transferId;
-      const outputs: TransactionOutput[] = [];
-      const operations: TransactionOperation[] = [];
-
-      switch (tx.type) {
-        case accountLib.BaseCoin.TransactionType.Send: {
-          transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
-          const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
-          outputs.push({
-            address: toAddress,
-            amount,
-            coin: self.getChain(),
-          });
-          break;
-        }
-        case accountLib.BaseCoin.TransactionType.StakingLock: {
-          const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
-          operations.push({
-            type: accountLib.BaseCoin.TransactionType.StakingLock,
-            amount,
-            coin: self.getChain(),
-            validator: validator,
-          });
-          break;
-        }
-        case accountLib.BaseCoin.TransactionType.StakingUnlock: {
-          const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
-          operations.push({
-            type: accountLib.BaseCoin.TransactionType.StakingUnlock,
-            amount,
-            coin: self.getChain(),
-            validator: validator,
-          });
-          break;
-        }
-        default: {
-          throw new InvalidTransactionError('Error while trying to get transaction type');
-        }
+      case accountLib.BaseCoin.TransactionType.StakingUnlock: {
+        const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+        operations.push({
+          type: accountLib.BaseCoin.TransactionType.StakingUnlock,
+          amount,
+          coin: this.getChain(),
+          validator: validator,
+        });
+        break;
       }
+      default: {
+        throw new InvalidTransactionError('Error while trying to get transaction type');
+      }
+    }
 
-      const outputAmount = outputs
-        .reduce((acumulator, output) => {
-          const currentValue = new BigNumber(output.amount);
-          return acumulator.plus(currentValue);
-        }, new BigNumber(0))
-        .toFixed(0);
+    const outputAmount = outputs
+      .reduce((acumulator, output) => {
+        const currentValue = new BigNumber(output.amount);
+        return acumulator.plus(currentValue);
+      }, new BigNumber(0))
+      .toFixed(0);
 
-      const displayOrder = [
-        'id',
-        'outputAmount',
-        'changeAmount',
-        'outputs',
-        'changeOutputs',
-        'transferId',
-        'fee',
-        'operations',
-      ];
+    const displayOrder = [
+      'id',
+      'outputAmount',
+      'changeAmount',
+      'outputs',
+      'changeOutputs',
+      'transferId',
+      'fee',
+      'operations',
+    ];
 
-      return {
-        displayOrder,
-        id,
-        outputs,
-        outputAmount,
-        changeOutputs: [], // account based does not use change outputs
-        changeAmount: '0', // account base does not make change
-        transferId,
-        fee: params.feeInfo,
-        operations,
-      };
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      displayOrder,
+      id,
+      outputs,
+      outputAmount,
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
+      transferId,
+      fee: params.feeInfo,
+      operations,
+    } as any;
   }
 }
