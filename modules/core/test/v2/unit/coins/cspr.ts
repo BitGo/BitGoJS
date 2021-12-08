@@ -209,7 +209,7 @@ describe('Casper', function () {
       const keyPair = new CsprAccountLib.KeyPair().getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair, messageToSign);
-      CsprAccountLib.Utils.isValidMessageSignature(signature, messageToSign, keyPair.pub).should.equals(
+      CsprAccountLib.Utils.isValidMessageSignature(signature.toString('hex'), messageToSign, keyPair.pub).should.equals(
         true,
       );
     });
@@ -220,7 +220,7 @@ describe('Casper', function () {
       const keyPair = keyPairToSign.getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage({ pub: keyPairExtendedKeys.xpub, prv: keyPairExtendedKeys.xprv }, messageToSign);
-      CsprAccountLib.Utils.isValidMessageSignature(signature, messageToSign, keyPair.pub).should.equals(
+      CsprAccountLib.Utils.isValidMessageSignature(signature.toString('hex'), messageToSign, keyPair.pub).should.equals(
         true,
       );
     });

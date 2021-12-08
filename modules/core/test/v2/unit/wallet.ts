@@ -121,45 +121,25 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
-      (() => {
-        wallet.transfers({ address: 13375 });
-      }).should.throw('invalid address argument, expecting string or array');
+      await wallet.transfers({ address: 13375 }).should.be.rejectedWith('invalid address argument, expecting string or array');
 
-      (() => {
-        wallet.transfers({ address: [null] });
-      }).should.throw('invalid address argument, expecting array of address strings');
+      await wallet.transfers({ address: [null] }).should.be.rejectedWith('invalid address argument, expecting array of address strings');
 
-      (() => {
-        wallet.transfers({ dateGte: 20101904 });
-      }).should.throw('invalid dateGte argument, expecting string');
+      await wallet.transfers({ dateGte: 20101904 }).should.be.rejectedWith('invalid dateGte argument, expecting string');
 
-      (() => {
-        wallet.transfers({ dateLt: 20101904 });
-      }).should.throw('invalid dateLt argument, expecting string');
+      await wallet.transfers({ dateLt: 20101904 }).should.be.rejectedWith('invalid dateLt argument, expecting string');
 
-      (() => {
-        wallet.transfers({ valueGte: '10230005' });
-      }).should.throw('invalid valueGte argument, expecting number');
+      await wallet.transfers({ valueGte: '10230005' }).should.be.rejectedWith('invalid valueGte argument, expecting number');
 
-      (() => {
-        wallet.transfers({ valueLt: '-5e8' });
-      }).should.throw('invalid valueLt argument, expecting number');
+      await wallet.transfers({ valueLt: '-5e8' }).should.be.rejectedWith('invalid valueLt argument, expecting number');
 
-      (() => {
-        wallet.transfers({ includeHex: '123' });
-      }).should.throw('invalid includeHex argument, expecting boolean');
+      await wallet.transfers({ includeHex: '123' }).should.be.rejectedWith('invalid includeHex argument, expecting boolean');
 
-      (() => {
-        wallet.transfers({ state: 123 });
-      }).should.throw('invalid state argument, expecting string or array');
+      await wallet.transfers({ state: 123 }).should.be.rejectedWith('invalid state argument, expecting string or array');
 
-      (() => {
-        wallet.transfers({ state: [123, 456] });
-      }).should.throw('invalid state argument, expecting array of state strings');
+      await wallet.transfers({ state: [123, 456] }).should.be.rejectedWith('invalid state argument, expecting array of state strings');
 
-      (() => {
-        wallet.transfers({ type: 123 });
-      }).should.throw('invalid type argument, expecting string');
+      await wallet.transfers({ type: 123 }).should.be.rejectedWith('invalid type argument, expecting string');
     });
   });
 

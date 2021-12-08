@@ -256,7 +256,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: '0',
+          fee: '5000',
           feeRate: 5000,
         },
         memo: undefined,
@@ -443,7 +443,7 @@ describe('Sol Transaction', () => {
           },
         ],
         fee: {
-          fee: '0',
+          fee: '10000',
           feeRate: 5000,
         },
         memo: undefined,

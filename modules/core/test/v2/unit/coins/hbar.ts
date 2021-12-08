@@ -28,6 +28,9 @@ describe('Hedera Hashgraph:', function () {
 
     badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
+
+    const hexAddress = '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84';
+    basecoin.isValidAddress(hexAddress).should.equal(false);
   });
 
   it('should get memoId and address', async function () {

@@ -5,14 +5,10 @@
  */
 
 import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 
 import { validateParams } from '../common';
 import { BaseCoin } from './baseCoin';
-import { NodeCallback } from './types';
-
-const co = Bluebird.coroutine;
 
 export interface AddOptions {
   url: string;
@@ -45,98 +41,73 @@ export class Webhooks {
   /**
    * Fetch list of user webhooks
    *
-   * @param callback
    * @returns {*}
    */
-  list(callback: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.get(this.baseCoin.url('/webhooks')).result()).nodeify(callback);
+  async list(): Promise<any> {
+    return await this.bitgo.get(this.baseCoin.url('/webhooks')).result();
   }
 
   /**
    * Add new user webhook
    *
    * @param params
-   * @param callback
    * @returns {*}
    */
-  add(params: AddOptions, callback: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      validateParams(params, ['url', 'type'], [], callback);
-      return self.bitgo.post(self.baseCoin.url('/webhooks')).send(params).result();
-    })
-      .call(this)
-      .asCallback(callback);
+  async add(params: AddOptions): Promise<any> {
+    validateParams(params, ['url', 'type'], []);
+    return await this.bitgo.post(this.baseCoin.url('/webhooks')).send(params).result();
   }
 
   /**
    * Remove user webhook
    *
    * @param params
-   * @param callback
    * @returns {*}
    */
-  remove(params: RemoveOptions, callback: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      validateParams(params, ['url', 'type'], [], callback);
+  async remove(params: RemoveOptions): Promise<any> {
+    validateParams(params, ['url', 'type'], []);
 
-      return self.bitgo.del(self.baseCoin.url('/webhooks')).send(params).result();
-    })
-      .call(this)
-      .asCallback(callback);
+    return this.bitgo.del(this.baseCoin.url('/webhooks')).send(params).result();
   }
 
   /**
    * Fetch list of webhook notifications for the user
    *
    * @param params
-   * @param callback
    * @returns {*}
    */
-  listNotifications(params: ListNotificationsOptions = {}, callback: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      const queryProperties: (keyof ListNotificationsOptions)[] = [];
-      if (params.prevId) {
-        if (!_.isString(params.prevId)) {
-          throw new Error('invalid prevId argument, expecting string');
-        }
-        queryProperties.push('prevId');
+  async listNotifications(params: ListNotificationsOptions = {}): Promise<any> {
+    const queryProperties: (keyof ListNotificationsOptions)[] = [];
+    if (params.prevId) {
+      if (!_.isString(params.prevId)) {
+        throw new Error('invalid prevId argument, expecting string');
       }
-      if (params.limit) {
-        if (!_.isNumber(params.limit)) {
-          throw new Error('invalid limit argument, expecting number');
-        }
-        queryProperties.push('limit');
+      queryProperties.push('prevId');
+    }
+    if (params.limit) {
+      if (!_.isNumber(params.limit)) {
+        throw new Error('invalid limit argument, expecting number');
       }
-      const query = _.pick(params, queryProperties);
+      queryProperties.push('limit');
+    }
+    const query = _.pick(params, queryProperties);
 
-      return self.bitgo.get(self.baseCoin.url('/webhooks/notifications')).query(query).result();
-    })
-      .call(this)
-      .asCallback(callback);
+    return this.bitgo.get(this.baseCoin.url('/webhooks/notifications')).query(query).result();
   }
 
   /**
    * Simulate a user webhook
    *
    * @param params
-   * @param callback
    * @returns {*}
    */
-  simulate(params: SimulateOptions, callback: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      validateParams(params, ['webhookId', 'blockId'], [], callback);
+  async simulate(params: SimulateOptions): Promise<any> {
+    validateParams(params, ['webhookId', 'blockId'], []);
 
-      const webhookId = params.webhookId;
-      return self.bitgo
-        .post(self.baseCoin.url('/webhooks/' + webhookId + '/simulate'))
-        .send(params)
-        .result();
-    })
-      .call(this)
-      .asCallback(callback);
+    const webhookId = params.webhookId;
+    return this.bitgo
+      .post(this.baseCoin.url('/webhooks/' + webhookId + '/simulate'))
+      .send(params)
+      .result();
   }
 }

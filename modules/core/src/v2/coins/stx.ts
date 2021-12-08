@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { c32addressDecode } from 'c32check';
@@ -17,11 +16,8 @@ import {
   SignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
-import { NodeCallback } from '../types';
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError } from '../../errors';
-
-const co = Bluebird.coroutine;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {
@@ -90,9 +86,9 @@ export class Stx extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     // TODO: Implement when available on the SDK.
-    return Bluebird.resolve(true).asCallback(callback);
+    return true;
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
@@ -170,123 +166,100 @@ export class Stx extends BaseCoin {
   /**
    * Signs stacks transaction
    * @param params
-   * @param callback
    */
-  signTransaction(
-    params: StxSignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    const self = this;
-    return co<SignedTransaction>(function* () {
-      const factory = accountLib.register(self.getChain(), accountLib.Stx.TransactionBuilderFactory);
-      const txBuilder = factory.from(params.txPrebuild.txHex);
-      const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
-      prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
-      if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
-      // if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
-      const transaction: any = yield txBuilder.build();
+  async signTransaction(params: StxSignTransactionOptions): Promise<SignedTransaction> {
+    const factory = accountLib.register(this.getChain(), accountLib.Stx.TransactionBuilderFactory);
+    const txBuilder = factory.from(params.txPrebuild.txHex);
+    const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
+    prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
+    if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
+    // if (params.numberSignature) txBuilder.numberSignatures(params.numberSignature);
+    const transaction = await txBuilder.build();
 
-      if (!transaction) {
-        throw new Error('Invalid message passed to signMessage');
-      }
+    if (!transaction) {
+      throw new Error('Invalid message passed to signMessage');
+    }
 
-      const response = {
-        txHex: transaction.toBroadcastFormat(),
-      };
-      return response;
-    })
-      .call(this)
-      .asCallback(callback);
+    return {
+      txHex: transaction.toBroadcastFormat(),
+    };
   }
 
-  parseTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: any): Promise<any> {
+    return {};
   }
 
   /**
    * Explain a Stacks transaction from txHex
    * @param params
-   * @param callback
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<StxTransactionExplanation>
-  ): Bluebird<StxTransactionExplanation> {
-    const self = this;
-    return co<TransactionExplanation>(function* () {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.feeInfo) {
-        throw new Error('missing explain tx parameters');
+  async explainTransaction(params: ExplainTransactionOptions): Promise<StxTransactionExplanation | undefined> {
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex || !params.feeInfo) {
+      throw new Error('missing explain tx parameters');
+    }
+
+    const factory = accountLib.getBuilder(this.getChain()) as accountLib.Stx.TransactionBuilderFactory;
+    const txBuilder = factory.from(txHex);
+
+    if (params.publicKeys !== undefined) {
+      txBuilder.fromPubKey(params.publicKeys);
+      if (params.publicKeys.length === 1) {
+        // definitely a single sig tx
+        txBuilder.numberSignatures(1);
       }
+    }
 
-      const factory = accountLib.getBuilder(self.getChain()) as accountLib.Stx.TransactionBuilderFactory;
-      const txBuilder = factory.from(txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
 
-      if (params.publicKeys !== undefined) {
-        txBuilder.fromPubKey(params.publicKeys);
-        if (params.publicKeys.length === 1) {
-          // definitely a single sig tx
-          txBuilder.numberSignatures(1);
-        }
-      }
-
-      const tx = (yield txBuilder.build()) as any;
-      const txJson = tx.toJson();
-
-      if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
-        const outputs: TransactionRecipient[] = [
-          {
-            address: txJson.payload.to,
-            amount: txJson.payload.amount,
-            memo: txJson.payload.memo,
-          },
-        ];
-
-        const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
-        const explanationResult: StxTransactionExplanation = {
-          displayOrder,
-          id: txJson.id,
-          outputAmount: txJson.payload.amount.toString(),
-          changeAmount: '0',
-          outputs,
-          changeOutputs: [],
-          fee: txJson.fee,
+    if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+      const outputs: TransactionRecipient[] = [
+        {
+          address: txJson.payload.to,
+          amount: txJson.payload.amount,
           memo: txJson.payload.memo,
-          type: tx.type,
-        };
+        },
+      ];
 
-        return explanationResult;
-      }
+      const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
+      return {
+        displayOrder,
+        id: txJson.id,
+        outputAmount: txJson.payload.amount.toString(),
+        changeAmount: '0',
+        outputs,
+        changeOutputs: [],
+        fee: txJson.fee,
+        memo: txJson.payload.memo,
+        type: tx.type,
+      };
+    }
 
-      if (tx.type === accountLib.BaseCoin.TransactionType.ContractCall) {
-        const displayOrder = [
-          'id',
-          'fee',
-          'type',
-          'contractAddress',
-          'contractName',
-          'contractFunction',
-          'contractFunctionArgs',
-        ];
-        const explanationResult: StxTransactionExplanation = {
-          displayOrder,
-          id: txJson.id,
-          changeAmount: '0',
-          outputAmount: '',
-          outputs: [],
-          changeOutputs: [],
-          fee: txJson.fee,
-          type: tx.type,
-          contractAddress: txJson.payload.contractAddress,
-          contractName: txJson.payload.contractName,
-          contractFunction: txJson.payload.functionName,
-          contractFunctionArgs: txJson.payload.functionArgs,
-        };
-
-        return explanationResult;
-      }
-    })
-      .call(this)
-      .asCallback(callback);
+    if (tx.type === accountLib.BaseCoin.TransactionType.ContractCall) {
+      const displayOrder = [
+        'id',
+        'fee',
+        'type',
+        'contractAddress',
+        'contractName',
+        'contractFunction',
+        'contractFunctionArgs',
+      ];
+      return {
+        displayOrder,
+        id: txJson.id,
+        changeAmount: '0',
+        outputAmount: '',
+        outputs: [],
+        changeOutputs: [],
+        fee: txJson.fee,
+        type: tx.type,
+        contractAddress: txJson.payload.contractAddress,
+        contractName: txJson.payload.contractName,
+        contractFunction: txJson.payload.functionName,
+        contractFunctionArgs: txJson.payload.functionArgs,
+      };
+    }
   }
 }

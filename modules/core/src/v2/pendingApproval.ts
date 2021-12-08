@@ -3,15 +3,11 @@
  */
 import { BitGo } from '../bitgo';
 import { validateParams } from '../common';
-import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 
-import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import { BaseCoin } from './baseCoin';
-
-const co = Bluebird.coroutine;
 
 export interface PendingApprovalInfo {
   type: Type;
@@ -170,153 +166,135 @@ export class PendingApproval {
    *
    * Note that this mutates the PendingApproval object in place.
    * @param params
-   * @param callback
    */
-  get(params: Record<string, never> = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
-    const self = this;
-    return co<PendingApproval>(function* (): any {
-      self._pendingApproval = yield self.bitgo.get(self.url()).result();
-      return self;
-    })
-      .call(this)
-      .asCallback(callback);
+  async get(params: Record<string, never> = {}): Promise<PendingApproval> {
+    this._pendingApproval = await this.bitgo.get(this.url()).result();
+    return this;
   }
 
   /**
    * Helper function to ensure that self.wallet is set
    */
-  private populateWallet(): Bluebird<undefined> {
-    const self = this;
-    return co<undefined>(function* (): any {
-      const transactionRequest = self.info().transactionRequest;
-      if (_.isUndefined(transactionRequest)) {
-        throw new Error('missing required object property transactionRequest');
+  private async populateWallet(): Promise<undefined> {
+    const transactionRequest = this.info().transactionRequest;
+    if (_.isUndefined(transactionRequest)) {
+      throw new Error('missing required object property transactionRequest');
+    }
+
+    if (_.isUndefined(this.wallet)) {
+      const updatedWallet: Wallet = await this.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
+
+      if (_.isUndefined(updatedWallet)) {
+        throw new Error('unexpected - unable to get wallet using sourcewallet');
       }
 
-      if (_.isUndefined(self.wallet)) {
-        const updatedWallet: Wallet = yield self.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
+      this.wallet = updatedWallet;
+    }
 
-        if (_.isUndefined(updatedWallet)) {
-          throw new Error('unexpected - unable to get wallet using sourcewallet');
-        }
+    if (this.wallet.id() !== transactionRequest.sourceWallet) {
+      throw new Error('unexpected source wallet for pending approval');
+    }
 
-        self.wallet = updatedWallet;
-      }
-
-      if (self.wallet.id() !== transactionRequest.sourceWallet) {
-        throw new Error('unexpected source wallet for pending approval');
-      }
-
-      // otherwise returns undefined
-    }).call(this);
+    // otherwise returns undefined
+    return;
   }
 
   /**
    * Sets this PendingApproval to an approved state
    */
-  approve(params: ApproveOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      validateParams(params, [], ['walletPassphrase', 'otp'], callback);
+  async approve(params: ApproveOptions = {}): Promise<any> {
+    validateParams(params, [], ['walletPassphrase', 'otp']);
 
-      let canRecreateTransaction = true;
-      /*
-       * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
-       *
-       * The transaction can be recreated if either
-       * – there is an xprv
-       * – there is a walletPassphrase and the wallet is not cold (because if it's cold, the passphrase is of little use)
-       *
-       * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
-       * statement below.
-       */
-      const isColdWallet = !!_.get(self.wallet, '_wallet.isCold');
-      const isOFCWallet = self.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
-      if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
-        canRecreateTransaction = false;
-      }
+    let canRecreateTransaction = true;
+    /*
+     * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
+     *
+     * The transaction can be recreated if either
+     * – there is an xprv
+     * – there is a walletPassphrase and the wallet is not cold (because if it's cold, the passphrase is of little use)
+     *
+     * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
+     * statement below.
+     */
+    const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
+    const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
+    if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
+      canRecreateTransaction = false;
+    }
 
-      const reqId = new RequestTracer();
+    const reqId = new RequestTracer();
 
-      /*
-       * Internal helper function to get the serialized transaction which is being approved
-       */
-      function getApprovalTransaction(): Bluebird<{ txHex: string }> {
-        return co<{ txHex: string }>(function* () {
-          if (self.type() === 'transactionRequest') {
-            /*
-             * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
-             * (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
-             * be reconstructed. It is preferable to reconstruct a tx in order to adhere to the latest network conditions
-             * such as newer unspents, different fees, or a higher sequence id
-             */
-            if (params.tx) {
-              // the approval tx was reconstructed and explicitly specified - pass it through
-              return {
-                txHex: params.tx,
-              };
-            }
-
-            const transaction = _.get(self.info(), `transactionRequest.coinSpecific.${self.baseCoin.type}`);
-
-            // this user may not have spending privileges or a passphrase may not have been passed in
-            if (!canRecreateTransaction) {
-              if (!_.isObject(transaction)) {
-                throw new Error('there is neither an original transaction object nor can a new one be recreated');
-              }
-              return transaction;
-            }
-
-            self.bitgo.setRequestTracer(reqId);
-            yield self.populateWallet();
-            return yield self.recreateAndSignTransaction(params);
-          }
-        }).call(this);
-      }
-
-      /*
-       * Internal helper function to prepare the approval payload and send it to bitgo
-       */
-      function sendApproval(transaction: { txHex: string; halfSigned?: string }): Bluebird<any> {
-        return co(function* () {
-          const approvalParams: any = { state: 'approved', otp: params.otp };
-          if (transaction) {
-            // if the transaction already has a half signed property, we take that directly
-            approvalParams.halfSigned = transaction.halfSigned || transaction;
-          }
-          self.bitgo.setRequestTracer(reqId);
-          return self.bitgo.put(self.url()).send(approvalParams).result();
-        })
-          .call(this)
-          .nodeify(callback);
-      }
-
-      try {
-        const approvalTransaction = (yield getApprovalTransaction()) as any;
-        self.bitgo.setRequestTracer(reqId);
-        return yield sendApproval(approvalTransaction);
-      } catch (e) {
-        if (
-          !canRecreateTransaction &&
-          (e.message.indexOf('could not find unspent output for input') !== -1 ||
-            e.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
-        ) {
-          throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
+    /*
+     * Internal helper function to get the serialized transaction which is being approved
+     */
+    const getApprovalTransaction = async (): Promise<{ txHex: string } | undefined> => {
+      if (this.type() === 'transactionRequest') {
+        /*
+         * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
+         * (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
+         * be reconstructed. It is preferable to reconstruct a tx in order to adhere to the latest network conditions
+         * such as newer unspents, different fees, or a higher sequence id
+         */
+        if (params.tx) {
+          // the approval tx was reconstructed and explicitly specified - pass it through
+          return {
+            txHex: params.tx,
+          };
         }
-        throw e;
+
+        const transaction = _.get(this.info(), `transactionRequest.coinSpecific.${this.baseCoin.type}`) as {
+          txHex: string;
+        };
+
+        // this user may not have spending privileges or a passphrase may not have been passed in
+        if (!canRecreateTransaction) {
+          if (!_.isObject(transaction)) {
+            throw new Error('there is neither an original transaction object nor can a new one be recreated');
+          }
+          return transaction;
+        }
+
+        this.bitgo.setRequestTracer(reqId);
+        await this.populateWallet();
+        return await this.recreateAndSignTransaction(params);
       }
-    })
-      .call(this)
-      .asCallback(callback);
+    };
+
+    /*
+     * Internal helper function to prepare the approval payload and send it to bitgo
+     */
+    const sendApproval = (transaction: { txHex: string; halfSigned?: string }): Promise<any> => {
+      const approvalParams: any = { state: 'approved', otp: params.otp };
+      if (transaction) {
+        // if the transaction already has a half signed property, we take that directly
+        approvalParams.halfSigned = transaction.halfSigned || transaction;
+      }
+      this.bitgo.setRequestTracer(reqId);
+      return this.bitgo.put(this.url()).send(approvalParams).result();
+    };
+
+    try {
+      const approvalTransaction = (await getApprovalTransaction()) as any;
+      this.bitgo.setRequestTracer(reqId);
+      return await sendApproval(approvalTransaction);
+    } catch (e) {
+      if (
+        !canRecreateTransaction &&
+        (e.message.indexOf('could not find unspent output for input') !== -1 ||
+          e.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
+      ) {
+        throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
+      }
+      throw e;
+    }
   }
 
   /**
    * Sets this PendingApproval to a rejected state
    * @param params
-   * @param callback
    */
-  reject(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result()).nodeify(callback);
+  async reject(params: Record<string, never> = {}): Promise<any> {
+    return await this.bitgo.put(this.url()).send({ state: 'rejected' }).result();
   }
 
   /**
@@ -324,78 +302,71 @@ export class PendingApproval {
    *
    * @deprecated
    * @param params
-   * @param callback
    */
-  cancel(params: Record<string, never> = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.reject(params, callback);
+  async cancel(params: Record<string, never> = {}): Promise<any> {
+    return await this.reject(params);
   }
 
   /**
    * Recreate a transaction for a pending approval to respond to updated network conditions
    * @param params
-   * @param callback
    */
-  recreateAndSignTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function* () {
-      // this method only makes sense with existing transaction requests
-      const transactionRequest = self.info().transactionRequest;
-      if (_.isUndefined(transactionRequest)) {
-        throw new Error('cannot recreate transaction without transaction request');
-      }
+  async recreateAndSignTransaction(params: any = {}): Promise<any> {
+    // this method only makes sense with existing transaction requests
+    const transactionRequest = this.info().transactionRequest;
+    if (_.isUndefined(transactionRequest)) {
+      throw new Error('cannot recreate transaction without transaction request');
+    }
 
-      if (_.isUndefined(self.wallet)) {
-        throw new Error('cannot recreate transaction without wallet');
-      }
+    if (_.isUndefined(this.wallet)) {
+      throw new Error('cannot recreate transaction without wallet');
+    }
 
-      const originalPrebuild = transactionRequest.coinSpecific[self.baseCoin.type];
+    const originalPrebuild = transactionRequest.coinSpecific[this.baseCoin.type];
 
-      const recipients = transactionRequest.recipients;
-      const prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
+    const recipients = transactionRequest.recipients;
+    const prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
 
-      if (!_.isUndefined(originalPrebuild.hopTransaction)) {
-        prebuildParams.hop = true;
-      }
+    if (!_.isUndefined(originalPrebuild.hopTransaction)) {
+      prebuildParams.hop = true;
+    }
 
-      if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'consolidate') {
-        // consolidate tag is in the build params - this is a consolidation transaction, so
-        // it needs to be rebuilt using the special consolidation build route
-        prebuildParams.prebuildTx = yield self.bitgo
-          .post(self.wallet.url(`/consolidateUnspents`))
-          .send(prebuildParams)
-          .result();
-        delete prebuildParams.recipients;
-      }
+    if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'consolidate') {
+      // consolidate tag is in the build params - this is a consolidation transaction, so
+      // it needs to be rebuilt using the special consolidation build route
+      prebuildParams.prebuildTx = await this.bitgo
+        .post(this.wallet.url(`/consolidateUnspents`))
+        .send(prebuildParams)
+        .result();
+      delete prebuildParams.recipients;
+    }
 
-      const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);
-      // compare PAYGo fees
-      const originalParsedTransaction = (yield self.baseCoin.parseTransaction({
-        txParams: prebuildParams,
-        wallet: self.wallet,
-        txPrebuild: originalPrebuild,
-      })) as any;
-      const recreatedParsedTransaction = (yield self.baseCoin.parseTransaction({
-        txParams: prebuildParams,
-        wallet: self.wallet,
-        txPrebuild: signedTransaction,
-      })) as any;
+    const signedTransaction = await this.wallet.prebuildAndSignTransaction(prebuildParams);
+    // compare PAYGo fees
+    const originalParsedTransaction = (await this.baseCoin.parseTransaction({
+      txParams: prebuildParams,
+      wallet: this.wallet,
+      txPrebuild: originalPrebuild,
+    })) as any;
+    const recreatedParsedTransaction = (await this.baseCoin.parseTransaction({
+      txParams: prebuildParams,
+      wallet: this.wallet,
+      txPrebuild: signedTransaction,
+    })) as any;
 
-      if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
-        return signedTransaction;
-      }
-
-      if (!_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)) {
-        throw new Error('implicit external spend amount could not be determined');
-      }
-      if (
-        !_.isUndefined(originalParsedTransaction.implicitExternalSpendAmount) &&
-        recreatedParsedTransaction.implicitExternalSpendAmount > originalParsedTransaction.implicitExternalSpendAmount
-      ) {
-        throw new Error('recreated transaction is using a higher pay-as-you-go-fee');
-      }
+    if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
       return signedTransaction;
-    })
-      .call(this)
-      .asCallback(callback);
+    }
+
+    if (!_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)) {
+      throw new Error('implicit external spend amount could not be determined');
+    }
+    if (
+      !_.isUndefined(originalParsedTransaction.implicitExternalSpendAmount) &&
+      recreatedParsedTransaction.implicitExternalSpendAmount > originalParsedTransaction.implicitExternalSpendAmount
+    ) {
+      throw new Error('recreated transaction is using a higher pay-as-you-go-fee');
+    }
+    return signedTransaction;
   }
 }

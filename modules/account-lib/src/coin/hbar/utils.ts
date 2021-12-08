@@ -16,7 +16,7 @@ const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
  * @returns {boolean} - the validation result
  */
 export function isValidAddress(address: string): boolean {
-  if (_.isEmpty(address)) {
+  if (_.isEmpty(address) || !address.match(/^[0-9]+(?:(?=\.)(\.[0-9]+){2}|(?!\.))$/)) {
     return false;
   }
   try {

@@ -15,7 +15,7 @@ describe('HBAR util library', function () {
     });
 
     it('should fail to validate invalid addresses', function () {
-      const invalidAddresses = ['0.0', '0.0.0.0', 'abc', 'a.b.c', ''];
+      const invalidAddresses = ['0.0', '0.0.0.0', 'abc', 'a.b.c', '', '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84'];
 
       for (const address of invalidAddresses) {
         should.doesNotThrow(() => Utils.isValidAddress(address));
