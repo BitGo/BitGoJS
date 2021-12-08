@@ -236,6 +236,7 @@ export enum UnderlyingAsset {
   BUSD = 'busd',
   BUY = 'buy',
   BXX = 'bxx',
+  BXXV1 = 'bxxv1',
   BZZ = 'bzz',
   C8P = 'c8p',
   CACXT = 'cacxt',
