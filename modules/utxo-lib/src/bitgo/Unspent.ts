@@ -8,15 +8,17 @@ import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
  */
 export interface Unspent {
   /**
-   * Format: ${txid}:${vout}
+   * Format: ${txid}:${vout}.
+   * Use `parseOutputId(id)` to parse.
    */
   id: string;
   /**
-   * In network-specific representation
+   * The network-specific encoded address.
+   * Use `toOutputScript(address, network)` to obtain scriptPubKey.
    */
   address: string;
   /**
-   * In satoshi
+   * The amount in satoshi.
    */
   value: number;
 }
