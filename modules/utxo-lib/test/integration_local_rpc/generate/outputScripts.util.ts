@@ -1,12 +1,15 @@
 import { Transaction, TxOutput } from 'bitcoinjs-lib';
 import * as utxolib from '../../../src';
-
-import { Network } from '../../../src/networkTypes';
-import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
-import { isTriple } from '../../../src/bitgo/types';
-import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
+import {
+  createOutputScript2of3,
+  isScriptType2Of3,
+  isSupportedScriptType,
+  ScriptType2Of3,
+  scriptTypes2Of3,
+} from '../../../src/bitgo/outputScripts';
 
 import {
+  isTriple,
   createTransactionBuilderForNetwork,
   createTransactionFromBuffer,
   signInput2Of3,
@@ -21,29 +24,22 @@ export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
 export const scriptTypes = [...scriptTypesSingleSig, ...scriptTypes2Of3];
 export type ScriptType = ScriptType2Of3 | ScriptTypeSingleSig;
 
-export function requiresSegwit(scriptType: ScriptType): boolean {
-  return scriptType === 'p2wkh' || scriptType === 'p2wsh' || scriptType === 'p2shP2wsh';
-}
-
-export function supportsSegwit(network: Network): boolean {
-  return isBitcoin(network) || isLitecoin(network) || isBitcoinGold(network);
-}
-
-export function supportsTaproot(network: Network): boolean {
-  // TODO: add litecoin once taproot activates
-  return isBitcoin(network);
-}
+type Network = utxolib.Network;
 
 export function isSupportedDepositType(network: Network, scriptType: ScriptType): boolean {
-  return scriptType === 'p2tr' ? supportsTaproot(network) : !requiresSegwit(scriptType) || supportsSegwit(network);
+  if (scriptType === 'p2pkh') {
+    return true;
+  }
+
+  if (scriptType === 'p2wkh') {
+    return utxolib.supportsSegwit(network);
+  }
+
+  return isSupportedScriptType(network, scriptType);
 }
 
 export function isSupportedSpendType(network: Network, scriptType: ScriptType): boolean {
-  if (!scriptTypes2Of3.includes(scriptType as ScriptType2Of3)) {
-    return false;
-  }
-
-  return isSupportedDepositType(network, scriptType);
+  return isScriptType2Of3(scriptType) && isSupportedScriptType(network, scriptType);
 }
 
 /**

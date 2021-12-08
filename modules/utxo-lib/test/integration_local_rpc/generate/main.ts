@@ -10,13 +10,12 @@ import {
   createScriptPubKey,
   createSpendTransaction,
   isSupportedDepositType,
-  isSupportedSpendType,
   ScriptType,
   scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
-import { isScriptType2Of3 } from '../../../src/bitgo/outputScripts';
+import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import { sendFromFaucet, generateToFaucet } from './faucet';
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
@@ -72,7 +71,7 @@ async function createTransactionsForScriptType(
   const deposit1Txid = await sendFromFaucet(rpc, address, 1);
   const deposit1Tx = await rpc.getRawTransaction(deposit1Txid);
   await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, deposit1Txid);
-  if (!isScriptType2Of3(scriptType) || !isSupportedSpendType(network, scriptType)) {
+  if (!isScriptType2Of3(scriptType) || !isSupportedScriptType(network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
   }

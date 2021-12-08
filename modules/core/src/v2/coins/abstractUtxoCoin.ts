@@ -321,7 +321,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return version;
     } catch (e) {
       // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
-      if (!this.supportsP2wsh()) {
+      if (!this.supportsAddressType('p2wsh') && !this.supportsAddressType('p2tr')) {
         return;
       }
     }
@@ -367,7 +367,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const addressVersionValid = _.isNumber(addressVersion) && validVersions.includes(addressVersion);
     const addressPrefix = this.getAddressPrefix(address);
 
-    if (!this.supportsP2wsh() || _.isUndefined(addressPrefix)) {
+    if (!this.supportsAddressType('p2wsh') || _.isUndefined(addressPrefix)) {
       return addressVersionValid;
     }
 
@@ -971,45 +971,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports spending from wrapped segwit outputs
-   * @returns {boolean}
-   */
-  supportsP2shP2wsh() {
-    return false;
-  }
-
-  /**
-   * Indicates whether a coin supports spending from native segwit outputs
-   * @returns {boolean}
-   */
-  supportsP2wsh() {
-    return false;
-  }
-
-  /**
-   * Indicates whether a coin supports spending from segwit v1 taproot outputs
-   * @returns {boolean}
-   */
-  supportsP2tr() {
-    return false;
-  }
-
-  /**
    * @param addressType
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    switch (addressType) {
-      case 'p2sh':
-        return true;
-      case 'p2shP2wsh':
-        return this.supportsP2shP2wsh();
-      case 'p2wsh':
-        return this.supportsP2wsh();
-      case 'p2tr':
-        return this.supportsP2tr();
-    }
-    throw new errors.UnsupportedAddressTypeError();
+    return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
   }
 
   /**
