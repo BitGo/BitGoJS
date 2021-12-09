@@ -19,7 +19,7 @@ describe('DOT:', function () {
       const keyPair = new accountLib.Dot.KeyPair();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair.getKeys(), messageToSign);
-      keyPair.verifySignature(messageToSign, Uint8Array.from(Buffer.from(signature, 'hex'))).should.equals(true);
+      keyPair.verifySignature(messageToSign, Uint8Array.from(signature)).should.equals(true);
     });
 
     it('should fail with missing private key', async () => {

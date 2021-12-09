@@ -3,7 +3,6 @@
 //
 
 import { CoinKind, coins, KeyCurve, CoinFamily, UnderlyingAsset } from '@bitgo/statics';
-import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import * as nock from 'nock';
 import * as should from 'should';
@@ -12,15 +11,13 @@ import * as sinon from 'sinon';
 import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
 
-const co = Bluebird.coroutine;
-
-describe('V2 Keychains', function v2keychains() {
+describe('V2 Keychains', function () {
   let bitgo;
   let basecoin;
   let keychains;
   let bgUrl;
 
-  before(function before() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
@@ -30,17 +27,18 @@ describe('V2 Keychains', function v2keychains() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
 
-  describe('Add Keychain', function addKeychain() {
-    it('should add a keychain', co(function *addKeychain() {
-      nock(bgUrl)
+  describe('Add Keychain', function () {
+    it('should add a keychain', async function () {
+      const scope = nock(bgUrl)
         .post('/api/v2/tltc/key', function (body) {
           body.pub.should.equal('pub');
           body.derivedFromParentWithSeed.should.equal('derivedFromParentWithSeed');
           return true;
         })
         .reply(200, {});
-      yield keychains.add({ pub: 'pub', derivedFromParentWithSeed: 'derivedFromParentWithSeed' });
-    }));
+      await keychains.add({ pub: 'pub', derivedFromParentWithSeed: 'derivedFromParentWithSeed' });
+      scope.done();
+    });
   });
 
   /**
@@ -76,13 +74,13 @@ describe('V2 Keychains', function v2keychains() {
     });
   });
 
-  describe('Update Password', function updatePassword() {
+  describe('Update Password', function () {
 
     const oldPassword = 'oldPassword';
     const newPassword = 'newPassword';
     const otherPassword = 'otherPassword';
 
-    describe('should fail', function describeSuccess() {
+    describe('should fail', function () {
       let sandbox;
       beforeEach(function () {
         sandbox = sinon.createSandbox();
@@ -92,21 +90,21 @@ describe('V2 Keychains', function v2keychains() {
         sandbox.restore();
       });
 
-      it('to update the password', co(function* coItFail() {
-        yield keychains.updatePassword({ newPassword: '5678' })
+      it('to update the password', async function () {
+        await keychains.updatePassword({ newPassword: '5678' })
           .should.be.rejectedWith('Missing parameter: oldPassword');
 
-        yield keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
+        await keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
           .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
 
-        yield keychains.updatePassword({ oldPassword: '1234' })
+        await keychains.updatePassword({ oldPassword: '1234' })
           .should.be.rejectedWith('Missing parameter: newPassword');
 
-        yield keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
+        await keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
           .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
-      }));
+      });
 
-      it('to update the password for a single keychain', co(function* coItFail() {
+      it('to update the password for a single keychain', function () {
         (() => keychains.updateSingleKeychainPassword({ newPassword: '5678' }))
           .should.throw('expected old password to be a string');
 
@@ -135,9 +133,9 @@ describe('V2 Keychains', function v2keychains() {
         const keychain = { encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
         (() => keychains.updateSingleKeychainPassword({ oldPassword, newPassword, keychain }))
           .should.throw('password used to decrypt keychain private key is incorrect');
-      }));
+      });
 
-      it('on any other error', co(function* coItFail() {
+      it('on any other error', async function () {
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -152,12 +150,12 @@ describe('V2 Keychains', function v2keychains() {
 
         sandbox.stub(keychains, 'updateSingleKeychainPassword').throws('error', 'some random error');
 
-        yield keychains.updatePassword({ oldPassword, newPassword })
+        await keychains.updatePassword({ oldPassword, newPassword })
           .should.be.rejectedWith('some random error');
-      }));
+      });
     });
 
-    describe('successful password update', function describeSuccess() {
+    describe('successful password update', function () {
       const validateKeys = function (keys, newPassword) {
         _.each(keys, function (encryptedPrv, pub) {
           pub.should.startWith('xpub');
@@ -166,7 +164,7 @@ describe('V2 Keychains', function v2keychains() {
         });
       };
 
-      it('receive only one page when listing keychains', co(function *coOnePageIt() {
+      it('receive only one page when listing keychains', async function () {
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
@@ -183,11 +181,11 @@ describe('V2 Keychains', function v2keychains() {
             ],
           });
 
-        const keys = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+        const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword);
-      }));
+      });
 
-      it('receive multiple pages when listing keychains', co(function *coMultiplePageIt() {
+      it('receive multiple pages when listing keychains', async function () {
         const prevId = 'prevId';
         nock(bgUrl)
           .get('/api/v2/tltc/key')
@@ -224,9 +222,9 @@ describe('V2 Keychains', function v2keychains() {
             ],
           });
 
-        const keys = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+        const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword);
-      }));
+      });
 
       it('single keychain password update', () => {
         const prv = 'xprvtest';

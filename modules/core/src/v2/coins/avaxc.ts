@@ -1,12 +1,11 @@
 /**
  * @prettier
  */
-import { BaseCoin, KeyPair, SignedTransaction } from '../baseCoin';
+import { BaseCoin, KeyPair } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { AbstractEthLikeCoin, EthSignTransactionOptions, SignedEthLikeTransaction } from './abstractEthLikeCoin';
 import { AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
-import { NodeCallback } from '../types';
 
 export class AvaxC extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -40,10 +39,7 @@ export class AvaxC extends AbstractEthLikeCoin {
     return !!address && AvaxCAccountLib.Utils.isValidEthAddress(address);
   }
 
-  async signTransaction(
-    params: EthSignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Promise<SignedEthLikeTransaction> {
+  async signTransaction(params: EthSignTransactionOptions): Promise<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new AvaxCAccountLib.KeyPair({ prv: params.prv }).getKeys().prv!);

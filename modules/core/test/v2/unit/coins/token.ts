@@ -1,5 +1,4 @@
-import * as Bluebird from 'bluebird';
-import * as should from 'should';
+import 'should';
 import { BaseCoin } from '../../../../src/v2/baseCoin';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -17,9 +16,7 @@ describe('Virtual Token:', function () {
   });
 
   it('should wait for client constants before instantiating coin', async function () {
-    const promise = bitgo.token('terc');
-    should(promise).be.instanceOf(Bluebird.Promise);
-    const erc = await promise;
+    const erc = await bitgo.token('terc');
     erc.should.be.instanceOf(BaseCoin);
     erc.type.should.equal('terc');
     erc.tokenContractAddress.should.equal('0x945ac907cf021a6bcd07852bb3b8c087051706a9');

@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-import * as should from 'should';
+import 'should';
 import * as sinon from 'sinon';
 require('should-sinon');
 import '../lib/asserts';
@@ -231,8 +231,7 @@ describe('V2 Wallet:', function () {
         address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       };
-      const error = await bitgo.getAsyncError(ethWallet.send(params));
-      should.exist(error);
+      await ethWallet.send(params).should.be.rejected();
     });
 
     it('should search for pending transaction correctly', async function () {

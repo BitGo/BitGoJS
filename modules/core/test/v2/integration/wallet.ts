@@ -394,8 +394,7 @@ describe('V2 Wallet:', function () {
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       };
 
-      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
-      should.exist(error);
+      yield wallet.sendMany(params).should.be.rejected();
     }));
 
     it('should send a transaction to the wallet itself with sendMany', function () {

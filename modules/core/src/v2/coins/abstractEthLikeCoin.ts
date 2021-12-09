@@ -3,7 +3,6 @@
  */
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { getBuilder, Eth } from '@bitgo/account-lib';
-import * as Bluebird from 'bluebird';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
@@ -14,7 +13,6 @@ import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
-  SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -25,7 +23,6 @@ import {
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
-import { NodeCallback } from '../types';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
 import BigNumber from 'bignumber.js';
 
@@ -130,11 +127,8 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     };
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress({ address }: VerifyAddressOptions): boolean {
@@ -144,14 +138,11 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
-  async signTransaction(
-    params: EthSignTransactionOptions,
-    callback?: NodeCallback<SignedTransaction>
-  ): Promise<SignedEthLikeTransaction> {
+  async signTransaction(params: EthSignTransactionOptions): Promise<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
@@ -185,21 +176,16 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * 2) Build transaction - build our transaction for the amount
    * 3) Send signed build - send our signed build to a public node
    * @param params The options with which to recover
-   * @param callback Callback for the result of this operation
    */
-  recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+  async recover(params: any): Promise<any> {
     throw new MethodNotImplementedError();
   }
 
   /**
    * Explain a transaction from txHex
    * @param params The options with which to explain the transaction
-   * @param callback Callback for the result of this operation
    */
-  async explainTransaction(
-    params: ExplainTransactionOptions,
-    callback?: NodeCallback<TransactionExplanation>
-  ): Promise<TransactionExplanation> {
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');

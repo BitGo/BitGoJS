@@ -1,9 +1,8 @@
 import * as should from 'should';
 import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
-import * as Bluebird from 'bluebird';
+
 import { Environments } from '../../../../src';
-const co = Bluebird.coroutine;
 
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -250,7 +249,7 @@ describe('XLM:', function () {
     };
     const signedTxBase64 = 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAUrgwAkAAABAOExcvVJIUJv9HuVfbV0y7lRPRARv4wDtcdhHG7QN40h5wQ2uwPF52OGQ8KY+66a1A/8lNKB75sgj2xj44s8lDQ==';
 
-    before(co(function *() {
+    before(function () {
       basecoin = bitgo.coin('txlm');
       const walletData = {
         id: '5a78dd561c6258a907f1eeaee132f796',
@@ -301,16 +300,16 @@ describe('XLM:', function () {
         pendingApprovals: [],
       };
       wallet = new Wallet(bitgo, basecoin, walletData);
-    }));
+    });
 
-    it('should sign a prebuild', co(function *() {
+    it('should sign a prebuild', async function () {
       // sign transaction
-      halfSignedTransaction = yield wallet.signTransaction({
+      halfSignedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: userKeychain.prv,
       });
       halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
-    }));
+    });
 
     it('should verify the user signature on a tx', function () {
       const userPub = userKeychain.pub;
@@ -478,7 +477,7 @@ describe('XLM:', function () {
     });
 
     describe('trustline transactions', function () {
-      it('should fail to verify a trustline transaction with unmatching number of trustlines', co(function *() {
+      it('should fail to verify a trustline transaction with unmatching number of trustlines', async function () {
         const txParams = {
           recipients: [],
           type: 'trustline',
@@ -493,7 +492,7 @@ describe('XLM:', function () {
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
-        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
           disableNetworking: true,
           keychains: {
@@ -501,11 +500,11 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline operations');
-      }));
+      });
 
-      it('should fail to verify a trustline transaction with unmatching trustlines', co(function *() {
+      it('should fail to verify a trustline transaction with unmatching trustlines', async function () {
         const txParams = {
           type: 'trustline',
           recipients: [],
@@ -523,7 +522,7 @@ describe('XLM:', function () {
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
-        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
           disableNetworking: true,
           keychains: {
@@ -531,11 +530,11 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
-      }));
+      });
 
-      it('should fail to verify a trustline transaction with unmatching limit', co(function *() {
+      it('should fail to verify a trustline transaction with unmatching limit', async function () {
         const txParams = {
           type: 'trustline',
           recipients: [],
@@ -554,7 +553,7 @@ describe('XLM:', function () {
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
-        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const txPrebuild = await wallet.prebuildTransaction(txParams);
         const verification = {
           disableNetworking: true,
           keychains: {
@@ -562,9 +561,9 @@ describe('XLM:', function () {
             backup: { pub: backupKeychain.pub },
           },
         };
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
-      }));
+      });
 
       it('should verify a trustline transaction', async function () {
         const txParams = {
@@ -607,7 +606,7 @@ describe('XLM:', function () {
 
   describe('Federation lookups:', function () {
     describe('Look up by stellar address:', function () {
-      it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
+      it('should fail to loop up an invalid stellar address with a bitgo.com domain', async function () {
         const stellarAddress = 'invalid*bitgo.com';
 
         nock(uri)
@@ -623,9 +622,9 @@ describe('XLM:', function () {
             name: 'UserNotFound',
           });
 
-        yield basecoin.federationLookupByName(stellarAddress)
+        await basecoin.federationLookupByName(stellarAddress)
           .should.be.rejectedWith(`user not found: ${stellarAddress}`);
-      }));
+      });
 
       it('should resolve a stellar address into an account', async function () {
         const stellarAddress = 'tester*bitgo.com';
@@ -653,7 +652,7 @@ describe('XLM:', function () {
     });
 
     describe('Look up by account id:', function () {
-      it('should fail to look up an account if the account id is invalid', co(function *() {
+      it('should fail to look up an account if the account id is invalid', async function () {
         const accountId = '123';
 
         nock(uri)
@@ -666,9 +665,9 @@ describe('XLM:', function () {
             detail: 'invalid id: ' + accountId,
           });
 
-        yield basecoin.federationLookupByAccountId(accountId)
+        await basecoin.federationLookupByAccountId(accountId)
           .should.be.rejectedWith(`invalid id: ${accountId}`);
-      }));
+      });
 
       it('should return only account_id for non-bitgo accounts', async function () {
         const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';

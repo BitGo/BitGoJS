@@ -3,7 +3,6 @@
  */
 
 import * as bip32 from 'bip32';
-import { coroutine as co } from 'bluebird';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
@@ -24,27 +23,25 @@ describe('Trade Payloads', function () {
   let tradingAccount;
   let bgUrl;
 
-  before(
-    co(function* () {
-      bitgo = new TestBitGo({ env: 'mock', microservicesUri });
-      bitgo.initializeTestVars();
-      basecoin = bitgo.coin('ofc');
-      basecoin.keychains();
+  before(function () {
+    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('ofc');
+    basecoin.keychains();
 
-      enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
+    enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
 
-      const walletData = {
-        id: 'walletId',
-        coin: 'tofc',
-        enterprise: enterprise.id,
-        keys: ['keyid'],
-      };
+    const walletData = {
+      id: 'walletId',
+      coin: 'tofc',
+      enterprise: enterprise.id,
+      keys: ['keyid'],
+    };
 
-      const wallet = new Wallet(bitgo, basecoin, walletData);
-      tradingAccount = wallet.toTradingAccount();
-      bgUrl = common.Environments[bitgo.getEnv()].uri;
-    })
-  );
+    const wallet = new Wallet(bitgo, basecoin, walletData);
+    tradingAccount = wallet.toTradingAccount();
+    bgUrl = common.Environments[bitgo.getEnv()].uri;
+  });
 
   it('should create and sign a trade payload with fees', async function () {
     const xprv =

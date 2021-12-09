@@ -1,8 +1,5 @@
 import 'should';
 
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
-
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 const ripple = require('../../../../src/ripple');
@@ -120,14 +117,10 @@ describe('XRP:', function () {
     coSignedHexTransaction.id.should.equal(coSignedJsonTransaction.id);
   });
 
-  it('Should be unable to explain bogus XRP transaction', co(function *() {
-    try {
-      yield basecoin.explainTransaction({ txHex: 'abcdefgH' });
-      throw new Error('this is the wrong error!');
-    } catch (e) {
-      e.message.should.equal('txHex needs to be either hex or JSON string for XRP');
-    }
-  }));
+  it('Should be unable to explain bogus XRP transaction', async function () {
+    await basecoin.explainTransaction({ txHex: 'abcdefgH' })
+      .should.be.rejectedWith('txHex needs to be either hex or JSON string for XRP');
+  });
 
 
   describe('Fee Management', () => {
