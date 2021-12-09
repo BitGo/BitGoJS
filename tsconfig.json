@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2017",
+    "target": "es2019",
     "lib": [
       "dom",
-      "es2017"
+      "es2019"
     ],
     "declaration": true,
     "resolveJsonModule": true,

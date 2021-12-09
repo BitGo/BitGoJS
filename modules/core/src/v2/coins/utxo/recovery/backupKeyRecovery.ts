@@ -258,7 +258,7 @@ export async function backupKeyRecovery(
     RootWalletKeys.defaultPrefix,
   ]);
 
-  const unspents: WalletUnspent[] = _.flatten(
+  const unspents: WalletUnspent[] = (
     await Promise.all(
       outputScripts.scriptTypes2Of3
         .filter(
@@ -273,7 +273,7 @@ export async function backupKeyRecovery(
           [] as Promise<WalletUnspent[]>[]
         )
     )
-  );
+  ).flat();
 
   // Execute the queries and gather the unspents
   const totalInputAmount = unspents.reduce((sum, u) => sum + u.value, 0);
