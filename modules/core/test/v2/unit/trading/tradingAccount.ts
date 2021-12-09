@@ -1,4 +1,3 @@
-import { coroutine as co } from 'bluebird';
 import * as should from 'should';
 import * as nock from 'nock';
 
@@ -14,7 +13,7 @@ describe('Trading Accounts', function () {
   let enterprise;
   let tradingAccount;
 
-  before(co(function *() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
@@ -29,7 +28,7 @@ describe('Trading Accounts', function () {
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
-  }));
+  });
 
   it('should calculate settlement fees', async function () {
     const msScope = nock(microservicesUri)

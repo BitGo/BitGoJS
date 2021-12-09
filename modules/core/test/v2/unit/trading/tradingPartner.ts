@@ -1,4 +1,3 @@
-import { coroutine as co } from 'bluebird';
 import * as nock from 'nock';
 import * as should from 'should';
 
@@ -18,7 +17,7 @@ describe('Trading Partners', function () {
   let enterprise;
   let tradingAccount;
 
-  before(co(function *() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
@@ -37,7 +36,7 @@ describe('Trading Partners', function () {
 
     const wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
-  }));
+  });
 
   it('should refer check trading partner by code', async function () {
     const scope = nock(microservicesUri)

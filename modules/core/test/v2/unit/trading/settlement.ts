@@ -1,4 +1,3 @@
-import { coroutine as co } from 'bluebird';
 import * as should from 'should';
 import * as nock from 'nock';
 
@@ -20,7 +19,7 @@ describe('Settlements', function () {
   let tradingAccount;
   let bgUrl;
 
-  before(co(function *() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
@@ -40,7 +39,7 @@ describe('Settlements', function () {
     const wallet = new Wallet(bitgo, basecoin, walletData);
     tradingAccount = wallet.toTradingAccount();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
-  }));
+  });
 
   it('should list all settlements', async function () {
     const scope = nock(microservicesUri)
