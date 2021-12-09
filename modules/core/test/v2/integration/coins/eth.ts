@@ -88,7 +88,7 @@ describe('ETH:', function () {
 
     it('should error when the backup key is unfunded (cannot pay gas)', co(function *() {
       const basecoin = bitgo.coin('teth');
-      const error = yield bitgo.getAsyncError(basecoin.recover({
+      yield basecoin.recover({
         userKey: '{"iv":"VNvG6t3fHfxMcfvNuafYYA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
           ':"ccm","adata":"","cipher":"aes","salt":"mc9pCk3H43w=","ct":"Qe4Z1evaXcrOMC\n' +
           'cQ/XMVVBO9M/99D1QQ6LxkG8z3fQtwwOVXM3/6doNrriprUqs+adpFC93KRcAaDroL1E6o17J2k\n' +
@@ -100,10 +100,8 @@ describe('ETH:', function () {
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
-      }));
-
-      should.exist(error);
-      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.');
+      })
+        .should.be.rejectedWith('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.');
     }));
   });
 

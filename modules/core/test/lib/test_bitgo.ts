@@ -260,15 +260,6 @@ BitGo.prototype.authenticateOfcTestUser = async function (otp) {
   response.should.have.property('user');
 };
 
-BitGo.prototype.getAsyncError = async function (prom) {
-  // Hacky because we can't use assert.throws with async functions
-  try {
-    await prom;
-  } catch (e) {
-    return e;
-  }
-};
-
 BitGo.prototype.checkFunded = async function () {
   // We are testing both BTC and ETH funds here, to make sure that
   // we don't spend for already 'failed' test runs (e.g., spending ETH when we don't have enough BTC)
