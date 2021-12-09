@@ -18,8 +18,6 @@ import bs58 = require('bs58');
 import * as common from './common';
 import { EnvironmentName, AliasEnvironments } from './v2/environments';
 import { NodeCallback, RequestTracer as IRequestTracer, V1Network } from './v2/types';
-import * as Bluebird from 'bluebird';
-import co = Bluebird.coroutine;
 import pjson = require('../package.json');
 import moment = require('moment');
 import * as _ from 'lodash';
@@ -618,14 +616,10 @@ export class BitGo {
   /**
    * Create a basecoin object for a virtual token
    * @param tokenName
-   * @param callback
    */
-  token(tokenName: string, callback?: NodeCallback<BaseCoin>): Bluebird<BaseCoin> {
-    const self = this;
-    return co<BaseCoin>(function *() {
-      yield self.fetchConstants();
-      return self.coin(tokenName);
-    }).call(this).asCallback(callback);
+  async token(tokenName: string): Promise<BaseCoin> {
+    await this.fetchConstants();
+    return this.coin(tokenName);
   }
 
   /**
