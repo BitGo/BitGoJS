@@ -371,8 +371,8 @@ describe('Wallet Prototype Methods', function () {
       // add first signature
       transaction.keychain = userKeypair;
       transaction.forceBCH = true;
-      await fakeProdWallet.signTransaction(transaction)
-        .should.be.rejectedWith('BCH does not support segwit inputs');
+      (() => fakeProdWallet.signTransaction(transaction))
+        .should.throw('BCH does not support segwit inputs');
     });
 
     it('mixed p2sh & segwit', async function () {

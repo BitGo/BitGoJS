@@ -151,7 +151,7 @@ describe('Ethereum Hop Transactions', function () {
       badBuildParams.recipients[0].address = '0x54bf1609aeed804aa231f08c53dbb18f7d374615';
 
       await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams)
-        .should.be.rejectedWith('does not equal original recipient');
+        .should.be.rejectedWith(/does not equal original recipient/);
     });
 
     it('should fail if the HSM prebuild tx amount is wrong', async function () {
@@ -159,7 +159,7 @@ describe('Ethereum Hop Transactions', function () {
       badBuildParams.recipients[0].amount = '50000000';
 
       await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams)
-        .should.be.rejectedWith('does not equal original amount');
+        .should.be.rejectedWith(/does not equal original amount/);
     });
 
     it('should fail if the HSM signature is invalid', async function () {
