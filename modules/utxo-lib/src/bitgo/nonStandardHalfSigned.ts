@@ -8,6 +8,7 @@ import { classify, script as bscript, TxInput } from '../';
  */
 export function padInputScript(input: TxInput, signatureIndex: number): void {
   if (![0, 1, 2].includes(signatureIndex)) {
+    /* istanbul ignore next */
     throw new Error(`invalid signature index: must be one of [0, 1, 2]`);
   }
 
@@ -21,19 +22,23 @@ export function padInputScript(input: TxInput, signatureIndex: number): void {
   // The shape of a non-standard half-signed input is
   //   OP_0 <signature> <p2ms>
   if (!decompiledSigScript || decompiledSigScript.length !== 3) {
+    /* istanbul ignore next */
     return;
   }
 
   const [op0, signatureBuffer, sigScript] = decompiledSigScript;
   if (op0 !== opcodes.OP_0 && !(Buffer.isBuffer(op0) && op0.length === 0)) {
+    /* istanbul ignore next */
     return;
   }
 
   if (!Buffer.isBuffer(sigScript)) {
+    /* istanbul ignore next */
     return;
   }
 
   if (classify.output(sigScript) !== classify.types.P2MS) {
+    /* istanbul ignore next */
     return;
   }
 
