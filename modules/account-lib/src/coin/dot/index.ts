@@ -8,4 +8,5 @@ export { TransferBuilder } from './transferBuilder';
 export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { TransactionExplanation } from './iface';
 export { Utils };
