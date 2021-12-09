@@ -3,8 +3,17 @@
  */
 import * as bip32 from 'bip32';
 import { Codes } from '@bitgo/unspents';
-import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as utxolib from '@bitgo/utxo-lib';
+import {
+  getExternalChainCode,
+  isChainCode,
+  RootWalletKeys,
+  toOutput,
+  Unspent,
+  verifySignatureWithUnspent,
+  WalletUnspentSigner,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
+import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -52,10 +61,8 @@ import { sanitizeLegacyPath } from '../../bip32path';
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
-import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction, verifyWalletTransactionWithUnspents, WalletUnspentSigner } from './utxo/sign';
-import { RootWalletKeys } from './utxo/WalletKeys';
+import { isReplayProtectionUnspent } from './utxo/replayProtection';
+import { signAndVerifyWalletTransaction } from './utxo/sign';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -1009,8 +1016,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param chain
    * @return true iff coin supports spending from chain
    */
-  supportsAddressChain(chain: number) {
-    return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
+  supportsAddressChain(chain: number): boolean {
+    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
   }
 
   keyIdsForSigning(): number[] {
@@ -1032,14 +1039,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   generateAddress(params: GenerateAddressOptions): AddressDetails {
     const { keychains, threshold, chain, index, segwit = false, bech32 = false } = params;
-    let derivationChain = 0;
-    if (_.isNumber(chain) && _.isInteger(chain) && chain > 0) {
+    let derivationChain = getExternalChainCode('p2sh');
+    if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
       derivationChain = chain;
     }
 
     function convertFlagsToAddressType(): ScriptType2Of3 {
-      if (_.isInteger(chain)) {
-        return utxolib.bitgo.outputScripts.scriptTypeForChain(chain as number);
+      if (isChainCode(chain)) {
+        return utxolib.bitgo.scriptTypeForChain(chain);
       }
       if (_.isBoolean(segwit) && segwit) {
         return 'p2shP2wsh';
@@ -1052,7 +1059,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const addressType = params.addressType || convertFlagsToAddressType();
 
-    if (addressType !== utxolib.bitgo.outputScripts.scriptTypeForChain(derivationChain)) {
+    if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
       throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
     }
 
@@ -1162,7 +1169,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
       txPrebuild.txInfo.unspents as Unspent[],
-      new WalletUnspentSigner(keychains, signerKeychain, cosignerKeychain),
+      new WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
 
@@ -1175,8 +1182,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param unspent
    * @returns {boolean}
    */
-  isBitGoTaintedUnspent(unspent: Unspent): unspent is ReplayProtectionUnspent {
-    return getReplayProtectionAddresses(this.network).includes(unspent.address);
+  isBitGoTaintedUnspent(unspent: Unspent): boolean {
+    return isReplayProtectionUnspent(unspent, this.network);
   }
 
   /**
@@ -1289,7 +1296,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        return verifyWalletTransactionWithUnspents(transaction, idx, unspents, walletKeys).filter((v) => v).length;
+        return verifySignatureWithUnspent(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
         return 0;
       }

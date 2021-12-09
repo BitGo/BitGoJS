@@ -7,6 +7,7 @@ import * as nock from 'nock';
 import * as bip32 from 'bip32';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import * as config from '../../../../../../src/config';
 import { RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';
@@ -16,7 +17,6 @@ import {
   BackupKeyRecoveryTransansaction,
   FormattedOfflineVaultTxInfo,
 } from '../../../../../../src/v2/coins/utxo/recovery/backupKeyRecovery';
-import { toOutput, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { CoingeckoApi } from '../../../../../../src/v2/coins/utxo/recovery/coingeckoApi';
 
 import {
@@ -35,9 +35,6 @@ import {
 
 import { MockRecoveryProvider } from './mock';
 import { Triple } from '../../../../../../src';
-import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import scriptTypes2Of3 = utxolib.bitgo.outputScripts.scriptTypes2Of3;
 
 nock.disableNetConnect();
 
@@ -95,7 +92,7 @@ function getKeysForFullSignedRecovery(
 
 function run(
   coin: AbstractUtxoCoin,
-  scriptType: ScriptType2Of3,
+  scriptType: outputScripts.ScriptType2Of3,
   walletKeys: RootWalletKeys,
   params: {
     keys: NamedKeys;
@@ -230,7 +227,7 @@ function run(
 utxoCoins.forEach((coin) => {
   const walletKeys = getDefaultWalletKeys();
 
-  scriptTypes2Of3.forEach((scriptType) => {
+  outputScripts.scriptTypes2Of3.forEach((scriptType) => {
     run(
       coin,
       scriptType,

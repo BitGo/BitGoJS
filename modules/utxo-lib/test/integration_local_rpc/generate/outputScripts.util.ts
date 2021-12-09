@@ -1,15 +1,19 @@
-import * as bip32 from 'bip32';
-import * as crypto from 'crypto';
+import { Transaction, TxOutput } from 'bitcoinjs-lib';
+import * as utxolib from '../../../src';
+
 import { Network } from '../../../src/networkTypes';
 import { createOutputScript2of3, ScriptType2Of3, scriptTypes2Of3 } from '../../../src/bitgo/outputScripts';
-import { isTriple, Triple } from '../../../src/bitgo/types';
+import { isTriple } from '../../../src/bitgo/types';
 import { isBitcoin, isBitcoinGold, isLitecoin } from '../../../src/coins';
 
-import { Transaction, TxOutput } from 'bitcoinjs-lib';
-import { createTransactionBuilderForNetwork, createTransactionFromBuffer, signInput2Of3 } from '../../../src/bitgo';
-import { UtxoTransaction } from '../../../src/bitgo/UtxoTransaction';
-
-const utxolib = require('../../../src');
+import {
+  createTransactionBuilderForNetwork,
+  createTransactionFromBuffer,
+  signInput2Of3,
+  TxOutPoint,
+  UtxoTransaction,
+} from '../../../src/bitgo';
+import { getDefaultCosigner, KeyTriple } from '../../testutil';
 
 export const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 export type ScriptTypeSingleSig = typeof scriptTypesSingleSig[number];
@@ -19,31 +23,6 @@ export type ScriptType = ScriptType2Of3 | ScriptTypeSingleSig;
 
 export function requiresSegwit(scriptType: ScriptType): boolean {
   return scriptType === 'p2wkh' || scriptType === 'p2wsh' || scriptType === 'p2shP2wsh';
-}
-
-export type KeyTriple = Triple<bip32.BIP32Interface>;
-
-function getKey(seed: string): bip32.BIP32Interface {
-  return bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
-}
-
-export function getKeyTriple(seed: string): KeyTriple {
-  return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
-}
-
-export function getDefaultCosigner<T>(keyset: Triple<T>, signer: T): T {
-  const eq = (a: T, b: T) => a === b || (Buffer.isBuffer(a) && Buffer.isBuffer(b) && a.equals(b));
-  const [user, backup, bitgo] = keyset;
-  if (eq(signer, user)) {
-    return bitgo;
-  }
-  if (eq(signer, backup)) {
-    return bitgo;
-  }
-  if (eq(signer, bitgo)) {
-    return user;
-  }
-  throw new Error(`signer not in pubkeys`);
 }
 
 export function supportsSegwit(network: Network): boolean {
@@ -85,9 +64,9 @@ export function createScriptPubKey(keys: KeyTriple, scriptType: ScriptType, netw
     case 'p2tr':
       return createOutputScript2of3(pubkeys, scriptType).scriptPubKey;
     case 'p2pkh':
-      return utxolib.payments.p2pkh({ pubkey: keys[0].publicKey }).output;
+      return utxolib.payments.p2pkh({ pubkey: keys[0].publicKey }).output as Buffer;
     case 'p2wkh':
-      return utxolib.payments.p2wpkh({ pubkey: keys[0].publicKey }).output;
+      return utxolib.payments.p2wpkh({ pubkey: keys[0].publicKey }).output as Buffer;
     default:
       throw new Error(`unsupported output type ${scriptType}`);
   }
@@ -107,8 +86,8 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
 
   const txBuilder = createTransactionBuilderForNetwork(network);
 
-  prevOutputs.forEach(({ txid, index, script, value }, i) => {
-    txBuilder.addInput(txid, index, undefined, script, value);
+  prevOutputs.forEach(({ txid, vout, script, value }, i) => {
+    txBuilder.addInput(txid, vout, undefined, script, value);
   });
 
   const inputSum = prevOutputs.reduce((sum, { value }) => sum + value, 0);
@@ -133,11 +112,6 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   return txBuilder.build() as T;
 }
 
-export type TxOutPoint = {
-  txid: string;
-  index: number;
-};
-
 export function createSpendTransaction(
   keys: KeyTriple,
   scriptType: ScriptType2Of3,
@@ -161,7 +135,7 @@ export function createSpendTransaction(
           }
           return {
             txid: inputTx.getId(),
-            index: vout,
+            vout,
             value: o.value,
             script: o.script,
           };

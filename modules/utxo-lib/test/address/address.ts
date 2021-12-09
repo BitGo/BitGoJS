@@ -4,13 +4,13 @@ import * as utxolib from '../../src';
 import { getNetworkList, getNetworkName } from '../../src/coins';
 import {
   createScriptPubKey,
-  getKeyTriple,
   isSupportedDepositType,
   ScriptType,
   scriptTypes,
 } from '../integration_local_rpc/generate/outputScripts.util';
 
 import * as fixtureUtil from '../fixture.util';
+import { getKeyTriple } from '../testutil';
 
 type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
 

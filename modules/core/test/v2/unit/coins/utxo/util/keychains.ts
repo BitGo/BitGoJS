@@ -2,11 +2,10 @@
  * @prettier
  */
 import * as bip32 from 'bip32';
-import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
-import { WalletUnspentSigner } from '../../../../../../src/v2/coins/utxo/sign';
 import { Triple } from '../../../../../../src';
 import { encrypt } from '../../../../../../src/encrypt';
 import { getSeed } from '../../../../../lib/keys';
+import { RootWalletKeys, WalletUnspentSigner } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 export type KeychainBase58 = {
   pub: string;

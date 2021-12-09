@@ -1,8 +1,9 @@
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+
 import { BlockstreamApi } from './blockstreamApi';
 import { BlockchairApi } from './blockchairApi';
 import { InsightApi } from './insightApi';
 import { ApiNotImplementedError } from './baseApi';
-import { PublicUnspent } from '../unspent';
 
 /**
  * An account with bear minimum information required for recoveries.
@@ -17,7 +18,7 @@ export interface RecoveryAccountData {
  */
 export abstract class RecoveryProvider {
   abstract getAccountInfo(address: string): Promise<RecoveryAccountData>
-  abstract getUnspents(address: string): Promise<PublicUnspent[]>;
+  abstract getUnspents(address: string): Promise<Unspent[]>;
 
   static forCoin(coinName: string, apiKey?: string): RecoveryProvider {
     switch (coinName) {

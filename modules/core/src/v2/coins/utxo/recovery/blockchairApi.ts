@@ -1,6 +1,9 @@
+/**
+ * @prettier
+ */
+import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, BaseApi, RequestOptions, Response } from './baseApi';
-import { formatOutputId, PublicUnspent } from '../unspent';
 
 export type BlockchairResponse<T> = {
   data: T;
@@ -30,7 +33,6 @@ export type BlockchairAddress = {
     utxo: BlockchairUnspent[];
   };
 };
-
 
 export class BlockchairApi extends BaseApi implements RecoveryProvider {
   protected readonly apiToken?: string;
@@ -75,7 +77,7 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
     return new BlockchairApi(`https://api.blockchair.com/${blockchain}`, apiToken);
   }
 
-  constructor(baseUrl: string, apiToken?: string ) {
+  constructor(baseUrl: string, apiToken?: string) {
     super(baseUrl);
     this.apiToken = apiToken;
   }
@@ -91,7 +93,7 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
     }
     // https://blockchair.com/api/docs#link_300
     const res = await this.get<BlockchairResponse<BlockchairAddress>>(`/dashboards/address/${address}`);
-    return res.map(body => {
+    return res.map((body) => {
       return {
         txCount: body.data[address].address.transaction_count,
         totalBalance: body.data[address].address.balance,
@@ -100,16 +102,16 @@ export class BlockchairApi extends BaseApi implements RecoveryProvider {
   }
 
   /** @inheritDoc */
-  async getUnspents(address: string): Promise<PublicUnspent[]> {
+  async getUnspents(address: string): Promise<Unspent[]> {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
     // https://blockchair.com/api/docs#link_300
     const res = await this.get<BlockchairResponse<BlockchairUnspent[]>>(`/dashboards/address/${address}`);
-    return res.map(body => {
-      return body.data[address].utxo.map((unspent): PublicUnspent => {
+    return res.map((body) => {
+      return body.data[address].utxo.map((unspent): Unspent => {
         return {
-          id: formatOutputId(unspent.transaction_hash, unspent.index),
+          id: formatOutputId({ txid: unspent.transaction_hash, vout: unspent.index }),
           address,
           value: unspent.value,
         };

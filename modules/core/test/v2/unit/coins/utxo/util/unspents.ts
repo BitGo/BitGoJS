@@ -2,28 +2,41 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { Codes } from '@bitgo/unspents';
+import {
+  scriptTypeForChain,
+  RootWalletKeys,
+  Unspent,
+  WalletUnspent,
+  ChainCode,
+  chainCodesP2sh,
+  getExternalChainCode,
+  getInternalChainCode,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { getSeed } from '../../../../../lib/keys';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
-import { ReplayProtectionUnspent, Unspent, WalletUnspent } from '../../../../../../src/v2/coins/utxo/unspent';
-
-import { RootWalletKeys } from '../../../../../../src/v2/coins/utxo/WalletKeys';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 
+const defaultChain: ChainCode = getExternalChainCode(chainCodesP2sh);
+
 export function getOutputScript(
   walletKeys: RootWalletKeys,
-  chain = 0,
+  chain = defaultChain,
   index = 0
 ): utxolib.bitgo.outputScripts.SpendableScript {
   return utxolib.bitgo.outputScripts.createOutputScript2of3(
     walletKeys.deriveForChainAndIndex(chain, index).publicKeys,
-    utxolib.bitgo.outputScripts.scriptTypeForChain(chain)
+    scriptTypeForChain(chain)
   );
 }
 
-export function getWalletAddress(network: utxolib.Network, walletKeys: RootWalletKeys, chain = 0, index = 0): string {
+export function getWalletAddress(
+  network: utxolib.Network,
+  walletKeys: RootWalletKeys,
+  chain = defaultChain,
+  index = 0
+): string {
   return utxolib.address.fromOutputScript(getOutputScript(walletKeys, chain, index).scriptPubKey, network);
 }
 
@@ -34,8 +47,8 @@ function mockOutputIdForAddress(address: string) {
 export function mockWalletUnspent(
   network: utxolib.Network,
   walletKeys: RootWalletKeys,
-  { id, chain = 0, index = 0, value, address }: Partial<WalletUnspent>
-): Unspent {
+  { id, chain = defaultChain, index = 0, value, address }: Partial<WalletUnspent>
+): WalletUnspent {
   if (value === undefined) {
     throw new Error(`unspent value must be set`);
   }
@@ -60,12 +73,10 @@ export function mockWalletUnspent(
     chain,
     index,
     value,
-    redeemScript: derived.redeemScript?.toString('hex'),
-    witnessScript: derived.witnessScript?.toString('hex'),
   };
 }
 
-export function mockUnspentReplayProtection(network: utxolib.Network): ReplayProtectionUnspent {
+export function mockUnspentReplayProtection(network: utxolib.Network): Unspent {
   const addresses = getReplayProtectionAddresses(network);
   if (addresses.length) {
     const address = addresses[0];
@@ -81,14 +92,13 @@ export function mockUnspentReplayProtection(network: utxolib.Network): ReplayPro
 export function mockUnspent(
   network: utxolib.Network,
   walletKeys: RootWalletKeys,
-  chain: number | InputScriptType,
+  chain: ChainCode | InputScriptType,
   index: number,
   value: number
 ): Unspent {
   if (chain === 'replayProtection') {
     return mockUnspentReplayProtection(network);
   } else {
-    chain = typeof chain === 'number' ? chain : Codes.forType(chain as any).internal;
-    return mockWalletUnspent(network, walletKeys, { chain, value, index });
+    return mockWalletUnspent(network, walletKeys, { chain: getInternalChainCode(chain), value, index });
   }
 }

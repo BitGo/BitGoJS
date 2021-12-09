@@ -1,11 +1,7 @@
-/**
- * @prettier
- */
-import * as should from 'should';
+import * as assert from 'assert';
 
-import { getDefaultWalletKeys } from './util';
-
-import { DerivedWalletKeys, RootWalletKeys, WalletKeys } from '../../../../../src/v2/coins/utxo/WalletKeys';
+import { DerivedWalletKeys, RootWalletKeys, WalletKeys } from '../../../src/bitgo';
+import { getDefaultWalletKeys } from '../../testutil';
 
 describe('WalletKeys', function () {
   let defaultWalletKeys: RootWalletKeys;
@@ -31,15 +27,15 @@ describe('WalletKeys', function () {
 
   it('does not accept duplicate keys', function () {
     const [a, b, c] = defaultWalletKeys.triple;
-    should.throws(() => {
+    assert.throws(() => {
       new WalletKeys([a, b, b]);
     });
-    should.throws(() => {
+    assert.throws(() => {
       new WalletKeys([a, a, c]);
     });
   });
 
-  function shouldEqlDerivedPaths(
+  function assertEqlDerivedPaths(
     root: RootWalletKeys,
     derived: DerivedWalletKeys,
     chain: number,
@@ -47,23 +43,23 @@ describe('WalletKeys', function () {
     expectedPaths: string[]
   ) {
     const paths = root.triple.map((k) => root.getDerivationPath(k, chain, index));
-    paths.should.eql(expectedPaths);
-    paths.should.eql(derived.paths);
+    assert.deepStrictEqual(paths, expectedPaths);
+    assert.deepStrictEqual(paths, derived.paths);
   }
 
   it('derives to expected values for default wallet keys', function () {
-    shouldEqlDerivedPaths(defaultWalletKeys, defaultWalletKeysDerived, 1, 2, ['0/0/1/2', '0/0/1/2', '0/0/1/2']);
-    mapBase58(defaultWalletKeysDerived).should.eql([
-      'xprv9zgfqaUb9iWAq8WmSTdoq617YeLDM3s9VBQAYqG3Zkrcoo6KmiM53KfjL7NtyFR13xLus7m3iVnfbDkoVG4PZ21gK18njDESSfLz3wsrAxk',
-      'xprvA1JDN2ruFL1RPkKey89PMQ4xNHyn4qwa515yvjSpymdMhJWJKpL8sVuA6trrGfKo3YUQumxLBFRNhKJn5wKF9pHWb1ENGJ4fwMSi5rTefrL',
-      'xprvA25Tn5wK3NdCa1gn2n5izydQVEYmPhMTXjHj8CYf9TsK6Pyj5K9B6M5iCnq226gbNQpDrhgZd68gJVZkKV7iGJzoXbhfxNUpTKyZ3gTguiH',
+    assertEqlDerivedPaths(defaultWalletKeys, defaultWalletKeysDerived, 1, 2, ['0/0/1/2', '0/0/1/2', '0/0/1/2']);
+    assert.deepStrictEqual(mapBase58(defaultWalletKeysDerived), [
+      'xprv9zz8umnxxQR63smXBW8YkywRjpchgxuuUH1iJg5ViS8QwZmNuBCbkx69Bzyijwcvsthd3zF8FCy74FU3DC1gYKtzPinfPF5iWJwarkhHinS',
+      'xprvA1gzohJxuwdy7UtoYwTA8pbskksjiywygp6LUJXW133TJn6ad2KX6XRGsV33nVYKqzsVZGq5h56u5NNkVFKmfMkn7Xqjen3MpZs8XdxABKQ',
+      'xprv9zuZc2cWHuBL7PJyppMtjCtsRz5QKaGfrPKBgA1SsHMZHxNzC3ZaJYDSYzcuSwwf6duVWQvBs4CcwMknC9mQieFKqKpwc3Yo2hpusjMsZJi',
     ]);
   });
 
   it('derives to expected values for exotic wallet keys', function () {
-    shouldEqlDerivedPaths(exoticWalletKeys, exoticWalletKeysDerived, 1, 2, ['99/99/1/2', '0/0/1/2', '0/0/1/2']);
-    mapBase58(exoticWalletKeysDerived).should.eql([
-      'xprv9zZRVSn7UqvWcLDiCHDWgz1boWDWGVHVyF6cYn5stL4oYyYE7TajNSA9r9VstcG67z49JaPJcvYCQvwDWbgMfrYz2Aa8gAN3fFG4jfHUifn',
+    assertEqlDerivedPaths(exoticWalletKeys, exoticWalletKeysDerived, 1, 2, ['99/99/1/2', '0/0/1/2', '0/0/1/2']);
+    assert.deepStrictEqual(mapBase58(exoticWalletKeysDerived), [
+      'xprvA22MDSEU9wGJWzCGXQVFdYfcoTmhsXqQpMzGpLCG1Ad7txFp4bbbu1rckowNRVL96kH5rSWgmkaoJMgrgUuds7sQax5jdjqsXKauWAcvp3V',
       mapBase58(defaultWalletKeysDerived)[1],
       mapBase58(defaultWalletKeysDerived)[2],
     ]);
