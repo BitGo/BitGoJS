@@ -3,18 +3,16 @@
 //
 
 import 'should';
-import * as Bluebird from 'bluebird';
 import * as nock from 'nock';
 import * as common from '../../../src/common';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
-const co = Bluebird.coroutine;
 
 describe('V2 Wallets:', function () {
   let wallets;
   let bgUrl;
 
-  before(co(function *before() {
+  before(function () {
     nock('https://bitgo.fakeurl')
       .persist()
       .get('/api/v1/client/constants')
@@ -26,7 +24,7 @@ describe('V2 Wallets:', function () {
     const basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
-  }));
+  });
 
   after(function () {
     nock.cleanAll();
@@ -34,33 +32,33 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Add Wallet:', function () {
-    it('throws on invalid arguments', co(function *() {
+    it('throws on invalid arguments', async function () {
       // isCustodial flag is not a boolean
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
         .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
 
       // type is not a string
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
         .should.be.rejectedWith('Expecting parameter string: type but found number');
 
       // Address is an invalid address
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
         .should.be.rejectedWith('invalid argument for address - valid address string expected');
 
       // signingKeyId is invalid
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, signingKeyId: 1243 })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, signingKeyId: 1243 })
         .should.be.rejectedWith('invalid argument for signingKeyId - valid key id string expected');
 
       // gasPrice is a number
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
         .should.be.rejectedWith('invalid argument for gasPrice - number expected');
 
       // walletVersion is a number
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, walletVersion: '1' })
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, walletVersion: '1' })
         .should.be.rejectedWith('invalid argument for walletVersion - number expected');
-    }));
+    });
 
-    it('creates a paired custodial wallet', co(function *createPairedCustodialWallet() {
+    it('creates a paired custodial wallet', async function () {
       nock(bgUrl)
         .post('/api/v2/tbtc/wallet', function (body) {
           body.isCustodial.should.be.true();
@@ -70,10 +68,10 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: true });
-    }));
+      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: true });
+    });
 
-    it('creates an eos wallet with custom address', co(function *createWalletCustomAddress() {
+    it('creates an eos wallet with custom address', async function () {
       const eosBitGo = new TestBitGo({ env: 'mock' });
       eosBitGo.initializeTestVars();
       const eosWallets = eosBitGo.coin('teos').wallets();
@@ -87,10 +85,10 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      yield eosWallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address });
-    }));
+      await eosWallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address });
+    });
 
-    it('creates a single custodial wallet', co(function *createSingleCustodialWallet() {
+    it('creates a single custodial wallet', async function () {
       nock(bgUrl)
         .post('/api/v2/tbtc/wallet', function (body) {
           body.type.should.equal('custodial');
@@ -100,10 +98,10 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      yield wallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial' });
-    }));
+      await wallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial' });
+    });
 
-    it('creates a wallet with custom gasPrice', co(function *createWalletCustomGasPrice() {
+    it('creates a wallet with custom gasPrice', async function () {
       const ethBitGo = new TestBitGo({ env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
@@ -117,10 +115,10 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      yield ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 });
-    }));
+      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 });
+    });
 
-    it('creates a new wallet with walletVersion', co(function *createWalletNewVersion() {
+    it('creates a new wallet with walletVersion', async function () {
       const ethBitGo = new TestBitGo({ env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
@@ -134,14 +132,14 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      yield ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', walletVersion: 1 });
-    }));
+      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', walletVersion: 1 });
+    });
   });
 
   describe('Generate wallet:', function () {
-    it('should validate parameters', co(function *() {
+    it('should validate parameters', async function () {
       let params = {};
-      yield wallets.generateWallet(params).should.be.rejectedWith('Missing parameter: label');
+      await wallets.generateWallet(params).should.be.rejectedWith('Missing parameter: label');
 
       params = {
         label: 'abc',
@@ -149,40 +147,40 @@ describe('V2 Wallets:', function () {
         backupXpubProvider: 'provider',
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
+      await wallets.generateWallet(params).should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
 
       params = {
         label: 'abc',
         passcodeEncryptionCode: 123,
       };
-      yield wallets.generateWallet(params).should.be.rejectedWith('passcodeEncryptionCode must be a string');
+      await wallets.generateWallet(params).should.be.rejectedWith('passcodeEncryptionCode must be a string');
 
       params = {
         label: 'abc',
         enterprise: 1234,
       };
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid enterprise argument, expecting string');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid enterprise argument, expecting string');
 
       params = {
         label: 'abc',
         disableTransactionNotifications: 'string',
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
 
       params = {
         label: 'abc',
         gasPrice: 'string',
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
 
       params = {
         label: 'abc',
         gasPrice: true,
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number or number as string');
 
       params = {
         label: 'abc',
@@ -193,7 +191,7 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('can not use both eip1559 and gasPrice values');
+      await wallets.generateWallet(params).should.be.rejectedWith('can not use both eip1559 and gasPrice values');
 
       params = {
         label: 'abc',
@@ -203,7 +201,7 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid max fee argument, expecting number or number as string');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid max fee argument, expecting number or number as string');
 
       params = {
         label: 'abc',
@@ -213,14 +211,14 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid priority fee argument, expecting number or number as string');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid priority fee argument, expecting number or number as string');
 
       params = {
         label: 'abc',
         disableKRSEmail: 'string',
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
+      await wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
 
       params = {
         label: 'abc',
@@ -233,10 +231,10 @@ describe('V2 Wallets:', function () {
         },
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
-    }));
+      await wallets.generateWallet(params).should.be.rejectedWith('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
+    });
 
-    it('should correctly disable krs emails when creating backup keychains', co(function *() {
+    it('should correctly disable krs emails when creating backup keychains', async function () {
       const params = {
         label: 'my_wallet',
         disableKRSEmail: true,
@@ -265,10 +263,10 @@ describe('V2 Wallets:', function () {
         .post('/api/v2/tbtc/wallet')
         .reply(200);
 
-      yield wallets.generateWallet(params);
-    }));
+      await wallets.generateWallet(params);
+    });
 
-    it('should correctly pass through the krsSpecific param when creating backup keychains', co(function *() {
+    it('should correctly pass through the krsSpecific param when creating backup keychains', async function () {
       const params = {
         label: 'my_wallet',
         backupXpubProvider: 'test',
@@ -297,8 +295,8 @@ describe('V2 Wallets:', function () {
         .post('/api/v2/tbtc/wallet')
         .reply(200);
 
-      yield wallets.generateWallet(params);
-    }));
+      await wallets.generateWallet(params);
+    });
 
     it('should send the cold derivation seed for a user key', async () => {
       const params = {
@@ -338,7 +336,7 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Sharing', () => {
-    it('should share a wallet to viewer', co(function *() {
+    it('should share a wallet to viewer', async function () {
       const shareId = '123';
 
       nock(bgUrl)
@@ -348,8 +346,8 @@ describe('V2 Wallets:', function () {
         .post(`/api/v2/tbtc/walletshare/${shareId}`, { walletShareId: shareId, state: 'accepted' })
         .reply(200, {});
 
-      yield wallets.acceptShare({ walletShareId: shareId });
-      acceptShareNock.isDone().should.be.True();
-    }));
+      await wallets.acceptShare({ walletShareId: shareId });
+      acceptShareNock.done();
+    });
   });
 });
