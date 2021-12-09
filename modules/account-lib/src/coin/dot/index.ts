@@ -1,4 +1,5 @@
 import * as Utils from './utils';
+import * as Interface from './iface';
 
 export { KeyPair } from './keyPair';
 export { Transaction } from './transaction';
@@ -8,4 +9,4 @@ export { TransferBuilder } from './transferBuilder';
 export { AddressInitializationBuilder } from './addressInitializationBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
-export { Utils };
+export { Interface, Utils };
