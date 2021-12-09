@@ -1,4 +1,3 @@
-import * as Bluebird from 'bluebird';
 import * as should from 'should';
 import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
@@ -11,18 +10,17 @@ import { TestBitGo } from '../../lib/test_bitgo';
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
-const co = Bluebird.coroutine;
 
 import { getBuilder, Eth } from '@bitgo/account-lib';
 
-describe('Sign ETH Transaction', co(function *() {
+describe('Sign ETH Transaction', async function () {
 
   let bitgo;
   let ethWallet;
   let recipients;
   let tx;
 
-  before(co(function *() {
+  before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
@@ -32,38 +30,39 @@ describe('Sign ETH Transaction', co(function *() {
       amount: '100000',
     }];
     tx = { recipients, nextContractSequenceId: 0 };
-  }));
+  });
 
-  it('should read transaction recipients from txPrebuild even if none are specified as top-level params', co(function *() {
+  it('should read transaction recipients from txPrebuild even if none are specified as top-level params', async function () {
     sinon.stub(Util, 'xprvToEthPrivateKey');
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
 
-    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: tx, prv: 'my_user_prv' })) as any;
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild: tx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('recipients', recipients);
     sinon.restore();
-  }));
+  });
 
-  it('should throw an error if no recipients are in the txPrebuild and none are specified as params', co(function *() {
-    yield ethWallet.signTransaction({ txPrebuild: {}, prv: 'my_user_prv' }).should.be.rejectedWith('recipients missing or not array');
-  }));
+  it('should throw an error if no recipients are in the txPrebuild and none are specified as params', async function () {
+    await ethWallet.signTransaction({ txPrebuild: {}, prv: 'my_user_prv' }).should.be.rejectedWith('recipients missing or not array');
+  });
 
-  it('should throw an error if the recipients param is not an array', co(function *() {
-    yield ethWallet.signTransaction({ txPrebuild: { recipients: 'not-array' }, prv: 'my_user_prv' }).should.be.rejectedWith('recipients missing or not array');
-  }));
+  it('should throw an error if the recipients param is not an array', async function () {
+    await ethWallet.signTransaction({ txPrebuild: { recipients: 'not-array' }, prv: 'my_user_prv' })
+      .should.be.rejectedWith('recipients missing or not array');
+  });
 
-  it('should set isBatch to false if single recipient', co(function *() {
+  it('should set isBatch to false if single recipient', async function () {
     sinon.stub(Util, 'xprvToEthPrivateKey');
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
     const singleRecipientsTx = { recipients: recipients, nextContractSequenceId: 0, isBatch: false };
-    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: singleRecipientsTx, prv: 'my_user_prv' })) as any;
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild: singleRecipientsTx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('recipients', recipients);
     halfSigned.should.have.property('isBatch', false);
     sinon.restore();
-  }));
+  });
 
-  it('should set isBatch to true if multiple recipients', co(function *() {
+  it('should set isBatch to true if multiple recipients', async function () {
     const multipleRecipients = [{
       address: '0x0c7f3bc5d2b2c0dbee1b45536b82569f41b54331',
       amount: '200',
@@ -75,13 +74,13 @@ describe('Sign ETH Transaction', co(function *() {
     sinon.stub(Util, 'xprvToEthPrivateKey');
     sinon.stub(Util, 'ethSignMsgHash');
     sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
-    const { halfSigned } = (yield ethWallet.signTransaction({ txPrebuild: multipleRecipientsTx, prv: 'my_user_prv' })) as any;
+    const { halfSigned } = (await ethWallet.signTransaction({ txPrebuild: multipleRecipientsTx, prv: 'my_user_prv' })) as any;
     halfSigned.should.have.property('isBatch', true);
     sinon.restore();
-  }));
-}));
+  });
+});
 
-describe('Ethereum Hop Transactions', co(function *() {
+describe('Ethereum Hop Transactions', function () {
   let bitgo;
   let ethWallet;
   let tx;
@@ -100,7 +99,7 @@ describe('Ethereum Hop Transactions', co(function *() {
     walletSubPath: '/0/0',
   };
 
-  before(co(function *() {
+  before(function () {
     tx = '0xf86c82015285012a05f200825208945208d8e80c6d1aef9be37b4bd19a9cf75ed93dc886b5e620f480008026a00e13f9e0e11337b2b0227e3412211d3625e43f1083fda399cc361dd4bf89083ba06c801a761e0aa3bc8db0ac2568d575b0fb306a1f04f4d5ba82ba3cc0ea0a83bd';
     txid = '0x0ac669c5fef8294443c75a31e32c44b97bbc9e43a18ea8beabcc2a3b45eb6ffa';
     bitgoKeyXprv = 'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
@@ -118,15 +117,15 @@ describe('Ethereum Hop Transactions', co(function *() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject({ keys: ['user', 'backup', 'bitgo'] });
-  }));
+  });
 
-  describe('Verify HSM Hop prebuild', co(function *() {
+  describe('Verify HSM Hop prebuild', function () {
     let prebuild;
     let buildParams;
     let finalRecipient;
     let sendAmount;
 
-    before(co(function *() {
+    before(function () {
       finalRecipient = '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8';
       sendAmount = '200000000000000';
       prebuild = {
@@ -140,64 +139,40 @@ describe('Ethereum Hop Transactions', co(function *() {
           amount: sendAmount,
         }],
       };
-    }));
+    });
 
-    it('should accept a valid hop prebuild', co(function *() {
-      let error = undefined;
-      try {
-        yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.not.exist(error);
-    }));
+    it('should accept a valid hop prebuild', async function () {
+      await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams)
+        .should.be.resolved();
+    });
 
-    it('should fail if the HSM prebuild recipient is wrong', co(function *() {
-      let error: string | undefined = undefined;
+    it('should fail if the HSM prebuild recipient is wrong', async function () {
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].address = '0x54bf1609aeed804aa231f08c53dbb18f7d374615';
 
-      try {
-        yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.exist(error);
-      error!.should.containEql('does not equal original recipient');
-    }));
+      await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams)
+        .should.be.rejectedWith('does not equal original recipient');
+    });
 
-    it('should fail if the HSM prebuild tx amount is wrong', co(function *() {
-      let error: string | undefined = undefined;
+    it('should fail if the HSM prebuild tx amount is wrong', async function () {
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].amount = '50000000';
 
-      try {
-        yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.exist(error);
-      error!.should.containEql('does not equal original amount');
-    }));
+      await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams)
+        .should.be.rejectedWith('does not equal original amount');
+    });
 
-    it('should fail if the HSM signature is invalid', co(function *() {
-      let error: string | undefined = undefined;
+    it('should fail if the HSM signature is invalid', async function () {
       // Mocking a different BitGo key means the signing key should be wrong (it maps to a different address than this xpub)
       const goodXpub = common.Environments[env].hsmXpub;
       common.Environments[env].hsmXpub = 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL';
 
-      try {
-        yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.exist(error);
-      error!.should.containEql('Hop txid signature invalid');
+      await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams)
+        .should.be.rejectedWith('Hop txid signature invalid');
       common.Environments[env].hsmXpub = goodXpub;
-    }));
+    });
 
-    it('should fail if the HSM signature signed the wrong HSM commitment digest', co(function *() {
-      let error: string | undefined = undefined;
+    it('should fail if the HSM signature signed the wrong HSM commitment digest', async function () {
       const badTxid = '0xb4b3827a529c9166786e796528017889ac5027255b65b3fa2a3d3ad91244a12b';
       const badTxidBuffer = Buffer.from(badTxid.slice(2), 'hex');
       const xprvNode = bip32.fromBase58(bitgoKeyXprv);
@@ -208,17 +183,12 @@ describe('Ethereum Hop Transactions', co(function *() {
       const badPrebuild = JSON.parse(JSON.stringify(prebuild));
       badPrebuild.signature = badSignature;
 
-      try {
-        yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, badPrebuild, buildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.exist(error);
-      error!.should.containEql('Hop txid signature invalid');
-    }));
-  }));
+      await ethWallet.baseCoin.validateHopPrebuild(ethWallet, badPrebuild, buildParams)
+        .should.be.rejectedWith('Hop txid signature invalid');
+    });
+  });
 
-  describe('Prebuild hop transaction', co(function *() {
+  describe('Prebuild hop transaction', function () {
     let prebuild;
     let buildParams;
     let finalRecipient;
@@ -251,7 +221,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         .reply(200, { hopTransaction: prebuild, buildParams });
     };
 
-    before(co(function *() {
+    before(function () {
       gasLimitEstimate = 100000;
       gasPrice = 50000000;
       finalRecipient = '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8';
@@ -269,35 +239,28 @@ describe('Ethereum Hop Transactions', co(function *() {
         hop: true,
         walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
       };
-    }));
+    });
 
-    it('should prebuild a hop transaction if given the correct args', co(function *() {
-      let error = undefined;
-
+    it('should prebuild a hop transaction if given the correct args', async function () {
       nockUserKey();
       const feeScope = nockFees();
       nockBuild(ethWallet.id());
-      try {
-        const res = (yield ethWallet.prebuildTransaction(buildParams)) as any;
-        should.exist(res.hopTransaction);
-        should.exist(res.hopTransaction.tx);
-        should.exist(res.hopTransaction.tx);
-        should.exist(res.hopTransaction.id);
-        should.exist(res.hopTransaction.signature);
-        should.not.exist(res.wallet);
-        should.not.exist(res.buildParams);
-      } catch (e) {
-        error = e.message;
-      }
-      should.not.exist(error);
+      const res = (await ethWallet.prebuildTransaction(buildParams)) as any;
+      should.exist(res.hopTransaction);
+      should.exist(res.hopTransaction.tx);
+      should.exist(res.hopTransaction.tx);
+      should.exist(res.hopTransaction.id);
+      should.exist(res.hopTransaction.signature);
+      should.not.exist(res.wallet);
+      should.not.exist(res.buildParams);
       feeScope.isDone().should.equal(true);
       const feeReq = (feeScope as any).interceptors[0].req;
       feeReq.path.should.containEql('hop=true');
       feeReq.path.should.containEql('recipient=' + finalRecipient);
       feeReq.path.should.containEql('amount=' + sendAmount);
-    }));
-  }));
-}));
+    });
+  });
+});
 
 describe('Add final signature to ETH tx from offline vault', function () {
 
@@ -310,8 +273,8 @@ describe('Add final signature to ETH tx from offline vault', function () {
     coin = bitgo.coin('teth');
   });
 
-  it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
-    const response = (yield coin.signTransaction(paramsFromVault)) as any;
+  it('should successfully fully sign a half-signed transaction from the offline vault', async function () {
+    const response = (await coin.signTransaction(paramsFromVault)) as any;
     const expectedTx = EthTx.fromSerializedTx(Buffer.from(expectedResult.txHex, 'hex'));
     const actualTx = EthTx.fromSerializedTx(Buffer.from(response.txHex, 'hex'));
     actualTx.nonce.toString().should.deepEqual(expectedTx.nonce.toString());
@@ -329,7 +292,7 @@ describe('Add final signature to ETH tx from offline vault', function () {
     actualTx.gasPrice.toString().should.deepEqual(expectedTx.gasPrice.toString());
     actualTx.gasLimit.toString().should.deepEqual(expectedTx.gasLimit.toString());
     response.txHex.toString().should.equal(expectedResult.txHex.toString());
-  }));
+  });
 });
 
 describe('Add signature to EIP1559 tx from offline vault', function () {
@@ -343,12 +306,12 @@ describe('Add signature to EIP1559 tx from offline vault', function () {
     coin = bitgo.coin('teth');
   });
 
-  it('should successfully sign an unsigned transaction from the offline vault', co(function *() {
-    const response = (yield coin.signTransaction(paramsFromVault)) as any;
+  it('should successfully sign an unsigned transaction from the offline vault', async function *() {
+    const response = await coin.signTransaction(paramsFromVault);
     should.exist(response.halfSigned);
     response.halfSigned.eip1559.should.deepEqual(expectedResult.halfSigned.eip1559);
     response.halfSigned.recipients.should.deepEqual(expectedResult.halfSigned.recipients);
-  }));
+  });
 });
 
 describe('prebuildTransaction', function () {
@@ -371,38 +334,32 @@ describe('prebuildTransaction', function () {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
 
-  it('should successfully accept gasLimit as a param', co(function *() {
+  it('should successfully accept gasLimit as a param', async function () {
     const scope = nock(bgUrl)
       .post('/api/v2/teth/wallet/' + ethWallet.id() + '/tx/build', {
         recipients,
         gasLimit,
       })
       .reply(200, { success: true });
-    const prebuild = (yield ethWallet.prebuildTransaction({ recipients, gasLimit })) as any;
+    const prebuild = await ethWallet.prebuildTransaction({ recipients, gasLimit });
     scope.isDone().should.equal(true);
     prebuild.success.should.equal(true);
-  }));
+  });
 
-  it('should reject hop param for an erc20 token build', co(function *() {
+  it('should reject hop param for an erc20 token build', async function () {
     const token = bitgo.coin('terc');
     const tokenWallet = token.newWalletObject(bitgo, token, {});
     recipients = [{
       address: '0xe59dfe5c67114b39a5662cc856be536c614124c0',
       amount: '100',
     }];
-    let error;
-    try {
-      yield tokenWallet.prebuildTransaction({ recipients, hop: true, walletPassphrase: 'hi' });
-    } catch (err) {
-      error = err;
-    }
-    should.exist(error);
-    error.message.should.equal(`Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`);
-  }));
+    await tokenWallet.prebuildTransaction({ recipients, hop: true, walletPassphrase: 'hi' })
+      .should.be.rejectedWith(`Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`);
+  });
 });
 
 describe('final-sign transaction from WRW', function () {
-  it('should add a second signature to unsigned sweep for teth', (async function () {
+  it('should add a second signature to unsigned sweep for teth', async function () {
     const bitgo = new TestBitGo({ env: 'test' });
     const basecoin = bitgo.coin('teth');
     const gasPrice = 200000000000;
@@ -440,9 +397,9 @@ describe('final-sign transaction from WRW', function () {
     outputs.length.should.equal(1);
     outputs[0].address.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.address);
     outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.amount);
-  }));
+  });
 
-  it('should add a second signature to unsigned sweep for erc20 token', (async function () {
+  it('should add a second signature to unsigned sweep for erc20 token', async function () {
     const bitgo = new TestBitGo({ env: 'test' });
     const basecoin = bitgo.coin('tdai');
     const gasPrice = 200000000000;
@@ -480,6 +437,5 @@ describe('final-sign transaction from WRW', function () {
     outputs.length.should.equal(1);
     outputs[0].address.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.address);
     outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepERC20Tx.recipient.amount);
-  }));
-
+  });
 });
