@@ -1,4 +1,3 @@
-export type NodeCallback<R> = (err: Error, res: R) => void;
 export type V1Network = 'bitcoin' | 'testnet';
 
 /**

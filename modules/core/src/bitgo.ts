@@ -17,7 +17,7 @@ import sjcl = require('./vendor/sjcl.min.js');
 import bs58 = require('bs58');
 import * as common from './common';
 import { EnvironmentName, AliasEnvironments } from './v2/environments';
-import { NodeCallback, RequestTracer as IRequestTracer, V1Network } from './v2/types';
+import { RequestTracer as IRequestTracer, V1Network } from './v2/types';
 import pjson = require('../package.json');
 import moment = require('moment');
 import * as _ from 'lodash';

@@ -5,7 +5,6 @@ import { BigNumber } from 'bignumber.js';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import { BitGo } from '../bitgo';
-import { NodeCallback } from './types';
 import { RequestTracer } from './internal/util';
 
 import { Wallet } from './wallet';
@@ -343,16 +342,15 @@ export abstract class BaseCoin {
    *
    * @param key
    * @param message
-   * @param callback
    */
-  async signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Promise<Buffer> {
+  async signMessage(key: { prv: string }, message: string): Promise<Buffer> {
     return signMessage(message, bip32.fromBase58(key.prv), utxolib.networks.bitcoin);
   }
 
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  abstract verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Promise<boolean>;
+  abstract verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
 
   /**
    * Verify that an address belongs to a wallet
@@ -479,10 +477,7 @@ export abstract class BaseCoin {
     throw new Error('deprecated method');
   }
 
-  abstract parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Promise<ParsedTransaction>;
+  abstract parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
 
   /**
    * Generate a key pair on the curve used by the coin
