@@ -117,4 +117,27 @@ describe('DOT:', function () {
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
   });
+
+
+  describe('Dot Explain Transaction', () => {
+    it('should explain an transfer transaction hex', async function () {
+      const explain = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: DotResources.rawTx.transfer.unsigned,
+          key: DotResources.accounts.account1.publicKey,
+          addressVersion: 0,
+          validity: {
+            firstValid: 3933,
+          },
+          referenceBlock: '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',
+          version: 7,
+        },
+      });
+      explain.outputAmount.should.equal('10000000000');
+      explain.outputs[0].amount.should.equal('10000000000');
+      explain.outputs[0].address.should.equal(DotResources.accounts.account2.address);
+      explain.fee.fee.should.equal('0');
+      explain.changeAmount.should.equal('0');
+    });
+  });
 });

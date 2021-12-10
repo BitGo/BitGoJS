@@ -146,17 +146,6 @@ export class Dot extends BaseCoin {
     return Buffer.from(new accountLib.Dot.KeyPair({ prv: key.prv }).signMessage(msg));
   }
 
-  /**
-   * Explain/parse transaction
-   * @param params
-   * @param callback
-   */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-  ): Promise<any> {
-    throw new MethodNotImplementedError('Dot recovery not implemented');
-  }
-
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
     const prv = params.prv;
     const addressVersion = params.txPrebuild.addressVersion;
@@ -221,6 +210,27 @@ export class Dot extends BaseCoin {
     return { txHex: signedTxHex };
   }
 
+  /**
+   * Explain/parse transaction
+   * @param params
+   * @param callback
+  */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<accountLib.Dot.TransactionExplanation> {
+    if (!params.txPrebuild.txHex || !params.txPrebuild.validity || !params.txPrebuild.key || !params.txPrebuild.referenceBlock || !params.txPrebuild.version) {
+      throw new Error('missing explain tx parameters');
+    }
+    const txHex = params.txPrebuild.txHex;
+    const sender = new accountLib.Dot.KeyPair({ pub: params.txPrebuild.key }).getAddress();
+    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
+    const txBuilder = factory.from(txHex);
+    txBuilder
+      .validity(params.txPrebuild.validity)
+      .referenceBlock(params.txPrebuild.referenceBlock)
+      .sender({ address: sender })
+      .version(params.txPrebuild.version);
+    const tx = (await txBuilder.build()) as unknown as accountLib.Dot.Transaction;
+    return tx.explainTransaction();
+  }
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
