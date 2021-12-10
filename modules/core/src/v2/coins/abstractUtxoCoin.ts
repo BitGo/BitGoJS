@@ -320,10 +320,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const { version } = utxolib.address.fromBase58Check(address, this.network);
       return version;
     } catch (e) {
-      // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
-      if (!this.supportsAddressType('p2wsh') && !this.supportsAddressType('p2tr')) {
-        return;
-      }
+      // try next format
+    }
+
+    // if coin does not support script types with bech32 encoding, do not attempt to parse
+    if (!this.supportsAddressType('p2wsh') && !this.supportsAddressType('p2tr')) {
+      return;
     }
 
     // otherwise, try decoding as bech32
