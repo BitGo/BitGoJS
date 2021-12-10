@@ -1,3 +1,7 @@
+/**
+ * @prettier
+ */
+
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
@@ -8,8 +12,10 @@ import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import {
   BaseCoin,
-  SignedTransaction, TransactionPrebuild,
-  VerificationOptions, VerifyAddressOptions,
+  SignedTransaction,
+  TransactionPrebuild,
+  VerificationOptions,
+  VerifyAddressOptions,
 } from './baseCoin';
 import { Eth } from './coins';
 import * as internal from './internal/internal';
@@ -25,27 +31,27 @@ const debug = debugLib('bitgo:v2:wallet');
 type ManageUnspents = 'consolidate' | 'fanout';
 
 export interface MaximumSpendableOptions {
-    minValue?: number;
-    maxValue?: number;
-    minHeight?: number;
-    minConfirms?: number;
-    enforceMinConfirmsForChange?: boolean;
-    feeRate?: number;
-    maxFeeRate?: number;
-    recipientAddress?: string;
-    limit?: number;
-    target?: number;
-    plainTarget?: number;
+  minValue?: number;
+  maxValue?: number;
+  minHeight?: number;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: boolean;
+  feeRate?: number;
+  maxFeeRate?: number;
+  recipientAddress?: string;
+  limit?: number;
+  target?: number;
+  plainTarget?: number;
 }
 
 export interface MaximumSpendable {
-    maximumSpendable: number;
-    coin: string;
+  maximumSpendable: number;
+  coin: string;
 }
 
 export interface Memo {
-    value: string;
-    type: string;
+  value: string;
+  type: string;
 }
 
 /**
@@ -64,74 +70,74 @@ export interface BuildConsolidationTransactionOptions extends PrebuildTransactio
 }
 
 export interface PrebuildTransactionOptions {
-    reqId?: RequestTracer;
-    recipients?: {
-        address: string;
-        amount: string | number;
-    }[];
-    numBlocks?: number;
-    maxFeeRate?: number;
-    minConfirms?: number;
-    enforceMinConfirmsForChange?: boolean;
-    targetWalletUnspents?: number;
-    minValue?: number;
-    maxValue?: number;
-    sequenceId?: string;
-    lastLedgerSequence?: number;
-    ledgerSequenceDelta?: number;
-    gasPrice?: number;
-    noSplitChange?: boolean;
-    unspents?: any[];
-    changeAddress?: string;
-    type?: string;
-    closeRemainderTo?:string;
-    nonParticipation?: boolean;
-    validFromBlock?: number;
-    validToBlock?: number;
-    instant?: boolean;
-    memo?: Memo;
-    addressType?: string;
-    hop?: boolean;
-    walletPassphrase?: string;
-    reservation?: {
-      expireTime?: string;
-      pendingApprovalId?: string;
-    };
-    offlineVerification?: boolean;
-    walletContractAddress?: string;
-    idfSignedTimestamp?: string;
-    idfUserId?: string;
-    idfVersion?: number;
-    [index: string]: unknown;
+  reqId?: RequestTracer;
+  recipients?: {
+    address: string;
+    amount: string | number;
+  }[];
+  numBlocks?: number;
+  maxFeeRate?: number;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: boolean;
+  targetWalletUnspents?: number;
+  minValue?: number;
+  maxValue?: number;
+  sequenceId?: string;
+  lastLedgerSequence?: number;
+  ledgerSequenceDelta?: number;
+  gasPrice?: number;
+  noSplitChange?: boolean;
+  unspents?: any[];
+  changeAddress?: string;
+  type?: string;
+  closeRemainderTo?: string;
+  nonParticipation?: boolean;
+  validFromBlock?: number;
+  validToBlock?: number;
+  instant?: boolean;
+  memo?: Memo;
+  addressType?: string;
+  hop?: boolean;
+  walletPassphrase?: string;
+  reservation?: {
+    expireTime?: string;
+    pendingApprovalId?: string;
+  };
+  offlineVerification?: boolean;
+  walletContractAddress?: string;
+  idfSignedTimestamp?: string;
+  idfUserId?: string;
+  idfVersion?: number;
+  [index: string]: unknown;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
-    prebuildTx?: string | PrebuildTransactionResult;
-    verification?: VerificationOptions;
+  prebuildTx?: string | PrebuildTransactionResult;
+  verification?: VerificationOptions;
 }
 
 export interface PrebuildTransactionResult extends TransactionPrebuild {
-    walletId: string;
-    // Consolidate ID is used for consolidate account transactions and indicates if this is
-    // a consolidation and what consolidate group it should be referenced by.
-    consolidateId?: string;
+  walletId: string;
+  // Consolidate ID is used for consolidate account transactions and indicates if this is
+  // a consolidation and what consolidate group it should be referenced by.
+  consolidateId?: string;
 }
 
 export interface WalletSignTransactionOptions {
-    txPrebuild?: TransactionPrebuild;
-    prv?: string;
-    pubs?: string[];
-    cosignerPub?: string;
-    isLastSignature?: boolean;
-    [index: string]: unknown;
+  txPrebuild?: TransactionPrebuild;
+  prv?: string;
+  pubs?: string[];
+  cosignerPub?: string;
+  isLastSignature?: boolean;
+  [index: string]: unknown;
 }
 
 export interface GetUserPrvOptions {
-    keychain?: Keychain;
-    key?: Keychain;
-    prv?: string;
-    coldDerivationSeed?: string;
-    walletPassphrase?: string;
+  keychain?: Keychain;
+  key?: Keychain;
+  prv?: string;
+  coldDerivationSeed?: string;
+  walletPassphrase?: string;
 }
 
 export interface WalletCoinSpecific {
@@ -188,7 +194,7 @@ export interface ConsolidateUnspentsOptions {
   xprv?: string;
   minValue?: number;
   maxValue?: number;
-  minHeight?: number
+  minHeight?: number;
   numUnspentsToMake?: number;
   feeTxConfirmTarget?: number;
   limit?: number;
@@ -208,7 +214,7 @@ export interface FanoutUnspentsOptions {
   xprv?: string;
   minValue?: number;
   maxValue?: number;
-  minHeight?: number
+  minHeight?: number;
   maxNumInputsToUse?: number;
   numUnspentsToMake?: number;
   minConfirms?: number;
@@ -266,6 +272,8 @@ export interface CreateAddressOptions {
   lowPriority?: boolean;
   forwarderVersion?: number;
   format?: 'base58' | 'cashaddr';
+  baseAddress?: string;
+  allowSkipVerifyAddress?: boolean;
 }
 
 export interface UpdateAddressOptions {
@@ -298,7 +306,7 @@ export interface CreateShareOptions {
     fromPubKey?: string;
     toPubKey?: string;
     path?: string;
-  },
+  };
   reshare?: boolean;
   message?: string;
   disableEmail?: boolean;
@@ -467,7 +475,6 @@ export class Wallet {
   private _wallet: WalletData;
   private readonly _permissions?: string[];
 
-
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
@@ -510,12 +517,47 @@ export class Wallet {
 
   prebuildWhitelistedParams(): string[] {
     return [
-      'addressType', 'changeAddress', 'consolidateAddresses', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange',
-      'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
-      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'transferId', 'message', 'minConfirms',
-      'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
-      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
-      'stakingOptions', 'eip1559', 'keyregTxBase64', 'closeRemainderTo',
+      'addressType',
+      'changeAddress',
+      'consolidateAddresses',
+      'cpfpFeeRate',
+      'cpfpTxIds',
+      'enforceMinConfirmsForChange',
+      'feeRate',
+      'gasLimit',
+      'gasPrice',
+      'idfSignedTimestamp',
+      'idfUserId',
+      'idfVersion',
+      'instant',
+      'lastLedgerSequence',
+      'ledgerSequenceDelta',
+      'maxFee',
+      'maxFeeRate',
+      'maxValue',
+      'memo',
+      'transferId',
+      'message',
+      'minConfirms',
+      'minValue',
+      'noSplitChange',
+      'numBlocks',
+      'recipients',
+      'reservation',
+      'sequenceId',
+      'strategy',
+      'targetWalletUnspents',
+      'trustlines',
+      'type',
+      'unspents',
+      'nonParticipation',
+      'validFromBlock',
+      'validToBlock',
+      'messageKey',
+      'stakingOptions',
+      'eip1559',
+      'keyregTxBase64',
+      'closeRemainderTo',
     ];
   }
 
@@ -523,9 +565,7 @@ export class Wallet {
    * This is a strict sub-set of prebuildWhitelistedParams
    */
   prebuildConsolidateAccountParams(): string[] {
-    return [
-      'consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
-    ];
+    return ['consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock'];
   }
 
   /**
@@ -666,7 +706,8 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return await this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
+    return await this.bitgo
+      .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
       .query(query)
       .result();
   }
@@ -695,7 +736,8 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return await this.bitgo.get(this.url('/tx/' + params.txHash))
+    return await this.bitgo
+      .get(this.url('/tx/' + params.txHash))
       .query(query)
       .result();
   }
@@ -740,7 +782,7 @@ export class Wallet {
         throw new Error('invalid address argument, expecting string or array');
       }
       if (_.isArray(params.address)) {
-        params.address.forEach(address => {
+        params.address.forEach((address) => {
           if (!_.isString(address)) {
             throw new Error('invalid address argument, expecting array of address strings');
           }
@@ -790,7 +832,7 @@ export class Wallet {
       }
 
       if (Array.isArray(params.state)) {
-        params.state.forEach(state => {
+        params.state.forEach((state) => {
           if (!_.isString(state)) {
             throw new Error('invalid state argument, expecting array of state strings');
           }
@@ -806,9 +848,7 @@ export class Wallet {
       query.type = params.type;
     }
 
-    return await this.bitgo.get(this.url('/transfer'))
-      .query(query)
-      .result();
+    return await this.bitgo.get(this.url('/transfer')).query(query).result();
   }
 
   /**
@@ -847,13 +887,20 @@ export class Wallet {
    */
   async maximumSpendable(params: MaximumSpendableOptions = {}): Promise<MaximumSpendable> {
     const filteredParams = _.pick(params, [
-      'enforceMinConfirmsForChange', 'feeRate', 'limit', 'maxFeeRate', 'maxValue', 'minConfirms', 'minHeight',
-      'minValue', 'plainTarget', 'recipientAddress', 'target',
+      'enforceMinConfirmsForChange',
+      'feeRate',
+      'limit',
+      'maxFeeRate',
+      'maxValue',
+      'minConfirms',
+      'minHeight',
+      'minValue',
+      'plainTarget',
+      'recipientAddress',
+      'target',
     ]);
 
-    return await this.bitgo.get(this.url('/maximumSpendable'))
-      .query(filteredParams)
-      .result();
+    return await this.bitgo.get(this.url('/maximumSpendable')).query(filteredParams).result();
   }
 
   /**
@@ -863,12 +910,18 @@ export class Wallet {
    */
   async unspents(params: UnspentsOptions = {}): Promise<any> {
     const query = _.pick(params, [
-      'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
+      'chains',
+      'limit',
+      'maxValue',
+      'minConfirms',
+      'minHeight',
+      'minValue',
+      'prevId',
+      'segwit',
+      'target',
     ]);
 
-    return this.bitgo.get(this.url('/unspents'))
-      .query(query)
-      .result();
+    return this.bitgo.get(this.url('/unspents')).query(query).result();
   }
 
   /**
@@ -900,7 +953,10 @@ export class Wallet {
    * Output parameters:
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    */
-  private async manageUnspents(routeName: ManageUnspents, params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {}): Promise<any> {
+  private async manageUnspents(
+    routeName: ManageUnspents,
+    params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {}
+  ): Promise<any> {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
@@ -921,24 +977,28 @@ export class Wallet {
       'numUnspentsToMake',
     ]);
     this.bitgo.setRequestTracer(reqId);
-    const response = await this.bitgo.post(this.url(`/${routeName}Unspents`))
+    const response = await this.bitgo
+      .post(this.url(`/${routeName}Unspents`))
       .send(filteredParams)
       .result();
 
-    const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId })) as unknown as Keychain[];
+    const keychains = (await this.baseCoin
+      .keychains()
+      .getKeysForSigning({ wallet: this, reqId })) as unknown as Keychain[];
 
     const transactionParams = {
       ...params,
       txPrebuild: response,
       keychain: keychains[0],
-      pubs: keychains.map(k => k.pub),
+      pubs: keychains.map((k) => k.pub),
     };
     const signedTransaction = await this.signTransaction(transactionParams);
     const selectParams = _.pick(params, ['comment', 'otp']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
 
     this.bitgo.setRequestTracer(reqId);
-    return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+    return this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
       .send(finalTxParams)
       .result();
   }
@@ -998,9 +1058,12 @@ export class Wallet {
       throw new Error('not supported for this wallet');
     }
 
-    this._wallet = await this.bitgo.put(this.url()).send({
-      tokenFlushThresholds: thresholds,
-    }).result();
+    this._wallet = await this.bitgo
+      .put(this.url())
+      .send({
+        tokenFlushThresholds: thresholds,
+      })
+      .result();
   }
 
   /**
@@ -1023,30 +1086,38 @@ export class Wallet {
 
     // The sweep API endpoint is only available to utxo-based coins
 
-    if (!(this.baseCoin.sweepWithSendMany())) {
+    if (!this.baseCoin.sweepWithSendMany()) {
       if (this.confirmedBalanceString() !== this.balanceString()) {
-        throw new Error('cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm');
+        throw new Error(
+          'cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm'
+        );
       }
 
       const value = this.spendableBalanceString();
       if (_.isUndefined(value) || value === '0') {
         throw new Error('no funds to sweep');
       }
-      (params as any).recipients = [{
-        address: params.address,
-        amount: value,
-      }];
+      (params as any).recipients = [
+        {
+          address: params.address,
+          amount: value,
+        },
+      ];
 
       return this.sendMany(params);
     }
     // the following flow works for all UTXO coins
 
     const reqId = new RequestTracer();
-    const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget', 'allowPartialSweep']);
+    const filteredParams = _.pick(params, [
+      'address',
+      'feeRate',
+      'maxFeeRate',
+      'feeTxConfirmTarget',
+      'allowPartialSweep',
+    ]);
     this.bitgo.setRequestTracer(reqId);
-    const response = await this.bitgo.post(this.url('/sweepWallet'))
-      .send(filteredParams)
-      .result();
+    const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
 
     // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
@@ -1057,8 +1128,8 @@ export class Wallet {
       txPrebuild: response,
       keychain: keychains[0],
       userKeychain: keychains[0],
-      backupKeychain: (keychains.length > 1) ? keychains[1] : null,
-      bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
       prv: params.xprv,
     };
     const signedTransaction = await this.signTransaction(transactionParams);
@@ -1066,7 +1137,8 @@ export class Wallet {
     const selectParams = _.pick(params, ['otp']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
     this.bitgo.setRequestTracer(reqId);
-    return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+    return this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
       .send(finalTxParams)
       .result();
   }
@@ -1096,7 +1168,8 @@ export class Wallet {
   async transferComment(params: TransferCommentOptions = {}): Promise<any> {
     common.validateParams(params, ['id'], ['comment']);
 
-    return await this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
+    return await this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
       .send(params)
       .result();
   }
@@ -1157,7 +1230,8 @@ export class Wallet {
       query.chains = params.chains;
     }
 
-    return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
+    return this.bitgo
+      .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
       .query(query)
       .result();
   }
@@ -1183,7 +1257,9 @@ export class Wallet {
       this.bitgo.setRequestTracer(params.reqId);
     }
 
-    return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`)).result();
+    return this.bitgo
+      .get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`))
+      .result();
   }
 
   /**
@@ -1201,6 +1277,10 @@ export class Wallet {
    * @param {Number} params.count=1 number of new addresses which should be created (maximum 250)
    * @param {Number} params.forwarderVersion The version of address to create, if applicable
    * @param {Boolean} params.lowPriority Ethereum-specific param to create address using low priority fee address
+   * @param {String} params.baseAddress base address of the wallet(optional parameter)
+   * @param {Boolean} params.allowSkipVerifyAddress When set to false, it throws error if address verification is skipped for any reason. Default is true.
+   * Address verification can be skipped when forwarderVersion is 0 and pendingChainInitialization is true OR
+   * if 'coinSpecific' is not part of the response from api call to create address
    */
   async createAddress(params: CreateAddressOptions = {}): Promise<any> {
     const addressParams: CreateAddressOptions = {};
@@ -1214,6 +1294,8 @@ export class Wallet {
       forwarderVersion,
       format,
       count = 1,
+      baseAddress,
+      allowSkipVerifyAddress = true,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1244,6 +1326,18 @@ export class Wallet {
       addressParams.label = label;
     }
 
+    if (!_.isUndefined(baseAddress)) {
+      if (!_.isString(baseAddress)) {
+        throw new Error('baseAddress has to be a string');
+      }
+    }
+
+    if (!_.isUndefined(allowSkipVerifyAddress)) {
+      if (!_.isBoolean(allowSkipVerifyAddress)) {
+        throw new Error('allowSkipVerifyAddress has to be a boolean');
+      }
+    }
+
     if (!_.isInteger(count) || count <= 0 || count > 250) {
       throw new Error('count has to be a number between 1 and 250');
     }
@@ -1263,14 +1357,13 @@ export class Wallet {
     }
 
     // get keychains for address verification
-    const keychains = await Promise.all(
-      this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })),
-    );
+    const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
 
     const newAddresses = _.times(count, async () => {
       this.bitgo.setRequestTracer(reqId);
-      const newAddress = (await this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
+      const newAddress = (await this.bitgo
+        .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
         .send(addressParams)
         .result()) as any;
 
@@ -1282,7 +1375,7 @@ export class Wallet {
       }
 
       newAddress.keychains = keychains;
-      newAddress.baseAddress = _.get(this._wallet, 'coinSpecific.baseAddress');
+      newAddress.baseAddress = baseAddress ?? _.get(this._wallet, 'coinSpecific.baseAddress');
 
       const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 
@@ -1290,11 +1383,17 @@ export class Wallet {
         throw new AddressGenerationError(verificationData.error);
       }
 
+      verificationData.impliedForwarderVersion = forwarderVersion ?? verificationData.coinSpecific?.forwarderVersion;
       // This condition was added in first place because in celo, when verifyAddress method was called on addresses which were having pendingChainInitialization as true, it used to throw some error
       // In case of forwarder version 1 eth addresses, addresses need to be verified even if the pendingChainInitialization flag is true
-      if (verificationData.coinSpecific && (!verificationData.coinSpecific.pendingChainInitialization || verificationData.coinSpecific.forwarderVersion === 1)) {
+      if (
+        verificationData.coinSpecific &&
+        (!verificationData.coinSpecific.pendingChainInitialization || verificationData.impliedForwarderVersion === 1)
+      ) {
         // can't verify addresses which are pending chain initialization, as the address is hidden
         this.baseCoin.verifyAddress(verificationData);
+      } else if (!allowSkipVerifyAddress) {
+        throw new Error(`address verification skipped for count = ${count}`);
       }
 
       return newAddress;
@@ -1347,9 +1446,7 @@ export class Wallet {
       query.limit = params.limit;
     }
 
-    return this.bitgo.get(this.url('/webhooks'))
-      .query(query)
-      .result();
+    return this.bitgo.get(this.url('/webhooks')).query(query).result();
   }
 
   /**
@@ -1380,7 +1477,8 @@ export class Wallet {
     const filteredParams = _.pick(params, ['transferId', 'pendingApprovalId']);
 
     const webhookId = params.webhookId;
-    return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
+    return this.bitgo
+      .post(this.url('/webhooks/' + webhookId + '/simulate'))
       .send(filteredParams)
       .result();
   }
@@ -1392,9 +1490,7 @@ export class Wallet {
   async addWebhook(params: ModifyWebhookOptions = {}): Promise<any> {
     common.validateParams(params, ['url', 'type'], []);
 
-    return this.bitgo.post(this.url('/webhooks'))
-      .send(params)
-      .result();
+    return this.bitgo.post(this.url('/webhooks')).send(params).result();
   }
 
   /**
@@ -1404,9 +1500,7 @@ export class Wallet {
   async removeWebhook(params: ModifyWebhookOptions = {}): Promise<any> {
     common.validateParams(params, ['url', 'type'], []);
 
-    return this.bitgo.del(this.url('/webhooks'))
-      .send(params)
-      .result();
+    return this.bitgo.del(this.url('/webhooks')).send(params).result();
   }
 
   /**
@@ -1482,14 +1576,18 @@ export class Wallet {
     common.validateParams(params, ['user', 'permissions'], []);
 
     if (params.keychain && !_.isEmpty(params.keychain)) {
-      if (!params.keychain.pub || !params.keychain.encryptedPrv || !params.keychain.fromPubKey || !params.keychain.toPubKey || !params.keychain.path) {
+      if (
+        !params.keychain.pub ||
+        !params.keychain.encryptedPrv ||
+        !params.keychain.fromPubKey ||
+        !params.keychain.toPubKey ||
+        !params.keychain.path
+      ) {
         throw new Error('requires keychain parameters - pub, encryptedPrv, fromPubKey, toPubKey, path');
       }
     }
 
-    return this.bitgo.post(this.url('/share'))
-      .send(params)
-      .result();
+    return this.bitgo.post(this.url('/share')).send(params).result();
   }
 
   /**
@@ -1633,14 +1731,15 @@ export class Wallet {
       offlineVerification: params.offlineVerification ? true : undefined,
     };
 
-    const buildQuery = this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/build'))
+    const buildQuery = this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/build'))
       .query(queryParams)
       .send(whitelistedParams)
       .result();
 
-    const blockHeightQuery = _.isFunction((this.baseCoin as any).getLatestBlockHeight) ?
-      (this.baseCoin as any).getLatestBlockHeight(params.reqId) :
-      Promise.resolve(undefined);
+    const blockHeightQuery = _.isFunction((this.baseCoin as any).getLatestBlockHeight)
+      ? (this.baseCoin as any).getLatestBlockHeight(params.reqId)
+      : Promise.resolve(undefined);
     const queries = [buildQuery, blockHeightQuery];
     const [buildResponse, blockHeight] = (await Promise.all(queries)) as any;
     debug('postprocessing transaction prebuild: %O', buildResponse);
@@ -1668,9 +1767,7 @@ export class Wallet {
    * - walletPassphrase
    * @return {*}
    */
-  async signTransaction(
-    params: WalletSignTransactionOptions = {},
-  ): Promise<SignedTransaction> {
+  async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction> {
     const txPrebuild = params.txPrebuild;
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
@@ -1680,7 +1777,7 @@ export class Wallet {
 
     if (!params.pubs && this.baseCoin.keyIdsForSigning().length > 1) {
       const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this })) as unknown as Keychain[];
-      params.pubs = keychains.map(k => k.pub);
+      params.pubs = keychains.map((k) => k.pub);
     }
 
     const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
@@ -1777,7 +1874,10 @@ export class Wallet {
       });
     } catch (e) {
       console.error('transaction prebuild failed local validation:', e.message);
-      console.error('transaction params:', _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet']));
+      console.error(
+        'transaction params:',
+        _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
+      );
       console.error('transaction prebuild:', txPrebuild);
       console.trace(e);
       throw e;
@@ -1882,7 +1982,8 @@ export class Wallet {
     if ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned)) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
-    return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
+    return this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
       .send(params)
       .result();
   }
@@ -1923,10 +2024,12 @@ export class Wallet {
       throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
     }
 
-    const recipients: SendManyOptions['recipients'] = [{
-      address: params.address,
-      amount: params.amount,
-    }];
+    const recipients: SendManyOptions['recipients'] = [
+      {
+        address: params.address,
+        amount: params.amount,
+      },
+    ];
 
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
@@ -1988,19 +2091,35 @@ export class Wallet {
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [
-      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
-      'enforceMinConfirmsForChange', 'targetWalletUnspents',
-      'message', 'minValue', 'maxValue', 'sequenceId',
-      'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
-      'instant', 'memo', 'type', 'trustlines', 'transferId',
+      'recipients',
+      'numBlocks',
+      'feeRate',
+      'maxFeeRate',
+      'minConfirms',
+      'enforceMinConfirmsForChange',
+      'targetWalletUnspents',
+      'message',
+      'minValue',
+      'maxValue',
+      'sequenceId',
+      'lastLedgerSequence',
+      'ledgerSequenceDelta',
+      'gasPrice',
+      'noSplitChange',
+      'unspents',
+      'comment',
+      'otp',
+      'changeAddress',
+      'instant',
+      'memo',
+      'type',
+      'trustlines',
+      'transferId',
       'stakingOptions',
     ]);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     this.bitgo.setRequestTracer(reqId);
-    return this.bitgo.post(this.url('/tx/send'))
-      .send(finalTxParams)
-      .result();
+    return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
   }
 
   /**
@@ -2018,10 +2137,7 @@ export class Wallet {
       throw new Error('token recovery only supported for eth wallets');
     }
 
-    const {
-      tokenContractAddress,
-      recipient,
-    } = params;
+    const { tokenContractAddress, recipient } = params;
 
     if (_.isUndefined(tokenContractAddress)) {
       throw new Error('missing required string parameter tokenContractAddress');
@@ -2054,7 +2170,8 @@ export class Wallet {
   async changeFee(params: ChangeFeeOptions = {}): Promise<any> {
     common.validateParams(params, ['txid', 'fee'], []);
 
-    return await this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
+    return await this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
       .send(params)
       .result();
   }
@@ -2066,13 +2183,11 @@ export class Wallet {
    * @returns {Object} The info returned from the merchant server
    * @deprecated
    */
-  async getPaymentInfo(params: { url?: string; } = {}): Promise<any> {
+  async getPaymentInfo(params: { url?: string } = {}): Promise<any> {
     params = params || {};
     common.validateParams(params, ['url'], []);
 
-    return await this.bitgo.get(this.url('/paymentInfo'))
-      .query(params)
-      .result();
+    return await this.bitgo.get(this.url('/paymentInfo')).query(params).result();
   }
 
   /**
@@ -2086,9 +2201,7 @@ export class Wallet {
    * @deprecated
    */
   async sendPaymentResponse(params: any = {}): Promise<any> {
-    return await this.bitgo.post(this.url('/sendPayment'))
-      .send(params)
-      .result();
+    return await this.bitgo.post(this.url('/sendPayment')).send(params).result();
   }
 
   /**
@@ -2109,9 +2222,7 @@ export class Wallet {
       throw new Error('missing parameter: action object');
     }
 
-    return await this.bitgo.post(this.url('/policy/rule'))
-      .send(params)
-      .result();
+    return await this.bitgo.post(this.url('/policy/rule')).send(params).result();
   }
 
   /**
@@ -2132,9 +2243,7 @@ export class Wallet {
       throw new Error('missing parameter: action object');
     }
 
-    return await this.bitgo.put(this.url('/policy/rule'))
-      .send(params)
-      .result();
+    return await this.bitgo.put(this.url('/policy/rule')).send(params).result();
   }
 
   /**
@@ -2145,9 +2254,7 @@ export class Wallet {
   async removePolicyRule(params: RemovePolicyRuleOptions = {}): Promise<any> {
     common.validateParams(params, ['id'], ['message']);
 
-    return await this.bitgo.del(this.url('/policy/rule'))
-      .send(params)
-      .result();
+    return await this.bitgo.del(this.url('/policy/rule')).send(params).result();
   }
 
   /**
@@ -2277,7 +2384,9 @@ export class Wallet {
    * @param params
    *     consolidateAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
    */
-  async buildAccountConsolidations(params: BuildConsolidationTransactionOptions = {}): Promise<PrebuildTransactionResult[]> {
+  async buildAccountConsolidations(
+    params: BuildConsolidationTransactionOptions = {}
+  ): Promise<PrebuildTransactionResult[]> {
     if (!this.baseCoin.allowsAccountConsolidations()) {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
@@ -2291,7 +2400,8 @@ export class Wallet {
     }
 
     // this could return 100 build transactions
-    const buildResponse = (await this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/consolidateAccount/build'))
+    const buildResponse = (await this.bitgo
+      .post(this.baseCoin.url('/wallet/' + this.id() + '/consolidateAccount/build'))
       .send(whitelistedParams)
       .result()) as any;
 

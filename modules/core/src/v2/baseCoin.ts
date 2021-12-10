@@ -60,6 +60,7 @@ export interface VerifyAddressOptions {
   }[];
   error?: string;
   coinSpecific?: AddressCoinSpecific;
+  impliedForwarderVersion?: number;
 }
 
 export interface TransactionParams {
