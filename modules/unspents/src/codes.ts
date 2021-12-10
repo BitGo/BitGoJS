@@ -142,26 +142,46 @@ const external = Object.freeze(new CodesByType(Purpose.external));
 const internal = Object.freeze(new CodesByType(Purpose.internal));
 const all = Object.freeze(codeList.map(({ id }) => id));
 
+/** @deprecated - use utxolib.bitgo */
 export default Object.freeze({
   /* @deprecated: use ChainCodeTcomb */
   ChainType,
+  /** @deprecated - use utxolib.bitgo */
   ChainCodeTcomb: ChainType,
+  /** @deprecated - use utxolib.bitgo */
   PurposeTcomb,
+  /** @deprecated - use utxolib.bitgo */
   UnspentTypeTcomb,
+  /** @deprecated - use utxolib.bitgo */
   p2sh,
+  /** @deprecated - use utxolib.bitgo */
   p2shP2wsh,
+  /** @deprecated - use utxolib.bitgo */
   p2wsh,
+  /** @deprecated - use utxolib.bitgo */
   p2tr,
+  /** @deprecated - use utxolib.bitgo */
   external,
+  /** @deprecated - use utxolib.bitgo */
   internal,
+  /** @deprecated - use utxolib.bitgo */
   all,
+  /** @deprecated - use utxolib.bitgo */
   isP2sh: boundHas(p2sh),
+  /** @deprecated - use utxolib.bitgo */
   isP2shP2wsh: boundHas(p2shP2wsh),
+  /** @deprecated - use utxolib.bitgo */
   isP2wsh: boundHas(p2wsh),
+  /** @deprecated - use utxolib.bitgo */
   isP2tr: boundHas(p2tr),
+  /** @deprecated - use utxolib.bitgo */
   isExternal: boundHas(external),
+  /** @deprecated - use utxolib.bitgo */
   isInternal: boundHas(internal),
+  /** @deprecated - use utxolib.bitgo */
   isValid,
+  /** @deprecated - use utxolib.bitgo */
   forType,
+  /** @deprecated - use utxolib.bitgo */
   typeForCode,
 });

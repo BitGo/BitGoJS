@@ -118,7 +118,7 @@ export interface RecoverParams {
   bitgoKey: string;
   recoveryDestination: string;
   krsProvider?: string;
-  ignoreAddressTypes: string[];
+  ignoreAddressTypes: outputScripts.ScriptType2Of3[];
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
@@ -218,7 +218,7 @@ export type BackupKeyRecoveryTransansaction = {
  * - krsProvider: necessary if backup key is held by KRS
  * - recoveryDestination: target address to send recovered funds to
  * - scan: the amount of consecutive addresses without unspents to scan through before stopping
- * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
+ * - ignoreAddressTypes: (optional) scripts to ignore
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
 export async function backupKeyRecovery(

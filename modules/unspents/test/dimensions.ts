@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as should from 'should';
+import {
+  chainCodes,
+  chainCodesP2sh,
+  chainCodesP2shP2wsh,
+  chainCodesP2tr,
+  chainCodesP2wsh,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import { Codes, Dimensions, IDimensions, IOutputDimensions, OutputDimensions, VirtualSizes } from '../src';
+import { Dimensions, IDimensions, IOutputDimensions, OutputDimensions, VirtualSizes } from '../src';
 
 import { getOutputDimensionsForUnspentType, UnspentTypePubKeyHash, UnspentTypeScript2of3 } from './testutils';
 
@@ -143,32 +150,21 @@ describe('Dimensions Arithmetic', function () {
 
 describe('Dimensions from unspent types', function () {
   it('determines unspent size according to chain', function () {
-    Codes.p2sh.values.forEach((chain) =>
-      Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2shInputs: 1 }))
-    );
+    chainCodesP2sh.forEach((chain) => Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2shInputs: 1 })));
 
-    Codes.p2shP2wsh.values.forEach((chain) =>
+    chainCodesP2shP2wsh.forEach((chain) =>
       Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2shP2wshInputs: 1 }))
     );
 
-    Codes.p2wsh.values.forEach((chain) =>
+    chainCodesP2wsh.forEach((chain) =>
       Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2wshInputs: 1 }))
     );
 
-    Codes.p2tr.values.forEach((chain) =>
+    chainCodesP2tr.forEach((chain) =>
       Dimensions.fromUnspent({ chain }).should.eql(Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }))
     );
 
-    Dimensions.fromUnspents([
-      { chain: Codes.p2sh.internal },
-      { chain: Codes.p2sh.external },
-      { chain: Codes.p2shP2wsh.internal },
-      { chain: Codes.p2shP2wsh.external },
-      { chain: Codes.p2wsh.internal },
-      { chain: Codes.p2wsh.external },
-      { chain: Codes.p2tr.internal },
-      { chain: Codes.p2tr.external },
-    ]).should.eql(
+    Dimensions.fromUnspents(chainCodes.map((chain) => ({ chain }))).should.eql(
       Dimensions({
         nP2shP2wshInputs: 2,
         nP2shInputs: 2,

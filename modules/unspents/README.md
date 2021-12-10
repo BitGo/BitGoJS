@@ -1,46 +1,12 @@
 # @bitgo/unspents
 
-The package has two components:
-
-- `Codes`: BitGo-defined chain codes for categorizing unspents.
-- `Dimensions` class with methods to calculate bitcoin transaction sizes
+The package provides a `Dimensions` class with methods to calculate bitcoin transaction sizes
 
 ## Installation
 
 ```
 npm install --save @bitgo/unspents
 ```
-
-## Chain Codes
-
-Every unspent has two attributes
-
-- purpose: `internal` or `external` (change or non-change).
-- scriptType: `p2sh`, `p2shP2wsh`, `p2wsh`, or `p2tr`.
-
-We define a chain code for every combination of these attributes, which is accessible as
-`unspents.Codes[purpose][scriptType]` or `unspents.Codes[scriptType][purpose]`.
-
-### Examples
-
-```typescript
-import { Codes } from '@bitgo/unspents';
-console.log(Codes.p2shP2wsh.external, Codes.external.p2shP2wsh); // 10, 10
-
-console.log(...Codes.p2shP2wsh.values); // 10, 11
-
-console.log(
-  Codes.isExternal(Codes.p2shP2wsh.internal),
-  Codes.isExternal(Codes.p2shP2wsh.external),
-  Codes.isP2shP2wsh(Codes.p2shP2wsh.internal),
-  Codes.isP2shP2wsh(Codes.p2shP2wsh.external)
-); // false, true, true, true
-
-console.log(Codes.isExternal(-1)); // throws exception - invalid chain code
-```
-
-The `Codes` module further exposes the methods `Codes.isInternal(code)`,
-`Codes.isExternal(code)`, `Codes.isP2shP2wsh(code)` etc.
 
 ## Dimensions, Virtual Size Estimation
 
@@ -93,3 +59,9 @@ the newly installed package will be downloaded and `require()`'d to ensure the p
 ## Continuous Integration
 
 `@bitgo/unspents` uses Drone for continuous integration, which is configured by the `.drone.yml` file in the project root. However, this file should not be modified by hand. All changes to the CI process should be done by modifying the `.drone.jsonnet` file, then running `npm run generate_drone` to rebuild the `.drone.yml` file.
+
+## `Codes`
+
+The exported `Codes` module is now deprecated.
+
+Please use [`utxo-lib/src/bitgo/wallet/chains`](https://github.com/BitGo/BitGoJS/blob/0439a0d4ffe4a15a9932ed70f98cc5745cc6526f/modules/utxo-lib/src/bitgo/wallet/chains.ts) instead.
