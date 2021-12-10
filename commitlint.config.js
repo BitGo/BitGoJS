@@ -7,5 +7,18 @@ module.exports = {
   ],
   rules: {
     'scope-enum': async () => [2, 'always', (await readdir('modules')).concat('root')],
+    'references-empty': [
+      2,
+      'never',
+    ],
+  },
+  parserPreset: {
+    parserOpts: {
+      issuePrefixes: [
+        'BG-',
+        'CR-',
+        'STLX-',
+      ],
+    },
   },
 };
