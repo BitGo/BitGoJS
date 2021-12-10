@@ -13,6 +13,7 @@ import {
   getSignatureVerifications,
   verifySignatureWithPublicKeys,
   verifySignatureWithPublicKey,
+  isPlaceholderSignature,
 } from '../../src/bitgo';
 
 import * as fixtureUtil from '../fixture.util';
@@ -120,13 +121,39 @@ function runTestParseScript(
   k1: bip32.BIP32Interface,
   k2: bip32.BIP32Interface
 ) {
-  async function testParseSignedInputs(tx: UtxoTransaction, name: string, expectedScriptType: string | undefined) {
+  async function testParseSignedInputs(
+    tx: UtxoTransaction,
+    name: string,
+    expectedScriptType: string | undefined,
+    { expectedPlaceholderSignatures }: { expectedPlaceholderSignatures: number }
+  ) {
     const parsed = parseSignatureScript(tx.ins[0]);
     assert.strictEqual(parsed.scriptType, expectedScriptType);
     fixtureUtil.assertEqualJSON(
       parsed,
       await readFixture(network, scriptType, ['parsed', keyName(k1), keyName(k2), name].join('-'), parsed)
     );
+
+    if (!parsed.scriptType) {
+      return;
+    }
+
+    switch (parsed.scriptType) {
+      case 'p2shP2pk':
+        // we don't parse the signature for this script type
+        break;
+      case 'p2sh':
+      case 'p2shP2wsh':
+      case 'p2wsh':
+      case 'p2tr':
+        assert.strictEqual(
+          parsed.signatures.filter((s) => isPlaceholderSignature(s)).length,
+          expectedPlaceholderSignatures
+        );
+        break;
+      default:
+        throw new Error(`unexpected scriptType ${parsed.scriptType}`);
+    }
   }
 
   if (scriptType !== 'p2shP2pk') {
@@ -134,19 +161,26 @@ function runTestParseScript(
       await testParseSignedInputs(
         getHalfSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network),
         'halfSigned',
-        scriptType
+        scriptType,
+        { expectedPlaceholderSignatures: scriptType === 'p2tr' ? 1 : 2 }
       );
     });
   }
 
   it(`parses full-signed inputs [${getNetworkName(network)} ${scriptType}]`, async function () {
     if (scriptType === 'p2shP2pk') {
-      await testParseSignedInputs(getFullSignedTransactionP2shP2pk(fixtureKeys, k1, network), 'fullSigned', scriptType);
+      await testParseSignedInputs(
+        getFullSignedTransactionP2shP2pk(fixtureKeys, k1, network),
+        'fullSigned',
+        scriptType,
+        { expectedPlaceholderSignatures: 0 }
+      );
     } else {
       await testParseSignedInputs(
         getFullSignedTransaction2Of3(fixtureKeys, k1, k2, scriptType, network),
         'fullSigned',
-        scriptType
+        scriptType,
+        { expectedPlaceholderSignatures: 0 }
       );
     }
   });

@@ -32,16 +32,4 @@ export class Btc extends AbstractUtxoCoin {
   supportsBlockTarget(): boolean {
     return true;
   }
-
-  supportsP2shP2wsh(): boolean {
-    return true;
-  }
-
-  supportsP2wsh(): boolean {
-    return true;
-  }
-
-  supportsP2tr(): boolean {
-    return true;
-  }
 }

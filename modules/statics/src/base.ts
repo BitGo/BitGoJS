@@ -105,18 +105,6 @@ export enum CoinFeature {
    */
   CHILD_PAYS_FOR_PARENT = 'cpfp',
   /*
-   * Does this coin support pay-to-script-hash wrapped segregated witness transactions.
-   *
-   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
-   */
-  WRAPPED_SEGWIT = 'wrapped-segwit',
-  /*
-   * Does this coin support segregated witness transactions natively? (eg, not wrapped in a P2SH indirection layer)
-   *
-   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
-   */
-  NATIVE_SEGWIT = 'native-segwit',
-  /*
    * Does this coin support tokens? These are distinct assets from the underlying coin, but run on the same network.
    *
    * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.

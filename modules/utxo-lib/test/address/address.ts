@@ -50,6 +50,11 @@ describe('Address', function () {
           assert.deepStrictEqual(v, refVectors[i]);
           const [, scriptPubKeyHex, address] = v;
           assert.strictEqual(utxolib.address.toOutputScript(address, network).toString('hex'), scriptPubKeyHex);
+
+          if (network.bech32 && !address.startsWith(network.bech32)) {
+            const { hash, version } = utxolib.address.fromBase58Check(address, network);
+            assert.deepStrictEqual(utxolib.address.toBase58Check(hash, version, network), address);
+          }
         });
       });
     });

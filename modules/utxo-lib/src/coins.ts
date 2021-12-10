@@ -175,6 +175,14 @@ export function isValidNetwork(network: unknown): network is Network {
   return getNetworkList().includes(network as Network);
 }
 
+export function supportsSegwit(network: Network): boolean {
+  return [networks.bitcoin, networks.litecoin, networks.bitcoingold].includes(getMainnet(network));
+}
+
+export function supportsTaproot(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoin;
+}
+
 /** @deprecated */
 export const BCH = coins.BCH;
 /** @deprecated */
