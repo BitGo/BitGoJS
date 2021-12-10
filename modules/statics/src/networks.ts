@@ -239,7 +239,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://etherscan.io/address/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
-  batcherContractAddress = '0x92c44c271a53f5cec699549c531d595c9692f663';
+  batcherContractAddress = '0x0c9b25dfe02b2c89cce86e1a0bd6c04a7aca01b6';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
 }
