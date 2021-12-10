@@ -1,7 +1,7 @@
 import { TxOutput, Transaction, TransactionBuilder } from 'bitcoinjs-lib';
 // eslint-disable-next-line
 import * as bitcoinjs from 'bitcoinjs-lib';
-import { Network } from '../networkTypes';
+import { Network } from '..';
 import { UtxoTransaction } from './UtxoTransaction';
 
 export interface TxbSignArg {

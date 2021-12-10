@@ -2,8 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { Network } from '../../../src/networkTypes';
-import { getNetworkName } from '../../../src/coins';
+import { Network, getNetworkName } from '../../../src';
 import { RpcClient } from './RpcClient';
 import { RpcTransaction } from './RpcTypes';
 import { getKeyTriple } from '../../testutil';

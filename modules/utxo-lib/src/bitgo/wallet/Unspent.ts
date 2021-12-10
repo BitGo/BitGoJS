@@ -1,4 +1,4 @@
-import { Network } from '../../networkTypes';
+import { Network } from '../..';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { createOutputScript2of3, scriptTypeForChain } from '../outputScripts';
 import { toOutputScript } from '../../address';

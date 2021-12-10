@@ -1,7 +1,5 @@
 import * as address from '../../src/address';
-import * as networks from '../../src/networks';
-import { Network } from '../../src/networkTypes';
-import { getMainnet, isZcash } from '../../src/coins';
+import { Network, getMainnet, networks, isZcash } from '../../src/networks';
 import { DashTransaction, UtxoTransaction, ZcashTransaction } from '../../src/bitgo';
 
 import { RpcTransaction } from './generate/RpcTypes';
@@ -49,7 +47,7 @@ export function normalizeParsedTransaction(tx: UtxoTransaction, network: Network
     vout: tx.outs.map((o, n) => {
       let address;
       try {
-        address = toRegtestAddress(o.script, network);
+        address = toRegtestAddress(o.script, network as { bech32?: string });
       } catch (e) {
         // ignore
       }

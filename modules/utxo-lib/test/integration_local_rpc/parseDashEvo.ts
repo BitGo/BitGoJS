@@ -17,8 +17,7 @@ import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 
 import { parseTransactionRoundTrip } from '../transaction_util';
 
-import * as networks from '../../src/networks';
-import { Transaction } from '../../src';
+import { networks, Transaction } from '../../src';
 import { DashTransaction } from '../../src/bitgo';
 
 export async function readDashEvoTransactions(): Promise<RpcTransaction[]> {

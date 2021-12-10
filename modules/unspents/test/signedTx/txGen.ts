@@ -68,7 +68,7 @@ const createScriptPubKey = (keys: bip32.BIP32Interface[], unspentType: TestUnspe
 };
 
 const createInputTx = (unspents: any[], inputValue: number) => {
-  const txInputBuilder = new utxolib.TransactionBuilder(utxolib.networks.bitcoin);
+  const txInputBuilder = new utxolib.bitgo.UtxoTransactionBuilder(utxolib.networks.bitcoin);
   txInputBuilder.addInput(Array(32).fill('01').join(''), 0);
   unspents.forEach(({ scriptPubKey }) => txInputBuilder.addOutput(scriptPubKey, inputValue));
   return txInputBuilder.buildIncomplete();

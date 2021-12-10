@@ -15,9 +15,58 @@ forkId         src/script/interpreter.h  FORKID_*
 
 */
 
-import { coins, BitcoinCashNetwork, Network, NetworkName, ZcashNetwork } from './networkTypes';
+/**
+ * @deprecated
+ */
+const coins = {
+  BCH: 'bch',
+  BSV: 'bsv',
+  BTC: 'btc',
+  BTG: 'btg',
+  LTC: 'ltc',
+  ZEC: 'zec',
+  DASH: 'dash',
+} as const;
 
-function getDefaultBip32Mainnet(): Network['bip32'] {
+type NetworkName =
+  | 'bitcoin'
+  | 'testnet'
+  | 'bitcoincash'
+  | 'bitcoincashTestnet'
+  | 'bitcoingold'
+  | 'bitcoingoldTestnet'
+  | 'bitcoinsv'
+  | 'bitcoinsvTestnet'
+  | 'dash'
+  | 'dashTest'
+  | 'litecoin'
+  | 'litecoinTest'
+  | 'zcash'
+  | 'zcashTest';
+
+export type Network = {
+  messagePrefix: string;
+  pubKeyHash: number;
+  scriptHash: number;
+  wif: number;
+  bip32: {
+    public: number;
+    private: number;
+  };
+  cashAddr?: {
+    prefix: string;
+    pubKeyHash: number;
+    scriptHash: number;
+  };
+  bech32?: string;
+  forkId?: number;
+  /**
+   * @deprecated
+   */
+  coin: string;
+};
+
+function getDefaultBip32Mainnet() {
   return {
     // base58 'xpub'
     public: 0x0488b21e,
@@ -26,7 +75,7 @@ function getDefaultBip32Mainnet(): Network['bip32'] {
   };
 }
 
-function getDefaultBip32Testnet(): Network['bip32'] {
+function getDefaultBip32Testnet() {
   return {
     // base58 'tpub'
     public: 0x043587cf,
@@ -35,9 +84,7 @@ function getDefaultBip32Testnet(): Network['bip32'] {
   };
 }
 
-const networks: Record<NetworkName, Network> &
-  Record<'zcash' | 'zcashTest', ZcashNetwork> &
-  Record<'bitcoincash' | 'bitcoincashTestnet', BitcoinCashNetwork> = {
+export const networks: Record<NetworkName, Network> = {
   // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
   // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   bitcoin: {
@@ -183,17 +230,6 @@ const networks: Record<NetworkName, Network> &
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
     wif: 0x80,
-    // This parameter was introduced in version 3 to allow soft forks, for version 1 and 2 transactions we add a
-    // dummy value.
-    consensusBranchId: {
-      1: 0x00,
-      2: 0x00,
-      3: 0x5ba81b19,
-      // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
-      // 4: 0x2bb40e60
-      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      4: 0xe9ff75a6, // (Canopy branch id, see https://zips.z.cash/zip-0251)
-    },
     coin: coins.ZEC,
   },
   zcashTest: {
@@ -202,17 +238,188 @@ const networks: Record<NetworkName, Network> &
     pubKeyHash: 0x1d25,
     scriptHash: 0x1cba,
     wif: 0xef,
-    consensusBranchId: {
-      1: 0x00,
-      2: 0x00,
-      3: 0x5ba81b19,
-      // 4: 0x76b809bb (old Sapling branch id)
-      // 4: 0x2bb40e60
-      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      4: 0xe9ff75a6, // (Canopy branch id, see https://zips.z.cash/zip-0251)
-    },
     coin: coins.ZEC,
   },
 };
 
-export = networks;
+/**
+ * @returns {Network[]} all known networks as array
+ */
+export function getNetworkList(): Network[] {
+  return Object.values(networks);
+}
+
+/**
+ * @param {Network} network
+ * @returns {string} the name of the network. Returns undefined if network is not a value
+ *                   of `networks`
+ */
+export function getNetworkName(network: Network): string | undefined {
+  return Object.keys(networks).find((n) => (networks as Record<string, Network>)[n] === network);
+}
+
+/**
+ * @param {Network} network
+ * @returns {Object} the mainnet corresponding to a testnet
+ */
+export function getMainnet(network: Network): Network {
+  switch (network) {
+    case networks.bitcoin:
+    case networks.testnet:
+      return networks.bitcoin;
+
+    case networks.bitcoincash:
+    case networks.bitcoincashTestnet:
+      return networks.bitcoincash;
+
+    case networks.bitcoingold:
+    case networks.bitcoingoldTestnet:
+      return networks.bitcoingold;
+
+    case networks.bitcoinsv:
+    case networks.bitcoinsvTestnet:
+      return networks.bitcoinsv;
+
+    case networks.dash:
+    case networks.dashTest:
+      return networks.dash;
+
+    case networks.litecoin:
+    case networks.litecoinTest:
+      return networks.litecoin;
+
+    case networks.zcash:
+    case networks.zcashTest:
+      return networks.zcash;
+  }
+  throw new TypeError(`invalid network`);
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is a mainnet
+ */
+export function isMainnet(network: Network): boolean {
+  return getMainnet(network) === network;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is a testnet
+ */
+export function isTestnet(network: Network): boolean {
+  return getMainnet(network) !== network;
+}
+
+/**
+ *
+ * @param {Network} network
+ * @param {Network} otherNetwork
+ * @returns {boolean} true iff both networks are for the same coin
+ */
+export function isSameCoin(network: Network, otherNetwork: Network): boolean {
+  return getMainnet(network) === getMainnet(otherNetwork);
+}
+
+const mainnets = getNetworkList().filter(isMainnet);
+const testnets = getNetworkList().filter(isTestnet);
+
+/**
+ * Map where keys are mainnet networks and values are testnet networks
+ * @type {Map<Network, Network[]>}
+ */
+const mainnetTestnetPairs = new Map(mainnets.map((m) => [m, testnets.filter((t) => getMainnet(t) === m)]));
+
+/**
+ * @param {Network} network
+ * @returns {Network|undefined} - The testnet corresponding to a mainnet.
+ *                               Returns undefined if a network has no testnet.
+ */
+export function getTestnet(network: Network): Network | undefined {
+  if (isTestnet(network)) {
+    return network;
+  }
+  const testnets = mainnetTestnetPairs.get(network);
+  if (testnets === undefined) {
+    throw new Error(`invalid argument`);
+  }
+  if (testnets.length === 0) {
+    return;
+  }
+  if (testnets.length === 1) {
+    return testnets[0];
+  }
+  throw new Error(`more than one testnet for ${getNetworkName(network)}`);
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network bitcoin or testnet
+ */
+export function isBitcoin(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoin;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is bitcoincash or bitcoincashTestnet
+ */
+export function isBitcoinCash(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoincash;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is bitcoingold
+ */
+export function isBitcoinGold(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoingold;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is bitcoinsv or bitcoinsvTestnet
+ */
+export function isBitcoinSV(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoinsv;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is dash or dashTest
+ */
+export function isDash(network: Network): boolean {
+  return getMainnet(network) === networks.dash;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is litecoin or litecoinTest
+ */
+export function isLitecoin(network: Network): boolean {
+  return getMainnet(network) === networks.litecoin;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is zcash or zcashTest
+ */
+export function isZcash(network: Network): boolean {
+  return getMainnet(network) === networks.zcash;
+}
+
+/**
+ * @param {unknown} network
+ * @returns {boolean} returns true iff network is any of the network stated in the argument
+ */
+export function isValidNetwork(network: unknown): network is Network {
+  return getNetworkList().includes(network as Network);
+}
+
+export function supportsSegwit(network: Network): boolean {
+  return ([networks.bitcoin, networks.litecoin, networks.bitcoingold] as Network[]).includes(getMainnet(network));
+}
+
+export function supportsTaproot(network: Network): boolean {
+  return getMainnet(network) === networks.bitcoin;
+}

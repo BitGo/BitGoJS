@@ -1,15 +1,13 @@
 import { TxOutput } from 'bitcoinjs-lib';
 
-import * as networks from '../networks';
-import { Network, ZcashNetwork } from '../networkTypes';
-import { getMainnet } from '../coins';
+import { networks, Network, getMainnet } from '../networks';
 
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 import { DashTransaction } from './dash/DashTransaction';
 import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
-import { ZcashTransaction } from './zcash/ZcashTransaction';
+import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 
 export function createTransactionFromBuffer(buf: Buffer, network: Network): UtxoTransaction {
   switch (getMainnet(network)) {

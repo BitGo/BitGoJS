@@ -2,8 +2,7 @@ import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 import { crypto as bcrypto, Transaction } from 'bitcoinjs-lib';
 
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
-import { Network } from '../../networkTypes';
-import { isDash } from '../../coins';
+import { isDash, Network } from '../../networks';
 
 export class DashTransaction extends UtxoTransaction {
   static DASH_NORMAL = 0;

@@ -6,13 +6,14 @@ const blake2b = require('@bitgo/blake2b');
 const varuint = require('varuint-bitcoin');
 const typeforce = require('typeforce');
 
-import * as networks from '../../networks';
+import { networks } from '../../networks';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
-import { ZcashNetwork } from '../../networkTypes';
 
 const ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
 
 const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
+
+export type ZcashNetwork = typeof networks.zcash | typeof networks.zcashTest;
 
 /**
  * Blake2b hashing algorithm for Zcash
@@ -23,6 +24,22 @@ const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
 function getBlake2bHash(buffer: Buffer, personalization: string | Buffer) {
   const out = Buffer.allocUnsafe(32);
   return blake2b(out.length, null, null, Buffer.from(personalization)).update(buffer).digest(out);
+}
+
+export function getDefaultConsensusBranchIdForVersion(version: number): number {
+  switch (version) {
+    case 1:
+    case 2:
+      return 0;
+    case 3:
+      return 0x5ba81b19;
+    case 4:
+      // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
+      // 4: 0x2bb40e60
+      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
+      return 0xe9ff75a6; // (Canopy branch id, see https://zips.z.cash/zip-0251)
+  }
+  throw new Error(`no consensusBranchId for ${version}`);
 }
 
 export class ZcashTransaction extends UtxoTransaction {
@@ -47,8 +64,7 @@ export class ZcashTransaction extends UtxoTransaction {
       this.expiryHeight = tx.expiryHeight;
     }
 
-    // Must be updated along with version
-    this.consensusBranchId = networks.zcash.consensusBranchId[this.version];
+    this.consensusBranchId = getDefaultConsensusBranchIdForVersion(this.version);
   }
 
   static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
@@ -64,10 +80,7 @@ export class ZcashTransaction extends UtxoTransaction {
     // Split the header into fOverwintered and nVersion
     tx.overwintered = tx.version >>> 31; // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07fffffff; // 3 for overwinter
-    if (tx.overwintered && !networks.zcash.consensusBranchId.hasOwnProperty(tx.version)) {
-      throw new Error('Unsupported Zcash transaction');
-    }
-    tx.consensusBranchId = networks.zcash.consensusBranchId[tx.version];
+    tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(tx.version);
 
     if (tx.isOverwinterCompatible()) {
       tx.versionGroupId = bufferReader.readUInt32();

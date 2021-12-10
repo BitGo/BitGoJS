@@ -1,13 +1,21 @@
 export * from 'bitcoinjs-lib';
 
 export * as bitgo from './bitgo';
-export * as coins from './coins';
-
-export { getMainnet, getTestnet, isMainnet, isTestnet, supportsSegwit, supportsTaproot } from './coins';
 
 export * as address from './address';
 
-export const networks = require('./networks');
+export {
+  networks,
+  Network,
+  getNetworkList,
+  isValidNetwork,
+  getNetworkName,
+  getMainnet,
+  getTestnet,
+  isMainnet,
+  isTestnet,
+  supportsTaproot,
+  supportsSegwit,
+} from './networks';
 
-export { Network, ZcashNetwork, BitcoinCashNetwork } from './networkTypes';
 export { Network as BitcoinJSNetwork } from 'bitcoinjs-lib';

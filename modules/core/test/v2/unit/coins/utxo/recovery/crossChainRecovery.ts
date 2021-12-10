@@ -193,8 +193,8 @@ utxoCoins.forEach((coin) => {
       (otherCoin) =>
         coin !== otherCoin &&
         isSupportedCrossChainRecovery(coin, otherCoin) &&
-        ((utxolib.coins.isMainnet(coin.network) && utxolib.coins.isMainnet(otherCoin.network)) ||
-          (utxolib.coins.isTestnet(coin.network) && utxolib.coins.isTestnet(otherCoin.network)))
+        ((utxolib.isMainnet(coin.network) && utxolib.isMainnet(otherCoin.network)) ||
+          (utxolib.isTestnet(coin.network) && utxolib.isTestnet(otherCoin.network)))
     )
     .forEach((otherCoin) => {
       run(coin, otherCoin);

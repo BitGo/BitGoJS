@@ -1,9 +1,7 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
 import * as varuint from 'varuint-bitcoin';
 
-import { Network } from '../networkTypes';
-import { getMainnet, isBitcoinGold } from '../coins';
-import * as networks from '../networks';
+import { networks, Network, getMainnet, isBitcoinGold } from '../networks';
 
 export function varSliceSize(slice: Buffer): number {
   const length = slice.length;

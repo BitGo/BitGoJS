@@ -13,11 +13,13 @@ import * as should from 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
 
-import { fixtures } from './fixtures/accelerate-tx';
+import { getFixtures } from './fixtures/accelerate-tx';
 
 nock.disableNetConnect();
 
+
 describe('Wallet Prototype Methods', function () {
+  const fixtures = getFixtures();
 
   const bitgo = new TestBitGo({ env: 'test' });
   bitgo.initializeTestVars();

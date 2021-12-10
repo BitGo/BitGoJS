@@ -1,6 +1,6 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
+import { Network } from '../../networks';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
-import { Network } from '../../networkTypes';
 import { DashTransaction } from './DashTransaction';
 import { UtxoTransaction } from '../UtxoTransaction';
 

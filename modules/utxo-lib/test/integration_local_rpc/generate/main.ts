@@ -2,8 +2,7 @@ import * as assert from 'assert';
 
 const utxolib = require('../../../src');
 
-import { Network } from '../../../src/networkTypes';
-import { getMainnet, getNetworkName, isTestnet } from '../../../src/coins';
+import { Network, getMainnet, getNetworkName, isTestnet } from '../../../src';
 
 import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
 import {
@@ -67,7 +66,7 @@ async function createTransactionsForScriptType(
   console.log(logTag);
 
   const script = createScriptPubKey(fixtureKeys, scriptType, network);
-  const address = toRegtestAddress(network, scriptType, script);
+  const address = toRegtestAddress(network as { bech32: string }, scriptType, script);
   const deposit1Txid = await sendFromFaucet(rpc, address, 1);
   const deposit1Tx = await rpc.getRawTransaction(deposit1Txid);
   await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, deposit1Txid);

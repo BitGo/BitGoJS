@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as assert from 'assert';
 import * as utxolib from '../../src';
-import { getNetworkList, getNetworkName } from '../../src/coins';
+import { getNetworkList, getNetworkName } from '../../src/networks';
 import {
   createScriptPubKey,
   isSupportedDepositType,
