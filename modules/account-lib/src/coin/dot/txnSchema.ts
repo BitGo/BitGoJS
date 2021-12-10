@@ -63,7 +63,7 @@ export const StakeTransactionSchema = joi.object({
   ],
 });
 
-export const WalletInitializationSchema = joi.object({
+export const AddressInitializationSchema = joi.object({
   proxyType: joi
     .string()
     .valid(...proxyTypes)

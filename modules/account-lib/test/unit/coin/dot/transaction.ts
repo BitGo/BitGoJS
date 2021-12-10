@@ -103,15 +103,15 @@ describe('Dot Transaction', () => {
       explain.forceProxyType?.should.equal('Any');
     });
 
-    it('should explain a wallet initialization transaction', async () => {
+    it('should explain a address initialization transaction', async () => {
       const json = JSON.parse(DotResources.jsonTransactions.walletInitialization) as TxData;
       tx.setTxJson(json);
-      tx.transactionType(TransactionType.WalletInitialization);
+      tx.transactionType(TransactionType.AddressInitialization);
       const explain = tx.explainTransaction();
       explain.outputAmount.should.equal('0');
       explain.fee.fee.should.equal('0');
       explain.changeAmount.should.equal('0');
-      explain.type.should.equal(TransactionType.WalletInitialization);
+      explain.type.should.equal(TransactionType.AddressInitialization);
       explain.owner?.should.equal(receiver.address);
       explain.proxyType?.should.equal('Any');
       explain.delay?.should.equal('0');
