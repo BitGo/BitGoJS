@@ -180,6 +180,47 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       });
     }
 
+    function testExplainTx(
+      stageName: string,
+      txHex: string,
+      unspents: utxolib.bitgo.Unspent[],
+      pubs?: Triple<string>
+    ): void {
+      const explanation = coin.explainTransaction({
+        txHex,
+        txInfo: {
+          unspents,
+        },
+        pubs,
+      });
+
+      explanation.should.have.properties(
+        'displayOrder',
+        'id',
+        'outputs',
+        'changeOutputs',
+        'changeAmount',
+        'outputAmount',
+        'inputSignatures',
+        'signatures'
+      );
+
+      const expectedSignatureCount =
+        stageName === 'prebuild' || pubs === undefined
+          ? 0
+          : stageName.startsWith('halfSigned')
+          ? 1
+          : stageName.startsWith('fullSigned')
+          ? 2
+          : undefined;
+
+      explanation.inputSignatures.should.eql(
+        // FIXME(BG-35154): implement signature verification for replay protection inputs
+        inputScripts.map((type) => (type === 'replayProtection' ? 0 : expectedSignatureCount))
+      );
+      explanation.signatures.should.eql(expectedSignatureCount);
+    }
+
     it('have valid signature for half-signed transaction', function () {
       testValidSignatures(transactionStages.halfSignedUserBackup, [walletKeys.user]);
       testValidSignatures(transactionStages.halfSignedUserBitGo, [walletKeys.user]);
@@ -207,39 +248,10 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
           txHex = stageTx.txHex;
         }
 
-        const explanation = coin.explainTransaction({
-          txHex,
-          txInfo: {
-            unspents: getUnspents(),
-          },
-          pubs: walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
-        });
-
-        explanation.should.have.properties(
-          'displayOrder',
-          'id',
-          'outputs',
-          'changeOutputs',
-          'changeAmount',
-          'outputAmount',
-          'inputSignatures',
-          'signatures'
-        );
-
-        const expectedSignatureCount =
-          stageName === 'prebuild'
-            ? 0
-            : stageName.startsWith('halfSigned')
-            ? 1
-            : stageName.startsWith('fullSigned')
-            ? 2
-            : undefined;
-
-        explanation.inputSignatures.should.eql(
-          // FIXME(BG-35154): implement signature verification for replay protection inputs
-          inputScripts.map((type) => (type === 'replayProtection' ? 0 : expectedSignatureCount))
-        );
-        explanation.signatures.should.eql(expectedSignatureCount);
+        const pubs = walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+        const unspents = getUnspents();
+        testExplainTx(stageName, txHex, unspents, pubs);
+        testExplainTx(stageName, txHex, unspents);
       }
     });
   });
