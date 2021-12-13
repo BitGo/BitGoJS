@@ -708,6 +708,15 @@ export enum UnderlyingAsset {
   CHEX = 'chex',
   IQ = 'iq',
   EOS_BOX = 'eos:box',
+
+  // Avax Token ERC-20
+  'avaxc:QI' = 'avaxc:qi',
+  'avaxc:XAVA' = 'avaxc:xava',
+  'avaxc:KLO' = 'avaxc:klo',
+  'avaxc:JOE' = 'avaxc:joe',
+  'avaxc:PNG' = 'avaxc:png',
+  'avaxc:USDT.E' = 'avaxc:usdt.e',
+  'avaxc:USDC.E' = 'avaxc:usdc.e',
 }
 
 /**
