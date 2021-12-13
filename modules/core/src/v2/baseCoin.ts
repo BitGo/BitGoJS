@@ -114,6 +114,8 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
+  address?: string;
+  suppressBroadcast?: boolean;
 }
 
 export interface FeeEstimateOptions {
@@ -390,7 +392,7 @@ export abstract class BaseCoin {
    * @param keychains
    * @return {*}
    */
-  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any> {
+  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Promise<any> {
     return Promise.resolve(walletParams);
   }
 
