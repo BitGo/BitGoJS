@@ -96,11 +96,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  /**
-   *
-   * @param firstValid
-   * @param maxDuration
-   */
   validity({ firstValid, maxDuration }: validityWindow): this {
     if (!_.isUndefined(firstValid)) {
       this.validateValue(new BigNumber(firstValid));
