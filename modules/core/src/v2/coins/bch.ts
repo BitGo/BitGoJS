@@ -1,21 +1,9 @@
 import * as utxolib from '@bitgo/utxo-lib';
-const cashaddress = require('cashaddress');
-import * as _ from 'lodash';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 
-const VALID_ADDRESS_VERSIONS = {
-  base58: 'base58',
-  // TODO(BG-11325): remove bech32 in future major version release
-  bech32: 'bech32',
-  cashaddr: 'cashaddr',
-};
-
-const containsMixedCaseCharacters = (str) => {
-  return str !== _.toLower(str) && str !== _.toUpper(str);
-};
 
 export class Bch extends AbstractUtxoCoin {
 
@@ -56,87 +44,19 @@ export class Bch extends AbstractUtxoCoin {
    * migrating over to the new format will be laborious, and we want to see how the space evolves
    *
    * @param address
-   * @param version the version of the desired address, 'base58' or 'cashaddr', defaulting to 'base58', 'bech32' is also
-   *                supported for backwards compatibility but is deprecated and will be removed
+   * @param version the version of the desired address, 'base58' or 'cashaddr', defaulting to 'base58'
    * @returns {*} address string
    */
   canonicalAddress(address, version = 'base58') {
-    if (!_.includes(_.keys(VALID_ADDRESS_VERSIONS), version)) {
-      throw new Error('version must be base58 or cashaddr');
+    if (version === 'base58') {
+      return utxolib.addressFormat.toCanonicalFormat(address, this.network);
     }
 
-    const originalAddress = address; // used for error message
-
-    let isValidBase58Address;
-    let isValidCashAddr;
-    try {
-      isValidBase58Address = this.isValidAddress(address, true);
-    } catch (e) {
-      // ignore
-    }
-    try {
-      isValidCashAddr = !!cashaddress.decode(address);
-    } catch (e) {
-      // try to coerce the address into a valid BCH cashaddr address if we know it's not a base58 address
-      // We do this to remain compliant with the spec at https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md,
-      // which says addresses do not need the prefix, and can be all lowercase XOR all uppercase
-      if (!isValidBase58Address) {
-        if (!_.startsWith(address, this.getAddressPrefix() + ':')) {
-          address = this.getAddressPrefix() + ':' + address;
-        }
-        if (containsMixedCaseCharacters(address.split(':')[1])) {
-          // we should reject these addresses
-        } else {
-          address = _.toLower(address);
-
-          try {
-            isValidCashAddr = !!cashaddress.decode(address);
-          } catch (e) {
-            // ignore
-          }
-        }
-      }
+    if (version === 'cashaddr') {
+      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network);
+      return utxolib.addressFormat.fromOutputScriptWithFormat(script, version, this.network);
     }
 
-    if (!isValidBase58Address && !isValidCashAddr) {
-      throw new Error('invalid address: ' + originalAddress);
-    }
-
-    // mapping to cashaddress's script versions
-    const versionMap = {
-      [this.network.pubKeyHash]: 'pubkeyhash',
-      [this.network.scriptHash]: 'scripthash',
-    };
-    // another mapping to cashaddress's script versions
-    const scriptVersionMap = {
-      pubkeyhash: 'pubKeyHash',
-      scripthash: 'scriptHash',
-    };
-
-    // convert from base58
-    if (isValidBase58Address) {
-      if (version === VALID_ADDRESS_VERSIONS.base58) {
-        // no conversion needed
-        return address;
-      }
-      const addressDetails = utxolib.address.fromBase58Check(address, this.network);
-
-      // JS annoyingly converts JSON Object variable keys to Strings, so we have to do so as well
-      const addressVersionString = String(addressDetails.version);
-
-      if (!_.includes(_.keys(versionMap), addressVersionString)) {
-        throw new Error('invalid address version: ' + addressVersionString + '. Expected one of ' + _.keys(versionMap));
-      }
-
-      return cashaddress.encode(this.getAddressPrefix(), versionMap[addressVersionString], addressDetails.hash);
-    }
-
-    // convert from cashaddr
-    if (version === VALID_ADDRESS_VERSIONS.cashaddr || version === VALID_ADDRESS_VERSIONS.bech32) {
-      return address;
-    }
-
-    const rawBytes = cashaddress.decode(address);
-    return utxolib.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]], this.network);
+    throw new Error(`invalid version ${version}`);
   }
 }
