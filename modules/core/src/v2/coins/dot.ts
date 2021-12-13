@@ -27,6 +27,7 @@ export interface TransactionPrebuild {
   };
   referenceBlock: string;
   version: number;
+  transaction?: any;
 }
 
 export interface ExplainTransactionOptions {
@@ -73,6 +74,11 @@ export class Dot extends BaseCoin {
 
   getBaseFactor(): any {
     return 1e12;
+  }
+
+  /** @inheritDoc **/
+  supportsUserSingleSigWallet(): boolean {
+    return true;
   }
 
   /**
@@ -179,19 +185,18 @@ export class Dot extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    if (!_.has(params.txPrebuild, 'key')) {
+    if (!_.has(params, 'pubs')) {
       throw new Error('missing public key parameter to sign transaction');
     }
 
     if (!_.isNumber(addressVersion)) {
-      throw new Error('missing addressVersion parameter to sign transaction');
+      // throw new Error('missing addressVersion parameter to sign transaction');
     }
 
-    const pubKey = params.txPrebuild.key;
+    console.dir(params.txPrebuild.transaction, { depth: null });
+    // const pubKey = params.txPrebuild.key;
     // if we are receiving addresses do not try to convert them
-    const signer = dotUtils.isValidAddress(pubKey)
-      ? pubKey :
-      new accountLib.Dot.KeyPair({ pub: pubKey }).getAddress();
+    const signer = '5FAeXHFGAG7TqTA3zaGz3AEUCiHyjKmqWfEPd56aXfGmF26z';
     return { txHex, addressVersion, prv, signer };
   }
 
@@ -204,15 +209,16 @@ export class Dot extends BaseCoin {
    * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const { txHex, signer, prv } = this.verifySignTransactionParams(params);
+    const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
+    const keyPair = new accountLib.Dot.KeyPair({ prv: prv });
     const txBuilder = factory.from(txHex);
     txBuilder
-      .validity(params.txPrebuild.validity)
-      .referenceBlock(params.txPrebuild.referenceBlock)
-      .version(params.txPrebuild.version)
-      .sender({ address: signer })
-      .sign({ key: prv });
+      .validity({ firstValid: params.txPrebuild.transaction.blockNumber })
+      .referenceBlock(params.txPrebuild.transaction.referenceBlock)
+      .version(params.txPrebuild.transaction.transactionVersion)
+      .sender({ address: params.txPrebuild.transaction.sender })
+      .sign({ key: keyPair.getKeys().prv });
     const transaction: any = await txBuilder.build();
     if (!transaction) {
       throw new Error('Invalid transaction');

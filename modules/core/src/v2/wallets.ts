@@ -13,10 +13,14 @@ import { sanitizeLegacyPath } from '../bip32path';
 import { getSharedSecret } from '../ecdh';
 import { BigNumber } from 'bignumber.js';
 import { promiseProps } from './promise-utils';
+import { Keychain } from './keychains';
 
-export interface WalletWithKeychains extends KeychainsTriplet {
+export interface WalletWithKeychains {
   wallet: Wallet;
   warning?: string;
+  userKeychain: Keychain;
+  backupKeychain?: Keychain;
+  bitgoKeychain?: Keychain;
 }
 
 export interface GetWalletOptions {
@@ -46,6 +50,9 @@ export interface GenerateWalletOptions {
   };
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
+  n?: number;
+  address?: string;
+  suppressBroadcast?: boolean;
 }
 
 export interface GetWalletByAddressOptions {
@@ -277,10 +284,21 @@ export class Wallets {
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
     const isCold = !canEncrypt || !!params.userKey;
 
+    const n = params.n ?? 3;
+    const m = params.n ?? 2;
+
+    if (n !== 1 && n !== 3) {
+      throw new Error('invalid n argument, expecting 1 or 3');
+    }
+
+    if (n === 1 && isCold) {
+      throw new Error('invalid arguments, cold wallets cannot have an n equal to 1 (singlesig)');
+    }
+
     const walletParams: SupplementGenerateWalletOptions = {
-      label: label,
-      m: 2,
-      n: 3,
+      label,
+      m,
+      n,
       keys: [],
       isCold,
     };
@@ -433,34 +451,51 @@ export class Wallets {
       }
     };
 
-    const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
-      userKeychain: userKeychainPromise(),
-      backupKeychain: backupKeychainPromise(),
-      bitgoKeychain: this.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId }),
-    });
+    let userKeychain: Keychain;
+    let backupKeychain: Keychain | undefined = undefined;
+    let bitgoKeychain: Keychain | undefined = undefined;
 
-    walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+    if (this.baseCoin.supportsUserSingleSigWallet() && n === 1) {
+      userKeychain = await userKeychainPromise();
+      walletParams.keys = [userKeychain.id];
+    } else {
+      const promiseResult: KeychainsTriplet = await promiseProps({
+        userKeychain: userKeychainPromise(),
+        backupKeychain: backupKeychainPromise(),
+        bitgoKeychain: this.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId }),
+      });
 
-    walletParams.isCold = isCold;
+      userKeychain = promiseResult.userKeychain;
+      backupKeychain = promiseResult.backupKeychain;
+      bitgoKeychain = promiseResult.bitgoKeychain;
 
-    const { prv } = userKeychain;
-    if (_.isString(prv)) {
-      walletParams.keySignatures = {
-        backup: (await this.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
-        bitgo: (await this.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
-      };
+      walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+      const { prv } = userKeychain;
+      if (_.isString(prv)) {
+        walletParams.keySignatures = {
+          backup: (await this.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
+          bitgo: (await this.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
+        };
+      }
     }
 
     if (_.includes(['xrp', 'xlm', 'cspr'], this.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
-    const keychains = {
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-    };
-    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+    if (_.includes(['dot'], this.baseCoin.getFamily()) && !_.isUndefined(params.address)) {
+      if (this.baseCoin.isValidAddress(params.address)) {
+        walletParams.address = params.address;
+      } else {
+        throw new Error('invalid address argument, expecting a string with a valid format');
+      }
+    }
+
+    if (params.suppressBroadcast) {
+      walletParams.suppressBroadcast = true;
+    }
+
+    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams);
     this.bitgo.setRequestTracer(reqId);
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
 
@@ -471,7 +506,7 @@ export class Wallets {
       bitgoKeychain: bitgoKeychain,
     };
 
-    if (!_.isUndefined(backupKeychain.prv)) {
+    if (!_.isUndefined(backupKeychain) && !_.isUndefined(backupKeychain.prv)) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
 

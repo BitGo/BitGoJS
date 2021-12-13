@@ -34,7 +34,6 @@ import {
   AddressCoinSpecific,
   BaseCoin,
   ExtraPrebuildParamsOptions,
-  KeychainsTriplet,
   ParseTransactionOptions as BaseParseTransactionOptions,
   ParsedTransaction as BaseParsedTransaction,
   PrecreateBitGoOptions,
@@ -1339,10 +1338,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return params;
   }
 
-  async supplementGenerateWallet(
-    walletParams: SupplementGenerateWalletOptions,
-    keychains: KeychainsTriplet
-  ): Promise<any> {
+  async supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Promise<any> {
     return walletParams;
   }
 
