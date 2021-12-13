@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as utxolib from '../../src';
 import { getNetworkList, getNetworkName } from '../../src/networks';
+
 import {
   createScriptPubKey,
   isSupportedDepositType,
@@ -9,47 +10,78 @@ import {
   scriptTypes,
 } from '../integration_local_rpc/generate/outputScripts.util';
 
+import { AddressFormat } from '../../src/addressFormat';
 import * as fixtureUtil from '../fixture.util';
 import { getKeyTriple } from '../testutil';
 
-type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
+export type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
 
-async function readFixture<T>(network: utxolib.Network, defaultValue: T): Promise<T> {
+export async function readFixture<T>(network: utxolib.Network, suffix: string, defaultValue: T): Promise<T> {
   return await fixtureUtil.readFixture(
-    path.join(__dirname, 'fixtures', `${getNetworkName(network)}.json`),
+    path.join(__dirname, 'fixtures', `${utxolib.getNetworkName(network)}${suffix}.json`),
     defaultValue
   );
 }
 
-describe('Address', function () {
-  getNetworkList().forEach((network) => {
-    describe(`network=${getNetworkName(network)}`, function () {
-      const keyTriples = Array.from({ length: 4 }).map((v, i) => getKeyTriple(`${i}`));
+const keyTriples = Array.from({ length: 4 }).map((v, i) => getKeyTriple(`${i}`));
+
+export function getOutputScripts(network: utxolib.Network): [ScriptType, Buffer][] {
+  return keyTriples.flatMap((keys) =>
+    scriptTypes
+      .filter((t) => isSupportedDepositType(network, t))
+      .map((scriptType): [ScriptType, Buffer] => {
+        return [scriptType, createScriptPubKey(keys, scriptType, network)];
+      })
+  );
+}
+
+function runWithAddressFormat(network, addressFormat?: AddressFormat) {
+  describe(
+    `network=${getNetworkName(network)}` + (addressFormat ? ` addressFormat=${addressFormat}` : ''),
+    function () {
       let vectors: AddressTestVector[];
       let refVectors: AddressTestVector[];
 
       before('prepare fixtures', async function () {
-        vectors = keyTriples
-          .map((keys) =>
-            scriptTypes
-              .filter((t) => isSupportedDepositType(network, t))
-              .map((scriptType): AddressTestVector => {
-                const scriptPubKey = createScriptPubKey(keys, scriptType, network);
-                const address = utxolib.address.fromOutputScript(scriptPubKey, network);
-                return [scriptType, scriptPubKey.toString('hex'), address];
-              })
-          )
-          .reduce((all: AddressTestVector[], v) => [...all, ...v], []);
+        vectors = getOutputScripts(network).map(
+          ([scriptType, scriptPubKey]): AddressTestVector => [
+            scriptType,
+            scriptPubKey.toString('hex'),
+            addressFormat === undefined
+              ? utxolib.address.fromOutputScript(scriptPubKey, network)
+              : utxolib.addressFormat.fromOutputScriptWithFormat(scriptPubKey, addressFormat, network),
+          ]
+        );
 
-        refVectors = await readFixture(network, vectors);
+        refVectors = await readFixture(
+          network,
+          (addressFormat ?? 'default') === 'default' ? '' : `-${addressFormat}`,
+          vectors
+        );
       });
 
-      it('matches test vectors, parses to scriptPubKeyHex', function () {
+      it('matches test vectors, parses to scriptPubKeyHex, implements toCanonicalFormat', function () {
         assert.strictEqual(vectors.length, refVectors.length);
         vectors.forEach((v, i) => {
           assert.deepStrictEqual(v, refVectors[i]);
           const [, scriptPubKeyHex, address] = v;
-          assert.strictEqual(utxolib.address.toOutputScript(address, network).toString('hex'), scriptPubKeyHex);
+
+          if (!addressFormat || addressFormat === 'default') {
+            assert.strictEqual(utxolib.address.toOutputScript(address, network).toString('hex'), scriptPubKeyHex);
+          } else {
+            assert.throws(() => {
+              utxolib.address.toOutputScript(address, network);
+            });
+            assert.strictEqual(
+              utxolib.addressFormat.toOutputScriptWithFormat(address, addressFormat, network).toString('hex'),
+              scriptPubKeyHex
+            );
+          }
+
+          assert.strictEqual(
+            utxolib.addressFormat.toCanonicalFormat(address, network),
+            utxolib.address.fromOutputScript(Buffer.from(scriptPubKeyHex, 'hex'), network)
+          );
 
           if (network.bech32 && !address.startsWith(network.bech32)) {
             const { hash, version } = utxolib.address.fromBase58Check(address, network);
@@ -57,6 +89,18 @@ describe('Address', function () {
           }
         });
       });
+    }
+  );
+}
+
+describe('Address', function () {
+  getNetworkList().forEach((network) => {
+    const formats = utxolib.addressFormat.addressFormats.filter((f) =>
+      utxolib.addressFormat.isSupportedAddressFormat(f, network)
+    );
+
+    [undefined, ...formats].forEach((f) => {
+      runWithAddressFormat(network, f);
     });
   });
 });

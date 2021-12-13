@@ -4,6 +4,8 @@ export * as bitgo from './bitgo';
 
 export * as address from './address';
 
+export * as addressFormat from './addressFormat';
+
 export {
   networks,
   Network,
