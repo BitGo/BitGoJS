@@ -72,7 +72,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * The tip to increase transaction priority.
    *
-   * @param {number | undefined} tip optional
+   * @param {number | undefined} [fee.type] options for building fee tx
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
