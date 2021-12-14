@@ -141,26 +141,6 @@ export interface CreateBaseTxInfo {
   };
 }
 
-/**
- * Nonce interface based on BitgoJS standards doc
- */
-export interface sequenceId {
-  name: string; // "Nonce", "Sequence Id", "Counter"
-  keyword: string; // "nonce", "sequenceId", "counter"
-  value: string | number;
-}
-
-/**
- * Block validity interface based on the BitgoJS standard doc.
- */
-export interface ValidityWindow {
-  firstValid?: number;
-  lastValid?: number;
-  minDuration?: number;
-  maxDuration?: number;
-  unit?: 'block' | 'seconds' | 'milliseconds';
-}
-
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
   forceProxyType?: ProxyType;
