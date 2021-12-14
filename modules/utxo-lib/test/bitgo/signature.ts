@@ -2,10 +2,9 @@ import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
 import { script as bscript, classify, TxOutput } from '../../src';
-import * as networks from '../../src/networks';
+import { getNetworkList, getNetworkName, isBitcoin, isMainnet, Network, networks } from '../../src/networks';
+
 import { ScriptType, ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
-import { getNetworkList, getNetworkName, isBitcoin, isMainnet } from '../../src/coins';
-import { Network } from '../../src/networkTypes';
 import {
   verifySignature,
   UtxoTransaction,

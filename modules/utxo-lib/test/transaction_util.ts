@@ -2,8 +2,7 @@ import * as bip32 from 'bip32';
 import * as assert from 'assert';
 import { TxOutput } from 'bitcoinjs-lib';
 
-import * as networks from '../src/networks';
-import { Network } from '../src/networkTypes';
+import { networks, Network } from '../src';
 
 import { createOutputScript2of3, isScriptType2Of3, ScriptType2Of3 } from '../src/bitgo/outputScripts';
 import {

@@ -1,6 +1,5 @@
 import { ECPair } from 'bitcoinjs-lib';
-
-import { Network } from '../networkTypes';
+import { Network } from '../networks';
 
 /**
  * Create an ECPair from the raw private key bytes

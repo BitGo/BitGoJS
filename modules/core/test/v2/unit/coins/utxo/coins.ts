@@ -7,7 +7,7 @@ import { getUtxoCoinForNetwork, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
   it('has expected chain/network values for items', function () {
-    utxoCoins.map(c => [c.getChain(), utxolib.coins.getNetworkName(c.network)]).should.eql([
+    utxoCoins.map(c => [c.getChain(), utxolib.getNetworkName(c.network)]).should.eql([
       ['btc', 'bitcoin'],
       ['tbtc', 'testnet'],
       ['bch', 'bitcoincash'],
@@ -23,7 +23,7 @@ describe('utxoCoins', function () {
       ['tzec', 'zcashTest'],
     ]);
 
-    utxolib.coins.getNetworkList().map((network): [string | undefined, string | undefined] => {
+    utxolib.getNetworkList().map((network): [string | undefined, string | undefined] => {
       let coin;
       try {
         coin = getUtxoCoinForNetwork(network);
@@ -31,7 +31,7 @@ describe('utxoCoins', function () {
         // ignore
       }
 
-      return [utxolib.coins.getNetworkName(network), coin?.getChain()];
+      return [utxolib.getNetworkName(network), coin?.getChain()];
     }).should.eql([
       ['bitcoin', 'btc'],
       ['testnet', 'tbtc'],

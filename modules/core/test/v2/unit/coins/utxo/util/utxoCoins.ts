@@ -32,9 +32,7 @@ function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
         throw new Error(`error creating ${cls.name}: ${e}`);
       }
     })
-    .sort(
-      (a, b) => utxolib.coins.getNetworkList().indexOf(a.network) - utxolib.coins.getNetworkList().indexOf(b.network)
-    );
+    .sort((a, b) => utxolib.getNetworkList().indexOf(a.network) - utxolib.getNetworkList().indexOf(b.network));
 }
 
 export const utxoCoins = getUtxoCoins();
@@ -54,5 +52,5 @@ export function getUtxoCoinForNetwork(n: utxolib.Network): coins.AbstractUtxoCoi
       return c;
     }
   }
-  throw new Error(`no coin for network ${utxolib.coins.getNetworkName(n)}`);
+  throw new Error(`no coin for network ${utxolib.getNetworkName(n)}`);
 }

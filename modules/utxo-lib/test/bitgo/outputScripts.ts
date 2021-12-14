@@ -10,7 +10,7 @@ import {
 } from '../../src/bitgo/outputScripts';
 
 import { getKeyTriple } from '../testutil';
-import { getNetworkList, getNetworkName } from '../../src/coins';
+import { getNetworkList, getNetworkName } from '../../src';
 
 const keys = getKeyTriple('utxo');
 const pubkeys = keys.map((k) => k.publicKey) as [Buffer, Buffer, Buffer];

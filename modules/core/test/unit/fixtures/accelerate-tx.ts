@@ -6,13 +6,14 @@ const accelerateParentTxHex = '01000000025f4acdcb5efe0b5800b8dda3ee8c37c322a9e4e
 const ignoreMaxFeeRateTxHex = '010000000001019cc0e63e8e037873d309f0f75b374202cd3bb228354f443f2751589016f9551f00000000232200209e70056b49ced4964c2abd091907a21bb2a6dd75f372460b009ec3b5e96f2730ffffffff02d4e79d000000000017a914f9a7950e9666348ae37826d83bfe96cd2e15312f87102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc8704004730440220647338bf8501a92f3b70e766806a29c0320afbd679bf1a72167908e45f592a80022079726e7e6c6a54e74c788025065a97cfc5d03cf780f082f5db4894928cc3567f0147304402200eef494043c0fced8370f7aaaa9d7328d439f9bda694ba6205f7b1e24c0de17002205b9078530524f27eb0c59fd4aafb8efa73646c90f8c9021e7a056531477624d00169522103abfd364d46f23e5ad8a166d2e42dda06014c86661a11e00947d1ed3f29277a2d2103cb22468f629363aba24e080a79828a660970c307977a51be1146ba2abe611fe921030cbcfec6a39f063a38332b60f0a29da571e02aa6624752f7dd031699d8f44fc653ae00000000';
 const unrelatedTxHex = '01000000000101d1c40822841db824893f4038660019ca443e00b83ed1f016b673d33e043a628801000000232200201b646106e3bd0e7541a2135376a6ee9362715c2f4ea74e2ea28d1de990021834ffffffff028eeb25020000000017a914b634d2464a22e99daa3822432d4903e55ae6482b87102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc870400483045022100c8c3ec442bfcddbc58da45c61252bfa2a50e0b2c91124fa3c5b0667eb8b785c002205e370a583d10a2d19785ae6b256638cb267b18478b5fc3de3d928f1c50e50bd401483045022100d7bd1ec22e2e5d0aa4e31f24d73d1fdefcc1c6caa85af17252a48021ca20b81002201ffa870ffa9d16ce9cd8c72e17bfb7f6698cef293afcc5b45b039114e9b64b200169522103bf0667e3b22adabdba9b05dc48cc5a5fc5c44b7dcbe7855284dee82333eea8b2210399c2e5dcadad8e980c58ea6099ea7a39b4b710576a3a03e65efaa71ff42de6bd21033b883beaa9c7eb0f69a6b3e53b0b267707b256e8764cd33bed87d181a43a272d53ae00000000';
 
-const { createTransactionFromHex } = utxolib.bitgo;
 const network = utxolib.networks.bitcoin;
 
-export const fixtures: { [txId: string]: string; } = {
-  [createTransactionFromHex(parentTxHex, network).getId()]: parentTxHex,
-  [createTransactionFromHex(successfulParentTxHex, network).getId()]: successfulParentTxHex,
-  [createTransactionFromHex(accelerateParentTxHex, network).getId()]: accelerateParentTxHex,
-  [createTransactionFromHex(ignoreMaxFeeRateTxHex, network).getId()]: ignoreMaxFeeRateTxHex,
-  [createTransactionFromHex(unrelatedTxHex, network).getId()]: unrelatedTxHex,
-};
+export function getFixtures(): { [txId: string]: string; } {
+  return {
+    [utxolib.bitgo.createTransactionFromHex(parentTxHex, network).getId()]: parentTxHex,
+    [utxolib.bitgo.createTransactionFromHex(successfulParentTxHex, network).getId()]: successfulParentTxHex,
+    [utxolib.bitgo.createTransactionFromHex(accelerateParentTxHex, network).getId()]: accelerateParentTxHex,
+    [utxolib.bitgo.createTransactionFromHex(ignoreMaxFeeRateTxHex, network).getId()]: ignoreMaxFeeRateTxHex,
+    [utxolib.bitgo.createTransactionFromHex(unrelatedTxHex, network).getId()]: unrelatedTxHex,
+  };
+}
