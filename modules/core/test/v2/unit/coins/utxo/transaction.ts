@@ -180,13 +180,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       });
     }
 
-    function testExplainTx(
+    async function testExplainTx(
       stageName: string,
       txHex: string,
       unspents: utxolib.bitgo.Unspent[],
       pubs?: Triple<string>
-    ): void {
-      const explanation = coin.explainTransaction({
+    ): Promise<void> {
+      const explanation = await coin.explainTransaction({
         txHex,
         txInfo: {
           unspents,
@@ -235,7 +235,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       testValidSignatures(transactionStages.fullSignedUserBitGo, [walletKeys.user, walletKeys.bitgo]);
     });
 
-    it('have correct results for explainTransaction', function () {
+    it('have correct results for explainTransaction', async function () {
       for (const [stageName, stageTx] of Object.entries(transactionStages)) {
         if (!stageTx) {
           continue;
@@ -250,8 +250,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
         const pubs = walletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
         const unspents = getUnspents();
-        testExplainTx(stageName, txHex, unspents, pubs);
-        testExplainTx(stageName, txHex, unspents);
+        await testExplainTx(stageName, txHex, unspents, pubs);
+        await testExplainTx(stageName, txHex, unspents);
       }
     });
   });

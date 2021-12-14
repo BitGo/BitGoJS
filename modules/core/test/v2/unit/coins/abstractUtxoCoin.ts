@@ -39,7 +39,7 @@ describe('Abstract UTXO Coin:', () => {
     const outputAmount = 0.01 * 1e8;
 
     async function runClassifyOutputsTest(outputAddress, verification, expectExternal, txParams: TransactionParams = {}) {
-      sinon.stub(coin, 'explainTransaction').returns({
+      sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [] as Output[],
         changeOutputs: [{
           address: outputAddress,
@@ -175,7 +175,7 @@ describe('Abstract UTXO Coin:', () => {
       const outputAmount = 10000;
       const recipients = [];
 
-      sinon.stub(coin, 'explainTransaction').returns({
+      sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [
           {
