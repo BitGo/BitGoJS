@@ -11,7 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import { Codes, VirtualSizes } from '@bitgo/unspents';
+import { VirtualSizes } from '@bitgo/unspents';
 
 import * as bip32 from 'bip32';
 const TransactionBuilder = require('./transactionBuilder');
@@ -25,6 +25,12 @@ import * as _ from 'lodash';
 import { makeRandomKey, getNetwork } from './bitcoin';
 import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
+import {
+  getExternalChainCode,
+  getInternalChainCode,
+  isChainCode,
+  scriptTypeForChain,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 const request = require('superagent');
 
 //
@@ -220,7 +226,7 @@ Wallet.prototype.getChangeChain = function (params) {
     // if segwit is disabled through the constants, segwit change should still not be created
     useSegwitChange = this.bitgo.getConstants().enableSegwit && params.segwitChange;
   }
-  return useSegwitChange ? Codes.internal.p2shP2wsh : Codes.internal.p2sh;
+  return useSegwitChange ? getInternalChainCode('p2shP2wsh') : getInternalChainCode('p2sh');
 };
 
 //
@@ -244,7 +250,7 @@ Wallet.prototype.createAddress = function (params, callback) {
   }
 
   const isSegwit = this.bitgo.getConstants().enableSegwit;
-  const defaultChain = isSegwit ? Codes.external.p2shP2wsh : Codes.external.p2sh;
+  const defaultChain = isSegwit ? getExternalChainCode('p2shP2wsh') : getExternalChainCode('p2sh');
 
   let chain = params.chain;
   if (chain === null || chain === undefined) {
@@ -1316,7 +1322,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
         _.forEach(unspents, (unspent) => {
           // update the child tx inputs
           const unspentChain = getChain(unspent);
-          if (unspentChain === Codes.p2shP2wsh.external || unspentChain === Codes.p2shP2wsh.internal) {
+          if (isChainCode(unspentChain) && scriptTypeForChain(unspentChain) === 'p2shP2wsh') {
             inputs.segwit++;
           } else {
             inputs.P2SH++;
@@ -1399,7 +1405,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    */
   const effectiveValue = (outputOrUnspent) => {
     const chain = getChain(outputOrUnspent);
-    if (chain === Codes.p2shP2wsh.external || chain === Codes.p2shP2wsh.internal) {
+    if (isChainCode(chain) && scriptTypeForChain(chain) === 'p2shP2wsh') {
       // VirtualSizes.txP2shP2wshInputSize is in bytes, so we need to convert to kB
       return outputOrUnspent.value - (VirtualSizes.txP2shP2wshInputSize * params.feeRate / 1000);
     }
@@ -1509,8 +1515,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // determine if parent output can cover child fee
     const isParentOutputSegwit =
-      outputToUse.chain === Codes.p2shP2wsh.external ||
-      outputToUse.chain === Codes.p2shP2wsh.internal;
+        isChainCode(outputToUse.chain) && scriptTypeForChain(outputToUse.chain) === 'p2shP2wsh';
 
     let childInputs = {
       segwit: isParentOutputSegwit ? 1 : 0,

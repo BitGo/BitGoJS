@@ -10,7 +10,7 @@ import { Network } from '../../src/networkTypes';
 import { getHalfSignedTransaction2Of3 } from '../transaction_util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';
 import { padInputScript } from '../../src/bitgo/nonStandardHalfSigned';
-import { getDefaultCosigner } from '../integration_local_rpc/generate/outputScripts.util';
+import { getDefaultCosigner } from '../testutil';
 
 async function getFixture<T>(network: Network, name: string): Promise<T> {
   const p = path.join(__dirname, 'fixtures', 'nonStandardHalfSigned', getNetworkName(network) as string, name);

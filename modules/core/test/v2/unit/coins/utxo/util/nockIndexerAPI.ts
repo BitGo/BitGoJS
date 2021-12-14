@@ -3,9 +3,9 @@
  */
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
-import { PublicUnspent, Unspent } from '../../../../../../src/v2/coins/utxo/unspent';
 import { ExplorerTxInfo } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import { nockBitGo } from './nockBitGo';
@@ -28,8 +28,8 @@ export function nockBitGoPublicAddressUnspents(
   address: string,
   outputs: utxolib.TxOutput[]
 ): nock.Scope {
-  const payload: PublicUnspent[] = outputs.map(
-    (o, vout: number): PublicUnspent => ({
+  const payload: Unspent[] = outputs.map(
+    (o, vout: number): Unspent => ({
       id: `${txid}:${vout}`,
       address: utxolib.address.fromOutputScript(o.script, coin.network),
       value: o.value,

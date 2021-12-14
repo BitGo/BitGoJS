@@ -2,12 +2,11 @@
 // Test for Keychains
 //
 
-import 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-import * as nock from 'nock';
-import * as common from '../../src/common';
 import * as _ from 'lodash';
+import * as nock from 'nock';
+import 'should';
+
+import * as common from '../../src/common';
 
 import { TestBitGo } from '../lib/test_bitgo';
 
@@ -28,37 +27,21 @@ describe('Keychains', function v2keychains() {
       bgUrl = common.Environments[bitgo.getEnv()].uri;
     });
 
-    it('should fail to update the password', co(function *coItFail() {
-      try {
-        yield keychains.updatePassword({ newPassword: '5678' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Missing parameter: oldPassword');
-      }
+    it('should fail to update the password', async function () {
+      await keychains.updatePassword({ newPassword: '5678' })
+        .should.be.rejectedWith('Missing parameter: oldPassword');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Expecting parameter string: oldPassword but found number');
-      }
+      await keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
+        .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: '1234' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Missing parameter: newPassword');
-      }
+      await keychains.updatePassword({ oldPassword: '1234' })
+        .should.be.rejectedWith('Missing parameter: newPassword');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Expecting parameter string: newPassword but found number');
-      }
-    }));
+      await keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
+        .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
+    });
 
-    it('successful password update', co(function *isSuccessfulPasswordUpdate() {
+    it('successful password update', async function () {
       const oldPassword = 'oldPassword';
       const newPassword = 'newPassword';
       const otherPassword = 'otherPassword';
@@ -73,7 +56,7 @@ describe('Keychains', function v2keychains() {
           version: 1,
         });
 
-      const result = (yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword })) as any;
+      const result = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
       _.forOwn(result.keychains, function (encryptedXprv, xpub) {
         xpub.should.startWith('xpub');
         try {
@@ -86,7 +69,7 @@ describe('Keychains', function v2keychains() {
         }
       });
       result.should.hasOwnProperty('version');
-    }));
+    });
   });
 
   after(function afterKeychains() {

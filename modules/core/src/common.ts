@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { NodeCallback, V1Network } from './v2/types';
+import { V1Network } from './v2/types';
 
 // re-export from here for backwards compatibility reasons
 export { Environments } from './v2/environments';
@@ -48,7 +48,7 @@ export function validateParams(
   params: object,
   expectedParams: string[],
   optionalParams: string[] = [],
-  optionalCallback?: NodeCallback<any>
+  optionalCallback?: <R>(err: Error, res: R) => void
 ): boolean {
   if (!_.isObject(params)) {
     throw new Error('Must pass in parameters dictionary');

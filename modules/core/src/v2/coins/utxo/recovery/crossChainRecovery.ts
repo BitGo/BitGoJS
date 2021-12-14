@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import * as request from 'superagent';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
@@ -12,7 +13,6 @@ import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { Ltc } from '../../ltc';
 import { Wallet } from '../../../wallet';
 
-import { PublicUnspent } from '../unspent';
 import { BaseCoin } from '../../../baseCoin';
 import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
@@ -35,9 +35,9 @@ class BitgoPublicApi {
    * @param addresses
    * @returns {*}
    */
-  async getUnspentInfo(addresses: string[]): Promise<PublicUnspent[]> {
+  async getUnspentInfo(addresses: string[]): Promise<Unspent[]> {
     const url = this.coin.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-    return (await request.get(url)).body as PublicUnspent[];
+    return (await request.get(url)).body as Unspent[];
   }
 }
 

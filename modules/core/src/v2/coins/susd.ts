@@ -13,8 +13,6 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
-import { NodeCallback } from '../types';
-import * as Bluebird from 'bluebird';
 
 export class Susd extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -60,25 +58,19 @@ export class Susd extends BaseCoin {
     throw new MethodNotImplementedError();
   }
 
-  parseTransaction(
-    params: ParseTransactionOptions,
-    callback?: NodeCallback<ParsedTransaction>
-  ): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({}).asCallback(callback);
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+    return {};
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
   }
 
-  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    return Bluebird.resolve(true).asCallback(callback);
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    return true;
   }
 
-  signTransaction(
-    params: SignTransactionOptions = {},
-    callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
-    return Bluebird.reject(new MethodNotImplementedError()).asCallback(callback);
+  async signTransaction(params: SignTransactionOptions = {}): Promise<SignedTransaction> {
+    throw new MethodNotImplementedError();
   }
 }

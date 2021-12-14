@@ -4,7 +4,6 @@
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
-import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import { getFirstPendingTransaction } from './internal/internal';
 
@@ -81,7 +80,7 @@ export class Enterprise {
    * Add a user to this Enterprise
    * @param params
    */
-  async addUser(params: any = {}, callback?: NodeCallback<any>): Promise<any> {
+  async addUser(params: any = {}): Promise<any> {
     return await this.bitgo.post(this.url('/user')).send(params).result();
   }
 

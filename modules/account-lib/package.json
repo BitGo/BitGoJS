@@ -33,6 +33,9 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=14 <17"
+  },
   "dependencies": {
     "@bitgo/blake2b": "^3.0.1",
     "@bitgo/bls": "^0.1.0",

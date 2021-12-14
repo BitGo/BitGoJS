@@ -4,13 +4,13 @@ import * as utxolib from '../../src';
 import { getNetworkList, getNetworkName } from '../../src/coins';
 import {
   createScriptPubKey,
-  getKeyTriple,
   isSupportedDepositType,
   ScriptType,
   scriptTypes,
 } from '../integration_local_rpc/generate/outputScripts.util';
 
 import * as fixtureUtil from '../fixture.util';
+import { getKeyTriple } from '../testutil';
 
 type AddressTestVector = [scriptType: ScriptType, outputScriptHex: string, address: string];
 
@@ -50,6 +50,11 @@ describe('Address', function () {
           assert.deepStrictEqual(v, refVectors[i]);
           const [, scriptPubKeyHex, address] = v;
           assert.strictEqual(utxolib.address.toOutputScript(address, network).toString('hex'), scriptPubKeyHex);
+
+          if (network.bech32 && !address.startsWith(network.bech32)) {
+            const { hash, version } = utxolib.address.fromBase58Check(address, network);
+            assert.deepStrictEqual(utxolib.address.toBase58Check(hash, version, network), address);
+          }
         });
       });
     });

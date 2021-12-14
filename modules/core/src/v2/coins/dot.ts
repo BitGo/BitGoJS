@@ -134,6 +134,19 @@ export class Dot extends BaseCoin {
   }
 
   /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   * @return {Buffer} A signature over the given message using the given key
+   */
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
+    // reconstitute keys and sign
+    return Buffer.from(new accountLib.Dot.KeyPair({ prv: key.prv }).signMessage(msg));
+  }
+
+  /**
    * Explain/parse transaction
    * @param params
    * @param callback

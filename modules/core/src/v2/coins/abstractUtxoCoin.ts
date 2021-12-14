@@ -2,9 +2,18 @@
  * @prettier
  */
 import * as bip32 from 'bip32';
-import { Codes } from '@bitgo/unspents';
-import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as utxolib from '@bitgo/utxo-lib';
+import {
+  getExternalChainCode,
+  isChainCode,
+  RootWalletKeys,
+  scriptTypeForChain,
+  outputScripts,
+  toOutput,
+  Unspent,
+  verifySignatureWithUnspent,
+  WalletUnspentSigner,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -52,10 +61,8 @@ import { sanitizeLegacyPath } from '../../bip32path';
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { ReplayProtectionUnspent, toOutput, Unspent } from './utxo/unspent';
-import { getReplayProtectionAddresses } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction, verifyWalletTransactionWithUnspents, WalletUnspentSigner } from './utxo/sign';
-import { RootWalletKeys } from './utxo/WalletKeys';
+import { isReplayProtectionUnspent } from './utxo/replayProtection';
+import { signAndVerifyWalletTransaction } from './utxo/sign';
 
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
@@ -100,7 +107,7 @@ export interface ExplainTransactionOptions {
   txHex: string;
   txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
   feeInfo?: string;
-  pubs: Triple<string>;
+  pubs?: Triple<string>;
 }
 
 export interface UtxoNetwork {
@@ -270,23 +277,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return true;
   }
 
-  static get validAddressTypes(): UnspentType[] {
-    const validAddressTypes: UnspentType[] = [];
-    // best way I could find to loop over enum values
-    // https://github.com/Microsoft/TypeScript/issues/17198#issuecomment-423836658
-    // this is a typescript rough corner for sure
-    const unspentTypeKeys: string[] = Object.keys(UnspentType);
-    const unspentTypes: UnspentType[] = unspentTypeKeys.map((k) => UnspentType[k as any]).map((v) => v as UnspentType);
-    for (const addressType of unspentTypes) {
-      try {
-        Codes.forType(addressType);
-        validAddressTypes.push(addressType);
-      } catch (e) {
-        // Do nothing. Codes.forType will throw if the address type has no chain codes, meaning it is invalid on the
-        // BitGo platform and should not be added to the validAddressTypes array.
-      }
-    }
-    return validAddressTypes;
+  /** @deprecated */
+  static get validAddressTypes(): ScriptType2Of3[] {
+    return [...outputScripts.scriptTypes2Of3];
   }
 
   /**
@@ -313,10 +306,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const { version } = utxolib.address.fromBase58Check(address, this.network);
       return version;
     } catch (e) {
-      // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
-      if (!this.supportsP2wsh()) {
-        return;
-      }
+      // try next format
+    }
+
+    // if coin does not support script types with bech32 encoding, do not attempt to parse
+    if (!this.supportsAddressType('p2wsh') && !this.supportsAddressType('p2tr')) {
+      return;
     }
 
     // otherwise, try decoding as bech32
@@ -360,7 +355,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const addressVersionValid = _.isNumber(addressVersion) && validVersions.includes(addressVersion);
     const addressPrefix = this.getAddressPrefix(address);
 
-    if (!this.supportsP2wsh() || _.isUndefined(addressPrefix)) {
+    if (!this.supportsAddressType('p2wsh') || _.isUndefined(addressPrefix)) {
       return addressVersionValid;
     }
 
@@ -438,23 +433,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
-  static inferAddressType(addressDetails: { coinSpecific: AddressCoinSpecific; chain: number }): ScriptType2Of3 | null {
-    const { witnessScript, redeemScript } = addressDetails.coinSpecific ?? {};
-    if (_.isString(redeemScript) && _.isString(witnessScript)) {
-      return 'p2shP2wsh';
-    } else if (_.isString(redeemScript)) {
-      return 'p2sh';
-    } else if (_.isString(witnessScript)) {
-      return 'p2wsh';
-    } else if (
-      _.isUndefined(redeemScript) &&
-      _.isUndefined(witnessScript) &&
-      _.isNumber(addressDetails.chain) &&
-      Codes.isP2tr(addressDetails.chain)
-    ) {
-      return 'p2tr';
-    }
-    return null;
+  static inferAddressType(addressDetails: { chain: number }): ScriptType2Of3 | null {
+    return isChainCode(addressDetails.chain) ? scriptTypeForChain(addressDetails.chain) : null;
   }
 
   createTransactionFromHex(hex: string) {
@@ -964,53 +944,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports spending from wrapped segwit outputs
-   * @returns {boolean}
-   */
-  supportsP2shP2wsh() {
-    return false;
-  }
-
-  /**
-   * Indicates whether a coin supports spending from native segwit outputs
-   * @returns {boolean}
-   */
-  supportsP2wsh() {
-    return false;
-  }
-
-  /**
-   * Indicates whether a coin supports spending from segwit v1 taproot outputs
-   * @returns {boolean}
-   */
-  supportsP2tr() {
-    return false;
-  }
-
-  /**
    * @param addressType
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    switch (addressType) {
-      case 'p2sh':
-        return true;
-      case 'p2shP2wsh':
-        return this.supportsP2shP2wsh();
-      case 'p2wsh':
-        return this.supportsP2wsh();
-      case 'p2tr':
-        return this.supportsP2tr();
-    }
-    throw new errors.UnsupportedAddressTypeError();
+    return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
   }
 
   /**
    * @param chain
    * @return true iff coin supports spending from chain
    */
-  supportsAddressChain(chain: number) {
-    return this.supportsAddressType(utxolib.bitgo.outputScripts.scriptTypeForChain(chain));
+  supportsAddressChain(chain: number): boolean {
+    return isChainCode(chain) && this.supportsAddressType(utxolib.bitgo.scriptTypeForChain(chain));
   }
 
   keyIdsForSigning(): number[] {
@@ -1032,14 +978,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   generateAddress(params: GenerateAddressOptions): AddressDetails {
     const { keychains, threshold, chain, index, segwit = false, bech32 = false } = params;
-    let derivationChain = 0;
-    if (_.isNumber(chain) && _.isInteger(chain) && chain > 0) {
+    let derivationChain = getExternalChainCode('p2sh');
+    if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
       derivationChain = chain;
     }
 
     function convertFlagsToAddressType(): ScriptType2Of3 {
-      if (_.isInteger(chain)) {
-        return utxolib.bitgo.outputScripts.scriptTypeForChain(chain as number);
+      if (isChainCode(chain)) {
+        return utxolib.bitgo.scriptTypeForChain(chain);
       }
       if (_.isBoolean(segwit) && segwit) {
         return 'p2shP2wsh';
@@ -1052,7 +998,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const addressType = params.addressType || convertFlagsToAddressType();
 
-    if (addressType !== utxolib.bitgo.outputScripts.scriptTypeForChain(derivationChain)) {
+    if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
       throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
     }
 
@@ -1162,7 +1108,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
       txPrebuild.txInfo.unspents as Unspent[],
-      new WalletUnspentSigner(keychains, signerKeychain, cosignerKeychain),
+      new WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
 
@@ -1175,8 +1121,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param unspent
    * @returns {boolean}
    */
-  isBitGoTaintedUnspent(unspent: Unspent): unspent is ReplayProtectionUnspent {
-    return getReplayProtectionAddresses(this.network).includes(unspent.address);
+  isBitGoTaintedUnspent(unspent: Unspent): boolean {
+    return isReplayProtectionUnspent(unspent, this.network);
   }
 
   /**
@@ -1226,10 +1172,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('failed to parse transaction hex');
     }
 
-    const walletKeys = new RootWalletKeys(
-      params.pubs.map((xpub) => bip32.fromBase58(xpub)) as Triple<bip32.BIP32Interface>
-    );
-
     const id = transaction.getId();
     let spendAmount = 0;
     let changeAmount = 0;
@@ -1278,6 +1220,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
+    // if keys are provided, prepare the keys for input signature checking
+    const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
+    const walletKeys = keys && keys.length === 3 ? new RootWalletKeys(keys as Triple<bip32.BIP32Interface>) : undefined;
+
     // get the number of signatures per input
     const inputSignatureCounts = transaction.ins.map((input, idx): number => {
       if (unspents.length !== transaction.ins.length) {
@@ -1288,9 +1234,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error(`invalid state`);
       }
 
+      if (!walletKeys) {
+        // no pub keys or incorrect number of pub keys
+        return 0;
+      }
+
       try {
-        return verifyWalletTransactionWithUnspents(transaction, idx, unspents, walletKeys).filter((v) => v).length;
+        return verifySignatureWithUnspent(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
+        // some other error occurred and we can't validate the signatures
         return 0;
       }
     });

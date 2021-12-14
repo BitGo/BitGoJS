@@ -3,6 +3,8 @@ export * from 'bitcoinjs-lib';
 export * as bitgo from './bitgo';
 export * as coins from './coins';
 
+export { getMainnet, getTestnet, isMainnet, isTestnet, supportsSegwit, supportsTaproot } from './coins';
+
 export * as address from './address';
 
 export const networks = require('./networks');

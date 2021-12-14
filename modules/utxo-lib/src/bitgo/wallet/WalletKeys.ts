@@ -9,12 +9,9 @@
  * Since we never use other derivations for utxo address scripts, the classes defined here only
  * allow exactly one level of derivation.
  */
-
-/**
- * @prettier
- */
 import * as bip32 from 'bip32';
-import { Triple } from '../../triple';
+
+import { Triple } from '../types';
 
 export function eqPublicKey(a: bip32.BIP32Interface, b: bip32.BIP32Interface): boolean {
   return a.publicKey.equals(b.publicKey);

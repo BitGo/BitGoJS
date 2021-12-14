@@ -6,7 +6,7 @@ import { Network } from '../../../src/networkTypes';
 import { getNetworkName } from '../../../src/coins';
 import { RpcClient } from './RpcClient';
 import { RpcTransaction } from './RpcTypes';
-import { getKeyTriple } from './outputScripts.util';
+import { getKeyTriple } from '../../testutil';
 
 export function getFixtureDir(network: Network): string {
   const networkName = getNetworkName(network);

@@ -37,14 +37,6 @@ export class Ltc extends AbstractUtxoCoin {
     return false;
   }
 
-  supportsP2shP2wsh(): boolean {
-    return true;
-  }
-
-  supportsP2wsh(): boolean {
-    return true;
-  }
-
   /**
    * Canonicalize a Litecoin address for a specific scriptHash version
    * @param address

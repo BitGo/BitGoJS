@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig, DotNetwork, PolkadotSpecNameType } from '@bitgo
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
+import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
@@ -89,17 +90,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * The number of the checkpoint block after which the transaction is valid
    *
-   * @param {number} blockNumber
+   * @param {validityWindow} firstValid block checkpoint where transaction is first valid
+   * @param {validityWindow} maxDuration number of blocks after checkpoint for which transaction is valid
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
   validity({ firstValid, maxDuration }: validityWindow): this {
-    if (firstValid) {
+    if (!_.isUndefined(firstValid)) {
       this.validateValue(new BigNumber(firstValid));
       this._blockNumber = firstValid;
     }
-    if (maxDuration) {
+    if (!_.isUndefined(maxDuration)) {
       this.validateValue(new BigNumber(maxDuration));
       this._eraPeriod = maxDuration;
     }
@@ -109,7 +111,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * The hash of the checkpoint block.
    *
-   * @param {number} blockHash
+   * @param {number} referenceBlock block hash checkpoint from where the transaction is valid
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction

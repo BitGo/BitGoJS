@@ -5,8 +5,6 @@
 import * as crypto from 'crypto';
 import * as should from 'should';
 import * as nock from 'nock';
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 
 import * as BitGoJS from '../../src/index';
 import { TestBitGo } from '../lib/test_bitgo';
@@ -79,7 +77,7 @@ describe('BitGo Prototype Methods', function () {
   });
 
   describe('HMAC request verification', () => {
-    it('throws if HMAC request verification is disabled for non-dev environments', co(function *() {
+    it('throws if HMAC request verification is disabled for non-dev environments', function () {
       (() => new TestBitGo({ env: 'prod', hmacVerification: false }))
         .should.throw(/Cannot disable request HMAC verification in environment/);
       (() => new TestBitGo({ env: 'test', hmacVerification: false }))
@@ -90,9 +88,9 @@ describe('BitGo Prototype Methods', function () {
         .should.throw(/Cannot disable request HMAC verification in environment/);
       (() => new TestBitGo({ env: 'dev', customRootURI: 'http://rooturi.example', hmacVerification: false }))
         .should.throw(/Cannot disable request HMAC verification in environment/);
-    }));
+    });
 
-    it('allows disabling of HMAC request verification only for dev environments', co(function *() {
+    it('allows disabling of HMAC request verification only for dev environments', function () {
       (() => new TestBitGo({ env: 'dev', hmacVerification: false }))
         .should.not.throw();
       (() => new TestBitGo({ env: 'latest', hmacVerification: false }))
@@ -107,7 +105,7 @@ describe('BitGo Prototype Methods', function () {
         .should.not.throw();
       (() => new TestBitGo({ env: 'branch', customRootURI: 'http://rooturi.example', hmacVerification: false }))
         .should.not.throw();
-    }));
+    });
   });
 
   describe('Authenticate in Microservices', () => {
@@ -121,25 +119,25 @@ describe('BitGo Prototype Methods', function () {
       forceSMS: false,
     };
 
-    it('goes to microservices', co(function *() {
+    it('goes to microservices', async function () {
       bitgo = new TestBitGo({ env: 'mock', microservicesUri: 'https://microservices.uri' });
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      yield bitgo.authenticate(authenticateRequest);
+      await bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
-    }));
+    });
 
-    it('goes to microservices even when microservicesUri is not specified', co(function *() {
+    it('goes to microservices even when microservicesUri is not specified', async function () {
       bitgo = new TestBitGo({ env: 'mock' });
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      yield bitgo.authenticate(authenticateRequest);
+      await bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
-    }));
+    });
   });
 
   describe('Verify Address', () => {
@@ -312,7 +310,7 @@ describe('BitGo Prototype Methods', function () {
     let bitgo;
     let bgUrl;
 
-    before(co(function *coBeforeChangePassword() {
+    before(async function () {
       nock('https://bitgo.fakeurl')
         .post('/api/auth/v1/session')
         .reply(200, {
@@ -324,32 +322,36 @@ describe('BitGo Prototype Methods', function () {
       bitgo.initializeTestVars();
       bitgo.setValidate(false);
 
-      yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
+      await bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
 
       bgUrl = common.Environments[bitgo.getEnv()].uri;
-    }));
+    });
 
     const oldPassword = 'oldPassword';
     const newPassword = 'newPassword';
     const otherPassword = 'otherPassword';
 
     describe('should fail to change the password', function changePWFail() {
-      it('wrong arguments', co(function *coWrongArguments() {
-        yield bitgo.changePassword({ newPassword: '5678' }).should.be.rejectedWith('expected string oldPassword');
-        yield bitgo.changePassword({ oldPassword: 1234, newPassword: '5678' }).should.be.rejectedWith('expected string oldPassword');
-        yield bitgo.changePassword({ oldPassword: '1234' }).should.be.rejectedWith('expected string newPassword');
-        yield bitgo.changePassword({ oldPassword: '1234', newPassword: 5678 }).should.be.rejectedWith('expected string newPassword');
-      }));
+      it('wrong arguments', async function () {
+        await bitgo.changePassword({ newPassword: '5678' })
+          .should.be.rejectedWith('expected string oldPassword');
+        await bitgo.changePassword({ oldPassword: 1234, newPassword: '5678' })
+          .should.be.rejectedWith('expected string oldPassword');
+        await bitgo.changePassword({ oldPassword: '1234' })
+          .should.be.rejectedWith('expected string newPassword');
+        await bitgo.changePassword({ oldPassword: '1234', newPassword: 5678 })
+          .should.be.rejectedWith('expected string newPassword');
+      });
 
-      it('incorrect old password', co(function *coIncorrectOldPW() {
+      it('incorrect old password', async function () {
         nock(bgUrl)
           .post('/api/v1/user/verifypassword')
           .reply(200, { valid: false });
-        yield bitgo.changePassword({ oldPassword, newPassword }).should.be.rejectedWith('the provided oldPassword is incorrect');
-      }));
+        await bitgo.changePassword({ oldPassword, newPassword }).should.be.rejectedWith('the provided oldPassword is incorrect');
+      });
     });
 
-    it('successful password change', co(function *coChangePWSuccess() {
+    it('successful password change', async function () {
       nock(bgUrl)
         .post('/api/v1/user/verifypassword')
         .reply(200, { valid: true });
@@ -386,8 +388,8 @@ describe('BitGo Prototype Methods', function () {
         .post('/api/v1/user/changepassword')
         .reply(200, {});
 
-      yield bitgo.changePassword({ oldPassword, newPassword });
-    }));
+      await bitgo.changePassword({ oldPassword, newPassword });
+    });
 
     afterEach(function afterChangePassword() {
       nock.pendingMocks().should.be.empty();
@@ -426,7 +428,7 @@ describe('BitGo Prototype Methods', function () {
       parsedAuthenticationData.ecdhXprv.should.equal('xprv9s21ZrQH143K3si1bKGp7KqgCQv39ttQ7aUwWzVdytgHd8HtDCHyEp14mxfhiT3qHTq4BaSrA7uUkG6AJTfPJBsRu63drvBqYuMZyTxepH7');
     });
 
-    it('should correctly verify a response hmac', co(function *() {
+    it('should correctly verify a response hmac', async function () {
       const url = bitgo.coin('tltc').url('/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1');
       const requestHeaderData = bitgo.calculateRequestHeaders({ url, token });
       const requestHeaders = {
@@ -445,7 +447,7 @@ describe('BitGo Prototype Methods', function () {
           timestamp: '1521590532925',
         });
 
-      const responseData = (yield rp({
+      const responseData = (await rp({
         uri: url,
         method: 'GET',
         headers: requestHeaders,
@@ -469,9 +471,9 @@ describe('BitGo Prototype Methods', function () {
       responseData.signatureSubject.should.equal('1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}');
       responseData.expectedHmac.should.equal('30a5943043ab4b0503d807f0cca7dac3a670e8785331322567db5189432b87ec');
       responseData.isValid.should.equal(true);
-    }));
+    });
 
-    it('should include request body as part of the hmac', co(function* () {
+    it('should include request body as part of the hmac', async function () {
       const url = 'https://bitgo.fakeurl';
       const body = { test: 'test' };
 
@@ -487,12 +489,12 @@ describe('BitGo Prototype Methods', function () {
             timestamp: String(fixedUnixTime),
           });
 
-        const resp = (yield bitgo.post(url).send(body)) as any;
+        const resp = (await bitgo.post(url).send(body)) as any;
         resp.req.headers['hmac'].should.equal('4425a4004ef2724add25b4dd019d21c66394653a049d82e37df3a2c356b5706d');
       } finally {
         Date.now = originalDateNow;
       }
-    }));
+    });
 
     it('should recognize trailing slash inconsistency', () => {
       const verificationParams = {
@@ -525,34 +527,34 @@ describe('BitGo Prototype Methods', function () {
       verificationDetails.isValid.should.equal(false);
     });
 
-    it('should throw if hmac validation is enabled, and no valid hmac headers are returned', co(function *() {
+    it('should throw if hmac validation is enabled, and no valid hmac headers are returned', async function () {
       const url = 'https://fakeurl.invalid';
       const scope = nock(url).get('/').reply(200);
 
       // test suite bitgo object has hmac verification enabled, so it should throw when the nock responds
-      yield bitgo.get(url).should.be.rejectedWith(/invalid response HMAC, possible man-in-the-middle-attack/);
+      await bitgo.get(url).should.be.rejectedWith(/invalid response HMAC, possible man-in-the-middle-attack/);
       scope.done();
-    }));
+    });
 
-    it('should not enforce hmac verification if hmac verification is disabled', co(function *() {
+    it('should not enforce hmac verification if hmac verification is disabled', async function () {
       const bg = new TestBitGo({ env: 'mock', hmacVerification: false, accessToken: token });
       const url = 'https://fakeurl.invalid';
       const scope = nock(url).get('/').reply(200, { ok: 1 });
 
-      const res = (yield bg.get(url)) as any;
+      const res = (await bg.get(url)) as any;
       res.body.should.have.property('ok', 1);
       scope.done();
-    }));
+    });
   });
 
   describe('Token Definitions at Startup', function () {
 
-    it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
+    it('Should return a non-empty list of tokens before the server responds', async function () {
       const bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
       const constants = bitgo.getConstants();
       constants.should.have.propertyByPath('eth', 'tokens', 'length').greaterThan(0);
-    }));
+    });
 
     after(function tokenDefinitionsAfter() {
       nock.pendingMocks().should.be.empty();
@@ -563,7 +565,7 @@ describe('BitGo Prototype Methods', function () {
 
     let bitgo;
     let bgUrl;
-    before(co(function *() {
+    before(function () {
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
 
@@ -572,13 +574,12 @@ describe('BitGo Prototype Methods', function () {
       nock(bgUrl)
         .patch('/')
         .reply(200);
-    }));
+    });
 
-    it('PATCH requests', co(function *() {
-      const res = (yield bitgo.patch(bgUrl)) as any;
-
+    it('PATCH requests', async function () {
+      const res = await bitgo.patch(bgUrl);
       res.status.should.equal(200);
-    }));
+    });
 
     after(function () {
       nock.pendingMocks().should.be.empty();
@@ -587,9 +588,11 @@ describe('BitGo Prototype Methods', function () {
 
   describe('preprocessAuthenticationParams', () => {
     const bitgo = new TestBitGo({ env: 'mock' });
-    it('should fail if passed non-string username or password', co(function *() {
-      (() => bitgo.preprocessAuthenticationParams({ username: 123 })).should.throw(/expected string username/);
-      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} })).should.throw(/expected string password/);
-    }));
+    it('should fail if passed non-string username or password', function () {
+      (() => bitgo.preprocessAuthenticationParams({ username: 123 }))
+        .should.throw(/expected string username/);
+      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} }))
+        .should.throw(/expected string password/);
+    });
   });
 });

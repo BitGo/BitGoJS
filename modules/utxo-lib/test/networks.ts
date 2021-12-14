@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-import { coins, networks } from '../src';
-import { Network } from '../src/networkTypes';
+import { coins, Network, networks, supportsSegwit, supportsTaproot } from '../src';
 
 describe('networks', function () {
   // Ideally, all properties for all coins should be distinct.
@@ -63,6 +62,30 @@ describe('networks', function () {
           list.shift();
         }
       }
+    });
+  });
+
+  describe('Features', function () {
+    it('have expected values for networks', function () {
+      assert.deepStrictEqual(
+        coins.getNetworkList().map((n) => [coins.getNetworkName(n), supportsSegwit(n), supportsTaproot(n)]),
+        [
+          ['bitcoin', true, true],
+          ['testnet', true, true],
+          ['bitcoincash', false, false],
+          ['bitcoincashTestnet', false, false],
+          ['bitcoingold', true, false],
+          ['bitcoingoldTestnet', true, false],
+          ['bitcoinsv', false, false],
+          ['bitcoinsvTestnet', false, false],
+          ['dash', false, false],
+          ['dashTest', false, false],
+          ['litecoin', true, false],
+          ['litecoinTest', true, false],
+          ['zcash', false, false],
+          ['zcashTest', false, false],
+        ]
+      );
     });
   });
 

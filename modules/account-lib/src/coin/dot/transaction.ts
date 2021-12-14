@@ -165,7 +165,7 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    if (this.type === TransactionType.WalletInitialization) {
+    if (this.type === TransactionType.AddressInitialization) {
       const txMethod = decodedTx.method.args as AddProxyArgs;
       const keypair = new KeyPair({
         pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
@@ -213,7 +213,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  explainWalletInitializationTransaction(
+  explainAddressInitializationTransaction(
     json: TxData,
     explanationResult: TransactionExplanation,
   ): TransactionExplanation {
@@ -262,8 +262,8 @@ export class Transaction extends BaseTransaction {
         return this.explainTransferTransaction(result, explanationResult);
       case TransactionType.StakingActivate:
         return this.explainStakingActivateTransaction(result, explanationResult);
-      case TransactionType.WalletInitialization:
-        return this.explainWalletInitializationTransaction(result, explanationResult);
+      case TransactionType.AddressInitialization:
+        return this.explainAddressInitializationTransaction(result, explanationResult);
       case TransactionType.StakingUnlock:
         return this.explainStakingUnlockTransaction(result, explanationResult);
       default:

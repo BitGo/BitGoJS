@@ -82,6 +82,41 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(outputs.value, '90034235235322');
     });
 
+    it('should build a transaction with zero maxDuration (immortal)', async () => {
+      builder
+        .amount('90034235235322')
+        .to({ address: receiver.address })
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 0 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
+        .fee({ amount: 0, type: 'tip' })
+        .version(7);
+      builder.sign({ key: sender.secretKey });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.amount, '90034235235322');
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.sender, sender.address);
+      should.deepEqual(txJson.blockNumber, 3933);
+      should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
+      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
+      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.nonce, 200);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.eraPeriod, 64);
+
+      const inputs = tx.inputs[0];
+      should.deepEqual(inputs.address, sender.address);
+      should.deepEqual(inputs.value, '90034235235322');
+
+      const outputs = tx.outputs[0];
+      should.deepEqual(outputs.address, receiver.address);
+      should.deepEqual(outputs.value, '90034235235322');
+    });
+
     it('should build an unsigned transfer transaction', async () => {
       builder
         .amount('90034235235322')

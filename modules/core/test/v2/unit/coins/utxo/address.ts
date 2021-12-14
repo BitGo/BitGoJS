@@ -4,7 +4,7 @@
 import 'should';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Codes } from '@bitgo/unspents';
+import { chainCodes } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
 import { GenerateAddressOptions } from '../../../../../src/v2/coins/abstractUtxoCoin';
@@ -32,10 +32,8 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
 function run(coin: AbstractUtxoCoin) {
   const keychains = keychainsBip32.map((k) => ({ pub: k.neutered().toBase58() }));
 
-  const chains = [...Codes.all].sort((a, b) => a - b);
-
   function getParameters(): GenerateAddressOptions[] {
-    return [undefined, ...chains].map((chain) => ({ keychains, chain }));
+    return [undefined, ...chainCodes].map((chain) => ({ keychains, chain }));
   }
 
   describe(`UTXO Addresses ${coin.getChain()}`, function () {

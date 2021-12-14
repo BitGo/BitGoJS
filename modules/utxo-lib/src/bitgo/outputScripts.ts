@@ -1,6 +1,11 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
+
+import { Network, supportsSegwit, supportsTaproot } from '..';
+
 import { isTriple, Triple, Tuple } from './types';
+
+export { scriptTypeForChain } from './wallet/chains';
 
 export const scriptTypeP2shP2pk = 'p2shP2pk';
 export type ScriptTypeP2shP2pk = typeof scriptTypeP2shP2pk;
@@ -14,23 +19,25 @@ export function isScriptType2Of3(t: string): t is ScriptType2Of3 {
 
 export type ScriptType = ScriptTypeP2shP2pk | ScriptType2Of3;
 
-export function scriptTypeForChain(chain: number): ScriptType2Of3 {
-  switch (chain) {
-    case 0:
-    case 1:
-      return 'p2sh';
-    case 10:
-    case 11:
-      return 'p2shP2wsh';
-    case 20:
-    case 21:
-      return 'p2wsh';
-    case 30:
-    case 31:
-      return 'p2tr';
-    default:
-      throw new Error(`invalid chain ${chain}`);
+/**
+ * @param network
+ * @param scriptType
+ * @return true iff script type is supported for network
+ */
+export function isSupportedScriptType(network: Network, scriptType: ScriptType): boolean {
+  switch (scriptType) {
+    case 'p2sh':
+    case 'p2shP2pk':
+      return true;
+    case 'p2shP2wsh':
+    case 'p2wsh':
+      return supportsSegwit(network);
+    case 'p2tr':
+      return supportsTaproot(network);
   }
+
+  /* istanbul ignore next */
+  throw new Error(`unexpected script type ${scriptType}`);
 }
 
 /**
@@ -47,9 +54,10 @@ export function scriptType2Of3AsPrevOutType(t: ScriptType2Of3): string {
       return 'p2wsh-p2ms';
     case 'p2tr':
       return 'p2tr-p2ns';
-    default:
-      throw new Error(`unsupported script type ${t}`);
   }
+
+  /* istanbul ignore next */
+  throw new Error(`unsupported script type ${t}`);
 }
 
 export type SpendableScript = {
@@ -85,9 +93,20 @@ export function createOutputScriptP2shP2pk(pubkey: Buffer): SpendableScript {
  * Return scripts for 2-of-3 multisig output
  * @param pubkeys - the key triple for multisig
  * @param scriptType
+ * @param network - if set, performs sanity check for scriptType support
  * @returns {{redeemScript, witnessScript, scriptPubKey}}
  */
-export function createOutputScript2of3(pubkeys: Buffer[], scriptType: ScriptType2Of3): SpendableScript {
+export function createOutputScript2of3(
+  pubkeys: Buffer[],
+  scriptType: ScriptType2Of3,
+  network?: Network
+): SpendableScript {
+  if (network) {
+    if (!isSupportedScriptType(network, scriptType)) {
+      throw new Error(`unsupported script type ${scriptType} for network`);
+    }
+  }
+
   if (!isTriple(pubkeys)) {
     throw new Error(`must provide pubkey triple`);
   }

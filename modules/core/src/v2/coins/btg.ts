@@ -28,16 +28,4 @@ export class Btg extends Btc {
   supportsBlockTarget(): boolean {
     return false;
   }
-
-  supportsP2shP2wsh(): boolean {
-    return true;
-  }
-
-  supportsP2wsh(): boolean {
-    return true;
-  }
-
-  supportsP2tr(): boolean {
-    return false;
-  }
 }

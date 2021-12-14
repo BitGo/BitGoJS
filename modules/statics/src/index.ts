@@ -12,5 +12,6 @@ export {
   StellarCoin,
   EosCoin,
   AlgoCoin,
+  AvaxERC20Token,
 } from './account';
 export { CoinMap } from './map';

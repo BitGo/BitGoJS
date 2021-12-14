@@ -4,8 +4,19 @@
 
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { Codes, VirtualSizes } from '@bitgo/unspents';
+import {
+  ChainCode,
+  getInternalChainCode,
+  parseOutputId,
+  RootWalletKeys,
+  scriptTypeForChain,
+  WalletUnspent,
+  WalletUnspentSigner,
+  outputScripts,
+  getExternalChainCode,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
+
+import { VirtualSizes } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
 import * as config from '../../../../config';
@@ -18,10 +29,8 @@ import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { RootWalletKeys } from '../WalletKeys';
 import { isTriple } from '../../../triple';
-import { signAndVerifyWalletTransaction, WalletUnspentSigner } from '../sign';
-import { parseOutputId, WalletUnspent } from '../unspent';
+import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface OfflineVaultTxInfo {
   inputs: WalletUnspent[];
@@ -109,7 +118,7 @@ export interface RecoverParams {
   bitgoKey: string;
   recoveryDestination: string;
   krsProvider?: string;
-  ignoreAddressTypes: string[];
+  ignoreAddressTypes: outputScripts.ScriptType2Of3[];
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
@@ -119,7 +128,7 @@ async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
   walletKeys: RootWalletKeys,
-  chain: number
+  chain: ChainCode
 ): Promise<WalletUnspent[]> {
   const recoveryProvider = RecoveryProvider.forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
@@ -127,11 +136,7 @@ async function queryBlockchainUnspentsPath(
 
   async function gatherUnspents(addrIndex: number) {
     const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
-    const address = coin.createMultiSigAddress(
-      Codes.typeForCode(chain) as ScriptType2Of3,
-      2,
-      walletKeysForUnspent.publicKeys
-    );
+    const address = coin.createMultiSigAddress(scriptTypeForChain(chain), 2, walletKeysForUnspent.publicKeys);
 
     const addrInfo: RecoveryAccountData = await recoveryProvider.getAccountInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
@@ -213,7 +218,7 @@ export type BackupKeyRecoveryTransansaction = {
  * - krsProvider: necessary if backup key is held by KRS
  * - recoveryDestination: target address to send recovered funds to
  * - scan: the amount of consecutive addresses without unspents to scan through before stopping
- * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
+ * - ignoreAddressTypes: (optional) scripts to ignore
  *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
  */
 export async function backupKeyRecovery(
@@ -253,43 +258,24 @@ export async function backupKeyRecovery(
     RootWalletKeys.defaultPrefix,
   ]);
 
-  const queries: Promise<WalletUnspent[]>[] = [];
-
-  _.forEach(Object.keys(Codes.UnspentTypeTcomb.meta.map), function (addressType) {
-    // If we aren't ignoring the address type, we derive the public key and construct the query for the external and
-    // internal indices
-    if (!_.includes(params.ignoreAddressTypes, addressType)) {
-      if (addressType === Codes.UnspentTypeTcomb('p2shP2wsh') && !coin.supportsP2shP2wsh()) {
-        // P2shP2wsh is not supported for this coin so we skip this unspent type.
-        return;
-      }
-
-      if (addressType === Codes.UnspentTypeTcomb('p2wsh') && !coin.supportsP2wsh()) {
-        // P2wsh is not supported for this coin so we skip this unspent type.
-        return;
-      }
-
-      if (addressType === Codes.UnspentTypeTcomb('p2tr') && !coin.supportsP2tr()) {
-        // P2tr is not supported for this coin so we skip this unspent type.
-        return;
-      }
-
-      let codes;
-      try {
-        codes = Codes.forType(Codes.UnspentTypeTcomb(addressType) as any);
-      } catch (e) {
-        // The unspent type is not supported by bitgo so attempting to get its chain codes throws. Catch that error
-        // and continue.
-        return;
-      }
-      queries.push(queryBlockchainUnspentsPath(coin, params, walletKeys, codes.external));
-      queries.push(queryBlockchainUnspentsPath(coin, params, walletKeys, codes.internal));
-    }
-  });
+  const unspents: WalletUnspent[] = (
+    await Promise.all(
+      outputScripts.scriptTypes2Of3
+        .filter(
+          (addressType) => coin.supportsAddressType(addressType) && !params.ignoreAddressTypes?.includes(addressType)
+        )
+        .reduce(
+          (queries, addressType) => [
+            ...queries,
+            queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
+            queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
+          ],
+          [] as Promise<WalletUnspent[]>[]
+        )
+    )
+  ).flat();
 
   // Execute the queries and gather the unspents
-  const queryResponses = await Promise.all(queries);
-  const unspents: WalletUnspent[] = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
   const totalInputAmount = unspents.reduce((sum, u) => sum + u.value, 0);
   if (totalInputAmount <= 0) {
     throw new errors.ErrorNoInputToRecover();

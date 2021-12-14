@@ -7,23 +7,14 @@
 import { BitGo as BG } from '../../src/bitgo';
 import { KeyIndices, Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 
 import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
 import * as common from '../../src/common';
+import { promiseProps } from '../../src/v2/promise-utils';
 nock.enableNetConnect();
-
-try {
-  Bluebird.config({
-    longStackTraces: true,
-  });
-} catch (e) {
-  console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
-}
 
 const BitGo: any = BG;
 
@@ -214,92 +205,67 @@ BitGo.prototype.testUserOTP = function () {
 // authenticateTestUser
 // Authenticate the test user.
 //
-BitGo.prototype.authenticateTestUser = function (otp, callback) {
-  return co(function *() {
-    const response = (yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp })) as any;
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  }).call(this).asCallback(callback);
+BitGo.prototype.authenticateTestUser = async function (otp) {
+  const response = await this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp });
+  response.should.have.property('access_token');
+  response.should.have.property('user');
 };
 
-BitGo.prototype.authenticateSharingTestUser = function (otp, callback) {
-  return this.authenticate({ username: BitGo.TEST_SHARED_KEY_USER, password: BitGo.TEST_SHARED_KEY_PASSWORD, otp: otp })
-    .then(function (response) {
-      response.should.have.property('access_token');
-      response.should.have.property('user');
-    })
-    .nodeify(callback);
+BitGo.prototype.authenticateSharingTestUser = async function (otp) {
+  const response = await this.authenticate({ username: BitGo.TEST_SHARED_KEY_USER, password: BitGo.TEST_SHARED_KEY_PASSWORD, otp: otp });
+  response.should.have.property('access_token');
+  response.should.have.property('user');
 };
 
-BitGo.prototype.authenticateKnownBalanceTestUser = function (otp, callback) {
-  return co(function *() {
-    const response = (yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp })) as any;
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  }).call(this).asCallback(callback);
+BitGo.prototype.authenticateKnownBalanceTestUser = async function (otp) {
+  const response = await this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+  response.should.have.property('access_token');
+  response.should.have.property('user');
 };
 
-BitGo.prototype.authenticateEnterpriseCreatorTestUser = function (otp, callback) {
-  return co(function *coAuthenticateEnterpriseCreatorTestUser() {
-    const response = (yield this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp })) as any;
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  }).call(this).asCallback(callback);
+BitGo.prototype.authenticateEnterpriseCreatorTestUser = async function (otp) {
+  const response = await this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp });
+  response.should.have.property('access_token');
+  response.should.have.property('user');
 };
 
-BitGo.prototype.authenticateChangePWTestUser = function (otp, callback) {
-  return co(function *() {
-    const params = {
-      username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
-      password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
-      otp: otp,
-    };
-    let alternatePassword = `${params.password}_new`;
-    let response;
+BitGo.prototype.authenticateChangePWTestUser = async function (otp) {
+  const params = {
+    username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
+    password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
+    otp: otp,
+  };
+  let alternatePassword = `${params.password}_new`;
+  let response;
 
-    try {
-      response = yield this.authenticate(params);
-    } catch (e) {
-      if (e.message !== 'invalid_grant') {
-        throw new Error(e);
-      }
-      params.password = alternatePassword;
-      alternatePassword = BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD;
-      response = yield this.authenticate(params);
-    }
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-
-    return { password: params.password, alternatePassword };
-  }).call(this).asCallback(callback);
-};
-
-BitGo.prototype.authenticateOfcTestUser = function (otp, callback) {
-  return co(function *() {
-    const response = (yield this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp })) as any;
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  }).call(this).asCallback(callback);
-};
-
-BitGo.prototype.getAsyncError = co(function *throwsAsync(prom) {
-  // Hacky because we can't use assert.throws with async functions
-  let error;
   try {
-    yield prom;
+    response = await this.authenticate(params);
   } catch (e) {
-    error = e;
+    if (e.message !== 'invalid_grant') {
+      throw new Error(e);
+    }
+    params.password = alternatePassword;
+    alternatePassword = BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD;
+    response = await this.authenticate(params);
   }
+  response.should.have.property('access_token');
+  response.should.have.property('user');
 
-  return error;
-});
+  return { password: params.password, alternatePassword };
+};
 
-BitGo.prototype.checkFunded = co(function *checkFunded() {
+BitGo.prototype.authenticateOfcTestUser = async function (otp) {
+  const response = await this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp });
+  response.should.have.property('access_token');
+  response.should.have.property('user');
+};
+
+BitGo.prototype.checkFunded = async function () {
   // We are testing both BTC and ETH funds here, to make sure that
   // we don't spend for already 'failed' test runs (e.g., spending ETH when we don't have enough BTC)
 
   // Test we have enough ETH
-  yield this.authenticateTestUser(this.testUserOTP());
+  await this.authenticateTestUser(this.testUserOTP());
   const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
 
   const {
@@ -307,12 +273,12 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     tbtcWallet,
     unspentWallet,
     sweep1Wallet,
-  } = (yield Bluebird.props({
+  }: any = await promiseProps({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
     unspentWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
     sweep1Wallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID }),
-  })) as any;
+  });
 
   const spendableBalance = tethWallet.spendableBalanceString;
 
@@ -353,7 +319,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
   if (balance.lt(minimumBalance)) {
     throw new Error(`The TBTC wallet ${sweep1Wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
-});
+};
 
 BitGo.prototype.nockEthWallet = function () {
   const walletData = {

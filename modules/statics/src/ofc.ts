@@ -39,9 +39,7 @@ export class OfcCoin extends BaseCoin {
     return new Set<CoinFeature>([
       CoinFeature.UNSPENT_MODEL,
       CoinFeature.CHILD_PAYS_FOR_PARENT,
-      CoinFeature.NATIVE_SEGWIT,
       CoinFeature.PAYGO,
-      CoinFeature.WRAPPED_SEGWIT,
       CoinFeature.SUPPORTS_TOKENS,
     ]);
   }
