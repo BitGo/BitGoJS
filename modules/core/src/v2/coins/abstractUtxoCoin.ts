@@ -483,7 +483,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing required txPrebuild property txHex');
     }
     // obtain all outputs
-    const explanation: TransactionExplanation = this.explainTransaction({
+    const explanation: TransactionExplanation = await this.explainTransaction({
       txHex: txPrebuild.txHex,
       txInfo: txPrebuild.txInfo,
       pubs: keychainArray.map((k) => k.pub) as Triple<string>,
@@ -1159,7 +1159,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * change amounts, and transaction outputs.
    * @param params
    */
-  explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     const txHex = _.get(params, 'txHex');
     if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
