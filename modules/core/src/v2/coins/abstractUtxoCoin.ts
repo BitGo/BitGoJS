@@ -107,7 +107,7 @@ export interface ExplainTransactionOptions {
   txHex: string;
   txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
   feeInfo?: string;
-  pubs: Triple<string>;
+  pubs?: Triple<string>;
 }
 
 export interface UtxoNetwork {
@@ -1172,10 +1172,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('failed to parse transaction hex');
     }
 
-    const walletKeys = new RootWalletKeys(
-      params.pubs.map((xpub) => bip32.fromBase58(xpub)) as Triple<bip32.BIP32Interface>
-    );
-
     const id = transaction.getId();
     let spendAmount = 0;
     let changeAmount = 0;
@@ -1224,6 +1220,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const prevOutputs = params.txInfo?.unspents.map((u) => toOutput(u, this.network));
 
+    // if keys are provided, prepare the keys for input signature checking
+    const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
+    const walletKeys = keys && keys.length === 3 ? new RootWalletKeys(keys as Triple<bip32.BIP32Interface>) : undefined;
+
     // get the number of signatures per input
     const inputSignatureCounts = transaction.ins.map((input, idx): number => {
       if (unspents.length !== transaction.ins.length) {
@@ -1234,9 +1234,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error(`invalid state`);
       }
 
+      if (!walletKeys) {
+        // no pub keys or incorrect number of pub keys
+        return 0;
+      }
+
       try {
         return verifySignatureWithUnspent(transaction, idx, unspents, walletKeys).filter((v) => v).length;
       } catch (e) {
+        // some other error occurred and we can't validate the signatures
         return 0;
       }
     });
