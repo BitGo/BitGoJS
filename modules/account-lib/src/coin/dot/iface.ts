@@ -170,3 +170,10 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   proxyType?: string;
   delay?: string;
 }
+
+export enum TransactionTypes {
+  TRANSFER = 'transfer',
+  STAKING = 'staking',
+  ADDR_INIT = 'addressInitialization',
+  UNSTAKING = 'unstaking',
+}
