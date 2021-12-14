@@ -32,7 +32,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return isHex(hash, 256);
   }
 
   /** @inheritdoc */
@@ -99,7 +99,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Helper function to decode the internal method hex incase of a proxy transaction
+   * Helper function to decode the internal method hex in case of a proxy transaction
    *
    * @param {string | UnsignedTransaction} tx
    * @param { metadataRpc: string; registry: TypeRegistry } options
