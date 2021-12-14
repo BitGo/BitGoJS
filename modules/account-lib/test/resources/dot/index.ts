@@ -82,3 +82,41 @@ export const jsonTransactions = {
   unstaking:
     '{"id":"0xcfc19a1c80041f807c321d381579bbfddbf0a76713d6d631e27d4ddda89f3699","sender":"5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr","referenceBlock":"0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d","blockNumber":3933,"genesisHash":"0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349","nonce":200,"specVersion":9100,"transactionVersion":7,"eraPeriod":64,"chainName":"Polkadot","tip":0,"amount":"50000000000000"}',
 };
+
+export const blockHash = {
+  blockWithTransferOperation: {
+    hash: '0xc5e877848888006015ac403bbdaf84a2da0d79f88798b8239df19a3d471b6a8e',
+  },
+  blockWithStakingOperation: {
+    hash: '0xc5e877848888006015ac403bbdaf84a2da0d79f88798b8239df19a3d471b6a8e',
+  },
+  blockWithUnstakingOperation: {
+    hash: '0x5405f1523cc4ff0a6b93c872e16e11978bb3898058176451dc2b566dfadf3069',
+  },
+  blockWithProxyOperation: {
+    hash: '0x08af04e1e7dd0d1a6bd82974067cb4879dcc47aad054d2dfe220bf2cf5d0fa34',
+  },
+  blockWithMultisigOperation: {
+    hash: '0x131a0f0ea77dbc9c553b007421b4ff385155f41affcc20d8124bca635b48e082',
+  },
+  invalidBlockPrefix: {
+    hash: '131a0f0ea77dbc9c553b007421b4ff385155f41affcc20d8124bca635b48e082',
+  },
+  invalidBlockLargerLength: {
+    hash: '0x131a0f0ea77dbc9c553b007421b4ff385155f41affcc20d8124bca635b48e0821',
+  },
+  invalidBlockShorterLength: {
+    hash: '0x131a0f0ea77dbc9c553b007421b4ff385155f41affcc20d8124bca635b48e08',
+  },
+};
+
+export const signature = {
+  validTransfer: {
+    signature:
+        '0xaaf529bb476980690880d4737df7a47a1003812752f60bcecd0a8e57154b0157345797773aa315d1718c5c5fd9cc96203bd48a236ade2f41e69c8c81d0117182',
+  },
+  invalidTransfer: {
+    signature:
+        '0xaaf529bb476980690880d4737df7a47a1003812752f60bcecd0a8e57154b0157345797773aa315d1718c5c5fd9cc96203bd48a236ade2f41e69c8c81d01171821',
+  },
+};

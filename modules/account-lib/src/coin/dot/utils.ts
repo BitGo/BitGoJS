@@ -2,7 +2,7 @@ import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
-import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
+import { hexToU8a, isHex, u8aToHex, stringToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
@@ -10,14 +10,15 @@ import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
+import type { HexString } from '@polkadot/util/types';
 import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
 import { Seed } from '../baseCoin/iface';
 import { ProxyCallArgs, TransferArgs } from './iface';
 import nacl from 'tweetnacl';
 const polkaUtils = require('@polkadot/util');
 const { createTypeUnsafe } = require('@polkadot/types');
 
+const SIGNATURE_LENGTH = 64; // https://docs.rs/py-sr25519-bindings/latest/sr25519/constant.SIGNATURE_LENGTH.html
 const PROXY_METHOD_ARG = 2;
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -32,7 +33,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return isHex(hash, 256);
   }
 
   /** @inheritdoc */
@@ -50,9 +51,14 @@ export class Utils implements BaseUtils {
     return isValidEd25519PublicKey(key);
   }
 
-  /** @inheritdoc */
-  isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('method not implemented');
+  /**
+   * Signs a given message with a given key pair
+   *
+   * @param {string} key the keypair to sign with
+   * @param {string} message the message to sign
+   */
+  signMessage(key: KeyringPair, message: string): Uint8Array {
+    return key.sign(stringToU8a(message));
   }
 
   /**
@@ -63,7 +69,9 @@ export class Utils implements BaseUtils {
    * @param {string} address the address of the signer
    * @returns {boolean} whether the signature is valid or not
    */
-  verifySignature(signedMessage: string, signature: string, address: string): boolean {
+  verifySignature(signedMessage: HexString | Uint8Array | string,
+                  signature: HexString | Uint8Array | string,
+                  address: HexString | Uint8Array | string): boolean {
     const publicKey = decodeAddress(address);
     const hexPublicKey = u8aToHex(publicKey);
 
@@ -72,7 +80,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return isHex(txId, 256);
   }
 
   /**
@@ -99,7 +107,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Helper function to decode the internal method hex incase of a proxy transaction
+   * Helper function to decode the internal method hex in case of a proxy transaction
    *
    * @param {string | UnsignedTransaction} tx
    * @param { metadataRpc: string; registry: TypeRegistry } options
@@ -186,6 +194,20 @@ export class Utils implements BaseUtils {
    */
   encodeDotAddress(address: string, ss58Format?: number): string {
     return encodeAddress(address, ss58Format);
+  }
+
+  /**
+   * Checks the validity of the signature submitted
+   *
+   * @param signature signature
+   * @returns {boolean}
+   */
+  isValidSignature(signature: string): boolean {
+    try {
+      return !!signature && decodeAddress(signature).length === SIGNATURE_LENGTH;
+    } catch (e) {
+      return false;
+    }
   }
 }
 
