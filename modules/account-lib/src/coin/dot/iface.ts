@@ -153,7 +153,7 @@ export interface sequenceId {
 /**
  * Block validity interface based on the BitgoJS standard doc.
  */
-export interface validityWindow {
+export interface ValidityWindow {
   firstValid?: number;
   lastValid?: number;
   minDuration?: number;
