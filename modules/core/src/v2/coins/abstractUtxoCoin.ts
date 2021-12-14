@@ -42,6 +42,7 @@ import {
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
+  TransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
@@ -76,21 +77,10 @@ export interface Output {
   needsCustomChangeKeySignatureVerification?: boolean;
 }
 
-export interface TransactionFee {
-  fee: number;
-  feeRate?: number;
-  size: number;
-}
-
-export interface TransactionExplanation {
-  displayOrder: string[];
-  id: string;
+export interface TransactionExplanation extends BaseTransactionExplanation<string, number> {
   locktime: number;
   outputs: Output[];
   changeOutputs: Output[];
-  outputAmount: number;
-  changeAmount: number;
-  fee: TransactionFee | string;
 
   /**
    * Number of input signatures per input.
