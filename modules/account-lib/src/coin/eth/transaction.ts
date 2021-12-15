@@ -92,7 +92,7 @@ export class Transaction extends BaseTransaction {
       const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data);
       let coinName: string;
       if (tokenContractAddress) {
-        const token = getToken(tokenContractAddress);
+        const token = getToken(tokenContractAddress, this._coinConfig.network);
         coinName = token ? token.name : UNSUPPORTED_COIN_NAME;
       } else {
         coinName = this._coinConfig.name;
