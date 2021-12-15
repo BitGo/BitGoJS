@@ -3,6 +3,7 @@ import sinon, { assert } from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
+import { ProxyType } from '../../../../../src/coin/dot/iface';
 
 describe('Dot Add Proxy Builder', () => {
   let builder: AddressInitializationBuilder;
@@ -40,7 +41,7 @@ describe('Dot Add Proxy Builder', () => {
     it('should build a addProxy transaction', async () => {
       builder
         .owner({ address: receiver.address })
-        .type('Any')
+        .type(ProxyType.ANY)
         .delay('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -52,7 +53,7 @@ describe('Dot Add Proxy Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
-      should.deepEqual(txJson.proxyType, 'Any');
+      should.deepEqual(txJson.proxyType, ProxyType.ANY);
       should.deepEqual(txJson.delay, '0');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
@@ -69,7 +70,7 @@ describe('Dot Add Proxy Builder', () => {
     it('should build an unsigned addProxy transaction', async () => {
       builder
         .owner({ address: receiver.address })
-        .type('Any')
+        .type(ProxyType.ANY)
         .delay('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -80,7 +81,7 @@ describe('Dot Add Proxy Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
-      should.deepEqual(txJson.proxyType, 'Any');
+      should.deepEqual(txJson.proxyType, ProxyType.ANY);
       should.deepEqual(txJson.delay, '0');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
@@ -103,7 +104,7 @@ describe('Dot Add Proxy Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
-      should.deepEqual(txJson.proxyType, 'Any');
+      should.deepEqual(txJson.proxyType, ProxyType.ANY);
       should.deepEqual(txJson.delay, '0');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
@@ -127,7 +128,7 @@ describe('Dot Add Proxy Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
-      should.deepEqual(txJson.proxyType, 'Any');
+      should.deepEqual(txJson.proxyType, ProxyType.ANY);
       should.deepEqual(txJson.delay, '0');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
