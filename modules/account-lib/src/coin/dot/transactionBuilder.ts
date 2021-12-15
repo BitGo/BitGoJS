@@ -9,7 +9,7 @@ import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, FeeOptions } from '../baseCoin/iface';
 import { AddressValidationError, InvalidFeeError } from './errors';
-import { CreateBaseTxInfo, sequenceId, TxMethod, validityWindow } from './iface';
+import { CreateBaseTxInfo, sequenceId, TxMethod, ValidityWindow } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
@@ -90,13 +90,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * The number of the checkpoint block after which the transaction is valid
    *
-   * @param {validityWindow} firstValid block checkpoint where transaction is first valid
-   * @param {validityWindow} maxDuration number of blocks after checkpoint for which transaction is valid
+   * @param {ValidityWindow} firstValid block checkpoint where transaction is first valid
+   * @param {ValidityWindow} maxDuration number of blocks after checkpoint for which transaction is valid
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  validity({ firstValid, maxDuration }: validityWindow): this {
+  validity({ firstValid, maxDuration }: ValidityWindow): this {
     if (!_.isUndefined(firstValid)) {
       this.validateValue(new BigNumber(firstValid));
       this._blockNumber = firstValid;

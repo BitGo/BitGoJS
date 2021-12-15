@@ -701,7 +701,7 @@ export class BitGo {
       const network = common.Environments[this.getEnv()].network;
       this._extensionKey = utxolib.ECPair.fromWIF(
         json.extensionKey,
-        utxolib.networks[network]
+        utxolib.networks[network] as utxolib.BitcoinJSNetwork
       );
     }
   }

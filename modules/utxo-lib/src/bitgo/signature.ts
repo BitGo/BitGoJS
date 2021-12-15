@@ -14,9 +14,6 @@ import {
   ScriptSignature,
 } from 'bitcoinjs-lib';
 
-import { Network } from '../networkTypes';
-import * as networks from '../networks';
-import { getMainnet } from '../coins';
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 import {
@@ -28,6 +25,7 @@ import {
   scriptType2Of3AsPrevOutType,
 } from './outputScripts';
 import { isTriple, Triple } from './types';
+import { getMainnet, Network, networks } from '../networks';
 
 const inputTypes = [
   'multisig',

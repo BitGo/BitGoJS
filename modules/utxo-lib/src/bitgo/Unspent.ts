@@ -1,5 +1,4 @@
-import { TxOutput } from '..';
-import { Network } from '../networkTypes';
+import { TxOutput, Network } from '..';
 import { toOutputScript } from '../address';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
 

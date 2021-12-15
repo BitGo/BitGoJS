@@ -153,7 +153,7 @@ export interface sequenceId {
 /**
  * Block validity interface based on the BitgoJS standard doc.
  */
-export interface validityWindow {
+export interface ValidityWindow {
   firstValid?: number;
   lastValid?: number;
   minDuration?: number;
@@ -169,4 +169,11 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   owner?: string;
   proxyType?: string;
   delay?: string;
+}
+
+export enum TransactionTypes {
+  TRANSFER = 'transfer',
+  STAKING = 'staking',
+  ADDR_INIT = 'addressInitialization',
+  UNSTAKING = 'unstaking',
 }

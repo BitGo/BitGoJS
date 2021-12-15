@@ -110,17 +110,7 @@ export interface ExplainTransactionOptions {
   pubs?: Triple<string>;
 }
 
-export interface UtxoNetwork {
-  pubKeyHash: number;
-  scriptHash: number;
-  altScriptHash?: number;
-  bech32: string;
-  wif: number;
-  bip32: {
-    public: number;
-    private: number;
-  };
-}
+export type UtxoNetwork = utxolib.Network;
 
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txInfo?: any;
@@ -344,7 +334,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param forceAltScriptSupport
    */
   isValidAddress(address: string, forceAltScriptSupport = false): boolean {
-    const validVersions = [this.network.pubKeyHash, this.network.scriptHash];
+    const validVersions: number[] = [this.network.pubKeyHash, this.network.scriptHash];
     if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
       validVersions.push(this.altScriptHash);
     }

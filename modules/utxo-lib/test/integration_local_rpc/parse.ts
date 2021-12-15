@@ -1,9 +1,7 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
-import { Network } from '../../src/networkTypes';
-import { isTestnet } from '../../src/coins';
-import { TxOutput } from '../../src';
+import { TxOutput, Network, isTestnet } from '../../src';
 
 import {
   verifySignature,

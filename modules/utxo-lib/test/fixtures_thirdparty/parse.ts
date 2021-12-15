@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash } from '../../src/coins';
+import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash } from '../../src/networks';
 import {
   sigHashTestFile,
   SigHashTestVector,
@@ -11,8 +11,7 @@ import {
 
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { UtxoTransaction } from '../../src/bitgo/UtxoTransaction';
-import { ZcashTransaction } from '../../src/bitgo/zcash/ZcashTransaction';
-import { ZcashNetwork } from '../../src/networkTypes';
+import { ZcashNetwork, ZcashTransaction } from '../../src/bitgo/zcash/ZcashTransaction';
 
 describe('Third-Party Fixtures', function () {
   getNetworkList()

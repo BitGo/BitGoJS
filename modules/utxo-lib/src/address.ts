@@ -1,10 +1,8 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
+import { Base58CheckResult, Bech32Result } from 'bitcoinjs-lib/types/address';
 
 import * as zcashAddress from '../src/bitgo/zcash/address';
-
-import { Network } from './networkTypes';
-import { isValidNetwork, isZcash } from './coins';
-import { Base58CheckResult, Bech32Result } from 'bitcoinjs-lib/types/address';
+import { isValidNetwork, isZcash, Network } from './networks';
 
 export function fromOutputScript(outputScript: Buffer, network: Network): string {
   if (isValidNetwork(network) && isZcash(network)) {

@@ -2,9 +2,8 @@ import * as bitcoinjs from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 const typeforce = require('typeforce');
 
-import * as networks from '../../networks';
-import { ZcashTransaction } from './ZcashTransaction';
-import { Network, ZcashNetwork } from '../../networkTypes';
+import { Network } from '../..';
+import { getDefaultConsensusBranchIdForVersion, ZcashNetwork, ZcashTransaction } from './ZcashTransaction';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
 
@@ -56,12 +55,8 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
 
   setVersion(version: number, overwinter = true): void {
     typeforce(types.UInt32, version);
-    /* istanbul ignore next */
-    if (!networks.zcash.consensusBranchId.hasOwnProperty(this.tx.version)) {
-      throw new Error('Unsupported Zcash transaction');
-    }
     this.tx.overwintered = overwinter ? 1 : 0;
-    this.tx.consensusBranchId = networks.zcash.consensusBranchId[version];
+    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
     this.tx.version = version;
   }
 

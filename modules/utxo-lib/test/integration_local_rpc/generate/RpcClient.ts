@@ -2,8 +2,7 @@ import * as assert from 'assert';
 import axios, { AxiosError } from 'axios';
 import buildDebug from 'debug';
 
-import { Network } from '../../../src/networkTypes';
-import { getMainnet, getNetworkName, isZcash } from '../../../src/coins';
+import { Network, getMainnet, getNetworkName, isZcash } from '../../../src/networks';
 import { RpcTransaction } from './RpcTypes';
 
 const utxolib = require('../../../src');

@@ -1,11 +1,10 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as assert from 'assert';
-import { getNetworkName } from '../../src/coins';
+
+import { networks, Network, getNetworkName } from '../../src';
 import { createTransactionFromHex } from '../../src/bitgo';
 import { ScriptType2Of3, scriptTypes2Of3 } from '../../src/bitgo/outputScripts';
-import * as networks from '../../src/networks';
-import { Network } from '../../src/networkTypes';
 
 import { getHalfSignedTransaction2Of3 } from '../transaction_util';
 import { fixtureKeys } from '../integration_local_rpc/generate/fixtures';

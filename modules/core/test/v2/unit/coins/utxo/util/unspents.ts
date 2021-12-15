@@ -86,7 +86,7 @@ export function mockUnspentReplayProtection(network: utxolib.Network): Unspent {
       value: 0.1,
     };
   }
-  throw new Error(`${utxolib.coins.getNetworkName(network)} has no replay protection unspetns`);
+  throw new Error(`${utxolib.getNetworkName(network)} has no replay protection unspetns`);
 }
 
 export function mockUnspent(

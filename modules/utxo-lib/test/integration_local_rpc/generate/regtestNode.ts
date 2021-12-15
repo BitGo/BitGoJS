@@ -1,9 +1,8 @@
 import * as crypto from 'crypto';
 import { spawn } from 'child_process';
-import { Network } from '../../../src/networkTypes';
-import { getNetworkName } from '../../../src/coins';
 
-const utxolib = require('../../../src');
+import * as utxolib from '../../../src';
+import { Network, getNetworkName } from '../../../src/networks';
 
 type DockerImageParams = {
   extraArgsDocker: string[];
