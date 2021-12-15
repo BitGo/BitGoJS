@@ -2,7 +2,7 @@ import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
-import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
+import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
@@ -11,7 +11,6 @@ import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
 import { Seed } from '../baseCoin/iface';
 import { ProxyCallArgs, TransferArgs } from './iface';
 import nacl from 'tweetnacl';
@@ -52,7 +51,8 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    const signatureU8a = u8aToU8a(signature);
+    return [64, 65, 66].includes(signatureU8a.length);
   }
 
   /**
@@ -72,7 +72,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return isHex(txId, 256);
   }
 
   /**
