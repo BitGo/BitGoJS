@@ -1,12 +1,14 @@
 /**
  * @prettier
  */
-import { BigNumber } from 'bignumber.js';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
+import { BigNumber } from 'bignumber.js';
+import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
+import * as utxolib from '@bitgo/utxo-lib';
+
 import { BitGo } from '../bitgo';
 import { RequestTracer } from './internal/util';
-
 import { Wallet } from './wallet';
 import { Wallets } from './wallets';
 import { Markets } from './markets';
@@ -15,11 +17,10 @@ import { PendingApprovals } from './pendingApprovals';
 import { Keychain, Keychains, KeyIndices } from './keychains';
 import { Enterprises } from './enterprises';
 
-// re-export account lib transaction types
-import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
-import { signMessage } from '../bip32util';
-import * as crypto from 'crypto';
 import { InitiateRecoveryOptions } from './recovery/initiate';
+import { signMessage } from '../bip32util';
+
+// re-export account lib transaction types
 export type TransactionType = AccountLibBasecoin.TransactionType;
 
 export interface TransactionRecipient {
@@ -28,20 +29,20 @@ export interface TransactionRecipient {
   memo?: string;
 }
 
-export interface TransactionFee {
-  fee: string;
+export interface TransactionFee<TAmount = string> {
+  fee: TAmount;
   feeRate?: number;
   size?: number;
 }
 
-export interface TransactionExplanation {
+export interface TransactionExplanation<TFee = any, TAmount = any> {
   displayOrder: string[];
   id: string;
   outputs: TransactionRecipient[];
-  outputAmount: string;
+  outputAmount: TAmount;
   changeOutputs: TransactionRecipient[];
-  changeAmount: string;
-  fee: TransactionFee;
+  changeAmount: TAmount;
+  fee: TFee;
   proxy?: string;
   producers?: string[];
 }
@@ -345,6 +346,14 @@ export abstract class BaseCoin {
    */
   async signMessage(key: { prv: string }, message: string): Promise<Buffer> {
     return signMessage(message, bip32.fromBase58(key.prv), utxolib.networks.bitcoin);
+  }
+
+  /**
+   * Decompose a raw transaction into useful information.
+   * @param options - coin-specific
+   */
+  explainTransaction(options: Record<string, any>): Promise<TransactionExplanation<any, string | number> | undefined> {
+    throw new Error(`not implemented`);
   }
 
   /**
