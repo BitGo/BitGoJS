@@ -28,6 +28,14 @@ describe('Sol KeyPair', function () {
       const keyPair = new Sol.KeyPair({ pub: testData.accountWithSeed.publicKey });
       should.equal(keyPair.getKeys().pub, testData.accountWithSeed.publicKey);
     });
+
+    it('should always generate valid key pairs', () => {
+      for (let i = 0; i < 50; i++) {
+        const keyPair = new Sol.KeyPair();
+        Sol.Utils.isValidPublicKey(keyPair.getKeys().pub).should.be.true();
+        Sol.Utils.isValidAddress(keyPair.getAddress()).should.be.true();
+      }
+    });
   });
 
   describe('should fail to create a KeyPair', function () {
