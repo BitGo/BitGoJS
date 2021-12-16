@@ -1,6 +1,9 @@
 import should from 'should';
 import utils from '../../../../src/coin/dot/utils';
+import { Keyring } from '@polkadot/keyring';
+import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { accounts, blockHash, signatures, txIds } from '../../../resources/dot';
+import { stringToU8a } from '@polkadot/util';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {
@@ -74,5 +77,29 @@ describe('utils', () => {
 
   it('should encode DOT address correctly', () => {
     should.equal(utils.encodeDotAddress(accounts.account1.address), '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr');
+  });
+
+  it('should verify signature correctly', () => {
+    const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
+    const pair = keyring.addFromUri(mnemonicGenerate(), { name: 'first pair' }, 'ed25519');
+    const message = 'this is our message';
+    const signature = pair.sign(stringToU8a(message));
+    should.equal(utils.verifySignature(message, signature, pair.address), true);
+  });
+
+  it('should not verify signature correctly when adulterated', () => {
+    const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
+    const pair = keyring.addFromUri(mnemonicGenerate(), { name: 'first pair' }, 'ed25519');
+    const message = 'this is our message';
+    const signature = pair.sign(stringToU8a(message));
+    should.equal(utils.verifySignature(message, signature.reverse(), pair.address), false);
+  });
+
+  it('should verify signature correctly', () => {
+    const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
+    const pair = keyring.addFromUri(mnemonicGenerate(), { name: 'first pair' }, 'ed25519');
+    const emptyMessage = '';
+    const signature = pair.sign(stringToU8a(emptyMessage));
+    should.equal(utils.verifySignature(emptyMessage, signature, pair.address), true);
   });
 });

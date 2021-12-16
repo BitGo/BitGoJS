@@ -63,7 +63,11 @@ export class Utils implements BaseUtils {
    * @param {string} address the address of the signer
    * @returns {boolean} whether the signature is valid or not
    */
-  verifySignature(signedMessage: string, signature: string, address: string): boolean {
+  verifySignature(
+    signedMessage: Uint8Array | string,
+    signature: Uint8Array | string,
+    address: Uint8Array | string,
+  ): boolean {
     const publicKey = decodeAddress(address);
     const hexPublicKey = u8aToHex(publicKey);
 
