@@ -22,7 +22,6 @@ import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
-const DECODED_ADDRESS_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#account-address-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
 const BASE_58_ENCONDING_REGEX = '[1-9A-HJ-NP-Za-km-z]';
 
@@ -55,13 +54,9 @@ export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
 /** @inheritdoc */
 export function isValidPublicKey(pubKey: string): boolean {
   try {
-    return (
-      !!pubKey &&
-      new RegExp(BASE_58_ENCONDING_REGEX).test(pubKey) &&
-      bs58.decode(pubKey).length === DECODED_ADDRESS_LENGTH &&
-      PublicKey.isOnCurve(new PublicKey(pubKey).toBuffer())
-    );
-  } catch (e) {
+    new PublicKey(pubKey);
+    return true;
+  } catch {
     return false;
   }
 }

@@ -27,7 +27,7 @@ export const pubKeys = {
   invalidPubKeys: [
     'randomstring',
     'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S12AF1',
-    'CP5Dpaa42R11111KqCQsLwma5Yh3knuvKsYDFX85F41S',
+    'CP5Dpaa42R11111KqCQsLwma5Yh3knuvKsYDFX85F41SAVV',
     'CP5Dpaa42RtJmMuKqCQsLwma==h3knuvKsYDFX85F41S',
   ],
 };
@@ -37,6 +37,7 @@ export const addresses = {
     'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
     'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
     '2n2xqWM9Z18LqxfJzkNrMMFWiDUFYA2k6WSgSnf6EnJs',
+    '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
   ],
   invalidAddresses: [
     'randomstring',
