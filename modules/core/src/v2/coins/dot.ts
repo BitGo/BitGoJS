@@ -18,6 +18,12 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
   prv: string;
 }
 
+type DotSignedTransaction = {
+  txid: string;
+}
+
+export type DotSigned = SignedTransaction & DotSignedTransaction;
+
 export interface TransactionPrebuild {
   txHex: string;
   key: string;
@@ -206,9 +212,9 @@ export class Dot extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @returns {Promise<SignedTransaction>}
+   * @returns {Promise<DotSignedTransaction>}
    */
-  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+  async signTransaction(params: SignTransactionOptions): Promise<DotSigned> {
     const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
     const keyPair = new accountLib.Dot.KeyPair({ prv: prv });
@@ -224,7 +230,7 @@ export class Dot extends BaseCoin {
       throw new Error('Invalid transaction');
     }
     const signedTxHex = transaction.toBroadcastFormat();
-    return { txHex: signedTxHex };
+    return { txHex: signedTxHex, txid: transaction.toJson().id };
   }
 
   /**
