@@ -26,8 +26,8 @@ import * as errors from '../../errors';
 import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
 import {
   CrossChainRecoverySigned,
-  CrossChainRecoveryTool,
   CrossChainRecoveryUnsigned,
+  recoverCrossChain,
 } from './utxo/recovery/crossChainRecovery';
 
 import {
@@ -1295,25 +1295,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
     }
 
-    const recoveryTool = new CrossChainRecoveryTool({
-      bitgo: this.bitgo,
+    return await recoverCrossChain(this.bitgo, {
       sourceCoin: this,
-      recoveryCoin: recoveryCoin,
-      logging: true,
+      recoveryCoin,
+      walletId: wallet,
+      txid,
+      recoveryAddress,
+      walletPassphrase: signed ? walletPassphrase : undefined,
+      xprv: signed ? xprv : undefined,
     });
-
-    await recoveryTool.buildTransaction({
-      wallet: wallet,
-      faultyTxId: txid,
-      recoveryAddress: recoveryAddress,
-    });
-
-    if (signed) {
-      await recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
-      return recoveryTool.export();
-    } else {
-      return await recoveryTool.buildUnsigned();
-    }
   }
 
   /**

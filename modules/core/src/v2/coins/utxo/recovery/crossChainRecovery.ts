@@ -3,19 +3,30 @@
  */
 import * as _ from 'lodash';
 import * as request from 'superagent';
+import * as Bluebird from 'bluebird';
 
+import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
-import { VirtualSizes } from '@bitgo/unspents';
+import {
+  RootWalletKeys,
+  Unspent,
+  unspentSum,
+  scriptTypeForChain,
+  outputScripts,
+  WalletUnspent,
+  WalletUnspentLegacy,
+  WalletUnspentSigner,
+} from '@bitgo/utxo-lib/dist/src/bitgo';
+import { Dimensions } from '@bitgo/unspents';
 
 import { BitGo } from '../../../../bitgo';
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { Ltc } from '../../ltc';
+import { AbstractUtxoCoin, TransactionInfo } from '../../abstractUtxoCoin';
 import { Wallet } from '../../../wallet';
 
-import { BaseCoin } from '../../../baseCoin';
 import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
+import { decrypt } from '../../../../encrypt';
+import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface ExplorerTxInfo {
   input: { address: string }[];
@@ -23,7 +34,7 @@ export interface ExplorerTxInfo {
 }
 
 class BitgoPublicApi {
-  constructor(public coin: BaseCoin) {}
+  constructor(public coin: AbstractUtxoCoin) {}
 
   async getTransactionInfo(txid: string): Promise<ExplorerTxInfo> {
     const url = this.coin.url(`/public/tx/${txid}`);
@@ -41,61 +52,32 @@ class BitgoPublicApi {
   }
 }
 
-interface CrossChainRecoveryToolOptions {
-  bitgo: BitGo;
-  sourceCoin?: AbstractUtxoCoin;
-  recoveryCoin?: AbstractUtxoCoin;
-  logging: boolean;
-}
-
-export interface SignRecoveryTransactionOptions {
-  prv?: string;
-  passphrase?: string;
-}
-
 export interface BuildRecoveryTransactionOptions {
   wallet: string;
   faultyTxId: string;
   recoveryAddress: string;
 }
 
-export interface RecoveryTxInfo {
-  inputAmount: number;
-  outputAmount: number;
-  spendAmount: number;
-  inputs: any[];
-  outputs: any[];
-  externalOutputs: any[];
-  changeOutputs: any[];
-  minerFee: number;
+type FeeInfo = {
+  size: number;
+  feeRate: number;
+  fee: number;
   payGoFee: number;
-  unspents: {
-    id: string;
-    chain: number;
-    index: number;
-    value: number;
-    address: string;
-  }[];
-}
-
-export interface HalfSignedRecoveryTx {
-  txHex: string;
-  tx?: string;
-}
+};
 
 export interface CrossChainRecoveryUnsigned {
   txHex: string;
-  txInfo: RecoveryTxInfo;
+  txInfo: TransactionInfo;
   walletId: string;
-  feeInfo: unknown;
+  feeInfo: FeeInfo;
   address: string;
   coin: string;
 }
 
 export interface CrossChainRecoverySigned {
   version: 1 | 2;
-  txHex?: string;
-  txInfo?: RecoveryTxInfo;
+  txHex: string;
+  txInfo: TransactionInfo;
   walletId: string;
   sourceCoin: string;
   recoveryCoin: string;
@@ -103,545 +85,321 @@ export interface CrossChainRecoverySigned {
   recoveryAmount?: number;
 }
 
-/**
- * An instance of the recovery tool, which encapsulates the recovery functions
- * Instantiated with parameters:
- *   - bitgo: an instance of the bitgo SDK
- *   - sourceCoin: the coin that needs to be recovered
- *   - recoveryCoin: the type of address the faulty transaction was sent to
- */
-export class CrossChainRecoveryTool {
-  bitgo: BitGo;
-  bitgoPublicApi: BitgoPublicApi;
+type WalletV1 = {
+  keychains: { xpub: string }[];
+  address({ address: string }): Promise<{ chain: number; index: number }>;
+  getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
+};
+
+type RecoverParams = {
+  /** Wallet ID (can be v1 wallet or v2 wallet) */
+  walletId: string;
+  /** Coin to create the transction for */
   sourceCoin: AbstractUtxoCoin;
+  /** Coin that wallet keys were set up for */
   recoveryCoin: AbstractUtxoCoin;
-  logging: boolean;
-  supportedCoins: string[];
-  wallet: any; // This can be either a v1 or v2 wallet
-  feeRates: { [key: string]: number };
-  recoveryTx: any;
-  logger: any;
-  private unspents?: any;
-  txInfo?: RecoveryTxInfo;
-  recoveryAddress?: string;
-  recoveryAmount?: number;
-  halfSignedRecoveryTx?: HalfSignedRecoveryTx;
-
-  constructor(opts: CrossChainRecoveryToolOptions) {
-    this.bitgo = opts.bitgo;
-    this.logging = opts.logging;
-
-    if (_.isUndefined(this.bitgo)) {
-      throw new Error('Please instantiate the recovery tool with a bitgo instance.');
-    }
-
-    // List of coins we support. Add modifiers (e.g. segwit) after the dash
-    this.supportedCoins = ['btc', 'bch', 'ltc', 'btc-segwit', 'bsv'];
-
-    if (_.isUndefined(opts.sourceCoin) || !this.supportedCoins.includes(opts.sourceCoin.getFamily())) {
-      throw new Error('Please set a valid source coin');
-    }
-    this.sourceCoin = opts.sourceCoin;
-    this.bitgoPublicApi = new BitgoPublicApi(this.sourceCoin);
-
-    if (_.isUndefined(opts.recoveryCoin) || !this.supportedCoins.includes(opts.recoveryCoin.getFamily())) {
-      throw new Error('Please set a valid recovery type');
-    }
-    this.recoveryCoin = opts.recoveryCoin;
-
-    this.wallet = null;
-
-    this.feeRates = {
-      bch: 20,
-      tbch: 20,
-      bsv: 20,
-      tbsv: 20,
-      btc: 80,
-      tbtc: 80,
-      ltc: 100,
-      tltc: 100,
-    };
-
-    this.recoveryTx = utxolib.bitgo.createTransactionBuilderForNetwork(this.sourceCoin.network);
-  }
-
-  /**
-   * Internal logging function (either uses provided logger or console.log, can be turned off)
-   * @param args - the arguments to pass to the logger
-   * @private
-   */
-  _log(...args) {
-    if (!this.logging) {
-      return;
-    }
-
-    this.logger ? this.logger(...args) : console.log(...args);
-  }
-
-  /**
-   * Sets the wallet ID of the recoveryCoin wallet. This is needed to find the private key to sign the transaction.
-   * @param walletId {String} wallet ID
-   */
-  protected async setWallet(walletId?: string): Promise<void> {
-    const coinType = this.recoveryCoin.getChain();
-    if (_.isUndefined(walletId)) {
-      throw new Error('Please provide wallet id');
-    }
-
-    this._log(`Fetching ${coinType} wallet...`);
-
-    if (this.sourceCoin.type !== coinType && this.recoveryCoin.type !== coinType) {
-      throw new Error('Cannot set a wallet for this coin type - this is not a coin involved in the recovery tx.');
-    }
-
-    let wallet: Wallet | undefined;
-    try {
-      wallet = await this.bitgo.coin(coinType).wallets().get({ id: walletId });
-    } catch (e) {
-      if (e.status !== 404 && e.status !== 400) {
-        throw e;
-      }
-
-      wallet = undefined;
-    }
-
-    if (_.isUndefined(wallet) && coinType.endsWith('btc')) {
-      try {
-        this._log('Could not find v2 wallet. Falling back to v1...');
-        wallet = await this.bitgo.wallets().get({ id: walletId });
-        (wallet as any).isV1 = true;
-      } catch (e) {
-        if (e.status !== 404) {
-          throw e;
-        }
-      }
-    }
-
-    if (_.isUndefined(wallet)) {
-      throw new Error(`Cannot find ${coinType} wallet.`);
-    }
-
-    this.wallet = wallet;
-  }
-
-  /**
-   * Retrieves and stores the unspents from the faulty transaction
-   * @param faultyTxId {String} the txid of the faulty transaction
-   */
-  protected async findUnspents(faultyTxId?: string): Promise<any> {
-    if (_.isUndefined(faultyTxId)) {
-      throw new Error('Please provide a faultyTxId');
-    }
-
-    this._log('Grabbing info for faulty tx...');
-
-    // calling source coin's method of exploring transactions
-    const faultyTxInfo = (await this.bitgoPublicApi.getTransactionInfo(faultyTxId)) as unknown as ExplorerTxInfo;
-
-    this._log('Getting unspents on output addresses..');
-    // Get output addresses that do not belong to wallet
-    // These are where the 'lost coins' live
-    const txOutputAddresses = faultyTxInfo.outputs.map((input) => input.address);
-
-    let outputAddresses: string[] = [];
-    for (let address of txOutputAddresses) {
-      if (this.sourceCoin.getFamily() === 'ltc') {
-        try {
-          address = (this.sourceCoin as Ltc).canonicalAddress(address, 1);
-        } catch (e) {
-          continue;
-        }
-      }
-
-      if (this.recoveryCoin.getFamily() === 'ltc') {
-        try {
-          address = (this.recoveryCoin as Ltc).canonicalAddress(address, 2);
-        } catch (e) {
-          continue;
-        }
-      }
-
-      try {
-        const methodName = this.wallet.isV1 ? 'address' : 'getAddress';
-        const walletAddress = (await this.wallet[methodName]({ address: address })) as any;
-        outputAddresses.push(walletAddress.address);
-      } catch (e) {
-        this._log(`Address ${address} not found on wallet`);
-      }
-    }
-
-    if (outputAddresses.length === 0) {
-      throw new Error(
-        'Could not find tx outputs belonging to the specified wallet. Please check the given parameters.'
-      );
-    }
-
-    if (this.recoveryCoin.getFamily() === 'ltc') {
-      outputAddresses = outputAddresses.map((address) => (this.recoveryCoin as Ltc).canonicalAddress(address, 1));
-    }
-
-    if (this.sourceCoin.getFamily() === 'ltc') {
-      outputAddresses = outputAddresses.map((address) => (this.sourceCoin as Ltc).canonicalAddress(address, 2));
-    }
-
-    this._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
-
-    // Get unspents for addresses. Calling source coin's method of fetching unspents
-    const unspents = (await this.bitgoPublicApi.getUnspentInfo(outputAddresses)) as any;
-
-    this.unspents = unspents;
-    return unspents;
-  }
-
-  /**
-   * Constructs transaction inputs from a set of unspents.
-   * @param unspents {Object[]} array of unspents from the faulty transaction
-   * @returns {Object} partial txInfo object with transaction inputs
-   */
-  protected async buildInputs(unspents?: any): Promise<any> {
-    this._log('Building inputs for recovery transaction...');
-
-    unspents = unspents || this.unspents;
-
-    if (_.isUndefined(unspents) || unspents.length === 0) {
-      throw new Error('Could not find unspents. Either supply an argument or call findUnspents');
-    }
-
-    const txInfo: any = {
-      inputAmount: 0,
-      outputAmount: 0,
-      spendAmount: 0,
-      inputs: [],
-      outputs: [],
-      unspents: [],
-      externalOutputs: [],
-      changeOutputs: [],
-      minerFee: 0,
-      payGoFee: 0,
-    };
-
-    let totalFound = 0;
-    const noSegwit = this.recoveryCoin.getFamily() === 'btc' && this.sourceCoin.getFamily() === 'bch';
-    for (const unspent of unspents) {
-      if (unspent.witnessScript && noSegwit) {
-        throw new Error(
-          'Warning! It appears one of the unspents is on a Segwit address. The tool only recovers BCH from non-Segwit BTC addresses. Aborting.'
-        );
-      }
-
-      let searchAddress = unspent.address;
-
-      if (this.sourceCoin.type.endsWith('ltc')) {
-        searchAddress = (this.sourceCoin as Ltc).canonicalAddress(searchAddress, 1);
-      }
-
-      if (this.recoveryCoin.type.endsWith('ltc')) {
-        searchAddress = (this.recoveryCoin as Ltc).canonicalAddress(searchAddress, 2);
-      }
-
-      let unspentAddress;
-      try {
-        const methodName = this.wallet.isV1 ? 'address' : 'getAddress';
-        unspentAddress = await this.wallet[methodName]({ address: searchAddress });
-      } catch (e) {
-        this._log(`Could not find address on wallet for ${searchAddress}`);
-        continue;
-      }
-
-      this._log(`Found ${unspent.value * 1e-8} ${this.sourceCoin.type} at address ${unspent.address}`);
-
-      const [txHash, index] = unspent.id.split(':');
-      const inputIndex = parseInt(index, 10);
-      let hash = Buffer.from(txHash, 'hex');
-      hash = Buffer.from(Array.prototype.reverse.call(hash));
-
-      try {
-        this.recoveryTx.addInput(hash, inputIndex);
-      } catch (e) {
-        throw new Error(`Error adding unspent ${unspent.id}`);
-      }
-
-      let inputData = {};
-
-      // Add v1 specific input fields
-      if (this.wallet.isV1) {
-        const addressInfo = (await this.wallet.address({ address: unspentAddress.address })) as any;
-
-        unspentAddress.path = unspentAddress.path || `/${unspentAddress.chain}/${unspentAddress.index}`;
-        const [txid, nOut] = unspent.id.split(':');
-
-        inputData = {
-          redeemScript: addressInfo.redeemScript,
-          witnessScript: addressInfo.witnessScript,
-          path: '/0/0' + unspentAddress.path,
-          chainPath: unspentAddress.path,
-          index: unspentAddress.index,
-          chain: unspentAddress.chain,
-          txHash: txid,
-          txOutputN: parseInt(nOut, 10),
-          txValue: unspent.value,
-          value: parseInt(unspent.value, 10),
-        };
-      } else {
-        inputData = {
-          redeemScript: unspentAddress.coinSpecific.redeemScript,
-          witnessScript: unspentAddress.coinSpecific.witnessScript,
-          index: unspentAddress.index,
-          chain: unspentAddress.chain,
-          wallet: this.wallet.id(),
-          fromWallet: this.wallet.id(),
-        };
-      }
-
-      txInfo.inputs.push(Object.assign({}, unspent, inputData));
-
-      txInfo.inputAmount += parseInt(unspent.value, 10);
-      totalFound += parseInt(unspent.value, 10);
-    }
-
-    txInfo.unspents = _.clone(txInfo.inputs);
-
-    // Normalize total found to base unit before we print it out
-    this._log(`Found lost ${totalFound * 1e-8} ${this.sourceCoin.type}.`);
-
-    this.txInfo = txInfo;
-    return txInfo;
-  }
-
-  /**
-   * Sets the txInfo.minerFee field by calculating the size of the transaction and multiplying it by the fee rate for
-   * the source coin.
-   * @param recoveryTx {Object} recovery transaction containing inputs
-   * @returns {Number} recovery fee for the transaction
-   */
-  protected setFees(recoveryTx?: any): number {
-    recoveryTx = recoveryTx || this.recoveryTx;
-
-    // Determine fee with default fee rate
-    const feeRate = this.feeRates[this.sourceCoin.type];
-
-    // Note that we assume one output here (all funds should be recovered to a single address)
-    const txSize =
-      VirtualSizes.txP2shInputSize * recoveryTx.tx.ins.length +
-      VirtualSizes.txP2pkhOutputSize +
-      VirtualSizes.txOverheadSize;
-    const recoveryFee = feeRate * txSize;
-
-    if (this.txInfo) {
-      this.txInfo.minerFee = recoveryFee;
-    }
-
-    return recoveryFee;
-  }
-
-  /**
-   * Constructs a single output to the recovery address.
-   * @param recoveryAddress {String} address to recover funds to
-   * @param outputAmount {Number} amount to send to the recovery address
-   * @param recoveryFee {Number} miner fee for the transaction
-   */
-  protected buildOutputs(recoveryAddress: string, outputAmount?: number, recoveryFee?: number): void {
-    if (_.isUndefined(outputAmount) && _.isUndefined(this.txInfo)) {
-      throw new Error('Could not find transaction info. Please provide an output amount, or call buildInputs.');
-    }
-
-    this._log(`Building outputs for recovery transaction. Funds will be sent to ${recoveryAddress}...`);
-
-    const txInputAmount = outputAmount || (this.txInfo && this.txInfo.inputAmount);
-    const txFeeAmount = recoveryFee || (this.txInfo && this.txInfo.minerFee);
-
-    if (!txInputAmount) {
-      throw new Error('could not determine transaction input amount');
-    }
-    if (!txFeeAmount) {
-      throw new Error('could not determine transaction fee amount');
-    }
-    const txOutputAmount = txInputAmount - txFeeAmount;
-
-    if (txOutputAmount <= 0) {
-      throw new Error('This recovery transaction cannot pay its own fees. Aborting.');
-    }
-
-    if (!_.isUndefined(this.txInfo)) {
-      this.txInfo.outputAmount = txOutputAmount;
-      this.txInfo.spendAmount = txOutputAmount;
-    }
-
-    this.recoveryAddress = recoveryAddress;
-    this.recoveryAmount = txOutputAmount;
-
-    this.recoveryTx.addOutput(recoveryAddress, txOutputAmount);
-
-    const outputData = {
-      address: recoveryAddress,
-      value: outputAmount,
-      valueString: txOutputAmount.toString(),
-      wallet: this.wallet.id(),
-      change: false,
-    };
-
-    if (this.txInfo) {
-      this.txInfo.outputs.push(outputData);
-      this.txInfo.externalOutputs.push(outputData);
+  /** Source coin transaction to recover outputs from (sourceCoin) */
+  txid: string;
+  /** Source coin address to send the funds to */
+  recoveryAddress: string;
+  /** If set, decrypts private key and signs transaction */
+  walletPassphrase?: string;
+  /** If set, signs transaction */
+  xprv?: string;
+};
+
+async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string): Promise<Wallet | WalletV1> {
+  try {
+    return await coin.wallets().get({ id: walletId });
+  } catch (e) {
+    if (e.status !== 404) {
+      throw e;
     }
   }
 
-  /**
-   * Half-signs the built transaction with the user's private key or keychain
-   * @param params
-   * @param params.prv {String} private key
-   * @param params.passphrase {String} wallet passphrase
-   * @returns {Object} half-signed transaction
-   */
-  async signTransaction(params: SignRecoveryTransactionOptions): Promise<any> {
-    if (_.isUndefined(this.txInfo)) {
-      throw new Error('Could not find txInfo. Please build a transaction');
-    }
-
-    this._log('Signing the transaction...');
-
-    const transactionHex = this.recoveryTx.buildIncomplete().toHex();
-
-    const prv = params.prv ? params.prv : params.passphrase ? await this.getXprv(params.passphrase) : undefined;
-    if (!prv) {
-      throw new Error(`must provide prv or passphrase`);
-    }
-    const pubs: Triple<string> = await this.getXpubs();
-
-    const txPrebuild = { txHex: transactionHex, txInfo: this.txInfo };
-    this.halfSignedRecoveryTx = (await this.sourceCoin.signTransaction({
-      txPrebuild,
-      prv,
-      pubs,
-      cosignerPub: pubs[2],
-    })) as any;
-
-    return this.halfSignedRecoveryTx;
+  try {
+    return await this.bitgo.wallets().get({ id: walletId });
+  } catch (e) {
+    throw new Error(`could not get wallet ${walletId} from v1 or v2`);
   }
+}
 
-  async getXpubs(): Promise<Triple<string>> {
-    if (this.wallet.isV1) {
-      return this.wallet.keychains.map((k) => k.xpub);
-    }
-    const keychains = (await this.recoveryCoin
-      .keychains()
-      .getKeysForSigning({ wallet: this.wallet })) as unknown as Keychain[];
+/**
+ * @param recoveryCoin
+ * @param wallet
+ * @return wallet pubkeys
+ */
+async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: Wallet | WalletV1): Promise<RootWalletKeys> {
+  let xpubs: Triple<string>;
+
+  if (wallet instanceof Wallet) {
+    const keychains = (await recoveryCoin.keychains().getKeysForSigning({ wallet })) as unknown as Keychain[];
     if (keychains.length !== 3) {
       throw new Error(`expected triple got ${keychains.length}`);
     }
-    return keychains.map((k) => k.pub) as Triple<string>;
+    xpubs = keychains.map((k) => k.pub) as Triple<string>;
+  } else {
+    xpubs = wallet.keychains.map((k) => k.xpub) as Triple<string>;
   }
 
-  /**
-   * Gets the wallet's encrypted keychain, then decrypts it with the wallet passphrase
-   * @param passphrase {String} wallet passphrase
-   * @returns {String} decrypted wallet private key
-   */
-  async getXprv(passphrase: string): Promise<string> {
-    let prv;
+  return new RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<bip32.BIP32Interface>);
+}
 
-    let keychain;
-    try {
-      keychain = await this.wallet.getEncryptedUserKeychain();
-    } catch (e) {
-      if (e.status !== 404) {
-        throw e;
-      }
-    }
+/**
+ * @param coin
+ * @param txid
+ * @return all unspents for transaction outputs, including outputs from other transactions
+ */
+async function getAllRecoveryOutputs(coin: AbstractUtxoCoin, txid: string): Promise<Unspent[]> {
+  const api = new BitgoPublicApi(coin);
+  const info = await api.getTransactionInfo(txid);
+  const addresses = new Set(info.outputs.map((o) => o.address));
+  return await api.getUnspentInfo([...addresses]);
+}
 
-    if (_.isUndefined(passphrase)) {
-      throw new Error('You have an encrypted user keychain - please provide the passphrase to decrypt it');
-    }
+/**
+ * Data required for address and signature derivation
+ */
+type ScriptId = {
+  chain: number;
+  index: number;
+};
 
-    if (this.wallet.isV1) {
-      if (_.isUndefined(keychain)) {
-        throw new Error('V1 wallets need a user keychain - could not find the proper keychain. Aborting');
-      }
-    }
+async function getScriptId(coin: AbstractUtxoCoin, wallet: Wallet | WalletV1, script: Buffer): Promise<ScriptId> {
+  const address = utxolib.address.fromOutputScript(script, coin.network);
+  let addressData: { chain: number; index: number };
+  if (wallet instanceof Wallet) {
+    addressData = await wallet.getAddress({ address });
+  } else {
+    addressData = await wallet.address({ address });
+  }
+  if (typeof addressData.chain === 'number' && typeof addressData.index === 'number') {
+    return { chain: addressData.chain, index: addressData.index };
+  }
 
-    if (keychain) {
+  throw new Error(`invalid address data: ${JSON.stringify(addressData)}`);
+}
+
+/**
+ * Lookup address data from unspents on sourceCoin in address database of recoveryCoin.
+ * Return full walletUnspents including scriptId in sourceCoin format.
+ *
+ * @param sourceCoin
+ * @param recoveryCoin
+ * @param unspents
+ * @param wallet
+ * @return walletUnspents
+ */
+async function toWalletUnspents(
+  sourceCoin: AbstractUtxoCoin,
+  recoveryCoin: AbstractUtxoCoin,
+  unspents: Unspent[],
+  wallet: Wallet | WalletV1
+): Promise<WalletUnspent[]> {
+  const addresses = new Set(unspents.map((u) => u.address));
+  return (
+    await Bluebird.mapSeries(addresses, async (address): Promise<WalletUnspent[]> => {
+      let scriptId;
       try {
-        const encryptedPrv = this.wallet.isV1 ? keychain.encryptedXprv : keychain.encryptedPrv;
-        prv = this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
+        scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
       } catch (e) {
-        throw new Error('Error reading private key. Please check that you have the correct wallet passphrase');
+        console.error(`error getting scriptId for ${address}:`, e);
+        return [];
       }
-    }
+      return unspents
+        .filter((u) => u.address === address)
+        .map((u) => ({
+          ...u,
+          ...scriptId,
+        }));
+    })
+  ).flat();
+}
 
-    return prv;
+/**
+ * @param coin
+ * @return feeRate for transaction
+ */
+async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
+  // TODO: use feeRate API
+  const feeRate = {
+    bch: 20,
+    tbch: 20,
+    bsv: 20,
+    tbsv: 20,
+    btc: 80,
+    tbtc: 80,
+    ltc: 100,
+    tltc: 100,
+  }[coin.getChain()];
+
+  if (!feeRate) {
+    throw new Error(`no feeRate for ${coin.getChain()}`);
   }
 
-  async buildTransaction(params: BuildRecoveryTransactionOptions): Promise<any> {
-    await this.setWallet(params.wallet);
+  return feeRate;
+}
 
-    await this.findUnspents(params.faultyTxId);
-    await this.buildInputs();
-    this.setFees();
-    this.buildOutputs(params.recoveryAddress);
-
-    return this.recoveryTx;
+/**
+ * @param xprv
+ * @param passphrase
+ * @param wallet
+ * @return signing key
+ */
+async function getPrv(xprv?: string, passphrase?: string, wallet?: Wallet | WalletV1): Promise<bip32.BIP32Interface> {
+  if (xprv) {
+    const key = bip32.fromBase58(xprv);
+    if (key.isNeutered()) {
+      throw new Error(`not a private key`);
+    }
+    return key;
   }
 
-  async buildUnsigned(): Promise<CrossChainRecoveryUnsigned> {
-    if (_.isUndefined(this.txInfo)) {
-      throw new Error('Could not find txInfo. Please build a transaction');
-    }
-    const incomplete = this.recoveryTx.buildIncomplete();
+  if (!wallet || !passphrase) {
+    throw new Error(`no xprv given: need wallet and passphrase to continue`);
+  }
 
-    const txInfo: any = {
-      nP2SHInputs: 0,
-      nSegwitInputs: 0,
+  let encryptedPrv: string;
+  if (wallet instanceof Wallet) {
+    encryptedPrv = (await wallet.getEncryptedUserKeychain()).encryptedPrv;
+  } else {
+    encryptedPrv = (await wallet.getEncryptedUserKeychain()).encryptedXprv;
+  }
+
+  return getPrv(decrypt(passphrase, encryptedPrv));
+}
+
+/**
+ * @param network
+ * @param unspents
+ * @param targetAddress
+ * @param feeRateSatVB
+ * @param signer - if set, sign transaction
+ * @return transaction spending full input amount to targetAddress
+ */
+function createSweepTransaction(
+  network: utxolib.Network,
+  unspents: WalletUnspent[],
+  targetAddress: string,
+  feeRateSatVB: number,
+  signer?: WalletUnspentSigner<RootWalletKeys>
+): utxolib.bitgo.UtxoTransaction {
+  const inputValue = unspentSum(unspents);
+  const vsize = Dimensions.fromUnspents(unspents)
+    .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(targetAddress, network) }))
+    .getVSize();
+  const fee = vsize * feeRateSatVB;
+
+  const transactionBuilder = utxolib.bitgo.createTransactionBuilderForNetwork(network);
+  transactionBuilder.addOutput(targetAddress, inputValue - fee);
+  unspents.forEach((unspent) => {
+    utxolib.bitgo.addToTransactionBuilder(transactionBuilder, unspent);
+  });
+  let transaction = transactionBuilder.buildIncomplete();
+  if (signer) {
+    transaction = signAndVerifyWalletTransaction(transactionBuilder, unspents, signer, { isLastSignature: false });
+  }
+  return transaction;
+}
+
+function getTxInfo(
+  transaction: utxolib.bitgo.UtxoTransaction,
+  unspents: WalletUnspent[],
+  walletId: string,
+  walletKeys: RootWalletKeys
+): TransactionInfo {
+  const inputAmount = utxolib.bitgo.unspentSum(unspents);
+  const outputAmount = transaction.outs.reduce((sum, o) => sum + o.value, 0);
+  const outputs = transaction.outs.map((o) => ({
+    address: utxolib.address.fromOutputScript(o.script, transaction.network),
+    valueString: o.value.toString(),
+    change: false,
+  }));
+  const inputs = unspents.map((u) => {
+    // NOTE:
+    // The `redeemScript` and `walletScript` properties are required for legacy versions of BitGoJS
+    // which might require these scripts for signing. The Wallet Recovery Wizard (WRW) can create
+    // unsigned prebuilds that are submitted to BitGoJS instances which are not necessarily the same
+    // version.
+    const addressKeys = walletKeys.deriveForChainAndIndex(u.chain, u.index);
+    const scriptType = scriptTypeForChain(u.chain);
+    const { redeemScript, witnessScript } = outputScripts.createOutputScript2of3(addressKeys.publicKeys, scriptType);
+
+    return {
+      ...u,
+      wallet: walletId,
+      fromWallet: walletId,
+      redeemScript: redeemScript?.toString('hex'),
+      witnessScript: witnessScript?.toString('hex'),
+    } as WalletUnspentLegacy;
+  });
+  return {
+    inputAmount,
+    outputAmount,
+    minerFee: inputAmount - outputAmount,
+    spendAmount: outputAmount,
+    inputs,
+    unspents: inputs,
+    outputs,
+    externalOutputs: outputs,
+    changeOutputs: [],
+    payGoFee: 0,
+  } as TransactionInfo;
+}
+
+function getFeeInfo(transaction: utxolib.bitgo.UtxoTransaction, unspents: WalletUnspent[]): FeeInfo {
+  const vsize = Dimensions.fromUnspents(unspents).plus(Dimensions.fromOutputs(transaction.outs)).getVSize();
+  const inputAmount = utxolib.bitgo.unspentSum(unspents);
+  const outputAmount = transaction.outs.reduce((sum, o) => sum + o.value, 0);
+  const fee = inputAmount - outputAmount;
+  return {
+    size: vsize,
+    fee,
+    feeRate: fee / vsize,
+    payGoFee: 0,
+  };
+}
+
+export async function recoverCrossChain(
+  bitgo: BitGo,
+  params: RecoverParams
+): Promise<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
+  const wallet = await getWallet(bitgo, params.recoveryCoin, params.walletId);
+  const unspents = await getAllRecoveryOutputs(params.sourceCoin, params.txid);
+  const walletUnspents = await toWalletUnspents(params.sourceCoin, params.recoveryCoin, unspents, wallet);
+  const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
+  const prv =
+    params.xprv || params.walletPassphrase ? await getPrv(params.xprv, params.walletPassphrase, wallet) : undefined;
+  const signer = prv ? new WalletUnspentSigner<RootWalletKeys>(walletKeys, prv, walletKeys.bitgo) : undefined;
+  const feeRateSatVB = await getFeeRateSatVB(params.sourceCoin);
+  const transaction = createSweepTransaction(
+    params.sourceCoin.network,
+    walletUnspents,
+    params.recoveryAddress,
+    feeRateSatVB,
+    signer
+  );
+  const recoveryAmount = transaction.outs[0].value;
+  const txHex = transaction.toBuffer().toString('hex');
+  const txInfo = getTxInfo(transaction, walletUnspents, params.walletId, walletKeys);
+  if (prv) {
+    return {
+      version: wallet instanceof Wallet ? 2 : 1,
+      walletId: params.walletId,
+      txHex,
+      txInfo,
+      sourceCoin: params.sourceCoin.getChain(),
+      recoveryCoin: params.recoveryCoin.getChain(),
+      recoveryAmount,
     };
-
-    for (const input of this.txInfo.inputs) {
-      if (input.chain === 10 || input.chain === 11) {
-        txInfo.nSegwitInputs++;
-      } else {
-        txInfo.nP2SHInputs++;
-      }
-    }
-
-    txInfo.nOutputs = 1;
-    txInfo.unspents = _.map(
-      this.txInfo.inputs,
-      _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value'])
-    );
-    txInfo.changeAddresses = [];
-    txInfo.walletAddressDetails = {};
-
-    const feeInfo: any = {};
-
-    feeInfo.size =
-      VirtualSizes.txOverheadSize +
-      VirtualSizes.txP2shInputSize * this.txInfo.inputs.length +
-      VirtualSizes.txP2pkhOutputSize;
-
-    feeInfo.feeRate = this.feeRates[this.sourceCoin.type];
-    feeInfo.fee = Math.round((feeInfo.size / 1000) * feeInfo.feeRate);
-    feeInfo.payGoFee = 0;
-    feeInfo.payGoFeeString = '0';
-
+  } else {
     return {
-      txHex: incomplete.toHex(),
-      txInfo: txInfo,
-      feeInfo: feeInfo,
-      walletId: this.wallet.id(),
-      amount: this.recoveryAmount,
-      address: this.recoveryAddress,
-      coin: this.sourceCoin.type,
-    } as any;
-  }
-
-  export(): CrossChainRecoverySigned {
-    return {
-      version: this.wallet.isV1 ? 1 : 2,
-      sourceCoin: this.sourceCoin.type,
-      recoveryCoin: this.recoveryCoin.type,
-      walletId: this.wallet.id(),
-      recoveryAddress: this.recoveryAddress,
-      recoveryAmount: this.recoveryAmount,
-      txHex: this.halfSignedRecoveryTx && (this.halfSignedRecoveryTx.txHex || this.halfSignedRecoveryTx.tx),
-      txInfo: this.txInfo,
+      txHex,
+      txInfo,
+      walletId: params.walletId,
+      feeInfo: getFeeInfo(transaction, walletUnspents),
+      address: params.recoveryAddress,
+      coin: params.sourceCoin.getChain(),
     };
   }
 }
