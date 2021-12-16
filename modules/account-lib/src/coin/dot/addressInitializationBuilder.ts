@@ -6,13 +6,13 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
-import { AddProxyArgs, MethodNames, proxyType } from './iface';
+import { AddProxyArgs, MethodNames, ProxyType } from './iface';
 import { AddressInitializationSchema } from './txnSchema';
 import { BaseAddress } from '../baseCoin/iface';
 
 export class AddressInitializationBuilder extends TransactionBuilder {
   protected _delegate: string;
-  protected _proxyType: proxyType;
+  protected _proxyType: ProxyType;
   protected _delay: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -65,7 +65,7 @@ export class AddressInitializationBuilder extends TransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#proxy-types
    */
-  type(proxyType: proxyType): this {
+  type(proxyType: ProxyType): this {
     this._proxyType = proxyType;
     return this;
   }

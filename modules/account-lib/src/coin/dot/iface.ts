@@ -36,7 +36,7 @@ export interface TxData {
   owner?: string;
   proxyType?: string;
   delay?: string;
-  forceProxyType?: proxyType;
+  forceProxyType?: ProxyType;
 }
 
 /**
@@ -80,14 +80,14 @@ export interface UnstakeArgs {
  * The types of proxies that can be setup and used
  * https://wiki.polkadot.network/docs/learn-proxies#proxy-types
  */
-export type proxyType =
-  | 'Any'
-  | 'NonTransfer'
-  | 'Governance'
-  | 'Staking'
-  | 'UnusedSudoBalances'
-  | 'IdentityJudgement'
-  | 'CancelProxy';
+export enum ProxyType {
+  ANY = 'Any',
+  NON_TRANSFER = 'NonTransfer',
+  GOVERNANCE = 'Governance',
+  STAKING = 'Staking',
+  IDENTTITY_JUDGEMENT = 'IdentityJudgement',
+  CANCEL_PROXY = 'CancelProxy',
+}
 
 /**
  * Transaction method specific args
@@ -95,7 +95,7 @@ export type proxyType =
 export interface AddProxyArgs {
   delegate: string;
   delay: string;
-  proxyType: proxyType;
+  proxyType: ProxyType;
 }
 
 /**
@@ -111,7 +111,7 @@ export type ProxyCallArgs = {
  */
 export interface ProxyArgs {
   real: string;
-  forceProxyType: proxyType;
+  forceProxyType: ProxyType;
 }
 
 /**
@@ -163,7 +163,7 @@ export interface ValidityWindow {
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
-  forceProxyType?: proxyType;
+  forceProxyType?: ProxyType;
   controller?: string;
   payee?: string;
   owner?: string;

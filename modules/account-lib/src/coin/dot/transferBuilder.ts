@@ -6,7 +6,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TransactionType } from '../baseCoin';
-import { MethodNames, ProxyArgs, proxyType, TransferArgs } from './iface';
+import { MethodNames, ProxyArgs, ProxyType, TransferArgs } from './iface';
 import { ProxyTransactionSchema, TransferTransactionSchema } from './txnSchema';
 import utils from './utils';
 import { BaseAddress } from '../baseCoin/iface';
@@ -15,7 +15,7 @@ export class TransferBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _to: string;
   protected _owner: string;
-  protected _forceProxyType: proxyType;
+  protected _forceProxyType: ProxyType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -111,7 +111,7 @@ export class TransferBuilder extends TransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/learn-proxies#proxy-types
    */
-  forceProxyType(forceProxyType: proxyType): this {
+  forceProxyType(forceProxyType: ProxyType): this {
     this._forceProxyType = forceProxyType;
     return this;
   }

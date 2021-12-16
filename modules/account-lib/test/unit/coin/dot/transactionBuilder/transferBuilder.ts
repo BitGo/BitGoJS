@@ -4,6 +4,7 @@ import sinon, { assert } from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
+import { ProxyType } from '../../../../../src/coin/dot/iface';
 
 describe('Dot Transfer Builder', () => {
   let builder: TransferBuilder;
@@ -215,7 +216,7 @@ describe('Dot Transfer Builder', () => {
     it('should build a proxy transaction', async () => {
       builder
         .owner({ address: sender.address })
-        .forceProxyType('Any')
+        .forceProxyType(ProxyType.ANY)
         .to({ address: receiver.address })
         .amount('90034235235322')
         .sender({ address: proxySender.address })
@@ -228,7 +229,7 @@ describe('Dot Transfer Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
-      should.deepEqual(txJson.forceProxyType, 'Any');
+      should.deepEqual(txJson.forceProxyType, ProxyType.ANY);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -252,7 +253,7 @@ describe('Dot Transfer Builder', () => {
     it('should build an unsigned proxy transaction', async () => {
       builder
         .owner({ address: sender.address })
-        .forceProxyType('Any')
+        .forceProxyType(ProxyType.ANY)
         .to({ address: receiver.address })
         .amount('90034235235322')
         .sender({ address: proxySender.address })
@@ -264,7 +265,7 @@ describe('Dot Transfer Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
-      should.deepEqual(txJson.forceProxyType, 'Any');
+      should.deepEqual(txJson.forceProxyType, ProxyType.ANY);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -286,7 +287,7 @@ describe('Dot Transfer Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
-      should.deepEqual(txJson.forceProxyType, 'Any');
+      should.deepEqual(txJson.forceProxyType, ProxyType.ANY);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -309,7 +310,7 @@ describe('Dot Transfer Builder', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
-      should.deepEqual(txJson.forceProxyType, 'Any');
+      should.deepEqual(txJson.forceProxyType, ProxyType.ANY);
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
