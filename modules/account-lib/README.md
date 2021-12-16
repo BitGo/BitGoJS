@@ -5,8 +5,7 @@ account-based coins (for example, Ethereum, Algorand, EOS, Tron, etc.). Account
 Lib was developed for BitGo and BitGo's multi-sig wallets, but it can also be
 used independently, outside of our wallet ecosystem.
 
-> Account Lib was intended to be used in an offline environment, for offline
-> signings.
+> Account Lib can be used in an offline environment.
 
 ## Supported Coins
 
@@ -43,31 +42,23 @@ network.
 
 #### Transaction Types
 
-The `TransactionBuilder` supports the following transaction types:
+`TransactionBuilder` supports the following transaction types:
 
-- [Send](#send)
-- [Wallet Initialization](#wallet-initialization)
-- [Address Initialization](#address-initialization)
-- [Account Update](#account-update)
+- **Send**: Transfers funds from a wallet.
 
-##### Send
+- **Wallet Initialization**: Initializes a wallet's account on the network
+  (e.g., multi-sig contract deployment).
 
-Transfers funds from a wallet.
+- **Address Initialization**: Initializes a wallet's address on the network
+  (e.g., forwarder contract deployment).
 
-##### Wallet Initialization
+- **Account Update**: Updates an account on the network (e.g., public key
+  revelation operation for Tezos).
 
-Initializes a wallet's account on the network (e.g., multi-sig contract
-deployment).
+### Offline Availability
 
-##### Address Initialization
-
-Initializes a wallet's address on the network (e.g., forwarder contract
-deployment).
-
-##### Account Update
-
-Updates an account on the network (e.g., public key revelation operation for
-Tezos).
+Account Lib was designed to be used for offline signings in an offline
+environment.
 
 ---
 
