@@ -329,6 +329,7 @@ interface EthAddressCoinSpecifics extends AddressCoinSpecific {
 interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
   baseAddress: string;
   coinSpecific: EthAddressCoinSpecifics;
+  forwarderVersion: number;
 }
 
 export class Eth extends BaseCoin {
@@ -1529,7 +1530,7 @@ export class Eth extends BaseCoin {
     let expectedAddress;
     let actualAddress;
 
-    const { address, coinSpecific, baseAddress } = params;
+    const { address, coinSpecific, baseAddress, impliedForwarderVersion = coinSpecific?.forwarderVersion } = params;
 
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -1546,7 +1547,7 @@ export class Eth extends BaseCoin {
       );
     }
 
-    if (coinSpecific.forwarderVersion === 0) {
+    if (impliedForwarderVersion === 0) {
       return true;
     } else {
       const ethNetwork = this.getNetwork();

@@ -310,23 +310,61 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Create Address', () => {
-    let ethWallet;
+    let ethWallet, nocks;
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+      },
+      coin: 'teth',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+    };
 
-    before(async function () {
-      const walletData = {
-        id: '598f606cd8fc24710d2ebadb1d9459bb',
-        coinSpecific: {
-          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-        },
-        coin: 'teth',
-        keys: [
-          '598f606cd8fc24710d2ebad89dce86c2',
-          '598f606cc8e43aef09fcb785221d9dd2',
-          '5935d59cf660764331bafcade1855fd7',
-        ],
-      };
+    beforeEach(async function() {
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+      nocks = [
+        nock(bgUrl)
+          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
+          .reply(200, {
+            id: '598f606cd8fc24710d2ebad89dce86c2',
+            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+            ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+            source: 'user',
+            encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[1]}`)
+          .reply(200, {
+            id: '598f606cc8e43aef09fcb785221d9dd2',
+            pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+            ethAddress: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
+            source: 'backup',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[2]}`)
+          .reply(200, {
+            id: '5935d59cf660764331bafcade1855fd7',
+            pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+            ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
+            source: 'bitgo',
+            coinSpecific: {},
+          })
+      ];
     });
+
+    afterEach(async function() {
+      nock.cleanAll();
+      nocks.forEach(scope => scope.isDone().should.be.true());
+    });
+
     it('should correctly validate arguments to create address', async function () {
       let message = 'gasPrice has to be an integer or numeric string';
       await wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
@@ -345,41 +383,21 @@ describe('V2 Wallet:', function () {
       await wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
+
+      message = 'baseAddress has to be a string';
+      await wallet.createAddress({ baseAddress: {} }).should.be.rejectedWith(message);
+      await wallet.createAddress({ baseAddress: 123 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ baseAddress: null }).should.be.rejectedWith(message);
+
+      message = 'allowSkipVerifyAddress has to be a boolean';
+      await wallet.createAddress({ allowSkipVerifyAddress: {} }).should.be.rejectedWith(message);
+      await wallet.createAddress({ allowSkipVerifyAddress: 123 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ allowSkipVerifyAddress: 'abc' }).should.be.rejectedWith(message);
+      await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
     });
 
     it('verify address when pendingChainInitialization is true in case of eth v1 forwarder', async function () {
-      nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`)
-        .reply(200, {
-          id: '598f606cd8fc24710d2ebad89dce86c2',
-          pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-          ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
-          source: 'user',
-          encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
-          coinSpecific: {},
-        });
-
-      nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[1]}`)
-        .reply(200, {
-          id: '598f606cc8e43aef09fcb785221d9dd2',
-          pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
-          ethAddress: '0xa1a88a502274073b1bc4fe06ea0f5fe77e151b91',
-          source: 'backup',
-          coinSpecific: {},
-        });
-
-      nock(bgUrl)
-        .get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[2]}`)
-        .reply(200, {
-          id: '5935d59cf660764331bafcade1855fd7',
-          pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
-          ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
-          source: 'bitgo',
-          coinSpecific: {},
-        });
-
-      nock(bgUrl)
+      const scope = nock(bgUrl)
         .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 1 })
         .reply(200, {
           id: '615c643a98a2a100068e023c639c0f74',
@@ -402,8 +420,119 @@ describe('V2 Wallet:', function () {
           },
         });
       await ethWallet.createAddress({ chain: 0, forwarderVersion: 1 }).should.be.rejectedWith('address validation failure: expected 0x32a226cda14e352a47bf4b1658648d8037736f80 but got 0x8c13cd0bb198858f628d5631ba4b2293fc08df49');
+      scope.isDone().should.be.true();
     });
-  });
+
+    it('verify address when invalid baseAddress is passed', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 1 })
+        .reply(200, {
+          id: '615c643a98a2a100068e023c639c0f74',
+          address: '0x32a226cda14e352a47bf4b1658648d8037736f80',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          chain: 0,
+          index: 3179,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-10-05T14:42:02.399Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0xc6b',
+            pendingDeployment: true,
+            forwarderVersion: 1,
+          },
+        });
+      await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, baseAddress: 'asgf' }).should.be.rejectedWith('invalid base address');
+      scope.isDone().should.be.true();
+    });
+
+    it('verify address when incorrect baseAddress is passed', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 1 })
+        .reply(200, {
+          id: '615c643a98a2a100068e023c639c0f74',
+          address: '0x32a226cda14e352a47bf4b1658648d8037736f80',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          chain: 0,
+          index: 3179,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-10-05T14:42:02.399Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0xc6b',
+            pendingDeployment: true,
+            forwarderVersion: 1,
+          },
+        });
+      // incorrect address is generated while validating due to incorrect baseAddress
+      await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, baseAddress: '0x8c13cd0bb198858f628d5631ba4b2293fc08df49' }).should.be.rejectedWith('address validation failure: expected 0x36748926007790e7ee416c6485b32e00cfb177a3 but got 0x32a226cda14e352a47bf4b1658648d8037736f80');
+      scope.isDone().should.be.true();
+    });
+
+    it('verify address when pendingChainInitialization is true  and allowSkipVerifyAddress is false in case of eth v0 forwarder', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 0 })
+        .reply(200, {
+          id: '615c643a98a2a100068e023c639c0f74',
+          address: '0x32a26cda14e352a47bf4b1658648d8037736f80',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          chain: 0,
+          index: 3179,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-10-05T14:42:02.399Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0xc6b',
+            pendingDeployment: true,
+            forwarderVersion: 1,
+          },
+        });
+      await ethWallet.createAddress({ chain: 0, forwarderVersion: 0, allowSkipVerifyAddress: false }).should.be.rejectedWith('address verification skipped for count = 1');
+      scope.isDone().should.be.true();
+    });
+
+    it('verify address with allowSkipVerifyAddress set to false and eth v1 forwarder', async function () {
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/address`, { chain: 0, forwarderVersion: 1 })
+        .reply(200, {
+          id: '615c643a98a2a100068e023c639c0f74',
+          address: '0x32a226cda14e352a47bf4b1658648d8037736f80',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          chain: 0,
+          index: 3179,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-10-05T14:42:02.399Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0xc6b',
+            pendingDeployment: true,
+            forwarderVersion: 0,
+          },
+        });
+      const newAddress = await ethWallet.createAddress({ chain: 0, forwarderVersion: 1, allowSkipVerifyAddress: false });
+      newAddress.index.should.equal(3179);
+      scope.isDone().should.be.true();
+    });
+  }) ;
 
   describe('Accelerate Transaction', function () {
     it('fails if cpfpTxIds is not passed', async function () {
