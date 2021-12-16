@@ -1,91 +1,35 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import BigNum from 'bn.js';
+import { BaseCoin as CoinConfig, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import {
   bufferCV,
   bufferCVFromString,
   ClarityAbiType,
   ClarityType,
   ClarityValue,
-  ContractCallOptions,
   encodeClarityValue,
-  makeUnsignedContractCall,
   noneCV,
-  PayloadType,
   someCV,
   tupleCV,
-  UnsignedContractCallOptions,
-  UnsignedMultiSigContractCallOptions,
 } from '@stacks/transactions';
-import { TransactionType } from '../baseCoin';
-import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidParameterValueError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
-import { TransactionBuilder } from './transactionBuilder';
 import { isValidAddress } from './utils';
 import { ClarityValueJson } from './iface';
 import { Utils } from '.';
+import { CONTRACT_NAME_SENDMANY, CONTRACT_NAME_STAKING } from './constants';
+import { AbstractContractBuilder } from './abstractContractBuilder';
 
-export class ContractBuilder extends TransactionBuilder {
-  private _options: UnsignedContractCallOptions | UnsignedMultiSigContractCallOptions;
-  private _contractAddress: string;
-  private _contractName: string;
-  private _functionName: string;
-  private _functionArgs: ClarityValue[];
-  private _anchorMode: number;
-
+export class ContractBuilder extends AbstractContractBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._anchorMode = 3;
   }
 
   initBuilder(tx: Transaction): void {
-    const txData = tx.toJson();
-    if (txData.payload === undefined) {
-      throw new InvalidTransactionError('payload must not be undefined');
-    }
-    if (txData.payload.payloadType === PayloadType.ContractCall) {
-      this.contractAddress(txData.payload.contractAddress);
-      this.contractName(txData.payload.contractName);
-      this.functionName(txData.payload.functionName);
-      this.functionArgs(txData.payload.functionArgs);
-      super.initBuilder(tx);
-    } else {
-      throw new BuildTransactionError('Transaction should be contract call');
-    }
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this._options = this.buildContractCallOptions();
-    this.transaction.setTransactionType(TransactionType.ContractCall);
-    this.transaction.stxTransaction = await makeUnsignedContractCall(this._options);
-    return await super.buildImplementation();
-  }
-
-  private buildContractCallOptions(): UnsignedContractCallOptions | UnsignedMultiSigContractCallOptions {
-    const defaultOpts: ContractCallOptions = {
-      contractAddress: this._contractAddress,
-      contractName: this._contractName,
-      functionName: this._functionName,
-      functionArgs: this._functionArgs,
-      anchorMode: this._anchorMode,
-      network: this._network,
-      fee: new BigNum(this._fee.fee),
-      nonce: new BigNum(this._nonce),
-    };
-    if (this._fromPubKeys.length === 1) {
-      return {
-        ...defaultOpts,
-        publicKey: this._fromPubKeys[0],
-      };
-    } else if (this._fromPubKeys.length > 1) {
-      return {
-        ...defaultOpts,
-        publicKeys: this._fromPubKeys,
-        numSignatures: this._numberSignatures,
-      };
-    } else {
-      throw new InvalidParameterValueError('supply at least 1 public key');
-    }
+    super.initBuilder(tx);
+    // Retro compatibility, checks parameters.
+    this.contractAddress(this._contractAddress);
+    this.contractName(this._contractName);
+    this.functionName(this._functionName);
+    this.functionArgs(this._functionArgs);
   }
 
   // region Contract fields
@@ -99,7 +43,7 @@ export class ContractBuilder extends TransactionBuilder {
     if (!isValidAddress(address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
-    if (!Utils.isValidContractAddress(address, this._network)) {
+    if (!Utils.isValidContractAddress(address, this._coinConfig.network as BitgoStacksNetwork)) {
       throw new InvalidParameterValueError('Invalid contract address');
     }
     this._contractAddress = address;
@@ -116,8 +60,8 @@ export class ContractBuilder extends TransactionBuilder {
     if (name.length === 0) {
       throw new InvalidParameterValueError('Invalid name');
     }
-    if (name !== 'pox') {
-      throw new InvalidParameterValueError('Only pox contract supported');
+    if (name !== CONTRACT_NAME_STAKING && name !== CONTRACT_NAME_SENDMANY) {
+      throw new InvalidParameterValueError('Only pox and send-many-memo contracts supported');
     }
     this._contractName = name;
     return this;

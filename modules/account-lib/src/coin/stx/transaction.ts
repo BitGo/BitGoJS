@@ -1,25 +1,27 @@
 import {
-  BufferReader,
-  PayloadType,
-  StacksTransaction,
-  TransactionSigner,
-  createStacksPrivateKey,
-  deserializeTransaction,
   addressToString,
-  StacksMessageType,
+  BufferReader,
+  createStacksPrivateKey,
   createStacksPublicKey,
+  createTransactionAuthField,
+  deserializeTransaction,
   isSingleSig,
   MultiSigSpendingCondition,
-  createTransactionAuthField,
+  PayloadType,
   PubKeyEncoding,
+  StacksMessageType,
+  StacksTransaction,
+  TransactionSigner,
 } from '@stacks/transactions';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SigningError, ParseTransactionError, InvalidTransactionError, NotSupported } from '../baseCoin/errors';
+import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo/statics';
+import { InvalidTransactionError, NotSupported, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
-import { getTxSenderAddress, removeHexPrefix, stringifyCv, unpadMemo } from './utils';
+import { functionArgsToSendParams, getTxSenderAddress, removeHexPrefix, stringifyCv, unpadMemo } from './utils';
 import { KeyPair } from './keyPair';
+import { ContractCallPayload } from '@stacks/transactions/dist/payload';
+import BigNum from 'bn.js';
 
 export class Transaction extends BaseTransaction {
   private _stxTransaction: StacksTransaction;
@@ -96,7 +98,7 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson() {
+  toJson(): TxData {
     if (!this._stxTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
@@ -179,7 +181,7 @@ export class Transaction extends BaseTransaction {
    *
    * @param rawTransaction
    */
-  fromRawTransaction(rawTransaction: string) {
+  fromRawTransaction(rawTransaction: string): void {
     const raw = removeHexPrefix(rawTransaction);
     try {
       this._stxTransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(raw, 'hex')));
@@ -223,21 +225,29 @@ export class Transaction extends BaseTransaction {
         ];
       }
     } else if (txJson.payload.payloadType === PayloadType.ContractCall) {
-      this._outputs = [
-        {
-          address: txJson.payload.contractAddress,
-          value: '0',
-          coin: this._coinConfig.name,
-        },
-      ];
+      if (txJson.payload.contractAddress === (this._coinConfig.network as StacksNetwork).sendmanymemoContractAddress) {
+        const sendParams = functionArgsToSendParams((this.stxTransaction.payload as ContractCallPayload).functionArgs);
+        const coin = this._coinConfig.name;
+        const sum: BigNum = sendParams.reduce((current, next) => current.add(new BigNum(next.amount)), new BigNum(0));
+        this._outputs = sendParams.map((sendParam) => ({ address: sendParam.address, value: sendParam.amount, coin }));
+        this._inputs = [{ address: txJson.from, value: sum.toString(), coin }];
+      } else {
+        this._outputs = [
+          {
+            address: txJson.payload.contractAddress,
+            value: '0',
+            coin: this._coinConfig.name,
+          },
+        ];
 
-      this._inputs = [
-        {
-          address: txJson.from,
-          value: '0',
-          coin: this._coinConfig.name,
-        },
-      ];
+        this._inputs = [
+          {
+            address: txJson.from,
+            value: '0',
+            coin: this._coinConfig.name,
+          },
+        ];
+      }
     }
   }
 }

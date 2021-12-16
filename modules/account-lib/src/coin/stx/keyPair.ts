@@ -6,8 +6,7 @@ import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { isValidXprv, isValidXpub } from '../../utils/crypto';
 import { isValidPrivateKey, isValidPublicKey } from './utils';
-
-const DEFAULT_SEED_SIZE_BYTES = 64;
+import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
