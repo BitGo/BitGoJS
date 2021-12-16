@@ -1,0 +1,49 @@
+{
+  "txHex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d720000000000ffffffff018057f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+  "txInfo": {
+    "nP2SHInputs": 1,
+    "nSegwitInputs": 0,
+    "nOutputs": 1,
+    "unspents": [
+      {
+        "chain": 0,
+        "index": 0,
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
+        "id": "724d184731f1fbf7cfcccae8acaf47a2f3f8288bd6fd1d65d031a0176d68ddbe:0",
+        "address": "MAfbWxccd7BxKFBcYGD5kTYhkGEVTkPv3o",
+        "value": 99999000
+      }
+    ],
+    "changeAddresses": [],
+    "walletAddressDetails": {}
+  },
+  "feeInfo": {
+    "size": 342,
+    "feeRate": 100,
+    "fee": 34,
+    "payGoFee": 0,
+    "payGoFeeString": "0"
+  },
+  "walletId": "5abacebe28d72fbd07e0b8cbba0ff39e",
+  "amount": 99964800,
+  "address": "MN9SUrFbnnZ4sA9P1ws7WzJQKHpVEoUdwA",
+  "coin": "ltc",
+  "tx": {
+    "id": "4c65c9dceb689fbbda6cb412dee88e4155401bbf1aebbe60cf0babf04e71d329",
+    "hex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d720000000000ffffffff018057f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+    "ins": [
+      {
+        "txid": "724d184731f1fbf7cfcccae8acaf47a2f3f8288bd6fd1d65d031a0176d68ddbe",
+        "index": 0,
+        "script": "",
+        "witness": []
+      }
+    ],
+    "outs": [
+      {
+        "script": "a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f87",
+        "value": 99964800
+      }
+    ]
+  }
+}
