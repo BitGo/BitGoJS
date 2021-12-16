@@ -15,13 +15,11 @@ import { isValidAddress, isValidAmount } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _options: UnsignedTokenTransferOptions | UnsignedMultiSigTokenTransferOptions;
-  private _toAddress: string;
-  private _amount: BigNum;
-  private _anchorMode: number;
+  protected _toAddress: string;
+  protected _amount: BigNum;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._anchorMode = 3;
   }
 
   initBuilder(tx: Transaction): void {

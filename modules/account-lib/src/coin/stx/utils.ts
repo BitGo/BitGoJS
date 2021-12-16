@@ -3,42 +3,38 @@ import * as url from 'url';
 import BigNumber from 'bignumber.js';
 import { bufferToHex, stripHexPrefix } from 'ethereumjs-utils-old';
 import {
-  AddressHashMode,
-  StacksTransaction,
-  TransactionVersion,
+  addressFromPublicKeys,
   addressFromVersionHash,
+  AddressHashMode,
   addressHashModeToVersion,
   addressToString,
-  validateStacksAddress,
-  deserializeTransaction,
-  BufferReader,
-  createMemoString,
   AddressVersion,
-  addressFromPublicKeys,
-  createStacksPublicKey,
-  signWithKey,
+  BufferReader,
+  ClarityType,
+  ClarityValue,
+  createMemoString,
+  createMessageSignature,
   createStacksPrivateKey,
+  createStacksPublicKey,
+  cvToString,
+  cvToValue,
+  deserializeTransaction,
   PubKeyEncoding,
   publicKeyFromSignature,
-  createMessageSignature,
-  ClarityValue,
-  ClarityType,
+  signWithKey,
+  StacksTransaction,
+  TransactionVersion,
+  validateStacksAddress,
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
-import { StacksNetwork } from '@stacks/network';
 import * as _ from 'lodash';
-import { isValidXpub, isValidXprv } from '../../utils/crypto';
-import { InvalidParameterValueError, SigningError, UtilsError } from '../baseCoin/errors';
-import { AddressDetails } from './iface';
+import { isValidXprv, isValidXpub } from '../../utils/crypto';
+import { InvalidTransactionError, SigningError, UtilsError } from '../baseCoin/errors';
+import { AddressDetails, SendParams } from './iface';
 import { KeyPair } from '.';
+import { StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
 
-const ContractFunctionNames = [
-  'stack-stx',
-  'delegate-stx',
-  'delegate-stack-stx',
-  'stack-aggregation-commit',
-  'revoke-delegate-stx',
-];
 /**
  * Encodes a buffer as a "0x" prefixed lower-case hex string.
  *
@@ -243,16 +239,11 @@ export function isValidMemo(memo: string): boolean {
  * Checks for valid contract address
  *
  * @param {string} addr - contract deployer address
- * @param {StacksNetwork} network - network object
+ * @param {BitgoStacksNetwork} network - network object
  * @returns {boolean} - the validation result
  */
-export function isValidContractAddress(addr: string, network: StacksNetwork): boolean {
-  if (network.isMainnet()) {
-    return addr === 'SP000000000000000000002Q6VF78';
-  } else if (network.version === TransactionVersion.Testnet) {
-    return true;
-  }
-  throw new InvalidParameterValueError('Network should be either Mainnet or Testnet');
+export function isValidContractAddress(addr: string, network: BitgoStacksNetwork): boolean {
+  return addr === network.stakingContractAddress || addr === network.sendmanymemoContractAddress;
 }
 
 /**
@@ -262,7 +253,7 @@ export function isValidContractAddress(addr: string, network: StacksNetwork): bo
  * @returns {boolean} - validation result
  */
 export function isValidContractFunctionName(name: string): boolean {
-  return ContractFunctionNames.includes(name);
+  return VALID_CONTRACT_FUNCTION_NAMES.includes(name);
 }
 
 /**
@@ -451,4 +442,31 @@ export function stringifyCv(cv: ClarityValue): any {
     default:
       return cv;
   }
+}
+
+/**
+ * Parse functionArgs into send params for send-many-memo contract calls
+ *
+ * @param {ClarityValue[]} args functionArgs from a contract call payload
+ * @returns {SendParams[]} An array of sendParams
+ */
+export function functionArgsToSendParams(args: ClarityValue[]): SendParams[] {
+  if (args.length !== 1 || args[0].type !== ClarityType.List) {
+    throw new InvalidTransactionError("function args don't match send-many-memo type declaration");
+  }
+  return args[0].list.map((tuple) => {
+    if (
+      tuple.type !== ClarityType.Tuple ||
+      tuple.data.to?.type !== ClarityType.PrincipalStandard ||
+      tuple.data.ustx?.type !== ClarityType.UInt ||
+      tuple.data.memo?.type !== ClarityType.Buffer
+    ) {
+      throw new InvalidTransactionError("function args don't match send-many-memo type declaration");
+    }
+    return {
+      address: cvToString(tuple.data.to),
+      amount: cvToValue(tuple.data.ustx, true),
+      memo: tuple.data.memo.buffer.toString('ascii'),
+    };
+  });
 }

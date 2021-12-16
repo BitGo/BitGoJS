@@ -11,7 +11,7 @@ import {
   toBuffer,
 } from 'ethereumjs-utils-old';
 import { generateAddress2 } from 'ethereumjs-util';
-import { BaseCoin, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
+import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
 import * as BN from 'bn.js';
@@ -479,10 +479,12 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
  * @param tokenContractAddress The contract address to match against
  * @returns statics BaseCoin object for the matching token
  */
-export function getToken(tokenContractAddress: string): Readonly<BaseCoin> | undefined {
+export function getToken(tokenContractAddress: string, network: BaseNetwork): Readonly<BaseCoin> | undefined {
   const tokens = coins.filter((coin) => {
     if (coin instanceof ContractAddressDefinedToken) {
-      return coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase();
+      return (
+        coin.network.type === network.type && coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
+      );
     }
     return false;
   });

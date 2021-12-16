@@ -48,3 +48,9 @@ export interface AddressDetails {
   address: string;
   memoId?: string;
 }
+
+export interface SendParams {
+  address: string;
+  amount: string;
+  memo?: string;
+}
