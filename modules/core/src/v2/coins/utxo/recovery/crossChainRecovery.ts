@@ -69,7 +69,13 @@ export interface RecoveryTxInfo {
   changeOutputs: any[];
   minerFee: number;
   payGoFee: number;
-  unspents: any[];
+  unspents: {
+    id: string;
+    chain: number;
+    index: number;
+    value: number;
+    address: string;
+  }[];
 }
 
 export interface HalfSignedRecoveryTx {
@@ -79,7 +85,7 @@ export interface HalfSignedRecoveryTx {
 
 export interface CrossChainRecoveryUnsigned {
   txHex: string;
-  txInfo?: RecoveryTxInfo;
+  txInfo: RecoveryTxInfo;
   walletId: string;
   feeInfo: unknown;
   address: string;
