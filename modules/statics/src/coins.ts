@@ -27,7 +27,9 @@ import { utxo } from './utxo';
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
+const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
+  feature => feature !== CoinFeature.CUSTODY
+);
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];

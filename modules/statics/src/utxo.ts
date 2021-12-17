@@ -13,7 +13,11 @@ export interface UtxoConstructorOptions {
 }
 
 export class UtxoCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [CoinFeature.UNSPENT_MODEL, CoinFeature.CHILD_PAYS_FOR_PARENT];
+  public static readonly DEFAULT_FEATURES = [
+    CoinFeature.UNSPENT_MODEL,
+    CoinFeature.CHILD_PAYS_FOR_PARENT,
+    CoinFeature.CUSTODY,
+  ];
 
   /**
    * Additional fields for utxo coins
