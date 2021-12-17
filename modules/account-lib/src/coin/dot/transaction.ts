@@ -104,6 +104,7 @@ export class Transaction extends BaseTransaction {
       registry: this._registry,
     }) as unknown as DecodedTx;
 
+    // blockNumber and transactionVersion will be zero if they are not part of the metadata
     const result: TxData = {
       id: construct.txHash(this.toBroadcastFormat()),
       sender: decodedTx.address,

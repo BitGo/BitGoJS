@@ -166,6 +166,24 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
+    it('should build from raw signed tx without extra metadata', async () => {
+      builder.from(DotResources.rawTx.transfer.signed);
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.amount, '1000000000000');
+      should.deepEqual(txJson.to, receiver.address);
+      should.deepEqual(txJson.sender, sender.address);
+      should.deepEqual(txJson.blockNumber, 0);
+      should.deepEqual(txJson.referenceBlock, undefined);
+      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
+      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.nonce, 200);
+      should.deepEqual(txJson.tip, 0);
+      should.deepEqual(txJson.transactionVersion, 0);
+      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.eraPeriod, 64);
+    });
+
     it('should build from raw unsigned tx', async () => {
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
