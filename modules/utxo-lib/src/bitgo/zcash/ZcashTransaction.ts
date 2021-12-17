@@ -34,10 +34,7 @@ export function getDefaultConsensusBranchIdForVersion(version: number): number {
     case 3:
       return 0x5ba81b19;
     case 4:
-      // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
-      // 4: 0x2bb40e60
-      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      return 0xe9ff75a6; // (Canopy branch id, see https://zips.z.cash/zip-0251)
+      return 0x37519621; // NU5 branch id, see https://zips.z.cash/zip-0252
   }
   throw new Error(`no consensusBranchId for ${version}`);
 }
