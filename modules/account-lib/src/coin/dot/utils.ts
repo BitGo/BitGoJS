@@ -187,6 +187,16 @@ export class Utils implements BaseUtils {
   encodeDotAddress(address: string, ss58Format?: number): string {
     return encodeAddress(address, ss58Format);
   }
+
+  /**
+   * Retrieves the txHash of a signed txHex
+   *
+   * @param txHex signed transaction hex
+   * @returns {string}
+   */
+  getTxHash(txHex: string): string {
+    return construct.txHash(txHex);
+  }
 }
 
 const utils = new Utils();

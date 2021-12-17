@@ -1,7 +1,7 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
-import { KeyPair, Transaction, TransferBuilder } from '../../../../src/coin/dot';
+import { KeyPair, Transaction, TransferBuilder, Utils } from '../../../../src/coin/dot';
 import { TxData } from '../../../../src/coin/dot/iface';
 import * as DotResources from '../../../resources/dot';
 import { buildTestConfig } from './transactionBuilder/base';
@@ -53,6 +53,14 @@ describe('Dot Transaction', () => {
     it('can sign', () => {
       tx.sender(DotResources.accounts.account2.address);
       should.deepEqual(tx.canSign({ key: DotResources.accounts.account2.secretKey }), true);
+    });
+
+    it('can generate valid txHash from signed transaction', () => {
+      const signedTx = DotResources.rawTx.transfer.westendSigned2;
+      const txHash = Utils.default.getTxHash(signedTx);
+      const expectedHash = '0x252e9b53c1d068c275ef4c9b5afcffb2df42859203be1305d148c0c1441a5b20';
+
+      txHash.should.equal(expectedHash);
     });
   });
 
