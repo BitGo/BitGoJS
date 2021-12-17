@@ -1,64 +1,38 @@
-import { Keypair as SolKeypair, PublicKey } from '@solana/web3.js';
-import nacl from 'tweetnacl';
-import { BaseKeyPair } from '../baseCoin';
-import { InvalidKey } from '../baseCoin/errors';
-import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
-import { SEED_LENGTH } from './constants';
+import { Keypair as SolKeypair } from '@solana/web3.js';
+import { Ed25519KeyPair } from '../baseCoin';
+import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
 import { SolanaKeys } from './iface';
-import { base58ToUint8Array, isValidPrivateKey, isValidPublicKey, Uint8ArrayTobase58 } from './utils';
+import { base58ToUint8Array, Uint8ArrayTobase58 } from './utils';
 
-// The Solana Key Pair is an ED25519 but the current ED25519 implementation doesnt return base58 strings
-// TODO(): Refactor to ED25519 Keypair instead of BaseKeyPair
-export class KeyPair implements BaseKeyPair {
+export class KeyPair extends Ed25519KeyPair {
   protected keyPair: DefaultKeys;
   protected source?: KeyPairOptions;
+
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
    * @param { KeyPairOptions } source Either a master seed, a private key, or a public key
    */
   constructor(source?: KeyPairOptions) {
-    let kp: SolKeypair;
-    if (!source) {
-      kp = SolKeypair.generate();
-      this.setKP(kp);
-    } else if (isSeed(source)) {
-      kp = SolKeypair.fromSeed(source.seed.slice(0, SEED_LENGTH));
-      this.setKP(kp);
-    } else if (isPrivateKey(source)) {
-      this.recordKeysFromPrivateKey(source.prv);
-    } else if (isPublicKey(source)) {
-      this.recordKeysFromPublicKey(source.pub);
-    } else {
-      throw new Error('Invalid key pair options');
-    }
+    super(source);
   }
 
-  private setKP(keyPair: SolKeypair): void {
-    this.keyPair = {
-      prv: Uint8ArrayTobase58(keyPair.secretKey),
-      pub: keyPair.publicKey.toString(),
+  /** @inheritdoc */
+  recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
+    const prvKey = base58ToUint8Array(prv);
+    const keyPair = SolKeypair.fromSecretKey(prvKey);
+
+    return {
+      pub: keyPair.publicKey.toBuffer().toString('hex'),
+      prv: Buffer.from(keyPair.secretKey.slice(0, 32)).toString('hex'),
     };
   }
 
   /** @inheritdoc */
-  recordKeysFromPrivateKey(prv: string): void {
-    if (isValidPrivateKey(prv)) {
-      const prvKey = base58ToUint8Array(prv);
-      const keyPair = SolKeypair.fromSecretKey(prvKey);
-      this.setKP(keyPair);
-    } else {
-      throw new InvalidKey('Invalid private key');
-    }
-  }
-
-  /** @inheritdoc */
-  recordKeysFromPublicKey(pub: string): void {
-    if (isValidPublicKey(pub)) {
-      this.keyPair = { pub };
-    } else {
-      throw new InvalidKey('Invalid public key: ' + pub);
-    }
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    return {
+      pub: Buffer.from(base58ToUint8Array(pub)).toString('hex'),
+    };
   }
 
   /**
@@ -68,12 +42,21 @@ export class KeyPair implements BaseKeyPair {
    * @returns {SolanaKeys} The keys in the defined format
    */
   getKeys(raw = false): SolanaKeys {
-    const result: SolanaKeys = { pub: this.keyPair.pub };
+    // keys are originally created in hex, but we need base58
+    const publicKeyBuffer = Buffer.from(this.keyPair.pub, 'hex');
+    const base58Pub = Uint8ArrayTobase58(publicKeyBuffer);
+
+    const result: SolanaKeys = { pub: base58Pub };
     if (!!this.keyPair.prv) {
+      const secretKeyBuffer = Buffer.from(this.keyPair.prv, 'hex');
+      const solanaSecretKey = new Uint8Array(64);
+      solanaSecretKey.set(secretKeyBuffer);
+      solanaSecretKey.set(publicKeyBuffer, 32);
+
       if (raw) {
-        result.prv = base58ToUint8Array(this.keyPair.prv);
+        result.prv = solanaSecretKey;
       } else {
-        result.prv = this.keyPair.prv;
+        result.prv = Uint8ArrayTobase58(solanaSecretKey);
       }
     }
     return result;
@@ -83,40 +66,5 @@ export class KeyPair implements BaseKeyPair {
   getAddress(): string {
     const keys = this.getKeys();
     return keys.pub;
-  }
-
-  /**
-   * Generates a signature for an arbitrary string with the current private key using the ed25519 public-key signature
-   * system.
-   *
-   * @param {string} message to produce a signature for
-   * @returns {Uint8Array} The signature produced for the message
-   * @throws if there is no private key
-   */
-  signMessage(message: string): Uint8Array {
-    const messageToSign = new Uint8Array(Buffer.from(message));
-    const { prv } = this.keyPair;
-    if (!prv) {
-      throw new Error('Missing private key');
-    }
-    return nacl.sign.detached(messageToSign, base58ToUint8Array(prv));
-  }
-
-  /**
-   * Verifies a message signature using the current public key.
-   *
-   * @param {string} message signed
-   * @param {Uint8Array} signature to verify
-   * @returns {boolean} True if the message was signed with the current key pair
-   */
-  verifySignature(message: Uint8Array | string, signature: Uint8Array): boolean {
-    let messageToVerify;
-    if (typeof message === 'string') {
-      messageToVerify = new Uint8Array(Buffer.from(message));
-    } else {
-      messageToVerify = message;
-    }
-    const pub = new PublicKey(this.keyPair.pub);
-    return nacl.sign.detached.verify(messageToVerify, signature, pub.toBuffer());
   }
 }

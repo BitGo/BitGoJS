@@ -202,7 +202,7 @@ describe('Sol Transaction Builder', async () => {
     const invalidKey = { key: testData.authAccount.pub };
     for (const builder of builders) {
       should.doesNotThrow(() => builder.validateKey(validKey));
-      should(() => builder.validateKey(invalidKey)).throwError('Invalid private key');
+      should(() => builder.validateKey(invalidKey)).throwError('Invalid key');
     }
   });
 

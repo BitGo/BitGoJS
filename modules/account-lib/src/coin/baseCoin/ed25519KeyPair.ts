@@ -67,7 +67,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   abstract recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys;
 
-  abstract recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys;
+  abstract recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys;
 
   /** @inheritdoc */
   abstract getAddress(format?: AddressFormat): string;
