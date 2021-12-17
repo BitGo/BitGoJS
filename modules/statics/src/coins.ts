@@ -6,8 +6,6 @@ import {
   hederaCoin,
   stellarToken,
   talgoToken,
-  avaxErc20,
-  tavaxErc20,
   tceloToken,
   terc20,
   tronToken,
@@ -1135,66 +1133,4 @@ export const coins = CoinMap.fromCoins([
   teosToken('teos:IQ', 'Everipedia', 3, 'testtoken112', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
   teosToken('teos:BOX', 'Box', 6, 'kvszn1xyz1bu', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
   teosToken('teos:USDT', 'Tether', 4, 'lionteste212', UnderlyingAsset.USDT, AccountCoin.DEFAULT_FEATURES, '', 'USDT'),
-  avaxErc20('avaxc:QI', 'BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:QI']),
-  avaxErc20('avaxc:XAVA', 'Avalaunch', 18, '0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4', UnderlyingAsset['avaxc:XAVA']),
-  avaxErc20('avaxc:KLO', 'Kalao', 18, '0xb27c8941a7df8958a1778c0259f76d1f8b711c35', UnderlyingAsset['avaxc:KLO']),
-  avaxErc20('avaxc:JOE', 'Trader Joe', 18, '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd', UnderlyingAsset['avaxc:JOE']),
-  avaxErc20('avaxc:PNG', 'Pangolin', 18, '0x60781c2586d68229fde47564546784ab3faca982', UnderlyingAsset['avaxc:PNG']),
-  avaxErc20(
-    'avaxc:USDT.E',
-    'Tether USD',
-    6,
-    '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
-  ),
-  avaxErc20(
-    'avaxc:USDC.E',
-    'USD Coin',
-    6,
-    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
-  ),
-  tavaxErc20('tavaxc:QI', 'Test BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:QI']),
-  tavaxErc20(
-    'tavaxc:XAVA',
-    'Test Avalaunch',
-    18,
-    '0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4',
-    UnderlyingAsset['avaxc:XAVA']
-  ),
-  tavaxErc20(
-    'tavaxc:KLO',
-    'Test Kalao',
-    18,
-    '0xb27c8941a7df8958a1778c0259f76d1f8b711c35',
-    UnderlyingAsset['avaxc:KLO']
-  ),
-  tavaxErc20(
-    'tavaxc:JOE',
-    'Test Trader Joe',
-    18,
-    '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
-    UnderlyingAsset['avaxc:JOE']
-  ),
-  tavaxErc20(
-    'tavaxc:PNG',
-    'Test Pangolin',
-    18,
-    '0x60781c2586d68229fde47564546784ab3faca982',
-    UnderlyingAsset['avaxc:PNG']
-  ),
-  tavaxErc20(
-    'tavaxc:USDT.E',
-    'Test Tether USD',
-    6,
-    '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
-  ),
-  tavaxErc20(
-    'tavaxc:USDC.E',
-    'Test USD Coin',
-    6,
-    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
-  ),
 ]);

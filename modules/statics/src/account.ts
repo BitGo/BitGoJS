@@ -255,16 +255,6 @@ export class SolCoin extends AccountCoinToken {
 }
 
 /**
- * The AVAX C Chain network support tokens
- * AVAX C Chain Tokens are ERC20 coins
- */
-export class AvaxERC20Token extends ContractAddressDefinedToken {
-  constructor(options: Erc20ConstructorOptions) {
-    super(options);
-  }
-}
-
-/**
  * Factory function for account coin instances.
  *
  * @param name unique identifier of the coin
@@ -897,87 +887,4 @@ export function tsolToken(
   network: AccountNetwork = Networks.test.sol
 ) {
   return solToken(name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
-}
-
-/**
- * Factory function for avaxErc20 token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractAddress Contract address of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to AvalancheC main network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
- */
-export function avaxErc20(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.avalancheC,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
-) {
-  return Object.freeze(
-    new AvaxERC20Token({
-      name,
-      fullName,
-      network,
-      contractAddress,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-    })
-  );
-}
-
-/**
- * Factory function for testnet avaxErc20 token instances.
- *
- * @param name unique identifier of the token
- * @param fullName Complete human-readable name of the token
- * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractAddress Contract address of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the AvalancheC test network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
- */
-export function tavaxErc20(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.avalancheC,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
-) {
-  return avaxErc20(
-    name,
-    fullName,
-    decimalPlaces,
-    contractAddress,
-    asset,
-    features,
-    prefix,
-    suffix,
-    network,
-    primaryKeyCurve
-  );
 }
