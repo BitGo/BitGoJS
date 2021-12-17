@@ -60,7 +60,7 @@ describe('Dot Transaction', () => {
       const txHash = Utils.default.getTxHash(signedTx);
       const expectedHash = '0x252e9b53c1d068c275ef4c9b5afcffb2df42859203be1305d148c0c1441a5b20';
 
-      txHash.should.equal(expectedHash);
+      expectedHash.should.equal(txHash);
     });
   });
 
