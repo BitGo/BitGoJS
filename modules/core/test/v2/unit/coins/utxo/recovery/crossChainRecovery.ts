@@ -1,15 +1,19 @@
 /**
  * @prettier
  */
+import * as assert from 'assert';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import * as config from '../../../../../../src/config';
 import { Triple } from '../../../../../../src';
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
-import { CrossChainRecoverySigned } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
+import {
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+} from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import {
   getFixture,
@@ -130,6 +134,18 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
       depositTx = getDepositTransaction();
     });
 
+    function getRecoveryUnspents(): WalletUnspent[] {
+      return [
+        {
+          id: depositTx.getId(),
+          address: depositAddressSourceCoin.address,
+          chain: depositAddressSourceCoin.chain as utxolib.bitgo.ChainCode,
+          index: depositAddressSourceCoin.index,
+          value: depositTx.outs[0].value,
+        },
+      ];
+    }
+
     before('setup nocks', function () {
       nocks.push(...nockWallet(recoveryCoin, recoveryWalletId, keychainsBase58));
       nocks.push(nockWalletAddress(recoveryCoin, recoveryWalletId, depositAddressRecoveryCoin));
@@ -147,38 +163,69 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
     });
 
     let signedRecovery: CrossChainRecoverySigned;
+    let unsignedRecovery: CrossChainRecoveryUnsigned;
+
     before('create recovery transaction', async function () {
-      signedRecovery = (await sourceCoin.recoverFromWrongChain({
+      const params = {
         recoveryCoin,
         txid: depositTx.getId(),
         recoveryAddress,
         wallet: recoveryWalletId,
+      };
+
+      signedRecovery = (await sourceCoin.recoverFromWrongChain({
+        ...params,
         xprv: keychainsBase58[0].prv,
       })) as CrossChainRecoverySigned;
+
+      unsignedRecovery = (await sourceCoin.recoverFromWrongChain({
+        ...params,
+        signed: false,
+      })) as CrossChainRecoveryUnsigned;
     });
 
-    it('should match fixture', async function () {
-      const signedRecoveryObj = {
-        ...signedRecovery,
-        tx: transactionHexToObj(signedRecovery.txHex as string, sourceCoin.network),
-      };
-      shouldEqualJSON(
-        signedRecoveryObj,
-        await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}`, signedRecoveryObj)
-      );
-    });
-
-    it('should have valid signatures', function () {
-      const tx = utxolib.bitgo.createTransactionFromBuffer(
-        Buffer.from(signedRecovery.txHex as string, 'hex'),
-        sourceCoin.network
-      );
-
-      should.equal(tx.ins.length, depositTx.outs.length);
-
-      tx.ins.forEach((input, i) => {
-        utxolib.bitgo.verifySignature(tx, i, depositTx.outs[i].value, {}, depositTx.outs).should.eql(true);
+    function testMatchFixture(name: string, getRecoveryResult: () => { txHex: string }) {
+      it(`should match fixture (${name})`, async function () {
+        const recovery = getRecoveryResult();
+        const recoveryObj = {
+          ...recovery,
+          tx: transactionHexToObj(recovery.txHex as string, sourceCoin.network),
+        };
+        shouldEqualJSON(
+          recoveryObj,
+          await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}-${name}`, recoveryObj)
+        );
       });
+    }
+
+    testMatchFixture('signed', () => signedRecovery as { txHex: string });
+    testMatchFixture('unsigned', () => unsignedRecovery);
+
+    function checkRecoveryTransactionSignature(tx: string | utxolib.bitgo.UtxoTransaction) {
+      if (typeof tx === 'string') {
+        tx = utxolib.bitgo.createTransactionFromBuffer(Buffer.from(tx, 'hex'), sourceCoin.network);
+      }
+      const unspents = getRecoveryUnspents();
+      should.equal(tx.ins.length, unspents.length);
+      tx.ins.forEach((input, i) => {
+        assert(typeof tx !== 'string');
+        utxolib.bitgo
+          .verifySignatureWithUnspent(tx, i, getRecoveryUnspents(), walletKeys)
+          .should.eql([true, false, false]);
+      });
+    }
+
+    it('should have valid signatures for signed recovery', function () {
+      checkRecoveryTransactionSignature(signedRecovery.txHex as string);
+    });
+
+    it('should be signable for unsigned recovery', async function () {
+      const signedTx = await sourceCoin.signTransaction({
+        txPrebuild: unsignedRecovery,
+        prv: keychainsBase58[0].prv,
+        pubs: keychainsBase58.map((k) => k.pub) as Triple<string>,
+      });
+      checkRecoveryTransactionSignature((signedTx as { txHex: string }).txHex);
     });
   });
 }

@@ -95,9 +95,9 @@ export function toOutputScriptAndFormat(
 
 /**
  * Same as `toOutputScriptAndFormat`, only returning script
- * @param address
- * @param network
- * @param formats
+ * @param address - {@see toOutputScriptAndFormat}
+ * @param network - {@see toOutputScriptAndFormat}
+ * @param formats - {@see toOutputScriptAndFormat}
  * @return parsed output script
  */
 export function toOutputScriptTryFormats(address: string, network: Network, formats?: AddressFormat[]): Buffer {
