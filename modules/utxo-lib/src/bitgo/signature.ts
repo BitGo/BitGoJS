@@ -387,6 +387,18 @@ export function parseSignatureScript2Of3(input: TxInput): ParsedSignatureScript2
 }
 
 /**
+ * @param v - UtxoTransaction or TxInput
+ * @return true iff input has a placeholder signature
+ * @throws Error if input cannot be parsed as 2-of-3 input
+ */
+export function hasPlaceholderSignatures(v: UtxoTransaction | TxInput): boolean {
+  if (v instanceof UtxoTransaction) {
+    return v.ins.some((i) => hasPlaceholderSignatures(i));
+  }
+  return parseSignatureScript2Of3(v).signatures.some((s) => isPlaceholderSignature(s));
+}
+
+/**
  * Constraints for signature verifications.
  * Parameters are conjunctive: if multiple parameters are set, a verification for an individual
  * signature must satisfy all of them.

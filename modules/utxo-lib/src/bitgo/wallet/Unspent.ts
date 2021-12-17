@@ -1,8 +1,9 @@
+import * as bip32 from 'bip32';
 import { Network } from '../..';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { createOutputScript2of3, scriptTypeForChain } from '../outputScripts';
 import { toOutputScript } from '../../address';
-import { signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
+import { hasPlaceholderSignatures, signInput2Of3, verifySignatureWithPublicKeys } from '../signature';
 import { WalletUnspentSigner } from './WalletUnspentSigner';
 import { RootWalletKeys } from './WalletKeys';
 import { UtxoTransaction } from '../UtxoTransaction';
@@ -63,6 +64,39 @@ export function verifySignatureWithUnspent(
     unspents.map((u) => toOutput(u, tx.network)),
     walletKeys.deriveForChainAndIndex(unspent.chain, unspent.index).publicKeys
   ) as Triple<boolean>;
+}
+
+/**
+ * @param tx
+ * @param unspents
+ * @param walletKeys
+ * @param verifyKeys - if set, only considers transactions signatures by one of the provided pairs
+ * @param ignoreUnspents - skip validation for these unspents (assume valid)
+ * @return true iff every transaction input has two or more signatures by verifyKeys and no placeholder signatures
+ */
+export function isFullSignedTransaction(
+  tx: UtxoTransaction,
+  unspents: Unspent[],
+  walletKeys: RootWalletKeys,
+  verifyKeys: bip32.BIP32Interface[] = walletKeys.triple,
+  { ignoreUnspents = [] }: { ignoreUnspents?: Unspent[] } = {}
+): boolean {
+  if (tx.ins.length !== unspents.length) {
+    throw new Error(`input length must match unspents length`);
+  }
+  return unspents.every((u, i) => {
+    if (ignoreUnspents.includes(u)) {
+      return true;
+    }
+    if (hasPlaceholderSignatures(tx.ins[i])) {
+      return false;
+    }
+    return (
+      verifySignatureWithUnspent(tx, i, unspents, walletKeys).filter(
+        (v, i) => v && verifyKeys.includes(walletKeys.triple[i])
+      ).length > 1
+    );
+  });
 }
 
 /**

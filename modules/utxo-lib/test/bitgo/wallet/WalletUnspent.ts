@@ -18,6 +18,7 @@ import {
   unspentSum,
   getWalletAddress,
   verifySignatureWithUnspent,
+  isFullSignedTransaction,
 } from '../../../src/bitgo';
 
 import { getDefaultWalletKeys } from '../../testutil';
@@ -86,6 +87,28 @@ describe('WalletUnspent', function () {
             walletKeys.triple.map((k) => k === walletKeys[signer] || (nSignature === 1 && k === walletKeys[cosigner]))
           );
         });
+
+        assert.deepStrictEqual(isFullSignedTransaction(tx, unspents, walletKeys), nSignature === 1);
+
+        /* wallet signer and wallet cosigner */
+        assert.deepStrictEqual(
+          isFullSignedTransaction(tx, unspents, walletKeys, [walletSigner.signer, walletSigner.cosigner]),
+          nSignature === 1
+        );
+
+        /* signature by non-signer is ignored */
+        const nonSigner = walletKeys.triple.find((k) => k !== walletSigner.signer && k !== walletSigner.cosigner);
+        assert.strict(nonSigner, `could not find non-signer`);
+        assert.deepStrictEqual(
+          isFullSignedTransaction(tx, unspents, walletKeys, [walletSigner.signer, nonSigner]),
+          false
+        );
+
+        /* buildIncomplete() only produces a full-signed transaction (without placeholders) for 2 p2tr signatures */
+        assert.deepStrictEqual(
+          isFullSignedTransaction(txb.buildIncomplete(), unspents, walletKeys),
+          nSignature === 1 && scriptType === 'p2tr'
+        );
       });
     });
   }
