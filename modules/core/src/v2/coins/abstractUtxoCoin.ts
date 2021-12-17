@@ -48,7 +48,7 @@ import {
   TransactionRecipient,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyTransactionOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   HalfSignedUtxoTransaction,
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
@@ -93,9 +93,15 @@ export interface TransactionExplanation extends BaseTransactionExplanation<strin
   signatures: number;
 }
 
+export interface TransactionInfo {
+  txHexes?: Record<string, string>;
+  changeAddresses?: string[];
+  unspents: Unspent[];
+}
+
 export interface ExplainTransactionOptions {
   txHex: string;
-  txInfo?: { changeAddresses?: string[]; unspents: Unspent[] };
+  txInfo?: TransactionInfo;
   feeInfo?: string;
   pubs?: Triple<string>;
 }
@@ -103,7 +109,7 @@ export interface ExplainTransactionOptions {
 export type UtxoNetwork = utxolib.Network;
 
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txInfo?: any;
+  txInfo?: TransactionInfo;
   blockHeight?: number;
 }
 
@@ -167,17 +173,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
   /** Transaction prebuild from bitgo server */
   txPrebuild: {
     txHex: string;
-    txInfo: {
-      unspents: {
-        id: string;
-        chain?: number;
-        index?: number;
-        value: number;
-        address: string;
-        redeemScript?: string;
-        witnessScript?: string;
-      }[];
-    };
+    txInfo: TransactionInfo;
   };
   /** xprv of user key or backup key */
   prv: string;
@@ -226,6 +222,10 @@ export interface VerifyUserPublicKeyOptions {
   userKeychain?: Keychain;
   disableNetworking: boolean;
   txParams: TransactionParams;
+}
+
+export interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild;
 }
 
 export interface UnspentParams {
@@ -824,7 +824,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const inputs = await Promise.all(
       transaction.ins.map(async (currentInput) => {
         const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
-        const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
+        const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
         if (txHex) {
           const localTx = this.createTransactionFromHex(txHex);
           if (localTx.getId() !== transactionId) {
@@ -1087,7 +1087,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
-      txPrebuild.txInfo.unspents as Unspent[],
+      txPrebuild.txInfo.unspents,
       new WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
