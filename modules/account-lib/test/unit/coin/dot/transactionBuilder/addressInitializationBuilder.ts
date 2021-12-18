@@ -58,12 +58,12 @@ describe('Dot Add Proxy Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
-      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(txJson.specVersion, 9130);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -86,12 +86,12 @@ describe('Dot Add Proxy Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
-      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(txJson.specVersion, 9130);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -109,12 +109,12 @@ describe('Dot Add Proxy Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
-      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(txJson.specVersion, 9130);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -133,13 +133,13 @@ describe('Dot Add Proxy Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
-      should.deepEqual(txJson.specVersion, 9100);
+      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(txJson.specVersion, 9130);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Polkadot');
+      should.deepEqual(txJson.chainName, 'Westend');
     });
   });
 });

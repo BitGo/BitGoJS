@@ -66,7 +66,7 @@ describe('Dot Transaction', () => {
 
   describe('should build from raw unsigned tx', async () => {
     it('Transaction size validation', async () => {
-      const builder = new TransferBuilder(coins.get('dot'));
+      const builder = new TransferBuilder(coins.get('tdot'));
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })

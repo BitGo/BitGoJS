@@ -9,17 +9,17 @@ import {
   UnstakeBuilder,
 } from '../../../../../src/coin/dot';
 import * as dotResources from '../../../../resources/dot';
-import { TestDotNetwork, TEST_NETWORK_DATA } from './base';
+import { TestDotNetwork } from './base';
 
 class StubTransactionBuilderFactory extends TransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
-    const testNetwork = { ..._coinConfig.network, ...TEST_NETWORK_DATA } as TestDotNetwork;
+    const testNetwork = { ..._coinConfig.network } as TestDotNetwork;
     super({ ..._coinConfig, network: testNetwork });
   }
 }
 
 describe('dot Transaction Builder Factory', () => {
-  const factory = register('dot', StubTransactionBuilderFactory);
+  const factory = register('tdot', StubTransactionBuilderFactory);
   const { rawTx } = dotResources;
   const sender = dotResources.accounts.account1;
   const sender2 = dotResources.accounts.account3;

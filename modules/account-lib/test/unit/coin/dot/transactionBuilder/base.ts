@@ -13,21 +13,8 @@ export interface TestDotNetwork extends DotNetwork {
   metadataRpc: string;
 }
 
-export const TEST_NETWORK_DATA = {
-  specVersion: 9100,
-  genesisHash: '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349',
-  metadataRpc: DotResources.testnetMetadataRpc,
-};
-
 export const buildTestConfig = (): Readonly<CoinConfig> => {
-  const config = coins.get('dot');
-  return {
-    ...config,
-    network: {
-      ...config.network,
-      ...TEST_NETWORK_DATA,
-    },
-  };
+  return coins.get('tdot');
 };
 
 class StubTransactionBuilder extends TransactionBuilder {
@@ -178,10 +165,10 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build a base transaction on testnet', async () => {
-      should.deepEqual(builder.getSpecName(), 'polkadot');
-      should.deepEqual(builder.getGenesisHash(), '0x2b8d4fdbb41f4bc15b8a7ec8ed0687f2a1ae11e0fc2dc6604fa962a9421ae349');
-      should.deepEqual(builder.getSpecVersion(), 9100);
-      should.deepEqual(builder.getChainName(), 'Polkadot');
+      should.deepEqual(builder.getSpecName(), 'westend');
+      should.deepEqual(builder.getGenesisHash(), '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(builder.getSpecVersion(), 9130);
+      should.deepEqual(builder.getChainName(), 'Westend');
     });
 
     it('should build from raw signed tx', async () => {
