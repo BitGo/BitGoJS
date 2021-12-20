@@ -442,7 +442,7 @@ class TrxTestnet extends Testnet implements TronNetwork {
 class Xrp extends Mainnet implements AccountNetwork {
   name = 'Xrp';
   family = CoinFamily.XRP;
-  explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
+  explorerUrl = 'https://livenet.xrpl.org/transactions/';
 }
 
 class XrpTestnet extends Testnet implements AccountNetwork {
