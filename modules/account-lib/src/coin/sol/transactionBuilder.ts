@@ -225,7 +225,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    const keyPair = new KeyPair({ prv: key.key });
+    let keyPair: KeyPair;
+    try {
+      keyPair = new KeyPair({ prv: key.key });
+    } catch {
+      throw new BuildTransactionError('Invalid key');
+    }
+
     if (!keyPair.getKeys().prv) {
       throw new BuildTransactionError('Invalid key');
     }
