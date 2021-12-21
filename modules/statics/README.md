@@ -23,7 +23,7 @@ const btc = coins.get('btc');
 console.log(btc.decimalPlaces);
 ```
 
-####typescript
+#### TypeScript
 ```typescript
 import { coins } from '@bitgo/statics';
 
@@ -41,7 +41,7 @@ const omg = coins.get('omg');
 console.log(omg.contractAddress);
 ```
 
-####typescript
+#### TypeScript
 ```typescript
 import { coins, Erc20Coin } from '@bitgo/statics';
 
@@ -62,7 +62,7 @@ coins.forEach((coin) => {
 });
 ```
 
-####typescript
+#### TypeScript
 ```typescript
 import { coins } from '@bitgo/statics';
 
