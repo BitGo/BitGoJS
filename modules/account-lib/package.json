@@ -70,6 +70,7 @@
     "hi-base32": "^0.5.1",
     "joi": "^17.4.0",
     "libsodium-wrappers": "^0.7.6",
+    "libsodium-wrappers-sumo": "^0.7.9",
     "lodash": "^4.17.15",
     "long": "^4.0.0",
     "protobufjs": "^6.8.9",
