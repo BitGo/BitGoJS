@@ -152,7 +152,8 @@ export class Dimensions {
       this.nP2wshInputs +
       this.nP2trKeypathInputs +
       this.nP2trScriptPathLevel1Inputs +
-      this.nP2trScriptPathLevel2Inputs
+      this.nP2trScriptPathLevel2Inputs +
+      this.nP2shP2pkInputs
     );
   }
 

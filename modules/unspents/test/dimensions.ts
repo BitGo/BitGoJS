@@ -103,6 +103,12 @@ describe('Dimensions Arithmetic', function () {
     should.throws(() => Dimensions.sum({ outputs: { count: 1, size: 1 } }, { outputs: { count: 1, size: 0 } }));
   });
 
+  it('counts inputs correctly', function () {
+    Object.entries(Dimensions.SingleInput).forEach(([key, value]) => {
+      value.nInputs.should.eql(1, key);
+    });
+  });
+
   it('multiplies correctly', function () {
     const d = new Dimensions({
       nP2shInputs: 1,
@@ -128,8 +134,8 @@ describe('Dimensions Arithmetic', function () {
       })
     );
 
-    d.getNInputs().should.eql(63);
-    d.nInputs.should.eql(63);
+    d.getNInputs().should.eql(84);
+    d.nInputs.should.eql(84);
   });
 });
 
