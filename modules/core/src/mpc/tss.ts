@@ -34,7 +34,6 @@ import Ed25519Curve from './curves';
 import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
-import * as BigNum from 'bn.js';
  
 const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) => {
   const result: any = object;
@@ -131,19 +130,19 @@ const Eddsa = async () => {
  
     const zeroBuffer32 = Buffer.alloc(32);
     uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
-    const u = ed25519.scalarReduce(new BigNum(uBuffer));
-    const y = ed25519.basePointMult(u);
+    const u = Buffer.from(ed25519.scalarReduce(uBuffer));
+    const y = Buffer.from(ed25519.basePointMult(u));
     const split_u = shamir.split(u, threshold, numShares);
  
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
-    const prefix = ed25519.scalarReduce(new BigNum(prefixBuffer));
+    const prefix = Buffer.from(ed25519.scalarReduce(prefixBuffer));
  
     const P_i: UShare = {
       i: index.toString(),
-      y: y.toString(16),
-      u: split_u[index.toString()].toString(16),
-      prefix: prefix.toString(16),
+      y: y.toString('hex'),
+      u: split_u[index.toString()].toString('hex'),
+      prefix: prefix.toString('hex'),
     };
     const shares: KeyShare = {
       uShare: P_i,
@@ -166,8 +165,8 @@ const Eddsa = async () => {
   const keyCombine = (uShare: UShare, distributedShares: YShare[]): KeyCombine => {
     // u-shares and y-shares required buffer format for curve functions
     const shares = [uShare, ...distributedShares].map((share) => convertObjectHexToBuffer(share, ['y', 'u']));
-    const yShares = shares.map((share) => new BigNum(share['y']));
-    const uShares = shares.map((share) => new BigNum(share['u']));
+    const yShares = shares.map((share) => share['y']);
+    const uShares = shares.map((share) => share['u']);
     const y = Buffer.from(yShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
     const x = Buffer.from(uShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
  
@@ -207,16 +206,16 @@ const Eddsa = async () => {
     const digest = Buffer.from(sha512.digest(combinedBuffer));
     digest.reverse();
  
-    const r = ed25519.scalarReduce(new BigNum(digest));
-    const R = ed25519.basePointMult(r);
+    const r = Buffer.from(ed25519.scalarReduce(digest));
+    const R = Buffer.from(ed25519.basePointMult(r));
     const split_r = shamir.split(r, shares.length, shares.length, indices);
  
     const P_i: XShare = {
       i: pShare['i'],
       y: pShare['y'],
       x: pShare['x'],
-      r: split_r[pShare['i']].toString(16),
-      R: R.toString(16),
+      r: split_r[pShare['i']].toString('hex'),
+      R: R.toString('hex'),
     };
  
     const resultShares: SignShare = {
@@ -229,8 +228,8 @@ const Eddsa = async () => {
       resultShares.rShares[S_j['i']] = {
         i: S_j['i'],
         j: pShare['i'],
-        r: split_r[S_j['i']].toString(16),
-        R: R.toString(16),
+        r: split_r[S_j['i']].toString('hex'),
+        R: R.toString('hex'),
       };
     }
     return resultShares;
@@ -245,13 +244,13 @@ const Eddsa = async () => {
     const littleRShares = shares.map((share) => share['r']);
  
     const R = Buffer.from(rShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
-    const r = littleRShares.reduce((partial, share) => ed25519.scalarAdd(partial, share));
+    const r = Buffer.from(littleRShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
  
     const combinedBuffer = Buffer.concat([R, Buffer.from(S_i['y'], 'hex'), message]);
-    const digest = sha512.digest(combinedBuffer);
-    const k = ed25519.scalarReduce(new BigNum(digest));
+    const digest = Buffer.from(sha512.digest(combinedBuffer));
+    const k = Buffer.from(ed25519.scalarReduce(digest));
  
-    const gamma = Buffer.from(ed25519.scalarAdd(r, ed25519.scalarMult(k, new BigNum(S_i['x']))));
+    const gamma = Buffer.from(ed25519.scalarAdd(r, ed25519.scalarMult(k, Buffer.from(S_i['x'], 'hex'))));
     const result = {
       i: playerShare['i'],
       y: playerShare['y'],
@@ -270,24 +269,26 @@ const Eddsa = async () => {
     const resultShares = {};
     for (const ind in shares) {
       const S_i = shares[ind];
-      resultShares[S_i['i']] = new BigNum(S_i['gamma']);
+      resultShares[S_i['i']] = S_i['gamma'];
     }
-    const sigma: BigNum = shamir.combine(resultShares);
+    let sigma: Buffer = shamir.combine(resultShares);
+    sigma = Buffer.from(sigma);
     const result = {
       y: y.toString('hex'),
       R: R.toString('hex'),
-      sigma: sigma.toString(16),
+      sigma: sigma.toString('hex'),
     };
     return result;
   };
  
   const verify = (message: Buffer, signature: Signature): Buffer => {
+    const publicKey = Buffer.from(signature['y'], 'hex');
     const signedMessage = Buffer.concat([
       Buffer.from(signature['R'], 'hex'),
       Buffer.from(signature['sigma'], 'hex'),
       message,
     ]);
-    return Buffer.from(ed25519.verify(new BigNum(signature['y']), signedMessage));
+    return Buffer.from(ed25519.verify(publicKey, signedMessage));
   };
  
   return { keyShare, keyCombine, signShare, sign, signCombine, verify };
