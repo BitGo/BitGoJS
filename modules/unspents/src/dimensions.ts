@@ -48,25 +48,25 @@ export class OutputDimensions {
 
 interface FromInputParams {
   // In cases where the input type is ambiguous, we must provide a hint about spend script type.
-  assumeUnsigned?: symbol;
+  assumeUnsigned?: Dimensions;
 }
 
 export interface FromUnspentParams {
-  // The p2tr output type has multiple spend options and thus different weights per spend path.
-  p2trSpendType: 'keypath' | 'scriptpath-level1' | 'scriptpath-level2';
+  p2tr: {
+    scriptPathLevel?: number;
+  };
 }
+
+const defaultUnspentParams: FromUnspentParams = {
+  p2tr: {
+    scriptPathLevel: 1,
+  },
+};
 
 /**
  * Dimensions of a BitGo wallet transactions.
  */
 export class Dimensions {
-  static readonly ASSUME_P2SH = Symbol('assume-p2sh');
-  static readonly ASSUME_P2SH_P2WSH = Symbol('assume-p2sh-p2wsh');
-  static readonly ASSUME_P2WSH = Symbol('assume-p2wsh');
-  static readonly ASSUME_P2TR_KEYPATH = Symbol('assume-p2tr-keypath');
-  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Symbol('assume-p2tr-scriptpath-level1');
-  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Symbol('assume-p2tr-scriptpath-level2');
-
   /** Input counts for BitGo wallet multi-signature inputs */
   public readonly nP2shInputs: number = 0;
   public readonly nP2shP2wshInputs: number = 0;
@@ -204,67 +204,73 @@ export class Dimensions {
     return scriptLength + compactSize(scriptLength) + VirtualSizes.txOutputAmountSize;
   }
 
+  static readonly SingleInput = Object.freeze({
+    p2sh: Dimensions.sum({ nP2shInputs: 1 }),
+    p2shP2wsh: Dimensions.sum({ nP2shP2wshInputs: 1 }),
+    p2wsh: Dimensions.sum({ nP2wshInputs: 1 }),
+    p2trKeypath: Dimensions.sum({ nP2trKeypathInputs: 1 }),
+    p2trScriptPathLevel1: Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }),
+    p2trScriptPathLevel2: Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }),
+    p2shP2pk: Dimensions.sum({ nP2shP2pkInputs: 1 }),
+  });
+
+  /**
+   * @return
+   */
+  static fromScriptType(
+    scriptType: utxolib.bitgo.outputScripts.ScriptType | 'p2pkh',
+    params: {
+      scriptPathLevel?: number;
+    } = {}
+  ): Dimensions {
+    switch (scriptType) {
+      case 'p2sh':
+      case 'p2shP2wsh':
+      case 'p2wsh':
+      case 'p2shP2pk':
+        return Dimensions.SingleInput[scriptType];
+      case 'p2tr':
+        switch (params.scriptPathLevel) {
+          case undefined:
+            return Dimensions.SingleInput.p2trKeypath;
+          case 1:
+            return Dimensions.SingleInput.p2trScriptPathLevel1;
+          case 2:
+            return Dimensions.SingleInput.p2trScriptPathLevel2;
+          default:
+            throw new Error(`unexpected script path level`);
+        }
+      default:
+        throw new Error(`unexpected scriptType ${scriptType}`);
+    }
+  }
+
+  static readonly ASSUME_P2SH = Dimensions.SingleInput.p2sh;
+  static readonly ASSUME_P2SH_P2WSH = Dimensions.SingleInput.p2shP2wsh;
+  static readonly ASSUME_P2WSH = Dimensions.SingleInput.p2wsh;
+  static readonly ASSUME_P2TR_KEYPATH = Dimensions.SingleInput.p2trKeypath;
+  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Dimensions.SingleInput.p2trScriptPathLevel1;
+  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Dimensions.SingleInput.p2trScriptPathLevel2;
+  static readonly ASSUME_P2SH_P2PK_INPUT = Dimensions.SingleInput.p2shP2pk;
+
   /**
    * @param input - the transaction input to count
    * @param params
    *        [param.assumeUnsigned] - default type for unsigned input
    */
   static fromInput(input: utxolib.TxInput, params: FromInputParams = {}): Dimensions {
-    const p2shInput = Dimensions.sum({ nP2shInputs: 1 });
-    const p2shP2wshInput = Dimensions.sum({ nP2shP2wshInputs: 1 });
-    const p2wshInput = Dimensions.sum({ nP2wshInputs: 1 });
-    const p2trKeypathInput = Dimensions.sum({ nP2trKeypathInputs: 1 });
-    const p2trScriptPathLevel1Input = Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
-    const p2trScriptPathLevel2Input = Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 });
-    const p2shP2pkInput = Dimensions.sum({ nP2shP2pkInputs: 1 });
-
     if (input.script?.length || input.witness?.length) {
       const parsed = utxolib.bitgo.parseSignatureScript(input);
-      switch (parsed.scriptType) {
-        case undefined:
-          // unknown script type, continue with `assumeUnsigned`
-          break;
-        case 'p2shP2pk':
-          return p2shP2pkInput;
-        case 'p2sh':
-          return p2shInput;
-        case 'p2shP2wsh':
-          return p2shP2wshInput;
-        case 'p2wsh':
-          return p2wshInput;
-        case 'p2tr':
-          switch (parsed.scriptPathLevel) {
-            case 1:
-              return p2trScriptPathLevel1Input;
-            case 2:
-              return p2trScriptPathLevel2Input;
-            default:
-              throw new Error(`unexpected script path level`);
-          }
-        default:
-          throw new Error(`unexpected script type ${parsed.scriptType}`);
+      if (parsed.scriptType) {
+        return Dimensions.fromScriptType(parsed.scriptType, parsed as { scriptPathLevel?: number });
       }
     }
 
     const { assumeUnsigned } = params;
-    switch (assumeUnsigned) {
-      case undefined:
-        throw new Error(`illegal input ${input.index}: empty script and assumeUnsigned not set`);
-      case Dimensions.ASSUME_P2SH:
-        return p2shInput;
-      case Dimensions.ASSUME_P2SH_P2WSH:
-        return p2shP2wshInput;
-      case Dimensions.ASSUME_P2WSH:
-        return p2wshInput;
-      case Dimensions.ASSUME_P2TR_KEYPATH:
-        return p2trKeypathInput;
-      case Dimensions.ASSUME_P2TR_SCRIPTPATH_LEVEL1:
-        return p2trScriptPathLevel1Input;
-      case Dimensions.ASSUME_P2TR_SCRIPTPATH_LEVEL2:
-        return p2trScriptPathLevel2Input;
-      default:
-        throw new TypeError(`illegal value for assumeUnsigned: ${String(assumeUnsigned)}`);
+    if (!assumeUnsigned) {
+      throw new Error(`illegal input ${input.index}: empty script and assumeUnsigned not set`);
     }
+    return assumeUnsigned;
   }
 
   /**
@@ -335,35 +341,14 @@ export class Dimensions {
    * @return {Dimensions} of the unspent
    * @throws if the chain code is invalid or unsupported
    */
-  static fromUnspent(
-    { chain }: { chain: number },
-    params: FromUnspentParams = { p2trSpendType: 'scriptpath-level1' }
-  ): Dimensions {
+  static fromUnspent({ chain }: { chain: number }, params: FromUnspentParams = defaultUnspentParams): Dimensions {
     if (!isChainCode(chain)) {
       throw new TypeError('invalid chain code');
     }
 
-    switch (scriptTypeForChain(chain)) {
-      case 'p2sh':
-        return Dimensions.sum({ nP2shInputs: 1 });
-      case 'p2shP2wsh':
-        return Dimensions.sum({ nP2shP2wshInputs: 1 });
-      case 'p2wsh':
-        return Dimensions.sum({ nP2wshInputs: 1 });
-      case 'p2tr':
-        switch (params.p2trSpendType) {
-          case 'keypath':
-            return Dimensions.sum({ nP2trKeypathInputs: 1 });
-          case 'scriptpath-level1':
-            return Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
-          case 'scriptpath-level2':
-            return Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 });
-          default:
-            throw new Error(`unsupported p2trSpendType: ${params.p2trSpendType}`);
-        }
-    }
+    const scriptType = scriptTypeForChain(chain);
 
-    throw new Error(`unsupported chain ${chain}`);
+    return Dimensions.fromScriptType(scriptType, scriptType === 'p2tr' ? params.p2tr : {});
   }
 
   /**
