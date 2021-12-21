@@ -1,4 +1,4 @@
-# BitGo SDK Typescript Examples
+# BitGo SDK TypeScript Examples
 
 ## Prerequisites
 

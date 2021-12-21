@@ -1,4 +1,4 @@
-# BitGo Javascript SDK
+# BitGo JavaScript SDK
 
 The BitGo Platform and SDK makes it easy to build multi-signature crypto-currency applications today with support for Bitcoin, Ethereum and many other coins.
 The SDK is fully integrated with the BitGo co-signing service for managing all of your BitGo wallets.
@@ -18,7 +18,7 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-Please see our [SDK Documentation](https://bitgo-sdk-docs.s3.amazonaws.com/core/11.3.0/index.html) for detailed information about the Typescript SDK and functionality.
+Please see our [SDK Documentation](https://bitgo-sdk-docs.s3.amazonaws.com/core/11.3.0/index.html) for detailed information about the TypeScript SDK and functionality.
 
 For more general information about the BitGo API, please see our [REST API Documentation](https://www.bitgo.com/api/v2).
 
@@ -69,7 +69,7 @@ console.dir(result);
 ```
 
 ## More examples
-Further demos and examples in both Javascript and Typescript can be found in the [example](example) directory.
+Further demos and examples in both JavaScript and TypeScript can be found in the [example](example) directory.
 
 # Enabling additional debugging output
 
@@ -104,7 +104,7 @@ To set debug namespaces in the browser, you should set `localStorage.debug` prop
 localStorage.debug = 'bitgo:*'; // enable all bitgo debug namespaces
 ```
 
-# Using with Typescript
+# Using with TypeScript
 
 `bitgo` is not yet compatible with the `noImplicitAny` compiler option. If you want to use this option in your project (and we recommend that you do), you must set the `skipLibCheck` option to supress errors about missing type definitions for dependencies of `bitgo`.
 

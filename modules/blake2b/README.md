@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/emilbayes/blake2b.svg?branch=master)](https://travis-ci.org/emilbayes/blake2b)
 
-> Blake2b (64-bit version) in pure Javascript
+> Blake2b (64-bit version) in pure JavaScript
 
 This module is based on @dcposch
 [implementation of BLAKE2b](https://github.com/dcposch/blakejs), with some changes:
@@ -13,7 +13,7 @@ This module is based on @dcposch
 * Uses a WASM version (where it is supported) for massive performance boosts
 
 All credit goes to @dcposch for doing the hard work of porting the
-implementation from C to Javascript.
+implementation from C to JavaScript.
 
 ## Usage
 

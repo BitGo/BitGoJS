@@ -88,6 +88,6 @@ require a round of feedback.
 
 Take note:
 
-> Do not specify default accessors. In Typescript, the default accessor for a
+> Do not specify default accessors. In TypeScript, the default accessor for a
 > class attribute is `public`, so specifying it for functions and attributes is
 > redundant.
