@@ -5,7 +5,7 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
-import { AssetTransferTxnSchema, AssetToggleTxnSchema } from './txnSchema';
+import { AssetToggleTxnSchema, AssetTransferTxnSchema } from './txnSchema';
 import Utils from './utils';
 
 export class AssetTransferBuilder extends TransferBuilder {
@@ -71,8 +71,39 @@ export class AssetTransferBuilder extends TransferBuilder {
     );
   }
 
+  /**
+   * Computes the specific (sub) type for this Asset Transaction in algorand
+   * https://developer.algorand.org/docs/get-details/transactions/transactions/#asset-transfer-transaction
+   * @protected
+   */
   protected get transactionType(): TransactionType {
+    if (this.isOptOutAssetTxn()) {
+      return TransactionType.DisableToken;
+    }
+
+    if (this.isOptInAssetTrx()) {
+      return TransactionType.EnableToken;
+    }
+
     return TransactionType.Send;
+  }
+
+  /**
+   * Check if this transaction to opt-in to an asset (allowlist)
+   * @see https://developer.algorand.org/articles/algos-asas/
+   * @private
+   */
+  private isOptInAssetTrx() {
+    return this._tokenId && !this.isOptOutAssetTxn() && BigInt(this._amount) === BigInt(0) && this._to === this._sender;
+  }
+
+  /**
+   * Check if this transaction to opt-out to an asset (do not allowlist)
+   * @see https://developer.algorand.org/articles/algos-asas/
+   * @private
+   */
+  private isOptOutAssetTxn() {
+    return this._tokenId && this._closeRemainderTo;
   }
 
   /** @inheritdoc */

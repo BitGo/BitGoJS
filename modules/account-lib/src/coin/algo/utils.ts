@@ -533,6 +533,9 @@ export class Utils implements BaseUtils {
    * @param to the target address
    * @param closeRemainderTo (optional) address to send remaining units in originated address
    * @returns 'enableToken' or 'disableToken'
+   *
+   * @deprecated Transaction type is computed while creating transaction in TxData format.
+   *             Field TxData.txType will have the value of TransactionType as a string
    */
   getTokenTxType(amount: string, from: string, to: string, closeRemainderTo?: string): string {
     let type = 'transferToken';

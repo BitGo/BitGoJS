@@ -9,18 +9,22 @@ import { CoinFamily } from '@bitgo/statics';
 
 import {
   BaseCoin,
-  TransactionExplanation,
   KeyPair,
-  ParseTransactionOptions,
   ParsedTransaction,
+  ParseTransactionOptions,
+  SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
+  TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  SignedTransaction,
-  TransactionRecipient,
-  SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { TokenManagementType } from '../types';
+import { TxData } from '@bitgo/account-lib/dist/src/coin/algo/ifaces';
+import { Transaction } from '@bitgo/account-lib/dist/src/coin/algo';
+
+const TransactionType = accountLib.BaseCoin.TransactionType;
 
 export interface AlgoTransactionExplanation extends TransactionExplanation {
   memo?: string;
@@ -77,6 +81,7 @@ export interface HalfSignedTransaction {
 export interface TransactionFee {
   fee: string;
 }
+
 export interface ExplainTransactionOptions {
   txHex?: string;
   halfSigned?: {
@@ -94,6 +99,9 @@ export interface VerifiedTransactionParameters {
   isHalfSigned: boolean;
   numberSigners: number;
 }
+
+// https://developer.algorand.org/docs/get-details/transactions/transactions/#asset-transfer-transaction
+export const ALGORAND_ASSET_TRANSFER_TX_TYPE = 'axfer';
 
 export class Algo extends BaseCoin {
   readonly ENABLE_TOKEN: TokenManagementType = 'enabletoken';
@@ -123,7 +131,7 @@ export class Algo extends BaseCoin {
     return 'Algorand';
   }
 
-  getBaseFactor(): any {
+  getBaseFactor(): number {
     return 1e6;
   }
 
@@ -217,7 +225,8 @@ export class Algo extends BaseCoin {
 
   /**
    * Explain/parse transaction
-   * @param params
+   * @param params options to explain transaction
+   * @return the explanation of the transaction, or undefined if it is a type not handled.
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<AlgoTransactionExplanation | undefined> {
     const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
@@ -228,104 +237,114 @@ export class Algo extends BaseCoin {
     const factory = accountLib.getBuilder(this.getBaseChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
     const txBuilder = factory.from(txHex);
-    const tx = (await txBuilder.build()) as any;
+    const tx = (await txBuilder.build()) as Transaction;
     const txJson = tx.toJson();
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
-      const outputs: TransactionRecipient[] = [
-        {
-          address: txJson.to,
-          amount: txJson.amount,
-          memo: txJson.note,
-        },
-      ];
-      const operations: TransactionOperation[] = [];
+    switch (tx.type) {
+      case TransactionType.Send:
+      case TransactionType.EnableToken:
+      case TransactionType.DisableToken:
+        return this.explainSendTransaction(txJson);
+      case TransactionType.WalletInitialization:
+        return Algo.explainWalletInitializationTransaction(txJson);
+    }
+    // Defaults to return undefined for unhandled types
+  }
 
-      const isTokenTx = this.isTokenTx(txJson.type);
-      if (isTokenTx) {
-        const type = accountLib.Algo.algoUtils.getTokenTxType(
-          txJson.amount,
-          txJson.from,
-          txJson.to,
-          txJson.closeRemainderTo
-        );
-        operations.push({
-          type: type,
-          coin: `${this.getChain()}:${txJson.tokenId}`,
-        });
-      }
+  private explainSendTransaction(txJson: TxData) {
+    const transactionType = Algo.getCompatibleTxType(txJson);
+    const note = new TextDecoder().decode(txJson.note);
 
-      const displayOrder = [
-        'id',
-        'outputAmount',
-        'changeAmount',
-        'outputs',
-        'changeOutputs',
-        'fee',
-        'memo',
-        'type',
-        'operations',
-      ];
+    const outputs: TransactionRecipient[] = [
+      {
+        address: txJson.to || '',
+        amount: txJson.amount || '',
+        memo: note,
+      },
+    ];
 
-      const explanationResult: AlgoTransactionExplanation = {
-        displayOrder,
-        id: txJson.id,
-        outputAmount: txJson.amount.toString(),
-        changeAmount: '0',
-        outputs,
-        changeOutputs: [],
-        fee: txJson.fee,
-        memo: txJson.note,
-        type: tx.type,
-        operations,
-      };
+    const operations: TransactionOperation[] = [];
 
-      if (txJson.tokenId) {
-        explanationResult.tokenId = txJson.tokenId;
-      }
-
-      return explanationResult;
+    if (this.isTokenTx(txJson)) {
+      operations.push({
+        type: transactionType,
+        coin: `${this.getChain()}:${txJson.tokenId}`,
+      });
     }
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
-      const displayOrder = [
-        'id',
-        'fee',
-        'memo',
-        'type',
-        'voteKey',
-        'selectionKey',
-        'voteFirst',
-        'voteLast',
-        'voteKeyDilution',
-      ];
+    const displayOrder = [
+      'id',
+      'outputAmount',
+      'changeAmount',
+      'outputs',
+      'changeOutputs',
+      'fee',
+      'memo',
+      'type',
+      'operations',
+    ];
 
-      return {
-        displayOrder,
-        id: txJson.id,
-        outputAmount: '0',
-        changeAmount: '0',
-        outputs: [],
-        changeOutputs: [],
-        fee: txJson.fee,
-        memo: txJson.note,
-        type: tx.type,
-        voteKey: txJson.voteKey,
-        selectionKey: txJson.selectionKey,
-        voteFirst: txJson.voteFirst,
-        voteLast: txJson.voteLast,
-        voteKeyDilution: txJson.voteKeyDilution,
-      };
+    const explanationResult: AlgoTransactionExplanation = {
+      displayOrder,
+      id: txJson.id,
+      outputAmount: (txJson.amount || 0).toString(),
+      changeAmount: '0',
+      outputs,
+      changeOutputs: [],
+      fee: txJson.fee,
+      memo: note,
+      type: transactionType,
+      operations,
+    };
+
+    if (txJson.tokenId) {
+      explanationResult.tokenId = txJson.tokenId;
     }
+
+    return explanationResult;
+  }
+
+  private static explainWalletInitializationTransaction(txJson: TxData) {
+    const transactionType = txJson.txType || TransactionType[TransactionType.WalletInitialization]; // Old transactions have this field empty
+    const note = new TextDecoder().decode(txJson.note);
+
+    const displayOrder = [
+      'id',
+      'fee',
+      'memo',
+      'type',
+      'voteKey',
+      'selectionKey',
+      'voteFirst',
+      'voteLast',
+      'voteKeyDilution',
+    ];
+
+    return {
+      displayOrder,
+      id: txJson.id,
+      outputAmount: '0',
+      changeAmount: '0',
+      outputs: [],
+      changeOutputs: [],
+      fee: txJson.fee,
+      memo: note,
+      type: transactionType,
+      voteKey: txJson.voteKey,
+      selectionKey: txJson.selectionKey,
+      voteFirst: txJson.voteFirst,
+      voteLast: txJson.voteLast,
+      voteKeyDilution: txJson.voteKeyDilution,
+    };
   }
 
   /**
    * returns if a tx is a token tx
-   * @param type {string} - tx type
+   * @param tx the transaction
    * @returns true if it's a token tx
    */
-  isTokenTx(type: string): boolean {
-    return type === 'axfer';
+  isTokenTx(tx: TxData): boolean {
+    return tx.type === ALGORAND_ASSET_TRANSFER_TX_TYPE;
   }
 
   /**
@@ -414,7 +433,7 @@ export class Algo extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {SignedTransaction}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, signers, prv, isHalfSigned, numberSigners } = this.verifySignTransactionParams(params);
@@ -423,7 +442,7 @@ export class Algo extends BaseCoin {
     txBuilder.numberOfRequiredSigners(numberSigners);
     txBuilder.sign({ key: prv });
     txBuilder.setSigners(signers);
-    const transaction: any = await txBuilder.build();
+    const transaction = (await txBuilder.build()) as Transaction;
     if (!transaction) {
       throw new Error('Invalid transaction');
     }
@@ -453,7 +472,32 @@ export class Algo extends BaseCoin {
     return accountLib.Algo.algoUtils.decodeAlgoTxn(txn);
   }
 
-  getAddressFromPublicKey(Pubkey: Uint8Array): string {
-    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(Pubkey);
+  getAddressFromPublicKey(pubkey: Uint8Array): string {
+    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(pubkey);
+  }
+
+  /**
+   * Return (sub) type of transaction handling backward compatibility with
+   * transactions created before new TransactionTypes were added
+   * @param tx the transaction
+   * @private
+   */
+  private static getCompatibleTxType(tx: TxData) {
+    const rawType = tx.txType;
+
+    switch (rawType) {
+      case 'enableToken':
+        // backward compatible
+        return TransactionType[TransactionType.EnableToken];
+      case 'disableToken':
+        // backward compatible
+        return TransactionType[TransactionType.DisableToken];
+      case 'transferToken':
+        // backward compatible
+        return TransactionType[TransactionType.Send];
+      default:
+        // Old transactions have this field empty
+        return rawType || TransactionType[TransactionType.Send];
+    }
   }
 }

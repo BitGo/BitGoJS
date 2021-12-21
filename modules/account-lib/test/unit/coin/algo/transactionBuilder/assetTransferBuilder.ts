@@ -53,6 +53,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
         .build();
       const txJson = tx.toJson();
 
+      txJson.type.should.equal('axfer');
+      txJson.txType.should.equal('Send');
       should.deepEqual(txJson.from, sender.address);
       should.deepEqual(txJson.to, receiver.address);
       should.deepEqual(txJson.fee, fee);
@@ -93,6 +95,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
 
       should.exists(txHex);
 
+      txInfo.type.should.equal('axfer');
+      txInfo.txType.should.equal('DisableToken');
       txInfo.to.should.equal(address);
       txInfo.from.should.equal(address);
       txInfo.closeRemainderTo.should.equal(closeRemainderTo);
@@ -158,6 +162,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
 
       should.exists(txHex);
 
+      txInfo.type.should.equal('axfer');
+      txInfo.txType.should.equal('EnableToken');
       txInfo.to.should.equal(address);
       txInfo.from.should.equal(address);
       txInfo.amount.should.equal('0');
@@ -194,6 +200,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
 
       should.exists(txHex);
 
+      txInfo.type.should.equal('axfer');
+      txInfo.txType.should.equal('EnableToken');
       txInfo.to.should.equal(address);
       txInfo.from.should.equal(address);
       txInfo.amount.should.equal('0');
@@ -232,6 +240,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
 
       should.exists(txHex);
 
+      txInfo.type.should.equal('axfer');
+      txInfo.txType.should.equal('DisableToken');
       txInfo.to.should.equal(address);
       txInfo.from.should.equal(address);
       txInfo.amount.should.equal('0');
