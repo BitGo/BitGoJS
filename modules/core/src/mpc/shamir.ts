@@ -1,45 +1,42 @@
 const assert = require('assert');
+import * as BigNum from 'bn.js';
 
-const Shamir = (curve) => {
-
+const Shamir = (curve: any) => {
   /**
    * Perform Shamir sharing on the secret `secret` to the degree `threshold - 1` split `numShares`
    * ways. The split secret requires `threshold` shares to be reconstructed.
-   * 
+   *
    * @param secret secret to split
    * @param threshold share threshold required to reconstruct secret
    * @param numShares total number of shares to split to split secret into
-   * @param indices 
-   * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares 
+   * @param indices
+   * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares
    * representing that share's free term.
    */
-  const split = (secret: Buffer, threshold: number, numShares: number,
-    indices?: Array<number>): Record<number, Buffer> => {
+  const split = (secret: BigNum, threshold: number, numShares: number, indices?: Array<number>): Record<number, BigNum> => {
     if (indices === undefined) {
       // make range(1, n + 1)
-      indices = [...Array(numShares).keys()].map(x => x + 1);
+      indices = Array.from({ length: numShares }, (_, i) => i + 1);
     }
     assert(threshold > 1);
     assert(threshold <= numShares);
-    const coefs: Buffer[] = [];
+    const coefs: BigNum[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
       const random_value = curve.scalarRandom();
       coefs.push(random_value);
     }
     coefs.push(secret);
-  
-    const shares: Record<number, Buffer> = {};
+
+    const shares: Record<number, BigNum> = {};
     for (let ind = 0; ind < indices.length; ind++) {
-      const x = indices[ind];
-      const x_buffer = Buffer.alloc(32);
-      x_buffer.writeUInt32LE(x, 0);
+      const x = new BigNum(indices[ind]);
       let partial = coefs[0];
-      for (let other = 1; other < coefs.length ; other++) {
-        const scalarMult = curve.scalarMult(partial, x_buffer);
+      for (let other = 1; other < coefs.length; other++) {
+        const scalarMult = curve.scalarMult(partial, x);
         const newAdd = curve.scalarAdd(coefs[other], scalarMult);
         partial = newAdd;
       }
-      shares[x] = Buffer.from(partial);
+      shares[x.toString()] = partial.toNumber;
     }
     return shares;
   };
@@ -47,40 +44,29 @@ const Shamir = (curve) => {
   /**
    * Reconstitute a secret from a dictionary of shares. The number of shares must
    * be equal to `t` to reconstitute the original secret.
-   * 
+   *
    * @param shares dictionary of shares. each key is the free term of the share
    * @returns secret
    */
-  const combine = (shares: Record<number, Buffer>): Buffer => {
-    let s = Buffer.alloc(32);
+  const combine = (shares: Record<number, BigNum>): BigNum => {
+    let s = new BigNum(0);
     for (const xi in shares) {
       const yi = shares[xi];
-      const xi_buffer = Buffer.alloc(32);
-      let num_buffer = Buffer.alloc(32);
-      let denum_buffer = Buffer.alloc(32);
-      xi_buffer.writeUInt32LE(parseInt(xi, 10), 0);
-      num_buffer.writeUInt32LE(1, 0);
-      denum_buffer.writeUInt32LE(1, 0);
-  
+      let num = new BigNum(1);
+      let denum = new BigNum(1);
+
       for (const xj in shares) {
-        const xj_buffer = Buffer.alloc(32);
-        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
         if (xi !== xj) {
-          num_buffer = curve.scalarMult(num_buffer, xj_buffer);
+          num = curve.scalarMult(num, new BigNum(xj));
         }
       }
-      num_buffer = Buffer.from(num_buffer);
       for (const xj in shares) {
-        const xj_buffer = Buffer.alloc(32);
-        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
         if (xi !== xj) {
-          denum_buffer = curve.scalarMult(denum_buffer,
-            curve.scalarSub(xj_buffer, xi_buffer));
+          denum = curve.scalarMult(denum, curve.scalarSub(new BigNum(xj), new BigNum(xi)));
         }
       }
-      denum_buffer = Buffer.from(denum_buffer);
-      const inverted = curve.scalarInvert(denum_buffer);
-      const innerMultiplied = curve.scalarMult(num_buffer, inverted);
+      const inverted = curve.scalarInvert(denum);
+      const innerMultiplied = curve.scalarMult(num, inverted);
       const multiplied = curve.scalarMult(innerMultiplied, yi);
       s = curve.scalarAdd(multiplied, s);
     }
@@ -88,7 +74,8 @@ const Shamir = (curve) => {
   };
 
   return {
-    split, combine,
+    split,
+    combine,
   };
 };
 

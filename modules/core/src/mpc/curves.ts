@@ -1,55 +1,65 @@
 const sodium = require('libsodium-wrappers-sumo');
+import * as BigNum from 'bn.js';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 
-
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const Ed25519Curve = async () => {
   // sodium requires await for ready within block scope
   await sodium.ready;
 
-  const scalarRandom = (): Uint8Array => {
+  const scalarRandom = (): BigNum => {
     const random_buffer = cryptoRandomBytes(64);
-    return sodium.crypto_core_ed25519_scalar_reduce(random_buffer);
+    return new BigNum(sodium.crypto_core_ed25519_scalar_reduce(random_buffer));
   };
 
-  const scalarReduce = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_reduce(s);
+  const scalarReduce = (s: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_reduce(s.toBuffer('le', 64)));
   };
 
-  const scalarNegate = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_negate(s);
+  const scalarNegate = (s: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_negate(s.toBuffer('le', 32)));
   };
 
-  const scalarInvert = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_invert(s);
+  const scalarInvert = (s: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_invert(s.toBuffer('le', 32)));
   };
 
-  const scalarAdd = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_add(x, y);
+  const scalarAdd = (x: BigNum, y: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_add(x.toBuffer('le', 32), y.toBuffer('le', 32)));
   };
 
-  const scalarSub = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_sub(x, y);
+  const scalarSub = (x: BigNum, y: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_sub(x.toBuffer('le', 32), y.toBuffer('le', 32)));
   };
 
-  const scalarMult = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_mul(x, y);
+  const scalarMult = (x: BigNum, y: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_scalar_mul(x.toBuffer('le', 32), y.toBuffer('le', 32)));
   };
 
-  const basePointMult = (n: Uint8Array): Uint8Array => {
-    return sodium.crypto_scalarmult_ed25519_base_noclamp(n);
+  const basePointMult = (n: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_scalarmult_ed25519_base_noclamp(n.toBuffer('le', 32)));
   };
 
-  const pointAdd = (p: Uint8Array, q: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_add(p, q);
+  const pointAdd = (p: BigNum, q: BigNum): BigNum => {
+    return new BigNum(sodium.crypto_core_ed25519_add(p.toBuffer('le', 32), q.toBuffer('le', 32)));
   };
 
-  const verify = (y: Uint8Array, signedMessage: Uint8Array): Uint8Array => {
-    return sodium.crypto_sign_open(signedMessage, y);
+  const verify = (y: BigNum, signedMessage: Uint8Array): Uint8Array => {
+    return sodium.crypto_sign_open(signedMessage, y.toBuffer('le', 32));
   };
 
-  return { scalarRandom, scalarReduce, scalarNegate, scalarInvert,
-    scalarAdd, scalarSub, scalarMult, basePointMult, pointAdd, verify };
+  return {
+    scalarRandom,
+    scalarReduce,
+    scalarNegate,
+    scalarInvert,
+    scalarAdd,
+    scalarSub,
+    scalarMult,
+    basePointMult,
+    pointAdd,
+    verify,
+  };
 };
 
 export default Ed25519Curve;
-  

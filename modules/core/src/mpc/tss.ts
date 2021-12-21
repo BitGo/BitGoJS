@@ -8,7 +8,7 @@
  * ======================
  * 1. Each signer generates their own key share, which involves a private u-share and a public y-share.
  * 2. Signers distribute their y-share to other signers.
- * 3. After exhanging y-shares the next phase is to combine key shares. Each signer combines their u-share
+ * 3. After exchanging y-shares the next phase is to combine key shares. Each signer combines their u-share
  *    with the y-shares received from other signers in order to generate a p-share for themselves. We
  *    also save j-shares for other signers.
  * 4. At this point the players do not distribute any shares and the first phase of the
@@ -18,22 +18,23 @@
  * EdDSA Signing
  * ======================
  * 1. The parties from key generation decide they want to sign something. They begin the signing protocol
- *    by generating shares of an ephemereal key.
+ *    by generating shares of an ephemeral key.
  *
  *    a) Each signer uses his p-share and the j-shares stored for other players to generate his signing share.
  *    b) This results in each signer having a private x-share and public r-shares.
  *
  * 2. Signers distribute their r-shares to other signers.
- * 3. After exchanging r-shares, each signer signs their share of the ephemereal key using their private
+ * 3. After exchanging r-shares, each signer signs their share of the ephemeral key using their private
  *    x-share with the r-shares from other signers.
  * 4. This results in each signer having a public g-share which they send to the other signers.
- * 5. After the signers broadcast their g-shares, the final signature can be reconstructed indepently.
+ * 5. After the signers broadcast their g-shares, the final signature can be re-constructed independently.
  */
 const assert = require('assert');
 import Ed25519Curve from './curves';
 import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
+import * as BigNum from 'bn.js';
  
 const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) => {
   const result: any = object;
@@ -43,14 +44,14 @@ const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) =
   return result;
 };
  
- interface PlayerKeyShare {
+ interface UShare {
    i: string;
    y: string;
    u: string;
    prefix: string;
  }
  
- interface DistributedKeyShare {
+ interface YShare {
    i: string;
    j: string;
    y: string;
@@ -58,28 +59,28 @@ const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) =
  }
  
  interface KeyShare {
-   player: PlayerKeyShare;
-   distributed: Record<string, DistributedKeyShare>;
+   uShare: UShare;
+   yShares: Record<string, YShare>;
  }
  
- interface PlayerKeyCombine {
+ interface PShare {
    i: string;
    x: string;
    y: string;
    prefix: string;
  }
  
- interface DistributedKeyCombine {
+ interface JShare {
    i: string;
    j: string;
  }
  
  interface KeyCombine {
-   player: PlayerKeyCombine;
-   distributed: Record<string, DistributedKeyCombine>;
+   pShare: PShare;
+   jShares: Record<string, JShare>;
  }
  
- interface PlayerSignShare {
+ interface XShare {
    i: string;
    y: string;
    x: string;
@@ -87,7 +88,7 @@ const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) =
    R: string;
  }
  
- interface DistributedSignShare {
+ interface RShare {
    i: string;
    j: string;
    r: string;
@@ -95,8 +96,8 @@ const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) =
  }
  
  interface SignShare {
-   player: PlayerSignShare;
-   distributed: Record<string, DistributedSignShare>;
+   xShare: XShare;
+   rShares: Record<string, RShare>;
  }
  
  interface GShare {
@@ -130,30 +131,30 @@ const Eddsa = async () => {
  
     const zeroBuffer32 = Buffer.alloc(32);
     uBuffer = Buffer.concat([uBuffer, zeroBuffer32]);
-    const u = Buffer.from(ed25519.scalarReduce(uBuffer));
-    const y = Buffer.from(ed25519.basePointMult(u));
+    const u = ed25519.scalarReduce(new BigNum(uBuffer));
+    const y = ed25519.basePointMult(u);
     const split_u = shamir.split(u, threshold, numShares);
  
     let prefixBuffer = combinedBuffer.subarray(32, combinedBuffer.length);
     prefixBuffer = Buffer.concat([zeroBuffer32, prefixBuffer]);
-    const prefix = Buffer.from(ed25519.scalarReduce(prefixBuffer));
+    const prefix = ed25519.scalarReduce(new BigNum(prefixBuffer));
  
-    const P_i: PlayerKeyShare = {
+    const P_i: UShare = {
       i: index.toString(),
-      y: y.toString('hex'),
-      u: split_u[index.toString()].toString('hex'),
-      prefix: prefix.toString('hex'),
+      y: y.toString(16),
+      u: split_u[index.toString()].toString(16),
+      prefix: prefix.toString(16),
     };
     const shares: KeyShare = {
-      player: P_i,
-      distributed: {},
+      uShare: P_i,
+      yShares: {},
     };
  
     for (const ind in split_u) {
       if (ind === index.toString()) {
         continue;
       }
-      shares['distributed'][ind] = {
+      shares.yShares[ind] = {
         i: ind,
         j: P_i['i'],
         y: y.toString('hex'),
@@ -162,28 +163,28 @@ const Eddsa = async () => {
     }
     return shares;
   };
-  const keyCombine = (playerShare: PlayerKeyShare, distributedShares: DistributedKeyShare[]): KeyCombine => {
+  const keyCombine = (uShare: UShare, distributedShares: YShare[]): KeyCombine => {
     // u-shares and y-shares required buffer format for curve functions
-    const shares = [playerShare, ...distributedShares].map((share) => convertObjectHexToBuffer(share, ['y', 'u']));
-    const yShares = shares.map((share) => share['y']);
-    const uShares = shares.map((share) => share['u']);
+    const shares = [uShare, ...distributedShares].map((share) => convertObjectHexToBuffer(share, ['y', 'u']));
+    const yShares = shares.map((share) => new BigNum(share['y']));
+    const uShares = shares.map((share) => new BigNum(share['u']));
     const y = Buffer.from(yShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
     const x = Buffer.from(uShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
  
-    const P_i: PlayerKeyCombine = {
-      i: playerShare['i'],
+    const P_i: PShare = {
+      i: uShare['i'],
       y: y.toString('hex'),
       x: x.toString('hex'),
-      prefix: playerShare['prefix'],
+      prefix: uShare['prefix'],
     };
     const players: KeyCombine = {
-      player: P_i,
-      distributed: {},
+      pShare: P_i,
+      jShares: {},
     };
  
     for (let ind = 0; ind < distributedShares.length; ind++) {
       const P_j = distributedShares[ind];
-      players.distributed[P_j['j']] = {
+      players.jShares[P_j['j']] = {
         i: P_j['j'],
         j: P_i['i'],
       };
@@ -191,17 +192,14 @@ const Eddsa = async () => {
     return players;
   };
  
-  const signShare = (
-    message: Buffer,
-    playerShare: PlayerKeyCombine,
-    distributedShares: DistributedKeyCombine[],
-  ): SignShare => {
+  const signShare = (message: Buffer, pShare: PShare, jShares: JShare[]): SignShare => {
     // x-shares and y-shares required buffer format for curve functions
-    const shares = [convertObjectHexToBuffer(playerShare, ['x', 'y']), ...distributedShares];
+    const shares = [convertObjectHexToBuffer(pShare, ['x', 'y']), ...jShares];
     const indices = shares.map((share) => share['i']);
  
+    // use big endian for prefix
     const randomBuffer = cryptoRandomBytes(32);
-    const prefix_reference = Buffer.from(playerShare['prefix'], 'hex');
+    const prefix_reference = Buffer.from(pShare['prefix'], 'hex');
     prefix_reference.reverse();
     const combinedBuffer = Buffer.concat([prefix_reference, message, randomBuffer]);
  
@@ -209,36 +207,36 @@ const Eddsa = async () => {
     const digest = Buffer.from(sha512.digest(combinedBuffer));
     digest.reverse();
  
-    const r = Buffer.from(ed25519.scalarReduce(digest));
-    const R = Buffer.from(ed25519.basePointMult(r));
+    const r = ed25519.scalarReduce(new BigNum(digest));
+    const R = ed25519.basePointMult(r);
     const split_r = shamir.split(r, shares.length, shares.length, indices);
  
-    const P_i: PlayerSignShare = {
-      i: playerShare['i'],
-      y: playerShare['y'],
-      x: playerShare['x'],
-      r: split_r[playerShare['i']].toString('hex'),
-      R: R.toString('hex'),
+    const P_i: XShare = {
+      i: pShare['i'],
+      y: pShare['y'],
+      x: pShare['x'],
+      r: split_r[pShare['i']].toString(16),
+      R: R.toString(16),
     };
  
     const resultShares: SignShare = {
-      player: P_i,
-      distributed: {},
+      xShare: P_i,
+      rShares: {},
     };
  
-    for (let ind = 0; ind < distributedShares.length; ind++) {
-      const S_j = distributedShares[ind];
-      resultShares['distributed'][S_j['i']] = {
+    for (let ind = 0; ind < jShares.length; ind++) {
+      const S_j = jShares[ind];
+      resultShares.rShares[S_j['i']] = {
         i: S_j['i'],
-        j: playerShare['i'],
-        r: split_r[S_j['i']].toString('hex'),
-        R: R.toString('hex'),
+        j: pShare['i'],
+        r: split_r[S_j['i']].toString(16),
+        R: R.toString(16),
       };
     }
     return resultShares;
   };
  
-  const sign = (message: Buffer, playerShare: PlayerSignShare, distributedShares: DistributedSignShare[]): GShare => {
+  const sign = (message: Buffer, playerShare: XShare, distributedShares: RShare[]): GShare => {
     // x, y, r, R required buffer format for curve functions
     const shares = [playerShare, ...distributedShares].map((share) => convertObjectHexToBuffer(share, ['R', 'r']));
     const S_i = playerShare;
@@ -247,13 +245,13 @@ const Eddsa = async () => {
     const littleRShares = shares.map((share) => share['r']);
  
     const R = Buffer.from(rShares.reduce((partial, share) => ed25519.pointAdd(partial, share)));
-    const r = Buffer.from(littleRShares.reduce((partial, share) => ed25519.scalarAdd(partial, share)));
+    const r = littleRShares.reduce((partial, share) => ed25519.scalarAdd(partial, share));
  
     const combinedBuffer = Buffer.concat([R, Buffer.from(S_i['y'], 'hex'), message]);
-    const digest = Buffer.from(sha512.digest(combinedBuffer));
-    const k = Buffer.from(ed25519.scalarReduce(digest));
+    const digest = sha512.digest(combinedBuffer);
+    const k = ed25519.scalarReduce(new BigNum(digest));
  
-    const gamma = Buffer.from(ed25519.scalarAdd(r, ed25519.scalarMult(k, Buffer.from(S_i['x'], 'hex'))));
+    const gamma = Buffer.from(ed25519.scalarAdd(r, ed25519.scalarMult(k, new BigNum(S_i['x']))));
     const result = {
       i: playerShare['i'],
       y: playerShare['y'],
@@ -272,26 +270,24 @@ const Eddsa = async () => {
     const resultShares = {};
     for (const ind in shares) {
       const S_i = shares[ind];
-      resultShares[S_i['i']] = S_i['gamma'];
+      resultShares[S_i['i']] = new BigNum(S_i['gamma']);
     }
-    let sigma: Buffer = shamir.combine(resultShares);
-    sigma = Buffer.from(sigma);
+    const sigma: BigNum = shamir.combine(resultShares);
     const result = {
       y: y.toString('hex'),
       R: R.toString('hex'),
-      sigma: sigma.toString('hex'),
+      sigma: sigma.toString(16),
     };
     return result;
   };
  
   const verify = (message: Buffer, signature: Signature): Buffer => {
-    const publicKey = Buffer.from(signature['y'], 'hex');
     const signedMessage = Buffer.concat([
       Buffer.from(signature['R'], 'hex'),
       Buffer.from(signature['sigma'], 'hex'),
       message,
     ]);
-    return Buffer.from(ed25519.verify(publicKey, signedMessage));
+    return Buffer.from(ed25519.verify(new BigNum(signature['y']), signedMessage));
   };
  
   return { keyShare, keyCombine, signShare, sign, signCombine, verify };
