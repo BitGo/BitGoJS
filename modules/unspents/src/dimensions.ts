@@ -60,25 +60,25 @@ export interface FromUnspentParams {
  * Dimensions of a BitGo wallet transactions.
  */
 export class Dimensions {
-  static ASSUME_P2SH = Symbol('assume-p2sh');
-  static ASSUME_P2SH_P2WSH = Symbol('assume-p2sh-p2wsh');
-  static ASSUME_P2WSH = Symbol('assume-p2wsh');
-  static ASSUME_P2TR_KEYPATH = Symbol('assume-p2tr-keypath');
-  static ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Symbol('assume-p2tr-scriptpath-level1');
-  static ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Symbol('assume-p2tr-scriptpath-level2');
+  static readonly ASSUME_P2SH = Symbol('assume-p2sh');
+  static readonly ASSUME_P2SH_P2WSH = Symbol('assume-p2sh-p2wsh');
+  static readonly ASSUME_P2WSH = Symbol('assume-p2wsh');
+  static readonly ASSUME_P2TR_KEYPATH = Symbol('assume-p2tr-keypath');
+  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Symbol('assume-p2tr-scriptpath-level1');
+  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Symbol('assume-p2tr-scriptpath-level2');
 
   /** Input counts for BitGo wallet multi-signature inputs */
-  public nP2shInputs = 0;
-  public nP2shP2wshInputs = 0;
-  public nP2wshInputs = 0;
-  public nP2trKeypathInputs = 0;
-  public nP2trScriptPathLevel1Inputs = 0;
-  public nP2trScriptPathLevel2Inputs = 0;
+  public readonly nP2shInputs: number = 0;
+  public readonly nP2shP2wshInputs: number = 0;
+  public readonly nP2wshInputs: number = 0;
+  public readonly nP2trKeypathInputs: number = 0;
+  public readonly nP2trScriptPathLevel1Inputs: number = 0;
+  public readonly nP2trScriptPathLevel2Inputs: number = 0;
 
   /* Input count for single-signature inputs (Replay Protection inputs) */
-  public nP2shP2pkInputs = 0;
+  public readonly nP2shP2pkInputs: number = 0;
 
-  public outputs: OutputDimensions = new OutputDimensions();
+  public readonly outputs: OutputDimensions = new OutputDimensions();
 
   constructor(d: Partial<Dimensions> = {}) {
     Object.entries(d).forEach(([key, value]) => this.setProperty(key, value));
@@ -114,7 +114,7 @@ export class Dimensions {
     (this as any)[k] = v;
   }
 
-  static ZERO = Object.freeze(new Dimensions());
+  static readonly ZERO = Object.freeze(new Dimensions());
 
   /**
    * @deprecated use ZERO
@@ -132,7 +132,7 @@ export class Dimensions {
     return Dimensions.sum({ outputs: { count: 1, size } });
   }
 
-  static SingleOutput = {
+  static readonly SingleOutput = Object.freeze({
     p2sh: Dimensions.singleOutput(VirtualSizes.txP2shOutputSize),
     p2shP2wsh: Dimensions.singleOutput(VirtualSizes.txP2shP2wshOutputSize),
     p2wsh: Dimensions.singleOutput(VirtualSizes.txP2wshOutputSize),
@@ -140,7 +140,7 @@ export class Dimensions {
 
     p2pkh: Dimensions.singleOutput(VirtualSizes.txP2pkhOutputSize),
     p2wpkh: Dimensions.singleOutput(VirtualSizes.txP2wpkhOutputSize),
-  };
+  });
 
   /**
    * @return Number of total inputs (p2sh + p2shP2wsh + p2wsh + p2tr)
