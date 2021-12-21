@@ -4,6 +4,9 @@ import { BuildTransactionError } from './coin/baseCoin/errors';
 import * as crypto from './utils/crypto';
 export { crypto };
 
+import { Ed25519KeyDeriver } from './utils/ed25519KeyDeriver';
+export { Ed25519KeyDeriver };
+
 // coins
 import * as BaseCoin from './coin/baseCoin';
 export { BaseCoin };

@@ -3,6 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
+import { Ed25519KeyDeriver } from '@bitgo/account-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as request from 'superagent';
@@ -11,7 +12,6 @@ import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 import { KeyIndices } from '../keychains';
 
-import { Ed25519KeyDeriver } from '../internal/keyDeriver';
 import * as common from '../../common';
 import {
   InvalidAddressError,
