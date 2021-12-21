@@ -1,5 +1,5 @@
 import 'should';
-import { BaseNetwork, CoinFamily, coins, Erc20Coin, EthereumNetwork, NetworkType } from '../../src';
+import { BaseNetwork, CoinFamily, CoinFeature, coins, Erc20Coin, EthereumNetwork, NetworkType } from '../../src';
 
 interface DuplicateCoinObject {
   name: string;
@@ -7,14 +7,24 @@ interface DuplicateCoinObject {
 }
 
 coins.forEach((coin, coinName) => {
-  describe(`Coin ${coinName}`, function () {
-    it('has expected name', function () {
+  describe(`Coin ${coinName}`, function() {
+    it('has expected name', function() {
       coin.name.should.eql(coinName);
     });
 
     if (!coin.isToken) {
-      it(`has expected network type`, function () {
+      it(`has expected network type`, function() {
         coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
+      });
+    }
+
+    if (coin.family === CoinFamily.XTZ) {
+      it('does not support custody', () => {
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
+      });
+    } else {
+      it('does support custody', () => {
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(true);
       });
     }
   });
@@ -23,7 +33,7 @@ coins.forEach((coin, coinName) => {
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses', () => {
     coins
-      .filter((coin) => coin instanceof Erc20Coin)
+      .filter(coin => coin instanceof Erc20Coin)
       .reduce((acc: { [index: string]: DuplicateCoinObject }, token) => {
         const address = (token as Readonly<Erc20Coin>).contractAddress.toString();
 

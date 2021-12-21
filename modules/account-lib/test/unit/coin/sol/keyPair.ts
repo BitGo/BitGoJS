@@ -29,11 +29,28 @@ describe('Sol KeyPair', function () {
       should.equal(keyPair.getKeys().pub, testData.accountWithSeed.publicKey);
     });
 
-    it('should always generate valid key pairs', () => {
+    it('should always generate and regenerate valid key pairs', () => {
       for (let i = 0; i < 50; i++) {
         const keyPair = new Sol.KeyPair();
         Sol.Utils.isValidPublicKey(keyPair.getKeys().pub).should.be.true();
         Sol.Utils.isValidAddress(keyPair.getAddress()).should.be.true();
+
+        const prv = keyPair.getKeys().prv as string;
+        should.exist(prv);
+
+        // verify key pair can be re-generated from private portion
+        const regeneratedKeyPairFromPrv = new Sol.KeyPair({ prv: prv });
+        regeneratedKeyPairFromPrv.getKeys().should.deepEqual(keyPair.getKeys());
+        regeneratedKeyPairFromPrv.getAddress().should.equal(keyPair.getAddress());
+        regeneratedKeyPairFromPrv.should.deepEqual(keyPair);
+        should.exist(regeneratedKeyPairFromPrv.getKeys().prv);
+
+        // verify key pair can be re-generated from public portion
+        const pub = keyPair.getKeys().pub;
+        const regeneratedKeyPairFromPub = new Sol.KeyPair({ pub: pub });
+        regeneratedKeyPairFromPub.getKeys().pub.should.deepEqual(keyPair.getKeys().pub);
+        regeneratedKeyPairFromPub.getAddress().should.equal(keyPair.getAddress());
+        should.not.exist(regeneratedKeyPairFromPub.getKeys().prv);
       }
     });
   });

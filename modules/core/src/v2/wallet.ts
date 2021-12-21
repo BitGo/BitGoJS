@@ -1768,20 +1768,20 @@ export class Wallet {
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction> {
-    const txPrebuild = params.txPrebuild;
+    const { txPrebuild } = params;
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
     }
     const presign = await this.baseCoin.presignTransaction(params);
     const userPrv = this.getUserPrv(presign);
 
-    if (!params.pubs && this.baseCoin.keyIdsForSigning().length > 1) {
+    let { pubs } = params;
+    if (!pubs && this.baseCoin.keyIdsForSigning().length > 1) {
       const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this })) as unknown as Keychain[];
-      params.pubs = keychains.map((k) => k.pub);
+      pubs = keychains.map((k) => k.pub);
     }
 
-    const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
-    return this.baseCoin.signTransaction(signingParams);
+    return this.baseCoin.signTransaction({ ...presign, txPrebuild, prv: userPrv, pubs });
   }
 
   /**

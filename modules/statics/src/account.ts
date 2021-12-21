@@ -28,6 +28,7 @@ export class AccountCoin extends BaseCoin {
     CoinFeature.REQUIRES_BIG_NUMBER,
     CoinFeature.VALUELESS_TRANSFER,
     CoinFeature.TRANSACTION_DATA,
+    CoinFeature.CUSTODY,
   ];
 
   public readonly network: AccountNetwork;

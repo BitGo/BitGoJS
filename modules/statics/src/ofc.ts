@@ -20,7 +20,11 @@ export interface OfcConstructorOptions {
  * OFC (off chain) coins. These are virtual coins used to represent off chain assets on the BitGo platform.
  */
 export class OfcCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
+  public static readonly DEFAULT_FEATURES = [
+    CoinFeature.ACCOUNT_MODEL,
+    CoinFeature.REQUIRES_BIG_NUMBER,
+    CoinFeature.CUSTODY,
+  ];
 
   // If set, this coin is the native address format for this token.
   public readonly addressCoin?: string;

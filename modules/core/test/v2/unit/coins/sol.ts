@@ -358,7 +358,7 @@ describe('SOL:', function () {
           keys: [resources.accountWithSeed.publicKey.toString()],
         },
         prv: resources.accountWithSeed.publicKey,
-      }).should.be.rejectedWith('Invalid private key');
+      }).should.be.rejectedWith('Invalid key');
     });
   });
 
