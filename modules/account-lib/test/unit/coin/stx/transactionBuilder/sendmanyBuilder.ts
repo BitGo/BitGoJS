@@ -43,7 +43,7 @@ describe('Stx Send Many Builder', () => {
       builder.sign({ key: testData.prvKeysString[1] });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      txJson.id.should.equal('d242ea714b3b8108cc4571174ed5cd0a34695bebf01f43575f7764b3af8e3340');
+      txJson.id.should.equal('01793eeb993d15791ea9af8910d867407803fe4c7d1db2dac592a2e8200de12a');
       txJson.fee.should.equal('532');
       txJson.from.should.equal('SN3KT9DVM9TCTAHV0S9VEAKTDG7JBC0K26ZMWEBNT');
       txJson.nonce.should.equal(45);
