@@ -1,4 +1,4 @@
-import * as utxo from '../src';
+import * as unspents from '../src';
 
 /**
  * makeEnum('a', 'b') returns `{ a: 'a', b: 'b' }`
@@ -37,40 +37,40 @@ class UnspentTypeOpReturn {
  * @param unspentType - one of UnspentTypeScript2of3
  * @return Dimensions
  */
-const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): utxo.IDimensions => {
+const getInputDimensionsForUnspentType = (unspentType: TestUnspentType): unspents.Dimensions => {
   switch (unspentType) {
     case UnspentTypeScript2of3.p2sh:
-      return utxo.Dimensions.sum({ nP2shInputs: 1 });
+      return unspents.Dimensions.sum({ nP2shInputs: 1 });
     case UnspentTypeScript2of3.p2shP2wsh:
-      return utxo.Dimensions.sum({ nP2shP2wshInputs: 1 });
+      return unspents.Dimensions.sum({ nP2shP2wshInputs: 1 });
     case UnspentTypeScript2of3.p2wsh:
-      return utxo.Dimensions.sum({ nP2wshInputs: 1 });
+      return unspents.Dimensions.sum({ nP2wshInputs: 1 });
     case UnspentTypeScript2of3.p2tr:
-      return utxo.Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
+      return unspents.Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 });
     case UnspentTypeP2shP2pk:
-      return utxo.Dimensions.sum({ nP2shP2pkInputs: 1 });
+      return unspents.Dimensions.sum({ nP2shP2pkInputs: 1 });
   }
   throw new Error(`no input dimensions for ${unspentType}`);
 };
 
-const getOutputDimensionsForUnspentType = (unspentType: TestUnspentType): utxo.IDimensions => {
+const getOutputDimensionsForUnspentType = (unspentType: TestUnspentType): unspents.Dimensions => {
   /* The values here are validated in the test 'calculates output dimensions dynamically' */
   switch (unspentType) {
     case UnspentTypeScript2of3.p2sh:
     case UnspentTypeScript2of3.p2shP2wsh:
     case UnspentTypeP2shP2pk:
-      return utxo.Dimensions.fromOutputScriptLength(23);
+      return unspents.Dimensions.fromOutputScriptLength(23);
     case UnspentTypeScript2of3.p2wsh:
-      return utxo.Dimensions.fromOutputScriptLength(34);
+      return unspents.Dimensions.fromOutputScriptLength(34);
     case UnspentTypeScript2of3.p2tr:
-      return utxo.Dimensions.fromOutputScriptLength(34);
+      return unspents.Dimensions.fromOutputScriptLength(34);
     case UnspentTypePubKeyHash.p2pkh:
-      return utxo.Dimensions.fromOutputScriptLength(25);
+      return unspents.Dimensions.fromOutputScriptLength(25);
     case UnspentTypePubKeyHash.p2wpkh:
-      return utxo.Dimensions.fromOutputScriptLength(22);
+      return unspents.Dimensions.fromOutputScriptLength(22);
     default:
       if (unspentType instanceof UnspentTypeOpReturn) {
-        return utxo.Dimensions.fromOutputScriptLength(1 + unspentType.size);
+        return unspents.Dimensions.fromOutputScriptLength(1 + unspentType.size);
       }
       throw new TypeError(`unknown unspentType ${unspentType}`);
   }

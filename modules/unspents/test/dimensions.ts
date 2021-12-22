@@ -8,35 +8,20 @@ import {
   chainCodesP2wsh,
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import { Dimensions, IDimensions, IOutputDimensions, OutputDimensions, VirtualSizes } from '../src';
+import { Dimensions, OutputDimensions, VirtualSizes } from '../src';
 
 import { getOutputDimensionsForUnspentType, UnspentTypePubKeyHash, UnspentTypeScript2of3 } from './testutils';
 
-describe('VirtualSizes', function () {
-  it('have expected values', function () {
-    VirtualSizes.should.match({
-      // check computed values only
-      txP2shInputSize: 298,
-      txP2shP2wshInputSize: 140,
-      txP2wshInputSize: 105,
-      txP2trKeypathInputSize: 58,
-      txP2trScriptPathLevel1InputSize: 108,
-      txP2trScriptPathLevel2InputSize: 116,
-      txP2shP2pkInputSize: 151,
-    });
-  });
-});
-
 describe('Dimensions Attributes', function () {
   it('has read-only nInputs and nOutputs', function () {
-    should.throws(() => (Dimensions.zero().nInputs = 1), /read-only/);
-    should.throws(() => (Dimensions.zero().nOutputs = 1), /read-only/);
+    should.throws(() => ((Dimensions.ZERO as any).nInputs = 1), /read-only/);
+    should.throws(() => ((Dimensions.ZERO as any).nOutputs = 1), /read-only/);
   });
 });
 
 describe('Output Dimensions', function () {
   it('instantiates', function () {
-    const dims: IOutputDimensions = OutputDimensions({ size: 0, count: 0 });
+    const dims = new OutputDimensions({ size: 0, count: 0 });
     should.throws(() => (dims.count += 1));
   });
 });
@@ -46,7 +31,7 @@ describe('Dimensions Arithmetic', function () {
     Dimensions.zero()
       .plus({ nP2shInputs: 1 })
       .should.eql(
-        Dimensions({
+        new Dimensions({
           nP2shInputs: 1,
           nP2shP2wshInputs: 0,
           nP2wshInputs: 0,
@@ -77,7 +62,7 @@ describe('Dimensions Arithmetic', function () {
     sum.should.eql(Dimensions.sum(...components));
 
     sum.should.eql(
-      Dimensions({
+      new Dimensions({
         nP2shInputs: 1,
         nP2shP2wshInputs: 2,
         nP2wshInputs: 3,
@@ -100,7 +85,7 @@ describe('Dimensions Arithmetic', function () {
         [Dimensions.SingleOutput.p2wsh, VirtualSizes.txP2wshOutputSize],
         [Dimensions.SingleOutput.p2pkh, VirtualSizes.txP2pkhOutputSize],
         [Dimensions.SingleOutput.p2wpkh, VirtualSizes.txP2wpkhOutputSize],
-      ] as Array<[IDimensions, number]>
+      ] as [Dimensions, number][]
     ).forEach(([dims, size]) => {
       dims.getOutputsVSize().should.eql(size);
     });
@@ -118,8 +103,14 @@ describe('Dimensions Arithmetic', function () {
     should.throws(() => Dimensions.sum({ outputs: { count: 1, size: 1 } }, { outputs: { count: 1, size: 0 } }));
   });
 
+  it('counts inputs correctly', function () {
+    Object.entries(Dimensions.SingleInput).forEach(([key, value]) => {
+      value.nInputs.should.eql(1, key);
+    });
+  });
+
   it('multiplies correctly', function () {
-    const d = Dimensions({
+    const d = new Dimensions({
       nP2shInputs: 1,
       nP2shP2wshInputs: 2,
       nP2wshInputs: 3,
@@ -131,7 +122,7 @@ describe('Dimensions Arithmetic', function () {
     }).times(3);
 
     d.should.eql(
-      Dimensions({
+      new Dimensions({
         nP2shInputs: 3,
         nP2shP2wshInputs: 6,
         nP2wshInputs: 9,
@@ -143,8 +134,8 @@ describe('Dimensions Arithmetic', function () {
       })
     );
 
-    d.getNInputs().should.eql(63);
-    d.nInputs.should.eql(63);
+    d.getNInputs().should.eql(84);
+    d.nInputs.should.eql(84);
   });
 });
 
@@ -165,7 +156,7 @@ describe('Dimensions from unspent types', function () {
     );
 
     Dimensions.fromUnspents(chainCodes.map((chain) => ({ chain }))).should.eql(
-      Dimensions({
+      new Dimensions({
         nP2shP2wshInputs: 2,
         nP2shInputs: 2,
         nP2wshInputs: 2,
@@ -199,7 +190,7 @@ describe('Dimensions from unspent types', function () {
 
 describe('Dimensions estimates', function () {
   it('calculates vsizes', function () {
-    function dim(nP2shInputs: number, nP2shP2wshInputs: number, nP2wshInputs: number, nOutputs: number): IDimensions {
+    function dim(nP2shInputs: number, nP2shP2wshInputs: number, nP2wshInputs: number, nOutputs: number): Dimensions {
       return Dimensions.sum(
         {
           nP2shInputs,
@@ -215,7 +206,7 @@ describe('Dimensions estimates', function () {
       nP2trScriptPathLevel1Inputs: number,
       nP2trScriptPathLevel2Inputs: number,
       nOutputs: number
-    ): IDimensions {
+    ): Dimensions {
       return Dimensions.sum(
         {
           nP2trKeypathInputs,
@@ -226,7 +217,7 @@ describe('Dimensions estimates', function () {
       );
     }
 
-    [
+    const vectors: [Dimensions, unknown[]][] = [
       [dim(1, 0, 0, 1), [false, 10, 298, 34, 342]],
       [dim(0, 1, 0, 1), [true, 11, 140, 34, 185]],
       [dim(0, 0, 1, 1), [true, 11, 105, 34, 150]],
@@ -239,15 +230,16 @@ describe('Dimensions estimates', function () {
       [dimP2tr(1, 0, 0, 1), [true, 11, 58, 34, 103]],
       [dimP2tr(0, 1, 0, 1), [true, 11, 108, 34, 153]],
       [dimP2tr(0, 0, 1, 1), [true, 11, 116, 34, 161]],
-    ].forEach(([dimensions, expectedSizes]) => {
-      dimensions = dimensions as IDimensions;
+    ];
+
+    vectors.forEach(([dimensions, props]) => {
       [
         dimensions.isSegwit(),
         dimensions.getOverheadVSize(),
         dimensions.getInputsVSize(),
         dimensions.getOutputsVSize(),
         dimensions.getVSize(),
-      ].should.eql(expectedSizes);
+      ].should.eql(props);
     });
   });
 });
