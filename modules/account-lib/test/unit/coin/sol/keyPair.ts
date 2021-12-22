@@ -126,6 +126,7 @@ describe('Sol KeyPair', function () {
       should(() => keyPair.signMessage(message)).throwError('Missing private key');
     });
   });
+
   describe('verifySignature', function () {
     it('should succeed to verify a signature', () => {
       const keyPair = new Sol.KeyPair({ prv: testData.accountWithSeed.privateKey.base58 });
@@ -153,6 +154,36 @@ describe('Sol KeyPair', function () {
       const signature = testData.SIGNED_MESSAGE_SIGNATURE;
       const message = 'incorrect msg';
       keyPair.verifySignature(message, signature).should.equal(false);
+    });
+  });
+
+  describe('deriveHardened', () => {
+    it('should derive child key pairs', () => {
+      const rootKeyPair = new Sol.KeyPair();
+      for (let i = 0; i < 50; i++) {
+        const path = `m/0'/0'/0'/${i}'`;
+        const derived = new Sol.KeyPair(rootKeyPair.deriveHardened(path));
+
+        Sol.Utils.isValidPublicKey(derived.getKeys().pub).should.be.true();
+        Sol.Utils.isValidAddress(derived.getAddress()).should.be.true();
+
+        const derivedPrv = derived.getKeys().prv;
+        should.exist(derivedPrv);
+        Sol.Utils.isValidPrivateKey(derivedPrv as string | Uint8Array).should.be.true();
+
+        const rederived = new Sol.KeyPair(rootKeyPair.deriveHardened(path));
+        rederived.getKeys().should.deepEqual(derived.getKeys());
+      }
+    });
+
+    it('should not be able to derive without private key', () => {
+      const rootKeyPair = new Sol.KeyPair({ pub: testData.accountWithSeed.publicKey });
+      should.throws(() => rootKeyPair.deriveHardened("m/0'/0'/0'/0'"), 'need private key to derive hardened keypair');
+    });
+
+    it('should throw error for non-hardened path', () => {
+      const rootKeyPair = new Sol.KeyPair();
+      should.throws(() => rootKeyPair.deriveHardened('m/0/0/0/0'), 'Invalid derivation path');
     });
   });
 });
