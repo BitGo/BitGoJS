@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import _ from 'lodash';
 import 'lodash.combinations';
-import { Dimensions, IDimensions } from '../../src';
+import { Dimensions } from '../../src';
 import {
   TestUnspentType,
   UnspentTypeOpReturn,
@@ -110,7 +110,7 @@ class TxCombo {
     public walletKeys: bip32.BIP32Interface[],
     public inputTypes: string[],
     public outputTypes: TestUnspentType[],
-    public expectedDims: IDimensions = Dimensions.zero(),
+    public expectedDims: Readonly<Dimensions> = Dimensions.ZERO,
     public signKeys?: bip32.BIP32Interface[],
     public inputValue: number = 10
   ) {

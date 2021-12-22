@@ -1,6 +1,6 @@
 import 'should';
-import { Ed25519KeyDeriver } from '../../../src/v2/internal/keyDeriver';
-import { keys } from '../fixtures/keyDeriver';
+import { Ed25519KeyDeriver } from '../../../src/utils/ed25519KeyDeriver';
+import { keys } from '../../resources/ed25519Deriver';
 
 describe('Key Derivation:', () => {
   const verifyTestVector = ({ path, seed, prv, chainCode }) => {

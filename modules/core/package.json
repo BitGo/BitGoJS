@@ -1,7 +1,7 @@
 {
   "name": "bitgo",
   "version": "14.0.0-rc.10",
-  "description": "BitGo Javascript SDK",
+  "description": "BitGo JavaScript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
   "keywords": [
@@ -63,7 +63,6 @@
     "bs58": "^2.0.1",
     "bs58check": "^1.0.4",
     "cashaddress": "^1.1.0",
-    "create-hmac": "^1.1.7",
     "debug": "^3.1.0",
     "ecurve": "^1.0.6",
     "eol": "^0.5.0",

@@ -15,7 +15,7 @@
 
 ### Get the number of decimal places in a Bitcoin
 
-#### Javascript
+#### JavaScript
 ```js
 const { coins } = require('@bitgo/statics');
 
@@ -23,7 +23,7 @@ const btc = coins.get('btc');
 console.log(btc.decimalPlaces);
 ```
 
-#### Typescript
+#### TypeScript
 ```typescript
 import { coins } from '@bitgo/statics';
 
@@ -33,7 +33,7 @@ console.log(btc.decimalPlaces);
 
 ### Get the contract address for the OmiseGo ERC20 Token
 
-#### Javascript
+#### JavaScript
 ```js
 const { coins } = require('@bitgo/statics');
 
@@ -41,7 +41,7 @@ const omg = coins.get('omg');
 console.log(omg.contractAddress);
 ```
 
-#### Typescript
+#### TypeScript
 ```typescript
 import { coins, Erc20Coin } from '@bitgo/statics';
 
@@ -53,7 +53,7 @@ if (omg instanceof Erc20Coin) {
 
 ### List full names of all defined coins
 
-#### Javascript
+#### JavaScript
 ```js
 const { coins } = require('@bitgo/statics');
 
@@ -62,7 +62,7 @@ coins.forEach((coin) => {
 });
 ```
 
-#### Typescript
+#### TypeScript
 ```typescript
 import { coins } from '@bitgo/statics';
 
@@ -97,13 +97,13 @@ $ # (optionally) nvm use 8.6.0
 $ npm install
 ```
 
-To build the project (from TypeScript to Javascript):
+To build the project (from TypeScript to JavaScript):
 
 ```
 $ npm run build
 ```
 
-This builds the Javascript and adds it to `dist/src/`. You will receive compilation errors if you have invalid syntax.
+This builds the JavaScript and adds it to `dist/src/`. You will receive compilation errors if you have invalid syntax.
 
 
 ## Tests

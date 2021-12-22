@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import BigNum from 'bn.js';
 import {
   AddressHashMode,
@@ -63,7 +63,9 @@ export class SendmanyBuilder extends AbstractContractBuilder {
       makeStandardSTXPostCondition(
         getSTXAddressFromPubKeys(
           this._fromPubKeys,
-          this._coinConfig.network.type === 'mainnet' ? AddressVersion.MainnetMultiSig : AddressVersion.MainnetMultiSig,
+          this._coinConfig.network.type === NetworkType.MAINNET
+            ? AddressVersion.MainnetMultiSig
+            : AddressVersion.TestnetMultiSig,
           this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
           this._numberSignatures,
         ).address,
