@@ -55,3 +55,7 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   durableNonce?: DurableNonceParams;
   memo?: string;
 }
+
+export interface SolanaSequenceId extends SequenceId{
+  durableNonceParams?: string;
+}
