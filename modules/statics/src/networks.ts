@@ -117,14 +117,14 @@ class BitcoinCash extends Mainnet implements UtxoNetwork {
   name = 'BitcoinCash';
   family = CoinFamily.BCH;
   utxolibName = 'bitcoincash';
-  explorerUrl = 'http://blockdozer.com/tx/';
+  explorerUrl = 'https://www.blockchain.com/bch/tx/';
 }
 
 class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinCashTestnet';
   family = CoinFamily.BCH;
   utxolibName = 'bitcoincashTestnet';
-  explorerUrl = 'https://tbch.blockdozer.com/tx/';
+  explorerUrl = 'https://www.blockchain.com/bch-testnet/tx/';
 }
 
 class BitcoinABC extends Mainnet implements UtxoNetwork {
