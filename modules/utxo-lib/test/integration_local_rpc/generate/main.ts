@@ -51,6 +51,9 @@ async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void>
         case 4:
           minBlocks = 400;
           break;
+        case 5:
+          minBlocks = 500;
+          break;
         default:
           throw new Error(`unexpected protocol version ${protocol.version}`);
       }

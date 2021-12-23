@@ -48,7 +48,7 @@ function getDockerParams(network: Network): DockerImageParams {
         throw new Error(`envvar ZCASH_PARAMS_DIR not set`);
       }
       return dockerImage(
-        'electriccoinco/zcashd:v4.4.0',
+        'electriccoinco/zcashd:v4.5.1-1',
         undefined, // `zcashd` is implicit
         [
           '-nuparams=5ba81b19:10',

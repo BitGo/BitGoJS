@@ -14,7 +14,12 @@ export type Protocol = {
 };
 
 export function getProtocolVersions(network: Network): number[] {
-  return [getDefaultTransactionVersion(network)];
+  switch (getMainnet(network)) {
+    case networks.zcash:
+      return [getDefaultTransactionVersion(network), 5];
+    default:
+      return [getDefaultTransactionVersion(network)];
+  }
 }
 
 export function getFixtureDir(protocol: Protocol): string {

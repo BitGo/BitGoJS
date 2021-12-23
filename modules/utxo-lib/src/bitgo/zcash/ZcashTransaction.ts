@@ -2,39 +2,41 @@ import { Transaction, crypto } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 
-const blake2b = require('@bitgo/blake2b');
 const varuint = require('varuint-bitcoin');
 const typeforce = require('typeforce');
 
 import { networks } from '../../networks';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
+import { fromBufferV4, fromBufferV5, toBufferV4, toBufferV5, VALUE_INT64_ZERO } from './ZcashBufferutils';
+import { getBlake2bHash, getSignatureDigest, getTxidDigest } from './hashZip0244';
 
 const ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex');
 
-const VALUE_INT64_ZERO = Buffer.from('0000000000000000', 'hex');
-
 export type ZcashNetwork = typeof networks.zcash | typeof networks.zcashTest;
-
-/**
- * Blake2b hashing algorithm for Zcash
- * @param buffer
- * @param personalization
- * @returns 256-bit BLAKE2b hash
- */
-function getBlake2bHash(buffer: Buffer, personalization: string | Buffer) {
-  const out = Buffer.allocUnsafe(32);
-  return blake2b(out.length, null, null, Buffer.from(personalization)).update(buffer).digest(out);
-}
 
 // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L29
 const SAPLING_VERSION_GROUP_ID = 0x892f2085;
+const ZIP225_VERSION_GROUP_ID = 0x26a7270a;
+
+// https://github.com/zcash/zcash/blob/v4.5.1/src/consensus/upgrades.cpp#L11
+const OVERWINTER_BRANCH_ID = 0x5ba81b19;
+const CANOPY_BRANCH_ID = 0xe9ff75a6;
+const NU5_BRANCH_ID = 0x37519621;
+
+export class UnsupportedTransactionError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
 
 export function getDefaultVersionGroupIdForVersion(version: number): number {
   switch (version) {
     case 4:
       return SAPLING_VERSION_GROUP_ID;
+    case 5:
+      return ZIP225_VERSION_GROUP_ID;
   }
-  throw new Error(`not implemented`);
+  throw new Error(`no value for version ${version}`);
 }
 
 export function getDefaultConsensusBranchIdForVersion(version: number): number {
@@ -43,14 +45,15 @@ export function getDefaultConsensusBranchIdForVersion(version: number): number {
     case 2:
       return 0;
     case 3:
-      return 0x5ba81b19;
+      return OVERWINTER_BRANCH_ID;
     case 4:
-      // 4: 0x76b809bb (old Sapling branch id). Blossom branch id becomes effective after block 653600
-      // 4: 0x2bb40e60
-      // 4: 0xf5b9230b (Heartwood branch id, see https://zips.z.cash/zip-0250)
-      return 0xe9ff75a6; // (Canopy branch id, see https://zips.z.cash/zip-0251)
+      // https://zips.z.cash/zip-0251
+      return CANOPY_BRANCH_ID;
+    case 5:
+      // https://zips.z.cash/zip-0252
+      return NU5_BRANCH_ID;
   }
-  throw new Error(`no consensusBranchId for ${version}`);
+  throw new Error(`no value for version ${version}`);
 }
 
 export class ZcashTransaction extends UtxoTransaction {
@@ -89,6 +92,7 @@ export class ZcashTransaction extends UtxoTransaction {
     tx.version = bufferReader.readInt32();
 
     // Split the header into fOverwintered and nVersion
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L772
     tx.overwintered = tx.version >>> 31; // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07fffffff; // 3 for overwinter
     tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(tx.version);
@@ -97,61 +101,17 @@ export class ZcashTransaction extends UtxoTransaction {
       tx.versionGroupId = bufferReader.readUInt32();
     }
 
-    const vinLen = bufferReader.readVarInt();
-    for (let i = 0; i < vinLen; ++i) {
-      tx.ins.push({
-        hash: bufferReader.readSlice(32),
-        index: bufferReader.readUInt32(),
-        script: bufferReader.readVarSlice(),
-        sequence: bufferReader.readUInt32(),
-        witness: [],
-      });
-    }
-
-    const voutLen = bufferReader.readVarInt();
-    for (let i = 0; i < voutLen; ++i) {
-      tx.outs.push({
-        value: bufferReader.readUInt64(),
-        script: bufferReader.readVarSlice(),
-      });
-    }
-
-    tx.locktime = bufferReader.readUInt32();
-
-    if (tx.isOverwinterCompatible()) {
-      tx.expiryHeight = bufferReader.readUInt32();
-    }
-
-    if (tx.isSaplingCompatible()) {
-      const valueBalance = bufferReader.readSlice(8);
-      if (!valueBalance.equals(VALUE_INT64_ZERO)) {
-        /* istanbul ignore next */
-        throw new Error(`unsupported valueBalance`);
-      }
-
-      const nShieldedSpend = bufferReader.readVarInt();
-      if (nShieldedSpend !== 0) {
-        /* istanbul ignore next */
-        throw new Error(`shielded spend not supported`);
-      }
-
-      const nShieldedOutput = bufferReader.readVarInt();
-      if (nShieldedOutput !== 0) {
-        /* istanbul ignore next */
-        throw new Error(`shielded output not supported`);
-      }
-    }
-
-    if (tx.supportsJoinSplits()) {
-      const joinSplitsLen = bufferReader.readVarInt();
-      if (joinSplitsLen !== 0) {
-        /* istanbul ignore next */
-        throw new Error(`joinSplits not supported`);
-      }
+    if (tx.version === 5) {
+      fromBufferV5(bufferReader, tx);
+    } else {
+      fromBufferV4(bufferReader, tx);
     }
 
     if (__noStrict) return tx;
-    if (bufferReader.offset !== buffer.length) throw new Error('Transaction has unexpected data');
+    if (bufferReader.offset !== buffer.length) {
+      const trailing = buffer.slice(bufferReader.offset);
+      throw new Error(`Unexpected trailing bytes: ${trailing.toString('hex')}`);
+    }
 
     return tx;
   }
@@ -164,13 +124,24 @@ export class ZcashTransaction extends UtxoTransaction {
     if (this.isOverwinterCompatible()) {
       byteLength += 4; // nExpiryHeight
     }
-    if (this.isSaplingCompatible()) {
-      byteLength += 8; // valueBalance
-      byteLength += varuint.encodingLength(0); // inputs
-      byteLength += varuint.encodingLength(0); // outputs
-    }
-    if (this.supportsJoinSplits()) {
-      byteLength += varuint.encodingLength(0); // joinsplits
+    const emptyVectorLength = varuint.encodingLength(0);
+    if (this.version === 5) {
+      // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L822
+      byteLength += 4; // consensusBranchId
+      byteLength += emptyVectorLength; // saplingBundle inputs
+      byteLength += emptyVectorLength; // saplingBundle outputs
+      byteLength += 1; // orchardBundle (empty)
+    } else {
+      if (this.isSaplingCompatible()) {
+        // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L862
+        byteLength += 8; // valueBalance (uint64)
+        byteLength += emptyVectorLength; // inputs
+        byteLength += emptyVectorLength; // outputs
+      }
+      if (this.supportsJoinSplits()) {
+        //
+        byteLength += emptyVectorLength; // joinsplits
+      }
     }
     return byteLength;
   }
@@ -270,8 +241,22 @@ export class ZcashTransaction extends UtxoTransaction {
    * @param hashType
    * @returns Buffer BLAKE2b hash
    */
-  hashForSignatureByNetwork(inIndex: number, prevOutScript: Buffer, value: number, hashType: number): Buffer {
+  hashForSignatureByNetwork(
+    inIndex: number | undefined,
+    prevOutScript: Buffer,
+    value: number,
+    hashType: number
+  ): Buffer {
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/script/interpreter.cpp#L1175
+    if (this.version === 5) {
+      return getSignatureDigest(this, inIndex, prevOutScript, value, hashType);
+    }
+
     typeforce(types.tuple(types.UInt32, types.Buffer, types.Number), arguments);
+
+    if (inIndex === undefined) {
+      throw new Error(`invalid inIndex`);
+    }
 
     /* istanbul ignore next */
     if (inIndex >= this.ins.length) {
@@ -354,40 +339,10 @@ export class ZcashTransaction extends UtxoTransaction {
       bufferWriter.writeInt32(this.version);
     }
 
-    bufferWriter.writeVarInt(this.ins.length);
-
-    this.ins.forEach(function (txIn) {
-      bufferWriter.writeSlice(txIn.hash);
-      bufferWriter.writeUInt32(txIn.index);
-      bufferWriter.writeVarSlice(txIn.script);
-      bufferWriter.writeUInt32(txIn.sequence);
-    });
-
-    bufferWriter.writeVarInt(this.outs.length);
-    this.outs.forEach(function (txOut) {
-      if ((txOut as any).valueBuffer) {
-        bufferWriter.writeSlice((txOut as any).valueBuffer);
-      } else {
-        bufferWriter.writeUInt64(txOut.value);
-      }
-
-      bufferWriter.writeVarSlice(txOut.script);
-    });
-
-    bufferWriter.writeUInt32(this.locktime);
-
-    if (this.isOverwinterCompatible()) {
-      bufferWriter.writeUInt32(this.expiryHeight);
-    }
-
-    if (this.isSaplingCompatible()) {
-      bufferWriter.writeSlice(VALUE_INT64_ZERO);
-      bufferWriter.writeVarInt(0); // vShieldedSpendLength
-      bufferWriter.writeVarInt(0); // vShieldedOutputLength
-    }
-
-    if (this.supportsJoinSplits()) {
-      bufferWriter.writeVarInt(0); // joinsSplits length
+    if (this.version === 5) {
+      toBufferV5(bufferWriter, this);
+    } else {
+      toBufferV4(bufferWriter, this);
     }
 
     if (initialOffset !== undefined) {
@@ -399,6 +354,9 @@ export class ZcashTransaction extends UtxoTransaction {
   getHash(forWitness?: boolean): Buffer {
     if (forWitness) {
       throw new Error(`invalid argument`);
+    }
+    if (this.version === 5) {
+      return getTxidDigest(this);
     }
     return crypto.hash256(this.toBuffer());
   }

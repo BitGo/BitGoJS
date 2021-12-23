@@ -36,7 +36,6 @@ import {
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { getDefaultCosigner } from '../testutil';
-import { isZcash } from '../../src/networks';
 
 const utxolib = require('../../src');
 
