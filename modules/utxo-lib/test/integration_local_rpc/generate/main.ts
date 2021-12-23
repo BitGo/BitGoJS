@@ -4,7 +4,7 @@ const utxolib = require('../../../src');
 
 import { Network, getMainnet, getNetworkName, isTestnet } from '../../../src';
 
-import { getRegtestNode, getRegtestNodeUrl, Node } from './regtestNode';
+import { getRegtestNode, getRegtestNodeUrl, Node, getRegtestNodeHelp } from './regtestNode';
 import {
   createScriptPubKey,
   createSpendTransaction,
@@ -16,6 +16,19 @@ import { RpcClient } from './RpcClient';
 import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
 import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import { sendFromFaucet, generateToFaucet } from './faucet';
+
+async function printRpcHelp(rpc: RpcClient, network: Network): Promise<void> {
+  console.log(await rpc.getHelp());
+}
+
+async function printNodeHelp(network: Network): Promise<void> {
+  const { stdout, stderr } = await getRegtestNodeHelp(network);
+  if (stderr) {
+    console.error(stderr);
+    throw new Error(`stderr`);
+  }
+  console.log(stdout);
+}
 
 async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
   let minBlocks = 300;
@@ -89,7 +102,7 @@ async function createTransactions(rpc: RpcClient, network: Network) {
   }
 }
 
-async function run(network: Network) {
+async function withRpcClient(network: Network, f: (c: RpcClient) => Promise<void>): Promise<void> {
   await wipeFixtures(network);
 
   let rpc;
@@ -102,8 +115,7 @@ async function run(network: Network) {
   }
 
   try {
-    await initBlockchain(rpc, network);
-    await createTransactions(rpc, network);
+    await f(rpc);
   } catch (e) {
     console.error(`error for network ${getNetworkName(network)}`);
     throw e;
@@ -112,6 +124,17 @@ async function run(network: Network) {
       await node.stop();
     }
   }
+}
+
+async function run(network: Network) {
+  await withRpcClient(network, async (rpc) => {
+    if (process.env.UTXOLIB_TESTS_PRINT_RPC_HELP === '1') {
+      await printRpcHelp(rpc, network);
+    } else {
+      await initBlockchain(rpc, network);
+      await createTransactions(rpc, network);
+    }
+  });
 }
 
 async function main(args: string[]) {
@@ -124,7 +147,7 @@ async function main(args: string[]) {
   });
 
   for (const networkName of Object.keys(utxolib.networks)) {
-    const network = utxolib.networks[networkName];
+    const network: Network = utxolib.networks[networkName];
     if (!isTestnet(network)) {
       continue;
     }
@@ -134,7 +157,14 @@ async function main(args: string[]) {
       continue;
     }
 
-    await run(utxolib.networks[networkName]);
+    if (process.env.UTXOLIB_TESTS_PRINT_NODE_HELP === '1') {
+      await printNodeHelp(network);
+      continue;
+    }
+
+    for (const version of getProtocolVersions(network)) {
+      await run({ network, version });
+    }
   }
 }
 

@@ -101,6 +101,10 @@ export class RpcClient {
     return new RpcClientWithWallet(this.network, this.url, this.networkInfo, walletName);
   }
 
+  async getHelp(): Promise<string> {
+    return this.exec('help');
+  }
+
   async createWallet(walletName: string): Promise<string> {
     return this.exec('createwallet', walletName);
   }

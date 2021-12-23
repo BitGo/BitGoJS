@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
-import { spawn } from 'child_process';
+import * as util from 'util';
+import { spawn, execFile } from 'child_process';
 
 import * as utxolib from '../../../src';
 import { Network, getNetworkName } from '../../../src/networks';
@@ -103,6 +104,21 @@ export async function getRegtestNode(network: Network): Promise<Node> {
       });
     },
   };
+}
+
+export async function getRegtestNodeHelp(network: Network): Promise<{ stdout: string; stderr: string }> {
+  const dockerParams = getDockerParams(network);
+  const args = [
+    'run',
+    ...dockerParams.extraArgsDocker,
+    dockerParams.image,
+    ...(dockerParams.binary ? [dockerParams.binary] : []),
+    '--help',
+    '-help-debug',
+    '-regtest',
+  ];
+
+  return await util.promisify(execFile)('docker', args);
 }
 
 export function getRegtestNodeUrl(network: Network): string {
