@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
-import { TxOutput, Network, isTestnet } from '../../src';
+import { TxOutput, isTestnet } from '../../src';
 
 import {
   verifySignature,
@@ -26,22 +26,29 @@ import {
   ScriptType,
   scriptTypes,
 } from './generate/outputScripts.util';
-import { fixtureKeys, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
+import {
+  fixtureKeys,
+  getProtocolVersions,
+  Protocol,
+  readFixture,
+  TransactionFixtureWithInputs,
+} from './generate/fixtures';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { getDefaultCosigner } from '../testutil';
+import { isZcash } from '../../src/networks';
 
 const utxolib = require('../../src');
 
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
-function runTestParse(network: Network, txType: FixtureTxType, scriptType: ScriptType) {
-  if (txType === 'deposit' && !isSupportedDepositType(network, scriptType)) {
+function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: ScriptType) {
+  if (txType === 'deposit' && !isSupportedDepositType(protocol.network, scriptType)) {
     return;
   }
 
-  if (txType === 'spend' && !isSupportedSpendType(network, scriptType)) {
+  if (txType === 'spend' && !isSupportedSpendType(protocol.network, scriptType)) {
     return;
   }
 
@@ -51,8 +58,8 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     let parsedTx: UtxoTransaction;
 
     before(async function () {
-      fixture = await readFixture(network, fixtureName);
-      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), network);
+      fixture = await readFixture(protocol, fixtureName);
+      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network);
     });
 
     type InputLookup = { txid?: string; hash?: Buffer; index: number };
@@ -93,14 +100,14 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
     }
 
     it(`round-trip`, function () {
-      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), network, getPrevOutputs());
+      parseTransactionRoundTrip(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, getPrevOutputs());
     });
 
     it(`recreate from unsigned hex`, function () {
       if (txType === 'deposit') {
         return;
       }
-      const txbUnsigned = createTransactionBuilderForNetwork(network);
+      const txbUnsigned = createTransactionBuilderForNetwork(protocol.network, { version: protocol.version });
       getPrevOutputs().forEach((o) => {
         txbUnsigned.addInput(o.txid, o.vout);
       });
@@ -108,7 +115,7 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);
       });
 
-      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), network);
+      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network);
       const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());
       const signKeys = [fixtureKeys[0], fixtureKeys[2]];
       const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;
@@ -126,13 +133,15 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         });
       });
 
+      assert.strictEqual(txb.build().version, tx.version);
+
       assert.strictEqual(txb.build().toBuffer().toString('hex'), fixture.transaction.hex);
     });
 
     it('compare against RPC data', function () {
       assert.deepStrictEqual(
-        normalizeRpcTransaction(fixture.transaction, network),
-        normalizeParsedTransaction(parsedTx, network)
+        normalizeRpcTransaction(fixture.transaction, protocol.network),
+        normalizeParsedTransaction(parsedTx, protocol.network)
       );
     });
 
@@ -204,8 +213,8 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
         scriptType,
         getPrevOutputs(),
         recipientScript,
-        network,
-        { signKeys }
+        protocol.network,
+        { signKeys, version: protocol.version }
       );
     }
 
@@ -248,16 +257,17 @@ function runTestParse(network: Network, txType: FixtureTxType, scriptType: Scrip
 }
 
 describe(`regtest fixtures`, function () {
-  Object.keys(utxolib.networks).forEach((networkName) => {
-    const network = utxolib.networks[networkName];
+  utxolib.getNetworkList().forEach((network) => {
     if (!isTestnet(network)) {
       return;
     }
 
-    describe(`${networkName} fixtures`, function () {
-      scriptTypes.forEach((scriptType) => {
-        fixtureTxTypes.forEach((txType) => {
-          runTestParse(network, txType, scriptType);
+    getProtocolVersions(network).forEach((version) => {
+      describe(`${utxolib.getNetworkName(network)} v${version} fixtures`, function () {
+        scriptTypes.forEach((scriptType) => {
+          fixtureTxTypes.forEach((txType) => {
+            runTestParse({ network, version }, txType, scriptType);
+          });
         });
       });
     });

@@ -111,7 +111,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       if (isZcash(network)) {
         delete v.valueZat;
       }
-      v.value = v.value * 1e8;
+      v.value = Math.round(v.value * 1e8);
       return v;
     }),
   };
@@ -136,6 +136,7 @@ export function normalizeRpcTransaction(tx: RpcTransaction, network: Network): N
       delete normalizedTx.proUpRegTx;
       break;
     case networks.zcash:
+      delete normalizedTx.authdigest;
       delete normalizedTx.valueBalanceZat;
   }
 

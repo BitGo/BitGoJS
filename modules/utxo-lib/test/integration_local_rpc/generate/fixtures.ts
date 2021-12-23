@@ -2,20 +2,30 @@ import * as assert from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { Network, getNetworkName } from '../../../src';
+import { networks, Network, getNetworkName, getMainnet } from '../../../src';
 import { RpcClient } from './RpcClient';
 import { RpcTransaction } from './RpcTypes';
 import { getKeyTriple } from '../../testutil';
+import { getDefaultTransactionVersion } from '../../../src/bitgo';
 
-export function getFixtureDir(network: Network): string {
-  const networkName = getNetworkName(network);
-  assert(networkName);
-  return path.join(__dirname, '..', 'fixtures', networkName);
+export type Protocol = {
+  network: Network;
+  version: number;
+};
+
+export function getProtocolVersions(network: Network): number[] {
+  return [getDefaultTransactionVersion(network)];
 }
 
-export async function wipeFixtures(network: Network): Promise<void> {
+export function getFixtureDir(protocol: Protocol): string {
+  const networkName = getNetworkName(protocol.network);
+  assert(networkName);
+  return path.join(__dirname, '..', 'fixtures', networkName, `v${protocol.version}`);
+}
+
+export async function wipeFixtures(protocol: Protocol): Promise<void> {
   try {
-    await fs.remove(getFixtureDir(network));
+    await fs.remove(getFixtureDir(protocol));
   } catch (e) {
     if (e.code === 'ENOENT') {
       return;
@@ -23,13 +33,13 @@ export async function wipeFixtures(network: Network): Promise<void> {
   }
 }
 
-export async function writeFixture(network: Network, filename: string, content: unknown): Promise<void> {
-  await fs.mkdir(getFixtureDir(network), { recursive: true });
-  await fs.writeFile(path.join(getFixtureDir(network), filename), JSON.stringify(content, null, 2));
+export async function writeFixture(protocol: Protocol, filename: string, content: unknown): Promise<void> {
+  await fs.mkdir(getFixtureDir(protocol), { recursive: true });
+  await fs.writeFile(path.join(getFixtureDir(protocol), filename), JSON.stringify(content, null, 2));
 }
 
-export async function readFixture<T>(network: Network, filename: string): Promise<T> {
-  return JSON.parse(await fs.readFile(path.join(getFixtureDir(network), filename), 'utf8'));
+export async function readFixture<T>(protocol: Protocol, filename: string): Promise<T> {
+  return JSON.parse(await fs.readFile(path.join(getFixtureDir(protocol), filename), 'utf8'));
 }
 
 export type TransactionFixtureWithInputs = {
@@ -39,7 +49,7 @@ export type TransactionFixtureWithInputs = {
 
 export async function writeTransactionFixtureWithInputs(
   rpc: RpcClient,
-  network: Network,
+  protocol: Protocol,
   filename: string,
   txid: string
 ): Promise<void> {
@@ -52,7 +62,7 @@ export async function writeTransactionFixtureWithInputs(
     rpc.getRawTransactionVerbose(inputTxid)
   );
   assert.strictEqual(inputs.length, inputTransactionIds.length);
-  await writeFixture(network, filename, {
+  await writeFixture(protocol, filename, {
     transaction,
     inputs,
   });

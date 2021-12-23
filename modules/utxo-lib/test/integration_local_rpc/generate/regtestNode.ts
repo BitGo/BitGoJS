@@ -55,7 +55,9 @@ function getDockerParams(network: Network): DockerImageParams {
           '-nuparams=76b809bb:20',
           '-nuparams=2bb40e60:30',
           '-nuparams=f5b9230b:40',
-          '-nuparams=e9ff75a6:50',
+          '-nuparams=e9ff75a6:400',
+          // https://zips.z.cash/zip-0252
+          '-nuparams=37519621:500',
         ],
         [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
       );

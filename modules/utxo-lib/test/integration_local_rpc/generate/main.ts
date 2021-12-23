@@ -13,7 +13,13 @@ import {
   scriptTypes,
 } from './outputScripts.util';
 import { RpcClient } from './RpcClient';
-import { fixtureKeys, wipeFixtures, writeTransactionFixtureWithInputs } from './fixtures';
+import {
+  fixtureKeys,
+  getProtocolVersions,
+  Protocol,
+  wipeFixtures,
+  writeTransactionFixtureWithInputs,
+} from './fixtures';
 import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import { sendFromFaucet, generateToFaucet } from './faucet';
 
@@ -30,15 +36,25 @@ async function printNodeHelp(network: Network): Promise<void> {
   console.log(stdout);
 }
 
-async function initBlockchain(rpc: RpcClient, network: Network): Promise<void> {
+async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void> {
   let minBlocks = 300;
-  switch (network) {
+  switch (protocol.network) {
     case utxolib.networks.bitcoingoldTestnet:
       // The actual BTC/BTG fork flag only gets activated at this height.
       // On mainnet the height was at 491407 (Around 10/25/2017 12:00 UTC)
       // Prior to that, signatures that use the BIP143 sighash flag are invalid.
       // https://github.com/BTCGPU/BTCGPU/blob/71894be9/src/chainparams.cpp#L371
-      minBlocks = 2001;
+      minBlocks = 2000;
+      break;
+    case utxolib.networks.zcashTest:
+      switch (protocol.version) {
+        case 4:
+          minBlocks = 400;
+          break;
+        default:
+          throw new Error(`unexpected protocol version ${protocol.version}`);
+      }
+      break;
   }
 
   const diff = minBlocks - (await rpc.getBlockCount());
@@ -69,55 +85,62 @@ function toRegtestAddress(network: { bech32?: string }, scriptType: ScriptType, 
 async function createTransactionsForScriptType(
   rpc: RpcClient,
   scriptType: ScriptType,
-  network: Network
+  protocol: Protocol
 ): Promise<void> {
-  const logTag = `createTransaction ${scriptType} ${getNetworkName(network)}`;
-  if (!isSupportedDepositType(network, scriptType)) {
+  const logTag = `createTransaction ${scriptType} ${getNetworkName(protocol.network)} v=${protocol.version}`;
+  if (!isSupportedDepositType(protocol.network, scriptType)) {
     console.log(logTag + ': not supported, skipping');
     return;
   }
   console.log(logTag);
 
-  const script = createScriptPubKey(fixtureKeys, scriptType, network);
-  const address = toRegtestAddress(network as { bech32: string }, scriptType, script);
+  const script = createScriptPubKey(fixtureKeys, scriptType, protocol.network);
+  const address = toRegtestAddress(protocol.network as { bech32: string }, scriptType, script);
   const deposit1Txid = await sendFromFaucet(rpc, address, 1);
   const deposit1Tx = await rpc.getRawTransaction(deposit1Txid);
-  await writeTransactionFixtureWithInputs(rpc, network, `deposit_${scriptType}.json`, deposit1Txid);
-  if (!isScriptType2Of3(scriptType) || !isSupportedScriptType(network, scriptType)) {
+  await writeTransactionFixtureWithInputs(rpc, protocol, `deposit_${scriptType}.json`, deposit1Txid);
+  if (!isScriptType2Of3(scriptType) || !isSupportedScriptType(protocol.network, scriptType)) {
     console.log(logTag + ': spend not supported, skipping spend');
     return;
   }
 
   const deposit2Txid = await sendFromFaucet(rpc, address, 1);
   const deposit2Tx = await rpc.getRawTransaction(deposit2Txid);
-  const spendTx = createSpendTransaction(fixtureKeys, scriptType, [deposit1Tx, deposit2Tx], script, network);
+  const spendTx = createSpendTransaction(
+    fixtureKeys,
+    scriptType,
+    [deposit1Tx, deposit2Tx],
+    script,
+    protocol.network,
+    protocol.version
+  );
   const spendTxid = await rpc.sendRawTransaction(spendTx.toBuffer());
   assert.strictEqual(spendTxid, spendTx.getId());
-  await writeTransactionFixtureWithInputs(rpc, network, `spend_${scriptType}.json`, spendTxid);
+  await writeTransactionFixtureWithInputs(rpc, protocol, `spend_${scriptType}.json`, spendTxid);
 }
 
-async function createTransactions(rpc: RpcClient, network: Network) {
+async function createTransactions(rpc: RpcClient, protocol: Protocol) {
   for (const scriptType of scriptTypes) {
-    await createTransactionsForScriptType(rpc, scriptType, network);
+    await createTransactionsForScriptType(rpc, scriptType, protocol);
   }
 }
 
-async function withRpcClient(network: Network, f: (c: RpcClient) => Promise<void>): Promise<void> {
-  await wipeFixtures(network);
+async function withRpcClient(protocol: Protocol, f: (c: RpcClient) => Promise<void>): Promise<void> {
+  await wipeFixtures(protocol);
 
   let rpc;
   let node: Node | undefined;
   if (process.env.UTXOLIB_TESTS_USE_DOCKER === '1') {
-    node = await getRegtestNode(network);
-    rpc = await RpcClient.forUrlWait(network, getRegtestNodeUrl(network));
+    node = await getRegtestNode(protocol.network);
+    rpc = await RpcClient.forUrlWait(protocol.network, getRegtestNodeUrl(protocol.network));
   } else {
-    rpc = await RpcClient.fromEnvvar(network);
+    rpc = await RpcClient.fromEnvvar(protocol.network);
   }
 
   try {
     await f(rpc);
   } catch (e) {
-    console.error(`error for network ${getNetworkName(network)}`);
+    console.error(`error for network ${getNetworkName(protocol.network)}`);
     throw e;
   } finally {
     if (node) {
@@ -126,13 +149,13 @@ async function withRpcClient(network: Network, f: (c: RpcClient) => Promise<void
   }
 }
 
-async function run(network: Network) {
-  await withRpcClient(network, async (rpc) => {
+async function run(protocol: Protocol) {
+  await withRpcClient(protocol, async (rpc) => {
     if (process.env.UTXOLIB_TESTS_PRINT_RPC_HELP === '1') {
-      await printRpcHelp(rpc, network);
+      await printRpcHelp(rpc, protocol.network);
     } else {
-      await initBlockchain(rpc, network);
-      await createTransactions(rpc, network);
+      await initBlockchain(rpc, protocol);
+      await createTransactions(rpc, protocol);
     }
   });
 }

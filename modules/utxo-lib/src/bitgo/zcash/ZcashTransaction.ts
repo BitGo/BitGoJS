@@ -26,6 +26,17 @@ function getBlake2bHash(buffer: Buffer, personalization: string | Buffer) {
   return blake2b(out.length, null, null, Buffer.from(personalization)).update(buffer).digest(out);
 }
 
+// https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L29
+const SAPLING_VERSION_GROUP_ID = 0x892f2085;
+
+export function getDefaultVersionGroupIdForVersion(version: number): number {
+  switch (version) {
+    case 4:
+      return SAPLING_VERSION_GROUP_ID;
+  }
+  throw new Error(`not implemented`);
+}
+
 export function getDefaultConsensusBranchIdForVersion(version: number): number {
   switch (version) {
     case 1:
