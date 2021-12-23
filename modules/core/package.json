@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "14.0.0-rc.10",
+  "version": "14.0.0-rc.11",
   "description": "BitGo JavaScript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
@@ -46,10 +46,10 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/account-lib": "^2.18.0-rc.2",
-    "@bitgo/statics": "^6.16.0-rc.1",
-    "@bitgo/unspents": "^0.7.2-rc.5",
-    "@bitgo/utxo-lib": "^2.2.1-rc.5",
+    "@bitgo/account-lib": "^2.18.0-rc.3",
+    "@bitgo/statics": "^6.16.0-rc.2",
+    "@bitgo/unspents": "^0.7.2-rc.6",
+    "@bitgo/utxo-lib": "^2.2.1-rc.6",
     "@types/bluebird": "^3.5.25",
     "@types/superagent": "^4.1.3",
     "algosdk": "^1.12.0",
