@@ -3,11 +3,15 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
+import * as _ from 'lodash';
 
 describe('SOL:', function () {
   let bitgo;
   let basecoin;
   let keyPair;
+  let newTxPrebuild;
+  let newTxParams;
+  let newTxParamsWithError;
   const badAddresses = resources.addresses.invalidAddresses;
   const goodAddresses = resources.addresses.validAddresses;
 
@@ -15,12 +19,70 @@ describe('SOL:', function () {
     pub: resources.accountWithSeed.publicKey,
     prv: resources.accountWithSeed.privateKey.base58,
   };
-
+  const txPrebuild = {
+    recipients: [
+      {
+        address: 'lionteste212',
+        amount: '1000',
+      },
+    ],
+    txBase64: resources.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
+    transaction: {
+      compression: 'none',
+      packed_trx:
+          '1e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f5300000000013100',
+      signatures: [],
+    },
+    txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+    isVotingTransaction: false,
+    coin: 'tsol',
+  };
+  const txParams = {
+    txPrebuild,
+    recipients: [
+      {
+        address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+        amount: '300000',
+      },
+    ],
+  };
+  const memo = 'test memo';
+  const feePayer = '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
+  const blockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+  const errorBlockhash = 'GHtXQBsoZHVnNFa9YzFr17DJjgHXk3ycTKD5xD3Zi';
+  const durableNonce = {
+    walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe'
+  };
+  const errorDurableNonce = {
+    walletNonceAddress: '8YM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe'
+  };
+  const txParamsWithError = {
+    txPrebuild,
+    recipients: [
+      {
+        address: 'CP5Dpaa42mMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+        amount: '300000',
+      },
+    ],
+  };
+  const errorMemo = 'different memo';
+  const errorFeePayer = '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tsol');
     keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);
+    newTxPrebuild = () => {
+      return _.cloneDeep(txPrebuild);
+    };
+    newTxParams = () => {
+      return _.cloneDeep(txParams);
+    };
+    newTxParamsWithError = () => {
+      return _.cloneDeep(txParamsWithError);
+    };
   });
 
   it('should instantiate the coin', function () {
@@ -37,10 +99,40 @@ describe('SOL:', function () {
     basecoin.getFullName().should.equal('Testnet Sol');
     basecoin.getBaseFactor().should.equal(1000000000);
   });
-
-  it('should verify transactions', async function () {
-    await basecoin.verifyTransaction('placeholder').should.be.rejectedWith('verifyTransaction method not implemented');
+  describe('verify transactions', () => {
+    it('should verify transactions', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, durableNonce });
+      validTransaction.should.equal(true);
+    });
+    it('should fail verify transactions when have different memo', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+    });
+    it('should fail verify transactions when have different durableNonce', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, errorDurableNonce }).should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
+    });
+    it('should fail verify transactions when have different feePayer', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx fee payer does not match with txParams fee payer');
+    });
+    it('should fail verify transactions when have different blockhash', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, errorBlockhash }).should.be.rejectedWith('Tx blockhash does not match with param blockhash');
+    });
+    it('should fail verify transactions when have different recipients', async function () {
+      const txParams = newTxParamsWithError();
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
   });
+
 
   it('should verify valid address', (function () {
     const params = { address: goodAddresses[0] };
