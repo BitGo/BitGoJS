@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseAddress, BaseKey } from './iface';
+import { BaseAddress, BaseKey, ValidityWindow } from './iface';
 import { BaseTransaction } from './baseTransaction';
 import { SigningError } from './errors';
 
@@ -139,4 +139,33 @@ export abstract class BaseTransactionBuilder {
    * Set the transaction being built.
    */
   protected abstract set transaction(transaction: BaseTransaction);
+
+  validateValidityWindows(validityWindow: ValidityWindow, defaultFirstValid: number): ValidityWindow {
+    const { lastValid, minDuration, maxDuration } = validityWindow;
+    if (!minDuration || !maxDuration) {
+      throw new Error('Missing fields max or min duration');
+    }
+    if (minDuration >= maxDuration) {
+      throw new Error('Max duration should be grater than min duration');
+    }
+    if (!validityWindow.firstValid) {
+      validityWindow.firstValid = defaultFirstValid;
+    }
+    const { firstValid } = validityWindow;
+
+    if (lastValid) {
+      if (firstValid >= lastValid) {
+        throw new Error('First valid should be less than last valid');
+      }
+      if (firstValid + minDuration > lastValid) {
+        throw new Error('First valid plus min duration should be less than or equal to last valid');
+      }
+      if (lastValid > firstValid + maxDuration) {
+        throw new Error('First valid plus max duration should be grater than or equal to last valid');
+      }
+    } else {
+      validityWindow.lastValid = firstValid + minDuration;
+    }
+    return validityWindow;
+  }
 }
