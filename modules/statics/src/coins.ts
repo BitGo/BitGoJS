@@ -526,6 +526,7 @@ export const coins = CoinMap.fromCoins([
   erc20('prdx', 'PRDX Token', 9, '0xe17900f23b7ebb2791f25f1eaa63d8f5e603e9a5', UnderlyingAsset.PRDX),
   erc20('pro', 'Propy', 18, '0x9041fe5b3fdea0f5e4afdc17e75180738d877a01', UnderlyingAsset.PRO),
   erc20('prts', 'Protos', 0, '0x835a44027ee4e92bbd8874e5ede9e5148b069e96', UnderlyingAsset.PRTS),
+  erc20('pup', 'Puppy Coin', 3, '0x2696fc1896f2d5f3deaa2d91338b1d2e5f4e1d44', UnderlyingAsset.PUP),
   erc20('npxs', 'Pundi X', 18, '0xa15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3', UnderlyingAsset.NPXS),
   erc20('ns2drp', 'New Silver Series 2 DROP', 18, '0xe4c72b4de5b0f9accea880ad0b1f944f85a9daa0', UnderlyingAsset.NS2DRP),
   erc20('pundix', 'Pundi X2', 18, '0x0fd10b9899882a6f2fcb5c371e17e70fdee00c38', UnderlyingAsset.PUNDIX),

@@ -525,6 +525,7 @@ export enum UnderlyingAsset {
   PRO = 'pro',
   PRTS = 'prts',
   PUNDIX = 'pundix',
+  PUP = 'pup',
   PUSD = 'pusd',
   QASH = 'qash',
   QCAD = 'qcad',
