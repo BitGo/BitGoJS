@@ -22,6 +22,7 @@ import {
 } from './fixtures';
 import { isScriptType2Of3, isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import { sendFromFaucet, generateToFaucet } from './faucet';
+import { ZcashTransaction } from '../../../src/bitgo';
 
 async function printRpcHelp(rpc: RpcClient, network: Network): Promise<void> {
   console.log(await rpc.getHelp());
@@ -48,10 +49,11 @@ async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void>
       break;
     case utxolib.networks.zcashTest:
       switch (protocol.version) {
-        case 400:
+        case ZcashTransaction.VERSION4_BRANCH_CANOPY:
           minBlocks = 400;
           break;
-        case 500:
+        case ZcashTransaction.VERSION4_BRANCH_NU5:
+        case ZcashTransaction.VERSION5_BRANCH_NU5:
           minBlocks = 500;
           break;
         default:
