@@ -94,6 +94,7 @@ export interface TransactionExplanation extends BaseTransactionExplanation<strin
 }
 
 export interface TransactionInfo {
+  /** Maps txid to txhex. Required for offline signing. */
   txHexes?: Record<string, string>;
   changeAddresses?: string[];
   unspents: Unspent[];
