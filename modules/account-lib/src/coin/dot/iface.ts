@@ -11,6 +11,7 @@ export enum MethodNames {
   Bond = 'bond',
   TransferKeepAlive = 'transferKeepAlive',
   Unbond = 'unbond',
+  Anonymous = 'anonymous',
 }
 
 /**
@@ -37,6 +38,7 @@ export interface TxData {
   proxyType?: string;
   delay?: string;
   forceProxyType?: ProxyType;
+  index?: string;
 }
 
 /**
@@ -101,6 +103,15 @@ export interface AddProxyArgs {
 /**
  * Transaction method specific args
  */
+export interface AddAnonymousProxyArgs {
+  proxyType: ProxyType;
+  index: string;
+  delay: string;
+}
+
+/**
+ * Transaction method specific args
+ */
 export type ProxyCallArgs = {
   callIndex: string;
   args: TransferArgs;
@@ -118,7 +129,7 @@ export interface ProxyArgs {
  * Decoded TxMethod from a transaction hex
  */
 export interface TxMethod {
-  args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs | UnstakeArgs;
+  args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs | UnstakeArgs | AddAnonymousProxyArgs;
   name: MethodNames;
   pallet: string;
 }

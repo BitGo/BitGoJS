@@ -15,6 +15,7 @@ import {
   AddProxyArgs,
   UnstakeArgs,
   TransactionExplanation,
+  AddAnonymousProxyArgs,
 } from './iface';
 import utils from './utils';
 
@@ -172,6 +173,13 @@ export class Transaction extends BaseTransaction {
       });
       result.owner = keypair.getAddress();
       result.proxyType = txMethod.proxyType;
+      result.delay = txMethod.delay;
+    }
+
+    if (this.type === TransactionType.AnonymousAddressInitialization) {
+      const txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
+      result.proxyType = txMethod.proxyType;
+      result.index = txMethod.index;
       result.delay = txMethod.delay;
     }
 
