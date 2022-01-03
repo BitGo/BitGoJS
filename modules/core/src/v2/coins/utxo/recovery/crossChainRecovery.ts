@@ -91,23 +91,6 @@ type WalletV1 = {
   getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
 };
 
-type RecoverParams = {
-  /** Wallet ID (can be v1 wallet or v2 wallet) */
-  walletId: string;
-  /** Coin to create the transction for */
-  sourceCoin: AbstractUtxoCoin;
-  /** Coin that wallet keys were set up for */
-  recoveryCoin: AbstractUtxoCoin;
-  /** Source coin transaction to recover outputs from (sourceCoin) */
-  txid: string;
-  /** Source coin address to send the funds to */
-  recoveryAddress: string;
-  /** If set, decrypts private key and signs transaction */
-  walletPassphrase?: string;
-  /** If set, signs transaction */
-  xprv?: string;
-};
-
 async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string): Promise<Wallet | WalletV1> {
   try {
     return await coin.wallets().get({ id: walletId });
@@ -344,7 +327,7 @@ function getTxInfo(
     externalOutputs: outputs,
     changeOutputs: [],
     payGoFee: 0,
-  } as TransactionInfo;
+  } /* cast to TransactionInfo to allow extra fields may be required by legacy consumers of this data */ as TransactionInfo;
 }
 
 function getFeeInfo(transaction: utxolib.bitgo.UtxoTransaction, unspents: WalletUnspent[]): FeeInfo {
@@ -360,6 +343,33 @@ function getFeeInfo(transaction: utxolib.bitgo.UtxoTransaction, unspents: Wallet
   };
 }
 
+type RecoverParams = {
+  /** Wallet ID (can be v1 wallet or v2 wallet) */
+  walletId: string;
+  /** Coin to create the transaction for */
+  sourceCoin: AbstractUtxoCoin;
+  /** Coin that wallet keys were set up for */
+  recoveryCoin: AbstractUtxoCoin;
+  /** Source coin transaction to recover outputs from (sourceCoin) */
+  txid: string;
+  /** Source coin address to send the funds to */
+  recoveryAddress: string;
+  /** If set, decrypts private key and signs transaction */
+  walletPassphrase?: string;
+  /** If set, signs transaction */
+  xprv?: string;
+};
+
+/**
+ * Recover wallet deposits that were received on the wrong blockchain
+ * (for instance bitcoin deposits that were received for a litecoin wallet).
+ *
+ * Fetches the unspent data from BitGo's public blockchain API and the script data from the user's
+ * wallet.
+ *
+ * @param {BitGo} bitgo
+ * @param {RecoverParams} params
+ */
 export async function recoverCrossChain(
   bitgo: BitGo,
   params: RecoverParams
