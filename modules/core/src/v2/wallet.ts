@@ -1510,8 +1510,8 @@ export class Wallet {
    * Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
    * @param params
    */
-  async getEncryptedUserKeychain(params: Record<string, never> = {}): Promise<any> {
-    const tryKeyChain = async (index: number) => {
+  async getEncryptedUserKeychain(params: Record<string, never> = {}): Promise<{ encryptedPrv: string }> {
+    const tryKeyChain = async (index: number): Promise<{ encryptedPrv: string }> => {
       if (!this._wallet.keys || index >= this._wallet.keys.length) {
         throw new Error('No encrypted keychains on this wallet.');
       }
@@ -1521,7 +1521,7 @@ export class Wallet {
       const keychain = await this.baseCoin.keychains().get(params);
       // If we find the prv, then this is probably the user keychain we're looking for
       if (keychain.encryptedPrv) {
-        return keychain;
+        return keychain as { encryptedPrv: string };
       }
       return tryKeyChain(index + 1);
     };

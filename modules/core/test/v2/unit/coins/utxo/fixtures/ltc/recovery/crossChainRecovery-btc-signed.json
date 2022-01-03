@@ -1,33 +1,22 @@
 {
   "version": 2,
-  "sourceCoin": "ltc",
-  "recoveryCoin": "btc",
   "walletId": "5abacebe28d72fbd07e0b8cbba0ff39e",
-  "recoveryAddress": "MN9SUrFbnnZ4sA9P1ws7WzJQKHpVEoUdwA",
-  "recoveryAmount": 99964800,
-  "txHex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d7200000000b6004730440220040de31eabf0431eeaf2ae67550aaebcebdaa867312f4d44ddd8bd6a32aeaaf80220041149829aec30e150f99053964300eccaf768db1343dc0eab5b81466dd9e0f00100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff018057f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+  "txHex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d7200000000b7004830450221008d4182eb1f78ffc9dc1b318d589ad594065034d32e6076580ad0145d8746738d022015a8911551c259cb52c6601e2dfcc8c4bd1ec5de54ceab98f95df41f4dc2d38d0100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff014858f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
   "txInfo": {
     "inputAmount": 99999000,
-    "outputAmount": 99964800,
-    "spendAmount": 99964800,
+    "outputAmount": 99965000,
+    "minerFee": 34000,
+    "spendAmount": 99965000,
     "inputs": [
       {
         "id": "724d184731f1fbf7cfcccae8acaf47a2f3f8288bd6fd1d65d031a0176d68ddbe:0",
         "address": "MAfbWxccd7BxKFBcYGD5kTYhkGEVTkPv3o",
         "value": 99999000,
-        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
-        "index": 0,
         "chain": 0,
+        "index": 0,
         "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
-        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e"
-      }
-    ],
-    "outputs": [
-      {
-        "address": "MN9SUrFbnnZ4sA9P1ws7WzJQKHpVEoUdwA",
-        "valueString": "99964800",
-        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
-        "change": false
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
       }
     ],
     "unspents": [
@@ -35,40 +24,48 @@
         "id": "724d184731f1fbf7cfcccae8acaf47a2f3f8288bd6fd1d65d031a0176d68ddbe:0",
         "address": "MAfbWxccd7BxKFBcYGD5kTYhkGEVTkPv3o",
         "value": 99999000,
-        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
-        "index": 0,
         "chain": 0,
+        "index": 0,
         "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
-        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e"
+        "fromWallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      }
+    ],
+    "outputs": [
+      {
+        "address": "MN9SUrFbnnZ4sA9P1ws7WzJQKHpVEoUdwA",
+        "valueString": "99965000",
+        "change": false
       }
     ],
     "externalOutputs": [
       {
         "address": "MN9SUrFbnnZ4sA9P1ws7WzJQKHpVEoUdwA",
-        "valueString": "99964800",
-        "wallet": "5abacebe28d72fbd07e0b8cbba0ff39e",
+        "valueString": "99965000",
         "change": false
       }
     ],
     "changeOutputs": [],
-    "minerFee": 34200,
     "payGoFee": 0
   },
+  "sourceCoin": "ltc",
+  "recoveryCoin": "btc",
+  "recoveryAmount": 99965000,
   "tx": {
-    "id": "17e04138d968049611ca9343f1817b25ff5fb9889d1eb656bec23850f11913ee",
-    "hex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d7200000000b6004730440220040de31eabf0431eeaf2ae67550aaebcebdaa867312f4d44ddd8bd6a32aeaaf80220041149829aec30e150f99053964300eccaf768db1343dc0eab5b81466dd9e0f00100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff018057f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
+    "id": "967a23999d45905288aefa6739d5595aa2be7c4d2797b4ac65bf3ec68ff5f9eb",
+    "hex": "0100000001bedd686d17a031d0651dfdd68b28f8f3a247aface8cacccff7fbf13147184d7200000000b7004830450221008d4182eb1f78ffc9dc1b318d589ad594065034d32e6076580ad0145d8746738d022015a8911551c259cb52c6601e2dfcc8c4bd1ec5de54ceab98f95df41f4dc2d38d0100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff014858f5050000000017a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f8700000000",
     "ins": [
       {
         "txid": "724d184731f1fbf7cfcccae8acaf47a2f3f8288bd6fd1d65d031a0176d68ddbe",
         "index": 0,
-        "script": "004730440220040de31eabf0431eeaf2ae67550aaebcebdaa867312f4d44ddd8bd6a32aeaaf80220041149829aec30e150f99053964300eccaf768db1343dc0eab5b81466dd9e0f00100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
+        "script": "004830450221008d4182eb1f78ffc9dc1b318d589ad594065034d32e6076580ad0145d8746738d022015a8911551c259cb52c6601e2dfcc8c4bd1ec5de54ceab98f95df41f4dc2d38d0100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae",
         "witness": []
       }
     ],
     "outs": [
       {
         "script": "a9149c4525e9e9fc92cdda2043d35ad699c343dbab0f87",
-        "value": 99964800
+        "value": 99965000
       }
     ]
   }
