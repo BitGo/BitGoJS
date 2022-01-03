@@ -1,6 +1,7 @@
 import * as nacl from 'tweetnacl';
 import { toHex, toUint8Array } from '../hbar/utils';
 import { isValidEd25519PublicKey, isValidEd25519SecretKey, isValidEd25519Seed } from '../../utils/crypto';
+import { Ed25519KeyDeriver } from '../../utils/ed25519KeyDeriver';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
@@ -34,11 +35,15 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
     }
   }
 
-  private setKeyPair(naclKeyPair: nacl.SignKeyPair): void {
-    this.keyPair = {
+  private getKeyPair(naclKeyPair: nacl.SignKeyPair): DefaultKeys {
+    return {
       prv: toHex(naclKeyPair.secretKey.slice(0, 32)),
       pub: toHex(naclKeyPair.publicKey),
     };
+  }
+
+  private setKeyPair(naclKeyPair: nacl.SignKeyPair): void {
+    this.keyPair = this.getKeyPair(naclKeyPair);
   }
 
   /** @inheritdoc */
@@ -108,5 +113,22 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
     }
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
+  }
+
+  /**
+   * Derives a hardened child key pair using this key pair's secret key
+   * as the seed.
+   *
+   * @param path derivation path
+   */
+  deriveHardened(path: string): DefaultKeys {
+    if (!this.keyPair.prv) {
+      throw new Error('need private key to derive hardened keypair');
+    }
+
+    const seed = Ed25519KeyDeriver.derivePath(path, this.keyPair.prv).key;
+    const derivedKeyPair = nacl.sign.keyPair.fromSeed(seed);
+
+    return this.getKeyPair(derivedKeyPair);
   }
 }
