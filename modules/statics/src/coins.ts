@@ -247,7 +247,7 @@ export const coins = CoinMap.fromCoins([
   erc20('bxx', 'Baanx', 18, '0x6b1a8f210ec6b7b6643cea3583fb0c079f367898', UnderlyingAsset.BXX),
   erc20('bxxv1', 'Baanxv1', 18, '0x54f9b4b4485543a815c51c412a9e20436a06491d', UnderlyingAsset.BXXV1),
   erc20('bzz', 'BZZ', 16, '0x19062190b1925b5b6689d7073fdfc8c2976ef8cb', UnderlyingAsset.BZZ),
-  erc20('c8p', 'C8 Plus', 18, '0x6930d2299964bcc81b8bcb453a522791e6488be1', UnderlyingAsset.C8P),
+  erc20('c8p', 'C8 Plus', 6, '0x6930d2299964bcc81b8bcb453a522791e6488be1', UnderlyingAsset.C8P),
   erc20('cacxt', 'Cacxt', 18, '0xe2b8c4938a3103c1ab5c19a6b93d07ab6f9da2ba', UnderlyingAsset.CACXT),
   erc20('cadx', 'eToro Canadian Dollar', 18, '0x8ed876e408959643479534a21970ec023d0fb51e', UnderlyingAsset.CADX),
   erc20('cag', 'Change', 18, '0x7d4b8cce0591c9044a22ee543533b72e976e36c3', UnderlyingAsset.CAG),
