@@ -39,7 +39,7 @@ export function getDefaultTransactionVersion(network: Network): number {
     case networks.bitcoingold:
       return 2;
     case networks.zcash:
-      return 4;
+      return 400;
     default:
       return 1;
   }

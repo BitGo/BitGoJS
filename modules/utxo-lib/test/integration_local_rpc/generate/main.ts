@@ -48,10 +48,10 @@ async function initBlockchain(rpc: RpcClient, protocol: Protocol): Promise<void>
       break;
     case utxolib.networks.zcashTest:
       switch (protocol.version) {
-        case 4:
+        case 400:
           minBlocks = 400;
           break;
-        case 5:
+        case 500:
           minBlocks = 500;
           break;
         default:

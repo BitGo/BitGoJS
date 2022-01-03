@@ -65,12 +65,16 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
   }
 
   setDefaultsForVersion(version: number): void {
-    if (version !== 4 && version !== 5) {
-      throw new Error(`invalid version`);
+    switch (version) {
+      case 400:
+      case 500:
+        this.setVersion(version === 400 ? 4 : 5);
+        this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
+        this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
+        break;
+      default:
+        throw new Error(`invalid version ${version}`);
     }
-    this.setVersion(version);
-    this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
-    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
   }
 
   private hasSignatures(): boolean {

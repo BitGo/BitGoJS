@@ -31,9 +31,9 @@ export class UnsupportedTransactionError extends Error {
 
 export function getDefaultVersionGroupIdForVersion(version: number): number {
   switch (version) {
-    case 4:
+    case 400:
       return SAPLING_VERSION_GROUP_ID;
-    case 5:
+    case 500:
       return ZIP225_VERSION_GROUP_ID;
   }
   throw new Error(`no value for version ${version}`);
@@ -47,9 +47,11 @@ export function getDefaultConsensusBranchIdForVersion(version: number): number {
     case 3:
       return OVERWINTER_BRANCH_ID;
     case 4:
+    case 400:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
     case 5:
+    case 500:
       // https://zips.z.cash/zip-0252
       return NU5_BRANCH_ID;
   }
