@@ -72,6 +72,15 @@ export const AddressInitializationSchema = joi.object({
   delay: joi.string().required(),
 });
 
+export const AnonymousAddressInitializationSchema = joi.object({
+  proxyType: joi
+    .string()
+    .valid(...proxyTypes)
+    .required(),
+  index: joi.number().required(),
+  delay: joi.number().required(),
+});
+
 export const ProxyTransactionSchema = joi.object({
   real: addressSchema.required(),
   forceProxyType: joi
