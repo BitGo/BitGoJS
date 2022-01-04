@@ -3,7 +3,12 @@ import * as types from 'bitcoinjs-lib/src/types';
 const typeforce = require('typeforce');
 
 import { Network } from '../..';
-import { getDefaultConsensusBranchIdForVersion, ZcashNetwork, ZcashTransaction } from './ZcashTransaction';
+import {
+  getDefaultConsensusBranchIdForVersion,
+  getDefaultVersionGroupIdForVersion,
+  ZcashNetwork,
+  ZcashTransaction,
+} from './ZcashTransaction';
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
 
@@ -56,8 +61,16 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
   setVersion(version: number, overwinter = true): void {
     typeforce(types.UInt32, version);
     this.tx.overwintered = overwinter ? 1 : 0;
-    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
     this.tx.version = version;
+  }
+
+  setDefaultsForVersion(version: number): void {
+    if (version !== 4 && version !== 5) {
+      throw new Error(`invalid version`);
+    }
+    this.setVersion(version);
+    this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
+    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
   }
 
   private hasSignatures(): boolean {

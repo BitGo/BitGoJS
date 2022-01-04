@@ -101,6 +101,10 @@ export class RpcClient {
     return new RpcClientWithWallet(this.network, this.url, this.networkInfo, walletName);
   }
 
+  async getHelp(): Promise<string> {
+    return this.exec('help');
+  }
+
   async createWallet(walletName: string): Promise<string> {
     return this.exec('createwallet', walletName);
   }
@@ -157,7 +161,7 @@ export class RpcClient {
       case utxolib.networks.litecoin:
         return ['/LitecoinCore:0.17.1/'];
       case utxolib.networks.zcash:
-        return ['/MagicBean:4.4.0/'];
+        return ['/MagicBean:4.5.1-1/'];
       default:
         return [];
     }

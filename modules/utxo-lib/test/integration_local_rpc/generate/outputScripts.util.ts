@@ -1,3 +1,4 @@
+import * as bip32 from 'bip32';
 import { Transaction, TxOutput } from 'bitcoinjs-lib';
 import * as utxolib from '../../../src';
 import {
@@ -74,13 +75,13 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   prevOutputs: (TxOutPoint & TxOutput)[],
   recipientScript: Buffer,
   network: Network,
-  { signKeys = [keys[0], keys[2]] } = {}
+  { signKeys = [keys[0], keys[2]], version }: { signKeys?: bip32.BIP32Interface[]; version?: number } = {}
 ): T {
   if (signKeys.length !== 1 && signKeys.length !== 2) {
     throw new Error(`signKeys length must be 1 or 2`);
   }
 
-  const txBuilder = createTransactionBuilderForNetwork(network);
+  const txBuilder = createTransactionBuilderForNetwork(network, { version });
 
   prevOutputs.forEach(({ txid, vout, script, value }, i) => {
     txBuilder.addInput(txid, vout, undefined, script, value);
@@ -113,7 +114,8 @@ export function createSpendTransaction(
   scriptType: ScriptType2Of3,
   inputTxs: Buffer[],
   recipientScript: Buffer,
-  network: Network
+  network: Network,
+  version?: number
 ): Transaction {
   const matches: (TxOutPoint & TxOutput)[] = inputTxs
     .map((inputTxBuffer): (TxOutPoint & TxOutput)[] => {
@@ -144,5 +146,5 @@ export function createSpendTransaction(
     throw new Error(`could not find matching outputs in funding transaction`);
   }
 
-  return createSpendTransactionFromPrevOutputs(keys, scriptType, matches, recipientScript, network);
+  return createSpendTransactionFromPrevOutputs(keys, scriptType, matches, recipientScript, network, { version });
 }
