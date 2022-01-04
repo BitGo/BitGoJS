@@ -138,6 +138,33 @@ describe('ETH:', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should verify ENS address resolution changing recipient address in client txParams', async function() {
+      const coin = bitgo.coin('teth');
+      const wallet = new Wallet(bitgo, coin, {});
+
+      const txParams = {
+        recipients: [{ amount: '1000000000000', address: '0x40a663963810449d6e72533657a74f112c3b901a' }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '1000000000000', address: 'bitgotestwallet.eth' }],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: false,
+        coin: 'teth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should verify a hop txPrebuild from the bitgo server that matches the client txParams', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
