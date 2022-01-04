@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
-import { spawn } from 'child_process';
+import * as util from 'util';
+import { spawn, execFile } from 'child_process';
 
 import * as utxolib from '../../../src';
 import { Network, getNetworkName } from '../../../src/networks';
@@ -47,14 +48,16 @@ function getDockerParams(network: Network): DockerImageParams {
         throw new Error(`envvar ZCASH_PARAMS_DIR not set`);
       }
       return dockerImage(
-        'electriccoinco/zcashd:v4.4.0',
+        'electriccoinco/zcashd:v4.5.1-1',
         undefined, // `zcashd` is implicit
         [
           '-nuparams=5ba81b19:10',
           '-nuparams=76b809bb:20',
           '-nuparams=2bb40e60:30',
           '-nuparams=f5b9230b:40',
-          '-nuparams=e9ff75a6:50',
+          '-nuparams=e9ff75a6:400',
+          // https://zips.z.cash/zip-0252
+          '-nuparams=37519621:500',
         ],
         [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
       );
@@ -103,6 +106,21 @@ export async function getRegtestNode(network: Network): Promise<Node> {
       });
     },
   };
+}
+
+export async function getRegtestNodeHelp(network: Network): Promise<{ stdout: string; stderr: string }> {
+  const dockerParams = getDockerParams(network);
+  const args = [
+    'run',
+    ...dockerParams.extraArgsDocker,
+    dockerParams.image,
+    ...(dockerParams.binary ? [dockerParams.binary] : []),
+    '--help',
+    '-help-debug',
+    '-regtest',
+  ];
+
+  return await util.promisify(execFile)('docker', args);
 }
 
 export function getRegtestNodeUrl(network: Network): string {

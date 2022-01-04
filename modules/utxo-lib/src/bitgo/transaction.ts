@@ -32,23 +32,47 @@ export function createTransactionFromHex(hex: string, network: Network): UtxoTra
   return createTransactionFromBuffer(Buffer.from(hex, 'hex'), network);
 }
 
-export function setTransactionBuilderDefaults(txb: UtxoTransactionBuilder, network: Network): void {
+export function getDefaultTransactionVersion(network: Network): number {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-      txb.setVersion(2);
-      break;
+      return 2;
     case networks.zcash:
-      (txb as ZcashTransactionBuilder).setVersion(4);
-      (txb as ZcashTransactionBuilder).setVersionGroupId(0x892f2085);
-      // Use "Canopy" consensus branch ID https://zips.z.cash/zip-0251
-      (txb as ZcashTransactionBuilder).setConsensusBranchId(0xe9ff75a6);
-      break;
+      return 4;
+    default:
+      return 1;
   }
 }
 
-export function createTransactionBuilderForNetwork(network: Network): UtxoTransactionBuilder {
+export function setTransactionBuilderDefaults(
+  txb: UtxoTransactionBuilder,
+  network: Network,
+  { version = getDefaultTransactionVersion(network) }: { version?: number } = {}
+): void {
+  switch (getMainnet(network)) {
+    case networks.bitcoincash:
+    case networks.bitcoinsv:
+    case networks.bitcoingold:
+      if (version !== 2) {
+        throw new Error(`invalid version`);
+      }
+      txb.setVersion(version);
+      break;
+    case networks.zcash:
+      (txb as ZcashTransactionBuilder).setDefaultsForVersion(version);
+      break;
+    default:
+      if (version !== 1) {
+        throw new Error(`invalid version`);
+      }
+  }
+}
+
+export function createTransactionBuilderForNetwork(
+  network: Network,
+  { version }: { version?: number } = {}
+): UtxoTransactionBuilder {
   let txb;
   switch (getMainnet(network)) {
     case networks.bitcoin:
@@ -70,7 +94,7 @@ export function createTransactionBuilderForNetwork(network: Network): UtxoTransa
       throw new Error(`unsupported network`);
   }
 
-  setTransactionBuilderDefaults(txb, network);
+  setTransactionBuilderDefaults(txb, network, { version });
 
   return txb;
 }
