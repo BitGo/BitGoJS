@@ -167,19 +167,18 @@ export class Transaction extends BaseTransaction {
     }
 
     if (this.type === TransactionType.AddressInitialization) {
-      const txMethod = decodedTx.method.args as AddProxyArgs;
-      const keypair = new KeyPair({
-        pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
-      });
-      result.owner = keypair.getAddress();
+      let txMethod;
+      if ((decodedTx.method?.args as AddProxyArgs).delegate) {
+        txMethod = decodedTx.method.args as AddProxyArgs;
+        const keypair = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
+        });
+        result.owner = keypair.getAddress();
+      } else {
+        txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
+        result.index = txMethod.index;
+      }
       result.proxyType = txMethod.proxyType;
-      result.delay = txMethod.delay;
-    }
-
-    if (this.type === TransactionType.AnonymousAddressInitialization) {
-      const txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
-      result.proxyType = txMethod.proxyType;
-      result.index = txMethod.index;
       result.delay = txMethod.delay;
     }
 

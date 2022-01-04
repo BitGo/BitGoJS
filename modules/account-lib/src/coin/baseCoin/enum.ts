@@ -29,8 +29,6 @@ export enum TransactionType {
   StakingWithdraw,
   // Handle smart contract calls
   ContractCall,
-  // Spawn address that does not have own key pair
-  AnonymousAddressInitialization,
 }
 
 /**
