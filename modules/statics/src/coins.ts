@@ -1146,18 +1146,18 @@ export const coins = CoinMap.fromCoins([
   avaxErc20('avaxc:JOE', 'Trader Joe', 18, '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd', UnderlyingAsset['avaxc:JOE']),
   avaxErc20('avaxc:PNG', 'Pangolin', 18, '0x60781c2586d68229fde47564546784ab3faca982', UnderlyingAsset['avaxc:PNG']),
   avaxErc20(
-    'avaxc:USDT.E',
+    'avaxc:USDT&E',
     'Tether USD',
     6,
     '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
+    UnderlyingAsset['avaxc:USDT&E']
   ),
   avaxErc20(
-    'avaxc:USDC.E',
+    'avaxc:USDC&E',
     'USD Coin',
     6,
     '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
+    UnderlyingAsset['avaxc:USDC&E']
   ),
   tavaxErc20('tavaxc:QI', 'Test BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:QI']),
   tavaxErc20(
@@ -1189,17 +1189,17 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['avaxc:PNG']
   ),
   tavaxErc20(
-    'tavaxc:USDT.E',
+    'tavaxc:USDT&E',
     'Test Tether USD',
     6,
     '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
+    UnderlyingAsset['avaxc:USDT&E']
   ),
   tavaxErc20(
-    'tavaxc:USDC.E',
+    'tavaxc:USDC&E',
     'Test USD Coin',
     6,
     '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
+    UnderlyingAsset['avaxc:USDC&E']
   ),
 ]);

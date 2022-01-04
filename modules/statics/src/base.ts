@@ -734,8 +734,8 @@ export enum UnderlyingAsset {
   'avaxc:KLO' = 'avaxc:klo',
   'avaxc:JOE' = 'avaxc:joe',
   'avaxc:PNG' = 'avaxc:png',
-  'avaxc:USDT.E' = 'avaxc:usdt.e',
-  'avaxc:USDC.E' = 'avaxc:usdc.e',
+  'avaxc:USDT&E' = 'avaxc:usdt&e',
+  'avaxc:USDC&E' = 'avaxc:usdc&e',
 }
 
 /**

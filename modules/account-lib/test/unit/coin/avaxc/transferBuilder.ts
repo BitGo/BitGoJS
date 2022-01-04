@@ -15,15 +15,15 @@ const tokensNames = [
   'avaxc:KLO',
   'avaxc:JOE',
   'avaxc:QI',
-  'avaxc:USDT.E',
-  'avaxc:USDC.E',
+  'avaxc:USDT&E',
+  'avaxc:USDC&E',
   'tavaxc:PNG',
   'tavaxc:XAVA',
   'tavaxc:KLO',
   'tavaxc:JOE',
   'tavaxc:QI',
-  'tavaxc:USDT.E',
-  'tavaxc:USDC.E',
+  'tavaxc:USDT&E',
+  'tavaxc:USDC&E',
 ];
 
 let txBuilder: AvaxC.TransactionBuilder;
