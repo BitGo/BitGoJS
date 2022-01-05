@@ -649,7 +649,7 @@ export enum UnderlyingAsset {
   VISR = 'visr',
   VRGX = 'vrgx',
   VXC = 'vxc',
-  VST = 'vst',
+  VSP = 'vsp',
   WAFL = 'wafl',
   WAX = 'wax',
   WABI = 'wabi',
