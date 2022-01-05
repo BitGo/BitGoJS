@@ -20,6 +20,7 @@ import { TransactionType } from '../baseCoin';
 import { NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/errors';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
+import * as Crypto from './../../utils/crypto';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
@@ -53,6 +54,7 @@ export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
 
 /** @inheritdoc */
 export function isValidPublicKey(pubKey: string): boolean {
+  if (Crypto.isValidXpub(pubKey)) return true;
   try {
     new PublicKey(pubKey);
     return true;

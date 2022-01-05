@@ -7,9 +7,9 @@ import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey, FeeOptions } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, FeeOptions, SequenceId, ValidityWindow } from '../baseCoin/iface';
 import { AddressValidationError, InvalidFeeError } from './errors';
-import { CreateBaseTxInfo, sequenceId, TxMethod, ValidityWindow } from './iface';
+import { CreateBaseTxInfo, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
@@ -62,7 +62,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
-  sequenceId(nonce: sequenceId): this {
+  sequenceId(nonce: SequenceId): this {
     const value = new BigNumber(nonce.value);
     this.validateValue(value);
     this._nonce = value.toNumber();

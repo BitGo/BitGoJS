@@ -130,3 +130,31 @@ export type FeeOptions = {
   formula?: 'fixed' | 'feeRate' | 'perKB' | 'custom';
   type?: 'base' | 'max' | 'tip';
 };
+
+/**
+ * The validity window signals when a transaction can be included in the network.
+ *  ValidityWindow information is stored as part of the transaction data in the indexer and wallet platform, unless it is absolutely necessary.
+ * firstValid: the absolute block/time after which the transaction is valid
+ * lastValid: the absolute block/time before which the transaction is valid
+ * minDuration: minimum duration a transaction for this coin is valid
+ * maxDuration: maximum duration a transaction for this coin is valid
+ * minDuration and maxDuration are defined per blockchain, whereas firstValid and lastValid are defined per transaction
+ * unit: validity window will be measure in blockheigh or timestamp
+ * TODO: validityWindow constraint methods will be taken on: https://bitgoinc.atlassian.net/browse/STLX-10800
+ */
+export interface ValidityWindow {
+  firstValid?: number;
+  lastValid?: number;
+  minDuration?: number;
+  maxDuration?: number;
+  unit?: 'blockheight' | 'timestamp';
+}
+
+/**
+ * Sequence Ids are used to differentiate payments coming from the same account and to prevent accidental double spends and replay attacks.
+ */
+export interface SequenceId {
+  name: 'Nonce' | 'Sequence Id' | 'Counter';
+  keyword: 'nonce' | 'sequenceId' | 'counter';
+  value: string | number;
+}

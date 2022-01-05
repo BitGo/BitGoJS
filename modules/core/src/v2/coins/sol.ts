@@ -5,7 +5,7 @@
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as accountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
@@ -21,7 +21,8 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { MethodNotImplementedError } from '../../errors';
+import { Memo } from '../wallet';
+import * as _ from 'lodash';
 
 export interface TransactionFee {
   fee: string;
@@ -50,6 +51,12 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   source: string;
 }
 
+export interface SolVerifyTransactionOptions extends VerifyTransactionOptions {
+  memo?: Memo;
+  feePayer: string;
+  blockhash: string;
+  durableNonce?: { walletNonceAddress: string; authWalletAddress: number };
+}
 interface TransactionOutput {
   address: string;
   amount: number | string;
@@ -99,9 +106,57 @@ export class Sol extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  // TODO (https://bitgoinc.atlassian.net/browse/STLX-10202)
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new MethodNotImplementedError('verifyTransaction method not implemented');
+  async verifyTransaction(params: SolVerifyTransactionOptions): Promise<any> {
+    let totalAmount = new BigNumber(0);
+    const coinConfig = coins.get(this.getChain());
+    const {
+      txParams: txParams,
+      txPrebuild: txPrebuild,
+      memo: memo,
+      feePayer: feePayer,
+      blockhash: blockhash,
+      durableNonce: durableNonce,
+    } = params;
+    const transaction = new accountLib.Sol.Transaction(coinConfig);
+
+    if (!txPrebuild.txBase64) {
+      throw new Error('missing required tx prebuild property txBase64');
+    }
+
+    transaction.fromRawTransaction(txPrebuild.txBase64);
+    const explainedTx = transaction.explainTransaction();
+
+    if (!_.isEqual(explainedTx.outputs, txParams.recipients)) {
+      throw new Error('Tx outputs does not match with expected txParams recipients');
+    }
+
+    const transactionJson = transaction.toJson();
+    if (memo != explainedTx.memo) {
+      throw new Error('Tx memo does not match with expected txParams recipient memo');
+    }
+    if (txParams.recipients) {
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+
+    if (transactionJson.feePayer !== feePayer) {
+      throw new Error('Tx fee payer does not match with txParams fee payer');
+    }
+
+    if (explainedTx.blockhash !== blockhash) {
+      throw new Error('Tx blockhash does not match with param blockhash');
+    }
+
+    if (!_.isEqual(explainedTx.durableNonce, durableNonce)) {
+      throw new Error('Tx durableNonce does not match with param durableNonce');
+    }
+
+    return true;
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {

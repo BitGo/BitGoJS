@@ -11,6 +11,7 @@ export enum MethodNames {
   Bond = 'bond',
   TransferKeepAlive = 'transferKeepAlive',
   Unbond = 'unbond',
+  Anonymous = 'anonymous',
 }
 
 /**
@@ -37,6 +38,7 @@ export interface TxData {
   proxyType?: string;
   delay?: string;
   forceProxyType?: ProxyType;
+  index?: string;
 }
 
 /**
@@ -101,6 +103,15 @@ export interface AddProxyArgs {
 /**
  * Transaction method specific args
  */
+export interface AddAnonymousProxyArgs {
+  proxyType: ProxyType;
+  index: string;
+  delay: string;
+}
+
+/**
+ * Transaction method specific args
+ */
 export type ProxyCallArgs = {
   callIndex: string;
   args: TransferArgs;
@@ -118,7 +129,7 @@ export interface ProxyArgs {
  * Decoded TxMethod from a transaction hex
  */
 export interface TxMethod {
-  args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs | UnstakeArgs;
+  args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs | UnstakeArgs | AddAnonymousProxyArgs;
   name: MethodNames;
   pallet: string;
 }
@@ -139,26 +150,6 @@ export interface CreateBaseTxInfo {
     metadataRpc: string;
     registry: TypeRegistry;
   };
-}
-
-/**
- * Nonce interface based on BitgoJS standards doc
- */
-export interface sequenceId {
-  name: string; // "Nonce", "Sequence Id", "Counter"
-  keyword: string; // "nonce", "sequenceId", "counter"
-  value: string | number;
-}
-
-/**
- * Block validity interface based on the BitgoJS standard doc.
- */
-export interface ValidityWindow {
-  firstValid?: number;
-  lastValid?: number;
-  minDuration?: number;
-  maxDuration?: number;
-  unit?: 'block' | 'seconds' | 'milliseconds';
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {

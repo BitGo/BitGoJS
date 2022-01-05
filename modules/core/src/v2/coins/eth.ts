@@ -1659,7 +1659,10 @@ export class Eth extends BaseCoin {
           'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
         );
       }
-      if (txParams.recipients[0].address !== txPrebuild.recipients[0].address) {
+      if (
+        this.isETHAddress(txPrebuild.recipients[0].address) &&
+        txParams.recipients[0].address !== txPrebuild.recipients[0].address
+      ) {
         throw new Error('destination address in normal txPrebuild does not match that in txParams supplied by client');
       }
     }
@@ -1668,5 +1671,9 @@ export class Eth extends BaseCoin {
       throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
     }
     return true;
+  }
+
+  private isETHAddress(address: string): boolean {
+    return !!address.match(/0x[a-fA-F0-9]{40}/);
   }
 }
