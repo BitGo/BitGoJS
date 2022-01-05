@@ -63,30 +63,14 @@ import {
   AvaxCToken,
 } from './coins';
 import { tokens } from '../config';
-
 import * as errors from '../errors';
 import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
 import { Tdot } from './coins/tdot';
-import { Environments } from './environments';
+import { AvaxcTokenConfigEnvDependent } from './coins/avaxcToken';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
-export type OptionsConstructor = {
-  isTestnetEnvDependant?: boolean;
-};
-
-/**
- * It creates a constructor according to the network env.
- * Avalanche network has the same contract address for both Mainnet and Testnet.
- * The goal is to select the right one when a particular network is used.
- */
-const envDependentCoinConstructor =
-  (coinConstructorMainNet: CoinConstructor, coinConstructorTestNet: CoinConstructor) =>
-  (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) =>
-    Environments[bitgo.getEnv()].network !== 'testnet'
-      ? coinConstructorMainNet(bitgo, staticsCoin)
-      : coinConstructorTestNet(bitgo, staticsCoin);
 
 export class CoinFactory {
   private coinConstructors = new Map<string, CoinConstructor>();
@@ -132,15 +116,11 @@ export class CoinFactory {
     throw new errors.UnsupportedCoinError(name);
   }
 
-  public registerCoinConstructor(name: string, constructor: CoinConstructor, options: OptionsConstructor = {}): void {
+  public registerCoinConstructor(name: string, constructor: CoinConstructor): void {
     if (this.coinConstructors.has(name)) {
-      if (!options.isTestnetEnvDependant) {
-        throw new Error(`coin '${name}' is already defined`);
-      }
-      this.coinConstructors.set(name, envDependentCoinConstructor(this.coinConstructors.get(name)!, constructor));
-    } else {
-      this.coinConstructors.set(name, constructor);
+      throw new Error(`coin '${name}' is already defined`);
     }
+    this.coinConstructors.set(name, constructor);
   }
 }
 
@@ -232,17 +212,21 @@ for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.token
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
 }
 
+const zipAvaxToken: Record<string, AvaxcTokenConfigEnvDependent> = {};
+
 for (const token of [...tokens.bitcoin.avaxc.tokens]) {
   const tokenConstructor = AvaxCToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
-  GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
+  zipAvaxToken[token.tokenContractAddress] = { mainnet: token };
 }
 
 for (const token of [...tokens.testnet.avaxc.tokens]) {
   const tokenConstructor = AvaxCToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
-  // this tokenContractAddress could be added as mainnet token.
-  GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor, {
-    isTestnetEnvDependant: true,
-  });
+  zipAvaxToken[token.tokenContractAddress].testnet = token;
+}
+
+for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) {
+  const tokenConstructor = AvaxCToken.createTokenConstructorEnvDependent(tokenConfig);
+  GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
 }
