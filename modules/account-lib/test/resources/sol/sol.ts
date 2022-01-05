@@ -23,12 +23,15 @@ export const pubKeys = {
     'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
     '7Uxci7Cyi3M6utvAFP6uhzkH3yMzhfqshA4Uu4hqBfy8',
     'q4mnAoGvzWJQwzZZtuNxDJ88B55FoLurWvKHbENMmFK',
+    'xpub661MyMwAqRbcF1DWtiuV6FPJX6eq9gYspJorAnwSjXFVcJ3E3X7ckgU2iZ2MvEjh58qdEU3VYDgLcZz6SVkB1yGDFguNt1ferkC6p4zxuRY',
   ],
   invalidPubKeys: [
     'randomstring',
     'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S12AF1',
     'CP5Dpaa42R11111KqCQsLwma5Yh3knuvKsYDFX85F41SAVV',
     'CP5Dpaa42RtJmMuKqCQsLwma==h3knuvKsYDFX85F41S',
+    'xpub661MyMwAqRbcFjmMuHyjyZsQYGD6m8JZseFXpjAc1djoKvnMiJvqCeGu4cvxDNXstgPTsP1yeXewvUf6rUubvuG8mi9yPEb7hHVVCqRnhu7XYZ',
+    'xprv9s21ZrQH143K2J9hbmRNqDXo5aQ3RXvycz8VLchc4dus6r7QekaRWsPT6WPirE67Ps5jae2Ti3webhmFDarJG76h3jFqeg8u3WzeisjS2qw',
   ],
 };
 
