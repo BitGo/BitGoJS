@@ -73,7 +73,6 @@ export interface AddWalletOptions {
   n?: number;
   tags?: string[];
   clientFlags?: string[];
-  signingKeyId?: string;
   isCold?: boolean;
   isCustodial?: boolean;
   address?: string;
@@ -204,10 +203,6 @@ export class Wallets {
       throw new Error('invalid argument for address - valid address string expected');
     }
 
-    if (params.signingKeyId && !_.isString(params.signingKeyId)) {
-      throw new Error('invalid argument for signingKeyId - valid key id string expected');
-    }
-
     const walletParams = _.pick(params, [
       'label',
       'm',
@@ -220,7 +215,6 @@ export class Wallets {
       'clientFlags',
       'type',
       'address',
-      'signingKeyId',
       'gasPrice',
       'walletVersion',
     ]);
