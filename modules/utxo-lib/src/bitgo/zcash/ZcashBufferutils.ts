@@ -102,10 +102,7 @@ export function fromBufferV4(bufferReader: BufferReader, tx: ZcashTransaction): 
 
 export function fromBufferV5(bufferReader: BufferReader, tx: ZcashTransaction): void {
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L815
-  const consensusBranchId = bufferReader.readUInt32();
-  if (consensusBranchId !== tx.consensusBranchId) {
-    throw new Error(`unexpected consensusBranchId`);
-  }
+  tx.consensusBranchId = bufferReader.readUInt32();
   tx.locktime = bufferReader.readUInt32();
   tx.expiryHeight = bufferReader.readUInt32();
 
