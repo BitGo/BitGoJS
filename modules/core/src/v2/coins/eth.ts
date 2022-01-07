@@ -1660,7 +1660,7 @@ export class Eth extends BaseCoin {
         );
       }
       if (
-        this.isETHAddress(txPrebuild.recipients[0].address) &&
+        this.isETHAddress(txParams.recipients[0].address) &&
         txParams.recipients[0].address !== txPrebuild.recipients[0].address
       ) {
         throw new Error('destination address in normal txPrebuild does not match that in txParams supplied by client');
