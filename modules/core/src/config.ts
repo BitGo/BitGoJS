@@ -6,7 +6,8 @@ import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
 import { EosTokenConfig } from './v2/coins/eosToken';
 import { AlgoTokenConfig } from './v2/coins/algoToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, EosCoin, Networks, AlgoCoin } from '@bitgo/statics';
+import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType, EosCoin, Networks, AlgoCoin, AvaxERC20Token } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -28,6 +29,9 @@ export interface Tokens {
     eos: {
       tokens: EosTokenConfig[];
     };
+    avaxc: {
+      tokens: AvaxcTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -48,6 +52,9 @@ export interface Tokens {
     eos: {
       tokens: EosTokenConfig[];
     }
+    avaxc: {
+      tokens: AvaxcTokenConfig[];
+    };
   };
 }
 
@@ -161,6 +168,20 @@ const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
+  if (coin instanceof AvaxERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -182,6 +203,9 @@ export const tokens: Tokens = {
     eos: {
       tokens: formattedEosTokens.filter(token => token.network === 'Mainnet'),
     },
+    avaxc: {
+      tokens: formattedAvaxCTokens.filter(token => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -202,6 +226,9 @@ export const tokens: Tokens = {
     },
     eos: {
       tokens: formattedEosTokens.filter(token => token.network === 'Testnet'),
+    },
+    avaxc: {
+      tokens: formattedAvaxCTokens.filter(token => token.network === 'Testnet'),
     },
   },
 };

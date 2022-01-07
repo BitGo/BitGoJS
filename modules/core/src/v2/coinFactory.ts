@@ -60,14 +60,15 @@ import {
   OfcToken,
   Zec,
   EosToken,
+  AvaxCToken,
 } from './coins';
 import { tokens } from '../config';
-
 import * as errors from '../errors';
 import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
 import { Tdot } from './coins/tdot';
+import { AvaxcTokenConfigEnvDependent } from './coins/avaxcToken';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
 
@@ -115,7 +116,7 @@ export class CoinFactory {
     throw new errors.UnsupportedCoinError(name);
   }
 
-  public registerCoinConstructor(name: string, constructor: CoinConstructor) {
+  public registerCoinConstructor(name: string, constructor: CoinConstructor): void {
     if (this.coinConstructors.has(name)) {
       throw new Error(`coin '${name}' is already defined`);
     }
@@ -209,4 +210,23 @@ for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]
 for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.tokens]) {
   const tokenConstructor = AlgoToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+}
+
+const zipAvaxToken: Record<string, AvaxcTokenConfigEnvDependent> = {};
+
+for (const token of [...tokens.bitcoin.avaxc.tokens]) {
+  const tokenConstructor = AvaxCToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+  zipAvaxToken[token.tokenContractAddress] = { mainnet: token };
+}
+
+for (const token of [...tokens.testnet.avaxc.tokens]) {
+  const tokenConstructor = AvaxCToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+  zipAvaxToken[token.tokenContractAddress].testnet = token;
+}
+
+for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) {
+  const tokenConstructor = AvaxCToken.createTokenConstructorEnvDependent(tokenConfig);
+  GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
 }
