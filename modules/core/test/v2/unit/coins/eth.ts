@@ -143,13 +143,13 @@ describe('ETH:', function () {
       const wallet = new Wallet(bitgo, coin, {});
 
       const txParams = {
-        recipients: [{ amount: '1000000000000', address: '0x40a663963810449d6e72533657a74f112c3b901a' }],
+        recipients: [{ amount: '1000000000000', address: 'bitgotestwallet.eth' }],
         wallet: wallet,
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
       const txPrebuild = {
-        recipients: [{ amount: '1000000000000', address: 'bitgotestwallet.eth' }],
+        recipients: [{ amount: '1000000000000', address: '0x40a663963810449d6e72533657a74f112c3b901a' }],
         nextContractSequenceId: 0,
         gasPrice: 20000000000,
         gasLimit: 500000,
