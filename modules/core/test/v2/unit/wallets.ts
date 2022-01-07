@@ -45,10 +45,6 @@ describe('V2 Wallets:', function () {
       await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
         .should.be.rejectedWith('invalid argument for address - valid address string expected');
 
-      // signingKeyId is invalid
-      await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, signingKeyId: 1243 })
-        .should.be.rejectedWith('invalid argument for signingKeyId - valid key id string expected');
-
       // gasPrice is a number
       await wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
         .should.be.rejectedWith('invalid argument for gasPrice - number expected');
