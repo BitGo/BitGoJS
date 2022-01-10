@@ -469,14 +469,14 @@ class ZCash extends Mainnet implements UtxoNetwork {
   name = 'ZCash';
   family = CoinFamily.ZEC;
   utxolibName = 'zcash';
-  explorerUrl = 'https://zcash.blockexplorer.com/tx/';
+  explorerUrl = 'https://chain.so/tx/ZEC/';
 }
 
 class ZCashTestnet extends Testnet implements UtxoNetwork {
   name = 'ZCashTestnet';
   family = CoinFamily.ZEC;
   utxolibName = 'zcashTest';
-  explorerUrl = 'https://explorer.testnet.z.cash/tx/';
+  explorerUrl = 'https://chain.so/tx/ZECTEST/';
 }
 
 export const Networks = {
