@@ -399,7 +399,7 @@ class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/';
-  sendmanymemoContractAddress = 'SP3HVG0704NNCN0DHYJ0SFHE87XPJWMVTXG4B30BD';
+  sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
 }
 
