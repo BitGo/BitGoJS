@@ -31,9 +31,10 @@ export class UnsupportedTransactionError extends Error {
 
 export function getDefaultVersionGroupIdForVersion(version: number): number {
   switch (version) {
-    case 4:
+    case 400:
+    case 450:
       return SAPLING_VERSION_GROUP_ID;
-    case 5:
+    case 500:
       return ZIP225_VERSION_GROUP_ID;
   }
   throw new Error(`no value for version ${version}`);
@@ -47,9 +48,12 @@ export function getDefaultConsensusBranchIdForVersion(version: number): number {
     case 3:
       return OVERWINTER_BRANCH_ID;
     case 4:
+    case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
     case 5:
+    case ZcashTransaction.VERSION4_BRANCH_NU5:
+    case ZcashTransaction.VERSION5_BRANCH_NU5:
       // https://zips.z.cash/zip-0252
       return NU5_BRANCH_ID;
   }
@@ -60,6 +64,10 @@ export class ZcashTransaction extends UtxoTransaction {
   static VERSION_JOINSPLITS_SUPPORT = 2;
   static VERSION_OVERWINTER = 3;
   static VERSION_SAPLING = 4;
+
+  static VERSION4_BRANCH_CANOPY = 400;
+  static VERSION4_BRANCH_NU5 = 450;
+  static VERSION5_BRANCH_NU5 = 500;
 
   // 1 if the transaction is post overwinter upgrade, 0 otherwise
   overwintered = 0;
@@ -72,13 +80,17 @@ export class ZcashTransaction extends UtxoTransaction {
   constructor(public network: ZcashNetwork, tx?: ZcashTransaction) {
     super(network, tx);
 
+    let consensusBranchId;
     if (tx) {
       this.overwintered = tx.overwintered;
       this.versionGroupId = tx.versionGroupId;
       this.expiryHeight = tx.expiryHeight;
-    }
 
-    this.consensusBranchId = getDefaultConsensusBranchIdForVersion(this.version);
+      if (tx.consensusBranchId !== undefined) {
+        consensusBranchId = tx.consensusBranchId;
+      }
+    }
+    this.consensusBranchId = consensusBranchId ?? getDefaultConsensusBranchIdForVersion(this.version);
   }
 
   static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
@@ -113,6 +125,14 @@ export class ZcashTransaction extends UtxoTransaction {
       throw new Error(`Unexpected trailing bytes: ${trailing.toString('hex')}`);
     }
 
+    return tx;
+  }
+
+  static fromBufferWithVersion(buf: Buffer, network: ZcashNetwork, version?: number): ZcashTransaction {
+    const tx = ZcashTransaction.fromBuffer(buf, false, network);
+    if (version) {
+      tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
+    }
     return tx;
   }
 

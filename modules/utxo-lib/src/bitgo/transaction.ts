@@ -9,7 +9,11 @@ import { DashTransactionBuilder } from './dash/DashTransactionBuilder';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 
-export function createTransactionFromBuffer(buf: Buffer, network: Network): UtxoTransaction {
+export function createTransactionFromBuffer(
+  buf: Buffer,
+  network: Network,
+  { version }: { version?: number } = {}
+): UtxoTransaction {
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -20,7 +24,7 @@ export function createTransactionFromBuffer(buf: Buffer, network: Network): Utxo
     case networks.dash:
       return DashTransaction.fromBuffer(buf, false, network);
     case networks.zcash:
-      return ZcashTransaction.fromBuffer(buf, false, network as ZcashNetwork);
+      return ZcashTransaction.fromBufferWithVersion(buf, network as ZcashNetwork, version);
   }
 
   /* istanbul ignore next */
@@ -39,7 +43,7 @@ export function getDefaultTransactionVersion(network: Network): number {
     case networks.bitcoingold:
       return 2;
     case networks.zcash:
-      return 4;
+      return ZcashTransaction.VERSION4_BRANCH_CANOPY;
     default:
       return 1;
   }

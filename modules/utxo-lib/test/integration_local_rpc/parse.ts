@@ -58,7 +58,9 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
 
     before(async function () {
       fixture = await readFixture(protocol, fixtureName);
-      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network);
+      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+        version: protocol.version,
+      });
     });
 
     type InputLookup = { txid?: string; hash?: Buffer; index: number };
@@ -114,7 +116,9 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
         txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);
       });
 
-      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network);
+      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network, {
+        version: protocol.version,
+      });
       const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());
       const signKeys = [fixtureKeys[0], fixtureKeys[2]];
       const publicKeys = fixtureKeys.map((k) => k.publicKey) as Triple<Buffer>;

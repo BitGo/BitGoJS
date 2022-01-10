@@ -399,7 +399,7 @@ class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
   explorerUrl = 'https://explorer.stacks.co/';
-  sendmanymemoContractAddress = 'SP3HVG0704NNCN0DHYJ0SFHE87XPJWMVTXG4B30BD';
+  sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
 }
 
@@ -469,14 +469,14 @@ class ZCash extends Mainnet implements UtxoNetwork {
   name = 'ZCash';
   family = CoinFamily.ZEC;
   utxolibName = 'zcash';
-  explorerUrl = 'https://zcash.blockexplorer.com/tx/';
+  explorerUrl = 'https://chain.so/tx/ZEC/';
 }
 
 class ZCashTestnet extends Testnet implements UtxoNetwork {
   name = 'ZCashTestnet';
   family = CoinFamily.ZEC;
   utxolibName = 'zcashTest';
-  explorerUrl = 'https://explorer.testnet.z.cash/tx/';
+  explorerUrl = 'https://chain.so/tx/ZECTEST/';
 }
 
 export const Networks = {
