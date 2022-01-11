@@ -63,11 +63,11 @@ describe('dot Transaction Builder Factory', () => {
   it('should parse an signed add proxy txn and return an Add Proxy builder', async () => {
     const builder = factory.from(rawTx.addProxy.signed);
     should(builder).instanceOf(AddressInitializationBuilder);
-    builder
+    /*builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .version(7)
-      .sign({ key: sender.secretKey });
+      .sign({ key: sender.secretKey });*/
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.addProxy.signed);
   });
@@ -75,11 +75,11 @@ describe('dot Transaction Builder Factory', () => {
   it('should parse an unsigned proxy txn and return a proxy builder', async () => {
     const builder = factory.from(rawTx.proxy.unsigned);
     should(builder).instanceOf(TransferBuilder);
-    builder
+    /*builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .sender({ address: sender.address })
-      .version(7);
+      .version(7);*/
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.unsigned);
   });
