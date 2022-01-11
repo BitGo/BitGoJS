@@ -54,6 +54,7 @@ export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
 
 /** @inheritdoc */
 export function isValidPublicKey(pubKey: string): boolean {
+  if (!pubKey) return false;
   if (Crypto.isValidXpub(pubKey)) return true;
   try {
     new PublicKey(pubKey);

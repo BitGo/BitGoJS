@@ -14,6 +14,14 @@ describe('SOL util library', function () {
       }
     });
 
+    it('should fail to validate undefined address', function () {
+      const undefinedAddress = undefined;
+      // @ts-expect-error Testing for undefined, should not throw
+      should.doesNotThrow(() => Utils.isValidAddress(undefinedAddress));
+      // @ts-expect-error Testing for undefined, should return false
+      should.equal(Utils.isValidAddress(undefinedAddress), false);
+    });
+
     it('should succeed to validate valid addresses', function () {
       for (const address of testData.addresses.validAddresses) {
         should.equal(Utils.isValidAddress(address), true);
@@ -42,6 +50,14 @@ describe('SOL util library', function () {
         should.doesNotThrow(() => Utils.isValidPublicKey(pubKey));
         should.equal(Utils.isValidPublicKey(pubKey), false);
       }
+    });
+
+    it('should fail to validate undefined public key', function () {
+      const undefinedPublicKey = undefined;
+      // @ts-expect-error Testing for undefined, should not throw
+      should.doesNotThrow(() => Utils.isValidPublicKey(undefinedPublicKey));
+      // @ts-expect-error Testing for undefined, should return false
+      should.equal(Utils.isValidPublicKey(undefinedPublicKey), false);
     });
 
     it('should succeed to validate public keys', function () {
