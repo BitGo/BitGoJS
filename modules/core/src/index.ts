@@ -11,6 +11,7 @@ import * as common from './common';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export * from './bitgo';
+export * from './bitgoAsync';
 
 export { BitGoOptions } from './bitgoBase';
 
