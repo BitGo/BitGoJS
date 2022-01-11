@@ -223,10 +223,19 @@ for (const token of [...tokens.bitcoin.avaxc.tokens]) {
 for (const token of [...tokens.testnet.avaxc.tokens]) {
   const tokenConstructor = AvaxCToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
-  zipAvaxToken[token.tokenContractAddress].testnet = token;
+  if (!!zipAvaxToken[token.tokenContractAddress]) {
+    zipAvaxToken[token.tokenContractAddress].testnet = token;
+  } else {
+    GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
+  }
 }
 
 for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) {
-  const tokenConstructor = AvaxCToken.createTokenConstructorEnvDependent(tokenConfig);
-  GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
+  if (!!tokenConfig.testnet) {
+    const tokenConstructor = AvaxCToken.createTokenConstructorEnvDependent(tokenConfig);
+    GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
+  } else {
+    const tokenConstructor = AvaxCToken.createTokenConstructor(tokenConfig.mainnet);
+    GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
+  }
 }
