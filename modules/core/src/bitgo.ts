@@ -74,6 +74,9 @@ export interface BitGoOptions {
   etherscanApiToken?: string;
   hmacVerification?: boolean;
   authVersion?: 2 | 3;
+  externalMode?: 'generator' | 'signer';
+  externalSignerUrl?: string;
+  signerFileSystemPath?: string;
 }
 
 export interface User {
@@ -357,6 +360,9 @@ export class BitGo {
   private _pendingApprovals?: any;
   private _hmacVerification = true;
   private readonly _authVersion: Exclude<BitGoOptions['authVersion'], undefined> = 2;
+  private readonly _externalMode?: 'generator' | 'signer';
+  private readonly _externalSignerUrl?: string;
+  private readonly _signerFileSystemPath?: string;
   /**
    * Constructor for BitGo Object
    */
@@ -407,6 +413,20 @@ export class BitGo {
       env = params.env || process.env.BITGO_ENV as EnvironmentName;
     }
 
+    if (params.externalMode !== undefined) {
+      this._externalMode = params.externalMode;
+      if (this._externalMode === 'generator' &&
+        (params.externalSignerUrl !== undefined || params.signerFileSystemPath !== undefined)) {
+        throw new Error('cannot specify externalSignerUrl or signerFileSystemPath in generator mode');
+      }
+      if (this._externalMode === 'signer') {
+        if (params.externalSignerUrl === undefined || params.signerFileSystemPath === undefined) {
+          throw new Error('cannot start SDK in signer mode without externalSignerUrl and signerFileSystemPath');
+        }
+        this._externalSignerUrl = params.externalSignerUrl;
+        this._signerFileSystemPath = params.signerFileSystemPath;
+      }
+    }
     if (params.authVersion !== undefined) {
       this._authVersion = params.authVersion;
     }
