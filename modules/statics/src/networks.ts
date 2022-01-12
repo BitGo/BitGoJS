@@ -36,7 +36,7 @@ export interface DotNetwork extends AccountNetwork {
   readonly genesisHash: string;
   readonly specVersion: number;
   readonly chainName: string;
-  readonly metadataRpc: string;
+  readonly metadataRpc: `0x${string}`;
 }
 
 export interface EthereumNetwork extends AccountNetwork {
@@ -191,7 +191,7 @@ class Polkadot extends Mainnet implements DotNetwork {
   genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   specVersion = 9122;
   chainName = 'Polkadot';
-  metadataRpc = DotResources.mainnetMetadataRpc;
+  metadataRpc = DotResources.mainnetMetadataRpc as `0x${string}`;
 }
 
 class PolkadotTestnet extends Testnet implements DotNetwork {
@@ -202,7 +202,7 @@ class PolkadotTestnet extends Testnet implements DotNetwork {
   genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
   specVersion = 9130;
   chainName = 'Westend';
-  metadataRpc = DotResources.westendMetadataRpc;
+  metadataRpc = DotResources.westendMetadataRpc as `0x${string}`;
 }
 
 class Celo extends Mainnet implements EthereumNetwork {

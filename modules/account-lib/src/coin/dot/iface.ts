@@ -147,7 +147,7 @@ export interface DecodedTx extends Omit<DecodedUnsignedTx, 'method'> {
 export interface CreateBaseTxInfo {
   baseTxInfo: BaseTxInfo;
   options: {
-    metadataRpc: string;
+    metadataRpc: `0x${string}`;
     registry: TypeRegistry;
   };
 }
