@@ -8,7 +8,7 @@ function setupRules(env) {
   const rules = [
     {
       test: /\.ts$/,
-      loader: 'awesome-typescript-loader',
+      use: [{ loader: 'ts-loader' }, { loader: require.resolve('@open-wc/webpack-import-meta-loader') }],
     },
   ];
 
@@ -17,7 +17,6 @@ function setupRules(env) {
 
 function setupExternals() {
   const nodeLibraries = ['fs', 'net', 'tls'];
-  
   return nodeLibraries;
 }
 
@@ -42,11 +41,11 @@ function getTestConfig(env) {
     // Output everything into browser/tests.js
     output: {
       path: path.join(__dirname, 'browser'),
-      filename: 'tests.js'
+      filename: 'tests.js',
     },
 
     externals: setupExternals(env),
-    plugins: setupPlugins(env)
+    plugins: setupPlugins(env),
   };
 }
 
@@ -54,7 +53,9 @@ function getTestConfig(env) {
 module.exports = function setupWebpack(env) {
   // If no env is provided, default to dev
   if (!env) {
-    console.log('No environment provided - defaulting to dev. Use the npm `compile` tasks for a better build experience.');
+    console.log(
+      'No environment provided - defaulting to dev. Use the npm `compile` tasks for a better build experience.',
+    );
     env = { dev: true };
   }
 
@@ -66,7 +67,7 @@ module.exports = function setupWebpack(env) {
   // Compile source code
   return {
     resolve: {
-      extensions: ['.js']
+      extensions: ['.js'],
     },
     // Main project entry point
     entry: path.join(__dirname, 'dist', 'src', 'index.js'),
@@ -76,7 +77,7 @@ module.exports = function setupWebpack(env) {
       path: path.join(__dirname, 'dist', 'browser'),
       filename: env.prod ? 'bitgo-account-lib.min.js' : 'bitgo-account-lib.js',
       library: 'bitgo-account-lib',
-      libraryTarget: 'umd'
+      libraryTarget: 'umd',
     },
 
     // All of our transpilation settings. Should really only need 'loaders' for now
@@ -89,15 +90,17 @@ module.exports = function setupWebpack(env) {
     plugins: setupPlugins(env),
 
     optimization: {
-      minimizer: [new TerserPlugin({
-        terserOptions: {
-          ecma: 6,
-          warnings: true,
-          mangle: false,
-          keep_classnames: true,
-          keep_fnames: true
-        }
-      })]
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            ecma: 6,
+            warnings: true,
+            mangle: false,
+            keep_classnames: true,
+            keep_fnames: true,
+          },
+        }),
+      ],
     },
 
     // Create a source map for the bundled code (dev and test only)

@@ -37,7 +37,7 @@ function setupRules(env) {
   const rules = [
     {
       test: /\.ts$/,
-      loader: 'awesome-typescript-loader',
+      loader: 'ts-loader',
     },
   ];
 
