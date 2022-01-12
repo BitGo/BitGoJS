@@ -104,7 +104,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
-    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+    this.contractAddress = options.contractAddress as unknown as ContractAddress;
   }
 }
 
@@ -123,7 +123,7 @@ export class Base58ContractAddressDefinedToken extends AccountCoinToken {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
-    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+    this.contractAddress = options.contractAddress as unknown as ContractAddress;
   }
 }
 
@@ -287,9 +287,9 @@ export function account(
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
-  isToken: boolean = false
+  isToken = false
 ) {
   return Object.freeze(
     new AccountCoin({
@@ -328,7 +328,7 @@ export function erc20(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.main.ethereum,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -370,7 +370,7 @@ export function terc20(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.kovan
 ) {
@@ -399,7 +399,7 @@ export function erc20CompatibleAccountCoin(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
@@ -441,7 +441,7 @@ export function celoToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.main.celo,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -483,7 +483,7 @@ export function tceloToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.celo
 ) {
@@ -510,9 +510,9 @@ export function stellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  domain: string = '',
+  domain = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.stellar,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
@@ -553,9 +553,9 @@ export function tstellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  domain: string = '',
+  domain = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.stellar
 ) {
@@ -583,7 +583,7 @@ export function tronToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: TronNetwork = Networks.main.trx,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -626,7 +626,7 @@ export function ttronToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: TronNetwork = Networks.test.trx,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -665,9 +665,9 @@ export function hederaCoin(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  nodeAccountId: string = '0.0.3',
+  nodeAccountId = '0.0.3',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
@@ -708,9 +708,9 @@ export function algoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenURL: string = '',
+  tokenURL = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.algorand,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
@@ -751,9 +751,9 @@ export function talgoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenURL: string = '',
+  tokenURL = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.algorand
 ) {
@@ -781,7 +781,7 @@ export function eosToken(
   contractName: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.eos,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -823,7 +823,7 @@ export function teosToken(
   contractName: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.eos
 ) {
@@ -851,7 +851,7 @@ export function solToken(
   tokenAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.sol,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
@@ -893,7 +893,7 @@ export function tsolToken(
   tokenAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.sol
 ) {
@@ -921,7 +921,7 @@ export function avaxErc20(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.avalancheC,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
@@ -964,7 +964,7 @@ export function tavaxErc20(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix: string = '',
+  prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.avalancheC,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1

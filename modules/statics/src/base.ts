@@ -828,7 +828,7 @@ export abstract class BaseCoin {
     const requiredFeatures = this.requiredFeatures();
     const disallowedFeatures = this.disallowedFeatures();
 
-    const intersectionFeatures = Array.from(requiredFeatures).filter(feat => disallowedFeatures.has(feat));
+    const intersectionFeatures = Array.from(requiredFeatures).filter((feat) => disallowedFeatures.has(feat));
 
     if (intersectionFeatures.length > 0) {
       throw new ConflictingCoinFeaturesError(options.name, intersectionFeatures);
