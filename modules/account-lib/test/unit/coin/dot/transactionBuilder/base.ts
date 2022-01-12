@@ -10,7 +10,7 @@ import * as DotResources from '../../../../resources/dot';
 export interface TestDotNetwork extends DotNetwork {
   genesisHash: string;
   specVersion: number;
-  metadataRpc: string;
+  metadataRpc: `0x${string}`;
 }
 
 export const buildTestConfig = (): Readonly<CoinConfig> => {
