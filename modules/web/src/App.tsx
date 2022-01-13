@@ -4,8 +4,10 @@ import './App.css';
 
 import { BitGoAsync } from 'bitgo';
 
+const sdk = new BitGoAsync({ customRootURI: 'https://app.bitgo-dev.com' });;
+
 function App() {
-  console.log(new BitGoAsync({ customRootURI: 'https://app.bitgo-dev.com' }));
+  console.log(sdk);
   return (
     <div className="App">
       <header className="App-header">

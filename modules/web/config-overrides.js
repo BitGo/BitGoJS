@@ -26,9 +26,6 @@ module.exports = function override(config, env) {
     'morgan', 
     'superagent-proxy'
   ];
-  console.log(`--------------`)
-  console.log(config.plugins);
-  console.log(`--------------`)
   config.plugins = [
     ...config.plugins,
     new webpack.ProvidePlugin({
