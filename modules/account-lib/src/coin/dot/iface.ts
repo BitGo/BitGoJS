@@ -85,7 +85,6 @@ export interface UnstakeArgs {
 export enum ProxyType {
   ANY = 'Any',
   NON_TRANSFER = 'NonTransfer',
-  GOVERNANCE = 'Governance',
   STAKING = 'Staking',
   IDENTTITY_JUDGEMENT = 'IdentityJudgement',
   CANCEL_PROXY = 'CancelProxy',
