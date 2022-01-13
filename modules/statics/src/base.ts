@@ -742,8 +742,9 @@ export enum UnderlyingAsset {
   'avaxc:KLO' = 'avaxc:klo',
   'avaxc:JOE' = 'avaxc:joe',
   'avaxc:PNG' = 'avaxc:png',
-  'avaxc:USDT.E' = 'avaxc:usdt.e',
-  'avaxc:USDC.E' = 'avaxc:usdc.e',
+  'avaxc:USDT' = 'avaxc:usdt',
+  'avaxc:USDC' = 'avaxc:usdc',
+  'avaxc:LINK' = 'avaxc:link',
 }
 
 /**
@@ -828,7 +829,7 @@ export abstract class BaseCoin {
     const requiredFeatures = this.requiredFeatures();
     const disallowedFeatures = this.disallowedFeatures();
 
-    const intersectionFeatures = Array.from(requiredFeatures).filter(feat => disallowedFeatures.has(feat));
+    const intersectionFeatures = Array.from(requiredFeatures).filter((feat) => disallowedFeatures.has(feat));
 
     if (intersectionFeatures.length > 0) {
       throw new ConflictingCoinFeaturesError(options.name, intersectionFeatures);

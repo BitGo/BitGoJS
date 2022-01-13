@@ -7,7 +7,7 @@ describe('Avaxc Token:', function () {
   let avaxcTokenCoin;
 
   describe('In env test:', function () {
-    const tokenName = 'tavaxc:PNG';
+    const tokenName = 'tavaxc:LINK';
 
     before(function () {
       bitgo = new TestBitGo({ env: 'test' });
@@ -16,12 +16,12 @@ describe('Avaxc Token:', function () {
     });
 
     it('should return constants', function () {
-      avaxcTokenCoin.getChain().should.equal('tavaxc:PNG');
-      avaxcTokenCoin.getBaseChain().should.equal('tavaxc:PNG');
+      avaxcTokenCoin.getChain().should.equal('tavaxc:LINK');
+      avaxcTokenCoin.getBaseChain().should.equal('tavaxc:LINK');
       avaxcTokenCoin.getFullName().should.equal('Avaxc Token');
       avaxcTokenCoin.getBaseFactor().should.equal(1e18);
       avaxcTokenCoin.type.should.equal(tokenName);
-      avaxcTokenCoin.name.should.equal('Test Pangolin');
+      avaxcTokenCoin.name.should.equal('Test Chainlink');
       avaxcTokenCoin.coin.should.equal('tavaxc');
       avaxcTokenCoin.network.should.equal('Testnet');
       avaxcTokenCoin.decimalPlaces.should.equal(18);

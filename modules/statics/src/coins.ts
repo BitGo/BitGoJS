@@ -28,7 +28,7 @@ const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
-  feature => feature !== CoinFeature.CUSTODY
+  (feature) => feature !== CoinFeature.CUSTODY
 );
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -1165,20 +1165,9 @@ export const coins = CoinMap.fromCoins([
   avaxErc20('avaxc:KLO', 'Kalao', 18, '0xb27c8941a7df8958a1778c0259f76d1f8b711c35', UnderlyingAsset['avaxc:KLO']),
   avaxErc20('avaxc:JOE', 'Trader Joe', 18, '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd', UnderlyingAsset['avaxc:JOE']),
   avaxErc20('avaxc:PNG', 'Pangolin', 18, '0x60781c2586d68229fde47564546784ab3faca982', UnderlyingAsset['avaxc:PNG']),
-  avaxErc20(
-    'avaxc:USDT.E',
-    'Tether USD',
-    6,
-    '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
-  ),
-  avaxErc20(
-    'avaxc:USDC.E',
-    'USD Coin',
-    6,
-    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
-  ),
+  avaxErc20('avaxc:LINK', 'Chainlink', 18, '0x5947bb275c521040051d82396192181b413227a3', UnderlyingAsset['avaxc:LINK']),
+  avaxErc20('avaxc:USDT', 'Tether USD', 6, '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', UnderlyingAsset['avaxc:USDT']),
+  avaxErc20('avaxc:USDC', 'USD Coin', 6, '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', UnderlyingAsset['avaxc:USDC']),
   tavaxErc20('tavaxc:QI', 'Test BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:QI']),
   tavaxErc20(
     'tavaxc:XAVA',
@@ -1209,17 +1198,24 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['avaxc:PNG']
   ),
   tavaxErc20(
-    'tavaxc:USDT.E',
-    'Test Tether USD',
-    6,
-    '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:USDT.E']
+    'tavaxc:LINK',
+    'Test Chainlink',
+    18,
+    '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
+    UnderlyingAsset['avaxc:LINK']
   ),
   tavaxErc20(
-    'tavaxc:USDC.E',
+    'tavaxc:USDT',
+    'Test Tether USD',
+    6,
+    '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    UnderlyingAsset['avaxc:USDT']
+  ),
+  tavaxErc20(
+    'tavaxc:USDC',
     'Test USD Coin',
     6,
-    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:USDC.E']
+    '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+    UnderlyingAsset['avaxc:USDC']
   ),
 ]);

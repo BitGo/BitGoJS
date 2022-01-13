@@ -85,7 +85,6 @@ export interface UnstakeArgs {
 export enum ProxyType {
   ANY = 'Any',
   NON_TRANSFER = 'NonTransfer',
-  GOVERNANCE = 'Governance',
   STAKING = 'Staking',
   IDENTTITY_JUDGEMENT = 'IdentityJudgement',
   CANCEL_PROXY = 'CancelProxy',
@@ -147,7 +146,7 @@ export interface DecodedTx extends Omit<DecodedUnsignedTx, 'method'> {
 export interface CreateBaseTxInfo {
   baseTxInfo: BaseTxInfo;
   options: {
-    metadataRpc: string;
+    metadataRpc: `0x${string}`;
     registry: TypeRegistry;
   };
 }
