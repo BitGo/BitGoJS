@@ -5,7 +5,7 @@ import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 const varuint = require('varuint-bitcoin');
 const typeforce = require('typeforce');
 
-import { networks } from '../../networks';
+import { isMainnet, networks } from '../../networks';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { fromBufferV4, fromBufferV5, toBufferV4, toBufferV5, VALUE_INT64_ZERO } from './ZcashBufferutils';
 import { getBlake2bHash, getSignatureDigest, getTxidDigest } from './hashZip0244';
@@ -40,7 +40,7 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
   throw new Error(`no value for version ${version}`);
 }
 
-export function getDefaultConsensusBranchIdForVersion(version: number): number {
+export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
   switch (version) {
     case 1:
     case 2:
@@ -48,6 +48,7 @@ export function getDefaultConsensusBranchIdForVersion(version: number): number {
     case 3:
       return OVERWINTER_BRANCH_ID;
     case 4:
+      return isMainnet(network) ? CANOPY_BRANCH_ID : NU5_BRANCH_ID;
     case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
@@ -90,7 +91,7 @@ export class ZcashTransaction extends UtxoTransaction {
         consensusBranchId = tx.consensusBranchId;
       }
     }
-    this.consensusBranchId = consensusBranchId ?? getDefaultConsensusBranchIdForVersion(this.version);
+    this.consensusBranchId = consensusBranchId ?? getDefaultConsensusBranchIdForVersion(network, this.version);
   }
 
   static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
@@ -107,7 +108,7 @@ export class ZcashTransaction extends UtxoTransaction {
     // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L772
     tx.overwintered = tx.version >>> 31; // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07fffffff; // 3 for overwinter
-    tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(tx.version);
+    tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, tx.version);
 
     if (tx.isOverwinterCompatible()) {
       tx.versionGroupId = bufferReader.readUInt32();
@@ -131,7 +132,7 @@ export class ZcashTransaction extends UtxoTransaction {
   static fromBufferWithVersion(buf: Buffer, network: ZcashNetwork, version?: number): ZcashTransaction {
     const tx = ZcashTransaction.fromBuffer(buf, false, network);
     if (version) {
-      tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
+      tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
     }
     return tx;
   }

@@ -64,7 +64,7 @@ export function setTransactionBuilderDefaults(
       txb.setVersion(version);
       break;
     case networks.zcash:
-      (txb as ZcashTransactionBuilder).setDefaultsForVersion(version);
+      (txb as ZcashTransactionBuilder).setDefaultsForVersion(network, version);
       break;
     default:
       if (version !== 1) {
