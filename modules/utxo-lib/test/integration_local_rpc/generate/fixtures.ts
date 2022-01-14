@@ -16,7 +16,7 @@ export type Protocol = {
 export function getProtocolVersions(network: Network): number[] {
   switch (getMainnet(network)) {
     case networks.zcash:
-      return [getDefaultTransactionVersion(network), 450, 500];
+      return [400, 450, 500];
     default:
       return [getDefaultTransactionVersion(network)];
   }

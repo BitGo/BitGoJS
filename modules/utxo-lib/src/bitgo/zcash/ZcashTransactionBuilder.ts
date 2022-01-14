@@ -64,7 +64,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     this.tx.version = version;
   }
 
-  setDefaultsForVersion(version: number): void {
+  setDefaultsForVersion(network: Network, version: number): void {
     switch (version) {
       case 4:
       case ZcashTransaction.VERSION4_BRANCH_CANOPY:
@@ -80,7 +80,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     }
 
     this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
-    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(version);
+    this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
   }
 
   private hasSignatures(): boolean {

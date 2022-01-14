@@ -1,6 +1,6 @@
 import { TxOutput } from 'bitcoinjs-lib';
 
-import { networks, Network, getMainnet } from '../networks';
+import { networks, Network, getMainnet, isMainnet } from '../networks';
 
 import { UtxoTransaction } from './UtxoTransaction';
 import { UtxoTransactionBuilder } from './UtxoTransactionBuilder';
@@ -43,7 +43,7 @@ export function getDefaultTransactionVersion(network: Network): number {
     case networks.bitcoingold:
       return 2;
     case networks.zcash:
-      return ZcashTransaction.VERSION4_BRANCH_CANOPY;
+      return isMainnet(network) ? ZcashTransaction.VERSION4_BRANCH_CANOPY : ZcashTransaction.VERSION4_BRANCH_NU5;
     default:
       return 1;
   }
@@ -64,7 +64,7 @@ export function setTransactionBuilderDefaults(
       txb.setVersion(version);
       break;
     case networks.zcash:
-      (txb as ZcashTransactionBuilder).setDefaultsForVersion(version);
+      (txb as ZcashTransactionBuilder).setDefaultsForVersion(network, version);
       break;
     default:
       if (version !== 1) {
