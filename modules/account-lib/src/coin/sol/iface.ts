@@ -1,4 +1,4 @@
-import { Blockhash, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
+import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
@@ -24,7 +24,7 @@ export interface TxData {
   instructionsData: InstructionParams[];
 }
 
-export type InstructionParams = Nonce | Memo | WalletInit | Transfer;
+export type InstructionParams = Nonce | Memo | WalletInit | Transfer | StakingActivate;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -46,7 +46,12 @@ export interface Transfer {
   params: { fromAddress: string; toAddress: string; amount: string };
 }
 
-export type ValidInstructionTypes = SystemInstructionType | 'Memo';
+export interface StakingActivate {
+  type: InstructionBuilderTypes.StakingActivate;
+  params: { fromAddress: string; stakingAddress: string; amount: string; validator: string };
+}
+
+export type ValidInstructionTypes = SystemInstructionType | StakeInstructionType | 'Memo';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: string;

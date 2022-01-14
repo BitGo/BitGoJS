@@ -4,6 +4,7 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
+import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { Transaction } from './transaction';
 import { validateRawTransaction } from './utils';
 
@@ -26,6 +27,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
+        case TransactionType.StakingActivate:
+          return this.getStakingActivateBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -42,6 +45,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the staking builder to create a staking account and also a delegate in one transaction.
+   * once the tx reach the network it will automatically by activated on next epoch
+   *
+   * @see https://docs.solana.com/cluster/stake-delegation-and-rewards#stake-warmup-cooldown-withdrawal
+   */
+  getStakingActivateBuilder(tx?: Transaction): StakingActivateBuilder {
+    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
   }
 
   /**

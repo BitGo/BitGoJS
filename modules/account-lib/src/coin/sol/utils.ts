@@ -2,6 +2,8 @@ import {
   Keypair,
   PublicKey,
   SignaturePubkeyPair,
+  StakeInstruction,
+  StakeProgram,
   SystemInstruction,
   SystemProgram,
   Transaction as SolTransaction,
@@ -12,6 +14,7 @@ import BigNumber from 'bignumber.js';
 import {
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
+  stakingActivateInstructionsIndexes,
   ValidInstructionTypesEnum,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
@@ -87,6 +90,17 @@ export function isValidTransactionId(txId: string): boolean {
 export function isValidAmount(amount: string): boolean {
   const bigNumberAmount = new BigNumber(amount);
   return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
+}
+
+/**
+ * Check if the string is a valid amount of lamports number on staking
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidStakingAmount(amount: string): boolean {
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThan(0);
 }
 
 /**
@@ -181,7 +195,7 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 
 /**
  * Returns the transaction Type based on the  transaction instructions.
- * Only Wallet initialization and Transfer transactions are supported.
+ * Wallet initialization, Transfer and Staking transactions are supported.
  *
  * @param {SolTransaction} transaction - the solana transaction
  * @returns {TransactionType} - the type of transaction
@@ -196,9 +210,16 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
       ValidInstructionTypesEnum.InitializeNonceAccount
   ) {
     return TransactionType.WalletInitialization;
-  } else {
-    return TransactionType.Send;
+  } else if (
+    getInstructionType(instructions[stakingActivateInstructionsIndexes.Create]) === ValidInstructionTypesEnum.Create &&
+    getInstructionType(instructions[stakingActivateInstructionsIndexes.Initialize]) ===
+      ValidInstructionTypesEnum.StakingInitialize &&
+    getInstructionType(instructions[stakingActivateInstructionsIndexes.Delegate]) ===
+      ValidInstructionTypesEnum.StakingDelegate
+  ) {
+    return TransactionType.StakingActivate;
   }
+  return TransactionType.Send;
 }
 
 /**
@@ -214,6 +235,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return 'Memo';
     case SystemProgram.programId.toString():
       return SystemInstruction.decodeInstructionType(instruction);
+    case StakeProgram.programId.toString():
+      return StakeInstruction.decodeInstructionType(instruction);
     default:
       throw new NotSupported(
         'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
