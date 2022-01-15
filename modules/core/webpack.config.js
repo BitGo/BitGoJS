@@ -3,6 +3,7 @@ const fs = require('fs');
 const webpack = require('webpack');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const mode = process.env.NODE_ENV ?? 'production';
+const TerserPlugin = require('terser-webpack-plugin');
 
 function replaceUnsafeEval(file) {
   const replacementRegex = /Function\("return this"\)\(\)/g;
@@ -90,5 +91,21 @@ module.exports = {
       },
     },
   ],
-  devtool: false,
+  node: {
+    global: true,
+  },
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        terserOptions: {
+          ecma: 6,
+          warnings: true,
+          mangle: false,
+          keep_classnames: true,
+          keep_fnames: true,
+        },
+      }),
+    ],
+  },
 };
