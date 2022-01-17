@@ -28,7 +28,7 @@ const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKE
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES].filter(
-  (feature) => feature !== CoinFeature.CUSTODY
+  feature => feature !== CoinFeature.CUSTODY
 );
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -189,13 +189,6 @@ export const coins = CoinMap.fromCoins([
   erc20('aergo1', 'Aergo1', 18, '0x91af0fbb28aba7e31403cb457106ce79397fd4e6', UnderlyingAsset.AERGO1),
   erc20('agwd', 'AGARWOOD', 18, '0xc3e419177044c9172823f06335d5d82aaf38a5c6', UnderlyingAsset.AGWD),
   erc20('aion', 'AION', 8, '0x4ceda7906a5ed2179785cd3a40a69ee8bc99c466', UnderlyingAsset.AION),
-  erc20(
-    'ali',
-    'Artificial Liquid Intelligence Token',
-    18,
-    '0x6b0b3a982b4634ac68dd83a4dbf02311ce324181',
-    UnderlyingAsset.ALI
-  ),
   erc20('alpha', 'Alpha Finance', 18, '0xa1faa113cbe53436df28ff0aee54275c13b40975', UnderlyingAsset.ALPHA),
   erc20('amn', 'Amon', 18, '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', UnderlyingAsset.AMN),
   erc20('amo', 'AMO Token', 18, '0x38c87aa89b2b8cd9b95b736e1fa7b612ea972169', UnderlyingAsset.AMO),
@@ -453,7 +446,6 @@ export const coins = CoinMap.fromCoins([
   erc20('lrc', 'loopring', 18, '0xef68e7c694f40c8202821edf525de3782458639f', UnderlyingAsset.LRC),
   erc20('lrcv2', 'loopring V2', 18, '0xbbbbca6a901c926f240b89eacb641d8aec7aeafd', UnderlyingAsset.LRCV2),
   erc20('lyn', 'Lynchpin', 18, '0xb0b1685f55843d03739c7d9b0a230f1b7dcf03d5', UnderlyingAsset.LYN),
-  erc20('mana', 'Decentraland', 18, '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', UnderlyingAsset.MANA),
   erc20('maps', 'Maps', 6, '0x2b915b505c017abb1547aa5ab355fbe69865cc6d', UnderlyingAsset.MAPS),
   erc20('matic', 'Matic Token', 18, '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', UnderlyingAsset.MATIC),
   erc20('mcdai', 'Dai', 18, '0x6b175474e89094c44da98b954eedeac495271d0f', UnderlyingAsset.MCDAI),
@@ -479,7 +471,6 @@ export const coins = CoinMap.fromCoins([
   erc20('moc', 'Moss Coin', 18, '0x865ec58b06bf6305b886793aa20a2da31d034e68', UnderlyingAsset.MOC),
   erc20('mof', 'Molecular Future', 16, '0x653430560be843c4a3d143d0110e896c2ab8ac0d', UnderlyingAsset.MOF),
   erc20('mpay', 'MenaPay', 18, '0x3810a4ddf41e586fa0dba1463a7951b748cecfca', UnderlyingAsset.MPAY),
-  erc20('mpl', 'Maple Token', 18, '0x33349b282065b0284d756f0577fb39c158f935e6', UnderlyingAsset.MPL),
   erc20('mtcn', 'Multiven', 18, '0xf6117cc92d7247f605f11d4c942f0feda3399cb5', UnderlyingAsset.MTCN),
   erc20('mtl', 'Metal', 8, '0xf433089366899d83a9f26a773d59ec7ecf30355e', UnderlyingAsset.MTL),
   erc20('musd', 'mStable USD', 18, '0xe2f2a5c287993345a840db3b0845fbc70f5935a5', UnderlyingAsset.MUSD),
@@ -487,7 +478,6 @@ export const coins = CoinMap.fromCoins([
   erc20('mvi', 'Metaverse Index', 18, '0x72e364f2abdc788b7e918bc238b21f109cd634d7', UnderlyingAsset.MVI),
   erc20('nas', 'Nebulas', 18, '0x5d65d971895edc438f465c17db6992698a52318d', UnderlyingAsset.NAS),
   erc20('nct', 'Polyswarm', 18, '0x9e46a38f5daabe8683e10793b06749eef7d733d1', UnderlyingAsset.NCT),
-  erc20('ndx', 'Indexed Finance', 18, '0x86772b1409b61c639eaac9ba0acfbb6e238e5f83', UnderlyingAsset.NDX),
   erc20('neu', 'Neumark', 18, '0xa823e6722006afe99e91c30ff5295052fe6b8e32', UnderlyingAsset.NEU),
   erc20('nexo', 'Nexo', 18, '0xb62132e35a6c13ee1ee0f84dc5d40bad8d815206', UnderlyingAsset.NEXO),
   erc20('nftx', 'NFTX', 18, '0x87d73e916d7057945c9bcd8cdd94e42a6f47f776', UnderlyingAsset.NFTX),
@@ -534,20 +524,12 @@ export const coins = CoinMap.fromCoins([
   erc20('powr', 'Power Ledger', 6, '0x595832f8fc6bf59c85c527fec3740a1b7a361269', UnderlyingAsset.POWR),
   erc20('ppt', 'Populous Platform', 8, '0xd4fa1460f537bb9085d22c7bccb5dd450ef28e3a', UnderlyingAsset.PPT),
   erc20('prdx', 'PRDX Token', 9, '0xe17900f23b7ebb2791f25f1eaa63d8f5e603e9a5', UnderlyingAsset.PRDX),
-  erc20('prints', 'FingerprintsDAO', 18, '0x4dd28568d05f09b02220b09c2cb307bfd837cb95', UnderlyingAsset.PRINTS),
   erc20('pro', 'Propy', 18, '0x9041fe5b3fdea0f5e4afdc17e75180738d877a01', UnderlyingAsset.PRO),
   erc20('prts', 'Protos', 0, '0x835a44027ee4e92bbd8874e5ede9e5148b069e96', UnderlyingAsset.PRTS),
   erc20('npxs', 'Pundi X', 18, '0xa15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3', UnderlyingAsset.NPXS),
   erc20('ns2drp', 'New Silver Series 2 DROP', 18, '0xe4c72b4de5b0f9accea880ad0b1f944f85a9daa0', UnderlyingAsset.NS2DRP),
   erc20('pundix', 'Pundi X2', 18, '0x0fd10b9899882a6f2fcb5c371e17e70fdee00c38', UnderlyingAsset.PUNDIX),
   erc20('pusd', 'PegUSD Token', 8, '0x93d3296cac208422bf587c3597d116e809870f2b', UnderlyingAsset.PUSD),
-  erc20(
-    'pxp',
-    'PointPay Crypto Banking Token V2',
-    18,
-    '0x95aa5d2dbd3c16ee3fdea82d5c6ec3e38ce3314f',
-    UnderlyingAsset.PXP
-  ),
   erc20('qash', 'QASH', 6, '0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6', UnderlyingAsset.QASH),
   erc20('qcad', 'QCAD', 2, '0x4a16baf414b8e637ed12019fad5dd705735db2e0', UnderlyingAsset.QCAD),
   erc20('quick', 'QuickSwap', 18, '0x6c28aef8977c9b773996d0e8376d2ee379446f2f', UnderlyingAsset.QUICK),
@@ -559,7 +541,6 @@ export const coins = CoinMap.fromCoins([
   erc20('qvt', 'Qvolta', 18, '0x1183f92a5624d68e85ffb9170f16bf0443b4c242', UnderlyingAsset.QVT),
   erc20('rad', 'Radicle', 18, '0x31c8eacbffdd875c74b94b077895bd78cf1e64a3', UnderlyingAsset.RAD),
   erc20('rcoin', 'ArCoin', 8, '0x252739487c1fa66eaeae7ced41d6358ab2a6bca9', UnderlyingAsset.RCOIN),
-  erc20('rare', 'SuperRare', 18, '0xba5bde662c17e2adff1075610382b9b691296350', UnderlyingAsset.RARE),
   erc20('rari', 'Rarible', 18, '0xfca59cd816ab1ead66534d82bc21e7515ce441cf', UnderlyingAsset.RARI),
   erc20('rby', 'Ruby X', 18, '0xf7705dee19a63e0bc1a240f723c5c0f570c78572', UnderlyingAsset.RBY),
   erc20('rdn', 'Raiden Network', 18, '0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6', UnderlyingAsset.RDN),
@@ -702,7 +683,6 @@ export const coins = CoinMap.fromCoins([
   erc20('yfdai', 'Yfdai.Finance', 18, '0xf4cd3d3fda8d7fd6c5a500203e38640a70bf9577', UnderlyingAsset.YFDAI),
   erc20('yfi', 'Yearn.Finance', 18, '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e', UnderlyingAsset.YFI),
   erc20('yfii', 'YFII.Finance', 18, '0xa1d0e215a23d7030842fc67ce582a6afa3ccab83', UnderlyingAsset.YFII),
-  erc20('ygg', 'Yield Guild Games', 18, '0x25f8087ead173b73d6e8b84329989a8eea16cf73', UnderlyingAsset.YGG),
   erc20('yld', 'Yld', 18, '0xf94b5c5651c888d928439ab6514b93944eee6f48', UnderlyingAsset.YLD),
   erc20('yng', 'Young Token', 18, '0xa26cbb76156090f4b40a1799a220fc4c946afb3c', UnderlyingAsset.YNG),
   erc20('ysey', 'YSEY Utility Token', 3, '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', UnderlyingAsset.YSEY),
@@ -1165,9 +1145,20 @@ export const coins = CoinMap.fromCoins([
   avaxErc20('avaxc:KLO', 'Kalao', 18, '0xb27c8941a7df8958a1778c0259f76d1f8b711c35', UnderlyingAsset['avaxc:KLO']),
   avaxErc20('avaxc:JOE', 'Trader Joe', 18, '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd', UnderlyingAsset['avaxc:JOE']),
   avaxErc20('avaxc:PNG', 'Pangolin', 18, '0x60781c2586d68229fde47564546784ab3faca982', UnderlyingAsset['avaxc:PNG']),
-  avaxErc20('avaxc:LINK', 'Chainlink', 18, '0x5947bb275c521040051d82396192181b413227a3', UnderlyingAsset['avaxc:LINK']),
-  avaxErc20('avaxc:USDT', 'Tether USD', 6, '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', UnderlyingAsset['avaxc:USDT']),
-  avaxErc20('avaxc:USDC', 'USD Coin', 6, '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', UnderlyingAsset['avaxc:USDC']),
+  avaxErc20(
+    'avaxc:USDT.E',
+    'Tether USD',
+    6,
+    '0xc7198437980c041c805a1edcba50c1ce5db95118',
+    UnderlyingAsset['avaxc:USDT.E']
+  ),
+  avaxErc20(
+    'avaxc:USDC.E',
+    'USD Coin',
+    6,
+    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+    UnderlyingAsset['avaxc:USDC.E']
+  ),
   tavaxErc20('tavaxc:QI', 'Test BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:QI']),
   tavaxErc20(
     'tavaxc:XAVA',
@@ -1198,24 +1189,17 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['avaxc:PNG']
   ),
   tavaxErc20(
-    'tavaxc:LINK',
-    'Test Chainlink',
-    18,
-    '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
-    UnderlyingAsset['avaxc:LINK']
-  ),
-  tavaxErc20(
-    'tavaxc:USDT',
+    'tavaxc:USDT.E',
     'Test Tether USD',
     6,
-    '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
-    UnderlyingAsset['avaxc:USDT']
+    '0xc7198437980c041c805a1edcba50c1ce5db95118',
+    UnderlyingAsset['avaxc:USDT.E']
   ),
   tavaxErc20(
-    'tavaxc:USDC',
+    'tavaxc:USDC.E',
     'Test USD Coin',
     6,
-    '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-    UnderlyingAsset['avaxc:USDC']
+    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+    UnderlyingAsset['avaxc:USDC.E']
   ),
 ]);
