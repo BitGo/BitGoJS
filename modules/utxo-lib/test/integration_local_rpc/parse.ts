@@ -1,21 +1,22 @@
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
-import { TxOutput, isTestnet } from '../../src';
+import { Network, isTestnet, TxOutput, getNetworkList, getNetworkName } from '../../src';
 
 import {
-  verifySignature,
-  parseSignatureScript,
-  parseSignatureScript2Of3,
-  ParsedSignatureScript2Of3,
-  signInput2Of3,
-  Triple,
-  UtxoTransaction,
-  getOutputIdForInput,
-  TxOutPoint,
   createTransactionBuilderForNetwork,
   createTransactionBuilderFromTransaction,
   createTransactionFromBuffer,
+  getDefaultTransactionVersion,
+  getOutputIdForInput,
+  ParsedSignatureScript2Of3,
+  parseSignatureScript,
+  parseSignatureScript2Of3,
+  signInput2Of3,
+  Triple,
+  TxOutPoint,
+  UtxoTransaction,
+  verifySignature,
 } from '../../src/bitgo';
 import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
@@ -26,23 +27,19 @@ import {
   ScriptType,
   scriptTypes,
 } from './generate/outputScripts.util';
-import {
-  fixtureKeys,
-  getProtocolVersions,
-  Protocol,
-  readFixture,
-  TransactionFixtureWithInputs,
-} from './generate/fixtures';
+import { fixtureKeys, getProtocolVersions, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { getDefaultCosigner } from '../testutil';
 
-const utxolib = require('../../src');
-
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
-function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: ScriptType) {
+function runTestParse(
+  protocol: { network: Network; version: number | undefined },
+  txType: FixtureTxType,
+  scriptType: ScriptType
+) {
   if (txType === 'deposit' && !isSupportedDepositType(protocol.network, scriptType)) {
     return;
   }
@@ -57,7 +54,13 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
     let parsedTx: UtxoTransaction;
 
     before(async function () {
-      fixture = await readFixture(protocol, fixtureName);
+      fixture = await readFixture(
+        {
+          network: protocol.network,
+          version: protocol.version ?? getDefaultTransactionVersion(protocol.network),
+        },
+        fixtureName
+      );
       parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
         version: protocol.version,
       });
@@ -260,13 +263,13 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
 }
 
 describe(`regtest fixtures`, function () {
-  utxolib.getNetworkList().forEach((network) => {
+  getNetworkList().forEach((network) => {
     if (!isTestnet(network)) {
       return;
     }
 
-    getProtocolVersions(network).forEach((version) => {
-      describe(`${utxolib.getNetworkName(network)} v${version} fixtures`, function () {
+    [undefined, ...getProtocolVersions(network)].forEach((version) => {
+      describe(`${getNetworkName(network)} fixtures (version=${version})`, function () {
         scriptTypes.forEach((scriptType) => {
           fixtureTxTypes.forEach((txType) => {
             runTestParse({ network, version }, txType, scriptType);
