@@ -52,8 +52,12 @@ export { Algo };
 
 import * as Sol from './coin/sol';
 export { Sol };
+
 import * as Dot from './coin/dot';
 export { Dot };
+
+import * as Near from './coin/near';
+export { Near };
 
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
