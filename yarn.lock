@@ -2622,28 +2622,28 @@
     sha.js "^2.4.11"
     smart-buffer "^4.1.0"
 
-"@substrate/txwrapper-core@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-core/-/txwrapper-core-1.4.0.tgz#3be4290d0f030bcdfa2f71e1d6a81795d92ad30f"
-  integrity sha512-a8mjao0cQwPp4QL8p352NP2/lPTzrQdwye4IXAHVAy4pKvlGqU2c1TYvH3rDrKTydWZdjh1uLZSiWxUyq9VHbQ==
+"@substrate/txwrapper-core@1.5.1", "@substrate/txwrapper-core@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-core/-/txwrapper-core-1.5.1.tgz#83c509aeee4cf5c196296c152c11c58478f16155"
+  integrity sha512-AfYl2I8cQx4cIHiXUNzcRKwrlkQVA2IFQvIzNNtEXgAqRjscDSUpRA2bNNEBMsKaNl/+jR7Asph6wekwbB4gJw==
   dependencies:
     "@polkadot/api" "^7.2.1"
     memoizee "0.4.15"
 
-"@substrate/txwrapper-polkadot@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-polkadot/-/txwrapper-polkadot-1.4.0.tgz#66b0084b2ba089a71908e05359ef9995404f6b2e"
-  integrity sha512-JHBWET8HxdyJfMnX0TRf96huwQBQ8cO+MObYMJvUxuRqFQzWNPa0dczYlODq50IJX5vJ5OuV/GjY5u8lfdSrrQ==
+"@substrate/txwrapper-polkadot@1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-polkadot/-/txwrapper-polkadot-1.5.1.tgz#08428d8e91c403083e65ab4e3de5d3dfee8cbe68"
+  integrity sha512-k1gLgQOEjfi71yJ6K97xSTJkSf8p0442l1mrF25xO8sA8+dZ8LTsOPSPDGm5HMq05ZXRLUoazLVBnNZ9DrO2Gw==
   dependencies:
-    "@substrate/txwrapper-core" "^1.4.0"
-    "@substrate/txwrapper-substrate" "^1.4.0"
+    "@substrate/txwrapper-core" "^1.5.1"
+    "@substrate/txwrapper-substrate" "^1.5.1"
 
-"@substrate/txwrapper-substrate@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-substrate/-/txwrapper-substrate-1.4.0.tgz#2e1923baa7309d293787bfa9717d54834922a518"
-  integrity sha512-WIcs9Oq+5khBQ1+07LfF4TBNTWSAU8tt0tIVN5xHRAWlh0oBS3aWR1p7DCUHc8IZppxoa3F7lSV93VWhcxnvfw==
+"@substrate/txwrapper-substrate@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@substrate/txwrapper-substrate/-/txwrapper-substrate-1.5.1.tgz#30cec544466ca0ee9b911f069a13aa69a3e90e17"
+  integrity sha512-sgHXtEG7qmZz7c3KAHPXuEoq58grOUzpBzEx7D0PRaXbPfsvOc6ujnKaJ204fw5QPRS1RG9V70ADDttDoC9FNQ==
   dependencies:
-    "@substrate/txwrapper-core" "^1.4.0"
+    "@substrate/txwrapper-core" "^1.5.1"
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
