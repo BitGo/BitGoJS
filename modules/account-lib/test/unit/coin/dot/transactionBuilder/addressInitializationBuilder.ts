@@ -3,17 +3,20 @@ import sinon, { assert } from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
-import { ProxyType } from '../../../../../src/coin/dot/iface';
+import { Material, ProxyType } from '../../../../../src/coin/dot/iface';
+import utils from '../../../../../src/coin/dot/utils';
 
 describe('Dot Address Initialization Builder', () => {
   let builder: AddressInitializationBuilder;
+  let materialData: Material;
 
   const sender = DotResources.accounts.account1;
   const receiver = DotResources.accounts.account3;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new AddressInitializationBuilder(config);
+    materialData = utils.getMaterial(config);
+    builder = new AddressInitializationBuilder(config).material(materialData);
   });
 
   describe('setter validation', () => {
@@ -58,8 +61,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -69,12 +71,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -87,8 +89,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
@@ -97,12 +98,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -110,8 +111,7 @@ describe('Dot Address Initialization Builder', () => {
       builder.from(DotResources.rawTx.addProxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(7);
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
@@ -120,12 +120,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -144,13 +144,13 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
     });
   });
 
@@ -164,8 +164,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -175,12 +174,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -193,8 +192,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.proxyType, ProxyType.ANY);
@@ -203,12 +201,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -220,8 +218,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -231,12 +228,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -244,8 +241,7 @@ describe('Dot Address Initialization Builder', () => {
       builder.from(DotResources.rawTx.anonymous.signed);
       builder
         .validity({ firstValid: 8975007, maxDuration: 64 })
-        .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05')
-        .version(7);
+        .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.proxyType, ProxyType.ANY);
@@ -254,12 +250,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 8975007);
       should.deepEqual(txJson.referenceBlock, '0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -278,12 +274,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 8975007);
       should.deepEqual(txJson.referenceBlock, '0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
   });

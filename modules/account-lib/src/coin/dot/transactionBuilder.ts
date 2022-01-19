@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, DotNetwork, PolkadotSpecNameType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
@@ -9,11 +9,11 @@ import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, FeeOptions, SequenceId, ValidityWindow } from '../baseCoin/iface';
 import { AddressValidationError, InvalidFeeError } from './errors';
-import { CreateBaseTxInfo, TxMethod } from './iface';
+import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
-import { default as Utils, default as utils } from './utils';
+import { default as utils } from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -22,16 +22,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   protected _blockNumber: number;
   protected _referenceBlock: string;
-  protected _genesisHash: string;
-  protected _specVersion: number;
-  protected _transactionVersion: number;
-  protected _specName: PolkadotSpecNameType;
-  protected _chainName: string;
   protected _nonce: number;
   protected _tip?: number;
   protected _eraPeriod?: number;
   protected _registry: TypeRegistry;
   protected _method?: TxMethod;
+  protected _material: Material;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -122,6 +118,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  private method(method: TxMethod): this {
+    this._method = method;
+    return this;
+  }
+
   /**
    * The current version for transaction format.
    *
@@ -129,14 +130,29 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder.
    *
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
+   * @deprecated This field was added in material data.
    */
   version(transactionVersion: number): this {
-    this._transactionVersion = transactionVersion;
+    // this._transactionVersion = transactionVersion;
     return this;
   }
 
-  private method(method: TxMethod): this {
-    this._method = method;
+  /**
+   * The material data for the block.
+   *
+   * @param {Material} material
+   * @returns {TransactionBuilder} This transaction builder.
+   *
+   * @see https://wiki.polkadot.network/docs/build-transaction-construction
+   */
+  material(material: Material): this {
+    this._material = material;
+    this._registry = getRegistry({
+      chainName: material.chainName,
+      specName: material.specName,
+      specVersion: material.specVersion,
+      metadataRpc: material.metadata,
+    });
     return this;
   }
 
@@ -144,17 +160,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Set the network based on the configuration in the statics module
    */
   protected staticsConfig(): void {
-    const networkConfig = this._coinConfig.network as DotNetwork;
-    const { specName, genesisHash, specVersion, chainName, metadataRpc } = networkConfig;
-    this._genesisHash = genesisHash;
-    this._specVersion = specVersion;
-    this._chainName = chainName;
-    this._specName = specName;
+    this._material = utils.getMaterial(this._coinConfig);
     this._registry = getRegistry({
-      chainName: chainName,
-      specName: specName,
-      specVersion: specVersion,
-      metadataRpc: metadataRpc,
+      chainName: this._material.chainName,
+      specName: this._material.specName,
+      specVersion: this._material.specVersion,
+      metadataRpc: this._material.metadata,
     });
   }
 
@@ -168,20 +179,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = transaction;
   }
 
-  protected isSigningPayload(payload: DecodedSigningPayload | DecodedSignedTx): payload is DecodedSigningPayload {
-    return (payload as DecodedSigningPayload).blockHash !== undefined;
-  }
-
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc,
+      metadataRpc: this._material.metadata,
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
-    if (this.isSigningPayload(decodedTxn)) {
+    if (utils.isSigningPayload(decodedTxn)) {
       this.referenceBlock(decodedTxn.blockHash);
-      this.version(decodedTxn.transactionVersion);
     } else {
       this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
     }
@@ -203,7 +208,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.setTransaction(this.buildTransaction());
     this.transaction.transactionType(this.transactionType);
     this.transaction.registry(this._registry);
-    this.transaction.chainName(this._chainName);
+    this.transaction.chainName(this._material.chainName);
     if (this._keyPair) {
       this.transaction.sign(this._keyPair);
     }
@@ -212,22 +217,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   protected createBaseTxInfo(): CreateBaseTxInfo {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     return {
       baseTxInfo: {
         address: this._sender,
         blockHash: this._referenceBlock,
         blockNumber: this._registry.createType('BlockNumber', this._blockNumber).toNumber(),
         eraPeriod: this._eraPeriod,
-        genesisHash: this._genesisHash,
-        metadataRpc,
+        genesisHash: this._material.genesisHash,
+        metadataRpc: this._material.metadata,
+        specVersion: this._material.specVersion,
+        transactionVersion: this._material.txVersion,
         nonce: this._nonce,
-        specVersion: this._specVersion,
         tip: this._tip,
-        transactionVersion: this._transactionVersion,
       },
       options: {
-        metadataRpc,
+        metadataRpc: this._material.metadata,
         registry: this._registry,
       },
     };
@@ -247,7 +251,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    if (!Utils.isValidAddress(address.address)) {
+    if (!utils.isValidAddress(address.address)) {
       throw new AddressValidationError(address.address);
     }
   }
@@ -258,7 +262,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const isValidPrivateKeyFromHex = isValidEd25519Seed(key);
     const isValidPrivateKeyFromBase64 = isValidEd25519Seed(Buffer.from(key, 'base64').toString('hex'));
     try {
-      const decodedSeed = Utils.decodeSeed(key);
+      const decodedSeed = utils.decodeSeed(key);
       isValidPrivateKeyFromBytes = isValidEd25519Seed(Buffer.from(decodedSeed.seed).toString('hex'));
     } catch (err) {
       isValidPrivateKeyFromBytes = false;
@@ -279,9 +283,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
     const decodedTxn = decode(rawTransaction, {
-      metadataRpc,
+      metadataRpc: this._material.metadata,
       registry: this._registry,
     }) as DecodedSigningPayload | DecodedSignedTx;
 
@@ -289,7 +292,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const nonce = decodedTxn.nonce;
     const tip = decodedTxn.tip;
 
-    if (this.isSigningPayload(decodedTxn)) {
+    if (utils.isSigningPayload(decodedTxn)) {
       const blockHash = decodedTxn.blockHash;
       const validationResult = SigningPayloadTransactionSchema.validate({
         eraPeriod,
@@ -322,12 +325,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._sender,
       this._blockNumber,
       this._referenceBlock,
-      this._genesisHash,
-      this._chainName,
+      this._material.genesisHash,
+      this._material.chainName,
       this._nonce,
-      this._specVersion,
-      this._specName,
-      this._transactionVersion,
+      this._material.specVersion,
+      this._material.specName,
+      this._material.txVersion,
       this._eraPeriod,
       this._tip,
     );

@@ -37,6 +37,7 @@ export interface DotNetwork extends AccountNetwork {
   readonly specVersion: number;
   readonly chainName: string;
   readonly metadataRpc: `0x${string}`;
+  readonly txVersion: number;
 }
 
 export interface EthereumNetwork extends AccountNetwork {
@@ -184,25 +185,29 @@ class DashTestnet extends Testnet implements UtxoNetwork {
 }
 
 class Polkadot extends Mainnet implements DotNetwork {
+  accountExplorerUrl?: string | undefined;
   name = 'Polkadot';
   family = CoinFamily.DOT;
   explorerUrl = 'https://polkadot.subscan.io/extrinsic/';
   specName = 'polkadot' as PolkadotSpecNameType;
   genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  specVersion = 9122;
+  specVersion = 9140;
   chainName = 'Polkadot';
   metadataRpc = DotResources.mainnetMetadataRpc as `0x${string}`;
+  txVersion = 9;
 }
 
 class PolkadotTestnet extends Testnet implements DotNetwork {
+  accountExplorerUrl?: string | undefined;
   name = 'Westend';
   family = CoinFamily.DOT;
   explorerUrl = 'https://westend.subscan.io/extrinsic/';
   specName = 'westend' as PolkadotSpecNameType;
   genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
-  specVersion = 9130;
+  specVersion = 9150;
   chainName = 'Westend';
   metadataRpc = DotResources.westendMetadataRpc as `0x${string}`;
+  txVersion = 8;
 }
 
 class Celo extends Mainnet implements EthereumNetwork {

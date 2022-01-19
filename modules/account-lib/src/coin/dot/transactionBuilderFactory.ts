@@ -1,33 +1,33 @@
-import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError, NotSupported } from '../baseCoin/errors';
+import { NotImplementedError, NotSupported } from '../baseCoin/errors';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
-import { MethodNames } from './iface';
+import { Material, MethodNames } from './iface';
+import utils from './utils';
 import { UnstakeBuilder } from '.';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
-  protected _registry: TypeRegistry;
+  protected _material: Material;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.staticsConfig();
+    this._material = utils.getMaterial(_coinConfig);
   }
 
   getTransferBuilder(): TransferBuilder {
-    return new TransferBuilder(this._coinConfig);
+    return new TransferBuilder(this._coinConfig).material(this._material);
   }
 
   getStakingBuilder(): StakingBuilder {
-    return new StakingBuilder(this._coinConfig);
+    return new StakingBuilder(this._coinConfig).material(this._material);
   }
 
   getAddressInitializationBuilder(): AddressInitializationBuilder {
-    return new AddressInitializationBuilder(this._coinConfig);
+    return new AddressInitializationBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -35,7 +35,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   getUnstakeBuilder(): UnstakeBuilder {
-    return new UnstakeBuilder(this._coinConfig);
+    return new UnstakeBuilder(this._coinConfig).material(this._material);
   }
 
   from(rawTxn: string): TransactionBuilder {
@@ -44,26 +44,25 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return builder;
   }
 
-  protected staticsConfig(): void {
-    const networkConfig = this._coinConfig.network as DotNetwork;
-    const { specName, specVersion, chainName, metadataRpc } = networkConfig;
-    this._registry = getRegistry({
-      chainName: chainName,
-      specName: specName,
-      specVersion: specVersion,
-      metadataRpc: metadataRpc,
-    });
+  material(material: Material): this {
+    this._material = material;
+
+    return this;
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
-    const { metadataRpc } = this._coinConfig.network as DotNetwork;
-    if (!this._registry) {
-      throw new BuildTransactionError('Please set the network before parsing the transaction');
-    }
-    const decodedTxn = decode(rawTxn, {
-      metadataRpc,
-      registry: this._registry,
+    const registry = getRegistry({
+      chainName: this._material.chainName,
+      specName: this._material.specName,
+      specVersion: this._material.specVersion,
+      metadataRpc: this._material.metadata,
     });
+
+    const decodedTxn = decode(rawTxn, {
+      metadataRpc: this._material.metadata,
+      registry: registry,
+    });
+
     const methodName = decodedTxn.method?.name;
     if (methodName === MethodNames.TransferKeepAlive || methodName === MethodNames.Proxy) {
       return this.getTransferBuilder();

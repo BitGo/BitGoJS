@@ -6,14 +6,15 @@ import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { Seed } from '../baseCoin/iface';
-import { ProxyCallArgs, TransferArgs } from './iface';
+import { Material, ProxyCallArgs, TransferArgs } from './iface';
 import nacl from 'tweetnacl';
+import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 const polkaUtils = require('@polkadot/util');
 const { createTypeUnsafe } = require('@polkadot/types');
 
@@ -196,6 +197,17 @@ export class Utils implements BaseUtils {
    */
   getTxHash(txHex: string): string {
     return construct.txHash(txHex);
+  }
+
+  getMaterial(coinConfig: Readonly<CoinConfig>): Material {
+    const networkConfig = coinConfig.network as DotNetwork;
+    const { specName, specVersion, chainName, metadataRpc, txVersion, genesisHash } = networkConfig;
+
+    return { specName, specVersion, chainName, metadata: metadataRpc, txVersion, genesisHash } as Material;
+  }
+
+  isSigningPayload(payload: DecodedSigningPayload | DecodedSignedTx): payload is DecodedSigningPayload {
+    return (payload as DecodedSigningPayload).blockHash !== undefined;
   }
 }
 
