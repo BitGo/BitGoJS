@@ -1,5 +1,7 @@
 import { Ed25519KeyPair } from '../baseCoin';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import * as nearApi from "near-api-js"
+import * as bs58 from 'bs58'
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -13,31 +15,28 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    const decodedSeed = utils.decodeSeed(prv);
-    const bufferFromSeed = Buffer.from(decodedSeed.seed);
-
-    return utils.keyPairFromSeed(bufferFromSeed).keyPair;
+    const keyPair = nearApi.KeyPair.fromString(prv)
+    return { pub: keyPair.getPublicKey().toString().slice(8),
+      prv: prv}
   }
 
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
-    const publicKey = algosdk.decodeAddress(pub).publicKey;
-    return { pub: utils.toHex(publicKey) };
+    const pubKey = nearApi.utils.PublicKey.from(pub)
+    return { pub: pubKey.toString()}
   }
 
   /** @inheritdoc */
   getAddress(): string {
-    return encodeAddress(utils.toUint8Array(this.keyPair.pub));
+    return bs58.decode(this.getKeys().pub.toString()).toString("hex")
   }
 
   /** @inheritdoc */
   getKeys(): DefaultKeys {
     const result: DefaultKeys = { pub: this.keyPair.pub };
-
     if (this.keyPair.prv) {
       result.prv = this.keyPair.prv;
     }
-
     return result;
   }
 
