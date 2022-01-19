@@ -30,7 +30,7 @@ describe('dot Transaction Builder Factory', () => {
     builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-      .version(7)
+      .version(8)
       .sender({ address: sender.address });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.transfer.unsigned);
@@ -41,7 +41,7 @@ describe('dot Transaction Builder Factory', () => {
     builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-      .version(7)
+      .version(8)
       .sender({ address: sender.address })
       .sign({ key: sender.secretKey });
     const tx = await builder.build();
@@ -54,7 +54,7 @@ describe('dot Transaction Builder Factory', () => {
     builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-      .version(7)
+      .version(8)
       .sender({ address: sender.address });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.addProxy.unsigned);
@@ -66,7 +66,7 @@ describe('dot Transaction Builder Factory', () => {
     builder
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-      .version(7)
+      .version(8)
       .sign({ key: sender.secretKey });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.addProxy.signed);
@@ -79,7 +79,7 @@ describe('dot Transaction Builder Factory', () => {
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .sender({ address: sender.address })
-      .version(7);
+      .version(8);
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.unsigned);
   });
@@ -88,10 +88,10 @@ describe('dot Transaction Builder Factory', () => {
     const builder = factory.from(rawTx.proxy.signed);
     should(builder).instanceOf(TransferBuilder);
     builder
-      .validity({ firstValid: 3933 })
+      .validity({ firstValid: 3933, maxDuration: 64 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .sender({ address: sender2.address })
-      .version(7)
+      .version(8)
       .sign({ key: sender2.secretKey });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.signed);
@@ -112,10 +112,10 @@ describe('dot Transaction Builder Factory', () => {
     const builder = factory.from(rawTx.stake.signed);
     should(builder).instanceOf(StakingBuilder);
     builder
-      .validity({ firstValid: 3933 })
+      .validity({ firstValid: 3933, maxDuration: 64 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .sender({ address: sender.address })
-      .version(7)
+      .version(8)
       .sign({ key: sender.secretKey });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.stake.signed);
@@ -139,7 +139,7 @@ describe('dot Transaction Builder Factory', () => {
       .validity({ firstValid: 3933 })
       .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
       .sender({ address: sender.address })
-      .version(7)
+      .version(8)
       .sign({ key: sender.secretKey });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.unstake.signed);

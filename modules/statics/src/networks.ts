@@ -200,7 +200,7 @@ class PolkadotTestnet extends Testnet implements DotNetwork {
   explorerUrl = 'https://westend.subscan.io/extrinsic/';
   specName = 'westend' as PolkadotSpecNameType;
   genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
-  specVersion = 9130;
+  specVersion = 9150;
   chainName = 'Westend';
   metadataRpc = DotResources.westendMetadataRpc as `0x${string}`;
 }
