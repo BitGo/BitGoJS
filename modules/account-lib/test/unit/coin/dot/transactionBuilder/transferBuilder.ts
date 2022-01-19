@@ -57,7 +57,7 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -67,10 +67,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
@@ -92,7 +92,7 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -102,10 +102,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
@@ -127,7 +127,7 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
@@ -136,10 +136,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -149,7 +149,7 @@ describe('Dot Transfer Builder', () => {
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(7);
+        .version(8);
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
@@ -158,10 +158,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -181,11 +181,11 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
     });
 
@@ -196,7 +196,7 @@ describe('Dot Transfer Builder', () => {
       westendBuilder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(7);
+        .version(8);
       const tx = await westendBuilder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '10000000000');
@@ -207,7 +207,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.eraPeriod, 64);
     });
   });
@@ -224,7 +224,7 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       builder.sign({ key: proxySender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -234,10 +234,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
@@ -261,7 +261,7 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
@@ -270,10 +270,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -283,7 +283,7 @@ describe('Dot Transfer Builder', () => {
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(7);
+        .version(8);
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
@@ -292,10 +292,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -315,11 +315,11 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9130);
+      should.deepEqual(txJson.specVersion, 9150);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 7);
+      should.deepEqual(txJson.transactionVersion, 8);
       should.deepEqual(txJson.chainName, 'Westend');
     });
   });
