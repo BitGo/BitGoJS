@@ -20,13 +20,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 
 export interface TransactionPrebuild {
   txHex: string;
-  key: string;
-  addressVersion: number;
-  validity: {
-    firstValid: number;
-  };
-  referenceBlock: string;
-  version: number;
+  transaction: accountLib.Dot.Interface.TxData;
 }
 
 export interface ExplainTransactionOptions {
@@ -39,9 +33,7 @@ export interface ExplainTransactionOptions {
 
 export interface VerifiedTransactionParameters {
   txHex: string;
-  addressVersion: number;
   prv: string;
-  signer: string;
 }
 
 const dotUtils = accountLib.Dot.Utils.default;
@@ -159,7 +151,6 @@ export class Dot extends BaseCoin {
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
     const prv = params.prv;
-    const addressVersion = params.txPrebuild.addressVersion;
 
     const txHex = params.txPrebuild.txHex;
 
@@ -179,20 +170,11 @@ export class Dot extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    if (!_.has(params.txPrebuild, 'key')) {
+    if (!_.has(params, 'pubs')) {
       throw new Error('missing public key parameter to sign transaction');
     }
 
-    if (!_.isNumber(addressVersion)) {
-      throw new Error('missing addressVersion parameter to sign transaction');
-    }
-
-    const pubKey = params.txPrebuild.key;
-    // if we are receiving addresses do not try to convert them
-    const signer = dotUtils.isValidAddress(pubKey)
-      ? pubKey :
-      new accountLib.Dot.KeyPair({ pub: pubKey }).getAddress();
-    return { txHex, addressVersion, prv, signer };
+    return { txHex, prv };
   }
 
   /**
@@ -204,15 +186,18 @@ export class Dot extends BaseCoin {
    * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const { txHex, signer, prv } = this.verifySignTransactionParams(params);
+    const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
     const txBuilder = factory.from(txHex);
+    const keyPair = new accountLib.Dot.KeyPair({ prv: prv });
+    const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
+
     txBuilder
-      .validity(params.txPrebuild.validity)
-      .referenceBlock(params.txPrebuild.referenceBlock)
-      .version(params.txPrebuild.version)
-      .sender({ address: signer })
-      .sign({ key: prv });
+      .validity({ firstValid: blockNumber })
+      .referenceBlock(referenceBlock)
+      .version(transactionVersion)
+      .sender({ address: sender })
+      .sign({ key: keyPair.getKeys().prv });
     const transaction: any = await txBuilder.build();
     if (!transaction) {
       throw new Error('Invalid transaction');
