@@ -160,14 +160,14 @@ describe('Dot Transfer Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' })
-        .version(7);
+        .version(8);
       should.doesNotThrow(() => builder.validateTransaction(builder.getTransaction()));
     });
 
     it('should build a base transaction on testnet', async () => {
       should.deepEqual(builder.getSpecName(), 'westend');
       should.deepEqual(builder.getGenesisHash(), '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(builder.getSpecVersion(), 9130);
+      should.deepEqual(builder.getSpecVersion(), 9150);
       should.deepEqual(builder.getChainName(), 'Westend');
     });
 
@@ -185,7 +185,7 @@ describe('Dot Transfer Builder', () => {
         builder.getReferenceBlock(),
         '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',
       );
-      should.deepEqual(builder.getTransactionVersion(), 7);
+      should.deepEqual(builder.getTransactionVersion(), 8);
       should.deepEqual(builder.getNonce(), 200);
       should.deepEqual(builder.getEraPeriod(), 64);
       should.deepEqual(builder.getTip(), undefined);

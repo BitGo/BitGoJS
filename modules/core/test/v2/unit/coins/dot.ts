@@ -38,7 +38,7 @@ describe('DOT:', function () {
       genesisHash: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
       nonce: 200,
       specVersion: 9150,
-      transactionVersion: 7,
+      transactionVersion: 8,
       eraPeriod: 64,
       chainName: 'Westend',
       tip: 0,
