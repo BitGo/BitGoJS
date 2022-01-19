@@ -6,7 +6,7 @@ import { InstructionBuilderTypes } from './constants';
 
 import assert from 'assert';
 import { StakingActivate } from './iface';
-import { isValidPublicKey, isValidStakingAmount } from './utils';
+import { isValidPublicKey, isValidStakingAmount, validateStakingAddress } from './utils';
 import { BuildTransactionError } from '../baseCoin/errors';
 
 export class StakingActivateBuilder extends TransactionBuilder {
@@ -60,9 +60,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
    * @see https://docs.solana.com/staking/stake-accounts#account-address
    */
   stakingAddress(stakingAddress: string): this {
-    if (!stakingAddress || !isValidPublicKey(stakingAddress)) {
-      throw new BuildTransactionError('Invalid or missing stakingAddress, got: ' + stakingAddress);
-    }
+    validateStakingAddress(stakingAddress);
     this._stakingAddress = stakingAddress;
     return this;
   }

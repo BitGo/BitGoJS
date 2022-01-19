@@ -10,7 +10,7 @@ import {
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
-import { InstructionParams, Memo, Nonce, StakingActivate, Transfer, WalletInit } from './iface';
+import { InstructionParams, Memo, Nonce, StakingActivate, StakingDeactivate, Transfer, WalletInit } from './iface';
 
 /**
  * Construct Solana instructions from instructions params
@@ -30,6 +30,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return createNonceAccountInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingActivate:
       return stakingInitializeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingDeactivate:
+      return stakingDeactivateInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -154,4 +156,25 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
   tx.add(delegateStaking);
 
   return tx.instructions;
+}
+
+/**
+ * Construct staking deactivate Solana instructions
+ *
+ * @param {StakingDeactivate} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing staking deactivate instruction
+ */
+function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+
+  const deactivateStaking = StakeProgram.deactivate({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+  });
+
+  return deactivateStaking.instructions;
 }

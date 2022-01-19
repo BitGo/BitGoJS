@@ -29,6 +29,8 @@ export enum TransactionType {
   StakingWithdraw,
   // Handle smart contract calls
   ContractCall,
+  // Deactivate
+  StakingDeactivate,
 }
 
 /**
