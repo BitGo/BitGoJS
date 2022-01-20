@@ -131,6 +131,8 @@ export class TransferBuilder {
    */
   private getOperationHash(): string {
     const operationData = this.getOperationData();
+    // TODO - aloe: fix typings here
+    // @ts-ignore
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
