@@ -106,6 +106,14 @@ describe('SOL:', function () {
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, durableNonce });
       validTransaction.should.equal(true);
     });
+    it('should handle txBase64 and txHex interchangeably', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = txPrebuild.txBase64;
+      txPrebuild.txBase64 = undefined;
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, durableNonce });
+      validTransaction.should.equal(true);
+    });
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -440,7 +448,18 @@ describe('SOL:', function () {
         },
         prv: resources.accountWithSeed.privateKey.base58,
       });
-      signed.txBase64.should.equal(resources.RAW_TX_SIGNED);
+      signed.txHex.should.equal(resources.RAW_TX_SIGNED);
+    });
+
+    it('should handle txHex and txBase64 interchangeably', async function () {
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: resources.RAW_TX_UNSIGNED,
+          keys: [resources.accountWithSeed.publicKey.toString()],
+        },
+        prv: resources.accountWithSeed.privateKey.base58,
+      });
+      signed.txHex.should.equal(resources.RAW_TX_SIGNED);
     });
 
     it('should throw invalid transaction when sign with public key', async function () {
