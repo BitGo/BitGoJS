@@ -35,6 +35,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   RBTC = 'rbtc',
   SOL = 'sol',
+  NEAR = 'near',
   STX = 'stx',
   SUSD = 'susd',
   TRX = 'trx',

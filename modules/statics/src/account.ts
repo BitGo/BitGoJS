@@ -75,6 +75,10 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
 }
 
+export interface NearCoinConstructorOptions extends AccountConstructorOptions {
+  tokenAddress: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
