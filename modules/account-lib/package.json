@@ -20,7 +20,7 @@
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && yarn tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
@@ -39,7 +39,7 @@
     "@bitgo/blake2b": "^3.0.2",
     "@bitgo/bls": "^0.1.0",
     "@bitgo/bls-dkg": "^1.0.1",
-    "@bitgo/statics": "^6.16.0",
+    "@bitgo/statics": "6.16.0",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
@@ -81,6 +81,9 @@
     "stellar-sdk": "^10.0.1",
     "tronweb": "^3.2.6",
     "tweetnacl": "^1.0.3"
+  },
+  "resolutions": {
+    "typescript": "4.5.5"
   },
   "devDependencies": {
     "@types/bs58": "^4.0.1",

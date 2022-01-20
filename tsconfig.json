@@ -24,5 +24,11 @@
   },
   "exclude": [
     "node_modules"
+  ],
+  "files": [],
+  "references": [
+    {
+      "path": "modules"
+    }
   ]
 }
