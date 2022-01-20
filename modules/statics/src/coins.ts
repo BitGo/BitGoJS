@@ -35,6 +35,7 @@ const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOK
 const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const SOL_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE, CoinFeature.SUPPORTS_TOKENS];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -109,6 +110,9 @@ export const coins = CoinMap.fromCoins([
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
+  // TODO : Uncomment when core functionality is implemented
+  //  account('near', 'Sol', Networks.main.near, 9, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  //  account('tnear', 'Testnet Sol', Networks.test.near, 9, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
