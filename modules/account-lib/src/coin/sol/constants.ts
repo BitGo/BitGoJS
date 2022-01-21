@@ -14,6 +14,7 @@ export enum ValidInstructionTypesEnum {
   StakingInitialize = 'Initialize',
   StakingDelegate = 'Delegate',
   StakingDeactivate = 'Deactivate',
+  StakingWithdraw = 'Withdraw',
   Transfer = 'Transfer',
   Memo = 'Memo',
 }
@@ -23,6 +24,7 @@ export enum InstructionBuilderTypes {
   CreateNonceAccount = 'CreateNonceAccount',
   StakingActivate = 'Activate',
   StakingDeactivate = 'Deactivate',
+  StakingWithdraw = 'Withdraw',
   Transfer = 'Transfer',
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
@@ -34,6 +36,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.StakingInitialize,
   ValidInstructionTypesEnum.StakingDelegate,
   ValidInstructionTypesEnum.StakingDeactivate,
+  ValidInstructionTypesEnum.StakingWithdraw,
   ValidInstructionTypesEnum.Transfer,
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
@@ -42,7 +45,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
 /** Const to check the order of the Wallet Init instructions when decode */
 export const walletInitInstructionIndexes = {
   Create: 0,
-  InitializeNonce: 1,
+  InitializeNonceAccount: 1,
   Memo: 2,
 } as const;
 
@@ -57,5 +60,11 @@ export const stakingActivateInstructionsIndexes = {
 /** Const to check the order of the Staking Deactivate instructions when decode */
 export const stakingDeactivateInstructionsIndexes = {
   Deactivate: 0,
+  Memo: 1,
+} as const;
+
+/** Enum to check the order of the Staking Withdraw instructions when decode */
+export const stakingWithdrawInstructionsIndexes = {
+  Withdraw: 0,
   Memo: 1,
 } as const;

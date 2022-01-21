@@ -17,6 +17,7 @@ describe('Sol Transaction Builder', async () => {
       factory.getWalletInitializationBuilder(),
       factory.getTransferBuilder(),
       factory.getStakingActivateBuilder(),
+      factory.getStakingWithdrawBuilder(),
     ];
     done();
   });

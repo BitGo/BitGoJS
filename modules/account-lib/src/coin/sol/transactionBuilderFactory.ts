@@ -8,6 +8,7 @@ import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { Transaction } from './transaction';
 import { validateRawTransaction } from './utils';
+import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -32,6 +33,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingActivateBuilder(tx);
         case TransactionType.StakingDeactivate:
           return this.getStakingDeactivateBuilder(tx);
+        case TransactionType.StakingWithdraw:
+          return this.getStakingWithdrawBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -75,6 +78,19 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getStakingDeactivateBuilder(tx?: Transaction): StakingDeactivateBuilder {
     return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a staking withdraw transaction.
+   * once the staking account reach 0 SOL it will not be traceable anymore by the network
+   *
+   * @see https://docs.solana.com/staking/stake-accounts#destroying-a-stake-account
+   *
+   * @param {Transaction} tx - the transaction to be used to intialize the builder
+   * @returns {StakingWithdrawBuilder} - the initialized staking withdraw builder
+   */
+  getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
+    return this.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
   }
 
   /**
