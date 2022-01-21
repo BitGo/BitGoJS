@@ -158,6 +158,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingActivate:
           this.setTransactionType(TransactionType.StakingActivate);
           break;
+        case TransactionType.StakingDeactivate:
+          this.setTransactionType(TransactionType.StakingDeactivate);
+          break;
       }
       this.loadInputsAndOutputs();
     } catch (e) {

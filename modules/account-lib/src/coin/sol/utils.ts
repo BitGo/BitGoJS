@@ -15,12 +15,13 @@ import {
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
   stakingActivateInstructionsIndexes,
+  stakingDeactivateInstructionsIndexes,
   ValidInstructionTypesEnum,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
 } from './constants';
 import { TransactionType } from '../baseCoin';
-import { NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/errors';
+import { NotSupported, ParseTransactionError, UtilsError, BuildTransactionError } from '../baseCoin/errors';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
@@ -218,6 +219,11 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
       ValidInstructionTypesEnum.StakingDelegate
   ) {
     return TransactionType.StakingActivate;
+  } else if (
+    getInstructionType(instructions[stakingDeactivateInstructionsIndexes.Deactivate]) ===
+    ValidInstructionTypesEnum.StakingDeactivate
+  ) {
+    return TransactionType.StakingDeactivate;
   }
   return TransactionType.Send;
 }
@@ -270,5 +276,16 @@ export function validateRawTransaction(rawTransaction: string): void {
   }
   if (!isValidRawTransaction(rawTransaction)) {
     throw new ParseTransactionError('Invalid raw transaction');
+  }
+}
+
+/**
+ * Validates staking address exists and is a valid Solana public key
+ *
+ * @param {string} stakingAddress The staking address to be validated
+ */
+export function validateStakingAddress(stakingAddress: string): void {
+  if (!stakingAddress || !isValidPublicKey(stakingAddress)) {
+    throw new BuildTransactionError('Invalid or missing stakingAddress, got: ' + stakingAddress);
   }
 }

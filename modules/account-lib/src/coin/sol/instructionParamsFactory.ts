@@ -7,8 +7,9 @@ import {
   ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
   stakingActivateInstructionsIndexes,
+  stakingDeactivateInstructionsIndexes,
 } from './constants';
-import { InstructionParams, WalletInit, Transfer, Nonce, Memo, StakingActivate } from './iface';
+import { InstructionParams, WalletInit, Transfer, Nonce, Memo, StakingActivate, StakingDeactivate } from './iface';
 import { getInstructionType } from './utils';
 
 /**
@@ -29,6 +30,8 @@ export function instructionParamsFactory(
       return parseSendInstructions(instructions);
     case TransactionType.StakingActivate:
       return parseStakingActivateInstructions(instructions);
+    case TransactionType.StakingDeactivate:
+      return parseStakingDeactivateInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -58,8 +61,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
   };
   instructionData.push(walletInit);
 
-  if (instructions.length === 3 && instructions[2]) {
-    const memo: Memo = { type: InstructionBuilderTypes.Memo, params: { memo: instructions[2].data.toString() } };
+  const memo = getMemo(instructions, walletInitInstructionIndexes);
+  if (memo) {
     instructionData.push(memo);
   }
 
@@ -144,14 +147,55 @@ function parseStakingActivateInstructions(instructions: TransactionInstruction[]
   };
   instructionData.push(stakingActivate);
 
-  const memoPosition = 4; // if there are 4 instructions we can asume there's a memo
-  if (instructions.length === memoPosition && instructions[stakingActivateInstructionsIndexes.Memo]) {
-    const memo: Memo = {
-      type: InstructionBuilderTypes.Memo,
-      params: { memo: instructions[stakingActivateInstructionsIndexes.Memo].data.toString() },
-    };
+  const memo = getMemo(instructions, stakingActivateInstructionsIndexes);
+  if (memo) {
     instructionData.push(memo);
   }
 
   return instructionData;
+}
+
+/**
+ * Parses Solana instructions to create deactivate tx instructions params
+ * Only supports StakingDeactivate and Memo Solana instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking deactivate tx
+ */
+function parseStakingDeactivateInstructions(instructions: TransactionInstruction[]): Array<StakingDeactivate | Memo> {
+  const instructionData: Array<StakingDeactivate | Memo> = [];
+  const deactivateInstruction = StakeInstruction.decodeDeactivate(
+    instructions[stakingDeactivateInstructionsIndexes.Deactivate],
+  );
+  const stakingDeactivate: StakingDeactivate = {
+    type: InstructionBuilderTypes.StakingDeactivate,
+    params: {
+      fromAddress: deactivateInstruction.authorizedPubkey.toString(),
+      stakingAddress: deactivateInstruction.stakePubkey.toString(),
+    },
+  };
+  instructionData.push(stakingDeactivate);
+
+  const memo = getMemo(instructions, stakingDeactivateInstructionsIndexes);
+  if (memo) {
+    instructionData.push(memo);
+  }
+  return instructionData;
+}
+
+/**
+ * Get the memo object from instructions if it exists
+ *
+ * @param {TransactionInstruction[]} instructions - the array of supported Solana instructions to be parsed
+ * @param {Record<string, number>} instructionIndexes - the instructions indexes of the current transaction
+ * @returns {Memo | undefined} - memo object or undefined
+ */
+function getMemo(instructions: TransactionInstruction[], instructionIndexes: Record<string, number>): Memo | undefined {
+  const instructionsLength = Object.keys(instructionIndexes).length;
+  if (instructions.length === instructionsLength && instructions[instructionIndexes.Memo]) {
+    return {
+      type: InstructionBuilderTypes.Memo,
+      params: { memo: instructions[instructionIndexes.Memo].data.toString() },
+    };
+  }
 }

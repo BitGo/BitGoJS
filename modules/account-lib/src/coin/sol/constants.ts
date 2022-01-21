@@ -13,6 +13,7 @@ export enum ValidInstructionTypesEnum {
   InitializeNonceAccount = 'InitializeNonceAccount',
   StakingInitialize = 'Initialize',
   StakingDelegate = 'Delegate',
+  StakingDeactivate = 'Deactivate',
   Transfer = 'Transfer',
   Memo = 'Memo',
 }
@@ -21,6 +22,7 @@ export enum ValidInstructionTypesEnum {
 export enum InstructionBuilderTypes {
   CreateNonceAccount = 'CreateNonceAccount',
   StakingActivate = 'Activate',
+  StakingDeactivate = 'Deactivate',
   Transfer = 'Transfer',
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
@@ -31,22 +33,29 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Create,
   ValidInstructionTypesEnum.StakingInitialize,
   ValidInstructionTypesEnum.StakingDelegate,
+  ValidInstructionTypesEnum.StakingDeactivate,
   ValidInstructionTypesEnum.Transfer,
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
 ];
 
-/** Enum to check the order of the Wallet Init instructions when decode */
-export enum walletInitInstructionIndexes {
-  Create = 0,
-  InitializeNonce = 1,
-  Memo = 2,
-}
+/** Const to check the order of the Wallet Init instructions when decode */
+export const walletInitInstructionIndexes = {
+  Create: 0,
+  InitializeNonce: 1,
+  Memo: 2,
+} as const;
 
-/** Enum to check the order of the Staking Activate instructions when decode */
-export enum stakingActivateInstructionsIndexes {
-  Create = 0,
-  Initialize = 1,
-  Delegate = 2,
-  Memo = 3,
-}
+/** Const to check the order of the Staking Activate instructions when decode */
+export const stakingActivateInstructionsIndexes = {
+  Create: 0,
+  Initialize: 1,
+  Delegate: 2,
+  Memo: 3,
+} as const;
+
+/** Const to check the order of the Staking Deactivate instructions when decode */
+export const stakingDeactivateInstructionsIndexes = {
+  Deactivate: 0,
+  Memo: 1,
+} as const;
