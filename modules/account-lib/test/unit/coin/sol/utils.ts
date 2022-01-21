@@ -12,6 +12,10 @@ describe('SOL util library', function () {
         should.doesNotThrow(() => Utils.isValidAddress(address));
         should.equal(Utils.isValidAddress(address), false);
       }
+      // @ts-expect-error Testing for missing param, should not throw an error
+      should.doesNotThrow(() => Utils.isValidAddress(undefined));
+      // @ts-expect-error Testing for missing param, should return false
+      should.equal(Utils.isValidAddress(undefined), false);
     });
 
     it('should succeed to validate valid addresses', function () {
@@ -42,6 +46,10 @@ describe('SOL util library', function () {
         should.doesNotThrow(() => Utils.isValidPublicKey(pubKey));
         should.equal(Utils.isValidPublicKey(pubKey), false);
       }
+      // @ts-expect-error Testing for missing param, should not throw an error
+      should.doesNotThrow(() => Utils.isValidPublicKey(undefined));
+      // @ts-expect-error Testing for missing param, should return false
+      should.equal(Utils.isValidPublicKey(undefined), false);
     });
 
     it('should succeed to validate public keys', function () {
