@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AccountId } from '@hashgraph/sdk';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {

@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
