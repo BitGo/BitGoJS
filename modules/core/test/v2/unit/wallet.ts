@@ -117,24 +117,34 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ address: 13375 }).should.be.rejectedWith('invalid address argument, expecting string or array');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ address: [null] }).should.be.rejectedWith('invalid address argument, expecting array of address strings');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateGte: 20101904 }).should.be.rejectedWith('invalid dateGte argument, expecting string');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateLt: 20101904 }).should.be.rejectedWith('invalid dateLt argument, expecting string');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueGte: '10230005' }).should.be.rejectedWith('invalid valueGte argument, expecting number');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueLt: '-5e8' }).should.be.rejectedWith('invalid valueLt argument, expecting number');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ includeHex: '123' }).should.be.rejectedWith('invalid includeHex argument, expecting boolean');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ state: 123 }).should.be.rejectedWith('invalid state argument, expecting string or array');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ state: [123, 456] }).should.be.rejectedWith('invalid state argument, expecting array of state strings');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ type: 123 }).should.be.rejectedWith('invalid type argument, expecting string');
     });
   });
@@ -183,6 +193,8 @@ describe('V2 Wallet:', function () {
         prv,
         keychain: {
           derivedFromParentWithSeed: '123',
+          id: '456',
+          pub: '789',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
@@ -194,6 +206,8 @@ describe('V2 Wallet:', function () {
         coldDerivationSeed: '123',
         keychain: {
           derivedFromParentWithSeed: '456',
+          id: '789',
+          pub: '012',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
@@ -409,32 +423,47 @@ describe('V2 Wallet:', function () {
 
     it('should correctly validate arguments to create address', async function () {
       let message = 'gasPrice has to be an integer or numeric string';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
       await wallet.createAddress({ gasPrice: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ gasPrice: null }).should.be.rejectedWith(message);
 
       message = 'chain has to be an integer';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
 
       message = 'count has to be a number between 1 and 250';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: null }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
 
       message = 'baseAddress has to be a string';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: 123 }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: null }).should.be.rejectedWith(message);
 
       message = 'allowSkipVerifyAddress has to be a boolean';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: 123 }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
     });
 
@@ -583,6 +612,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if cpfpTxIds is not an array', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: {} })
         .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     });
@@ -600,6 +630,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if cpfpFeeRate is not an integer', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
         .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     });
@@ -615,6 +646,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if maxFee is not an integer', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     });
@@ -1007,21 +1039,24 @@ describe('V2 Wallet:', function () {
 
     it('arguments', async function () {
       const optionalParams = {
-        limit: '25',
+        limit: 25,
         minValue: '0',
         maxValue: '9999999999999',
-        minHeight: '0',
-        minConfirms: '2',
-        enforceMinConfirmsForChange: 'false',
-        feeRate: '10000',
-        maxFeeRate: '100000',
+        minHeight: 0,
+        minConfirms: 2,
+        enforceMinConfirmsForChange: false,
+        feeRate: 10000,
+        maxFeeRate: 100000,
         recipientAddress: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df',
       };
+
+      // The actual api request will only send strings, but the SDK function expects numbers for some values
+      const apiParams = _.mapValues(optionalParams, param => String(param));
 
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
       const response = nock(bgUrl)
         .get(path)
-        .query(_.matches(optionalParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .query(_.matches(apiParams)) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200, {
           coin: 'tbch',
           maximumSpendable: 65000,
@@ -1048,11 +1083,15 @@ describe('V2 Wallet:', function () {
         .reply(200, { userId });
 
       const getKeyNock = nock(bgUrl)
-        .get(`/api/v2/tbtc/key/${wallet._wallet.keys[0]}`)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {})
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[1]}`)
+        .reply(200, {})
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[2]}`)
         .reply(200, {});
 
       const createShareNock = nock(bgUrl)
-        .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions, keychain: {} })
+        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`, { user: userId, permissions, keychain: {} })
         .reply(200, {});
 
       await wallet.shareWallet({ email, permissions });

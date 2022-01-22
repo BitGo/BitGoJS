@@ -31,8 +31,8 @@ const debug = debugLib('bitgo:v2:wallet');
 type ManageUnspents = 'consolidate' | 'fanout';
 
 export interface MaximumSpendableOptions {
-  minValue?: number;
-  maxValue?: number;
+  minValue?: number | string;
+  maxValue?: number | string;
   minHeight?: number;
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
@@ -111,7 +111,7 @@ export interface PrebuildTransactionOptions {
   [index: string]: unknown;
 }
 
-export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
+export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
   prebuildTx?: string | PrebuildTransactionResult;
   verification?: VerificationOptions;
 }
@@ -169,8 +169,8 @@ export interface TransfersOptions extends PaginationOptions {
   address?: string[] | string;
   dateGte?: string;
   dateLt?: string;
-  valueGte?: string;
-  valueLt?: string;
+  valueGte?: number;
+  valueLt?: number;
   includeHex?: boolean;
   state?: string[] | string;
   type?: string;
@@ -194,7 +194,7 @@ export interface UnspentsOptions extends PaginationOptions {
   chains?: number[];
 }
 
-export interface ConsolidateUnspentsOptions {
+export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions {
   walletPassphrase?: string;
   xprv?: string;
   minValue?: number;
@@ -214,7 +214,7 @@ export interface ConsolidateUnspentsOptions {
   [index: string]: unknown;
 }
 
-export interface FanoutUnspentsOptions {
+export interface FanoutUnspentsOptions extends WalletSignTransactionOptions {
   walletPassphrase?: string;
   xprv?: string;
   minValue?: number;
@@ -369,7 +369,7 @@ export interface SendOptions {
   [index: string]: unknown;
 }
 
-export interface SendManyOptions {
+export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: RequestTracer;
   recipients?: {
     address: string;
@@ -1897,7 +1897,8 @@ export class Wallet {
     }
 
     // pass our three keys
-    const signingParams = _.extend({}, params, {
+    const signingParams = {
+      ...params,
       txPrebuild: txPrebuild,
       wallet: {
         // this is the version of the multisig address at wallet creation time
@@ -1905,7 +1906,7 @@ export class Wallet {
       },
       keychain: keychains[0],
       pubs: keychains.map((k) => k.pub),
-    });
+    };
 
     try {
       return await this.signTransaction(signingParams);
@@ -2143,7 +2144,6 @@ export class Wallet {
    * @param params.recipient the destination address recovered tokens should be sent to
    * @param params.walletPassphrase the wallet passphrase
    * @param params.prv the xprv
-   * @param callback
    */
   async recoverToken(params: RecoverTokenOptions = {}): Promise<any> {
     if (this.baseCoin.getFamily() !== 'eth') {
