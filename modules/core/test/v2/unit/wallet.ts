@@ -9,7 +9,7 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { Wallet } from '../../../src/';
+import { CustomSigningFunction, Wallet } from '../../../src/';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
@@ -17,27 +17,23 @@ import { TestBitGo } from '../../lib/test_bitgo';
 nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {
-  let bitgo;
-  let wallet;
-  let bgUrl;
-  let basecoin;
+  const bitgo = new TestBitGo({ env: 'test' });
+  bitgo.initializeTestVars();
+  const basecoin = bitgo.coin('tbtc');
+  const walletData = {
+    id: '5b34252f1bf349930e34020a00000000',
+    coin: 'tbtc',
+    keys: [
+      '5b3424f91bf349930e34017500000000',
+      '5b3424f91bf349930e34017600000000',
+      '5b3424f91bf349930e34017700000000',
+    ],
+    coinSpecific: {},
+  };
+  const wallet = new Wallet(bitgo, basecoin, walletData);
+  const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
-
-  before(async function () {
-    bitgo = new TestBitGo({ env: 'test' });
-    bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tbtc');
-    const walletData = {
-      id: '5b34252f1bf349930e34020a',
-      coin: 'tbtc',
-      keys: [
-        '5b3424f91bf349930e340175',
-      ],
-    };
-    wallet = new Wallet(bitgo, basecoin, walletData);
-    bgUrl = common.Environments[bitgo.getEnv()].uri;
-  });
 
   describe('Wallet transfers', function () {
     it('should search in wallet for a transfer', async function () {
@@ -306,6 +302,52 @@ describe('V2 Wallet:', function () {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
+    });
+
+    it('should use a custom signing function if provided', async function () {
+      const customSigningFunction: CustomSigningFunction = sinon.stub();
+      const builtInSigningMethod = sinon.spy();
+
+      const stubs = [
+        sinon.stub(wallet.baseCoin, 'postProcessPrebuild').returnsArg(0),
+        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves(true),
+        sinon.stub(wallet.baseCoin, 'signTransaction').callsFake(builtInSigningMethod),
+      ];
+
+      const recipients = [
+        { address: 'abc', amount: 123 },
+        { address: 'def', amount: 456 },
+      ];
+
+      const txPrebuild = {
+        txHex: 'this-is-a-tx',
+      };
+
+      const scope = nock(bgUrl)
+        .post(wallet.url('/tx/build').replace(bgUrl, ''))
+        .reply(200, txPrebuild)
+        .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
+        .reply(200)
+        .post(wallet.url('/tx/send').replace(bgUrl, ''))
+        .reply(200, { ok: true });
+
+      const result = await wallet.sendMany({ recipients, customSigningFunction });
+
+      result.should.have.property('ok', true);
+      customSigningFunction.should.have.been.calledOnceWith(sinon.match({
+        recipients,
+        txPrebuild,
+        pubs: sinon.match.array,
+      }));
+      builtInSigningMethod.called.should.be.false();
+      scope.done();
+      stubs.forEach((s) => s.restore());
     });
   });
 

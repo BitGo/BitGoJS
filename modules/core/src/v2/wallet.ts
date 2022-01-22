@@ -123,12 +123,17 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   consolidateId?: string;
 }
 
+export interface CustomSigningFunction {
+  (params: { txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
+}
+
 export interface WalletSignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   prv?: string;
   pubs?: string[];
   cosignerPub?: string;
   isLastSignature?: boolean;
+  customSigningFunction?: CustomSigningFunction;
   [index: string]: unknown;
 }
 
@@ -1773,15 +1778,23 @@ export class Wallet {
       throw new Error('txPrebuild must be an object');
     }
     const presign = await this.baseCoin.presignTransaction(params);
-    const userPrv = this.getUserPrv(presign);
 
     let { pubs } = params;
     if (!pubs && this.baseCoin.keyIdsForSigning().length > 1) {
-      const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this })) as unknown as Keychain[];
+      const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this });
       pubs = keychains.map((k) => k.pub);
     }
 
-    return this.baseCoin.signTransaction({ ...presign, txPrebuild, prv: userPrv, pubs });
+    const signTransactionParams = {
+      ...presign,
+      txPrebuild,
+      pubs,
+    };
+
+    if (_.isFunction(params.customSigningFunction)) {
+      return params.customSigningFunction(signTransactionParams);
+    }
+    return this.baseCoin.signTransaction({ ...signTransactionParams, prv: this.getUserPrv(presign) });
   }
 
   /**
