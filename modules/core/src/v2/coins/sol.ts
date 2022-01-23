@@ -19,6 +19,7 @@ import {
   VerifyTransactionOptions,
   SignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
+  DeriveKeypairOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { Memo } from '../wallet';
@@ -200,6 +201,17 @@ export class Sol extends BaseCoin {
     }
 
     return Buffer.from(solKeypair.signMessage(message));
+  }
+
+  /** @inheritDoc */
+  deriveKeypair(params: DeriveKeypairOptions): KeyPair | undefined {
+    const rootKeypair = new accountLib.Sol.KeyPair({ prv: params.addressDerivationPrv });
+
+    const derivedKeys = rootKeypair.deriveHardened(`m/0'/0'/0'/${params.index}'`);
+    return {
+      prv: derivedKeys.prv || '',
+      pub: derivedKeys.pub,
+    };
   }
 
   /**

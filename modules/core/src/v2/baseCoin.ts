@@ -115,6 +115,15 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
+  addressDerivationKeypair?: {
+    encryptedPrv: string;
+    pub: string;
+  };
+}
+
+export interface DeriveKeypairOptions {
+  addressDerivationPrv: string;
+  index: number;
 }
 
 export interface FeeEstimateOptions {
@@ -485,6 +494,14 @@ export abstract class BaseCoin {
    */
   initiateRecovery(params: InitiateRecoveryOptions): never {
     throw new Error('deprecated method');
+  }
+
+  /**
+   *
+   * @param params
+   */
+  deriveKeypair(params: DeriveKeypairOptions): KeyPair | undefined {
+    return undefined;
   }
 
   abstract parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;

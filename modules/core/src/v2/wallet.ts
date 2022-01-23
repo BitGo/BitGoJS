@@ -264,7 +264,7 @@ export interface GetAddressOptions {
   reqId?: RequestTracer;
 }
 
-export interface CreateAddressOptions {
+export interface CreateAddressApiParams {
   chain?: number;
   gasPrice?: number | string;
   count?: number;
@@ -274,6 +274,12 @@ export interface CreateAddressOptions {
   format?: 'base58' | 'cashaddr';
   baseAddress?: string;
   allowSkipVerifyAddress?: boolean;
+  derivedAddress?: string;
+  index?: number;
+}
+
+export interface CreateAddressOptions extends CreateAddressApiParams {
+  passphrase?: string;
 }
 
 export interface UpdateAddressOptions {
@@ -419,6 +425,10 @@ export interface WalletData {
     user?: string;
     backup?: string;
     bitgo?: string;
+  };
+  addressDerivationKeypair?: {
+    pub: string;
+    encryptedPrv: string;
   };
 }
 
@@ -1283,7 +1293,7 @@ export class Wallet {
    * if 'coinSpecific' is not part of the response from api call to create address
    */
   async createAddress(params: CreateAddressOptions = {}): Promise<any> {
-    const addressParams: CreateAddressOptions = {};
+    const addressParams: CreateAddressApiParams = {};
     const reqId = new RequestTracer();
 
     const {
@@ -1359,8 +1369,29 @@ export class Wallet {
     // get keychains for address verification
     const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
+    const addressDerivationKeypair = _.get(this._wallet, 'addressDerivationKeypair');
+    const lastChainIndex = _.get(this.coinSpecific(), `lastChainIndex.${chain || 0}`, -1);
 
-    const newAddresses = _.times(count, async () => {
+    const newAddresses = _.times(count, async (index) => {
+      if (addressDerivationKeypair && params.passphrase) {
+        const addressDerivationPrv = this.bitgo.decrypt({
+          password: params.passphrase,
+          input: addressDerivationKeypair.encryptedPrv,
+        });
+        const newChainIndex = index + lastChainIndex + 1;
+        const derivedKeypair = this.baseCoin.deriveKeypair({
+          index: newChainIndex,
+          addressDerivationPrv,
+        });
+
+        if (derivedKeypair) {
+          addressParams.derivedAddress = derivedKeypair.pub;
+          addressParams.index = newChainIndex;
+        }
+      }
+
+      console.log(JSON.stringify(addressParams, undefined, 2));
+
       this.bitgo.setRequestTracer(reqId);
       const newAddress = (await this.bitgo
         .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))

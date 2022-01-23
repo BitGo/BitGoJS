@@ -46,6 +46,10 @@ export interface GenerateWalletOptions {
   };
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
+  addressDerivationKeypair?: {
+    pub: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface GetWalletByAddressOptions {
@@ -453,6 +457,20 @@ export class Wallets {
 
     if (_.includes(['xrp', 'xlm', 'cspr'], this.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
       walletParams.rootPrivateKey = params.rootPrivateKey;
+    }
+
+    // TODO: only generate if coin supports?
+    if (canEncrypt) {
+      const addressDerivationKeypair = this.baseCoin.keychains().create();
+      if (!addressDerivationKeypair.pub) {
+        throw new Error('Expected address derivation keypair to contain a public key.');
+      }
+
+      const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: addressDerivationKeypair.prv });
+      walletParams.addressDerivationKeypair = {
+        pub: addressDerivationKeypair.pub,
+        encryptedPrv: encryptedPrv,
+      };
     }
 
     const keychains = {
