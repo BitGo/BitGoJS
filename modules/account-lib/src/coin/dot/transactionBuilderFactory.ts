@@ -9,6 +9,7 @@ import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { MethodNames } from './iface';
 import { UnstakeBuilder } from '.';
+import { UnnominateBuilder } from './unnominateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _registry: TypeRegistry;
@@ -36,6 +37,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getUnstakeBuilder(): UnstakeBuilder {
     return new UnstakeBuilder(this._coinConfig);
+  }
+
+  getUnnominateBuilder(): UnnominateBuilder {
+    return new UnnominateBuilder(this._coinConfig);
   }
 
   from(rawTxn: string): TransactionBuilder {
@@ -73,6 +78,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getAddressInitializationBuilder();
     } else if (methodName === MethodNames.Unbond) {
       return this.getUnstakeBuilder();
+    } else if (methodName === MethodNames.Chill) {
+      return this.getUnnominateBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }

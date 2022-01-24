@@ -13,6 +13,7 @@ export enum MethodNames {
   Unbond = 'unbond',
   Anonymous = 'anonymous',
   Batch = 'batch',
+  Chill = 'chill',
 }
 
 /**
