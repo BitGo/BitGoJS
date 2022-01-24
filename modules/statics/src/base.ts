@@ -32,6 +32,7 @@ export enum CoinFamily {
   EOS = 'eos',
   HBAR = 'hbar',
   LTC = 'ltc',
+  NEAR = 'near',
   OFC = 'ofc',
   RBTC = 'rbtc',
   SOL = 'sol',

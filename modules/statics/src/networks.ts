@@ -479,6 +479,18 @@ class ZCashTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://chain.so/tx/ZECTEST/';
 }
 
+class Near extends Mainnet implements AccountNetwork {
+  name = 'Near';
+  family = CoinFamily.NEAR;
+  explorerUrl = 'https://explorer.near.org/transactions/';
+}
+
+class NearTestnet extends Testnet implements AccountNetwork {
+  name = 'NearTestnet';
+  family = CoinFamily.NEAR;
+  explorerUrl = 'https://explorer.testnet.near.org/transactions/';
+}
+
 export const Networks = {
   main: {
     algorand: Object.freeze(new Algorand()),
@@ -502,6 +514,7 @@ export const Networks = {
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
     sol: Object.freeze(new Sol()),
+    near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
@@ -532,6 +545,7 @@ export const Networks = {
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     sol: Object.freeze(new SolTestnet()),
+    near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),
