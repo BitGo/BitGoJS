@@ -75,6 +75,10 @@ export class AvaxCToken extends AvaxC {
     return this.tokenConfig.type;
   }
 
+  getBaseChain() {
+    return this.coin;
+  }
+
   getFullName(): string {
     return 'Avaxc Token';
   }
