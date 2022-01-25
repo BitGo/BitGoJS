@@ -85,7 +85,6 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.22",
     "@types/sinon": "^7.5.0",
-    "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
     "eslint-plugin-import": "^2.19.1",
