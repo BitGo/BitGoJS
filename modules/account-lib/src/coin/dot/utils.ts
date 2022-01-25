@@ -145,6 +145,18 @@ export class Utils implements BaseUtils {
     return new KeyPair({ prv: Buffer.from(decodedKeyPair.secretKey).toString('hex') });
   }
 
+  createSigningPayload(
+    unsigned: UnsignedTransaction,
+    options: { metadataRpc: `0x${string}`; registry: TypeRegistry },
+    tssSignature?: string,
+  ): `0x${string}` {
+    const { registry, metadataRpc } = options;
+    registry.setMetadata(createMetadata(registry, metadataRpc));
+    const u8aSignPayload = construct.signingPayloadToU8a(unsigned, { registry });
+    // if signing, then use tss
+    return u8aToHex(u8aSignPayload);
+  }
+
   /**
    * Signing function. Implement this on the OFFLINE signing device.
    *
