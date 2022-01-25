@@ -27,11 +27,9 @@ describe('SOL:', function () {
       },
     ],
     txBase64: resources.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
-    transaction: {
-      compression: 'none',
-      packed_trx:
-          '1e0c7a61a3a7b5e7c4470000000100408c7a02ea3055000000000085269d00030233330100a6823403ea3055000000572d3ccdcd0120ceb8437333427c00000000a8ed32322220ceb8437333427c20825019ab3ca98be80300000000000004454f5300000000013100',
-      signatures: [],
+    txInfo: {
+      feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+      nonce: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
     },
     txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
     isVotingTransaction: false,
@@ -47,8 +45,6 @@ describe('SOL:', function () {
     ],
   };
   const memo = 'test memo';
-  const feePayer = '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
-  const blockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const errorBlockhash = 'GHtXQBsoZHVnNFa9YzFr17DJjgHXk3ycTKD5xD3Zi';
   const durableNonce = {
     walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -68,7 +64,7 @@ describe('SOL:', function () {
     ],
   };
   const errorMemo = 'different memo';
-  const errorFeePayer = '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
+  const errorFeePayer = '5hr5fisPi6DXCuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
@@ -103,7 +99,15 @@ describe('SOL:', function () {
     it('should verify transactions', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, durableNonce });
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
+      validTransaction.should.equal(true);
+    });
+    it('should handle txBase64 and txHex interchangeably', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = txPrebuild.txBase64;
+      txPrebuild.txBase64 = undefined;
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
       validTransaction.should.equal(true);
     });
     it('should fail verify transactions when have different memo', async function () {
@@ -114,17 +118,19 @@ describe('SOL:', function () {
     it('should fail verify transactions when have different durableNonce', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, blockhash, errorDurableNonce }).should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorDurableNonce }).should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
     });
     it('should fail verify transactions when have different feePayer', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx fee payer does not match with txParams fee payer');
+      txPrebuild.txInfo.feePayer = errorFeePayer;
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo }).should.be.rejectedWith('Tx fee payer does not match with txParams fee payer');
     });
     it('should fail verify transactions when have different blockhash', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, feePayer, errorBlockhash }).should.be.rejectedWith('Tx blockhash does not match with param blockhash');
+      txPrebuild.txInfo.nonce = errorBlockhash;
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, }).should.be.rejectedWith('Tx blockhash does not match with nonce param');
     });
     it('should fail verify transactions when have different recipients', async function () {
       const txParams = newTxParamsWithError();
@@ -440,7 +446,18 @@ describe('SOL:', function () {
         },
         prv: resources.accountWithSeed.privateKey.base58,
       });
-      signed.txBase64.should.equal(resources.RAW_TX_SIGNED);
+      signed.txHex.should.equal(resources.RAW_TX_SIGNED);
+    });
+
+    it('should handle txHex and txBase64 interchangeably', async function () {
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: resources.RAW_TX_UNSIGNED,
+          keys: [resources.accountWithSeed.publicKey.toString()],
+        },
+        prv: resources.accountWithSeed.privateKey.base58,
+      });
+      signed.txHex.should.equal(resources.RAW_TX_SIGNED);
     });
 
     it('should throw invalid transaction when sign with public key', async function () {

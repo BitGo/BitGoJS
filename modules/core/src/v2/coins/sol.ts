@@ -109,21 +109,16 @@ export class Sol extends BaseCoin {
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<any> {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
-    const {
-      txParams: txParams,
-      txPrebuild: txPrebuild,
-      memo: memo,
-      feePayer: feePayer,
-      blockhash: blockhash,
-      durableNonce: durableNonce,
-    } = params;
+    const { txParams: txParams, txPrebuild: txPrebuild, memo: memo, durableNonce: durableNonce } = params;
     const transaction = new accountLib.Sol.Transaction(coinConfig);
+    const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
+    const { feePayer, nonce } = txPrebuild.txInfo as any;
 
-    if (!txPrebuild.txBase64) {
-      throw new Error('missing required tx prebuild property txBase64');
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64 or txHex');
     }
 
-    transaction.fromRawTransaction(txPrebuild.txBase64);
+    transaction.fromRawTransaction(rawTx);
     const explainedTx = transaction.explainTransaction();
 
     if (!_.isEqual(explainedTx.outputs, txParams.recipients)) {
@@ -148,8 +143,8 @@ export class Sol extends BaseCoin {
       throw new Error('Tx fee payer does not match with txParams fee payer');
     }
 
-    if (explainedTx.blockhash !== blockhash) {
-      throw new Error('Tx blockhash does not match with param blockhash');
+    if (explainedTx.blockhash !== nonce) {
+      throw new Error('Tx blockhash does not match with nonce param');
     }
 
     if (!_.isEqual(explainedTx.durableNonce, durableNonce)) {
@@ -214,7 +209,8 @@ export class Sol extends BaseCoin {
    */
   async signTransaction(params: SolSignTransactionOptions): Promise<SignedTransaction> {
     const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
-    const txBuilder = factory.from(params.txPrebuild.txBase64);
+    const rawTx = params.txPrebuild.txHex || params.txPrebuild.txBase64;
+    const txBuilder = factory.from(rawTx);
     txBuilder.sign({ key: params.prv });
     const transaction: accountLib.BaseCoin.BaseTransaction = await txBuilder.build();
 
@@ -222,8 +218,10 @@ export class Sol extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
+    const serializedTx = (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat();
+
     return {
-      txBase64: (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat(),
+      txHex: serializedTx,
     } as any;
   }
 

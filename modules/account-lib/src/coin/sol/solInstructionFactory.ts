@@ -1,8 +1,25 @@
-import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import {
+  Authorized,
+  Lockup,
+  PublicKey,
+  StakeProgram,
+  SystemProgram,
+  TransactionInstruction,
+  Transaction,
+} from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
-import { InstructionParams, Memo, Nonce, Transfer, WalletInit } from './iface';
+import {
+  InstructionParams,
+  Memo,
+  Nonce,
+  StakingActivate,
+  StakingDeactivate,
+  StakingWithdraw,
+  Transfer,
+  WalletInit,
+} from './iface';
 
 /**
  * Construct Solana instructions from instructions params
@@ -20,6 +37,12 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return transferInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateNonceAccount:
       return createNonceAccountInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingActivate:
+      return stakingInitializeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingDeactivate:
+      return stakingDeactivateInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingWithdraw:
+      return stakingWithdrawInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -105,4 +128,88 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
     lamports: new BigNumber(amount).toNumber(),
   });
   return nonceAccountInstruction.instructions;
+}
+
+/**
+ * Construct Create Staking Account and Delegate Solana instructions
+ *
+ * @param {StakingActivate} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Create Staking Account and Delegate Solana instructions
+ */
+function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress, amount, validator },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+  assert(amount, 'Missing amount param');
+  assert(validator, 'Missing validator param');
+
+  const fromPubkey = new PublicKey(fromAddress);
+  const stakePubkey = new PublicKey(stakingAddress);
+
+  const tx = new Transaction();
+
+  const walletInitStaking = StakeProgram.createAccount({
+    fromPubkey,
+    stakePubkey,
+    authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
+    lockup: new Lockup(0, 0, fromPubkey), // Lookup sets the minimum epoch to withdraw, by default is 0,0 which means there's no minimum limit
+    lamports: new BigNumber(amount).toNumber(),
+  });
+  tx.add(walletInitStaking);
+
+  const delegateStaking = StakeProgram.delegate({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+    votePubkey: new PublicKey(validator),
+  });
+  tx.add(delegateStaking);
+
+  return tx.instructions;
+}
+
+/**
+ * Construct staking deactivate Solana instructions
+ *
+ * @param {StakingDeactivate} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing staking deactivate instruction
+ */
+function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+
+  const deactivateStaking = StakeProgram.deactivate({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+  });
+
+  return deactivateStaking.instructions;
+}
+
+/**
+ * Construct Staking Withdraw Solana instructions
+ *
+ * @param {StakingWithdraw} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Staking Withdraw  Solana instructions
+ */
+function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress, amount },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+  assert(amount, 'Missing amount param');
+
+  const withdrawStaking = StakeProgram.withdraw({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+    toPubkey: new PublicKey(fromAddress),
+    lamports: new BigNumber(amount).toNumber(),
+  });
+
+  return withdrawStaking.instructions;
 }

@@ -17,7 +17,7 @@ describe('Avaxc Token:', function () {
 
     it('should return constants', function () {
       avaxcTokenCoin.getChain().should.equal('tavaxc:LINK');
-      avaxcTokenCoin.getBaseChain().should.equal('tavaxc:LINK');
+      avaxcTokenCoin.getBaseChain().should.equal('tavaxc');
       avaxcTokenCoin.getFullName().should.equal('Avaxc Token');
       avaxcTokenCoin.getBaseFactor().should.equal(1e18);
       avaxcTokenCoin.type.should.equal(tokenName);
@@ -44,7 +44,7 @@ describe('Avaxc Token:', function () {
 
     it('should return constants', function () {
       avaxcTokenCoin.getChain().should.equal('avaxc:PNG');
-      avaxcTokenCoin.getBaseChain().should.equal('avaxc:PNG');
+      avaxcTokenCoin.getBaseChain().should.equal('avaxc');
       avaxcTokenCoin.getFullName().should.equal('Avaxc Token');
       avaxcTokenCoin.getBaseFactor().should.equal(1e18);
       avaxcTokenCoin.type.should.equal(tokenName);

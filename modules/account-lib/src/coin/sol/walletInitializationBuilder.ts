@@ -4,7 +4,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { isValidAmount, isValidPublicKey } from './utils';
+import { isValidAmount, validateAddress } from './utils';
 import { TransactionType } from '../baseCoin';
 import { WalletInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
@@ -54,10 +54,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @param nonceAddress address of the new nonce account
    */
   address(nonceAddress: string): this {
-    if (!nonceAddress || !isValidPublicKey(nonceAddress)) {
-      throw new BuildTransactionError('Invalid or missing nonceAddress, got: ' + nonceAddress);
-    }
-
+    validateAddress(nonceAddress, 'nonceAddress');
     this._nonceAddress = nonceAddress;
 
     return this;

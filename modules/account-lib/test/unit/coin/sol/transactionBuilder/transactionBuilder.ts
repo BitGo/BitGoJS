@@ -13,7 +13,12 @@ describe('Sol Transaction Builder', async () => {
   const validBlockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
 
   beforeEach(function (done) {
-    builders = [factory.getWalletInitializationBuilder(), factory.getTransferBuilder()];
+    builders = [
+      factory.getWalletInitializationBuilder(),
+      factory.getTransferBuilder(),
+      factory.getStakingActivateBuilder(),
+      factory.getStakingWithdrawBuilder(),
+    ];
     done();
   });
 
@@ -77,7 +82,40 @@ describe('Sol Transaction Builder', async () => {
     builtTx.toBroadcastFormat().should.equal(testData.WALLET_INIT_SIGNED_TX);
   });
 
-  // STLX-10065: fails right now due to issues with deserializing. Will fix as follow up.
+  it('build a staking activate from rawTx', async () => {
+    const txBuilder = factory.from(testData.STAKING_ACTIVATE_SIGNED_TX);
+    const builtTx = await txBuilder.build();
+    should.equal(builtTx.type, TransactionType.StakingActivate);
+    should.equal(
+      builtTx.id,
+      '2oA7BvodsSiDTfjjswMRmucj8WD86esqfvnSkqKiKtPZ8oXSGB72L87LMppw1Ag7PbEKsKLczqh2p6uzukuCTrhF',
+    );
+    builtTx.inputs.length.should.equal(1);
+    builtTx.inputs[0].should.deepEqual({
+      address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+      value: '300000',
+      coin: 'tsol',
+    });
+    builtTx.outputs.length.should.equal(1);
+    const jsonTx = builtTx.toJson();
+    jsonTx.id.should.equal('2oA7BvodsSiDTfjjswMRmucj8WD86esqfvnSkqKiKtPZ8oXSGB72L87LMppw1Ag7PbEKsKLczqh2p6uzukuCTrhF');
+    jsonTx.feePayer.should.equal('5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe');
+    jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
+    jsonTx.numSignatures.should.equal(2);
+    jsonTx.instructionsData.should.deepEqual([
+      {
+        type: 'Activate',
+        params: {
+          fromAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          stakingAddress: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
+          amount: '300000',
+          validator: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
+        },
+      },
+    ]);
+    builtTx.toBroadcastFormat().should.equal(testData.STAKING_ACTIVATE_SIGNED_TX);
+  });
+
   it('build a send from rawTx', async () => {
     const txBuilder = factory.from(testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
     const builtTx = await txBuilder.build();
@@ -123,6 +161,7 @@ describe('Sol Transaction Builder', async () => {
     ]);
     builtTx.toBroadcastFormat().should.equal(testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
   });
+
   describe('Nonce tests', async () => {
     it('should throw for invalid nonce', () => {
       const blockHash = 'randomstring';

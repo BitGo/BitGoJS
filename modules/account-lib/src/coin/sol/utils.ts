@@ -2,6 +2,8 @@ import {
   Keypair,
   PublicKey,
   SignaturePubkeyPair,
+  StakeInstruction,
+  StakeProgram,
   SystemInstruction,
   SystemProgram,
   Transaction as SolTransaction,
@@ -12,12 +14,14 @@ import BigNumber from 'bignumber.js';
 import {
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
-  ValidInstructionTypesEnum,
+  stakingActivateInstructionsIndexes,
+  stakingDeactivateInstructionsIndexes,
+  stakingWithdrawInstructionsIndexes,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
 } from './constants';
 import { TransactionType } from '../baseCoin';
-import { NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/errors';
+import { NotSupported, ParseTransactionError, UtilsError, BuildTransactionError } from '../baseCoin/errors';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
@@ -54,8 +58,8 @@ export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
 
 /** @inheritdoc */
 export function isValidPublicKey(pubKey: string): boolean {
-  if (Crypto.isValidXpub(pubKey)) return true;
   try {
+    if (Crypto.isValidXpub(pubKey)) return true;
     new PublicKey(pubKey);
     return true;
   } catch {
@@ -87,6 +91,17 @@ export function isValidTransactionId(txId: string): boolean {
 export function isValidAmount(amount: string): boolean {
   const bigNumberAmount = new BigNumber(amount);
   return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
+}
+
+/**
+ * Check if the string is a valid amount of lamports number on staking
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidStakingAmount(amount: string): boolean {
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThan(0);
 }
 
 /**
@@ -180,8 +195,35 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 }
 
 /**
+ * Check the transaction type matching instructions by order.
+ *
+ * @param {TransactionInstruction[]} instructions - the array of supported Solana instructions to be parsed
+ * @param {Record<string, number>} instructionIndexes - the instructions indexes of the current transaction
+ * @returns true if it matchs by order.
+ */
+export function matchTransactionTypeByInstructionsOrder(
+  instructions: TransactionInstruction[],
+  instructionIndexes: Record<string, number>,
+): boolean {
+  const instructionsKeys = Object.keys(instructionIndexes);
+
+  // Memo is optional and the last instruction added, it does not matter to match the type
+  if (instructionsKeys[instructionsKeys.length - 1] === 'Memo') {
+    instructionsKeys.pop();
+  }
+
+  // Check instructions by order using the index.
+  for (const keyName of instructionsKeys) {
+    if (getInstructionType(instructions[instructionIndexes[keyName]]) !== keyName) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Returns the transaction Type based on the  transaction instructions.
- * Only Wallet initialization and Transfer transactions are supported.
+ * Wallet initialization, Transfer and Staking transactions are supported.
  *
  * @param {SolTransaction} transaction - the solana transaction
  * @returns {TransactionType} - the type of transaction
@@ -189,16 +231,16 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 export function getTransactionType(transaction: SolTransaction): TransactionType {
   const { instructions } = transaction;
   validateIntructionTypes(instructions);
-  if (
-    instructions.length <= 3 &&
-    getInstructionType(instructions[walletInitInstructionIndexes.Create]) === ValidInstructionTypesEnum.Create &&
-    getInstructionType(instructions[walletInitInstructionIndexes.InitializeNonce]) ===
-      ValidInstructionTypesEnum.InitializeNonceAccount
-  ) {
+  if (matchTransactionTypeByInstructionsOrder(instructions, walletInitInstructionIndexes)) {
     return TransactionType.WalletInitialization;
-  } else {
-    return TransactionType.Send;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
+    return TransactionType.StakingActivate;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes)) {
+    return TransactionType.StakingDeactivate;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
+    return TransactionType.StakingWithdraw;
   }
+  return TransactionType.Send;
 }
 
 /**
@@ -214,6 +256,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return 'Memo';
     case SystemProgram.programId.toString():
       return SystemInstruction.decodeInstructionType(instruction);
+    case StakeProgram.programId.toString():
+      return StakeInstruction.decodeInstructionType(instruction);
     default:
       throw new NotSupported(
         'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
@@ -247,5 +291,17 @@ export function validateRawTransaction(rawTransaction: string): void {
   }
   if (!isValidRawTransaction(rawTransaction)) {
     throw new ParseTransactionError('Invalid raw transaction');
+  }
+}
+
+/**
+ * Validates address to check if it exists and is a valid Solana public key
+ *
+ * @param {string} address The address to be validated
+ * @param {string} fieldName Name of the field to validate, its needed to return which field is failing on case of error.
+ */
+export function validateAddress(address: string, fieldName: string): void {
+  if (!address || !isValidPublicKey(address)) {
+    throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
   }
 }

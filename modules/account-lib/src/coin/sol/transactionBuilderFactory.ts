@@ -4,8 +4,11 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
+import { StakingActivateBuilder } from './stakingActivateBuilder';
+import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { Transaction } from './transaction';
 import { validateRawTransaction } from './utils';
+import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -26,6 +29,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
+        case TransactionType.StakingActivate:
+          return this.getStakingActivateBuilder(tx);
+        case TransactionType.StakingDeactivate:
+          return this.getStakingDeactivateBuilder(tx);
+        case TransactionType.StakingWithdraw:
+          return this.getStakingWithdrawBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -42,6 +51,46 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the staking builder to create a staking account and also a delegate in one transaction.
+   * once the tx reach the network it will automatically by activated on next epoch
+   *
+   * @see https://docs.solana.com/cluster/stake-delegation-and-rewards#stake-warmup-cooldown-withdrawal
+   *
+   * @param {Transaction} tx - the transaction to be used to initialize the builder
+   * @returns {StakingDeactivateBuilder} - the initialized staking activate builder
+   */
+  getStakingActivateBuilder(tx?: Transaction): StakingActivateBuilder {
+    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a staking deactivate transaction.
+   * Deactivated is set in the current epoch + cooldown
+   * The account's stake will ramp down to zero by that epoch, and the lamports will be available for withdrawal.
+   *
+   * @see https://docs.solana.com/cluster/stake-delegation-and-rewards#stake-warmup-cooldown-withdrawal
+   *
+   * @param {Transaction} tx - the transaction to be used to initialize the builder
+   * @returns {StakingDeactivateBuilder} - the initialized staking deactivate builder
+   */
+  getStakingDeactivateBuilder(tx?: Transaction): StakingDeactivateBuilder {
+    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a staking withdraw transaction.
+   * once the staking account reach 0 SOL it will not be traceable anymore by the network
+   *
+   * @see https://docs.solana.com/staking/stake-accounts#destroying-a-stake-account
+   *
+   * @param {Transaction} tx - the transaction to be used to intialize the builder
+   * @returns {StakingWithdrawBuilder} - the initialized staking withdraw builder
+   */
+  getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
+    return this.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
   }
 
   /**

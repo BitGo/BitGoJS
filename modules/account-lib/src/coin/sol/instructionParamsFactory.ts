@@ -1,9 +1,25 @@
-import { SystemInstruction, TransactionInstruction } from '@solana/web3.js';
+import { StakeInstruction, SystemInstruction, TransactionInstruction } from '@solana/web3.js';
 
 import { TransactionType } from '../baseCoin';
 import { NotSupported } from '../baseCoin/errors';
-import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
-import { InstructionParams, WalletInit, Transfer, Nonce, Memo } from './iface';
+import {
+  InstructionBuilderTypes,
+  ValidInstructionTypesEnum,
+  walletInitInstructionIndexes,
+  stakingActivateInstructionsIndexes,
+  stakingDeactivateInstructionsIndexes,
+  stakingWithdrawInstructionsIndexes,
+} from './constants';
+import {
+  InstructionParams,
+  WalletInit,
+  Transfer,
+  Nonce,
+  Memo,
+  StakingActivate,
+  StakingDeactivate,
+  StakingWithdraw,
+} from './iface';
 import { getInstructionType } from './utils';
 
 /**
@@ -22,6 +38,12 @@ export function instructionParamsFactory(
       return parseWalletInitInstructions(instructions);
     case TransactionType.Send:
       return parseSendInstructions(instructions);
+    case TransactionType.StakingActivate:
+      return parseStakingActivateInstructions(instructions);
+    case TransactionType.StakingDeactivate:
+      return parseStakingDeactivateInstructions(instructions);
+    case TransactionType.StakingWithdraw:
+      return parseStakingWithdrawInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -37,7 +59,7 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
   const instructionData: Array<WalletInit | Memo> = [];
   const createInstruction = SystemInstruction.decodeCreateAccount(instructions[walletInitInstructionIndexes.Create]);
   const nonceInitInstruction = SystemInstruction.decodeNonceInitialize(
-    instructions[walletInitInstructionIndexes.InitializeNonce],
+    instructions[walletInitInstructionIndexes.InitializeNonceAccount],
   );
 
   const walletInit: WalletInit = {
@@ -51,8 +73,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
   };
   instructionData.push(walletInit);
 
-  if (instructions.length === 3 && instructions[2]) {
-    const memo: Memo = { type: InstructionBuilderTypes.Memo, params: { memo: instructions[2].data.toString() } };
+  const memo = getMemo(instructions, walletInitInstructionIndexes);
+  if (memo) {
     instructionData.push(memo);
   }
 
@@ -105,4 +127,118 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
     }
   }
   return instructionData;
+}
+
+/**
+ * Parses Solana instructions to create staking tx and delegate tx instructions params
+ * Only supports StakingActivate and Memo Solana instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking activate tx
+ */
+function parseStakingActivateInstructions(instructions: TransactionInstruction[]): Array<StakingActivate | Memo> {
+  const instructionData: Array<StakingActivate | Memo> = [];
+  const createInstruction = SystemInstruction.decodeCreateAccount(
+    instructions[stakingActivateInstructionsIndexes.Create],
+  );
+  const initializeInstruction = StakeInstruction.decodeInitialize(
+    instructions[stakingActivateInstructionsIndexes.Initialize],
+  );
+  const delegateInstruction = StakeInstruction.decodeDelegate(
+    instructions[stakingActivateInstructionsIndexes.Delegate],
+  );
+
+  const stakingActivate: StakingActivate = {
+    type: InstructionBuilderTypes.StakingActivate,
+    params: {
+      fromAddress: createInstruction.fromPubkey.toString(),
+      stakingAddress: initializeInstruction.stakePubkey.toString(),
+      amount: createInstruction.lamports.toString(),
+      validator: delegateInstruction.votePubkey.toString(),
+    },
+  };
+  instructionData.push(stakingActivate);
+
+  const memo = getMemo(instructions, stakingActivateInstructionsIndexes);
+  if (memo) {
+    instructionData.push(memo);
+  }
+
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to create deactivate tx instructions params
+ * Only supports StakingDeactivate and Memo Solana instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking deactivate tx
+ */
+function parseStakingDeactivateInstructions(instructions: TransactionInstruction[]): Array<StakingDeactivate | Memo> {
+  const instructionData: Array<StakingDeactivate | Memo> = [];
+  const deactivateInstruction = StakeInstruction.decodeDeactivate(
+    instructions[stakingDeactivateInstructionsIndexes.Deactivate],
+  );
+  const stakingDeactivate: StakingDeactivate = {
+    type: InstructionBuilderTypes.StakingDeactivate,
+    params: {
+      fromAddress: deactivateInstruction.authorizedPubkey.toString(),
+      stakingAddress: deactivateInstruction.stakePubkey.toString(),
+    },
+  };
+  instructionData.push(stakingDeactivate);
+
+  const memo = getMemo(instructions, stakingDeactivateInstructionsIndexes);
+  if (memo) {
+    instructionData.push(memo);
+  }
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to create staking  withdraw tx instructions params
+ * Only supports StakingWithdraw and Memo Solana instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for staking withdraw tx
+ */
+function parseStakingWithdrawInstructions(instructions: TransactionInstruction[]): Array<StakingWithdraw | Memo> {
+  const instructionData: Array<StakingWithdraw | Memo> = [];
+  const withdrawInstruction = StakeInstruction.decodeWithdraw(
+    instructions[stakingWithdrawInstructionsIndexes.Withdraw],
+  );
+
+  const stakingWithdraw: StakingWithdraw = {
+    type: InstructionBuilderTypes.StakingWithdraw,
+    params: {
+      fromAddress: withdrawInstruction.authorizedPubkey.toString(),
+      stakingAddress: withdrawInstruction.stakePubkey.toString(),
+      amount: withdrawInstruction.lamports.toString(),
+    },
+  };
+  instructionData.push(stakingWithdraw);
+
+  const memo = getMemo(instructions, stakingWithdrawInstructionsIndexes);
+  if (memo) {
+    instructionData.push(memo);
+  }
+
+  return instructionData;
+}
+
+/**
+ * Get the memo object from instructions if it exists
+ *
+ * @param {TransactionInstruction[]} instructions - the array of supported Solana instructions to be parsed
+ * @param {Record<string, number>} instructionIndexes - the instructions indexes of the current transaction
+ * @returns {Memo | undefined} - memo object or undefined
+ */
+function getMemo(instructions: TransactionInstruction[], instructionIndexes: Record<string, number>): Memo | undefined {
+  const instructionsLength = Object.keys(instructionIndexes).length;
+  if (instructions.length === instructionsLength && instructions[instructionIndexes.Memo]) {
+    return {
+      type: InstructionBuilderTypes.Memo,
+      params: { memo: instructions[instructionIndexes.Memo].data.toString() },
+    };
+  }
 }

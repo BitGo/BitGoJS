@@ -3,7 +3,17 @@ import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { Blockhash, PublicKey, Signer, Transaction as SolTransaction, SystemInstruction } from '@solana/web3.js';
-import { Memo, Transfer, TransactionExplanation, TxData, WalletInit, Nonce, DurableNonceParams } from './iface';
+import {
+  Memo,
+  Transfer,
+  TransactionExplanation,
+  TxData,
+  WalletInit,
+  Nonce,
+  DurableNonceParams,
+  StakingActivate,
+  StakingWithdraw,
+} from './iface';
 import base58 from 'bs58';
 import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
@@ -146,6 +156,15 @@ export class Transaction extends BaseTransaction {
         case TransactionType.Send:
           this.setTransactionType(TransactionType.Send);
           break;
+        case TransactionType.StakingActivate:
+          this.setTransactionType(TransactionType.StakingActivate);
+          break;
+        case TransactionType.StakingDeactivate:
+          this.setTransactionType(TransactionType.StakingDeactivate);
+          break;
+        case TransactionType.StakingWithdraw:
+          this.setTransactionType(TransactionType.StakingWithdraw);
+          break;
       }
       this.loadInputsAndOutputs();
     } catch (e) {
@@ -226,6 +245,30 @@ export class Transaction extends BaseTransaction {
             coin: this._coinConfig.name,
           });
           break;
+        case InstructionBuilderTypes.StakingActivate:
+          inputs.push({
+            address: instruction.params.fromAddress,
+            value: instruction.params.amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: instruction.params.stakingAddress,
+            value: instruction.params.amount,
+            coin: this._coinConfig.name,
+          });
+          break;
+        case InstructionBuilderTypes.StakingWithdraw:
+          inputs.push({
+            address: instruction.params.stakingAddress,
+            value: instruction.params.amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: instruction.params.fromAddress,
+            value: instruction.params.amount,
+            coin: this._coinConfig.name,
+          });
+          break;
       }
     }
     this._outputs = outputs;
@@ -265,6 +308,22 @@ export class Transaction extends BaseTransaction {
             amount: createInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(createInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.StakingActivate:
+          const stakingActivateInstruction = instruction as StakingActivate;
+          outputs.push({
+            address: stakingActivateInstruction.params.stakingAddress,
+            amount: stakingActivateInstruction.params.amount,
+          });
+          outputAmount = outputAmount.plus(stakingActivateInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.StakingWithdraw:
+          const stakingWithdrawInstruction = instruction as StakingWithdraw;
+          outputs.push({
+            address: stakingWithdrawInstruction.params.fromAddress,
+            amount: stakingWithdrawInstruction.params.amount,
+          });
+          outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
         default:
           continue;
