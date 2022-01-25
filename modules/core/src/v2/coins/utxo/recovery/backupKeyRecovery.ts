@@ -24,7 +24,7 @@ import * as errors from '../../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 
-import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
+import { RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
@@ -138,16 +138,16 @@ async function queryBlockchainUnspentsPath(
     const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
     const address = coin.createMultiSigAddress(scriptTypeForChain(chain), 2, walletKeysForUnspent.publicKeys);
 
-    const addrInfo: RecoveryAccountData = await recoveryProvider.getAccountInfo(address.address);
+    const addrInfo = await recoveryProvider.getAddressInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
     } else {
       numSequentialAddressesWithoutTxs = 0;
 
-      if (addrInfo.totalBalance > 0) {
-        console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`);
-        const addressUnspents = await recoveryProvider.getUnspents(address.address);
+      if (addrInfo.balance > 0) {
+        console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
+        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([address.address]);
 
         walletUnspents.push(
           ...addressUnspents.map(
