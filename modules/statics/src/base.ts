@@ -152,6 +152,7 @@ export enum UnderlyingAsset {
   EOS = 'eos',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
+  NEAR = 'near',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
   STX = 'stx',

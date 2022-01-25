@@ -110,9 +110,8 @@ export const coins = CoinMap.fromCoins([
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
-  // TODO : Uncomment when core functionality is implemented
-  //  account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
-  //  account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
