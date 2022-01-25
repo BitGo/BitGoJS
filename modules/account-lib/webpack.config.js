@@ -19,7 +19,6 @@ module.exports = {
       '@hashgraph/sdk': path.resolve('../../node_modules/@hashgraph/sdk/src/browser.js'),
     },
     fallback: {
-      buffer: require.resolve('buffer'),
       constants: false,
       crypto: require.resolve('crypto-browserify'),
       dns: false,
@@ -41,8 +40,6 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
-    }),
-    new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
   ],
