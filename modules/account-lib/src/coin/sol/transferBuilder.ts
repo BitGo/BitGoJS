@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidAmount, isValidPublicKey } from './utils';
+import { isValidAmount, validateAddress } from './utils';
 import { TransactionType } from '../baseCoin';
 import { InstructionBuilderTypes } from './constants';
 import { Transfer } from './iface';
@@ -50,9 +50,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   send({ address, amount }: SendParams): this {
-    if (!address || !isValidPublicKey(address)) {
-      throw new BuildTransactionError('Invalid or missing address, got: ' + address);
-    }
+    validateAddress(address, 'address');
     if (!amount || !isValidAmount(amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + amount);
     }

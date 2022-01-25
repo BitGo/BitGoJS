@@ -10,7 +10,16 @@ import {
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
-import { InstructionParams, Memo, Nonce, StakingActivate, StakingDeactivate, Transfer, WalletInit } from './iface';
+import {
+  InstructionParams,
+  Memo,
+  Nonce,
+  StakingActivate,
+  StakingDeactivate,
+  StakingWithdraw,
+  Transfer,
+  WalletInit,
+} from './iface';
 
 /**
  * Construct Solana instructions from instructions params
@@ -32,6 +41,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingInitializeInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingDeactivate:
       return stakingDeactivateInstruction(instructionToBuild);
+    case InstructionBuilderTypes.StakingWithdraw:
+      return stakingWithdrawInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -177,4 +188,28 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
   });
 
   return deactivateStaking.instructions;
+}
+
+/**
+ * Construct Staking Withdraw Solana instructions
+ *
+ * @param {StakingWithdraw} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Staking Withdraw  Solana instructions
+ */
+function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstruction[] {
+  const {
+    params: { fromAddress, stakingAddress, amount },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(stakingAddress, 'Missing stakingAddress param');
+  assert(amount, 'Missing amount param');
+
+  const withdrawStaking = StakeProgram.withdraw({
+    stakePubkey: new PublicKey(stakingAddress),
+    authorizedPubkey: new PublicKey(fromAddress),
+    toPubkey: new PublicKey(fromAddress),
+    lamports: new BigNumber(amount).toNumber(),
+  });
+
+  return withdrawStaking.instructions;
 }

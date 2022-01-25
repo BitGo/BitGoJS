@@ -16,7 +16,7 @@ import {
   MEMO_PROGRAM_PK,
   stakingActivateInstructionsIndexes,
   stakingDeactivateInstructionsIndexes,
-  ValidInstructionTypesEnum,
+  stakingWithdrawInstructionsIndexes,
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
 } from './constants';
@@ -195,6 +195,33 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 }
 
 /**
+ * Check the transaction type matching instructions by order.
+ *
+ * @param {TransactionInstruction[]} instructions - the array of supported Solana instructions to be parsed
+ * @param {Record<string, number>} instructionIndexes - the instructions indexes of the current transaction
+ * @returns true if it matchs by order.
+ */
+export function matchTransactionTypeByInstructionsOrder(
+  instructions: TransactionInstruction[],
+  instructionIndexes: Record<string, number>,
+): boolean {
+  const instructionsKeys = Object.keys(instructionIndexes);
+
+  // Memo is optional and the last instruction added, it does not matter to match the type
+  if (instructionsKeys[instructionsKeys.length - 1] === 'Memo') {
+    instructionsKeys.pop();
+  }
+
+  // Check instructions by order using the index.
+  for (const keyName of instructionsKeys) {
+    if (getInstructionType(instructions[instructionIndexes[keyName]]) !== keyName) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Returns the transaction Type based on the  transaction instructions.
  * Wallet initialization, Transfer and Staking transactions are supported.
  *
@@ -204,26 +231,14 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
 export function getTransactionType(transaction: SolTransaction): TransactionType {
   const { instructions } = transaction;
   validateIntructionTypes(instructions);
-  if (
-    instructions.length <= 3 &&
-    getInstructionType(instructions[walletInitInstructionIndexes.Create]) === ValidInstructionTypesEnum.Create &&
-    getInstructionType(instructions[walletInitInstructionIndexes.InitializeNonce]) ===
-      ValidInstructionTypesEnum.InitializeNonceAccount
-  ) {
+  if (matchTransactionTypeByInstructionsOrder(instructions, walletInitInstructionIndexes)) {
     return TransactionType.WalletInitialization;
-  } else if (
-    getInstructionType(instructions[stakingActivateInstructionsIndexes.Create]) === ValidInstructionTypesEnum.Create &&
-    getInstructionType(instructions[stakingActivateInstructionsIndexes.Initialize]) ===
-      ValidInstructionTypesEnum.StakingInitialize &&
-    getInstructionType(instructions[stakingActivateInstructionsIndexes.Delegate]) ===
-      ValidInstructionTypesEnum.StakingDelegate
-  ) {
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
     return TransactionType.StakingActivate;
-  } else if (
-    getInstructionType(instructions[stakingDeactivateInstructionsIndexes.Deactivate]) ===
-    ValidInstructionTypesEnum.StakingDeactivate
-  ) {
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes)) {
     return TransactionType.StakingDeactivate;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
+    return TransactionType.StakingWithdraw;
   }
   return TransactionType.Send;
 }
@@ -280,12 +295,13 @@ export function validateRawTransaction(rawTransaction: string): void {
 }
 
 /**
- * Validates staking address exists and is a valid Solana public key
+ * Validates address to check if it exists and is a valid Solana public key
  *
- * @param {string} stakingAddress The staking address to be validated
+ * @param {string} address The address to be validated
+ * @param {string} fieldName Name of the field to validate, its needed to return which field is failing on case of error.
  */
-export function validateStakingAddress(stakingAddress: string): void {
-  if (!stakingAddress || !isValidPublicKey(stakingAddress)) {
-    throw new BuildTransactionError('Invalid or missing stakingAddress, got: ' + stakingAddress);
+export function validateAddress(address: string, fieldName: string): void {
+  if (!address || !isValidPublicKey(address)) {
+    throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
   }
 }

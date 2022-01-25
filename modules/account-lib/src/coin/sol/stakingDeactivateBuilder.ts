@@ -7,7 +7,7 @@ import { InstructionBuilderTypes } from './constants';
 import { StakingDeactivate } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { validateStakingAddress } from './utils';
+import { validateAddress } from './utils';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
@@ -41,7 +41,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
    * @see https://docs.solana.com/staking/stake-accounts#account-address
    */
   stakingAddress(stakingAddress: string): this {
-    validateStakingAddress(stakingAddress);
+    validateAddress(stakingAddress, 'stakingAddress');
     this._stakingAddress = stakingAddress;
     return this;
   }

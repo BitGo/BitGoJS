@@ -5,7 +5,7 @@ import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, FeeOptions } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
-import { isValidAddress, isValidBlockId, isValidMemo, isValidPublicKey, validateRawTransaction } from './utils';
+import { isValidAddress, isValidBlockId, isValidMemo, validateAddress, validateRawTransaction } from './utils';
 import { KeyPair } from '.';
 import { InstructionBuilderTypes } from './constants';
 import { solInstructionFactory } from './solInstructionFactory';
@@ -154,9 +154,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   sender(senderAddress: string): this {
-    if (!senderAddress || !isValidPublicKey(senderAddress)) {
-      throw new BuildTransactionError('Invalid or missing sender, got: ' + senderAddress);
-    }
+    validateAddress(senderAddress, 'sender');
     this._sender = senderAddress;
     return this;
   }
@@ -174,16 +172,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Invalid or missing blockHash, got: ' + blockHash);
     }
     if (durableNonceParams) {
-      if (!durableNonceParams.walletNonceAddress || !isValidPublicKey(durableNonceParams.walletNonceAddress)) {
-        throw new BuildTransactionError(
-          'Invalid or missing walletNonceAddress, got: ' + durableNonceParams.walletNonceAddress,
-        );
-      }
-      if (!durableNonceParams.authWalletAddress || !isValidPublicKey(durableNonceParams.authWalletAddress)) {
-        throw new BuildTransactionError(
-          'Invalid or missing authWalletAddress, got: ' + durableNonceParams.authWalletAddress,
-        );
-      }
+      validateAddress(durableNonceParams.walletNonceAddress, 'walletNonceAddress');
+      validateAddress(durableNonceParams.authWalletAddress, 'authWalletAddress');
       if (durableNonceParams.walletNonceAddress === durableNonceParams.authWalletAddress) {
         throw new BuildTransactionError('Invalid params: walletNonceAddress cannot be equal to authWalletAddress');
       }

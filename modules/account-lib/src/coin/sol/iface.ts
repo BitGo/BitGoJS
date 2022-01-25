@@ -24,7 +24,14 @@ export interface TxData {
   instructionsData: InstructionParams[];
 }
 
-export type InstructionParams = Nonce | Memo | WalletInit | Transfer | StakingActivate | StakingDeactivate;
+export type InstructionParams =
+  | Nonce
+  | Memo
+  | WalletInit
+  | Transfer
+  | StakingActivate
+  | StakingDeactivate
+  | StakingWithdraw;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -54,6 +61,11 @@ export interface StakingActivate {
 export interface StakingDeactivate {
   type: InstructionBuilderTypes.StakingDeactivate;
   params: { fromAddress: string; stakingAddress: string };
+}
+
+export interface StakingWithdraw {
+  type: InstructionBuilderTypes.StakingWithdraw;
+  params: { fromAddress: string; stakingAddress: string; amount: string };
 }
 
 export type ValidInstructionTypes = SystemInstructionType | StakeInstructionType | 'Memo';
