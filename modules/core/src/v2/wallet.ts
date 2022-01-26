@@ -1065,7 +1065,23 @@ export class Wallet {
       })
       .result();
   }
-
+  /**
+     * Updates the wallet. Sets flags for deployForwardersManually and flushForwardersManually of the wallet.
+     * @param forwarderFlags {Object} - {
+       "coinSpecific": {
+         [coinName]: {
+           "deployForwardersManually": {Boolean},
+           "flushForwardersManually": {Boolean}
+         }
+       }
+     }
+     */
+  async updateForwarders(forwarderFlags: any = {}): Promise<any> {
+    if (this.baseCoin.getFamily() !== 'eth') {
+      throw new Error('not supported for this wallet');
+    }
+    this._wallet = await this.bitgo.put(this.url()).send(forwarderFlags).result();
+  }
   /**
    * Sweep funds for a wallet
    *
