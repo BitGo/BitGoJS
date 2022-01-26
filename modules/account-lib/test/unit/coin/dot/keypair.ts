@@ -14,7 +14,7 @@ describe('Dot KeyPair', () => {
       const keyPair = new Dot.KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
-      should.equal(keyPair.getKeys().prv!.length, 64);
+      should.equal(keyPair.getKeys().prv?.length, 64);
       should.equal(keyPair.getKeys().pub.length, 64);
     });
 
