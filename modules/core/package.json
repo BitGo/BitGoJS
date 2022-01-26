@@ -133,5 +133,8 @@
     "extension": [
       ".ts"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
