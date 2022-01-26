@@ -1,9 +1,9 @@
-import { Sol, Tsol } from '../../../../src/v2/coins/';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 import * as _ from 'lodash';
+import { Sol, Tsol } from '../../../../src/v2/coins/';
 
 describe('SOL:', function () {
   let bitgo;
@@ -511,6 +511,32 @@ describe('SOL:', function () {
       await basecoin.signMessage(
         keypair,
       ).should.be.rejectedWith('The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined');
+    });
+  });
+
+  describe('Derive Keypair', () => {
+    const params = {
+      addressDerivationPrv: resources.accountWithSeed.privateKey.base58,
+      addressDerivationPub: resources.accountWithSeed.publicKey,
+      index: 1,
+    };
+    it('should derive valid key pairs', async function () {
+      while (params.index < 11) {
+        const derivedKeypair = basecoin.deriveKeypair(params);
+        basecoin.isValidPrv(derivedKeypair.prv).should.true();
+        basecoin.isValidPub(derivedKeypair.pub).should.true();
+        params.index++;
+      }
+    });
+    it('should throw if prv is missing', async function () {
+      // @ts-expect-error Test for throw
+      params.addressDerivationPrv = undefined;
+      should(() => basecoin.deriveKeypair(params)).throw('addressDerivationPrv is missing');
+    });
+
+    it('should throw if prv is invalid', async function () {
+      params.addressDerivationPrv = 'randomstring';
+      should(() => basecoin.deriveKeypair(params)).throw();
     });
   });
 

@@ -25,6 +25,7 @@ import { TradingAccount } from './trading/tradingAccount';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';
+import { KeyIndices } from '.';
 
 const debug = debugLib('bitgo:v2:wallet');
 
@@ -269,7 +270,7 @@ export interface GetAddressOptions {
   reqId?: RequestTracer;
 }
 
-export interface CreateAddressOptions {
+export interface CreateAddressApiParams {
   chain?: number;
   gasPrice?: number | string;
   count?: number;
@@ -279,6 +280,12 @@ export interface CreateAddressOptions {
   format?: 'base58' | 'cashaddr';
   baseAddress?: string;
   allowSkipVerifyAddress?: boolean;
+  derivedAddress?: string;
+  index?: number;
+}
+
+export interface CreateAddressOptions extends CreateAddressApiParams {
+  passphrase?: string;
 }
 
 export interface UpdateAddressOptions {
@@ -1300,11 +1307,14 @@ export class Wallet {
    * @param {Boolean} params.lowPriority Ethereum-specific param to create address using low priority fee address
    * @param {String} params.baseAddress base address of the wallet(optional parameter)
    * @param {Boolean} params.allowSkipVerifyAddress When set to false, it throws error if address verification is skipped for any reason. Default is true.
+   * @param {String} [params.derivedAddress]  Derived address
+   * @param {Number} [params.index] Index of the derived address
+   * @param {String} [params.passphrase] passphrase
    * Address verification can be skipped when forwarderVersion is 0 and pendingChainInitialization is true OR
    * if 'coinSpecific' is not part of the response from api call to create address
    */
   async createAddress(params: CreateAddressOptions = {}): Promise<any> {
-    const addressParams: CreateAddressOptions = {};
+    const addressParams: CreateAddressApiParams = {};
     const reqId = new RequestTracer();
 
     const {
@@ -1317,6 +1327,7 @@ export class Wallet {
       count = 1,
       baseAddress,
       allowSkipVerifyAddress = true,
+      passphrase,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1377,11 +1388,37 @@ export class Wallet {
       addressParams.format = format;
     }
 
+    if (!_.isUndefined(passphrase)) {
+      if (!_.isString(passphrase)) {
+        throw new Error('passphrase has to be a string');
+      }
+    }
+
     // get keychains for address verification
     const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
+    const addressDerivationKeypair = _.get(keychains[KeyIndices.USER], 'addressDerivationKeypair');
+    const lastChainIndex = _.get(this.coinSpecific(), `lastChainIndex.${chain || 0}`, 0);
 
-    const newAddresses = _.times(count, async () => {
+    const newAddresses = _.times(count, async (index) => {
+      if (addressDerivationKeypair && passphrase) {
+        const addressDerivationPrv = this.bitgo.decrypt({
+          password: passphrase,
+          input: addressDerivationKeypair.encryptedPrv,
+        });
+        const newChainIndex = index + lastChainIndex + 1;
+        const derivedKeypair = this.baseCoin.deriveKeypair({
+          index: newChainIndex,
+          addressDerivationPrv,
+          addressDerivationPub: addressDerivationKeypair.pub,
+        });
+
+        if (derivedKeypair) {
+          addressParams.derivedAddress = derivedKeypair.pub;
+          addressParams.index = newChainIndex;
+        }
+      }
+
       this.bitgo.setRequestTracer(reqId);
       const newAddress = (await this.bitgo
         .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
