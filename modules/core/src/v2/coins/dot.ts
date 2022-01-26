@@ -39,6 +39,7 @@ export interface VerifiedTransactionParameters {
 const dotUtils = accountLib.Dot.Utils.default;
 
 export class Dot extends BaseCoin {
+  readonly MAX_VALIDITY_DURATION = 2400;
   constructor(bitgo: BitGo) {
     super(bitgo);
   }
@@ -193,7 +194,7 @@ export class Dot extends BaseCoin {
     const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
 
     txBuilder
-      .validity({ firstValid: blockNumber })
+      .validity({ firstValid: blockNumber, maxDuration: this.MAX_VALIDITY_DURATION })
       .referenceBlock(referenceBlock)
       .version(transactionVersion)
       .sender({ address: sender })
