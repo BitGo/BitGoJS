@@ -9,6 +9,7 @@ export * as addressFormat from './addressFormat';
 export {
   networks,
   Network,
+  NetworkName,
   getNetworkList,
   isValidNetwork,
   getNetworkName,

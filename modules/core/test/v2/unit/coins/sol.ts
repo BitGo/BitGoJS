@@ -12,6 +12,7 @@ describe('SOL:', function () {
   let newTxPrebuild;
   let newTxParams;
   let newTxParamsWithError;
+  let newTxParamsWithExtraData;
   const badAddresses = resources.addresses.invalidAddresses;
   const goodAddresses = resources.addresses.validAddresses;
 
@@ -48,11 +49,11 @@ describe('SOL:', function () {
   const errorBlockhash = 'GHtXQBsoZHVnNFa9YzFr17DJjgHXk3ycTKD5xD3Zi';
   const durableNonce = {
     walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe'
+    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
   };
   const errorDurableNonce = {
     walletNonceAddress: '8YM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe'
+    authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
   };
   const txParamsWithError = {
     txPrebuild,
@@ -60,6 +61,16 @@ describe('SOL:', function () {
       {
         address: 'CP5Dpaa42mMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
         amount: '300000',
+      },
+    ],
+  };
+  const txParamsWithExtraData = {
+    txPrebuild,
+    recipients: [
+      {
+        address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+        amount: '300000',
+        data: undefined,
       },
     ],
   };
@@ -78,6 +89,9 @@ describe('SOL:', function () {
     };
     newTxParamsWithError = () => {
       return _.cloneDeep(txParamsWithError);
+    };
+    newTxParamsWithExtraData = () => {
+      return _.cloneDeep(txParamsWithExtraData);
     };
   });
 
@@ -130,12 +144,26 @@ describe('SOL:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txInfo.nonce = errorBlockhash;
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, }).should.be.rejectedWith('Tx blockhash does not match with nonce param');
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo }).should.be.rejectedWith('Tx blockhash does not match with nonce param');
     });
     it('should fail verify transactions when have different recipients', async function () {
       const txParams = newTxParamsWithError();
       const txPrebuild = newTxPrebuild();
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail verify transactions when recipients is undefined', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transactions when recipients has extra data', async function () {
+      const txParams = newTxParamsWithExtraData();
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
+      validTransaction.should.equal(true);
     });
   });
 

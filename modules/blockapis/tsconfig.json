@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    "allowJs": false,
+    "strict": true
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "package.json"
+  ]
+}

@@ -7,6 +7,8 @@ export { TransactionBuilder } from './transactionBuilder';
 export { StakingBuilder } from './stakingBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { AddressInitializationBuilder } from './addressInitializationBuilder';
+export { BatchTransactionBuilder } from './batchTransactionBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
+export { UnnominateBuilder } from './unnominateBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Interface, Utils };

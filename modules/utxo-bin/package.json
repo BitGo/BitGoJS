@@ -1,0 +1,40 @@
+{
+  "name": "@bitgo/utxo-bin",
+  "description": "Command-line utility for BitGo UTXO transactions",
+  "version": "1.0.0",
+  "files": ["dist/**/*"],
+  "keywords": [
+    "bitgo",
+    "utxo",
+    "bitcoinjs",
+    "bitcoin"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha",
+    "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-bin"
+  },
+  "bin": "./dist/bin/index.js",
+  "dependencies": {
+    "@bitgo/utxo-lib": "^2.2.1-rc.9",
+    "archy": "^1.0.0",
+    "chalk": "4",
+    "yargs": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/archy": "^0.0.32",
+    "@types/mocha": "^9.0.0",
+    "@types/yargs": "^17.0.8",
+    "mocha": "^9.1.4",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "license": "MIT"
+}

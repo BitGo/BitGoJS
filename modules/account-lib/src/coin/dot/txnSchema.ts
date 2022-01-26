@@ -81,6 +81,15 @@ export const AnonymousAddressInitializationSchema = joi.object({
   delay: joi.number().required(),
 });
 
+export const BatchTransactionSchema = joi.object({
+  calls: joi
+    .alternatives()
+    .try(
+      joi.array().items(joi.string()),
+      joi.array().items(joi.object({ callIndex: joi.string(), args: joi.object() })),
+    ),
+});
+
 export const ProxyTransactionSchema = joi.object({
   real: addressSchema.required(),
   forceProxyType: joi

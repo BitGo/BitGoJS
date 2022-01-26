@@ -121,7 +121,10 @@ export class Sol extends BaseCoin {
     transaction.fromRawTransaction(rawTx);
     const explainedTx = transaction.explainTransaction();
 
-    if (!_.isEqual(explainedTx.outputs, txParams.recipients)) {
+    const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+    const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+    if (!_.isEqual(filteredOutputs, filteredRecipients)) {
       throw new Error('Tx outputs does not match with expected txParams recipients');
     }
 
