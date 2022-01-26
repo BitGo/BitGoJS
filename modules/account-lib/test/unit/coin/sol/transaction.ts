@@ -220,6 +220,9 @@ describe('Sol Transaction', () => {
     const sender = testData.authAccount.pub;
     const address = testData.addresses.validAddresses[0];
     const amount = '10000';
+    const wallet = new KeyPair(testData.authAccount).getKeys();
+    const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
+    const validator = testData.validator;
 
     it('should explain single transfer transaction', async function () {
       const tx = await factory
@@ -539,6 +542,139 @@ describe('Sol Transaction', () => {
         },
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should activate builder ', async function () {
+      const tx = await factory
+        .getStakingActivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .validator(validator.pub)
+        .fee({ amount: 5000 })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingActivate',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '10000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should deactivate builder ', async function () {
+      const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+      const tx = await factory
+        .getStakingDeactivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .stakingAddress(stakeAccount.pub)
+        .nonce(recentBlockHash)
+        .fee({ amount: 5000 })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingDeactivate',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should withdraw builder ', async function () {
+      const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+      const tx = await factory
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .amount(amount)
+        .nonce(recentBlockHash)
+        .fee({ amount: 5000 })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingWithdraw',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
       });
     });
