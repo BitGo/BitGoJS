@@ -8,8 +8,8 @@
     "test": "yarn unit-test",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\"",
     "build": "tsc",
-    "fmt": "prettier --write 'src/**/*.ts'",
-    "check-fmt": "prettier --check 'src/**/*.ts'",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "precommit": "lint-staged",
     "prepare": "npm run build"
