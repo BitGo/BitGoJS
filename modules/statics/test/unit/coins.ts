@@ -6,6 +6,12 @@ interface DuplicateCoinObject {
   network: BaseNetwork;
 }
 
+describe('CoinMap', function () {
+  it('should have iterator', function () {
+    [...coins].length.should.be.greaterThan(100);
+  });
+});
+
 coins.forEach((coin, coinName) => {
   describe(`Coin ${coinName}`, function () {
     it('has expected name', function () {
