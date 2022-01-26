@@ -31,6 +31,8 @@ export enum TransactionType {
   ContractCall,
   // Deactivate
   StakingDeactivate,
+  // Batch of multiple transactions broadcast as a single transaction
+  Batch,
 }
 
 /**
