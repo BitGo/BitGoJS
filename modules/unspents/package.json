@@ -42,5 +42,9 @@
     "@bitgo/utxo-lib": "^2.2.0",
     "lodash": "~4.17.21",
     "tcomb": "~3.2.29"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "ef15427ab86ecf83431e8474bfff445cf5b2774b"
 }

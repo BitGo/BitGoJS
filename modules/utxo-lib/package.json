@@ -62,5 +62,9 @@
     "nyc": "^15.1.0",
     "ts-node": "^9.1.1"
   },
-  "license": "MIT"
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "gitHead": "ef15427ab86ecf83431e8474bfff445cf5b2774b"
 }

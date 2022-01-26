@@ -36,5 +36,9 @@
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
   },
-  "license": "MIT"
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "gitHead": "ef15427ab86ecf83431e8474bfff445cf5b2774b"
 }
