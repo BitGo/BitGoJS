@@ -1,3 +1,4 @@
+import { PolkadotSpecNameType } from '@bitgo/statics';
 import { BaseTxInfo, TypeRegistry, DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
 import { TransactionType } from '../baseCoin';
 import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
@@ -180,4 +181,12 @@ export enum TransactionTypes {
   STAKING = 'staking',
   ADDR_INIT = 'addressInitialization',
   UNSTAKING = 'unstaking',
+}
+export interface Material {
+  genesisHash: string;
+  chainName: string;
+  specName: PolkadotSpecNameType;
+  specVersion: number;
+  txVersion: number;
+  metadata: `0x${string}`;
 }
