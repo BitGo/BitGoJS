@@ -470,6 +470,7 @@ export enum UnderlyingAsset {
   MTCN = 'mtcn',
   MTL = 'mtl',
   MUSD = 'musd',
+  MVI = 'mvi',
   MVL = 'mvl',
   NAS = 'nas',
   NCT = 'nct',
