@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
-import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed } from '../baseCoin/iface';
+import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed, DefaultKeys } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import { SECP256K1_PREFIX } from './constants';
 const DEFAULT_SEED_SIZE_BYTES = 16;
@@ -36,7 +36,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @returns { DefaultKeys } The keys in the defined format
    */
-  getKeys() {
+  getKeys(): DefaultKeys {
     return {
       pub: this.getPublicKey({ compressed: true }).toString('hex'),
       prv: this.getPrivateKey()?.toString('hex'),

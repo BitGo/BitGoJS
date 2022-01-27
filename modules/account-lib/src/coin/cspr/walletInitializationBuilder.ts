@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLTypedAndToBytesHelper, CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
+import { CLValue, CLPublicKey as PublicKey, RuntimeArgs, CLValueBuilder, CLString } from 'casper-js-sdk';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
@@ -25,11 +25,11 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     const args = this.buildWalletParameters();
     const extraArguments = new Map<string, CLValue>();
 
-    extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.WalletInitialization]));
+    extraArguments.set(TRANSACTION_TYPE, CLValueBuilder.string(TransactionType[TransactionType.WalletInitialization]));
     for (let index = 0; index < this._owners.length; index++) {
-      const ownerPublicKey = Buffer.from(this._owners[index].address.rawPublicKey).toString('hex');
+      const ownerPublicKey = Buffer.from(this._owners[index].address.value()).toString('hex');
       const ownerAddress = new KeyPair({ pub: ownerPublicKey }).getAddress();
-      extraArguments.set(OWNER_PREFIX + index, CLValue.string(ownerAddress));
+      extraArguments.set(OWNER_PREFIX + index, CLValueBuilder.string(ownerAddress));
     }
 
     this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args), extraArguments: extraArguments };
@@ -43,20 +43,20 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @returns {WalletInitContractArgs} contracts args to create a session
    */
   private buildWalletParameters(): WalletInitContractArgs {
-    const accounts = this._owners.map((owner) => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
-    const weights = this._owners.map((owner) => CLTypedAndToBytesHelper.u8(owner.weight));
+    const accounts = this._owners.map((owner) => CLValueBuilder.byteArray(owner.address.toAccountHash()));
+    const weights = this._owners.map((owner) => CLValueBuilder.u8(owner.weight));
 
     // set source address weight to zero to disable the master private key from signing.
-    accounts.push(CLTypedAndToBytesHelper.bytes(PublicKey.fromHex(this._source.address).toAccountHash()));
-    weights.push(CLTypedAndToBytesHelper.u8(0));
+    accounts.push(CLValueBuilder.byteArray(PublicKey.fromHex(this._source.address).toAccountHash()));
+    weights.push(CLValueBuilder.u8(0));
 
     return {
-      action: CLValue.string(WALLET_INITIALIZATION_CONTRACT_ACTION),
+      action: CLValueBuilder.string(WALLET_INITIALIZATION_CONTRACT_ACTION),
       // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
-      deployment_thereshold: CLValue.u8(DEFAULT_N),
-      key_management_threshold: CLValue.u8(DEFAULT_M),
-      accounts: CLValue.list(accounts),
-      weights: CLValue.list(weights),
+      deployment_thereshold: CLValueBuilder.u8(DEFAULT_N),
+      key_management_threshold: CLValueBuilder.u8(DEFAULT_M),
+      accounts: CLValueBuilder.list(accounts),
+      weights: CLValueBuilder.list(weights),
     };
   }
 
@@ -65,8 +65,8 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     for (let ownerIndex = 0; ownerIndex < DEFAULT_M; ownerIndex++) {
-      const ownerCLValue = tx.casperTx.session.getArgByName(OWNER_PREFIX + ownerIndex) as CLValue;
-      this.owner(ownerCLValue.asString());
+      const ownerCLValue = tx.casperTx.session.getArgByName(OWNER_PREFIX + ownerIndex) as CLString;
+      this.owner(ownerCLValue.value());
     }
   }
 
@@ -85,7 +85,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     }
     this.validateAddress({ address: address });
     for (const _owner of this._owners) {
-      if (address.substr(0, 2) + Buffer.from(_owner.address.rawPublicKey).toString('hex') === address) {
+      if (address.substr(0, 2) + Buffer.from(_owner.address.value()).toString('hex') === address) {
         throw new BuildTransactionError('Duplicated owner: ' + address);
       }
     }

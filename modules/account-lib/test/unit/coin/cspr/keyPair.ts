@@ -15,13 +15,13 @@ describe('Casper Key Pair', () => {
       const keyPair = new KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
-      should.equal(keyPair.getKeys().prv!.length, 64);
+      should.equal(keyPair.getKeys().prv?.length, 64);
       should.equal(keyPair.getKeys().pub.length, 66);
     });
 
     it('from a seed', () => {
       const keyPair = new KeyPair({ seed: Buffer.from(accountSeed) });
-      should.equal(keyPair.getKeys().prv!, prvKey);
+      should.equal(keyPair.getKeys().prv, prvKey);
       should.equal(keyPair.getKeys().pub, pubKey);
     });
 
@@ -32,7 +32,7 @@ describe('Casper Key Pair', () => {
 
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prvKey });
-      should.equal(keyPair.getKeys().prv!, prvKey);
+      should.equal(keyPair.getKeys().prv, prvKey);
       should.equal(keyPair.getKeys().pub, pubKey);
     });
 
@@ -103,7 +103,7 @@ describe('Casper Key Pair', () => {
     it('should get the keys in extended format from xprv', () => {
       const keyPair = new KeyPair({ prv: xPrvKey });
       const { xprv: calculatedXprv, xpub: calculatedXpub } = keyPair.getExtendedKeys();
-      calculatedXprv!.should.equal(xPrvKey);
+      calculatedXprv?.should.equal(xPrvKey);
       calculatedXpub.should.equal(xPubKey);
     });
 

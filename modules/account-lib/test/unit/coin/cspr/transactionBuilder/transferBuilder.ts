@@ -1,7 +1,7 @@
 import should from 'should';
-import { CLValue, DeployUtil } from 'casper-client-sdk';
+import { DeployUtil, CLOption, CLString, CLU512, CLU64, CLValueBuilder } from 'casper-js-sdk';
 import BigNumber from 'bignumber.js';
-import { register } from '../../../../../src/index';
+import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import * as testData from '../../../../resources/cspr/cspr';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
@@ -34,6 +34,35 @@ describe('Casper Transfer Builder', () => {
 
   describe('should build ', () => {
     describe('non serialized transactions', () => {
+      it('should build a transaction without transferId', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
+        txBuilder.source({ address: owner1Address });
+        txBuilder.to(owner2Address);
+        txBuilder.amount(testData.MIN_MOTES_AMOUNT);
+        txBuilder.sign({ key: testData.ACCOUNT_1.privateKey });
+        const tx = (await txBuilder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
+        should.deepEqual(tx.casperTx.approvals[0].signer, owner1Address, 'Error in the signature');
+        should.exist(tx.casperTx.hash, 'There is no hash');
+        should.exist(txJson.from, 'There is no from');
+        should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount was not as expected');
+        should.equal(txJson.transferId, undefined);
+      });
+
       it('should build a transaction to an address from an ed25519 key', async function () {
         const ed25519Address = '01513fa90c1a74c34a8958dd86055e9736edb1ead918bd4d4d750ca851946be7aa';
         const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
@@ -62,11 +91,10 @@ describe('Casper Transfer Builder', () => {
           testData.FEE.gasPrice,
           'Gas price does not match expected',
         );
-
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount was not as expected');
       });
 
@@ -92,7 +120,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount was not as expected');
       });
 
@@ -121,7 +149,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -150,7 +178,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -179,7 +207,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
 
@@ -189,7 +217,7 @@ describe('Casper Transfer Builder', () => {
         const txJson = tx.toJson();
 
         should.deepEqual(tx.casperTx.approvals.length, 0, 'Error in the number of signatures');
-        should.exist(tx.casperTx.hash), 'There is no hash';
+        should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
         should.deepEqual(txJson.from, owner1Address, 'The recipient does not match');
         should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
@@ -204,7 +232,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!, owner2Address, 'To address was not the expected one');
+        should.equal(txJson.to, owner2Address, 'To address was not the expected one');
         should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT, 'Amount does not match expected');
       });
     });
@@ -215,22 +243,28 @@ describe('Casper Transfer Builder', () => {
           const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
-
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -243,21 +277,28 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -275,21 +316,28 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -308,21 +356,28 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -341,21 +396,28 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -374,21 +436,28 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
-          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
-          should.equal(tx.casperTx.session.getArgByName('amount')!.asBigNumber().toString(), testData.MIN_MOTES_AMOUNT);
+          const txId = tx.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId.isSome(), true);
+          should.equal(txId.value().unwrap().value().toNumber(), 255);
+          should.equal(
+            (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
+            testData.MIN_MOTES_AMOUNT,
+          );
 
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
 
-          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
-          should.equal(tx2.casperTx.session.getArgByName('to_address')!.asString(), owner2Address);
-          should.equal(tx2.casperTx.session.getArgByName('id')!.asOption().getSome().asBigNumber().toNumber(), 255);
+          const txId2 = tx2.casperTx.session.getArgByName('id') as CLOption<CLU64>;
+          should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'Send');
+          should.equal((tx2.casperTx.session.getArgByName('to_address') as CLString).value(), owner2Address);
+          should.equal(txId2.isSome(), true);
+          should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
-            tx2.casperTx.session.getArgByName('amount')!.asBigNumber().toString(),
+            (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
             testData.MIN_MOTES_AMOUNT,
           );
 
@@ -408,15 +477,12 @@ describe('Casper Transfer Builder', () => {
       const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
       const tx = (await builder.build()) as Transaction;
 
-      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'to_address', CLValue.byteArray(Uint8Array.from([])));
+      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'to_address', CLValueBuilder.byteArray(Uint8Array.from([])));
 
       const builder2 = factory.getTransferBuilder();
-      should.throws(
-        () => {
-          builder2.from(tx.toBroadcastFormat());
-        },
-        (e) => e.message === testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM,
-      );
+      should.throws(() => {
+        builder2.from(tx.toBroadcastFormat());
+      }, testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM);
     });
   });
 
@@ -589,7 +655,7 @@ describe('Casper Transfer Builder', () => {
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
       should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT);
-      should.equal(txJson.to!, owner2Address);
+      should.equal(txJson.to, owner2Address);
       should.equal(txJson.transferId, 255);
     });
 
@@ -606,7 +672,7 @@ describe('Casper Transfer Builder', () => {
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
       should.equal(txJson.amount, testData.MIN_MOTES_AMOUNT);
-      should.equal(txJson.to!, owner2Address);
+      should.equal(txJson.to, owner2Address);
       should.equal(txJson.transferId, 255);
     });
   });

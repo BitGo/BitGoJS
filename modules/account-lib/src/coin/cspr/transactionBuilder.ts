@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { DeployUtil, PublicKey } from 'casper-client-sdk';
+import { DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import _ from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
@@ -72,7 +72,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     const jsonTransaction = JSON.parse(rawTransaction);
-    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as DeployUtil.Deploy;
+    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction).unwrap();
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -318,7 +318,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     switch (this.transaction.type) {
       case TransactionType.Send:
         const transferSession = this._session as CasperTransferTransaction;
-        session = DeployUtil.ExecutableDeployItem.newTransfer(
+        session = DeployUtil.ExecutableDeployItem.newTransferWithOptionalTransferId(
           transferSession.amount,
           transferSession.target,
           undefined,

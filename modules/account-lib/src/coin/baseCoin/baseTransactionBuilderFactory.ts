@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { DeployUtil } from 'casper-client-sdk';
+import { DeployUtil } from 'casper-js-sdk';
 
 /**
  * Generic transaction builder factory to be extended with coin specific logic.
