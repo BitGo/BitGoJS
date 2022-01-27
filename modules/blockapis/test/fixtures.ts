@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import * as fs from 'fs/promises';
 
 export async function getFixtureString(path: string, defaultValue?: string): Promise<string> {
@@ -17,4 +18,8 @@ export async function getFixtureString(path: string, defaultValue?: string): Pro
 
 export async function getFixture<T>(path: string, defaultValue?: T): Promise<T> {
   return JSON.parse(await getFixtureString(path, defaultValue ? JSON.stringify(defaultValue, null, 2) : undefined));
+}
+
+export function deepStrictEqualJSON<T>(a: T, b: T): void {
+  return assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
 }

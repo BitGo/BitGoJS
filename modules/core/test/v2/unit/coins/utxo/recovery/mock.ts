@@ -2,9 +2,10 @@
  * @prettier
  */
 import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
-import { AddressApi, AddressInfo, UtxoApi } from '@bitgo/blockapis';
+import { AddressInfo } from '@bitgo/blockapis';
+import { RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';
 
-export class MockRecoveryProvider implements UtxoApi, AddressApi {
+export class MockRecoveryProvider implements RecoveryProvider {
   constructor(public unspents: Unspent[]) {}
   async getAddressInfo(address: string): Promise<AddressInfo> {
     const u = this.unspents.find((u) => u.address === address);

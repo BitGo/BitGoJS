@@ -12,6 +12,12 @@ function stripApiTokens(uri: string): string {
 }
 
 export class CachingHttpClient implements HttpClient {
+  static envvarEnableHttp = 'BITGO_BLOCKAPIS_TEST_ENABLE_HTTP';
+
+  static isHttpEnabled(): boolean {
+    return process.env[this.envvarEnableHttp] === '1';
+  }
+
   constructor(private cacheDir: string, private client: HttpClient = new BaseHttpClient()) {}
 
   cachePath(p: string): string {
@@ -46,6 +52,9 @@ export class CachingHttpClient implements HttpClient {
     const cached = await this.readCache<T>(path);
     if (cached) {
       return cached;
+    }
+    if (!CachingHttpClient.isHttpEnabled()) {
+      throw new Error(`networking disabled (${CachingHttpClient.envvarEnableHttp}=1 to enable)`);
     }
     const resp = await this.client.get<T>(path);
     await this.writeCache(

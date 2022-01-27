@@ -3,7 +3,8 @@ import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { BaseHttpClient, HttpClient, Response } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { AddressApi, AddressInfo } from '../AddressApi';
-import { UtxoApi } from '../UtxoApi';
+import { OutputSpend, UtxoApi } from '../UtxoApi';
+import { TransactionStatus } from '../TransactionApi';
 
 type BlockchairResponse<T> = {
   data: T;
@@ -11,9 +12,15 @@ type BlockchairResponse<T> = {
 
 type BlockchairRecordResponse<T> = BlockchairResponse<Record<string, T>>;
 
+class ErrorKeyNotInResponse extends Error {
+  constructor(key: string) {
+    super(`key ${key} not in response`);
+  }
+}
+
 function unwrapRecord<T>(body: BlockchairRecordResponse<T>, key: string): T {
   if (!(key in body.data)) {
-    throw new Error(`key ${key} not in response`);
+    throw new ErrorKeyNotInResponse(key);
   }
   return body.data[key];
 }
@@ -25,6 +32,9 @@ type BlockchairUnspent = {
   recipient: string;
   value: number;
   block_id: number;
+  script_hex: string;
+  spending_transaction_hash: string;
+  spending_index: number;
 };
 
 // https://blockchair.com/api/docs#link_300
@@ -43,7 +53,18 @@ type BlockchairAddress = {
 
 // https://blockchair.com/api/docs#link_200
 type BlockchairTransaction = {
-  transaction: unknown;
+  transaction: {
+    /**
+      The block number it's included in.
+      If the transaction is in the mempool, data.{:hash}ᵢ.transaction.block_id yields -1
+    */
+    block_id: number;
+    /**
+     * Like https://tc39.es/ecma262/#sec-date-time-string-format but with a space instead of 'T'
+     * YYYY-MM-DD HH:mm:ss
+     */
+    time: string;
+  };
   inputs: BlockchairUnspent[];
   outputs: BlockchairUnspent[];
 };
@@ -142,6 +163,28 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     );
   }
 
+  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+    let transaction;
+    try {
+      transaction = (await this.getTransaction(txid)).transaction;
+    } catch (e) {
+      if (e instanceof ErrorKeyNotInResponse) {
+        return { found: false };
+      }
+      throw e;
+    }
+    const { block_id, time } = transaction;
+    const date = new Date(Date.parse(time.replace(' ', 'T') + '.000Z' /* force UTC parsing */));
+    return block_id === -1
+      ? { found: true, confirmed: false }
+      : {
+          found: true,
+          confirmed: true,
+          blockHeight: block_id,
+          date,
+        };
+  }
+
   async getTransactionInputs(txid: string): Promise<Unspent[]> {
     return (await this.getTransaction(txid)).inputs.map((i) => {
       return {
@@ -150,6 +193,17 @@ export class BlockchairApi implements AddressApi, UtxoApi {
         value: i.value,
       };
     });
+  }
+
+  async getTransactionSpends(txid: string): Promise<OutputSpend[]> {
+    return (await this.getTransaction(txid)).outputs.map((o) =>
+      o.spending_transaction_hash
+        ? {
+            txid: o.spending_transaction_hash,
+            vin: o.spending_index,
+          }
+        : { txid: undefined, vin: undefined }
+    );
   }
 
   async getTransactionHex(txid: string): Promise<string> {

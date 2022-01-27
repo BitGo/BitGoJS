@@ -10,7 +10,6 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import * as config from '../../../../../../src/config';
-import { RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import {
   backupKeyRecovery,
@@ -127,7 +126,6 @@ function run(
     const recoverUnspents = allUnspents.slice(0, -1);
 
     before('mock', function () {
-      sinon.stub(RecoveryProvider, 'forCoin').returns(new MockRecoveryProvider(recoverUnspents));
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
     });
 
@@ -152,6 +150,7 @@ function run(
         userKeyPath: params.userKeyPath,
         krsProvider: params.krsProvider,
         ...params.keys,
+        recoveryProvider: new MockRecoveryProvider(recoverUnspents),
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
