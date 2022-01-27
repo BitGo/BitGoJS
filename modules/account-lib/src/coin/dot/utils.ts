@@ -12,11 +12,10 @@ import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { Seed } from '../baseCoin/iface';
-import { Material, ProxyCallArgs, TransferArgs } from './iface';
+import { ProxyCallArgs, TransferArgs, ProxyArgs, TxMethod, Material } from './iface';
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
-const polkaUtils = require('@polkadot/util');
-const { createTypeUnsafe } = require('@polkadot/types');
+import { createTypeUnsafe, GenericExtrinsicPayload, GenericCall, GenericExtrinsic } from '@polkadot/types';
 
 const PROXY_METHOD_ARG = 2;
 export class Utils implements BaseUtils {
@@ -112,15 +111,18 @@ export class Utils implements BaseUtils {
   ): TransferArgs {
     const { metadataRpc, registry } = options;
     registry.setMetadata(createMetadata(registry, metadataRpc));
-    let methodCall: any;
+    let methodCall: GenericCall | GenericExtrinsic;
     if (typeof tx === 'string') {
       try {
-        const payload = createTypeUnsafe(registry, 'ExtrinsicPayload', [tx, { version: EXTRINSIC_VERSION }]);
+        const payload: GenericExtrinsicPayload = createTypeUnsafe(registry, 'ExtrinsicPayload', [
+          tx,
+          { version: EXTRINSIC_VERSION },
+        ]);
         methodCall = createTypeUnsafe(registry, 'Call', [payload.method]);
       } catch (e) {
-        methodCall = registry.createType('Extrinsic', polkaUtils.hexToU8a(tx), {
+        methodCall = registry.createType('Extrinsic', hexToU8a(tx), {
           isSigned: true,
-        }).method;
+        });
       }
     } else {
       methodCall = registry.createType('Call', tx.method);
@@ -149,7 +151,12 @@ export class Utils implements BaseUtils {
    * @param {KeyringPair} pair - The signing pair.
    * @param {string} signingPayload - Payload to sign.
    */
-  createSignedTx(pair: KeyringPair, signingPayload: string, transaction: UnsignedTransaction, options): string {
+  createSignedTx(
+    pair: KeyringPair,
+    signingPayload: string,
+    transaction: UnsignedTransaction,
+    options: { metadataRpc: `0x${string}`; registry: TypeRegistry },
+  ): string {
     const { registry, metadataRpc } = options;
     // Important! The registry needs to be updated with latest metadata, so make
     // sure to run `registry.setMetadata(metadata)` before signing.
@@ -215,6 +222,14 @@ export class Utils implements BaseUtils {
 
   isSigningPayload(payload: DecodedSigningPayload | DecodedSignedTx): payload is DecodedSigningPayload {
     return (payload as DecodedSigningPayload).blockHash !== undefined;
+  }
+
+  isProxyTransfer(arg: TxMethod['args']): arg is ProxyArgs {
+    return (arg as ProxyArgs).real !== undefined;
+  }
+
+  isTransfer(arg: TxMethod['args']): arg is TransferArgs {
+    return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
   }
 }
 

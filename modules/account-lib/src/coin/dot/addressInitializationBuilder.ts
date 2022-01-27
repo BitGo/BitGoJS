@@ -9,6 +9,7 @@ import { TransactionType } from '../baseCoin';
 import { AddAnonymousProxyArgs, AddProxyArgs, MethodNames, ProxyType } from './iface';
 import { AddressInitializationSchema, AnonymousAddressInitializationSchema } from './txnSchema';
 import { BaseAddress } from '../baseCoin/iface';
+import { ValidationResult } from 'joi';
 
 export class AddressInitializationBuilder extends TransactionBuilder {
   protected _delegate: string;
@@ -175,8 +176,8 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     this.validateFields();
   }
 
-  private validateFields(): any {
-    let validationResult;
+  private validateFields(): void {
+    let validationResult: ValidationResult;
     if (this._delegate) {
       validationResult = this.validateAddProxyFields(this._delegate, this._proxyType, this._delay);
     } else {
@@ -189,7 +190,7 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     }
   }
 
-  private validateAddProxyFields(delegate: string, proxyType: string, delay: string): any {
+  private validateAddProxyFields(delegate: string, proxyType: string, delay: string): ValidationResult {
     return AddressInitializationSchema.validate({
       delegate,
       proxyType,
@@ -197,7 +198,7 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     });
   }
 
-  private validateAnonymousProxyFields(index: number, proxyType: string, delay: string): any {
+  private validateAnonymousProxyFields(index: number, proxyType: string, delay: string): ValidationResult {
     return AnonymousAddressInitializationSchema.validate({
       proxyType,
       index,
