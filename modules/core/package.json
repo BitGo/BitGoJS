@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "14.0.0-rc.22",
+  "version": "14.0.0-rc.23",
   "description": "BitGo JavaScript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
