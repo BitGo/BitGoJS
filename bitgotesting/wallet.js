@@ -1,13 +1,32 @@
 /* eslint-disable */
+/*
+----------- INSTRUCTIONS -----------
+PRE-REQUIREMENTS.
+1. You need to have an enterprise linked to your account : How?
+  - Go to TAT (https://testnet-XX-admin.bitgo-dev.com/), login with Bitgo Test account. Use testnet as you need.
+  - Create an enterprise with the following data:
+        - Bitgo contract Entity: Bitgo Trust.
+        - Organization ID: NOTHING. ITS IMPORTANT BE EMPTY.
+        - Salesforce Opportunity ID: 123456
+        - Pricing Plan: 1
+        - Licenses: First three.
+        - KYC Information: Waived.
+        - Primary Contact email: MAIL YOU WANT TO USE in testnet.
+        - Rest of data the one of you want.
+2. Login in testnet using same mail to primary contact.
+3. Enable an Access Token : How? User Settings > Developer Options > Add Access Token
+4. Copy the access token and set this in env.js file.
+Optional, set walletId and Address.
+For test, uncomment lines at the end of the file.
+ */
 const environment = 'custom';
 const BitGoJS = require('../modules/core/dist/src/index');
-const bitgo = new BitGoJS.BitGo({ env: environment });
 const { envs } = require('./env');
-
+const bitgo = new BitGoJS.BitGo({ env: environment });
 const accessToken = envs[environment].accessToken;
-const coin = '<coin name here>';
+const coin = 'tdot';
 const walletLabel = 'Test TDOT V2 Wallet - ' + (new Date()).getTime();
-const walletPassphrase = '';
+const walletPassphrase = 'passphrase123';
 const coinWalletId = envs[environment].walletId;
 const address = envs[environment].address;
 
@@ -107,17 +126,18 @@ async function sendFunds(walletId, baseUnitQuantity) {
   }
   const walletInstance = await bitgo.coin(coin).wallets().get({ id: walletId });
 
-  const res = await walletInstance.sendMany({
-    recipients: [
-      {
-        amount: baseUnitQuantity,
-        address: '5H56KVtb3sSMxuhFsH51iFi1gei7tnBQjpVmj6hu9tK7CBDR',
-      },
-    ],
-    sequenceId: '1',
-    walletPassphrase: walletPassphrase,
-  });
-  console.dir(JSON.stringify(res, null, 2));
+    const res = await walletInstance.sendMany({
+      recipients: [
+        {
+          amount: baseUnitQuantity,
+          address: '5CqUpSRAKiSHXeVeJgRV6dPNrSpwNf3SVbbtok8558zt3Dxj',
+        },
+      ],
+      sequenceId: '5',
+      walletPassphrase: walletPassphrase,
+      type: 'transfer',
+    });
+    console.dir(JSON.stringify(res, null, 2));
 }
 
 async function buildTxn(walletId, tokenName, baseUnitQuantity) {
@@ -133,7 +153,7 @@ async function buildTxn(walletId, tokenName, baseUnitQuantity) {
     recipients: [
       {
         amount: baseUnitQuantity,
-        address: '5FodfGfp6zf9PZ1oKVs33H298zRwJCq2j5uEDEa9AjcYoNQC',
+        address: '5FhbxjiWNdzxFKgT6aGuLdjq64UNa62F6jqw4r4w3iGGHpJH',
       },
     ],
     sequenceId: '3',
@@ -155,6 +175,6 @@ async function getWalletTransfers(walletId) {
 }
 
 // createWallet();
-// getBalances(coin, tdotWalletId);
-// sendFunds(coinWalletId, '57000000')
+// getBalances('tdot', '61f2c050845d4e000738bef58cb1b98d');
+// sendFunds('61f2c050845d4e000738bef58cb1b98d', '30000000000')
 
