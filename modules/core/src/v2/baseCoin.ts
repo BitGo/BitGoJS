@@ -115,6 +115,10 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
+  addressDerivationKeypair?: {
+    pub: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface FeeEstimateOptions {

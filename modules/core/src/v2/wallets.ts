@@ -455,6 +455,19 @@ export class Wallets {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
+    if (canEncrypt && !isCold) {
+      const addressDerivationKeypair = this.baseCoin.keychains().create();
+      if (!addressDerivationKeypair.pub) {
+        throw new Error('Expected address derivation keypair to contain a public key.');
+      }
+
+      const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: addressDerivationKeypair.prv });
+      walletParams.addressDerivationKeypair = {
+        pub: addressDerivationKeypair.pub,
+        encryptedPrv: encryptedPrv,
+      };
+    }
+
     const keychains = {
       userKeychain,
       backupKeychain,

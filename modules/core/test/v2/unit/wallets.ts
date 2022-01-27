@@ -329,6 +329,60 @@ describe('V2 Wallets:', function () {
         scope.done();
       }
     });
+
+    it('should add an address derivation keypair to the wallet', async () => {
+      const params = {
+        label: 'my-cold-wallet',
+        passphrase: 'test123',
+        disableTransactionNotifications: true,
+        passcodeEncryptionCode: '123',
+        backupXpubProvider: 'test',
+        coldDerivationSeed: '123',
+        gasPrice: 123,
+        walletVersion: 1,
+      };
+      const addressDerivationKeypair = {
+        pub: 'xpub661MyMwAqRbcEjSwLFyTLw5NdVqqd8iRQcSyFTWfqUDbNMkVdukaYzVLLRA1zHwSrjUi6rqdydZnSDA9H7bSMpagXo1WkdvwZbdpeYyv99F',
+        encryptedPrv: {
+          iv: '2Fn1RIa83pOt6TAh1g7ocQ==',
+          v: 1,
+          iter: 10000,
+          ks: 256,
+          ts: 64,
+          mode: 'ccm',
+          adata: '',
+          cipher: 'aes',
+          salt: 'yW6/jgxCGfQ=',
+          ct: 'vVsWas9uAutrs/+Zyj9vOxbmryvoh2eC8NrlPzpxap/AHxybOyjAj/XdtBNQw3WVp6vttps+CuejLvrIrxX9RO2IjKJrPO5J5xjrHIY30I2UQXEJYY8ZTuE72kq5+MHoLmO1PUBgzC7I9aDcxx5iJ32EYO7G1vI=',
+        },
+      };
+
+      // bitgo key
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200, { source: 'bitgo', pub: 'mensaje bigo' });
+
+      // backup key
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider }))
+        .reply(200, { source: 'backup', provider: params.backupXpubProvider, pub: 'mensaje backup' });
+
+      // bitgoKeychain
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key')
+        .reply(200);
+      
+      // wallet
+      nock(bgUrl)
+        .post('/api/v2/tbtc/wallet', _.property('addressDerivationKeypair'))
+        .reply(200, {
+          addressDerivationKeypair: addressDerivationKeypair,
+        });
+
+      const newWallet = await wallets.generateWallet(params);
+      newWallet.wallet._wallet.should.have.property('addressDerivationKeypair');
+      newWallet.wallet._wallet.addressDerivationKeypair.should.deepEqual(addressDerivationKeypair);
+    });
   });
 
   describe('Sharing', () => {
