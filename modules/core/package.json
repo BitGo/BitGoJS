@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@bitgo/account-lib": "^2.17.1",
+    "@bitgo/blockapis": "^1.0.0",
     "@bitgo/statics": "^6.15.0",
     "@bitgo/unspents": "^0.7.1",
     "@bitgo/utxo-lib": "^2.2.0",
