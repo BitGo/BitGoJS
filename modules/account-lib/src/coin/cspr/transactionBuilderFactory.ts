@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { DeployUtil } from 'casper-client-sdk';
+import { DeployUtil } from 'casper-js-sdk';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory, TransactionType } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
@@ -50,13 +50,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     this.validateRawTransaction(raw);
     const tx = new Transaction(this._coinConfig);
     const deployJson = JSON.parse(raw);
-    const deployObject = DeployUtil.deployFromJson(deployJson);
-
-    if (!deployObject) {
-      throw new InvalidTransactionError('Invalid transaction: ' + deployObject);
+    try {
+      tx.casperTx = DeployUtil.deployFromJson(deployJson).unwrap();
+    } catch (e) {
+      throw new InvalidTransactionError('Invalid transaction: ' + e);
     }
-
-    tx.casperTx = deployObject;
 
     const casperDeployType = getDeployType(tx.casperTx.session);
     switch (casperDeployType) {
@@ -92,7 +90,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    *
    * @param {any} rawTransaction - Transaction in any format
    */
-  private validateRawTransaction(rawTransaction: any) {
+  private validateRawTransaction(rawTransaction: string) {
     if (!rawTransaction) {
       throw new ParseTransactionError('Invalid raw transaction: Undefined');
     }

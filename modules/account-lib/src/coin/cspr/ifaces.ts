@@ -1,4 +1,4 @@
-import { CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
+import { CLValue, CLPublicKey, RuntimeArgs } from 'casper-js-sdk';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { KeyPair } from '.';
 
@@ -40,7 +40,7 @@ export interface Fee {
 
 export interface CasperTransferTransaction {
   amount: BigNumberish;
-  target: PublicKey;
+  target: CLPublicKey;
   id?: number;
   extraArguments: Map<string, CLValue>;
 }
@@ -50,8 +50,8 @@ export interface CasperTransferTransaction {
  */
 export interface CasperDelegateTransaction {
   action: string;
-  delegator: PublicKey;
-  validator: PublicKey;
+  delegator: CLPublicKey;
+  validator: CLPublicKey;
   amount: BigNumberish;
   extraArguments: Map<string, CLValue>;
 }
@@ -63,7 +63,7 @@ export interface CasperModuleBytesTransaction {
 }
 
 export interface Owner {
-  address: PublicKey;
+  address: CLPublicKey;
   weight: number;
 }
 
