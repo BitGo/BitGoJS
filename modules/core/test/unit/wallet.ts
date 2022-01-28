@@ -4,6 +4,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import Eddsa from "@bitgo/account-lib/dist/src/mpc/tss";
+
 const Wallet = require('../../src/wallet');
 import { TestBitGo } from '../lib/test_bitgo';
 import * as _ from 'lodash';
@@ -47,6 +49,43 @@ describe('Wallet Prototype Methods', function () {
   };
 
   const fakeWallet = new Wallet(bitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
+
+  describe('tss', function () {
+    it('tss', async function () {
+      const MPC = await Eddsa();
+      const userKeyShare = MPC.keyShare(1, 2, 3);
+      const backupKeyShare = MPC.keyShare(2, 2, 3);
+      const bitgoKeyShare = MPC.keyShare(3, 2, 3);
+
+      console.log(userKeyShare.yShares[3].u);
+
+      const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoKeyShare.yShares[1]]);
+      const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoKeyShare.yShares[2]]);
+      const bitgoCombined = MPC.keyCombine(bitgoKeyShare.uShare, [userKeyShare.yShares[3], backupKeyShare.yShares[3]]);
+
+      const tssKeychains = await bitgo.coin('tsol').wallets().generateTssKeyChains({
+        label: 'test',
+        passphrase: 'admin',
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeyShare,
+      });
+
+      tssKeychains.userKeychain.commonPub.should.equal(userCombined.pShare.y);
+      bitgo.decrypt({
+        password: 'admin',
+        input: tssKeychains.userKeychain.encryptedPrv,
+      }).should.equal(JSON.stringify(userCombined.pShare));
+
+      tssKeychains.backupKeychain.commonPub.should.equal(backupCombined.pShare.y);
+      bitgo.decrypt({
+        password: 'admin',
+        input: tssKeychains.backupKeychain.encryptedPrv,
+      }).should.equal(JSON.stringify(backupCombined.pShare));
+
+      tssKeychains.bitgoKeychain.commonPub.should.equal(bitgoCombined.pShare.y);
+    });
+  });
 
   describe('Generate Address', function () {
 
