@@ -14,6 +14,10 @@ export interface Keychain {
   encryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
+  addressDerivationKeypair?: {
+    pub: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface ChangedKeychains {
@@ -60,6 +64,10 @@ interface AddKeychainOptions {
   provider?: string;
   reqId?: RequestTracer;
   krsSpecific?: any
+  addressDerivationKeypair?: {
+    pub: string;
+    encryptedPrv: string;
+  };
 }
 
 export interface CreateBackupOptions {
@@ -248,7 +256,9 @@ export class Keychains {
   async add(params: AddKeychainOptions = {}): Promise<Keychain> {
     params = params || {};
     validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed']);
-
+    if (params.addressDerivationKeypair) {
+      validateParams(params.addressDerivationKeypair, ['pub', 'encryptedPrv'], []);
+    }
     if (!_.isUndefined(params.disableKRSEmail)) {
       if (!_.isBoolean(params.disableKRSEmail)) {
         throw new Error('invalid disableKRSEmail argument, expecting boolean');
@@ -270,6 +280,7 @@ export class Keychains {
         derivedFromParentWithSeed: params.derivedFromParentWithSeed,
         disableKRSEmail: params.disableKRSEmail,
         krsSpecific: params.krsSpecific,
+        addressDerivationKeypair: params.addressDerivationKeypair,
       })
       .result();
   }
