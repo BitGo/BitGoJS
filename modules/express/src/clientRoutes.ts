@@ -5,9 +5,19 @@ import * as bodyParser from 'body-parser';
 import * as bluebird from 'bluebird';
 import * as url from 'url';
 import * as debugLib from 'debug';
-import { BitGo, BitGoOptions, Coin, Errors } from 'bitgo';
+import {
+  BaseCoin,
+  BitGo,
+  BitGoOptions,
+  Coin,
+  CustomSigningFunction,
+  Errors,
+  SignedTransaction,
+  TransactionPrebuild,
+} from 'bitgo';
 import * as _ from 'lodash';
 import * as express from 'express';
+import * as superagent from 'superagent';
 
 // RequestTracer should be extracted into a separate npm package (along with
 // the rest of the BitGoJS HTTP request machinery)
@@ -26,6 +36,7 @@ const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version
 declare module 'express-serve-static-core' {
   export interface Request {
     bitgo: BitGo;
+    config: Config;
   }
 }
 
@@ -101,6 +112,7 @@ function handleSendCoins(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.sendCoins(req.body);
     })
     .catch(function (err) {
@@ -124,6 +136,7 @@ function handleSendMany(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.sendMany(req.body);
     })
     .catch(function (err) {
@@ -164,6 +177,7 @@ function handleSignTransaction(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.signTransaction(req.body);
     });
 }
@@ -231,6 +245,7 @@ function handleConsolidateUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.consolidateUnspents(req.body);
     });
 }
@@ -244,6 +259,7 @@ function handleFanOutUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.fanOutUnspents(req.body);
     });
 }
@@ -353,11 +369,10 @@ function handleCanonicalAddress(req: express.Request) {
 }
 
 function handleV1Sign(req: express.Request) {
-  console.log('v1 sign was called');
   throw new Error('not yet implemented');
 }
+
 function handleV2Sign(req: express.Request) {
-  console.log('v2 sign was called');
   throw new Error('not yet implemented');
 }
 
@@ -441,7 +456,7 @@ async function handleV2SignTxWallet(req: express.Request) {
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   try {
-    return await wallet.signTransaction(req.body);
+    return await wallet.signTransaction(createSendParams(req));
   } catch (error) {
     console.log('error while signing wallet transaction ', error);
     throw error;
@@ -483,7 +498,7 @@ async function handleV2ConsolidateUnspents(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.consolidateUnspents(req.body);
+  return wallet.consolidateUnspents(createSendParams(req));
 }
 
 /**
@@ -541,7 +556,7 @@ async function handleV2FanOutUnspents(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.fanoutUnspents(req.body);
+  return wallet.fanoutUnspents(createSendParams(req));
 }
 
 /**
@@ -552,7 +567,7 @@ async function handleV2Sweep(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.sweep(req.body);
+  return wallet.sweep(createSendParams(req));
 }
 
 /**
@@ -563,7 +578,18 @@ async function handleV2AccelerateTransaction(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.accelerateTransaction(req.body);
+  return wallet.accelerateTransaction(createSendParams(req));
+}
+
+function createSendParams(req: express.Request) {
+  if (req.config.externalSignerUrl !== undefined) {
+    return {
+      ...req.body,
+      customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
+    };
+  } else {
+    return req.body;
+  }
 }
 
 /**
@@ -579,7 +605,7 @@ async function handleV2SendOne(req: express.Request) {
 
   let result;
   try {
-    result = await wallet.send(req.body);
+    result = await wallet.send(createSendParams(req));
   } catch (err) {
     err.status = 400;
     throw err;
@@ -602,7 +628,7 @@ async function handleV2SendMany(req: express.Request) {
   req.body.reqId = reqId;
   let result;
   try {
-    result = await wallet.sendMany(req.body);
+    result = await wallet.sendMany(createSendParams(req));
   } catch (err) {
     err.status = 400;
     throw err;
@@ -738,6 +764,7 @@ function prepareBitGo(config: Config) {
     };
 
     req.bitgo = new BitGo(bitgoConstructorParams);
+    req.config = config;
 
     next();
   };
@@ -973,4 +1000,19 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 export function setupSigningRoutes(app: express.Application, config: Config): void {
   app.post('/api/v1/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV1Sign));
   app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
+}
+
+export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
+  return async function (params: {
+    coin: BaseCoin;
+    txPrebuild: TransactionPrebuild;
+    pubs?: string[];
+  }): Promise<SignedTransaction> {
+    const { body: signedTx } = await superagent
+      .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
+      .type('json')
+      .send({ txPrebuild: params.txPrebuild, pubs: params.pubs });
+
+    return signedTx;
+  };
 }

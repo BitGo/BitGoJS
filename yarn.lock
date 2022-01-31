@@ -3146,6 +3146,14 @@
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-7.5.2.tgz#5e2f1d120f07b9cda07e5dedd4f3bf8888fccdb9"
   integrity sha512-T+m89VdXj/eidZyejvmoP9jivXgBDdkOSBVQjU9kF349NEx10QdPNGxHeZUaj1IlJ32/ewdyXJjnJxyxJroYwg==
 
+"@types/superagent@*":
+  version "4.1.15"
+  resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.15.tgz#63297de457eba5e2bc502a7609426c4cceab434a"
+  integrity sha512-mu/N4uvfDN2zVQQ5AYJI/g4qxn2bHB6521t1UuH09ShNWjebTqN0ZFuYK9uYjcgmI0dTQEs+Owi1EO6U0OkOZQ==
+  dependencies:
+    "@types/cookiejar" "*"
+    "@types/node" "*"
+
 "@types/superagent@^4.1.3":
   version "4.1.11"
   resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.11.tgz#4822bc64a82a0f579261a77097dbca276556c20e"
@@ -3153,6 +3161,13 @@
   dependencies:
     "@types/cookiejar" "*"
     "@types/node" "*"
+
+"@types/supertest@^2.0.11":
+  version "2.0.11"
+  resolved "https://registry.yarnpkg.com/@types/supertest/-/supertest-2.0.11.tgz#2e70f69f220bc77b4f660d72c2e1a4231f44a77d"
+  integrity sha512-uci4Esokrw9qGb9bvhhSVEjd6rkny/dk5PK/Qz4yxKiyppEI+dOPlNrZBahE3i+PoKFYyDxChVXZ/ysS/nrm1Q==
+  dependencies:
+    "@types/superagent" "*"
 
 "@types/urijs@^1.19.6":
   version "1.19.15"
