@@ -1,0 +1,1 @@
+{"version":3,"file":"AddressApi.d.ts","sourceRoot":"","sources":["../../src/AddressApi.ts"],"names":[],"mappings":"AAAA,oBAAY,WAAW,GAAG;IACxB,mDAAmD;IACnD,OAAO,EAAE,MAAM,CAAC;IAChB,oDAAoD;IACpD,OAAO,EAAE,MAAM,CAAC;CACjB,CAAC;AAEF;;GAEG;AACH,MAAM,WAAW,UAAU;IACzB,uCAAuC;IACvC,cAAc,CAAC,OAAO,EAAE,MAAM,GAAG,OAAO,CAAC,WAAW,CAAC,CAAC;CACvD"}
