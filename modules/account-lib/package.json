@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.18.0-rc.13",
+  "version": "2.18.0-rc.14",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@bitgo/blake2b": "^3.0.2-rc.0",
     "@bitgo/bls": "^0.1.0",
-    "@bitgo/statics": "^6.16.0-rc.10",
+    "@bitgo/statics": "^6.16.0-rc.11",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
@@ -60,7 +60,7 @@
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "bs58": "^4.0.1",
     "bs58check": "^2.1.2",
-    "casper-js-sdk":"2.7.6",
+    "casper-js-sdk": "2.7.6",
     "create-hmac": "^1.1.7",
     "elliptic": "^6.5.2",
     "ethereumjs-abi": "^0.6.5",
