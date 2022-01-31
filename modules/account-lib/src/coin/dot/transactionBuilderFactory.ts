@@ -8,7 +8,7 @@ import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { Material, MethodNames } from './iface';
 import utils from './utils';
-import { UnstakeBuilder } from '.';
+import { BatchTransactionBuilder, UnstakeBuilder } from '.';
 import { UnnominateBuilder } from './unnominateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -29,6 +29,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getAddressInitializationBuilder(): AddressInitializationBuilder {
     return new AddressInitializationBuilder(this._coinConfig).material(this._material);
+  }
+
+  getBatchTransactionBuilder(): BatchTransactionBuilder {
+    return new BatchTransactionBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {

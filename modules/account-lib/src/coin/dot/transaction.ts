@@ -181,6 +181,7 @@ export class Transaction extends BaseTransaction {
         txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
         result.index = txMethod.index;
       }
+      result.method = this._dotTransaction.method;
       result.proxyType = txMethod.proxyType;
       result.delay = txMethod.delay;
     }
