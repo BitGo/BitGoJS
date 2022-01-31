@@ -1,6 +1,6 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { CLValue, DeployUtil, PublicKey } from 'casper-client-sdk';
+import { CLString, DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
 import * as testData from '../../../resources/cspr/cspr';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr';
@@ -95,7 +95,7 @@ describe('Cspr Transaction', () => {
         isValidTransactionSignature(
           tx.casperTx.approvals[0].signature,
           tx.casperTx.hash,
-          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+          Buffer.from(tx.casperTx.header.account.value()).toString('hex'),
         ),
         true,
       );
@@ -103,7 +103,7 @@ describe('Cspr Transaction', () => {
         verifySignature(
           tx.casperTx.approvals[0].signature,
           tx.casperTx.hash,
-          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+          Buffer.from(tx.casperTx.header.account.value()).toString('hex'),
         ),
       );
     });
@@ -121,7 +121,7 @@ describe('Cspr Transaction', () => {
         isValidTransactionSignature(
           tx.casperTx.approvals[0].signature,
           tx.casperTx.hash,
-          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+          Buffer.from(tx.casperTx.header.account.value()).toString('hex'),
         ),
         true,
       );
@@ -129,7 +129,7 @@ describe('Cspr Transaction', () => {
         verifySignature(
           tx.casperTx.approvals[0].signature,
           tx.casperTx.hash,
-          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+          Buffer.from(tx.casperTx.header.account.value()).toString('hex'),
         ),
       );
     });
@@ -288,7 +288,7 @@ describe('Cspr Transaction', () => {
       [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
-          (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
+          (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLString).value(),
         );
       });
 
@@ -318,7 +318,7 @@ describe('Cspr Transaction', () => {
       [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
-          (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
+          (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLString).value(),
         );
       });
 

@@ -110,9 +110,8 @@ export const coins = CoinMap.fromCoins([
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
   account('tsol', 'Testnet Sol', Networks.test.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
-  // TODO : Uncomment when core functionality is implemented
-  //  account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
-  //  account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  account('near', 'Near', Networks.main.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
+  account('tnear', 'Testnet Near', Networks.test.near, 24, UnderlyingAsset.NEAR, NEAR_FEATURES, KeyCurve.Ed25519),
   erc20CompatibleAccountCoin(
     'celo',
     'Celo Gold',
@@ -733,8 +732,10 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcdydx', 'dYdX', 18, UnderlyingAsset.DYDX),
   ofcerc20('ofcgrt', 'The Graph', 18, UnderlyingAsset.GRT),
   ofcerc20('ofclink', 'ChainLink', 18, UnderlyingAsset.LINK),
+  ofcerc20('ofclrc', 'loopring', 18, UnderlyingAsset.LRC),
   ofcerc20('ofcmatic', 'Matic Token', 18, UnderlyingAsset.MATIC),
   ofcerc20('ofcmkr', 'Maker', 18, UnderlyingAsset.MKR),
+  ofcerc20('ofcomg', 'OmiseGO Token', 18, UnderlyingAsset.OMG),
   ofcerc20('ofcperp', 'Perpetual Protocol', 18, UnderlyingAsset.PERP),
   ofcerc20('ofcsand', 'Sand', 18, UnderlyingAsset.SAND),
   ofcerc20('ofcshib', 'Shiba Inu', 18, UnderlyingAsset.SHIB),

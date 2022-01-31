@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
+import { InvalidTransactionError, SigningError, ParseTransactionError } from '../baseCoin/errors';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
@@ -121,8 +121,8 @@ export class Transaction extends BaseTransaction {
     };
 
     if (this.type === TransactionType.Send) {
-      const txMethod = decodedTx.method.args as any;
-      if (txMethod.real) {
+      const txMethod = decodedTx.method.args;
+      if (utils.isProxyTransfer(txMethod)) {
         const keypairReal = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
         });
@@ -137,12 +137,14 @@ export class Transaction extends BaseTransaction {
         });
         result.to = keypairDest.getAddress();
         result.amount = decodedCall.value;
-      } else {
+      } else if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
         result.to = keypairDest.getAddress();
         result.amount = txMethod.value;
+      } else {
+        throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
       }
     }
 
@@ -168,7 +170,7 @@ export class Transaction extends BaseTransaction {
     }
 
     if (this.type === TransactionType.AddressInitialization) {
-      let txMethod;
+      let txMethod: AddAnonymousProxyArgs | AddProxyArgs;
       if ((decodedTx.method?.args as AddProxyArgs).delegate) {
         txMethod = decodedTx.method.args as AddProxyArgs;
         const keypair = new KeyPair({
@@ -297,11 +299,11 @@ export class Transaction extends BaseTransaction {
     }) as unknown as DecodedTx;
 
     if (this.type === TransactionType.Send) {
-      const txMethod = decodedTx.method.args as any;
+      const txMethod = decodedTx.method.args;
       let to: string;
       let value: string;
       let from: string;
-      if (txMethod.real) {
+      if (utils.isProxyTransfer(txMethod)) {
         const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
           metadataRpc: this._dotTransaction.metadataRpc,
           registry: this._registry,
@@ -314,14 +316,16 @@ export class Transaction extends BaseTransaction {
         });
         to = keypairDest.getAddress();
         value = `${decodedCall.value}`;
-        from = keypairFrom.getAddress(txMethod.real);
-      } else {
+        from = keypairFrom.getAddress();
+      } else if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
         to = keypairDest.getAddress();
         value = txMethod.value;
         from = decodedTx.address;
+      } else {
+        throw new ParseTransactionError(`Loading inputs of unknown Transfer type parameters`);
       }
       this._outputs = [
         {

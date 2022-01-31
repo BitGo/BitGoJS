@@ -1,10 +1,11 @@
-import { coins } from '@bitgo/statics';
+import { coins, Networks } from '@bitgo/statics';
 import should from 'should';
 import sinon, { assert } from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
+import utils from '../../../../../src/coin/dot/utils';
 
 describe('Dot Transfer Builder', () => {
   let builder: TransferBuilder;
@@ -12,10 +13,12 @@ describe('Dot Transfer Builder', () => {
   const proxySender = DotResources.accounts.account3;
   const sender = DotResources.accounts.account1;
   const receiver = DotResources.accounts.account2;
+  const materialData = Networks.test.dot;
+  const config = buildTestConfig();
+  const material = utils.getMaterial(config);
 
   beforeEach(() => {
-    const config = buildTestConfig();
-    builder = new TransferBuilder(config);
+    builder = new TransferBuilder(config).material(material);
   });
   describe('setter validation', () => {
     it('should validate real address', () => {
@@ -56,8 +59,7 @@ describe('Dot Transfer Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -66,12 +68,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
 
       const inputs = tx.inputs[0];
@@ -91,8 +93,7 @@ describe('Dot Transfer Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 0 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -101,12 +102,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
 
       const inputs = tx.inputs[0];
@@ -126,8 +127,7 @@ describe('Dot Transfer Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
@@ -135,12 +135,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -148,8 +148,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.transfer.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(8);
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '90034235235322');
@@ -157,12 +156,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -180,13 +179,13 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
     });
 
     it('should build from raw signed westend tx', async () => {
@@ -195,8 +194,7 @@ describe('Dot Transfer Builder', () => {
       westendBuilder.from(DotResources.rawTx.transfer.westendSigned);
       westendBuilder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(8);
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await westendBuilder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '10000000000');
@@ -223,8 +221,7 @@ describe('Dot Transfer Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: proxySender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -233,12 +230,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
 
       const inputs = tx.inputs[0];
@@ -260,8 +257,7 @@ describe('Dot Transfer Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
@@ -269,12 +265,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -282,8 +278,7 @@ describe('Dot Transfer Builder', () => {
       builder.from(DotResources.rawTx.proxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .version(8);
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, sender.address);
@@ -291,12 +286,12 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -314,13 +309,13 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, proxySender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, 9150);
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.chainName, materialData.chainName);
     });
   });
 });

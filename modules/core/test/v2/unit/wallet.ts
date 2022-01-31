@@ -412,7 +412,7 @@ describe('V2 Wallet:', function () {
             ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
             source: 'bitgo',
             coinSpecific: {},
-          })
+          }),
       ];
     });
 
@@ -604,6 +604,140 @@ describe('V2 Wallet:', function () {
       scope.isDone().should.be.true();
     });
   }) ;
+
+  describe('Create Address for Solana', () => {
+    let solWallet, solNocks;
+    const passphrase = '#Bondiola1234';
+    const solBitgo = new TestBitGo({ env: 'mock' });
+    solBitgo.initializeTestVars();
+    const tsol = solBitgo.coin('tsol');
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        baseAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        pendingChainInitialization: false,
+        minimumFunding: 2447136,
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tsol',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+    };
+
+    beforeEach(async function () {
+      solWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
+      solNocks = [
+        nock(bgUrl)
+          .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[0]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cd8fc24710d2ebad89dce86c2',
+            pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+            source: 'user',
+            encryptedPrv: '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
+            coinSpecific: {},
+            addressDerivationKeypair: {
+              pub: '3eJ1H3LfbSpQy1NFGsTHtLhP1s1PuMWaaqHqj4Bm13ya',
+              encryptedPrv: '{"iv":"5pSLrx+MK3N8exqwDtiH2A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"c3z58NKwCMQ=","ct":"ZPsexWW+bbkZSkwVph9doog0b0xrILehlSFfafpq65J14QmU5gklKc7jhK3taBtuyGPmAVWfkXCdZBe9s4ohaWzuQnG6r8DRQmR5xG8mzF9hDCBl+wAuW3pRMugn1Zdj"}',
+            },
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[1]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cc8e43aef09fcb785221d9dd2',
+            pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
+            encryptedPrv: '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
+            source: 'backup',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[2]}`)
+          .times(2)
+          .reply(200, {
+            id: '5935d59cf660764331bafcade1855fd7',
+            pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
+            encryptedPrv: '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
+            source: 'bitgo',
+            coinSpecific: {},
+          }),
+      ];
+    });
+
+    afterEach(async function () {
+      nock.cleanAll();
+      solNocks.forEach(scope => scope.isDone().should.be.true());
+    });
+
+    it('should create a 2 derived addresses for sol', async function () {
+      const nock1 = nock(bgUrl)
+        .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 1), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body);
+          tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(1);
+          return {
+            id: '615c643a98a2a100068e023c639c0f74',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tsol',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              pendingChainInitialization: true,
+              minimumFunding: 2447136,
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+      await solWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock1.isDone().should.be.true();
+
+      // imitates the raise of the lastChainIndex after the address creation
+      walletData.coinSpecific.lastChainIndex[0]++;
+      const updatedSolWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
+      const nock2 = nock(bgUrl)
+        .post(`/api/v2/${updatedSolWallet.coin()}/wallet/${updatedSolWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 2), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body);
+          tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(2);
+          return {
+            id: '615c643a98a2a100068e023c639c0f73',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tsol',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              pendingChainInitialization: true,
+              minimumFunding: 2447136,
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+
+      await updatedSolWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock2.isDone().should.be.true();
+    });
+  });
 
   describe('Accelerate Transaction', function () {
     it('fails if cpfpTxIds is not passed', async function () {

@@ -32,6 +32,9 @@ export interface Config {
   customRootUri?: string;
   customBitcoinNetwork?: V1Network;
   authVersion: number;
+  externalSignerUrl?: string;
+  signerMode?: boolean;
+  signerFileSystemPath?: string;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -50,6 +53,9 @@ export const ArgConfig = (args): Partial<Config> => ({
   customRootUri: args.customrooturi,
   customBitcoinNetwork: args.custombitcoinnetwork,
   authVersion: args.authVersion,
+  externalSignerUrl: args.externalSignerUrl,
+  signerMode: args.signerMode,
+  signerFileSystemPath: args.signerFileSystemPath,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -69,6 +75,9 @@ export const EnvConfig = (): Partial<Config> => ({
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
   customBitcoinNetwork: (readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network),
   authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
+  externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
+  signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
+  signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
 });
 
 export const DefaultConfig: Config = {
@@ -121,6 +130,9 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     customRootUri: get('customRootUri'),
     customBitcoinNetwork: get('customBitcoinNetwork'),
     authVersion: get('authVersion'),
+    externalSignerUrl: get('externalSignerUrl'),
+    signerMode: get('signerMode'),
+    signerFileSystemPath: get('signerFileSystemPath'),
   };
 }
 

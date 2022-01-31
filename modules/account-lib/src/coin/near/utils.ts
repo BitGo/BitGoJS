@@ -32,3 +32,7 @@ export class Utils implements BaseUtils {
     throw new NotImplementedError('method not implemented');
   }
 }
+
+const utils = new Utils();
+
+export default utils;

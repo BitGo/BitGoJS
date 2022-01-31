@@ -352,6 +352,15 @@ function handleCanonicalAddress(req: express.Request) {
   return (coin as Coin.Bch | Coin.Bsv | Coin.Ltc).canonicalAddress(address, version || fallbackVersion);
 }
 
+function handleV1Sign(req: express.Request) {
+  console.log('v1 sign was called');
+  throw new Error('not yet implemented');
+}
+function handleV2Sign(req: express.Request) {
+  console.log('v2 sign was called');
+  throw new Error('not yet implemented');
+}
+
 /**
  * handle new wallet creation
  * @param req
@@ -788,7 +797,7 @@ function promiseWrapper(promiseRequestHandler: express.RequestHandler) {
   };
 }
 
-export function setupRoutes(app: express.Application, config: Config): void {
+export function setupAPIRoutes(app: express.Application, config: Config): void {
   // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
   // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
   // Express routes on the BitGo server and return an error message that says that one should call BitGo Express
@@ -959,4 +968,9 @@ export function setupRoutes(app: express.Application, config: Config): void {
   if (!config.disableProxy) {
     app.use(prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
+}
+
+export function setupSigningRoutes(app: express.Application, config: Config): void {
+  app.post('/api/v1/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV1Sign));
+  app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
 }

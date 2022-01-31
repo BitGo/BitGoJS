@@ -146,7 +146,7 @@ export const INVALID_TRANSACTION_MISSING_SOURCE = 'Invalid transaction: missing 
 
 export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the transaction.';
 
-export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Transfer does not have a destination address defined';
+export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Invalid Delegator address format';
 
 export const ERROR_INVALID_TRANSFER_ID_ON_FROM = 'Transfer does not have an id defined';
 

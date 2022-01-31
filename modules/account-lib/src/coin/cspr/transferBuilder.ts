@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLValue, PublicKey } from 'casper-client-sdk';
+import { CLValue, CLPublicKey as PublicKey, CLValueBuilder } from 'casper-js-sdk';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
@@ -28,10 +28,8 @@ export class TransferBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     const extraArguments = new Map<string, CLValue>();
     if (this._toAddress) {
-      extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.Send]));
-      // TODO(STLX-1691): We are sending the destination address as string until impediment STLX-1691 is fixed.
-      // After that we will change this to send an instance of PublicKey instead.
-      extraArguments.set(TRANSFER_TO_ADDRESS, CLValue.string(this._toAddress));
+      extraArguments.set(TRANSACTION_TYPE, CLValueBuilder.string(TransactionType[TransactionType.Send]));
+      extraArguments.set(TRANSFER_TO_ADDRESS, CLValueBuilder.string(this._toAddress));
     }
     this._session = {
       amount: this._amount,
