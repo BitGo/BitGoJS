@@ -1,8 +1,9 @@
 import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { AddressApi, AddressInfo } from '../AddressApi';
-import { UtxoApi } from '../UtxoApi';
-import { BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
+import { OutputSpend, UtxoApi } from '../UtxoApi';
+import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
+import { TransactionStatus } from '../TransactionApi';
 
 // https://github.com/Blockstream/esplora/blob/master/API.md#get-addressaddress
 type EsploraAddressStats = {
@@ -34,6 +35,12 @@ type EsploraVout = {
   value: number;
 };
 
+// https://github.com/Blockstream/esplora/blob/master/API.md#get-txtxidoutspendvout
+type EsploraOutspend = {
+  txid: string;
+  vin: number;
+};
+
 function toBitGoUnspent(u: EsploraVin, address: string, value: number): Unspent {
   return {
     id: formatOutputId(u),
@@ -42,10 +49,22 @@ function toBitGoUnspent(u: EsploraVin, address: string, value: number): Unspent 
   };
 }
 
+// https://github.com/Blockstream/esplora/blob/master/API.md#get-txtxidstatus
+type EsploraStatus =
+  | {
+      confirmed: false;
+    }
+  | {
+      confirmed: true;
+      block_height: number;
+      block_hash: string;
+    };
+
 // https://github.com/Blockstream/esplora/blob/master/API.md#get-txtxid
 type EsploraTransaction = {
   txid: string;
   vin: EsploraVin[];
+  status: EsploraStatus;
 };
 
 export class BlockstreamApi implements AddressApi, UtxoApi {
@@ -89,9 +108,33 @@ export class BlockstreamApi implements AddressApi, UtxoApi {
     return (await this.client.get<string>(`/tx/${txid}/hex`)).map((v) => v);
   }
 
+  async getTransactionStatus(txid: string): Promise<TransactionStatus> {
+    try {
+      return (await this.client.get<EsploraTransaction>(`/tx/${txid}`)).map(({ status }) =>
+        status.confirmed
+          ? { found: true, confirmed: true, blockHeight: status.block_height, blockHash: status.block_hash }
+          : { found: true, confirmed: false }
+      );
+    } catch (e) {
+      if (e instanceof ApiRequestError) {
+        const reason = e.reason as any;
+        if (reason.response.status === 404 && reason.response.text === 'Transaction not found') {
+          return { found: false };
+        }
+      }
+      throw e;
+    }
+  }
+
   async getTransactionInputs(txid: string): Promise<Unspent[]> {
     return (await this.client.get<EsploraTransaction>(`/tx/${txid}`)).map((body) =>
       body.vin.map((u) => toBitGoUnspent(u, u.prevout.scriptpubkey_address, u.prevout.value))
+    );
+  }
+
+  async getTransactionSpends(txid: string): Promise<OutputSpend[]> {
+    return (await this.client.get<EsploraOutspend[]>(`/tx/${txid}/outspends`)).map((arr) =>
+      arr.map((v) => (v.txid ? { txid: v.txid, vin: v.vin } : { txid: undefined, vin: undefined }))
     );
   }
 }

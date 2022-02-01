@@ -2,7 +2,12 @@ import { Chalk, Instance } from 'chalk';
 import * as archy from 'archy';
 import { TxNode, TxNodeValue } from './parse';
 
-export function formatTree(n: TxNode, chalk: Chalk = new Instance()): string {
+const hideDefault = ['pubkeys', 'sequence', 'locktime', 'script', 'witness'];
+
+export function formatTree(
+  n: TxNode,
+  { hide = hideDefault, chalk = new Instance() }: { hide?: string[]; chalk?: Chalk } = {}
+): string {
   function getLabel(label: string | number, v?: unknown): string {
     const arr = [chalk.bold(label)];
     if (v !== undefined) {
@@ -33,7 +38,7 @@ export function formatTree(n: TxNode, chalk: Chalk = new Instance()): string {
   function toArchy(n: TxNode): archy.Data {
     return {
       label: getLabel(n.label, getLabelFromValue(n.value)),
-      nodes: n.nodes ? n.nodes.map((e) => toArchy(e)) : undefined,
+      nodes: n.nodes ? n.nodes.flatMap((e) => (hide.includes(e.label) ? [] : [toArchy(e)])) : undefined,
     };
   }
 

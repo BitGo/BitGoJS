@@ -1,5 +1,6 @@
 export * from './ApiBuilder';
 export * from './AddressApi';
+export * from './TransactionApi';
 export * from './UtxoApi';
 export * from './BaseHttpClient';
 

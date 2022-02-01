@@ -1,8 +1,14 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { OutputSpend } from '@bitgo/blockapis';
+import { TransactionStatus } from '@bitgo/blockapis/dist/src/TransactionApi';
 
 export type InputFormat = 'asm' | 'parseSignature';
 
 export type TxNodeValue = number | string | Buffer | boolean | undefined | null;
+
+function formatSat(v: number): string {
+  return (v / 1e8).toFixed(8);
+}
 
 export type TxNode = {
   type: 'node';
@@ -18,20 +24,24 @@ export type ParserArgs = {
   hide?: string[];
 };
 
+export type ChainInfo = {
+  status?: TransactionStatus;
+  outputSpends?: OutputSpend[];
+  prevOutputs?: utxolib.TxOutput[];
+  prevOutputSpends?: OutputSpend[];
+};
+
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
   buf.writeUInt32LE(n);
   return buf;
 }
 
-const hideDefault = ['sequence', 'locktime'];
-
 export class Parser {
   static PARSE_ALL: ParserArgs = {
     parseScriptData: true,
     parseScriptAsm: true,
     parseSignatureData: true,
-    hide: [],
   };
 
   constructor(private params: ParserArgs) {}
@@ -41,7 +51,7 @@ export class Parser {
       type: 'node',
       label: String(label),
       value,
-      nodes: nodes.filter((n) => !(this.params.hide ?? hideDefault).includes(n.label)),
+      nodes,
     };
   }
 
@@ -101,66 +111,141 @@ export class Parser {
     return this.node('witness', type, this.params.parseScriptData ? this.parseScriptParts(type, script) : undefined);
   }
 
-  parseSignatureContent(signatures: (Buffer | 0)[]): TxNode[] {
-    if (this.params.parseSignatureData) {
-      return signatures.map((sig, i) =>
-        this.node(
-          i,
-          Buffer.isBuffer(sig)
-            ? sig.toString('hex')
-            : utxolib.bitgo.isPlaceholderSignature(sig)
-            ? sig + ' (placeholder)'
-            : sig
-        )
-      );
-    }
+  parsePubkeys(parsed: utxolib.bitgo.ParsedSignatureScript2Of3): TxNode {
+    return this.node(
+      'pubkeys',
+      parsed.publicKeys.length,
+      parsed.publicKeys.map((k, i) => this.node(i, k))
+    );
+  }
 
+  parseSignatures(
+    parsed: utxolib.bitgo.ParsedSignatureScript2Of3,
+    tx: utxolib.bitgo.UtxoTransaction,
+    inputIndex: number,
+    prevOutputs?: utxolib.TxOutput[]
+  ): TxNode {
+    const nodes = [];
+    if (prevOutputs) {
+      const signedBy = utxolib.bitgo.verifySignatureWithPublicKeys(tx, inputIndex, prevOutputs, parsed.publicKeys);
+      nodes.push(this.node('signed by', signedBy.flatMap((v, i) => (v ? [i] : [])).join(', ')));
+    }
+    return this.node(
+      'signatures',
+      parsed.signatures
+        .map((s: Buffer | 0) =>
+          utxolib.bitgo.isPlaceholderSignature(s) ? '[]' : Buffer.isBuffer(s) ? `[${s.length}byte]` : `[${s}]`
+        )
+        .join(' '),
+      nodes
+    );
+  }
+
+  parseSigScript(tx: utxolib.bitgo.UtxoTransaction, inputIndex: number, prevOutputs?: utxolib.TxOutput[]): TxNode {
+    const parsed = utxolib.bitgo.parseSignatureScript(tx.ins[inputIndex]);
+    return this.node(
+      'sigScript',
+      parsed.scriptType ?? 'unknown',
+      parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)
+        ? [
+            this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
+            this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
+          ]
+        : []
+    );
+  }
+
+  parsePrevOut(
+    input: utxolib.TxInput,
+    i: number,
+    network: utxolib.Network,
+    prevOutputs?: utxolib.TxOutput[]
+  ): TxNode[] {
+    if (!prevOutputs || !prevOutputs[i]) {
+      return [];
+    }
+    const { script, value } = prevOutputs[i];
+    let address;
+    try {
+      address = utxolib.address.fromOutputScript(script, network);
+    } catch (e) {
+      address = '(error)';
+    }
     return [
-      this.node(
-        'buffers',
-        signatures
-          .map((sig) =>
-            Buffer.isBuffer(sig) ? `${sig.length}` : utxolib.bitgo.isPlaceholderSignature(sig) ? '(placeholder)' : sig
-          )
-          .join(' ')
-      ),
+      this.node('value', value / 1e8),
+      this.node('pubScript', script, address ? [this.node('address', address)] : undefined),
     ];
   }
 
-  parseSignature(input: utxolib.TxInput): TxNode {
-    const parsed = utxolib.bitgo.parseSignatureScript(input);
-    let nodes: TxNode[] | undefined;
-    switch (parsed.scriptType) {
-      case undefined:
-        break;
-      case 'p2sh':
-      case 'p2shP2wsh':
-      case 'p2wsh':
-      case 'p2tr':
-        nodes = this.parseSignatureContent(parsed.signatures);
-        break;
+  parseSpend(txid: string, index: number, spends: OutputSpend[] | undefined, params: { conflict: boolean }): TxNode[] {
+    if (!spends || !spends[index]) {
+      // no spend data available
+      return [];
     }
-    return this.node('signature', parsed.scriptType ?? 'unknown', nodes);
+    const spend = spends[index];
+    if (spend.txid === undefined) {
+      return [this.node('spent', false)];
+    }
+    if (spend.txid === txid) {
+      // if input is spent by this transaction we don't display it
+      return [];
+    }
+    return [this.node('spent', `${spend.txid}:${spend.vin}`, params.conflict ? [this.node('conflict', true)] : [])];
   }
 
-  parseIns(ins: utxolib.TxInput[]): TxNode[] {
+  parseIns(ins: utxolib.TxInput[], tx: utxolib.bitgo.UtxoTransaction, outputInfo: ChainInfo): TxNode[] {
+    const txid = tx.getId();
     return ins.map((input, i) => {
       return this.node(i, utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(input)), [
         this.node('sequence', toBufferUInt32BE(input.sequence)),
         this.parseScript(input.script),
         this.parseWitness(input.witness),
-        this.parseSignature(input),
+        this.parseSigScript(tx, i, outputInfo.prevOutputs),
+        ...this.parsePrevOut(input, i, tx.network, outputInfo.prevOutputs),
+        ...this.parseSpend(txid, i, outputInfo.prevOutputSpends, { conflict: true }),
       ]);
     });
   }
 
-  parseOuts(outs: utxolib.TxOutput[], network: utxolib.Network): TxNode[] {
-    return outs.map((o, i) => {
-      return this.node(i, utxolib.address.fromOutputScript(o.script, network), [this.node(`value`, o.value / 1e8)]);
-    });
+  parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): TxNode[] {
+    const txid = tx.getId();
+    return outs.map((o, i) =>
+      this.node(i, utxolib.address.fromOutputScript(o.script, tx.network), [
+        this.node(`value`, o.value / 1e8),
+        ...this.parseSpend(txid, i, params.outputSpends, { conflict: false }),
+      ])
+    );
   }
 
-  parse(tx: utxolib.bitgo.UtxoTransaction): TxNode {
+  parseStatus(tx: utxolib.bitgo.UtxoTransaction, status?: TransactionStatus): TxNode[] {
+    if (!status) {
+      return [this.node('status', 'unknown')];
+    }
+    return [
+      this.node(
+        'status',
+        status.found ? 'found' : 'not found',
+        status.found
+          ? status.confirmed
+            ? [
+                this.node(
+                  'confirmed',
+                  `block ${status.blockHeight}` + (status.date ? ` date=${status.date.toISOString()}` : '')
+                ),
+              ]
+            : [this.node('confirmed', false)]
+          : []
+      ),
+    ];
+  }
+
+  parse(tx: utxolib.bitgo.UtxoTransaction, chainInfo: ChainInfo = {}): TxNode {
+    const weight = tx.weight();
+    const vsize = tx.virtualSize();
+    const outputSum = tx.outs.reduce((sum, o) => sum + o.value, 0);
+    const inputSum = chainInfo.prevOutputs?.reduce((sum, o) => sum + o.value, 0);
+    const fee = inputSum ? inputSum - outputSum : undefined;
+    const feeRate = fee ? fee / vsize : undefined;
     return this.node('transaction', tx.getId(), [
       this.node(
         'parsedAs',
@@ -170,9 +255,21 @@ export class Parser {
       this.node('version', tx.version),
       this.node('locktime', tx.locktime),
       this.node('hasWitnesses', tx.hasWitnesses()),
-      this.node('vsize', `${tx.virtualSize()}vbytes (${tx.weight()}wu)`),
-      this.node(`inputs`, tx.ins.length, this.parseIns(tx.ins)),
-      this.node(`outputs`, tx.outs.length, this.parseOuts(tx.outs, tx.network)),
+      ...this.parseStatus(tx, chainInfo.status),
+      this.node('vsize', `${vsize}vbytes (${weight}wu)`),
+      ...(fee && feeRate
+        ? [this.node('fee [btc]', formatSat(fee)), this.node('feeRate [sat/vbyte]', feeRate.toFixed(2))]
+        : []),
+      this.node(
+        `inputs`,
+        [String(tx.ins.length)].concat(inputSum ? ['sum=' + formatSat(inputSum)] : []).join(' '),
+        this.parseIns(tx.ins, tx, chainInfo)
+      ),
+      this.node(
+        `outputs`,
+        [String(tx.outs.length), 'sum=' + formatSat(outputSum)].join(' '),
+        this.parseOuts(tx.outs, tx, chainInfo)
+      ),
     ]);
   }
 }

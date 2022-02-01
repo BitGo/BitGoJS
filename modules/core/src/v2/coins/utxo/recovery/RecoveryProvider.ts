@@ -1,4 +1,5 @@
-import { AddressApi, BlockchairApi, BlockstreamApi, UtxoApi } from '@bitgo/blockapis';
+import { AddressInfo, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo/Unspent';
 
 import { ApiNotImplementedError } from './baseApi';
 
@@ -13,22 +14,25 @@ export interface RecoveryAccountData {
 /**
  * Factory for AddressApi & UtxoApi
  */
-export class RecoveryProvider {
-  static forCoin(coinName: string, apiToken?: string): AddressApi & UtxoApi {
-    switch (coinName) {
-      case 'btc':
-      case 'tbtc':
-        return BlockstreamApi.forCoin(coinName);
-      case 'bch':
-      case 'bcha':
-      case 'bsv':
-      case 'btg':
-      case 'dash':
-      case 'ltc':
-      case 'zec':
-        return BlockchairApi.forCoin(coinName, { apiToken });
-    }
+export interface RecoveryProvider {
+  getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]>;
+  getAddressInfo(address: string): Promise<AddressInfo>;
+}
 
-    throw new ApiNotImplementedError(coinName);
+export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
+  switch (coinName) {
+    case 'btc':
+    case 'tbtc':
+      return BlockstreamApi.forCoin(coinName);
+    case 'bch':
+    case 'bcha':
+    case 'bsv':
+    case 'btg':
+    case 'dash':
+    case 'ltc':
+    case 'zec':
+      return BlockchairApi.forCoin(coinName, { apiToken });
   }
+
+  throw new ApiNotImplementedError(coinName);
 }
