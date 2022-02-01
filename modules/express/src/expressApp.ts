@@ -156,6 +156,22 @@ export function createBaseUri(config: Config): string {
 }
 
 /**
+ * Check the that the json file containing the external signer private key exists
+ * @param path
+ */
+function checkSignerPrvPath(path: string) {
+  try {
+    const privKeyFile = fs.readFileSync(path, { encoding: 'utf8' });
+    const privKey = JSON.parse(privKeyFile);
+    if (privKey.prv === undefined) {
+      throw new Error(`required field "prv" is missing`);
+    }
+  } catch (e) {
+    throw new Error(`Failed to parse ${path} - ${e.message}`);
+  }
+}
+
+/**
  * Check environment and other preconditions to ensure bitgo-express can start safely
  * @param config
  */
@@ -214,6 +230,14 @@ function checkPreconditions(config: Config) {
     throw new ExternalSignerConfigError(
       'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
     );
+  }
+
+  if (signerFileSystemPath !== undefined) {
+    try {
+      checkSignerPrvPath(signerFileSystemPath);
+    } catch (e) {
+      throw e;
+    }
   }
 }
 
