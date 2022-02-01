@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
       - name: Setup node:${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -34,12 +35,14 @@ jobs:
           echo "npm $(npm --version)"
           echo "yarn $(yarn --version)"
           git --version
-          echo "base ref $GITHUB_BASE_REF"
-          echo "head ref $GITHUB_HEAD_REF"
 
-      - name: Fetch Base Ref
+      - name: Fetch Git Refs
         run: |
-          git fetch origin $GITHUB_BASE_REF
+          git fetch origin $GITHUB_BASE_REF $GITHUB_HEAD_REF
+          git branch $GITHUB_BASE_REF origin/$GITHUB_BASE_REF
+          git branch $GITHUB_HEAD_REF origin/$GITHUB_HEAD_REF
+          echo "base ref $GITHUB_BASE_REF: $(git rev-parse $GITHUB_BASE_REF)"
+          echo "head ref $GITHUB_HEAD_REF: $(git rev-parse $GITHUB_HEAD_REF)"
 
       - name: Install Packages
         run: yarn install --with-frozen-lockfile
