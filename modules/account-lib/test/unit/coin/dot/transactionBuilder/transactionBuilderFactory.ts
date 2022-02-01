@@ -82,4 +82,27 @@ describe('dot Transaction Builder Factory', () => {
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.signed);
   });
+
+  it('should parse an unsigned anonymous proxy txn and return a addressInit builder', async () => {
+    const builder = factory.from(rawTx.anonymous.unsigned2);
+    should(builder).instanceOf(AddressInitializationBuilder);
+    builder
+      .validity({ firstValid: 9382825 })
+      .referenceBlock('0xca0c583e1a81a6121fc2bdd1a7879bd902c0e02a1a55e87edf62fe45070aa41e')
+      .sender({ address: sender.address });
+    const tx = await builder.build();
+    should.equal(tx.toBroadcastFormat(), rawTx.anonymous.unsigned2);
+  });
+
+  it('should parse a signed anonymous proxy txn and return a addressInit builder', async () => {
+    const builder = factory.from(rawTx.anonymous.signed2);
+    should(builder).instanceOf(AddressInitializationBuilder);
+    builder
+      .validity({ firstValid: 9382825, maxDuration: 64 })
+      .referenceBlock('0xca0c583e1a81a6121fc2bdd1a7879bd902c0e02a1a55e87edf62fe45070aa41e')
+      .sender({ address: sender.address })
+      .sign({ key: sender.secretKey });
+    const tx = await builder.build();
+    should.equal(tx.toBroadcastFormat(), rawTx.anonymous.signed2);
+  });
 });

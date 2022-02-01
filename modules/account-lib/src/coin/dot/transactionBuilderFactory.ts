@@ -76,7 +76,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getTransferBuilder();
     } else if (methodName === MethodNames.Bond) {
       return this.getStakingBuilder();
-    } else if (methodName === MethodNames.AddProxy) {
+    } else if (methodName === MethodNames.AddProxy || methodName === MethodNames.Anonymous) {
       return this.getAddressInitializationBuilder();
     } else if (methodName === MethodNames.Unbond) {
       return this.getUnstakeBuilder();
