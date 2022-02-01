@@ -400,5 +400,42 @@ describe('Bitgo Express', function () {
       apiStub.restore();
       signerStub.restore();
     });
+
+    it('should require a signerFileSystemPath and signerMode are both set when running in signer mode', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+      });
+
+      args.signerMode = undefined;
+      args.signerFileSystemPath = 'signerFileSystemPath';
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+      });
+
+      args.signerMode = 'signerMode';
+      (() => expressApp(args)).should.not.throw();
+    });
+
+    it('should require that an externalSignerUrl and signerMode are not both set', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        externalSignerUrl: 'externalSignerUrl',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
+      });
+
+      args.signerMode = undefined;
+      (() => expressApp(args)).should.not.throw();
+    });
+
   });
 });

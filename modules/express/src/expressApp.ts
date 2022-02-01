@@ -17,7 +17,7 @@ import { Config, config } from './config';
 const debug = debugLib('bitgo:express');
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
-import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
+import { IpcError, NodeEnvironmentError, TlsConfigurationError, ExternalSignerConfigError } from './errors';
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
@@ -160,7 +160,20 @@ export function createBaseUri(config: Config): string {
  * @param config
  */
 function checkPreconditions(config: Config) {
-  const { env, disableEnvCheck, bind, ipc, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
+  const {
+    env,
+    disableEnvCheck,
+    bind,
+    ipc,
+    disableSSL,
+    keyPath,
+    crtPath,
+    customRootUri,
+    customBitcoinNetwork,
+    externalSignerUrl,
+    signerMode,
+    signerFileSystemPath,
+  } = config;
 
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
@@ -189,6 +202,18 @@ function checkPreconditions(config: Config) {
   if ((customRootUri || customBitcoinNetwork) && env !== 'custom') {
     console.warn(`customRootUri or customBitcoinNetwork is set, but env is '${env}'. Setting env to 'custom'.`);
     config.env = 'custom';
+  }
+
+  if (externalSignerUrl !== undefined && (signerMode !== undefined || signerFileSystemPath !== undefined)) {
+    throw new ExternalSignerConfigError(
+      'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
+    );
+  }
+
+  if ((signerMode !== undefined || signerFileSystemPath !== undefined) && !(signerMode && signerFileSystemPath)) {
+    throw new ExternalSignerConfigError(
+      'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+    );
   }
 }
 

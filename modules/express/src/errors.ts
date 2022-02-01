@@ -40,3 +40,10 @@ export class IpcError extends Errors.BitGoJsError {
     Object.setPrototypeOf(this, IpcError.prototype);
   }
 }
+
+export class ExternalSignerConfigError extends Errors.BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'External signer configuration is invalid');
+    Object.setPrototypeOf(this, ExternalSignerConfigError.prototype);
+  }
+}
