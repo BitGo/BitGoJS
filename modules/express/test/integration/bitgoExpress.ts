@@ -220,6 +220,24 @@ describe('Bitgo Express', function () {
     res.body.marketData[0].should.have.property('coin', 'tbtc');
   });
 
+  it('should pass POST body data to the proxy target url', async function () {
+    const path = '/api/v2/post';
+    const body = { some: 'data' };
+    const serverResponse = { testResponse: 'server response' };
+
+    // client constants are retrieved upon BitGo
+    // object creation so they need to be nocked
+    const scopes = [
+      nock(Environments.test.uri).get('/api/v1/client/constants').reply(200, {}),
+      nock(Environments.test.uri).post(path, body).reply(200, serverResponse),
+    ];
+
+    const postRes = await agent.post(path).send(body);
+    postRes.should.have.status(200);
+    postRes.should.have.property('body', serverResponse);
+    scopes.forEach((s) => s.done());
+  });
+
   describe('proxy error handling', () => {
     let agent;
     before(() => {
