@@ -26,7 +26,17 @@ export type Seed = {
   seed: Buffer;
 };
 
-export type KeyPairOptions = Seed | PrivateKey | PublicKey;
+/**
+ * The number of participants for which to generate shares and a threshold of those that would be required when signing
+ */
+export type DkgOptions = {
+  threshold: number;
+  participants: number;
+};
+
+export type BlsKeyPairOptions = DkgOptions | BlsKeys;
+
+export type KeyPairOptions = Seed | PrivateKey | PublicKey | BlsKeyPairOptions;
 
 export type BaseBuilder = BaseTransactionBuilder | BaseTransactionBuilderFactory;
 
@@ -52,6 +62,19 @@ export function isPublicKey(source: KeyPairOptions): source is PublicKey {
 }
 
 /**
+ * @param source
+ */
+export function isDkg(source: KeyPairOptions): source is DkgOptions {
+  const dkg = source as DkgOptions;
+  return dkg.threshold !== undefined && dkg.participants !== undefined;
+}
+
+export function isBlsKey(source: KeyPairOptions): source is BlsKeys {
+  const bls = source as BlsKeys;
+  return bls.publicShare !== undefined && bls.secretShares !== undefined;
+}
+
+/**
  * Key pair in the protocol default format.
  */
 export type DefaultKeys = {
@@ -73,6 +96,15 @@ export type ByteKeys = {
 export type ExtendedKeys = {
   xprv?: string;
   xpub: string;
+};
+
+/**
+ * BLS signature keys.
+ */
+export type BlsKeys = {
+  prv?: string;
+  secretShares: string[];
+  publicShare: string;
 };
 
 export interface BaseAddress {

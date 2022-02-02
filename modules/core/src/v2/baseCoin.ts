@@ -52,6 +52,10 @@ export interface KeyPair {
   prv: string;
 }
 
+export interface BlsKeyPair extends KeyPair {
+  secretShares?: string[];
+}
+
 export interface VerifyAddressOptions {
   address: string;
   addressType?: string;

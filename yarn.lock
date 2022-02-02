@@ -11341,7 +11341,7 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-noble-bls12-381@^0.7.2:
+noble-bls12-381@0.7.2, noble-bls12-381@^0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/noble-bls12-381/-/noble-bls12-381-0.7.2.tgz#9a9384891569ba32785d6e4ff8588b783487eae4"
   integrity sha512-Z5isbU6opuWPL3dxsGqO5BdOE8WP1XUM7HFIn/xeE5pATTnml/PEIy4MFQQrktHiitkuJdsCDtzEOnS9eIpC3Q==

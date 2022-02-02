@@ -10,7 +10,7 @@ import BigNumber from 'bignumber.js';
 import {
   BaseCoin,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
-  KeyPair,
+  BlsKeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
@@ -284,18 +284,19 @@ export class Eth2 extends BaseCoin {
    * @param seed - byte array to generate BLS key pair from
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = new Eth2AccountLib.KeyPair();
+  generateKeyPair(seed?: Buffer): BlsKeyPair {
+    let keyPair = new Eth2AccountLib.KeyPair();
     if (seed && Eth2AccountLib.KeyPair.isValidPrv(seed)) {
       const seedStr = '0x' + Buffer.from(seed).toString('hex');
-      keyPair.recordKeysFromPrivateKey(seedStr);
+      keyPair = new Eth2AccountLib.KeyPair({ prv: seedStr });
     } else if (seed) {
       throw new Error('trying to generate keypair from invalid seed');
     }
 
     return {
-      pub: keyPair.getKeys().pub,
+      pub: keyPair.getKeys().publicShare,
       prv: keyPair.getKeys().prv || '',
+      secretShares: keyPair.getKeys().secretShares || [],
     };
   }
 
@@ -318,8 +319,7 @@ export class Eth2 extends BaseCoin {
    * @param message
    */
   async signMessage(key: { prv: string }, message: string): Promise<Buffer> {
-    const keyPair = new Eth2AccountLib.KeyPair();
-    keyPair.recordKeysFromPrivateKey(key.prv);
+    const keyPair = new Eth2AccountLib.KeyPair({ prv: key.prv });
 
     let messageToSign: Buffer = Buffer.from(message);
     if (Eth2AccountLib.KeyPair.isValidPub(message)) {
@@ -329,6 +329,7 @@ export class Eth2 extends BaseCoin {
       messageToSign = Buffer.from(ethUtil.stripHexPrefix(message), 'hex');
     }
 
-    return keyPair.sign(messageToSign);
+    const signedMessage = await keyPair.sign(messageToSign);
+    return ethUtil.toBuffer(signedMessage);
   }
 }

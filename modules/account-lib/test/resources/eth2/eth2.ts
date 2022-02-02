@@ -9,7 +9,7 @@ export const ACCOUNT_1 = {
   ),
 };
 
-export const errorMessageInvalidPrivateKey = 'Invalid private key';
+export const errorMessageInvalidPrivateKey = 'Private key derivation is not supported in bls';
 
 export const errorMessageInvalidPublicKey = 'Public key derivation is not supported in bls';
 
