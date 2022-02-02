@@ -7,7 +7,7 @@
   "scripts": {
     "webpack-dev": "cross-env NODE_ENV=development webpack",
     "webpack-prod": "cross-env NODE_ENV=production webpack",
-    "build": "npm run prepare",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' npm run prepare",
     "clean": "rm -rf dist/*",
     "compile": "npm run webpack-prod",
     "compile-dev": "npm run webpack-dev",
