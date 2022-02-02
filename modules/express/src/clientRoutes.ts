@@ -993,7 +993,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // everything else should use the proxy handler
   if (!config.disableProxy) {
-    app.use(prepareBitGo(config), promiseWrapper(handleProxyReq));
+    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
 }
 
