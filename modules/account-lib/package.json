@@ -7,7 +7,7 @@
   "scripts": {
     "webpack-dev": "cross-env NODE_ENV=development webpack",
     "webpack-prod": "cross-env NODE_ENV=production webpack",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' npm run prepare",
+    "build": "npm run prepare",
     "clean": "rm -rf dist/*",
     "compile": "npm run webpack-prod",
     "compile-dev": "npm run webpack-dev",
@@ -20,7 +20,7 @@
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && NODE_OPTIONS=\"--max-old-space-size=4096\" tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
