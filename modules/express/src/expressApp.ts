@@ -10,6 +10,7 @@ import * as http from 'http';
 import * as morgan from 'morgan';
 import * as fs from 'fs';
 import { Request as StaticRequest } from 'express-serve-static-core';
+import * as timeout from 'connect-timeout';
 
 import { Config, config } from './config';
 
@@ -227,6 +228,8 @@ export function app(cfg: Config): express.Application {
     next();
   });
 
+  app.use(timeout(cfg.timeout));
+
   // Decorate the client routes
   setupRoutes(app, cfg);
 
@@ -277,6 +280,4 @@ export async function init(): Promise<void> {
   } else {
     server.listen(port, bind, startup(cfg, baseUri));
   }
-
-  server.timeout = 300 * 1000; // 5 minutes
 }

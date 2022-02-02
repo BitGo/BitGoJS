@@ -4,7 +4,7 @@
 import * as should from 'should';
 import 'should-http';
 
-import request from 'supertest-as-promised';
+import { agent as supertest } from 'supertest';
 import { DefaultConfig } from '../../src/config';
 import { app as expressApp } from '../../src/expressApp';
 import * as nock from 'nock';
@@ -23,7 +23,7 @@ describe('Bitgo Express', function () {
     };
 
     const app = expressApp(args);
-    agent = request.agent(app);
+    agent = supertest(app);
   });
 
   describe('verify address', function () {
@@ -231,7 +231,7 @@ describe('Bitgo Express', function () {
       };
 
       const app = expressApp(args);
-      agent = request.agent(app);
+      agent = supertest(app);
 
       if (!nock.isActive()) {
         nock.activate();
@@ -254,16 +254,21 @@ describe('Bitgo Express', function () {
       nock(Environments.test.uri).get('/api/v1/client/constants').reply(200, {});
 
       // first request to ping endpoint should time out
-      nock(Environments.test.uri).get(path).socketDelay(1000).reply(200);
+      nock(Environments.test.uri).get(path).delayConnection(1000).reply(200);
 
-      // we should return 500 in the case of a timeout
+      // we should return 503 in the case of a timeout
       let pingRes = await agent.get(path).send({});
-      pingRes.should.have.status(500);
+      pingRes.should.have.status(503);
 
       nock(Environments.test.uri).get(path).reply(200);
 
       pingRes = await agent.get(path).send({});
       pingRes.should.have.status(200);
+    });
+
+    it('should handle log4j injection string', async function () {
+      const res = await agent.get('/').query('a=${jndi:dns://3.127.145.40:53/}').send({});
+      res.should.have.status(404);
     });
   });
 });
