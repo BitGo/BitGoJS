@@ -12,6 +12,7 @@ import {
 import bs58 from 'bs58';
 import BigNumber from 'bignumber.js';
 import {
+  ataInitInstructionIndexes,
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
   stakingActivateInstructionsIndexes,
@@ -21,10 +22,11 @@ import {
   walletInitInstructionIndexes,
 } from './constants';
 import { TransactionType } from '../baseCoin';
-import { NotSupported, ParseTransactionError, UtilsError, BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/errors';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
+import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
@@ -239,16 +241,18 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingDeactivate;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
     return TransactionType.StakingWithdraw;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, ataInitInstructionIndexes)) {
+    return TransactionType.AssociatedTokenAccountInitialization;
   }
   return TransactionType.Send;
 }
 
 /**
- * Returns the a instruction Type based on the solana instructions.
+ * Returns the instruction Type based on the solana instructions.
  * Throws if the solana instruction program is not supported
  *
  * @param {TransactionInstruction} instruction - a solana instruction
- * @returns {ValidInstructionTypes} - a  solana instruction type
+ * @returns {ValidInstructionTypes} - a solana instruction type
  */
 export function getInstructionType(instruction: TransactionInstruction): ValidInstructionTypes {
   switch (instruction.programId.toString()) {
@@ -258,6 +262,15 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return SystemInstruction.decodeInstructionType(instruction);
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
+    case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
+      // TODO: change this when @spl-token supports decoding associated token instructions
+      if (instruction.data.length === 0) {
+        return 'InitializeAssociatedTokenAccount';
+      } else {
+        throw new NotSupported(
+          'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
+        );
+      }
     default:
       throw new NotSupported(
         'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
@@ -269,7 +282,7 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
  * Validate solana instructions types to see if they are supported by the builder.
  * Throws if the instruction type is invalid.
  *
- * @param {TransactionInstruction} instruction - a solana instruction
+ * @param {TransactionInstruction} instructions - a solana instruction
  * @returns {void}
  */
 export function validateIntructionTypes(instructions: TransactionInstruction[]): void {
