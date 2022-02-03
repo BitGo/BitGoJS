@@ -9,8 +9,10 @@ import {
   stakingActivateInstructionsIndexes,
   stakingDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
+  ataInitInstructionIndexes,
 } from './constants';
 import {
+  AtaInit,
   InstructionParams,
   WalletInit,
   Transfer,
@@ -44,6 +46,8 @@ export function instructionParamsFactory(
       return parseStakingDeactivateInstructions(instructions);
     case TransactionType.StakingWithdraw:
       return parseStakingWithdrawInstructions(instructions);
+    case TransactionType.AssociatedTokenAccountInitialization:
+      return parseAtaInitInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -241,4 +245,42 @@ function getMemo(instructions: TransactionInstruction[], instructionIndexes: Rec
       params: { memo: instructions[instructionIndexes.Memo].data.toString() },
     };
   }
+}
+
+const ataInitInstructionKeysIndexes = {
+  PayerAddress: 0,
+  ATAAddress: 1,
+  OwnerAddress: 2,
+  MintAddress: 3,
+};
+
+/**
+ * Parses Solana instructions to initialize associated token account tx instructions params
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for Send tx
+ */
+function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array<AtaInit | Memo> {
+  const instructionData: Array<AtaInit | Memo> = [];
+  const ataInitInstruction = instructions[ataInitInstructionIndexes.InitializeAssociatedTokenAccount];
+
+  const ataInit: AtaInit = {
+    type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+    params: {
+      mintAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString(),
+      ataAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+      ownerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+      payerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+    },
+  };
+  instructionData.push(ataInit);
+
+  if (instructions.length === 2 && instructions[ataInitInstructionIndexes.Memo]) {
+    const memo: Memo = {
+      type: InstructionBuilderTypes.Memo,
+      params: { memo: instructions[ataInitInstructionIndexes.Memo].data.toString() },
+    };
+    instructionData.push(memo);
+  }
+  return instructionData;
 }

@@ -31,7 +31,8 @@ export type InstructionParams =
   | Transfer
   | StakingActivate
   | StakingDeactivate
-  | StakingWithdraw;
+  | StakingWithdraw
+  | AtaInit;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -68,7 +69,16 @@ export interface StakingWithdraw {
   params: { fromAddress: string; stakingAddress: string; amount: string };
 }
 
-export type ValidInstructionTypes = SystemInstructionType | StakeInstructionType | 'Memo';
+export interface AtaInit {
+  type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
+  params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string };
+}
+
+export type ValidInstructionTypes =
+  | SystemInstructionType
+  | StakeInstructionType
+  | 'Memo'
+  | 'InitializeAssociatedTokenAccount';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: string;

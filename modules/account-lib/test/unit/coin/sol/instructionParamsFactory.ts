@@ -6,6 +6,7 @@ import { InstructionParams } from '../../../../src/coin/sol/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 describe('Instruction Parser Tests: ', function () {
   describe('Succeed ', function () {
@@ -73,6 +74,30 @@ describe('Instruction Parser Tests: ', function () {
       const instructionsData = [nonceAdvanceParams, transferParams, memoParams];
       const result = instructionParamsFactory(TransactionType.Send, instructions);
       should.deepEqual(result, instructionsData);
+    });
+
+    it('ATA init tx instructions', () => {
+      const mintAddress = testData.associatedTokenAccounts.mint;
+      const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
+
+      const instruction = Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        new PublicKey(mintAddress),
+        new PublicKey(ataAddress),
+        new PublicKey(ownerAddress),
+        new PublicKey(payerAddress),
+      );
+
+      const createATA: InstructionParams = {
+        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+        params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+      };
+
+      const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, [instruction]);
+      should.deepEqual(result, [createATA]);
     });
   });
   describe('Fail ', function () {
