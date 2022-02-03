@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { register } from '../../../../../src/index';
 import {
   TransactionBuilderFactory,
+  TransactionBuilder,
   TransferBuilder,
   AddressInitializationBuilder,
   StakingBuilder,
@@ -12,6 +13,7 @@ import * as dotResources from '../../../../resources/dot';
 import * as materialData from '../../../../resources/dot/materialData.json';
 import { TestDotNetwork } from './base';
 import { Material } from '../../../../../src/coin/dot/iface';
+import sinon from 'sinon';
 
 class StubTransactionBuilderFactory extends TransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -84,25 +86,19 @@ describe('dot Transaction Builder Factory', () => {
   });
 
   it('should parse an unsigned anonymous proxy txn and return a addressInit builder', async () => {
+    sinon.stub(factory, 'from').callsFake((txHex: string): TransactionBuilder => {
+      return factory.getBuilder(txHex);
+    });
     const builder = factory.from(rawTx.anonymous.unsigned2);
     should(builder).instanceOf(AddressInitializationBuilder);
-    builder
-      .validity({ firstValid: 9382825 })
-      .referenceBlock('0xca0c583e1a81a6121fc2bdd1a7879bd902c0e02a1a55e87edf62fe45070aa41e')
-      .sender({ address: sender.address });
-    const tx = await builder.build();
-    should.equal(tx.toBroadcastFormat(), rawTx.anonymous.unsigned2);
+    sinon.restore();
   });
 
   it('should parse a signed anonymous proxy txn and return a addressInit builder', async () => {
+    sinon.stub(factory, 'from').callsFake((txHex: string): TransactionBuilder => {
+      return factory.getBuilder(txHex);
+    });
     const builder = factory.from(rawTx.anonymous.signed2);
     should(builder).instanceOf(AddressInitializationBuilder);
-    builder
-      .validity({ firstValid: 9382825, maxDuration: 64 })
-      .referenceBlock('0xca0c583e1a81a6121fc2bdd1a7879bd902c0e02a1a55e87edf62fe45070aa41e')
-      .sender({ address: sender.address })
-      .sign({ key: sender.secretKey });
-    const tx = await builder.build();
-    should.equal(tx.toBroadcastFormat(), rawTx.anonymous.signed2);
   });
 });

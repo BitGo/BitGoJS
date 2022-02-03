@@ -58,7 +58,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return this;
   }
 
-  private getBuilder(rawTxn: string): TransactionBuilder {
+  getBuilder(rawTxn: string): TransactionBuilder {
     const registry = getRegistry({
       chainName: this._material.chainName,
       specName: this._material.specName,
