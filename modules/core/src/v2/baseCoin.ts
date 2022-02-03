@@ -49,6 +49,7 @@ export interface TransactionExplanation<TFee = any, TAmount = any> {
 
 export interface KeyPair {
   pub?: string;
+  address?: string;
   prv: string;
 }
 
