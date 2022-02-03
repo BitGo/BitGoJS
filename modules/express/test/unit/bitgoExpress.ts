@@ -465,5 +465,32 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.not.throw();
       readValidStub.restore();
     });
+
+    it('should require express to be in test mode when using the external signer feature', function () {
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+
+      const args: any = {
+        env: 'notTestMode',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'external signer feature is only enabled for test mode.'
+      });
+
+      args.signerMode = undefined;
+      args.signerFileSystemPath = undefined;
+      args.externalSignerUrl = 'externalSignerUrl';
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'external signer feature is only enabled for test mode.'
+      });
+
+      args.env = 'test';
+      (() => expressApp(args)).should.not.throw();
+
+      readValidStub.restore();
+    });
   });
 });

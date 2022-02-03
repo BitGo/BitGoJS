@@ -220,6 +220,10 @@ function checkPreconditions(config: Config) {
     config.env = 'custom';
   }
 
+  if (env !== 'test' && (externalSignerUrl !== undefined || signerMode !== undefined)) {
+    throw new ExternalSignerConfigError('external signer feature is only enabled for test mode.');
+  }
+
   if (externalSignerUrl !== undefined && (signerMode !== undefined || signerFileSystemPath !== undefined)) {
     throw new ExternalSignerConfigError(
       'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
