@@ -679,7 +679,7 @@ describe('V2 Wallet:', function () {
         .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/address`, _.conforms(
           { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 1), derivedAddress: (a) => _.isString(a) }))
         .reply(200, (uri, body) => {
-          const parsedBody = JSON.parse(body);
+          const parsedBody = JSON.parse(body as string);
           tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
           parsedBody.chain.should.equal(0);
           parsedBody.index.should.equal(1);
@@ -711,7 +711,7 @@ describe('V2 Wallet:', function () {
         .post(`/api/v2/${updatedSolWallet.coin()}/wallet/${updatedSolWallet.id()}/address`, _.conforms(
           { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 2), derivedAddress: (a) => _.isString(a) }))
         .reply(200, (uri, body) => {
-          const parsedBody = JSON.parse(body);
+          const parsedBody = JSON.parse(body as string);
           tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
           parsedBody.chain.should.equal(0);
           parsedBody.index.should.equal(2);
