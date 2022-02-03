@@ -46,7 +46,7 @@ describe('SOL:', function () {
       },
     ],
   };
-  const memo = 'test memo';
+  const memo = { value: 'test memo' };
   const errorBlockhash = 'GHtXQBsoZHVnNFa9YzFr17DJjgHXk3ycTKD5xD3Zi';
   const durableNonce = {
     walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -75,7 +75,7 @@ describe('SOL:', function () {
       },
     ],
   };
-  const errorMemo = 'different memo';
+  const errorMemo = { value: 'different memo' };
   const errorFeePayer = '5hr5fisPi6DXCuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
   const factory = accountLib.register('tsol', accountLib.Sol.TransactionBuilderFactory);
   const wallet = new accountLib.Sol.KeyPair(resources.authAccount).getKeys();
@@ -136,7 +136,7 @@ describe('SOL:', function () {
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
     it('should fail verify transactions when have different durableNonce', async function () {
       const txParams = newTxParams();
