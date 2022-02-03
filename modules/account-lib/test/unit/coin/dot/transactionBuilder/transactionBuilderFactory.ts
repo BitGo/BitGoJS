@@ -10,10 +10,9 @@ import {
   UnstakeBuilder,
 } from '../../../../../src/coin/dot';
 import * as dotResources from '../../../../resources/dot';
-import * as materialData from '../../../../resources/dot/materialData.json';
-import { TestDotNetwork } from './base';
-import { Material } from '../../../../../src/coin/dot/iface';
+import { buildTestConfig, TestDotNetwork } from './base';
 import sinon from 'sinon';
+import utils from '../../../../../src/coin/dot/utils';
 
 class StubTransactionBuilderFactory extends TransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -23,7 +22,9 @@ class StubTransactionBuilderFactory extends TransactionBuilderFactory {
 }
 
 describe('dot Transaction Builder Factory', () => {
-  const factory = register('tdot', StubTransactionBuilderFactory).material(materialData as Material);
+  const config = buildTestConfig();
+  const material = utils.getMaterial(config);
+  const factory = register('tdot', StubTransactionBuilderFactory).material(material);
   const { rawTx } = dotResources;
   const sender = dotResources.accounts.account1;
   const sender2 = dotResources.accounts.account3;
@@ -100,5 +101,6 @@ describe('dot Transaction Builder Factory', () => {
     });
     const builder = factory.from(rawTx.anonymous.signed2);
     should(builder).instanceOf(AddressInitializationBuilder);
+    sinon.restore();
   });
 });
