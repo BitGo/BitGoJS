@@ -30,11 +30,11 @@
     "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "lerna run lint --stream",
-    "lint-changed": "lerna run lint --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream",
-    "unit-test-changed": "lerna run unit-test --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
+    "lint-changed": "lerna run lint --since origin/${GITHUB_BASE_REF:-master}..${GITHUB_HEAD_REF:-HEAD} --stream",
+    "unit-test-changed": "lerna run unit-test --since origin/${GITHUB_BASE_REF:-master}..${GITHUB_HEAD_REF:-HEAD} --stream --parallel",
     "browser-tests": "lerna run --scope @bitgo/account-lib compile && lerna run --scope bitgo compile && lerna run --scope bitgo browser-test",
-    "gen-coverage-changed": "lerna run gen-coverage --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
-    "coverage-changed": "lerna run upload-coverage --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel --",
+    "gen-coverage-changed": "lerna run gen-coverage --since origin/${GITHUB_BASE_REF:-master}..${GITHUB_HEAD_REF:-HEAD} --stream --parallel",
+    "coverage-changed": "lerna run upload-coverage --since origin/${GITHUB_BASE_REF:-master}..${GITHUB_HEAD_REF:-HEAD} --stream --parallel --",
     "unit-test": "lerna run unit-test --stream --parallel",
     "integration-test": "lerna run integration-test --stream --parallel",
     "coverage": "yarn gen-coverage && yarn upload-coverage",
@@ -43,9 +43,9 @@
     "artifacts": "lerna run upload-artifacts --stream --parallel",
     "upload-docs": "lerna run upload-docs --stream --parallel",
     "gen-docs": "lerna run gen-docs --stream --parallel",
-    "check-fmt-changed": "lerna run check-fmt --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
+    "check-fmt-changed": "lerna run check-fmt --since origin/${GITHUB_BASE_REF:-master}..${GITHUB_HEAD_REF:-HEAD} --stream --parallel",
     "check-fmt": "lerna run check-fmt --stream --parallel",
-    "check-commits": "yarn commitlint --from=origin/${DRONE_REPO_BRANCH:-master} -V",
+    "check-commits": "yarn commitlint --from=origin/${GITHUB_BASE_REF:-master} -V",
     "check-versions": "node ./check-package-versions.js"
   },
   "husky": {
@@ -56,7 +56,10 @@
   "resolutions": {
     "axios": "^0.21.2",
     "elliptic": "^6.5.4",
+    "follow-redirects": "^1.14.7",
+    "node-fetch": "^2.6.7",
     "normalize-url": "^6.0.1",
+    "simple-get": "^4.0.1",
     "trim-newlines": "^3.0.0",
     "underscore": "^1.12.1"
   }
