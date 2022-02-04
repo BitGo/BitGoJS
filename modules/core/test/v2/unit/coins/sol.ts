@@ -177,15 +177,15 @@ describe('SOL:', function () {
 
     it('should verify activate staking transaction', async function () {
       const tx = await factory
-          .getStakingActivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .validator(validator.pub)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingActivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .validator(validator.pub)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -203,14 +203,14 @@ describe('SOL:', function () {
 
     it('should verify withdraw staking transaction', async function () {
       const tx = await factory
-          .getStakingWithdrawBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -228,13 +228,13 @@ describe('SOL:', function () {
 
     it('should verify deactivate staking transaction', async function () {
       const tx = await factory
-          .getStakingDeactivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingDeactivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -535,15 +535,15 @@ describe('SOL:', function () {
 
     it('should explain activate staking transaction', async function () {
       const tx = await factory
-          .getStakingActivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .validator(validator.pub)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingActivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .validator(validator.pub)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -587,13 +587,13 @@ describe('SOL:', function () {
 
     it('should explain deactivate staking transaction', async function () {
       const tx = await factory
-          .getStakingDeactivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingDeactivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -632,14 +632,14 @@ describe('SOL:', function () {
 
     it('should explain withdraw staking transaction', async function () {
       const tx = await factory
-          .getStakingWithdrawBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -752,6 +752,7 @@ describe('SOL:', function () {
         const derivedKeypair = basecoin.deriveKeypair(params);
         basecoin.isValidPrv(derivedKeypair.prv).should.true();
         basecoin.isValidPub(derivedKeypair.pub).should.true();
+        basecoin.isValidAddress(derivedKeypair.address).should.true();
         params.index++;
       }
     });
