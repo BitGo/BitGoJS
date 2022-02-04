@@ -1417,7 +1417,7 @@ export class Wallet {
         });
 
         if (derivedKeypair) {
-          addressParams.derivedAddress = derivedKeypair.pub;
+          addressParams.derivedAddress = derivedKeypair.address;
           addressParams.index = newChainIndex;
         }
       }

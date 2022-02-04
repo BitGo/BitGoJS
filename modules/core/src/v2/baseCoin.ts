@@ -52,6 +52,10 @@ export interface KeyPair {
   prv: string;
 }
 
+export interface DerivedKeyPair extends KeyPair {
+  address?: string;
+}
+
 export interface BlsKeyPair extends KeyPair {
   secretShares?: string[];
 }
@@ -551,9 +555,9 @@ export abstract class BaseCoin {
    * @param {DeriveKeypairOptions} params
    * @param {String} params.addressDerivationPrv - private key
    * @param {Number} params.index - index
-   * @returns {KeyPair|undefined} - a derived Keypair or undefined
+   * @returns {DerivedKeyPair|undefined} - a derived Keypair or undefined
    */
-  deriveKeypair(params: DeriveKeypairOptions): KeyPair | undefined {
+  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
     return undefined;
   }
 }
