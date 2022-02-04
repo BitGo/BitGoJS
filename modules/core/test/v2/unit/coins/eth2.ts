@@ -66,36 +66,47 @@ describe('Ethereum 2.0', function () {
       const walletKeyPair = basecoin.generateKeyPair();
       
       const message = 'hello world';
-      const userPrv = Eth2AccountLib.KeyPair.aggregatePrvkeys([userKeyPair.secretShares[0], backupKeyPair.secretShares[0], walletKeyPair.secretShares[0]]);
-      const userSignatureBuffer = await basecoin.signMessage({ prv: userPrv }, message);
+      const userKey = basecoin.aggregateShares({
+        pubShares: [userKeyPair.pub, backupKeyPair.pub, walletKeyPair.pub],
+        prvShares: [userKeyPair.secretShares[0], backupKeyPair.secretShares[0], walletKeyPair.secretShares[0]],
+      });
+      const userSignatureBuffer = await basecoin.signMessage({ prv: userKey.prv }, message);
       const userSignature = bufferToHex(userSignatureBuffer);
-      const walletPrv = Eth2AccountLib.KeyPair.aggregatePrvkeys([userKeyPair.secretShares[2], backupKeyPair.secretShares[2], walletKeyPair.secretShares[2]]);
-      const walletSignatureBuffer = await basecoin.signMessage({ prv: walletPrv }, message);
+      const walletKey = basecoin.aggregateShares({
+        pubShares: [userKeyPair.pub, backupKeyPair.pub, walletKeyPair.pub],
+        prvShares: [userKeyPair.secretShares[2], backupKeyPair.secretShares[2], walletKeyPair.secretShares[2]],
+      });
+      const walletSignatureBuffer = await basecoin.signMessage({ prv: walletKey.prv }, message);
       const walletSignature = bufferToHex(walletSignatureBuffer);
       const signature = Eth2AccountLib.KeyPair.aggregateSignatures({ 1: BigInt(userSignature), 3: BigInt(walletSignature) });
-      const pub = Eth2AccountLib.KeyPair.aggregatePubkeys([userKeyPair.pub, backupKeyPair.pub, walletKeyPair.pub]);
 
-      (await Eth2AccountLib.KeyPair.verifySignature(pub, Buffer.from(message), signature)).should.be.true();
+      userKey.pub.should.equal(walletKey.pub);
+      (await Eth2AccountLib.KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.true();
     });
 
     it('should fail to validate a string message with wrong public key', async function () {
       const userKeyPair = basecoin.generateKeyPair();
       const backupKeyPair = basecoin.generateKeyPair();
       const walletKeyPair = basecoin.generateKeyPair();
-      
+      const otherKeyPair = basecoin.generateKeyPair();
+
       const message = 'hello world';
-      const userPrv = Eth2AccountLib.KeyPair.aggregatePrvkeys([userKeyPair.secretShares[0], backupKeyPair.secretShares[0], walletKeyPair.secretShares[0]]);
-      const userSignatureBuffer = await basecoin.signMessage({ prv: userPrv }, message);
+      const userKey = basecoin.aggregateShares({
+        pubShares: [userKeyPair.pub, backupKeyPair.pub, otherKeyPair.pub],
+        prvShares: [userKeyPair.secretShares[0], backupKeyPair.secretShares[0], walletKeyPair.secretShares[0]],
+      });
+      const userSignatureBuffer = await basecoin.signMessage({ prv: userKey.prv }, message);
       const userSignature = bufferToHex(userSignatureBuffer);
-      const walletPrv = Eth2AccountLib.KeyPair.aggregatePrvkeys([userKeyPair.secretShares[2], backupKeyPair.secretShares[2], walletKeyPair.secretShares[2]]);
-      const walletSignatureBuffer = await basecoin.signMessage({ prv: walletPrv }, message);
+      const walletKey = basecoin.aggregateShares({
+        pubShares: [userKeyPair.pub, backupKeyPair.pub, otherKeyPair.pub],
+        prvShares: [userKeyPair.secretShares[2], backupKeyPair.secretShares[2], walletKeyPair.secretShares[2]],
+      });
+      const walletSignatureBuffer = await basecoin.signMessage({ prv: walletKey.prv }, message);
       const walletSignature = bufferToHex(walletSignatureBuffer);
       const signature = Eth2AccountLib.KeyPair.aggregateSignatures({ 1: BigInt(userSignature), 3: BigInt(walletSignature) });
 
-      const otherKeyPair = basecoin.generateKeyPair();
-      const pub = Eth2AccountLib.KeyPair.aggregatePubkeys([userKeyPair.pub, backupKeyPair.pub, otherKeyPair.pub]);
-
-      (await Eth2AccountLib.KeyPair.verifySignature(pub, Buffer.from(message), signature)).should.be.false();
+      userKey.pub.should.equal(walletKey.pub);
+      (await Eth2AccountLib.KeyPair.verifySignature(userKey.pub, Buffer.from(message), signature)).should.be.false();
     });
   });
 });
