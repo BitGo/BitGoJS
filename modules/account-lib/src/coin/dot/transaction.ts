@@ -17,6 +17,7 @@ import {
   TransactionExplanation,
   AddAnonymousProxyArgs,
   BatchArgs,
+  WithdrawUnstakedArgs,
 } from './iface';
 import utils from './utils';
 
@@ -189,6 +190,11 @@ export class Transaction extends BaseTransaction {
     if (this.type === TransactionType.StakingUnlock) {
       const txMethod = decodedTx.method.args as UnstakeArgs;
       result.amount = txMethod.value;
+    }
+
+    if (this.type === TransactionType.StakingWithdraw) {
+      const txMethod = decodedTx.method.args as WithdrawUnstakedArgs;
+      result.numSlashingSpans = txMethod.numSlashingSpans;
     }
 
     if (this.type === TransactionType.Batch) {

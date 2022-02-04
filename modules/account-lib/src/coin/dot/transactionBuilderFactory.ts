@@ -8,7 +8,7 @@ import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { Material, MethodNames } from './iface';
 import utils from './utils';
-import { BatchTransactionBuilder, UnstakeBuilder } from '.';
+import { BatchTransactionBuilder, UnstakeBuilder, WithdrawUnstakedBuilder } from '.';
 import { UnnominateBuilder } from './unnominateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -41,6 +41,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getUnstakeBuilder(): UnstakeBuilder {
     return new UnstakeBuilder(this._coinConfig).material(this._material);
+  }
+
+  getWithdrawUnstakedBuilder(): WithdrawUnstakedBuilder {
+    return new WithdrawUnstakedBuilder(this._coinConfig).material(this._material);
   }
 
   getUnnominateBuilder(): UnnominateBuilder {
