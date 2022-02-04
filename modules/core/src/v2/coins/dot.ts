@@ -4,6 +4,7 @@ import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
+  DerivedKeyPair,
   DeriveKeypairOptions,
   KeyPair,
   ParsedTransaction,
@@ -103,7 +104,7 @@ export class Dot extends BaseCoin {
   }
 
   /** @inheritDoc */
-  deriveKeypair(params: DeriveKeypairOptions): KeyPair | undefined {
+  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
     try {
       if (_.isNil(params.addressDerivationPrv)) {
         throw new Error('addressDerivationPrv is missing');

@@ -122,12 +122,11 @@ describe('DOT:', function () {
       });
     });
     it('should throw if prv is missing from deriveKeypair params', async () => {
-      // @ts-ignore allow invalid type for testing
+      // @ts-expect-error allow invalid type for testing
       params.addressDerivationPrv = undefined;
       should(() => basecoin.deriveKeypair(params)).throw();
     });
     it('should throw if prv is invalid in deriveKeypair params', async () => {
-      // @ts-ignore allow invalid type for testing
       params.addressDerivationPrv = 'fakeprvkey';
       should(() => basecoin.deriveKeypair(params)).throw();
     });

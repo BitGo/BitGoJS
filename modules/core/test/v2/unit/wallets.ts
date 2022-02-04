@@ -376,6 +376,8 @@ describe('V2 Wallets:', function () {
       backupNock.isDone().should.be.true();
       walletNock.isDone().should.be.true();
     });
+
+
   });
 
   describe('Sharing', () => {
