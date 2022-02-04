@@ -117,6 +117,7 @@ describe('DOT:', function () {
       Array.from({ length: 10 }).forEach((val, idx) => {
         params.index = idx + 1;
         const derivedKeypair = basecoin.deriveKeypair(params);
+        basecoin.isValidPrv(derivedKeypair.prv).should.be.true();
         basecoin.isValidPub(derivedKeypair.pub).should.be.true();
         basecoin.isValidAddress(derivedKeypair.address).should.be.true();
       });

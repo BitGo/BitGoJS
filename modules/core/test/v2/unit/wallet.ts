@@ -801,9 +801,7 @@ describe('V2 Wallet:', function () {
     const walletData = {
       id: '598f606cd8fc24710d2ebadb1d9459bb',
       coinSpecific: {
-        baseAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
-        pendingChainInitialization: false,
-        minimumFunding: 2447136,
+        rootAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
         lastChainIndex: { 0: 0 },
       },
       coin: 'tdot',
@@ -880,8 +878,6 @@ describe('V2 Wallet:', function () {
             lastNonce: 0,
             wallet: '598f606cd8fc24710d2ebadb1d9459bb',
             coinSpecific: {
-              pendingChainInitialization: true,
-              minimumFunding: 2447136,
               rootAddress: parsedBody.derivedAddress,
             },
           };
@@ -912,8 +908,6 @@ describe('V2 Wallet:', function () {
             lastNonce: 0,
             wallet: '598f606cd8fc24710d2ebadb1d9459bb',
             coinSpecific: {
-              pendingChainInitialization: true,
-              minimumFunding: 2447136,
               rootAddress: parsedBody.derivedAddress,
             },
           };
