@@ -125,7 +125,7 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
 }
 
 export interface CustomSigningFunction {
-  (params: { txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
+  (params: { coin: BaseCoin; txPrebuild: TransactionPrebuild; pubs?: string[] }): Promise<SignedTransaction>;
 }
 
 export interface WalletSignTransactionOptions {
@@ -1842,6 +1842,7 @@ export class Wallet {
       ...presign,
       txPrebuild,
       pubs,
+      coin: this.baseCoin,
     };
 
     if (_.isFunction(params.customSigningFunction)) {

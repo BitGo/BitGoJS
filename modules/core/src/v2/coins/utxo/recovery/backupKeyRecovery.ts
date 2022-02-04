@@ -24,7 +24,7 @@ import * as errors from '../../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 
-import { RecoveryProvider } from './RecoveryProvider';
+import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
@@ -122,6 +122,7 @@ export interface RecoverParams {
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
+  recoveryProvider?: RecoveryProvider;
 }
 
 async function queryBlockchainUnspentsPath(
@@ -130,7 +131,7 @@ async function queryBlockchainUnspentsPath(
   walletKeys: RootWalletKeys,
   chain: ChainCode
 ): Promise<WalletUnspent[]> {
-  const recoveryProvider = RecoveryProvider.forCoin(coin.getChain(), params.apiKey);
+  const recoveryProvider = params.recoveryProvider ?? forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
 

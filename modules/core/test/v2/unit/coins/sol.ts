@@ -3,6 +3,7 @@ import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 import * as _ from 'lodash';
+import * as accountLib from '@bitgo/account-lib';
 import { Sol, Tsol } from '../../../../src/v2/coins/';
 
 describe('SOL:', function () {
@@ -45,7 +46,7 @@ describe('SOL:', function () {
       },
     ],
   };
-  const memo = 'test memo';
+  const memo = { value: 'test memo' };
   const errorBlockhash = 'GHtXQBsoZHVnNFa9YzFr17DJjgHXk3ycTKD5xD3Zi';
   const durableNonce = {
     walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -74,8 +75,15 @@ describe('SOL:', function () {
       },
     ],
   };
-  const errorMemo = 'different memo';
+  const errorMemo = { value: 'different memo' };
   const errorFeePayer = '5hr5fisPi6DXCuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
+  const factory = accountLib.register('tsol', accountLib.Sol.TransactionBuilderFactory);
+  const wallet = new accountLib.Sol.KeyPair(resources.authAccount).getKeys();
+  const stakeAccount = new accountLib.Sol.KeyPair(resources.stakeAccount).getKeys();
+  const blockHash = resources.blockHashes.validBlockHashes[0];
+  const amount = '10000';
+  const validator = resources.validator;
+
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
@@ -110,6 +118,7 @@ describe('SOL:', function () {
     basecoin.getBaseFactor().should.equal(1000000000);
   });
   describe('verify transactions', () => {
+
     it('should verify transactions', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -127,7 +136,7 @@ describe('SOL:', function () {
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+      await basecoin.verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
     it('should fail verify transactions when have different durableNonce', async function () {
       const txParams = newTxParams();
@@ -163,6 +172,76 @@ describe('SOL:', function () {
       const txParams = newTxParamsWithExtraData();
       const txPrebuild = newTxPrebuild();
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify activate staking transaction', async function () {
+      const tx = await factory
+          .getStakingActivateBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .amount(amount)
+          .validator(validator.pub)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txBase64 = txToBroadcastFormat;
+      txPrebuild.txInfo.nonce = '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen';
+      txParams.recipients = [
+        {
+          address: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
+          amount: amount,
+        },
+      ];
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify withdraw staking transaction', async function () {
+      const tx = await factory
+          .getStakingWithdrawBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .amount(amount)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txBase64 = txToBroadcastFormat;
+      txPrebuild.txInfo.nonce = '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen';
+      txParams.recipients = [
+        {
+          address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+          amount: amount,
+        },
+      ];
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify deactivate staking transaction', async function () {
+      const tx = await factory
+          .getStakingDeactivateBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txBase64 = txToBroadcastFormat;
+      txPrebuild.txInfo.nonce = '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen';
+      txParams.recipients = [];
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo });
       validTransaction.should.equal(true);
     });
   });
@@ -451,6 +530,154 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+      });
+    });
+
+    it('should explain activate staking transaction', async function () {
+      const tx = await factory
+          .getStakingActivateBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .amount(amount)
+          .validator(validator.pub)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: txToBroadcastFormat,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingActivate',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '10000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain deactivate staking transaction', async function () {
+      const tx = await factory
+          .getStakingDeactivateBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: txToBroadcastFormat,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingDeactivate',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain withdraw staking transaction', async function () {
+      const tx = await factory
+          .getStakingWithdrawBuilder()
+          .stakingAddress(stakeAccount.pub)
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .amount(amount)
+          .memo('test memo')
+          .fee({ amount: 5000 })
+          .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: txToBroadcastFormat,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'StakingWithdraw',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
       });
     });
   });

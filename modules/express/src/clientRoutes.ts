@@ -1,13 +1,24 @@
 /**
  * @prettier
  */
+import { CoinFamily } from '@bitgo/statics';
+import {
+  BaseCoin,
+  BitGo,
+  BitGoOptions,
+  Coin,
+  CustomSigningFunction,
+  Errors,
+  SignedTransaction,
+  TransactionPrebuild,
+} from 'bitgo';
 import * as bodyParser from 'body-parser';
-import * as bluebird from 'bluebird';
-import * as url from 'url';
 import * as debugLib from 'debug';
-import { BitGo, BitGoOptions, Coin, Errors } from 'bitgo';
-import * as _ from 'lodash';
 import * as express from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
+import * as _ from 'lodash';
+import * as url from 'url';
+import * as superagent from 'superagent';
 
 // RequestTracer should be extracted into a separate npm package (along with
 // the rest of the BitGoJS HTTP request machinery)
@@ -15,7 +26,6 @@ import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
 import { ApiResponseError } from './errors';
-import { CoinFamily } from '@bitgo/statics';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -26,6 +36,7 @@ const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version
 declare module 'express-serve-static-core' {
   export interface Request {
     bitgo: BitGo;
+    config: Config;
   }
 }
 
@@ -101,6 +112,7 @@ function handleSendCoins(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.sendCoins(req.body);
     })
     .catch(function (err) {
@@ -124,6 +136,7 @@ function handleSendMany(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.sendMany(req.body);
     })
     .catch(function (err) {
@@ -164,6 +177,7 @@ function handleSignTransaction(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.signTransaction(req.body);
     });
 }
@@ -231,6 +245,7 @@ function handleConsolidateUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.consolidateUnspents(req.body);
     });
 }
@@ -244,6 +259,7 @@ function handleFanOutUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
+      // signs a tx, needs custom signing function passed in
       return wallet.fanOutUnspents(req.body);
     });
 }
@@ -353,11 +369,10 @@ function handleCanonicalAddress(req: express.Request) {
 }
 
 function handleV1Sign(req: express.Request) {
-  console.log('v1 sign was called');
   throw new Error('not yet implemented');
 }
+
 function handleV2Sign(req: express.Request) {
-  console.log('v2 sign was called');
   throw new Error('not yet implemented');
 }
 
@@ -441,7 +456,7 @@ async function handleV2SignTxWallet(req: express.Request) {
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   try {
-    return await wallet.signTransaction(req.body);
+    return await wallet.signTransaction(createSendParams(req));
   } catch (error) {
     console.log('error while signing wallet transaction ', error);
     throw error;
@@ -483,7 +498,7 @@ async function handleV2ConsolidateUnspents(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.consolidateUnspents(req.body);
+  return wallet.consolidateUnspents(createSendParams(req));
 }
 
 /**
@@ -541,7 +556,7 @@ async function handleV2FanOutUnspents(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.fanoutUnspents(req.body);
+  return wallet.fanoutUnspents(createSendParams(req));
 }
 
 /**
@@ -552,7 +567,7 @@ async function handleV2Sweep(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.sweep(req.body);
+  return wallet.sweep(createSendParams(req));
 }
 
 /**
@@ -563,7 +578,18 @@ async function handleV2AccelerateTransaction(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.accelerateTransaction(req.body);
+  return wallet.accelerateTransaction(createSendParams(req));
+}
+
+function createSendParams(req: express.Request) {
+  if (req.config.externalSignerUrl !== undefined) {
+    return {
+      ...req.body,
+      customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
+    };
+  } else {
+    return req.body;
+  }
 }
 
 /**
@@ -579,7 +605,7 @@ async function handleV2SendOne(req: express.Request) {
 
   let result;
   try {
-    result = await wallet.send(req.body);
+    result = await wallet.send(createSendParams(req));
   } catch (err) {
     err.status = 400;
     throw err;
@@ -602,7 +628,7 @@ async function handleV2SendMany(req: express.Request) {
   req.body.reqId = reqId;
   let result;
   try {
-    result = await wallet.sendMany(req.body);
+    result = await wallet.sendMany(createSendParams(req));
   } catch (err) {
     err.status = 400;
     throw err;
@@ -684,7 +710,7 @@ async function handleProxyReq(req: express.Request, res: express.Response, next:
 
   // user tried to access a url which is not an api route, do not proxy
   debug('unable to proxy %s request to %s', req.method, fullUrl);
-  res.status(404).send('bitgo-express can only proxy BitGo API requests');
+  throw new ApiResponseError('bitgo-express can only proxy BitGo API requests', 404);
 }
 
 /**
@@ -738,62 +764,63 @@ function prepareBitGo(config: Config) {
     };
 
     req.bitgo = new BitGo(bitgoConstructorParams);
+    req.config = config;
 
     next();
   };
+}
+
+type RequestHandlerResponse = string | unknown | undefined;
+interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, RequestHandlerResponse> {
+  (req: express.Request, res: express.Response, next: express.NextFunction):
+    | RequestHandlerResponse
+    | Promise<RequestHandlerResponse>;
+}
+
+function handleRequestHandlerError(res: express.Response, error: unknown) {
+  let err;
+  if (error instanceof Error) {
+    err = error;
+  } else if (typeof error === 'string') {
+    err = new Error('(string_error) ' + error);
+  } else {
+    err = new Error('(object_error) ' + JSON.stringify(error));
+  }
+
+  const message = err.message || 'local error';
+  // use attached result, or make one
+  let result = err.result || { error: message };
+  result = _.extend({}, result, {
+    message: err.message,
+    bitgoJsVersion: version,
+    bitgoExpressVersion: pjson.version,
+  });
+  const status = err.status || 500;
+  if (!(status >= 200 && status < 300)) {
+    console.log('error %s: %s', status, err.message);
+  }
+  if (status >= 500 && status <= 599) {
+    if (err.response && err.response.request) {
+      console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+    }
+    console.log(err.stack);
+  }
+  res.status(status).send(result);
 }
 
 /**
  * Promise handler wrapper to handle sending responses and error cases
  * @param promiseRequestHandler
  */
-function promiseWrapper(promiseRequestHandler: express.RequestHandler) {
-  return function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
+function promiseWrapper(promiseRequestHandler: RequestHandler) {
+  return async function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
-    bluebird
-      .try(promiseRequestHandler.bind(null, req, res, next))
-      .then(function (result: any) {
-        let status = 200;
-        if (result.__redirect) {
-          res.redirect(result.url);
-          status = 302;
-        } else if (result.__render) {
-          res.render(result.template, result.params);
-        } else {
-          res.status(status).send(result);
-        }
-      })
-      .catch(function (caught) {
-        let err;
-        if (caught instanceof Error) {
-          err = caught;
-        } else if (typeof caught === 'string') {
-          err = new Error('(string_error) ' + caught);
-        } else {
-          err = new Error('(object_error) ' + JSON.stringify(caught));
-        }
-
-        const message = err.message || 'local error';
-        // use attached result, or make one
-        let result = err.result || { error: message };
-        result = _.extend({}, result, {
-          message: err.message,
-          bitgoJsVersion: version,
-          bitgoExpressVersion: pjson.version,
-        });
-        const status = err.status || 500;
-        if (!(status >= 200 && status < 300)) {
-          console.log('error %s: %s', status, err.message);
-        }
-        if (status >= 500 && status <= 599) {
-          if (err.response && err.response.request) {
-            console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
-          }
-          console.log(err.stack);
-        }
-        res.status(status).send(result);
-      })
-      .done();
+    try {
+      const result = await promiseRequestHandler(req, res, next);
+      res.status(200).send(result);
+    } catch (e: unknown) {
+      handleRequestHandlerError(res, e);
+    }
   };
 }
 
@@ -966,11 +993,26 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // everything else should use the proxy handler
   if (!config.disableProxy) {
-    app.use(prepareBitGo(config), promiseWrapper(handleProxyReq));
+    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
   app.post('/api/v1/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV1Sign));
   app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
+}
+
+export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
+  return async function (params: {
+    coin: BaseCoin;
+    txPrebuild: TransactionPrebuild;
+    pubs?: string[];
+  }): Promise<SignedTransaction> {
+    const { body: signedTx } = await superagent
+      .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
+      .type('json')
+      .send({ txPrebuild: params.txPrebuild, pubs: params.pubs });
+
+    return signedTx;
+  };
 }

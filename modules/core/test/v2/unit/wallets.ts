@@ -353,7 +353,7 @@ describe('V2 Wallets:', function () {
       const userNock = nock(bgUrl)
         .post('/api/v2/tsol/key', _.conforms({ addressDerivationKeypair: (a) => _.isString(a.pub) && _.isString(a.encryptedPrv) }))
         .reply(200, (uri, requestBody) => {
-          const parsedBody = JSON.parse(requestBody);
+          const parsedBody = JSON.parse(requestBody as string);
           parsedBody.should.properties(['pub', 'encryptedPrv', 'addressDerivationKeypair']);
           parsedBody.addressDerivationKeypair.should.properties(['pub', 'encryptedPrv']);
           return parsedBody;
@@ -362,7 +362,7 @@ describe('V2 Wallets:', function () {
       // backup key
       const backupNock = nock(bgUrl)
         .post('/api/v2/tsol/key', _.matches({ source: 'backup' }))
-        .reply(200, (uri, requestBody) => JSON.parse(requestBody));
+        .reply(200, (uri, requestBody) => JSON.parse(requestBody as string));
 
       // wallet
       const walletNock = nock(bgUrl)

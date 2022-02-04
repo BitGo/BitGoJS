@@ -17,6 +17,7 @@ export enum ValidInstructionTypesEnum {
   StakingWithdraw = 'Withdraw',
   Transfer = 'Transfer',
   Memo = 'Memo',
+  InitializeAssociatedTokenAccount = 'InitializeAssociatedTokenAccount',
 }
 
 // Internal instructions types
@@ -28,6 +29,7 @@ export enum InstructionBuilderTypes {
   Transfer = 'Transfer',
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
+  CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -40,6 +42,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Transfer,
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
+  ValidInstructionTypesEnum.InitializeAssociatedTokenAccount,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */
@@ -63,8 +66,14 @@ export const stakingDeactivateInstructionsIndexes = {
   Memo: 1,
 } as const;
 
-/** Enum to check the order of the Staking Withdraw instructions when decode */
+/** Const to check the order of the Staking Withdraw instructions when decode */
 export const stakingWithdrawInstructionsIndexes = {
   Withdraw: 0,
+  Memo: 1,
+} as const;
+
+/** Const to check the order of the ATA init instructions when decode */
+export const ataInitInstructionIndexes = {
+  InitializeAssociatedTokenAccount: 0,
   Memo: 1,
 } as const;

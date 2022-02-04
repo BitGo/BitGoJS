@@ -30,6 +30,7 @@ export interface TxData {
   specVersion: number;
   transactionVersion: number;
   chainName: string;
+  method?: string;
   specName?: string;
   amount?: string;
   to?: string;

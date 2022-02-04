@@ -25,3 +25,19 @@ export const accounts = {
     address: '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29',
   },
 };
+
+export const blockHash = {
+  block1: 'CDEwwp7TjjahriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9',
+  block2: 'CvjrdzHQB1KystXqa4bDWcLbNRaVUcrLZ3PVnMqHKyiW',
+};
+
+export const signatures = {
+  signature1: 'NfcCZq7rrxx8SN23w31Wtd53Bhw5qm6E4GaXfw1sxBEnV3J9MRdHRzwgDEEjTC5WCurvW84bkyDcpCGgGjkhi9A',
+  signature2: 'NfcCZq7rrxx8SN23w31Wtd53Bhw5qm6E4GaXfw1sxBEnV3J9MRdHRzwgDEEjTC5WCurvW84bkyDcpCGgGjkhi9A',
+  signature3: 'FrTD1L5nVyFqPmQDFtKX4goWoFtz9iF9bwF27DxfEmBDJ7eiBEr6H4ULPAJ4kNQTCpdQB2RJK2LuT7yUGKnDhty',
+};
+
+export const txIds = {
+  id1: '9Z9Kn1aDw6CQTcH3qttxJSf3PCwc6BvMirrCiroY5v6W',
+  id2: '3eBsBWBK9wtjYgtw2B23HzVaXj8vopFcmiMSTHSJiroW',
+};

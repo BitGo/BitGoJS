@@ -130,7 +130,7 @@ export class Sol extends BaseCoin {
     }
 
     const transactionJson = transaction.toJson();
-    if (memo != explainedTx.memo) {
+    if (memo && memo.value !== explainedTx.memo) {
       throw new Error('Tx memo does not match with expected txParams recipient memo');
     }
     if (txParams.recipients) {

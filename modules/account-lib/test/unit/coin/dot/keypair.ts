@@ -32,6 +32,23 @@ describe('Dot KeyPair', () => {
       const keyPair = new Dot.KeyPair({ pub: account3.publicKey });
       should.equal(keyPair.getKeys().pub, account3.publicKey);
     });
+
+    it('should be able to derive keypair with hardened derivation', () => {
+      // using ed25519 (polkadot.js uses sr25519)
+      const keyPair = new Dot.KeyPair({
+        prv: account1.secretKey,
+      });
+      const derivationIndex = 0;
+      const derived = keyPair.deriveHardened(`m/0'/0'/0'/${derivationIndex}'`);
+      const derivedKeyPair = new Dot.KeyPair({
+        prv: derived.prv || '',
+      });
+      should.exists(derivedKeyPair.getAddress());
+      should.exists(derivedKeyPair.getKeys().prv);
+      should.exists(derivedKeyPair.getKeys().pub);
+      should.equal(derivedKeyPair.getKeys().prv?.length, 64);
+      should.equal(derivedKeyPair.getKeys().pub?.length, 64);
+    });
   });
 
   describe('KeyPair validation', () => {
