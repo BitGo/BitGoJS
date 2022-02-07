@@ -1,24 +1,24 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError, SigningError, ParseTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import Keyring, { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
 import {
-  TxData,
+  AddAnonymousProxyArgs,
+  AddProxyArgs,
+  BatchArgs,
   DecodedTx,
   StakeArgs,
   StakeArgsPayeeRaw,
-  AddProxyArgs,
-  UnstakeArgs,
   TransactionExplanation,
-  AddAnonymousProxyArgs,
-  BatchArgs,
-  WithdrawUnstakedArgs,
   HexString,
+  TxData,
+  UnstakeArgs,
+  WithdrawUnstakedArgs,
 } from './iface';
 import utils from './utils';
 import { u8aToBuffer } from '@polkadot/util';
@@ -70,6 +70,19 @@ export class Transaction extends BaseTransaction {
     // get signature from signed txHex generated above
     this._signatures = [utils.recoverSignatureFromRawTx(txHex, { registry: this._registry })];
     this._signedTransaction = txHex;
+  }
+
+  /**
+   * Adds the signature to the DOT Transaction
+   * @param {string} signature
+   */
+  addSignature(signature: string): void {
+    this._signedTransaction = utils.serializeSignedTransaction(
+      this._dotTransaction,
+      signature,
+      this._dotTransaction.metadataRpc,
+      this._registry,
+    );
   }
 
   registry(registry: TypeRegistry): void {
