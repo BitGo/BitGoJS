@@ -792,6 +792,135 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('Create Address for Polkadot', () => {
+    let dotWallet, coinNocks;
+    const passphrase = 'Passphrase1234';
+    const coinBitgo = new TestBitGo({ env: 'mock' });
+    coinBitgo.initializeTestVars();
+    const tdot = coinBitgo.coin('tdot');
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        rootAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tdot',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+    };
+
+    beforeEach(async function () {
+      dotWallet = new Wallet(bitgo, bitgo.coin('tdot'), walletData);
+      coinNocks = [
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[0]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cd8fc24710d2ebad89dce86c2',
+            pub: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+            source: 'user',
+            encryptedPrv: '{"iv":"8yOcLDpWe5wZnqJyftjrqQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"YDBv4nR/hu8=","ct":"m4CKUWNGTNXMJahCrYG2+6M+YmhegZTk0S3SP3BEOoNunc4dvg7ZT3EdryXeKoFG77W8bh+uJpB38yVEnLGQv5vYNjAmMu4J"}',
+            coinSpecific: {},
+            // addressDerivationKeypair represents the single sig KP used to derive addresses from
+            addressDerivationKeypair: {
+              pub: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+              encryptedPrv: '{"iv":"qv4P1xvbBWvJ82ANzVQICA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"xUMlfBzd6/E=","ct":"UVWWDhivmo/9DCMUOdTzLnDrDbjEX98MmVwC+TBAC+C6RYi6EKSL5wiCx5QI8PRic1CALeU2NEg6uu2akhIm7nS3bEDD4Vfe"}',
+            },
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[1]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cc8e43aef09fcb785221d9dd2',
+            pub: 'd472bd6e0f1f92297631938e30edb682208c2cd2698d80cf678c53a69979eb9f',
+            encryptedPrv: '{"iv":"Os4sXt/AWg4GVOlzcswxhQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cn7WLegr0zA=","ct":"29Aq9b+7KmCZbnpqDYBusS2qxj3JB3prNbc3Fq+TBwjv97K69NNR2h2Id2Fq36lJO9eu7neqvjG0rkI64phBRD6npdw7mtmt"}',
+            source: 'backup',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[2]}`)
+          .times(2)
+          .reply(200, {
+            id: '5935d59cf660764331bafcade1855fd7',
+            pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7',
+            encryptedPrv: '{"iv":"45l3KXJTWVeT24fjPAwK9g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"NctSBGanqrc=","ct":"uquQCan0ItRHCGNnUkF1JkjxGJyAChLnx6QfkgKE5FSeoMutA77hB4GM2DTn2kMoxYhXMnnCX/nIld1RXvAjSrX99vHwdcuQ"}',
+            source: 'bitgo',
+            coinSpecific: {},
+          }),
+      ];
+    });
+
+    afterEach(async function () {
+      nock.cleanAll();
+      coinNocks.forEach(scope => scope.isDone().should.be.true());
+    });
+
+    it('should create a 2 derived addresses for dot', async function () {
+      const nock1 = nock(bgUrl)
+        .post(`/api/v2/${dotWallet.coin()}/wallet/${dotWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 1), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body as string);
+          tdot.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(1);
+          return {
+            id: '615c643a98a2a100068e023c639c0f74',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tdot',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+      await dotWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock1.isDone().should.be.true();
+
+      // imitates the raise of the lastChainIndex after the address creation
+      walletData.coinSpecific.lastChainIndex[0]++;
+      const updatedDotWallet = new Wallet(bitgo, bitgo.coin('tdot'), walletData);
+      const nock2 = nock(bgUrl)
+        .post(`/api/v2/${updatedDotWallet.coin()}/wallet/${updatedDotWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 2), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body as string);
+          tdot.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(2);
+          return {
+            id: '615c643a98a2a100068e023c639c0f73',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tdot',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+
+      await updatedDotWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock2.isDone().should.be.true();
+    });
+  });
+
   describe('Accelerate Transaction', function () {
     it('fails if cpfpTxIds is not passed', async function () {
       await wallet.accelerateTransaction({})
