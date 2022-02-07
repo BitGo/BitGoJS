@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLValue, PublicKey, DeployUtil, Keys } from 'casper-client-sdk';
+import { CLPublicKey as PublicKey, DeployUtil, Keys, CLString, CLU512 } from 'casper-js-sdk';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
@@ -90,7 +90,11 @@ export class Transaction extends BaseTransaction {
     if (!this.casperTx) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    const txJson = DeployUtil.deployToJson(this.casperTx);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const txJson: any = DeployUtil.deployToJson(this.casperTx);
+    // The new casper lib is converting the TTL from miliseconds to another date format, in this case 1 day
+    // we need to leave it as ms for the HSM to be able to parse it
+    txJson.deploy.header.ttl = `${this.casperTx.header.ttl}ms`;
     this.setOwnersInJson(txJson);
     this.setTransfersFieldsInJson(txJson);
     this.setDelegateFieldsInJson(txJson);
@@ -99,7 +103,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson(): CasperTransaction {
-    const deployPayment = this._deploy.payment.asModuleBytes()!.getArgByName('amount');
+    const deployPayment = this._deploy.payment.asModuleBytes()?.getArgByName('amount') as CLU512;
     if (!deployPayment) {
       throw new InvalidTransactionError('Undefined fee');
     }
@@ -107,16 +111,16 @@ export class Transaction extends BaseTransaction {
     const owner1Index = 0;
     const owner2Index = 1;
     const owner3Index = 2;
-    const sourcePublicKey = Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex');
+    const sourcePublicKey = Buffer.from(this._deploy.header.account.value()).toString('hex');
     const sourceAddress = new KeyPair({ pub: sourcePublicKey }).getAddress();
 
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
-      fee: { gasLimit: deployPayment.asBigNumber().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
+      fee: { gasLimit: deployPayment.value().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
       from: sourceAddress,
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
       expiration: this._deploy.header.ttl,
-      deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
+      deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLString).value(),
     };
 
     const transactionType = getDeployType(this._deploy.session);
@@ -128,9 +132,9 @@ export class Transaction extends BaseTransaction {
         result.transferId = getTransferId(this._deploy.session);
         break;
       case TransactionType.WalletInitialization:
-        result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLValue).asString();
-        result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
-        result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
+        result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLString).value();
+        result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLString).value();
+        result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLString).value();
         break;
       case TransactionType.StakingLock:
         result.fromDelegate = getDelegatorAddress(this.casperTx.session);
@@ -181,16 +185,16 @@ export class Transaction extends BaseTransaction {
 
       const ownersValues = new Map();
 
-      ownersValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString());
+      ownersValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLString).value());
 
       [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
-          (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
+          (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLString).value(),
         );
       });
 
-      txJson['deploy']!['session']['ModuleBytes']['args'].forEach((arg) => {
+      txJson['deploy']['session']['ModuleBytes']['args'].forEach((arg) => {
         if (ownersValues.has(arg[argName])) {
           arg[argValue]['parsed'] = ownersValues.get(arg[argName]);
         }
@@ -209,10 +213,7 @@ export class Transaction extends BaseTransaction {
       const argValue = 1;
 
       const transferValues = new Map();
-      transferValues.set(
-        TRANSACTION_TYPE,
-        (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
-      );
+      transferValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLString).value());
       transferValues.set('amount', getTransferAmount(this.casperTx.session));
       transferValues.set('to_address', getTransferDestinationAddress(this.casperTx.session));
       const transferId = getTransferId(this.casperTx.session);
@@ -220,7 +221,7 @@ export class Transaction extends BaseTransaction {
         transferValues.set('id', transferId.toString());
       }
 
-      txJson['deploy']!['session']['Transfer']['args'].forEach((arg) => {
+      txJson['deploy']['session']['Transfer']['args'].forEach((arg) => {
         if (transferValues.has(arg[argName])) {
           arg[argValue]['parsed'] = transferValues.get(arg[argName]);
         }
@@ -242,10 +243,7 @@ export class Transaction extends BaseTransaction {
       const argValue = 1;
 
       const delegateValues = new Map();
-      delegateValues.set(
-        TRANSACTION_TYPE,
-        (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
-      );
+      delegateValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLString).value());
       delegateValues.set('amount', getDelegateAmount(this.casperTx.session));
       delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
       delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));

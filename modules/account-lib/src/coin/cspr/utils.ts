@@ -3,7 +3,7 @@ import * as querystring from 'querystring';
 import * as url from 'url';
 import { createHash } from 'crypto';
 import BigNumber from 'bignumber.js';
-import { Keys, PublicKey, DeployUtil } from 'casper-client-sdk';
+import { CLPublicKey as PublicKey, Keys, DeployUtil, CLTypeTag, CLU512, CLU64, CLOption } from 'casper-js-sdk';
 import * as hex from '@stablelib/hex';
 import { ecdsaSign, ecdsaVerify } from 'secp256k1';
 import { InvalidTransactionError, SigningError, UtilsError } from '../baseCoin/errors';
@@ -224,11 +224,13 @@ export function isValidTransferId(id: number): boolean {
 function getAmountArgValue(transferTx: DeployUtil.ExecutableDeployItem): string {
   const amount = transferTx.getArgByName('amount');
 
-  if (!amount || !amount.isBigNumber()) {
+  // Using U512 as used here:
+  // https://github.com/casper-ecosystem/casper-js-sdk/blob/master/src/lib/DeployUtil.ts#L762
+  if (!amount || amount.clType().tag !== CLTypeTag.U512 || !amount.value()._isBigNumber) {
     throw new InvalidTransactionError('Transfer does not have an amount defined');
   }
 
-  return amount.asBigNumber().toString();
+  return (amount as CLU512).value().toString();
 }
 
 /**
@@ -240,11 +242,17 @@ function getAmountArgValue(transferTx: DeployUtil.ExecutableDeployItem): string 
 export function getTransferDestinationAddress(transferTx: DeployUtil.ExecutableDeployItem): string {
   const toAddress = transferTx.getArgByName(TRANSFER_TO_ADDRESS);
 
-  if (!toAddress || !toAddress.isString()) {
+  if (!toAddress || !toAddress.clType().tag) {
     throw new InvalidTransactionError('Transfer does not have a destination address defined');
   }
 
-  return toAddress.asString();
+  if (toAddress.clType().tag === CLTypeTag.PublicKey) {
+    return (toAddress as PublicKey).toHex();
+  } else if (toAddress.clType().tag === CLTypeTag.String) {
+    return toAddress.value();
+  } else {
+    throw new InvalidTransactionError('Invalid Delegator address format');
+  }
 }
 
 /**
@@ -264,16 +272,19 @@ export function getTransferAmount(transferTx: DeployUtil.ExecutableDeployItem): 
  * @returns {number | undefined} the transferId if exists or undefined
  */
 export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): number | undefined {
-  const transferId = transferTx.getArgByName('id');
+  const optTransferId = transferTx.getArgByName('id') as CLOption<CLU64>;
 
-  if (!transferId || !transferId.isOption()) {
+  // Using U64 as used here:
+  // https://github.com/casper-ecosystem/casper-js-sdk/blob/master/src/lib/DeployUtil.ts#L776
+  if (!optTransferId || optTransferId.isNone() || optTransferId.clType().tag !== CLTypeTag.Option) {
     return; // no-op
   }
-  const transferIdOption = transferId.asOption();
-  if (transferIdOption.isNone()) {
-    return; // no-op
+  const transferId = optTransferId.value().unwrap();
+  if (transferId.clType().tag === CLTypeTag.U64 && transferId.value()._isBigNumber) {
+    return transferId.value().toNumber();
+  } else {
+    throw new InvalidTransactionError('Invalid transferId');
   }
-  return transferIdOption.getSome().asBigNumber().toNumber();
 }
 
 /**
@@ -285,11 +296,17 @@ export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): numb
 export function getDelegatorAddress(delegateTx: DeployUtil.ExecutableDeployItem): string {
   const delegatorAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
 
-  if (!delegatorAddress || !delegatorAddress.isString()) {
-    throw new InvalidTransactionError('Delegate / Undelegate does not have an address defined');
+  if (!delegatorAddress || !delegatorAddress.clType().tag) {
+    throw new InvalidTransactionError('Delegate / Undelegate does not have a Delegator address defined');
   }
 
-  return delegatorAddress.asString();
+  if (delegatorAddress.clType().tag === CLTypeTag.PublicKey) {
+    return (delegatorAddress as PublicKey).toHex();
+  } else if (delegatorAddress.clType().tag === CLTypeTag.String) {
+    return delegatorAddress.value();
+  } else {
+    throw new InvalidTransactionError('Invalid Delegator address format');
+  }
 }
 
 /**
@@ -301,11 +318,16 @@ export function getDelegatorAddress(delegateTx: DeployUtil.ExecutableDeployItem)
 export function getValidatorAddress(delegateTx: DeployUtil.ExecutableDeployItem): string {
   const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
 
-  if (!validatorAddress || !validatorAddress.isPublicKey()) {
-    throw new InvalidTransactionError('Delegate / Undelegate does not have an address defined');
+  if (!validatorAddress || !validatorAddress.clType().tag) {
+    throw new InvalidTransactionError('Delegate / Undelegate does not have an Validator address defined');
   }
-
-  return validatorAddress.asPublicKey().toAccountHex();
+  if (validatorAddress.clType().tag === CLTypeTag.PublicKey) {
+    return (validatorAddress as PublicKey).toHex();
+  } else if (validatorAddress.clType().tag === CLTypeTag.String) {
+    return validatorAddress.value();
+  } else {
+    throw new InvalidTransactionError('Invalid Validator address format');
+  }
 }
 
 /**
@@ -329,7 +351,7 @@ export function getDeployType(session: DeployUtil.ExecutableDeployItem): Transac
     return TransactionType.Send;
   }
   if (session.isModuleBytes() && isCasperContract(session.asModuleBytes())) {
-    const action = session!.getArgByName(MODULE_BYTES_ACTION)!.asString();
+    const action = session.getArgByName(MODULE_BYTES_ACTION)?.value();
     switch (action) {
       case WALLET_INITIALIZATION_CONTRACT_ACTION:
         return TransactionType.WalletInitialization;
@@ -337,6 +359,8 @@ export function getDeployType(session: DeployUtil.ExecutableDeployItem): Transac
         return TransactionType.StakingLock;
       case UNDELEGATE_CONTRACT_ACTION:
         return TransactionType.StakingUnlock;
+      default:
+        return undefined;
     }
   }
   return undefined;
@@ -384,7 +408,7 @@ export function signMessage(keyPair: KeyPair, data: string): SignResponse {
 function isValidSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
   try {
     const signatureBytes = hex.decode(signature);
-    const rawPublicKey = PublicKey.fromHex(SECP256K1_PREFIX + publicKey).rawPublicKey;
+    const rawPublicKey = PublicKey.fromHex(SECP256K1_PREFIX + publicKey).value();
     if (typeof data === 'string') {
       data = hex.decode(data);
     }
@@ -402,7 +426,7 @@ function isValidSignature(signature: string, data: Uint8Array | string, publicKe
  * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
  * @param {string} publicKey Public Key as hex string used to verify the signature.
  */
-export function verifySignature(signature: string, data: Uint8Array | string, publicKey: string) {
+export function verifySignature(signature: string, data: Uint8Array | string, publicKey: string): void {
   if (!isValidPublicKey(publicKey)) {
     throw new SigningError(`invalid pub: ${publicKey}`);
   }

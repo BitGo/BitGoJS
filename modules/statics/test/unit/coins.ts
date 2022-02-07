@@ -6,14 +6,20 @@ interface DuplicateCoinObject {
   network: BaseNetwork;
 }
 
+describe('CoinMap', function () {
+  it('should have iterator', function () {
+    [...coins].length.should.be.greaterThan(100);
+  });
+});
+
 coins.forEach((coin, coinName) => {
-  describe(`Coin ${coinName}`, function() {
-    it('has expected name', function() {
+  describe(`Coin ${coinName}`, function () {
+    it('has expected name', function () {
       coin.name.should.eql(coinName);
     });
 
     if (!coin.isToken) {
-      it(`has expected network type`, function() {
+      it(`has expected network type`, function () {
         coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
       });
     }
@@ -33,7 +39,7 @@ coins.forEach((coin, coinName) => {
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses', () => {
     coins
-      .filter(coin => coin instanceof Erc20Coin)
+      .filter((coin) => coin instanceof Erc20Coin)
       .reduce((acc: { [index: string]: DuplicateCoinObject }, token) => {
         const address = (token as Readonly<Erc20Coin>).contractAddress.toString();
 

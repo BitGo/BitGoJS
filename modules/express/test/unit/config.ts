@@ -53,6 +53,9 @@ describe('Config:', () => {
       timeout: 'argtimeout',
       customrooturi: 'argcustomRootUri',
       custombitcoinnetwork: 'argcustomBitcoinNetwork',
+      externalSignerUrl: 'argexternalSignerUrl',
+      signerMode: 'argsignerMode',
+      signerFileSystemPath: 'argsignerFileSystemPath',
     });
     const envStub = sinon.stub(process, 'env').value({
       BITGO_PORT: 'env12345',
@@ -69,6 +72,9 @@ describe('Config:', () => {
       BITGO_TIMEOUT: 'envtimeout',
       BITGO_CUSTOM_ROOT_URI: 'envcustomRootUri',
       BITGO_CUSTOM_BITCOIN_NETWORK: 'envcustomBitcoinNetwork',
+      BITGO_EXTERNAL_SIGNER_URL: 'envexternalSignerUrl',
+      BITGO_SIGNER_MODE: 'envsignerMode',
+      BITGO_SIGNER_FILE_SYSTEM_PATH: 'envsignerFileSystemPath',
     });
     config().should.eql({
       port: 23456,
@@ -86,6 +92,9 @@ describe('Config:', () => {
       customRootUri: 'argcustomRootUri',
       customBitcoinNetwork: 'argcustomBitcoinNetwork',
       authVersion: 2,
+      externalSignerUrl: 'argexternalSignerUrl',
+      signerMode: 'argsignerMode',
+      signerFileSystemPath: 'argsignerFileSystemPath',
     });
     argStub.restore();
     envStub.restore();

@@ -1,5 +1,4 @@
 import should from 'should';
-import * as BLS from '@bitgo/bls';
 import { KeyPair } from '../../../../src/coin/eth2';
 import * as testData from '../../../resources/eth2/eth2';
 
@@ -8,40 +7,67 @@ const prv = testData.ACCOUNT_1.privateKey;
 
 describe('Eth2 Key Pair', () => {
   describe('should create a valid KeyPair', () => {
-    it('from an empty value', () => {
-      const keyPair = new KeyPair();
-      should.exists(keyPair.getKeys().pub);
-      should.exists(keyPair.getKeys().prv);
-      should.equal(keyPair.getKeys().pub.slice(0, 2), '0x');
-    });
-
     it('without source', () => {
       const keyPair = new KeyPair();
-      should.exists(keyPair.getKeys().prv);
-      should.exists(keyPair.getKeys().pub);
+      should.exists(keyPair.getKeys().secretShares);
+      should.exists(keyPair.getKeys().publicShare);
+      should.equal(keyPair.getKeys().secretShares.length, 3);
     });
 
-    it('from a private key', () => {
+    it('from a bls key', () => {
       const baseKeyPair = new KeyPair();
-      const inheritKeyPair = new KeyPair();
-      inheritKeyPair.recordKeysFromPrivateKey(baseKeyPair.getKeys().prv!);
-      should.equal(inheritKeyPair.getKeys().prv, baseKeyPair.getKeys().prv);
+      const inheritKeyPair = new KeyPair(baseKeyPair.getKeys());
+      should.equal(inheritKeyPair.getKeys().secretShares, baseKeyPair.getKeys().secretShares);
+      should.equal(inheritKeyPair.getKeys().publicShare, baseKeyPair.getKeys().publicShare);
     });
 
-    it('from a byte array private key converted to string', () => {
-      const privateKey = '0x' + Buffer.from(testData.ACCOUNT_1.privateKeyBytes).toString('hex');
-      const keyPair = new KeyPair();
-      keyPair.recordKeysFromPrivateKey(privateKey);
-      should.equal(keyPair.getKeys().prv, privateKey);
+    it('from a bls key with a single invalid private share', () => {
+      should.throws(
+        () =>
+          new KeyPair({
+            secretShares: ['0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002'],
+            publicShare: pub,
+          }),
+      );
+    });
+
+    it('from a bls key with an invalid public share', () => {
+      should.throws(
+        () =>
+          new KeyPair({
+            secretShares: [prv],
+            publicShare: '123',
+          }),
+      );
+    });
+
+    it('from dkg options', () => {
+      const keyPair = new KeyPair({
+        threshold: 1,
+        participants: 2,
+      });
+      should.exists(keyPair.getKeys().secretShares);
+      should.exists(keyPair.getKeys().publicShare);
+      should.equal(keyPair.getKeys().secretShares.length, 2);
+    });
+
+    it('from invalid dkg options', () => {
+      should.throws(
+        () =>
+          new KeyPair({
+            threshold: 2,
+            participants: 1,
+          }),
+      );
     });
 
     it('should recognize a valid public key', () => {
       const keyPair = new KeyPair();
-      KeyPair.isValidPub(keyPair.getKeys().pub).should.be.true();
+      KeyPair.isValidPub(keyPair.getKeys().publicShare).should.be.true();
     });
 
     it('should recognize an invalid public key', () => {
-      const pubkey = 'abc';
+      const pubkey = '123';
       KeyPair.isValidPub(pubkey).should.be.false();
     });
 
@@ -54,7 +80,7 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('should recognize an invalid priv key', () => {
-      const prvBuff = Buffer.from('abc');
+      const prvBuff = Buffer.from('73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
       KeyPair.isValidPrv(prvBuff).should.be.false();
 
       const prvString = '0x' + prvBuff.toString('hex');
@@ -65,18 +91,18 @@ describe('Eth2 Key Pair', () => {
   describe('should validly perform key aggregation', () => {
     it('from a single valid pubkey', () => {
       const keyPair = new KeyPair();
-      const pub = Uint8Array.from(Buffer.from(keyPair.getKeys().pub.slice(2), 'hex'));
-      const aggregatedKey = '0x' + KeyPair.aggregatePubkeys([pub]).toString('hex');
+      const pub = keyPair.getKeys().publicShare;
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub]);
       aggregatedKey.length.should.equal(98);
     });
 
     it('from a set of valid pubkeys', () => {
       const keyPair1 = new KeyPair();
-      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
+      const pub1 = keyPair1.getKeys().publicShare;
 
       const keyPair2 = new KeyPair();
-      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
-      const aggregatedKey = '0x' + KeyPair.aggregatePubkeys([pub1, pub2]).toString('hex');
+      const pub2 = keyPair2.getKeys().publicShare;
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
       aggregatedKey.length.should.equal(98);
     });
   });
@@ -89,19 +115,9 @@ describe('Eth2 Key Pair', () => {
       );
     });
 
-    it('from an invalid private key', () => {
-      const shorterPrv = '82A34E';
-      const longerPrv = prv + '1';
+    it('from a private key', () => {
       should.throws(
-        () => new KeyPair().recordKeysFromPrivateKey(shorterPrv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
-      );
-      should.throws(
-        () => new KeyPair().recordKeysFromPrivateKey(longerPrv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey,
-      );
-      should.throws(
-        () => new KeyPair().recordKeysFromPrivateKey(prv + pub),
+        () => new KeyPair().recordKeysFromPrivateKey(prv),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
     });
@@ -109,55 +125,175 @@ describe('Eth2 Key Pair', () => {
 
   describe('should reject key aggregation', () => {
     it('from a single invalid pubkey string', () => {
-      const pub = Buffer.from('abc');
+      const pub = '123';
       should.throws(() => KeyPair.aggregatePubkeys([pub]));
     });
 
     it('from a single invalid pubkey buffer', () => {
-      const pub = Uint8Array.from(Buffer.from('abc', 'hex'));
+      const pub = '0x' + Buffer.from('abc').toString('hex');
       should.throws(() => KeyPair.aggregatePubkeys([pub]));
     });
 
     it('from a set of invalid pubkeys', () => {
-      const pub1 = Uint8Array.from(Buffer.from('abd', 'hex'));
+      const pub1 = '0x' + Buffer.from('abc').toString('hex');
 
       const keyPair2 = new KeyPair();
-      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+      const pub2 = keyPair2.getKeys().publicShare;
       should.throws(() => KeyPair.aggregatePubkeys([pub1, pub2]));
+    });
+
+    it('from a single invalid prvkey string', () => {
+      const prv = BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
+      should.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv.toString(16)]));
+    });
+
+    it('from a set of invalid prvkeys', () => {
+      const prv1 = BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
+
+      const keyPair2 = new KeyPair();
+      const secretShares2 = keyPair2.getKeys().secretShares;
+      should.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv1.toString(16), secretShares2[1]]));
     });
   });
 
   describe('Signatures', () => {
-    it('should accept 2-of-2 aggregated signature', async () => {
+    it('should accept user and backup aggregated signature', async () => {
       const msg = Buffer.from('test message');
-      const keyPair1 = new KeyPair();
-      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
-      const sig1 = keyPair1.sign(msg);
+      const userKeyPair = new KeyPair();
+      const userSecrets = userKeyPair.getKeys().secretShares;
+      const userPub = userKeyPair.getKeys().publicShare;
 
-      const keyPair2 = new KeyPair();
-      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
-      const sig2 = keyPair2.sign(msg);
+      const backupKeyPair = new KeyPair();
+      const backupSecrets = backupKeyPair.getKeys().secretShares;
+      const backupPub = backupKeyPair.getKeys().publicShare;
 
-      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
-      const aggregatedSig = BLS.aggregateSignatures([sig1, sig2]);
+      const walletKeyPair = new KeyPair();
+      const walletSecrets = walletKeyPair.getKeys().secretShares;
+      const walletPub = walletKeyPair.getKeys().publicShare;
 
-      BLS.verify(aggregatedKey, msg, aggregatedSig).should.be.true();
+      const userPrv = KeyPair.aggregatePrvkeys([userSecrets[0], backupSecrets[0], walletSecrets[0]]);
+      const signKeyPair1 = new KeyPair({ prv: userPrv });
+      const userSig = await signKeyPair1.sign(msg);
+
+      const backupPrv = KeyPair.aggregatePrvkeys([userSecrets[1], backupSecrets[1], walletSecrets[1]]);
+      const signKeyPair2 = new KeyPair({ prv: backupPrv });
+      const backupSig = await signKeyPair2.sign(msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([userPub, backupPub, walletPub]);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 1: BigInt(userSig), 2: BigInt(backupSig) });
+
+      (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.true();
     });
 
-    it('should reject 1-of-2 aggregated signature', async () => {
+    it('should accept user and wallet aggregated signature', async () => {
+      const msg = Buffer.from('test message');
+      const userKeyPair = new KeyPair();
+      const userSecrets = userKeyPair.getKeys().secretShares;
+      const userPub = userKeyPair.getKeys().publicShare;
+
+      const backupKeyPair = new KeyPair();
+      const backupSecrets = backupKeyPair.getKeys().secretShares;
+      const backupPub = backupKeyPair.getKeys().publicShare;
+
+      const walletKeyPair = new KeyPair();
+      const walletSecrets = walletKeyPair.getKeys().secretShares;
+      const walletPub = walletKeyPair.getKeys().publicShare;
+
+      const userPrv = KeyPair.aggregatePrvkeys([userSecrets[0], backupSecrets[0], walletSecrets[0]]);
+      const signKeyPair1 = new KeyPair({ prv: userPrv });
+      const userSig = await signKeyPair1.sign(msg);
+
+      const walletPrv = KeyPair.aggregatePrvkeys([userSecrets[2], backupSecrets[2], walletSecrets[2]]);
+      const signKeyPair2 = new KeyPair({ prv: walletPrv });
+      const walletSig = await signKeyPair2.sign(msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([userPub, backupPub, walletPub]);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 1: BigInt(userSig), 3: BigInt(walletSig) });
+
+      (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.true();
+    });
+
+    it('should accept backup and wallet aggregated signature', async () => {
+      const msg = Buffer.from('test message');
+      const userKeyPair = new KeyPair();
+      const userSecrets = userKeyPair.getKeys().secretShares;
+      const userPub = userKeyPair.getKeys().publicShare;
+
+      const backupKeyPair = new KeyPair();
+      const backupSecrets = backupKeyPair.getKeys().secretShares;
+      const backupPub = backupKeyPair.getKeys().publicShare;
+
+      const walletKeyPair = new KeyPair();
+      const walletSecrets = walletKeyPair.getKeys().secretShares;
+      const walletPub = walletKeyPair.getKeys().publicShare;
+
+      const backupPrv = KeyPair.aggregatePrvkeys([userSecrets[1], backupSecrets[1], walletSecrets[1]]);
+      const signKeyPair1 = new KeyPair({ prv: backupPrv });
+      const backupSig = await signKeyPair1.sign(msg);
+
+      const walletPrv = KeyPair.aggregatePrvkeys([userSecrets[2], backupSecrets[2], walletSecrets[2]]);
+      const signKeyPair2 = new KeyPair({ prv: walletPrv });
+      const walletSig = await signKeyPair2.sign(msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([userPub, backupPub, walletPub]);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 2: BigInt(backupSig), 3: BigInt(walletSig) });
+
+      (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.true();
+    });
+
+    it('should accept 3-of-3 aggregated signature', async () => {
       const msg = Buffer.from('test message');
       const keyPair1 = new KeyPair();
-      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
-      const sig1 = keyPair1.sign(msg);
+      const secrets1 = keyPair1.getKeys().secretShares;
+      const pub1 = keyPair1.getKeys().publicShare;
 
       const keyPair2 = new KeyPair();
-      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+      const secrets2 = keyPair2.getKeys().secretShares;
+      const pub2 = keyPair2.getKeys().publicShare;
 
-      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
-      const aggregatedSig = BLS.aggregateSignatures([sig1]);
+      const keyPair3 = new KeyPair();
+      const secrets3 = keyPair3.getKeys().secretShares;
+      const pub3 = keyPair3.getKeys().publicShare;
 
-      KeyPair.verifySignature(aggregatedKey.toString('hex'), msg, aggregatedSig).should.be.false();
-      KeyPair.verifySignature(aggregatedKey.toString('hex'), msg, sig1).should.be.false();
+      const prv1 = KeyPair.aggregatePrvkeys([secrets1[0], secrets2[0], secrets3[0]]);
+      const signKeyPair1 = new KeyPair({ prv: prv1 });
+      const sig1 = await signKeyPair1.sign(msg);
+      const prv2 = KeyPair.aggregatePrvkeys([secrets1[1], secrets2[1], secrets3[1]]);
+      const signKeyPair2 = new KeyPair({ prv: prv2 });
+      const sig2 = await signKeyPair2.sign(msg);
+      const prv3 = KeyPair.aggregatePrvkeys([secrets1[2], secrets2[2], secrets3[2]]);
+      const signKeyPair3 = new KeyPair({ prv: prv3 });
+      const sig3 = await signKeyPair3.sign(msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2, pub3]);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 1: BigInt(sig1), 2: BigInt(sig2), 3: BigInt(sig3) });
+
+      (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.true();
+    });
+
+    it('should reject 1-of-3 aggregated signature', async () => {
+      const msg = Buffer.from('test message');
+      const keyPair1 = new KeyPair();
+      const secrets1 = keyPair1.getKeys().secretShares;
+      const pub1 = keyPair1.getKeys().publicShare;
+
+      const keyPair2 = new KeyPair();
+      const secrets2 = keyPair2.getKeys().secretShares;
+      const pub2 = keyPair2.getKeys().publicShare;
+
+      const keyPair3 = new KeyPair();
+      const secrets3 = keyPair3.getKeys().secretShares;
+      const pub3 = keyPair3.getKeys().publicShare;
+
+      const prv = KeyPair.aggregatePrvkeys([secrets1[0], secrets2[0], secrets3[0]]);
+      const signKeyPair = new KeyPair({ prv });
+      const sig1 = await signKeyPair.sign(msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2, pub3]);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 1: BigInt(sig1) });
+
+      (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.false();
+      (await KeyPair.verifySignature(aggregatedKey, msg, sig1)).should.be.false();
     });
   });
 });

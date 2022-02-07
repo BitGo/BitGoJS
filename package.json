@@ -1,6 +1,7 @@
 {
   "name": "root",
   "private": true,
+  "license": "Apache-2.0",
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
@@ -59,10 +60,8 @@
     "follow-redirects": "^1.14.7",
     "node-fetch": "^2.6.7",
     "normalize-url": "^6.0.1",
+    "simple-get": "^4.0.1",
     "trim-newlines": "^3.0.0",
     "underscore": "^1.12.1"
-  },
-  "dependencies": {
-    "openpgp": "^5.1.0"
   }
 }

@@ -2,7 +2,9 @@
   "name": "@bitgo/utxo-bin",
   "description": "Command-line utility for BitGo UTXO transactions",
   "version": "1.0.0",
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
   "keywords": [
     "bitgo",
     "utxo",
@@ -23,6 +25,8 @@
   },
   "bin": "./dist/bin/index.js",
   "dependencies": {
+    "@bitgo/blockapis": "^1.0.0",
+    "@bitgo/statics": "^6.15.0",
     "@bitgo/utxo-lib": "^2.2.0",
     "archy": "^1.0.0",
     "chalk": "4",
@@ -35,6 +39,9 @@
     "mocha": "^9.1.4",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT"
 }

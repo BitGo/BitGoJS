@@ -7,6 +7,8 @@ export enum TransactionType {
   WalletInitialization,
   // Initialize an address on-chain(e.g. Forwarder contract deployment)
   AddressInitialization,
+  // Initialized an associated token account
+  AssociatedTokenAccountInitialization,
   // Flush tokens from a forwarder address to its base address
   FlushTokens,
   // Flush native coins (eg. ETH) from a forwarder address to base address

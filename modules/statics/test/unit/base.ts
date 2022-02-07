@@ -1,8 +1,8 @@
 const should = require('should');
 const { UnderlyingAsset } = require('../../src/base');
 
-describe('UnderlyingAsset', function() {
-  it('UnderlyingAsset values should be unique', function() {
+describe('UnderlyingAsset', function () {
+  it('UnderlyingAsset values should be unique', function () {
     const underlyingAssetSet = new Set();
     const duplicateAssets: typeof UnderlyingAsset[] = [];
 

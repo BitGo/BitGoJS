@@ -24,7 +24,7 @@ import * as errors from '../../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 
-import { RecoveryAccountData, RecoveryProvider } from './RecoveryProvider';
+import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
@@ -122,6 +122,7 @@ export interface RecoverParams {
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
+  recoveryProvider?: RecoveryProvider;
 }
 
 async function queryBlockchainUnspentsPath(
@@ -130,7 +131,7 @@ async function queryBlockchainUnspentsPath(
   walletKeys: RootWalletKeys,
   chain: ChainCode
 ): Promise<WalletUnspent[]> {
-  const recoveryProvider = RecoveryProvider.forCoin(coin.getChain(), params.apiKey);
+  const recoveryProvider = params.recoveryProvider ?? forCoin(coin.getChain(), params.apiKey);
   const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
   let numSequentialAddressesWithoutTxs = 0;
 
@@ -138,16 +139,16 @@ async function queryBlockchainUnspentsPath(
     const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
     const address = coin.createMultiSigAddress(scriptTypeForChain(chain), 2, walletKeysForUnspent.publicKeys);
 
-    const addrInfo: RecoveryAccountData = await recoveryProvider.getAccountInfo(address.address);
+    const addrInfo = await recoveryProvider.getAddressInfo(address.address);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
     } else {
       numSequentialAddressesWithoutTxs = 0;
 
-      if (addrInfo.totalBalance > 0) {
-        console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`);
-        const addressUnspents = await recoveryProvider.getUnspents(address.address);
+      if (addrInfo.balance > 0) {
+        console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
+        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([address.address]);
 
         walletUnspents.push(
           ...addressUnspents.map(

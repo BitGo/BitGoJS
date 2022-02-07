@@ -62,5 +62,8 @@
     "nyc": "^15.1.0",
     "ts-node": "^9.1.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT"
 }

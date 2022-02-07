@@ -14,22 +14,31 @@ utxolib.bitgo.outputScripts.scriptTypes2Of3.forEach((t) => {
   ];
   params.forEach(([name, args]) => {
     describe(`parse ${t} spend with ${args.join(' ')}`, function () {
-      function parse(tx: utxolib.bitgo.UtxoTransaction): TxNode {
-        return getParser(yargs.command(cmdParse).parse(args) as any).parse(tx);
+      function parse(tx: utxolib.bitgo.UtxoTransaction, prevOutputs?: utxolib.TxOutput[]): TxNode {
+        return getParser(yargs.command(cmdParse).parse(args) as any).parse(tx, { prevOutputs });
       }
 
       let tx: utxolib.bitgo.UtxoTransaction;
+      let prevOut: utxolib.TxOutput[];
       before(async function () {
-        tx = await getTransactionWithSpendType(utxolib.networks.testnet, t);
+        [tx, prevOut] = await getTransactionWithSpendType(utxolib.networks.testnet, t);
       });
 
       it(`parses`, function () {
         assert.doesNotThrow(() => parse(tx));
+        assert.doesNotThrow(() => parse(tx, prevOut));
       });
 
-      it('formats', async function () {
-        const formatted = formatTree(parse(tx), new Instance({ level: 0 }));
-        assert.strictEqual(formatted, await getFixtureString(`test/fixtures/format_${t}_${name}.txt`, formatted));
+      [false, true].forEach((usePrevOuts) => {
+        it(`formats [usePrevOuts=${usePrevOuts}]`, async function () {
+          const formatted = formatTree(parse(tx, usePrevOuts ? prevOut : undefined), {
+            chalk: new Instance({ level: 0 }),
+          });
+          assert.strictEqual(
+            formatted,
+            await getFixtureString(`test/fixtures/format_${t}_${name}${usePrevOuts ? '_prevOuts' : ''}.txt`, formatted)
+          );
+        });
       });
     });
   });

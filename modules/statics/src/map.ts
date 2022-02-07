@@ -59,4 +59,8 @@ export class CoinMap {
   public forEach(callback: (coin: Readonly<BaseCoin>, coinName: string) => void): void {
     this._map.forEach(callback);
   }
+
+  public [Symbol.iterator](): IterableIterator<[string, Readonly<BaseCoin>]> {
+    return this._map[Symbol.iterator]();
+  }
 }

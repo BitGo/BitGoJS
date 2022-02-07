@@ -1,6 +1,7 @@
-import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
 import { Ed25519KeyPair } from '../baseCoin';
-import { AddressFormat } from '../baseCoin/enum';
+import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import * as nearApi from 'near-api-js';
+import { toHex } from '../hbar/utils';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -12,18 +13,29 @@ export class KeyPair extends Ed25519KeyPair {
     super(source);
   }
 
-  getAddress(format?: AddressFormat): string {
-    throw new Error('Method not implemented.');
-  }
-
-  getKeys(): DefaultKeys {
-    throw new Error('Method not implemented.');
-  }
-
+  /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new Error('Method not implemented.');
+    const rawPrv = new Uint8Array(nearApi.utils.serialize.base_decode(prv));
+    return new KeyPair({ prv: toHex(rawPrv) }).keyPair;
   }
-  recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new Error('Method not implemented.');
+
+  /** @inheritdoc */
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    const rawPub = new Uint8Array(nearApi.utils.serialize.base_decode(pub));
+    return { pub: toHex(rawPub) };
+  }
+
+  /** @inheritdoc */
+  getAddress(): string {
+    return this.keyPair.pub;
+  }
+
+  /** @inheritdoc */
+  getKeys(): DefaultKeys {
+    const result: DefaultKeys = { pub: this.keyPair.pub };
+    if (this.keyPair.prv) {
+      result.prv = this.keyPair.prv;
+    }
+    return result;
   }
 }

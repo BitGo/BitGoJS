@@ -1,8 +1,6 @@
-import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { AddressInfo, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
+import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo/Unspent';
 
-import { BlockstreamApi } from './blockstreamApi';
-import { BlockchairApi } from './blockchairApi';
-import { InsightApi } from './insightApi';
 import { ApiNotImplementedError } from './baseApi';
 
 /**
@@ -14,34 +12,27 @@ export interface RecoveryAccountData {
 }
 
 /**
- * Methods required to perform different recovery actions in UTXO coins.
+ * Factory for AddressApi & UtxoApi
  */
-export abstract class RecoveryProvider {
-  abstract getAccountInfo(address: string): Promise<RecoveryAccountData>
-  abstract getUnspents(address: string): Promise<Unspent[]>;
+export interface RecoveryProvider {
+  getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]>;
+  getAddressInfo(address: string): Promise<AddressInfo>;
+}
 
-  static forCoin(coinName: string, apiKey?: string): RecoveryProvider {
-    switch (coinName) {
-      case 'btc':
-      case 'tbtc':
-        return BlockstreamApi.forCoin(coinName);
-      case 'bch':
-      case 'tbch':
-      case 'bcha':
-      case 'tbcha': // this coin only exists in tests
-      case 'bsv':
-      case 'tbsv':
-        return BlockchairApi.forCoin(coinName, apiKey);
-      case 'btg':
-      case 'dash':
-      case 'tdash':
-      case 'ltc':
-      case 'tltc':
-      case 'zec':
-      case 'tzec':
-        return InsightApi.forCoin(coinName);
-    }
-
-    throw new ApiNotImplementedError(coinName);
+export function forCoin(coinName: string, apiToken?: string): RecoveryProvider {
+  switch (coinName) {
+    case 'btc':
+    case 'tbtc':
+      return BlockstreamApi.forCoin(coinName);
+    case 'bch':
+    case 'bcha':
+    case 'bsv':
+    case 'btg':
+    case 'dash':
+    case 'ltc':
+    case 'zec':
+      return BlockchairApi.forCoin(coinName, { apiToken });
   }
+
+  throw new ApiNotImplementedError(coinName);
 }

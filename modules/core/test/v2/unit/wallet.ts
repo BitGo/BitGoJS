@@ -9,7 +9,7 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { Wallet } from '../../../src/';
+import { CustomSigningFunction, Wallet } from '../../../src/';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
@@ -17,27 +17,23 @@ import { TestBitGo } from '../../lib/test_bitgo';
 nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {
-  let bitgo;
-  let wallet;
-  let bgUrl;
-  let basecoin;
+  const bitgo = new TestBitGo({ env: 'test' });
+  bitgo.initializeTestVars();
+  const basecoin = bitgo.coin('tbtc');
+  const walletData = {
+    id: '5b34252f1bf349930e34020a00000000',
+    coin: 'tbtc',
+    keys: [
+      '5b3424f91bf349930e34017500000000',
+      '5b3424f91bf349930e34017600000000',
+      '5b3424f91bf349930e34017700000000',
+    ],
+    coinSpecific: {},
+  };
+  const wallet = new Wallet(bitgo, basecoin, walletData);
+  const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
-
-  before(async function () {
-    bitgo = new TestBitGo({ env: 'test' });
-    bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tbtc');
-    const walletData = {
-      id: '5b34252f1bf349930e34020a',
-      coin: 'tbtc',
-      keys: [
-        '5b3424f91bf349930e340175',
-      ],
-    };
-    wallet = new Wallet(bitgo, basecoin, walletData);
-    bgUrl = common.Environments[bitgo.getEnv()].uri;
-  });
 
   describe('Wallet transfers', function () {
     it('should search in wallet for a transfer', async function () {
@@ -121,24 +117,34 @@ describe('V2 Wallet:', function () {
     });
 
     it('should throw errors for invalid expected parameters', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ address: 13375 }).should.be.rejectedWith('invalid address argument, expecting string or array');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ address: [null] }).should.be.rejectedWith('invalid address argument, expecting array of address strings');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateGte: 20101904 }).should.be.rejectedWith('invalid dateGte argument, expecting string');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ dateLt: 20101904 }).should.be.rejectedWith('invalid dateLt argument, expecting string');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueGte: '10230005' }).should.be.rejectedWith('invalid valueGte argument, expecting number');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ valueLt: '-5e8' }).should.be.rejectedWith('invalid valueLt argument, expecting number');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ includeHex: '123' }).should.be.rejectedWith('invalid includeHex argument, expecting boolean');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ state: 123 }).should.be.rejectedWith('invalid state argument, expecting string or array');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ state: [123, 456] }).should.be.rejectedWith('invalid state argument, expecting array of state strings');
 
+      // @ts-expect-error checking type mismatch
       await wallet.transfers({ type: 123 }).should.be.rejectedWith('invalid type argument, expecting string');
     });
   });
@@ -187,6 +193,8 @@ describe('V2 Wallet:', function () {
         prv,
         keychain: {
           derivedFromParentWithSeed: '123',
+          id: '456',
+          pub: '789',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
@@ -198,6 +206,8 @@ describe('V2 Wallet:', function () {
         coldDerivationSeed: '123',
         keychain: {
           derivedFromParentWithSeed: '456',
+          id: '789',
+          pub: '012',
         },
       };
       wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
@@ -307,6 +317,52 @@ describe('V2 Wallet:', function () {
       }
       response.isDone().should.be.true();
     });
+
+    it('should use a custom signing function if provided', async function () {
+      const customSigningFunction: CustomSigningFunction = sinon.stub();
+      const builtInSigningMethod = sinon.spy();
+
+      const stubs = [
+        sinon.stub(wallet.baseCoin, 'postProcessPrebuild').returnsArg(0),
+        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves(true),
+        sinon.stub(wallet.baseCoin, 'signTransaction').callsFake(builtInSigningMethod),
+      ];
+
+      const recipients = [
+        { address: 'abc', amount: 123 },
+        { address: 'def', amount: 456 },
+      ];
+
+      const txPrebuild = {
+        txHex: 'this-is-a-tx',
+      };
+
+      const scope = nock(bgUrl)
+        .post(wallet.url('/tx/build').replace(bgUrl, ''))
+        .reply(200, txPrebuild)
+        .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
+        .reply(200)
+        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
+        .reply(200)
+        .post(wallet.url('/tx/send').replace(bgUrl, ''))
+        .reply(200, { ok: true });
+
+      const result = await wallet.sendMany({ recipients, customSigningFunction });
+
+      result.should.have.property('ok', true);
+      customSigningFunction.should.have.been.calledOnceWith(sinon.match({
+        recipients,
+        txPrebuild,
+        pubs: sinon.match.array,
+      }));
+      builtInSigningMethod.called.should.be.false();
+      scope.done();
+      stubs.forEach((s) => s.restore());
+    });
   });
 
   describe('Create Address', () => {
@@ -356,7 +412,7 @@ describe('V2 Wallet:', function () {
             ethAddress: '0x032821b7ea40ea5d446f47c29a0f777ee035aa10',
             source: 'bitgo',
             coinSpecific: {},
-          })
+          }),
       ];
     });
 
@@ -367,32 +423,47 @@ describe('V2 Wallet:', function () {
 
     it('should correctly validate arguments to create address', async function () {
       let message = 'gasPrice has to be an integer or numeric string';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
       await wallet.createAddress({ gasPrice: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ gasPrice: null }).should.be.rejectedWith(message);
 
       message = 'chain has to be an integer';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
 
       message = 'count has to be a number between 1 and 250';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ count: null }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
       await wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
 
       message = 'baseAddress has to be a string';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: 123 }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ baseAddress: null }).should.be.rejectedWith(message);
 
       message = 'allowSkipVerifyAddress has to be a boolean';
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: {} }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: 123 }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: 'abc' }).should.be.rejectedWith(message);
+      // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
     });
 
@@ -534,6 +605,322 @@ describe('V2 Wallet:', function () {
     });
   }) ;
 
+  describe('Solana tests: ', () => {
+    let solWallet;
+    const passphrase = '#Bondiola1234';
+    const solBitgo = new TestBitGo({ env: 'mock' });
+    solBitgo.initializeTestVars();
+    const tsol = solBitgo.coin('tsol');
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        baseAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        pendingChainInitialization: false,
+        minimumFunding: 2447136,
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tsol',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+    };
+
+    before(async function () {
+      solWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
+      nock(bgUrl)
+        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[0]}`)
+        .times(3)
+        .reply(200, {
+          id: '598f606cd8fc24710d2ebad89dce86c2',
+          pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+          source: 'user',
+          encryptedPrv: '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
+          coinSpecific: {},
+          addressDerivationKeypair: {
+            pub: '3eJ1H3LfbSpQy1NFGsTHtLhP1s1PuMWaaqHqj4Bm13ya',
+            encryptedPrv: '{"iv":"5pSLrx+MK3N8exqwDtiH2A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"c3z58NKwCMQ=","ct":"ZPsexWW+bbkZSkwVph9doog0b0xrILehlSFfafpq65J14QmU5gklKc7jhK3taBtuyGPmAVWfkXCdZBe9s4ohaWzuQnG6r8DRQmR5xG8mzF9hDCBl+wAuW3pRMugn1Zdj"}',
+          },
+        });
+
+      nock(bgUrl)
+        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[1]}`)
+        .times(2)
+        .reply(200, {
+          id: '598f606cc8e43aef09fcb785221d9dd2',
+          pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
+          encryptedPrv: '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
+          source: 'backup',
+          coinSpecific: {},
+        });
+
+      nock(bgUrl)
+        .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[2]}`)
+        .times(2)
+        .reply(200, {
+          id: '5935d59cf660764331bafcade1855fd7',
+          pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
+          encryptedPrv: '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
+          source: 'bitgo',
+          coinSpecific: {},
+        });
+    });
+
+    after(async function () {
+      nock.cleanAll();
+    });
+
+    describe('prebuildAndSignTransaction: ', function () {
+      it('should successfully sign a consolidation transfer', async function () {
+        const txParams = {
+          prebuildTx: {
+            walletId: walletData.id,
+            txHex: 'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE9MWWV2ct01mg5Gm4EqcJ9SAn2XuD+FuAHcHFTkc1Tgut3DgTsiSgTQ0dmzj5JJg6qYTpn8FxOYPFCFTMoZi46gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0Qc+q0Zg6OOpV8eCDVLfYziox7YBA7+QPLX4IRhDCSKwICAgABDAIAAACghgEAAAAAAAMAFVRlc3QgaW50ZWdyYXRpb24gbWVtbw==',
+            txInfo: {
+              feePayer: 'HUVE5NfJyGfU1djZsVLA6fxSTS1E2iRqcTRVNC9K2z7c',
+              lamportsPerSignature: 5000,
+              nonce: '27E3MXFvXMUNYeMJeX1pAbERGsJfUbkaZTfgMgpmNN5g',
+              numSignatures: 0,
+              instructionsData: [
+                {
+                  type: 'Transfer',
+                  params: {
+                    fromAddress: 'HUVE5NfJyGfU1djZsVLA6fxSTS1E2iRqcTRVNC9K2z7c',
+                    toAddress: 'ChgJ5tgDwBUsk9RNMm2iLiwP8RodwgZ6uqrC5paJsXVT',
+                    amount: '100000',
+                  },
+                },
+                {
+                  type: 'Memo',
+                  params: {
+                    memo: 'Test integration memo',
+                  },
+                },
+              ],
+            },
+            buildParams: {
+              memo: {
+                type: 'Memo',
+                value: 'Test integration memo',
+              },
+              recipients: [
+                {
+                  address: 'ChgJ5tgDwBUsk9RNMm2iLiwP8RodwgZ6uqrC5paJsXVT',
+                  amount: '100000',
+                },
+              ],
+              type: 'transfer',
+            },
+            consolidateId: '1234',
+            consolidationDetails: {
+              senderAddressIndex: 1,
+            },
+          },
+          walletPassphrase: passphrase,
+        };
+        // Build and sign the transaction
+        const preBuiltSignedTx = await solWallet.prebuildAndSignTransaction(txParams);
+        preBuiltSignedTx.should.have.property('txHex');
+      });
+    });
+
+    describe('Create Address for Solana', () => {
+      it('should create a 2 derived addresses for sol', async function () {
+        const nock1 = nock(bgUrl)
+          .post(`/api/v2/${solWallet.coin()}/wallet/${solWallet.id()}/address`, _.conforms(
+            { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 1), derivedAddress: (a) => _.isString(a) }))
+          .reply(200, (uri, body) => {
+            const parsedBody = JSON.parse(body as string);
+            tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
+            parsedBody.chain.should.equal(0);
+            parsedBody.index.should.equal(1);
+            return {
+              id: '615c643a98a2a100068e023c639c0f74',
+              address: parsedBody.derivedAddress,
+              chain: parsedBody.chain,
+              index: parsedBody.index,
+              coin: 'tsol',
+              lastNonce: 0,
+              wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+              coinSpecific: {
+                pendingChainInitialization: true,
+                minimumFunding: 2447136,
+                rootAddress: parsedBody.derivedAddress,
+              },
+            };
+          });
+        await solWallet.createAddress({
+          chain: 0,
+          passphrase,
+        });
+        nock1.isDone().should.be.true();
+
+        // imitates the raise of the lastChainIndex after the address creation
+        walletData.coinSpecific.lastChainIndex[0]++;
+        const updatedSolWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
+        const nock2 = nock(bgUrl)
+          .post(`/api/v2/${updatedSolWallet.coin()}/wallet/${updatedSolWallet.id()}/address`, _.conforms(
+            { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 2), derivedAddress: (a) => _.isString(a) }))
+          .reply(200, (uri, body) => {
+            const parsedBody = JSON.parse(body as string);
+            tsol.isValidAddress(parsedBody.derivedAddress).should.be.true();
+            parsedBody.chain.should.equal(0);
+            parsedBody.index.should.equal(2);
+            return {
+              id: '615c643a98a2a100068e023c639c0f73',
+              address: parsedBody.derivedAddress,
+              chain: parsedBody.chain,
+              index: parsedBody.index,
+              coin: 'tsol',
+              lastNonce: 0,
+              wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+              coinSpecific: {
+                pendingChainInitialization: true,
+                minimumFunding: 2447136,
+                rootAddress: parsedBody.derivedAddress,
+              },
+            };
+          });
+
+        await updatedSolWallet.createAddress({
+          chain: 0,
+          passphrase,
+        });
+        nock2.isDone().should.be.true();
+      });
+    });
+  });
+
+  describe('Create Address for Polkadot', () => {
+    let dotWallet, coinNocks;
+    const passphrase = 'Passphrase1234';
+    const coinBitgo = new TestBitGo({ env: 'mock' });
+    coinBitgo.initializeTestVars();
+    const tdot = coinBitgo.coin('tdot');
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        rootAddress: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tdot',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+    };
+
+    beforeEach(async function () {
+      dotWallet = new Wallet(bitgo, bitgo.coin('tdot'), walletData);
+      coinNocks = [
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[0]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cd8fc24710d2ebad89dce86c2',
+            pub: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+            source: 'user',
+            encryptedPrv: '{"iv":"8yOcLDpWe5wZnqJyftjrqQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"YDBv4nR/hu8=","ct":"m4CKUWNGTNXMJahCrYG2+6M+YmhegZTk0S3SP3BEOoNunc4dvg7ZT3EdryXeKoFG77W8bh+uJpB38yVEnLGQv5vYNjAmMu4J"}',
+            coinSpecific: {},
+            // addressDerivationKeypair represents the single sig KP used to derive addresses from
+            addressDerivationKeypair: {
+              pub: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+              encryptedPrv: '{"iv":"qv4P1xvbBWvJ82ANzVQICA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"xUMlfBzd6/E=","ct":"UVWWDhivmo/9DCMUOdTzLnDrDbjEX98MmVwC+TBAC+C6RYi6EKSL5wiCx5QI8PRic1CALeU2NEg6uu2akhIm7nS3bEDD4Vfe"}',
+            },
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[1]}`)
+          .times(2)
+          .reply(200, {
+            id: '598f606cc8e43aef09fcb785221d9dd2',
+            pub: 'd472bd6e0f1f92297631938e30edb682208c2cd2698d80cf678c53a69979eb9f',
+            encryptedPrv: '{"iv":"Os4sXt/AWg4GVOlzcswxhQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cn7WLegr0zA=","ct":"29Aq9b+7KmCZbnpqDYBusS2qxj3JB3prNbc3Fq+TBwjv97K69NNR2h2Id2Fq36lJO9eu7neqvjG0rkI64phBRD6npdw7mtmt"}',
+            source: 'backup',
+            coinSpecific: {},
+          }),
+
+        nock(bgUrl)
+          .get(`/api/v2/${dotWallet.coin()}/key/${dotWallet.keyIds()[2]}`)
+          .times(2)
+          .reply(200, {
+            id: '5935d59cf660764331bafcade1855fd7',
+            pub: '7788327c695dca4b3e649a0db45bc3e703a2c67428fce360e61800cc4248f4f7',
+            encryptedPrv: '{"iv":"45l3KXJTWVeT24fjPAwK9g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"NctSBGanqrc=","ct":"uquQCan0ItRHCGNnUkF1JkjxGJyAChLnx6QfkgKE5FSeoMutA77hB4GM2DTn2kMoxYhXMnnCX/nIld1RXvAjSrX99vHwdcuQ"}',
+            source: 'bitgo',
+            coinSpecific: {},
+          }),
+      ];
+    });
+
+    afterEach(async function () {
+      nock.cleanAll();
+      coinNocks.forEach(scope => scope.isDone().should.be.true());
+    });
+
+    it('should create a 2 derived addresses for dot', async function () {
+      const nock1 = nock(bgUrl)
+        .post(`/api/v2/${dotWallet.coin()}/wallet/${dotWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 1), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body as string);
+          tdot.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(1);
+          return {
+            id: '615c643a98a2a100068e023c639c0f74',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tdot',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+      await dotWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock1.isDone().should.be.true();
+
+      // imitates the raise of the lastChainIndex after the address creation
+      walletData.coinSpecific.lastChainIndex[0]++;
+      const updatedDotWallet = new Wallet(bitgo, bitgo.coin('tdot'), walletData);
+      const nock2 = nock(bgUrl)
+        .post(`/api/v2/${updatedDotWallet.coin()}/wallet/${updatedDotWallet.id()}/address`, _.conforms(
+          { chain: (c) => _.isNumber(c), index: (i) => _.isEqual(i, 2), derivedAddress: (a) => _.isString(a) }))
+        .reply(200, (uri, body) => {
+          const parsedBody = JSON.parse(body as string);
+          tdot.isValidAddress(parsedBody.derivedAddress).should.be.true();
+          parsedBody.chain.should.equal(0);
+          parsedBody.index.should.equal(2);
+          return {
+            id: '615c643a98a2a100068e023c639c0f73',
+            address: parsedBody.derivedAddress,
+            chain: parsedBody.chain,
+            index: parsedBody.index,
+            coin: 'tdot',
+            lastNonce: 0,
+            wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+            coinSpecific: {
+              rootAddress: parsedBody.derivedAddress,
+            },
+          };
+        });
+
+      await updatedDotWallet.createAddress({
+        chain: 0,
+        passphrase,
+      });
+      nock2.isDone().should.be.true();
+    });
+  });
+
   describe('Accelerate Transaction', function () {
     it('fails if cpfpTxIds is not passed', async function () {
       await wallet.accelerateTransaction({})
@@ -541,6 +928,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if cpfpTxIds is not an array', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: {} })
         .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     });
@@ -558,6 +946,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if cpfpFeeRate is not an integer', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
         .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     });
@@ -573,6 +962,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('fails if maxFee is not an integer', async function () {
+      // @ts-expect-error checking type mismatch
       await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     });
@@ -965,21 +1355,24 @@ describe('V2 Wallet:', function () {
 
     it('arguments', async function () {
       const optionalParams = {
-        limit: '25',
+        limit: 25,
         minValue: '0',
         maxValue: '9999999999999',
-        minHeight: '0',
-        minConfirms: '2',
-        enforceMinConfirmsForChange: 'false',
-        feeRate: '10000',
-        maxFeeRate: '100000',
+        minHeight: 0,
+        minConfirms: 2,
+        enforceMinConfirmsForChange: false,
+        feeRate: 10000,
+        maxFeeRate: 100000,
         recipientAddress: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df',
       };
+
+      // The actual api request will only send strings, but the SDK function expects numbers for some values
+      const apiParams = _.mapValues(optionalParams, param => String(param));
 
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
       const response = nock(bgUrl)
         .get(path)
-        .query(_.matches(optionalParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .query(_.matches(apiParams)) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200, {
           coin: 'tbch',
           maximumSpendable: 65000,
@@ -1006,11 +1399,15 @@ describe('V2 Wallet:', function () {
         .reply(200, { userId });
 
       const getKeyNock = nock(bgUrl)
-        .get(`/api/v2/tbtc/key/${wallet._wallet.keys[0]}`)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {})
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[1]}`)
+        .reply(200, {})
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[2]}`)
         .reply(200, {});
 
       const createShareNock = nock(bgUrl)
-        .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions, keychain: {} })
+        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`, { user: userId, permissions, keychain: {} })
         .reply(200, {});
 
       await wallet.shareWallet({ email, permissions });

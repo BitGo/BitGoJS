@@ -1,10 +1,11 @@
 import should from 'should';
-import { register } from '../../../../../src/index';
+import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr';
 import * as testData from '../../../../resources/cspr/cspr';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
 import { verifySignature } from '../../../../../src/coin/cspr/utils';
+import { CLString } from 'casper-js-sdk';
 
 describe('CSPR Wallet initialization', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -186,17 +187,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -205,17 +206,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -228,17 +229,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -247,17 +248,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -275,17 +276,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -294,17 +295,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -323,17 +324,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -342,17 +343,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -371,17 +372,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -390,17 +391,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -419,17 +420,17 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -438,17 +439,17 @@ describe('CSPR Wallet initialization', () => {
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
 
-        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal((tx2.casperTx.session.getArgByName('deploy_type') as CLString).value(), 'WalletInitialization');
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_0')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_0') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_1')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_1') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress(),
         );
         should.equal(
-          tx2.casperTx.session.getArgByName('owner_2')!.asString(),
+          (tx2.casperTx.session.getArgByName('owner_2') as CLString).value(),
           new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress(),
         );
 
@@ -472,9 +473,9 @@ describe('CSPR Wallet initialization', () => {
       should.equal(txJson.from, '02' + testData.ROOT_ACCOUNT.publicKey);
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
-      should.equal(txJson.owner1!, new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
-      should.equal(txJson.owner2!, new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());
-      should.equal(txJson.owner3!, new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress());
+      should.equal(txJson.owner1, new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
+      should.equal(txJson.owner2, new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());
+      should.equal(txJson.owner3, new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress());
     });
 
     it('contains all required fields for Wallet Initialization using extended key to sign', async () => {
@@ -486,9 +487,9 @@ describe('CSPR Wallet initialization', () => {
       should.equal(txJson.from, '02' + testData.ROOT_ACCOUNT.publicKey);
       should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
 
-      should.equal(txJson.owner1!, new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
-      should.equal(txJson.owner2!, new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());
-      should.equal(txJson.owner3!, new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress());
+      should.equal(txJson.owner1, new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
+      should.equal(txJson.owner2, new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());
+      should.equal(txJson.owner3, new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress());
     });
   });
 });

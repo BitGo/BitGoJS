@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
+import { CLValue, CLPublicKey as PublicKey, RuntimeArgs, CLValueBuilder } from 'casper-js-sdk';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType, StakingOperationTypes } from '../baseCoin';
@@ -45,10 +45,10 @@ export class UndelegateBuilder extends TransactionBuilder {
     const args = this.buildUndelegateParameters();
     const extraArguments = new Map<string, CLValue>();
 
-    extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.StakingUnlock]));
-    extraArguments.set(STAKING_TYPE, CLValue.string(StakingOperationTypes[StakingOperationTypes.UNLOCK]));
-    extraArguments.set(DELEGATE_FROM_ADDRESS, CLValue.string(this._source.address));
-    extraArguments.set(DELEGATE_VALIDATOR, CLValue.string(this._validator));
+    extraArguments.set(TRANSACTION_TYPE, CLValueBuilder.string(TransactionType[TransactionType.StakingUnlock]));
+    extraArguments.set(STAKING_TYPE, CLValueBuilder.string(StakingOperationTypes[StakingOperationTypes.UNLOCK]));
+    extraArguments.set(DELEGATE_FROM_ADDRESS, CLValueBuilder.string(this._source.address));
+    extraArguments.set(DELEGATE_VALIDATOR, CLValueBuilder.string(this._validator));
 
     this._session = {
       moduleBytes: this._contract,
@@ -85,10 +85,10 @@ export class UndelegateBuilder extends TransactionBuilder {
     const validator = PublicKey.fromHex(this._validator);
 
     return {
-      action: CLValue.string(this._action),
-      delegator: CLValue.publicKey(delegator),
-      validator: CLValue.publicKey(validator),
-      amount: CLValue.u512(this._amount),
+      action: CLValueBuilder.string(this._action),
+      delegator: CLValueBuilder.publicKey(delegator.value(), delegator.tag),
+      validator: CLValueBuilder.publicKey(validator.value(), validator.tag),
+      amount: CLValueBuilder.u512(this._amount),
     };
   }
 

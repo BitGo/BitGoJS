@@ -84,4 +84,17 @@ parser.addArgument(['--authversion'], {
   help: 'BitGo authentication scheme version to use (default 2). See BitGo documentation for more details on auth versions.',
 });
 
+parser.addArgument(['--externalSignerUrl'], {
+  help: 'URL which specifies the external signing API.',
+});
+
+parser.addArgument(['--signerMode'], {
+  action: 'storeConst',
+  constant: true,
+  help: 'Flag setting the BitGo SDK instance to either "generator" or "signer" mode, which enables use of the external signing API.',
+});
+
+parser.addArgument(['--signerFileSystemPath'], {
+  help: 'Local path specifying where an Express signer machine keeps encrypted user private keys.',
+});
 export const args = () => parser.parseArgs();

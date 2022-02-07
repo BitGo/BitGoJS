@@ -26,6 +26,7 @@ import {
   createBaseUri,
   prepareIpc,
 } from '../../src/expressApp';
+import * as clientRoutes from '../../src/clientRoutes';
 
 describe('Bitgo Express', function () {
 
@@ -203,6 +204,25 @@ describe('Bitgo Express', function () {
       logStub.restore();
     });
 
+    it('should output signer mode upon server startup', () => {
+      const logStub = sinon.stub(console, 'log');
+
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+      };
+
+      startup(args, 'base')();
+
+      logStub.should.have.callCount(4);
+      logStub.should.have.been.calledWith('BitGo-Express running');
+      logStub.should.have.been.calledWith(`Environment: ${args.env}`);
+      logStub.should.have.been.calledWith('Base URI: base');
+      logStub.should.have.been.calledWith(`External signer mode: ${args.signerMode}`);
+
+      logStub.restore();
+    });
+
     it('should create http base URIs', () => {
       const args: any = {
         bind: '1',
@@ -347,6 +367,38 @@ describe('Bitgo Express', function () {
       startup(args, 'base')();
       logStub.should.have.been.calledWith('IPC path: expressIPC');
       logStub.restore();
+    });
+
+    it('should only call setupAPIRoutes when running in regular mode', () => {
+      const args: any = {
+        env: 'test',
+        signerMode: '',
+      };
+
+      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
+      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
+
+      expressApp(args);
+      apiStub.should.have.been.calledOnce();
+      signerStub.called.should.be.false();
+      apiStub.restore();
+      signerStub.restore();
+    });
+
+    it('should only call setupSigningRoutes when running in signer mode', () => {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+      };
+
+      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
+      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
+
+      expressApp(args);
+      signerStub.should.have.been.calledOnce();
+      apiStub.called.should.be.false();
+      apiStub.restore();
+      signerStub.restore();
     });
   });
 });

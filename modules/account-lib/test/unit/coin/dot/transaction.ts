@@ -3,6 +3,7 @@ import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import { KeyPair, Transaction, TransferBuilder, Utils } from '../../../../src/coin/dot';
 import { TxData } from '../../../../src/coin/dot/iface';
+import utils from '../../../../src/coin/dot/utils';
 import * as DotResources from '../../../resources/dot';
 import { buildTestConfig } from './transactionBuilder/base';
 
@@ -23,9 +24,10 @@ class StubTransaction extends Transaction {
 
 describe('Dot Transaction', () => {
   let tx: StubTransaction;
+  const config = buildTestConfig();
+  const material = utils.getMaterial(config);
 
   beforeEach(() => {
-    const config = buildTestConfig();
     tx = new StubTransaction(config);
   });
 
@@ -66,7 +68,7 @@ describe('Dot Transaction', () => {
 
   describe('should build from raw unsigned tx', async () => {
     it('Transaction size validation', async () => {
-      const builder = new TransferBuilder(coins.get('tdot'));
+      const builder = new TransferBuilder(coins.get('tdot')).material(material);
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })

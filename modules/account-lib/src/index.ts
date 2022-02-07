@@ -55,6 +55,9 @@ export { Sol };
 import * as Dot from './coin/dot';
 export { Dot };
 
+import * as Near from './coin/near';
+export { Near };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -85,6 +88,7 @@ const coinBuilderMap = {
   tsol: Sol.TransactionBuilderFactory,
   dot: Dot.TransactionBuilderFactory,
   tdot: Dot.TransactionBuilderFactory,
+  near: Near.TransactionBuilderFactory,
 };
 
 /**

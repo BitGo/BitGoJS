@@ -10,6 +10,7 @@ import * as http from 'http';
 import * as morgan from 'morgan';
 import * as fs from 'fs';
 import { Request as StaticRequest } from 'express-serve-static-core';
+import * as timeout from 'connect-timeout';
 
 import { Config, config } from './config';
 
@@ -19,7 +20,7 @@ import { SSL_OP_NO_TLSv1 } from 'constants';
 import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
 
 import { Environments } from 'bitgo';
-import { setupRoutes } from './clientRoutes';
+import * as clientRoutes from './clientRoutes';
 
 /**
  * Set up the logging middleware provided by morgan
@@ -103,7 +104,7 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function () {
-    const { env, ipc, customRootUri, customBitcoinNetwork } = config;
+    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode } = config;
     /* eslint-disable no-console */
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
@@ -117,6 +118,9 @@ export function startup(config: Config, baseUri: string): () => void {
     }
     if (customBitcoinNetwork) {
       console.log(`Custom bitcoin network: ${customBitcoinNetwork}`);
+    }
+    if (signerMode) {
+      console.log(`External signer mode: ${signerMode}`);
     }
     /* eslint-enable no-console */
   };
@@ -188,6 +192,14 @@ function checkPreconditions(config: Config) {
   }
 }
 
+export function setupRoutes(app: express.Application, config: Config): void {
+  if (config.signerMode) {
+    clientRoutes.setupSigningRoutes(app, config);
+  } else {
+    clientRoutes.setupAPIRoutes(app, config);
+  }
+}
+
 export function app(cfg: Config): express.Application {
   debug('app is initializing');
 
@@ -215,6 +227,8 @@ export function app(cfg: Config): express.Application {
     req.url = req.url.replace(/\/\//g, '/');
     next();
   });
+
+  app.use(timeout(cfg.timeout));
 
   // Decorate the client routes
   setupRoutes(app, cfg);
@@ -266,6 +280,4 @@ export async function init(): Promise<void> {
   } else {
     server.listen(port, bind, startup(cfg, baseUri));
   }
-
-  server.timeout = 300 * 1000; // 5 minutes
 }

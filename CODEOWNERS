@@ -74,5 +74,5 @@ yarn.lock tyler@bitgo.com
 modules/express/package-lock.json tyler@bitgo.com
 
 # NOTHING BELOW THIS LINE
-CODEOWNERS @BitGo/git-admins @argjv @twtaylorbitgo @CapnMigraine @tylerlevine
+CODEOWNERS @BitGo/git-admins @argjv @CapnMigraine @tylerlevine
 

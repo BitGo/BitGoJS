@@ -3,8 +3,9 @@ import * as testData from '../../../resources/sol/sol';
 import { solInstructionFactory } from '../../../../src/coin/sol/solInstructionFactory';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
 import { InstructionParams } from '../../../../src/coin/sol/iface';
-import { TransactionInstruction, PublicKey, SystemProgram } from '@solana/web3.js';
+import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 describe('Instruction Builder Tests: ', function () {
   describe('Succeed ', function () {
@@ -81,6 +82,29 @@ describe('Instruction Builder Tests: ', function () {
           lamports: new BigNumber(amount).toNumber(),
         }).instructions,
       );
+    });
+
+    it('Create associated token account', () => {
+      const mintAddress = testData.associatedTokenAccounts.mint;
+      const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
+      const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const createATAParams: InstructionParams = {
+        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+        params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+      };
+
+      const result = solInstructionFactory(createATAParams);
+      should.deepEqual(result, [
+        Token.createAssociatedTokenAccountInstruction(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          TOKEN_PROGRAM_ID,
+          new PublicKey(mintAddress),
+          new PublicKey(ataAddress),
+          new PublicKey(ownerAddress),
+          new PublicKey(payerAddress),
+        ),
+      ]);
     });
   });
 

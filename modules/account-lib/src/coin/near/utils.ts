@@ -1,34 +1,57 @@
 import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { KeyPair } from './keyPair';
+import bs58 from 'bs58';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return this.isValidPublicKey(address);
   }
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return this.isBase58(hash, 32);
   }
 
   /** @inheritdoc */
   isValidPrivateKey(key: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    try {
+      new KeyPair({ prv: key });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    try {
+      new KeyPair({ pub: key });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return this.isBase58(signature, 64);
   }
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('method not implemented');
+    return this.isBase58(txId, 32);
+  }
+
+  isBase58(value: string, length: number): boolean {
+    try {
+      return !!value && bs58.decode(value).length === length;
+    } catch (e) {
+      return false;
+    }
   }
 }
+
+const utils = new Utils();
+
+export default utils;
