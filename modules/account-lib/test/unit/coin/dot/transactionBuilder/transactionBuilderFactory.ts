@@ -16,7 +16,6 @@ describe('dot Transaction Builder Factory', function () {
   const sender2 = accounts.account3;
   let factory: TransactionBuilderFactory;
 
-  // TODO: BG-43197
   xdescribe('parse generic builders', function () {
     before(function () {
       factory = register('tdot', TransactionBuilderFactory);
@@ -48,9 +47,7 @@ describe('dot Transaction Builder Factory', function () {
 
         builder
           .validity({ firstValid: 3933 })
-          .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-          .sender({ address: sender.address })
-          .sign({ key: sender.secretKey });
+          .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
         const tx = await builder.build();
         should.equal(tx.toBroadcastFormat(), rawTx[txn.type].signed);
       });

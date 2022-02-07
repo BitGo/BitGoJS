@@ -26,6 +26,7 @@ import utils from './utils';
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected _keyPair: KeyPair;
+  protected _signature?: string;
   protected _sender: string;
 
   protected _blockNumber: number;
@@ -190,9 +191,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (utils.isSigningPayload(decodedTxn)) {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
-      this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
+      const keypair = utils.decodeDotAddressToKeyPair(decodedTxn.address);
+      this.sender({ address: keypair.getAddress() });
       const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
-      this._transaction.signature.push(edSignature);
+      this.addSignature(keypair.getKeys(), Buffer.from(edSignature, 'hex'));
     }
     this.validity({ maxDuration: decodedTxn.eraPeriod });
     this.sequenceId({
@@ -206,7 +208,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.method(decodedTxn.method as unknown as TxMethod);
     return this._transaction;
   }
-
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.setTransaction(this.buildTransaction());
