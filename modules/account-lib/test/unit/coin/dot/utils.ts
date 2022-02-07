@@ -1,8 +1,16 @@
 import should from 'should';
 import utils from '../../../../src/coin/dot/utils';
-import { accounts, blockHash, signatures, txIds } from '../../../resources/dot';
+import { accounts, blockHash, signatures, txIds, rawTx } from '../../../resources/dot';
+import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { getRegistry } from '@substrate/txwrapper-polkadot';
+import * as material from '../../../resources/dot/materialData.json';
+import { PolkadotSpecNameType } from '@bitgo/statics';
+import { Keyring } from '@polkadot/keyring';
+import { mnemonicGenerate } from '@polkadot/util-crypto';
+import { stringToU8a } from '@polkadot/util';
 
 describe('utils', () => {
+
   it('should validate addresses correctly', () => {
     should.equal(utils.isValidAddress(accounts.account1.address), true);
     should.equal(utils.isValidAddress(accounts.account2.address), true);
@@ -75,4 +83,42 @@ describe('utils', () => {
   it('should encode DOT address correctly', () => {
     should.equal(utils.encodeDotAddress(accounts.account1.address), '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr');
   });
+
+  it('should recover signature from raw tx correctly', () => {
+    const _registry: TypeRegistry = getRegistry({
+      chainName: material.chainName,
+      specName: material.specName as PolkadotSpecNameType,
+      specVersion: material.specVersion,
+      metadataRpc: material.metadata as `0x${string}`,
+    });
+    should.equal(utils.recoverSignatureFromRawTx(rawTx.transfer.signed, {registry: _registry}), '0x00b6d868a11d202b56df1959f5d5f81f44ce1f95c8e70424b17080ea869d1c39d453f16c38fbef600a636c9a62a49ede5ee695a1822faf2f94fcfbb184a4254009');
+
+  });
+
+  it('should serialize signed transaction successfully', () => {
+    const _registry: TypeRegistry = getRegistry({
+      chainName: material.chainName,
+      specName: material.specName as PolkadotSpecNameType,
+      specVersion: material.specVersion,
+      metadataRpc: material.metadata as `0x${string}`,
+    });
+    const signature = utils.recoverSignatureFromRawTx(rawTx.transfer.signed, {registry: _registry});
+    console.log("signature type:", typeof (signature))
+    const txHex = utils.serializeSignedTransaction(
+        rawTx.transfer.unsigned,
+        signature,
+        material.metadata as `0x${string}`,
+        _registry);
+    should.equal(txHex, '0xb9018400000000000000000000000000000000000000000000000000000000000000000000b6d868a11d202b56df1959f5d5f81f44ce1f95c8e70424b17080ea869d1c39d453f16c38fbef600a636c9a62a49ede5ee695a1822faf2f94fcfbb184a4254009d501210300000000000000');
+
+  });
+
+  it('should verify signature correctly', () => {
+    const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
+    const pair = keyring.addFromUri(mnemonicGenerate(), { name: 'first pair' }, 'ed25519');
+    const message = 'message';
+    const signature = pair.sign(stringToU8a(message));
+    should.equal(utils.verifySignature(message, signature, pair.address), true);
+  });
+
 });

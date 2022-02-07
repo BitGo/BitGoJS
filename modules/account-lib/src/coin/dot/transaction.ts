@@ -1,22 +1,22 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError, SigningError, ParseTransactionError } from '../baseCoin/errors';
-import { construct, decode } from '@substrate/txwrapper-polkadot';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import Keyring, { decodeAddress } from '@polkadot/keyring';
-import { KeyPair } from './keyPair';
+import {BaseCoin as CoinConfig} from '@bitgo/statics';
+import {BaseTransaction, TransactionType} from '../baseCoin';
+import {BaseKey, TransactionRecipient} from '../baseCoin/iface';
+import {InvalidTransactionError, ParseTransactionError, SigningError} from '../baseCoin/errors';
+import {construct, decode} from '@substrate/txwrapper-polkadot';
+import {UnsignedTransaction} from '@substrate/txwrapper-core';
+import {TypeRegistry} from '@substrate/txwrapper-core/lib/types';
+import Keyring, {decodeAddress} from '@polkadot/keyring';
+import {KeyPair} from './keyPair';
 import {
-  TxData,
+  AddAnonymousProxyArgs,
+  AddProxyArgs,
+  BatchArgs,
   DecodedTx,
   StakeArgs,
   StakeArgsPayeeRaw,
-  AddProxyArgs,
-  UnstakeArgs,
   TransactionExplanation,
-  AddAnonymousProxyArgs,
-  BatchArgs,
+  TxData,
+  UnstakeArgs,
 } from './iface';
 import utils from './utils';
 
@@ -64,6 +64,34 @@ export class Transaction extends BaseTransaction {
     });
 
     this._signedTransaction = txHex;
+  }
+
+  /**
+   * Adds the signature to the DOT Transaction
+   * @param {string} signature
+   */
+  addSignature(signature: string): void {
+    this._signedTransaction = utils.serializeSignedTransaction(
+        this._dotTransaction,
+        signature,
+        this._dotTransaction.metadataRpc,
+        this._registry);
+  }
+
+  /**
+   * Verifies the signature on a given message
+   *
+   * @param {string} signature the signature to verify
+   */
+  verifySignature(signature: string) {
+    if (!this._dotTransaction) {
+      throw new InvalidTransactionError('No transaction data to sign');
+    }
+    const signingPayload = construct.signingPayload(this._dotTransaction, {
+      registry: this._registry,
+    });
+    const result = utils.verifySignature(signingPayload, signature, this._sender);
+    return result;
   }
 
   registry(registry: TypeRegistry): void {

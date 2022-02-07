@@ -6,6 +6,9 @@ import { TxData } from '../../../../src/coin/dot/iface';
 import utils from '../../../../src/coin/dot/utils';
 import * as DotResources from '../../../resources/dot';
 import { buildTestConfig } from './transactionBuilder/base';
+import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { getRegistry } from '@substrate/txwrapper-polkadot';
+import { PolkadotSpecNameType } from '@bitgo/statics';
 
 class StubTransaction extends Transaction {
   private _txJson: TxData;
@@ -76,6 +79,24 @@ describe('Dot Transaction', () => {
         .sender({ address: DotResources.accounts.account1.address });
       const tx = (await builder.build()) as Transaction;
       should.deepEqual(tx.transactionSize(), DotResources.rawTx.transfer.unsigned.length / 2);
+    });
+
+    it('should verify signature correctly', async () => {
+      const builder = new TransferBuilder(coins.get('tdot')).material(material);
+      builder.from(DotResources.rawTx.transfer.signed);
+      builder
+          .validity({ firstValid: 3933 })
+          .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+          .sender({ address: DotResources.accounts.account1.address });
+      const tx = (await builder.build()) as Transaction;
+      const _registry: TypeRegistry = getRegistry({
+        chainName: material.chainName,
+        specName: material.specName as PolkadotSpecNameType,
+        specVersion: material.specVersion,
+        metadataRpc: material.metadata as `0x${string}`,
+      });
+      const signature = utils.recoverSignatureFromRawTx(DotResources.rawTx.transfer.signed, {registry: _registry});
+      should.equal(tx.verifySignature(signature), true);
     });
   });
 

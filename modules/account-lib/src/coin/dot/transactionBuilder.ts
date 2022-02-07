@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
+import {createMetadata, decode, getRegistry} from '@substrate/txwrapper-polkadot';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
@@ -14,10 +14,12 @@ import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
 import { default as utils } from './utils';
+import {rawTx} from "../../../test/resources/dot";
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected _keyPair: KeyPair;
+  protected _signature?: string;
   protected _sender: string;
 
   protected _blockNumber: number;
@@ -152,6 +154,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       specVersion: material.specVersion,
       metadataRpc: material.metadata,
     });
+    this._registry.setMetadata(createMetadata(this._registry, this.__material.metadata));
     return this;
   }
 
@@ -184,6 +187,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
       this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
+      this._signature = utils.recoverSignatureFromRawTx(rawTransaction, {registry: this._registry});
     }
     this.validity({ maxDuration: decodedTxn.eraPeriod });
     this.sequenceId({
@@ -206,6 +210,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.chainName(this._material.chainName);
     if (this._keyPair) {
       this.transaction.sign(this._keyPair);
+    } else if (this._signature){
+      this.transaction.addSignature(this._signature);
     }
     this._transaction.loadInputsAndOutputs();
     return this._transaction;

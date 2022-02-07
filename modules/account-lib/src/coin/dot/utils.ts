@@ -12,7 +12,7 @@ import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { Seed } from '../baseCoin/iface';
-import { ProxyCallArgs, TransferArgs, ProxyArgs, TxMethod, Material } from './iface';
+import {ProxyCallArgs, TransferArgs, ProxyArgs, TxMethod, Material, TxData} from './iface';
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { createTypeUnsafe, GenericExtrinsicPayload, GenericCall, GenericExtrinsic } from '@polkadot/types';
@@ -63,11 +63,12 @@ export class Utils implements BaseUtils {
    * @param {string} address the address of the signer
    * @returns {boolean} whether the signature is valid or not
    */
-  verifySignature(signedMessage: string, signature: string, address: string): boolean {
+  verifySignature(signedMessage: string, signature: Uint8Array | string, address: string): boolean {
     const publicKey = decodeAddress(address);
     const hexPublicKey = u8aToHex(publicKey);
 
-    return signatureVerify(signedMessage, signature, hexPublicKey).isValid;
+    let valid = signatureVerify(signedMessage, signature, hexPublicKey).isValid;
+    return valid;
   }
 
   /** @inheritdoc */
@@ -168,11 +169,23 @@ export class Utils implements BaseUtils {
       .sign(pair);
 
     // Serialize a signed transaction.
-    const txHex = construct.signedTx(transaction, signature, {
+    return this.serializeSignedTransaction(transaction, signature, metadataRpc, registry);
+  }
+
+  /**
+   * Serializes the signed transaction
+   *
+   * @param transaction Transaction to serialize
+   * @param signature Signature of the message
+   * @param metadataRpc Network metadata
+   * @param registry Transaction registry
+   * @returns string Serialized transaction
+   */
+  serializeSignedTransaction(transaction, signature, metadataRpc: `0x${string}`, registry): string {
+    return construct.signedTx(transaction, signature, {
       metadataRpc,
       registry,
     });
-    return txHex;
   }
 
   /**
@@ -230,6 +243,15 @@ export class Utils implements BaseUtils {
 
   isTransfer(arg: TxMethod['args']): arg is TransferArgs {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
+  }
+
+  recoverSignatureFromRawTx(rawTx: string, options: { registry: TypeRegistry },
+  ): any {
+    const { registry } = options;
+    const methodCall = registry.createType('Extrinsic', rawTx, {
+      isSigned: true,
+    });
+    return u8aToHex(methodCall.signature).replace("0x", "0x00");
   }
 }
 
