@@ -332,4 +332,15 @@ export class Eth2 extends BaseCoin {
     const signedMessage = await keyPair.sign(messageToSign);
     return ethUtil.toBuffer(signedMessage);
   }
+
+  aggregateShares(shares: { pubShares: string[]; prvShares: string[] }): BlsKeyPair {
+    const commonPub = Eth2AccountLib.KeyPair.aggregatePubkeys(shares.pubShares);
+    const prv = Eth2AccountLib.KeyPair.aggregatePrvkeys(shares.prvShares);
+
+    return {
+      pub: commonPub,
+      prv,
+      secretShares: shares.prvShares,
+    };
+  }
 }

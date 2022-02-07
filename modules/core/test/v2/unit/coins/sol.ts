@@ -125,6 +125,7 @@ describe('SOL:', function () {
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
       validTransaction.should.equal(true);
     });
+
     it('should handle txBase64 and txHex interchangeably', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -133,37 +134,43 @@ describe('SOL:', function () {
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
       validTransaction.should.equal(true);
     });
+
+    it('should verify when input `recipients` is absent', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce });
+      validTransaction.should.equal(true);
+    });
+
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
+
     it('should fail verify transactions when have different durableNonce', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorDurableNonce }).should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
     });
+
     it('should fail verify transactions when have different feePayer', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txInfo.feePayer = errorFeePayer;
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo }).should.be.rejectedWith('Tx fee payer does not match with txParams fee payer');
     });
+
     it('should fail verify transactions when have different blockhash', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txInfo.nonce = errorBlockhash;
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo }).should.be.rejectedWith('Tx blockhash does not match with nonce param');
     });
+
     it('should fail verify transactions when have different recipients', async function () {
       const txParams = newTxParamsWithError();
-      const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-
-    it('should fail verify transactions when recipients is undefined', async function () {
-      const txParams = newTxParams();
-      txParams.recipients = undefined;
       const txPrebuild = newTxPrebuild();
       await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
@@ -177,15 +184,15 @@ describe('SOL:', function () {
 
     it('should verify activate staking transaction', async function () {
       const tx = await factory
-          .getStakingActivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .validator(validator.pub)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingActivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .validator(validator.pub)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -203,14 +210,14 @@ describe('SOL:', function () {
 
     it('should verify withdraw staking transaction', async function () {
       const tx = await factory
-          .getStakingWithdrawBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -228,13 +235,13 @@ describe('SOL:', function () {
 
     it('should verify deactivate staking transaction', async function () {
       const tx = await factory
-          .getStakingDeactivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingDeactivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
@@ -535,15 +542,15 @@ describe('SOL:', function () {
 
     it('should explain activate staking transaction', async function () {
       const tx = await factory
-          .getStakingActivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .validator(validator.pub)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingActivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .validator(validator.pub)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -587,13 +594,13 @@ describe('SOL:', function () {
 
     it('should explain deactivate staking transaction', async function () {
       const tx = await factory
-          .getStakingDeactivateBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingDeactivateBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -632,14 +639,14 @@ describe('SOL:', function () {
 
     it('should explain withdraw staking transaction', async function () {
       const tx = await factory
-          .getStakingWithdrawBuilder()
-          .stakingAddress(stakeAccount.pub)
-          .sender(wallet.pub)
-          .nonce(blockHash)
-          .amount(amount)
-          .memo('test memo')
-          .fee({ amount: 5000 })
-          .build();
+        .getStakingWithdrawBuilder()
+        .stakingAddress(stakeAccount.pub)
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .amount(amount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: txToBroadcastFormat,
@@ -752,6 +759,7 @@ describe('SOL:', function () {
         const derivedKeypair = basecoin.deriveKeypair(params);
         basecoin.isValidPrv(derivedKeypair.prv).should.true();
         basecoin.isValidPub(derivedKeypair.pub).should.true();
+        basecoin.isValidAddress(derivedKeypair.address).should.true();
         params.index++;
       }
     });

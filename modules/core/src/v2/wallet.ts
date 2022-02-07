@@ -122,6 +122,9 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   // Consolidate ID is used for consolidate account transactions and indicates if this is
   // a consolidation and what consolidate group it should be referenced by.
   consolidateId?: string;
+  consolidationDetails?: {
+    senderAddressIndex: number;
+  };
 }
 
 export interface CustomSigningFunction {
@@ -1414,7 +1417,7 @@ export class Wallet {
         });
 
         if (derivedKeypair) {
-          addressParams.derivedAddress = derivedKeypair.pub;
+          addressParams.derivedAddress = derivedKeypair.address;
           addressParams.index = newChainIndex;
         }
       }
@@ -1927,13 +1930,13 @@ export class Wallet {
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
 
-    const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId })) as any;
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
 
-    const txPrebuild = (await txPrebuildQuery) as any;
+    const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
       await this.baseCoin.verifyTransaction({
-        txParams: params,
+        txParams: txPrebuild.buildParams || params,
         txPrebuild,
         wallet: this,
         verification: params.verification ?? {},
@@ -1949,7 +1952,6 @@ export class Wallet {
       console.trace(e);
       throw e;
     }
-
     // pass our three keys
     const signingParams = {
       ...params,
@@ -1961,6 +1963,35 @@ export class Wallet {
       keychain: keychains[0],
       pubs: keychains.map((k) => k.pub),
     };
+
+    if (txPrebuild.consolidationDetails && this.baseCoin.supportsDerivationKeypair()) {
+      const encryptedDerivationPrv = keychains[0].addressDerivationKeypair?.encryptedPrv;
+      const derivationPub = keychains[0].addressDerivationKeypair?.pub || ''; // required but no used
+      if (_.isNil(encryptedDerivationPrv)) {
+        throw new Error('Derivation Private Key not found');
+      }
+
+      if (_.isNil(params.walletPassphrase)) {
+        throw new Error('Missing is passphrase');
+      }
+
+      const decryptedDerivationPrv = this.bitgo.decrypt({
+        password: params.walletPassphrase,
+        input: encryptedDerivationPrv,
+      });
+
+      const derivedKeypair = this.baseCoin.deriveKeypair({
+        index: txPrebuild.consolidationDetails.senderAddressIndex,
+        addressDerivationPrv: decryptedDerivationPrv,
+        addressDerivationPub: derivationPub,
+      });
+
+      if (_.isNil(derivedKeypair)) {
+        throw new Error('Derivation failed');
+      }
+
+      signingParams.prv = derivedKeypair.prv;
+    }
 
     try {
       return await this.signTransaction(signingParams);
