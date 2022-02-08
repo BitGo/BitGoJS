@@ -1,4 +1,5 @@
 import * as bs58 from 'bs58';
+import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
 import Eddsa, { KeyShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 
@@ -72,12 +73,27 @@ export class TssUtils {
       throw new Error('Failed to create user keychain - commonPubs do not match.');
     }
 
-    return await this.baseCoin.keychains().add({
+    const userKeychainParams: any = {
       source: 'user',
       type: 'tss',
       commonPub: bs58.encode(Buffer.from(userCombined.pShare.y, 'hex')),
       encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userCombined.pShare), password: passphrase }),
-    });
+    };
+
+    if (this.baseCoin.supportsDerivationKeypair()) {
+      const addressDerivationKeypair = this.baseCoin.keychains().create();
+      if (!addressDerivationKeypair.pub) {
+        throw new Error('Expected address derivation keypair to contain a public key.');
+      }
+
+      const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: addressDerivationKeypair.prv });
+      userKeychainParams.addressDerivationKeypair = {
+        pub: addressDerivationKeypair.pub,
+        encryptedPrv: encryptedPrv,
+      };
+    }
+
+    return await this.baseCoin.keychains().add(userKeychainParams);
   }
 
   /**
@@ -229,11 +245,13 @@ export class TssUtils {
     const userKeyShare = MPC.keyShare(1, m, n);
     const backupKeyShare = MPC.keyShare(2, m, n);
 
+    const randomHexString = crypto.randomBytes(12).toString('hex');
+
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
-          name: 'randomstring',
-          email: 'randomstring@random.com',
+          name: randomHexString,
+          email: `${randomHexString}@${randomHexString}.com`,
         },
       ],
     });
