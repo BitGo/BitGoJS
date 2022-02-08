@@ -202,10 +202,10 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
+      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
       should.deepEqual(txJson.eraPeriod, 64);
     });
   });
