@@ -4,17 +4,19 @@ import { BatchTransactionBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
+import utils from '../../../../../src/coin/dot/utils';
 
 describe('Dot Batch Transaction Builder', () => {
   let builder: BatchTransactionBuilder;
 
-  const specVersion = 9150;
+  const config = buildTestConfig();
+  const materialData = utils.getMaterial(config);
   const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
   const sender = DotResources.accounts.account1;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new BatchTransactionBuilder(config);
+    builder = new BatchTransactionBuilder(config).material(materialData);
   });
 
   describe('setter validation', () => {
@@ -56,10 +58,10 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.blockNumber, 9279281);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -87,10 +89,10 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.blockNumber, 9266787);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -114,10 +116,10 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.blockNumber, 9266787);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -144,10 +146,10 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.blockNumber, 9266787);
       should.deepEqual(txJson.referenceBlock, referenceBlock);
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
-      should.deepEqual(txJson.specVersion, specVersion);
+      should.deepEqual(txJson.specVersion, materialData.specVersion);
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, 8);
+      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
