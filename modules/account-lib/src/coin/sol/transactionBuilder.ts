@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseTransactionBuilder, Interface, TransactionType } from '../baseCoin';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, FeeOptions, PublicKey as BasePublicKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
@@ -13,14 +13,9 @@ import assert from 'assert';
 import { DurableNonceParams, InstructionParams, Memo, Nonce } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
 
-interface Signature {
-  signature: Buffer;
-  publicKey: PublicKey;
-}
-
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
-  private _signatures: Signature[] = [];
+  private _signatures: Interface.Signature[] = [];
   private _lamportsPerSignature: number;
 
   protected _sender: string;
@@ -129,7 +124,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     for (const signature of this._signatures) {
-      tx.addSignature(signature.publicKey, signature.signature);
+      const solPublicKey = new PublicKey(signature.publicKey.pub);
+      tx.addSignature(solPublicKey, signature.signature);
     }
 
     return tx;
@@ -159,11 +155,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    const solPublicKey = new PublicKey(publicKey.pub);
-    this._signatures.push({
-      publicKey: solPublicKey,
-      signature: signature,
-    });
+    this._signatures.push({ publicKey, signature });
   }
 
   /**
