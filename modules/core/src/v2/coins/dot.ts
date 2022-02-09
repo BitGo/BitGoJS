@@ -66,7 +66,7 @@ export class Dot extends BaseCoin {
     return 'Polkadot';
   }
 
-  getBaseFactor(): any {
+  getBaseFactor(): number {
     return 1e12;
   }
 
@@ -192,7 +192,7 @@ export class Dot extends BaseCoin {
    */
   explainTransaction(
     params: ExplainTransactionOptions,
-  ): Promise<any> {
+  ): Promise<never> {
     throw new MethodNotImplementedError('Dot recovery not implemented');
   }
 
@@ -245,7 +245,7 @@ export class Dot extends BaseCoin {
       .version(transactionVersion)
       .sender({ address: sender })
       .sign({ key: keyPair.getKeys().prv });
-    const transaction: any = await txBuilder.build();
+    const transaction = await txBuilder.build();
     if (!transaction) {
       throw new Error('Invalid transaction');
     }
@@ -257,7 +257,7 @@ export class Dot extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: any): Promise<any> {
+  async recover(params: never): Promise<never> {
     throw new MethodNotImplementedError('Dot recovery not implemented');
   }
 
