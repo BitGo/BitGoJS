@@ -67,8 +67,8 @@ export class Utils implements BaseUtils {
     const publicKey = decodeAddress(address);
     const hexPublicKey = u8aToHex(publicKey);
 
-    let valid = signatureVerify(signedMessage, signature, hexPublicKey).isValid;
-    return valid;
+    let valid = signatureVerify(signedMessage, signature, hexPublicKey);
+    return valid.isValid;
   }
 
   /** @inheritdoc */
@@ -181,7 +181,7 @@ export class Utils implements BaseUtils {
    * @param registry Transaction registry
    * @returns string Serialized transaction
    */
-  serializeSignedTransaction(transaction, signature, metadataRpc: `0x${string}`, registry): string {
+  serializeSignedTransaction(transaction: UnsignedTransaction, signature, metadataRpc: `0x${string}`, registry: TypeRegistry): string {
     return construct.signedTx(transaction, signature, {
       metadataRpc,
       registry,

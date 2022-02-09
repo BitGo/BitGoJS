@@ -71,6 +71,9 @@ export class Transaction extends BaseTransaction {
    * @param {string} signature
    */
   addSignature(signature: string): void {
+    if(!this.verifySignature(signature)){
+      throw new Error("Invalid signature");
+    }
     this._signedTransaction = utils.serializeSignedTransaction(
         this._dotTransaction,
         signature,

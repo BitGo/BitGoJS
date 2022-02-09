@@ -9,6 +9,7 @@ import { buildTestConfig } from './transactionBuilder/base';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { getRegistry } from '@substrate/txwrapper-polkadot';
 import { PolkadotSpecNameType } from '@bitgo/statics';
+import { createMetadata } from '@substrate/txwrapper-polkadot';
 
 class StubTransaction extends Transaction {
   private _txJson: TxData;
@@ -87,15 +88,16 @@ describe('Dot Transaction', () => {
       builder
           .validity({ firstValid: 3933 })
           .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-          .sender({ address: DotResources.accounts.account1.address });
+          //.sender({ address: DotResources.accounts.account1.address });
       const tx = (await builder.build()) as Transaction;
-      const _registry: TypeRegistry = getRegistry({
+      const registry: TypeRegistry = getRegistry({
         chainName: material.chainName,
         specName: material.specName as PolkadotSpecNameType,
         specVersion: material.specVersion,
         metadataRpc: material.metadata as `0x${string}`,
       });
-      const signature = utils.recoverSignatureFromRawTx(DotResources.rawTx.transfer.signed, {registry: _registry});
+      registry.setMetadata(createMetadata(registry, material.metadata));
+      const signature = utils.recoverSignatureFromRawTx(DotResources.rawTx.transfer.signed, {registry});
       should.equal(tx.verifySignature(signature), true);
     });
   });
