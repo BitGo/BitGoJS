@@ -2,7 +2,7 @@ import * as bs58 from 'bs58';
 import * as _ from 'lodash';
 import * as nock from 'nock';
 import * as openpgp from 'openpgp';
-import 'should';
+import * as should from 'should';
 
 import Eddsa, { KeyShare } from '../../../../../account-lib/dist/src/mpc/tss';
 import { Keychain } from '../../../../src';
@@ -14,10 +14,14 @@ describe('TSS Utils:', async function () {
   let MPC;
   let bgUrl: string;
   let tssUtils: TssUtils;
+  let bitgoKeyShare;
 
   const coinName = 'tsol';
 
   before(async function () {
+    MPC = await Eddsa();
+    bitgoKeyShare = await MPC.keyShare(3, 2, 3);
+
     const bitGoGPGKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -46,10 +50,6 @@ describe('TSS Utils:', async function () {
     tssUtils = new TssUtils(bitgo, baseCoin);
   });
 
-  before(async function () {
-    MPC = await Eddsa();
-  });
-
   it('should generate TSS key chains', async function () {
     const userKeyShare = MPC.keyShare(1, 2, 3);
     const backupKeyShare = MPC.keyShare(2, 2, 3);
@@ -69,7 +69,7 @@ describe('TSS Utils:', async function () {
       userGpgKey,
     });
     const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
-    const nockedBackupKeychain = await nockBackupKeychain({ coin: coinName });
+    await nockBackupKeychain({ coin: coinName });
 
     const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
     const userKeychain = await tssUtils.createUserKeychain(
@@ -85,9 +85,15 @@ describe('TSS Utils:', async function () {
       bitgoKeychain,
       'passphrase');
 
+    const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoKeyShare.yShares[2]]);
+
     bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
     userKeychain.should.deepEqual(nockedUserKeychain);
-    backupKeychain.should.deepEqual(nockedBackupKeychain);
+
+    // unencrypted `prv` property should exist on backup keychain
+    JSON.stringify(backupCombined.pShare).should.equal(backupKeychain.prv);
+    should.exist(backupKeychain.encryptedPrv);
+
   });
 
   it('should fail to generate TSS key chains', async function () {
@@ -150,7 +156,6 @@ describe('TSS Utils:', async function () {
     backupKeyShare: KeyShare,
     userGpgKey: openpgp.SerializedKeyPair<string>,
   }): Promise<Keychain> {
-    const bitgoKeyShare = MPC.keyShare(3, 2, 3);
     const bitgoCombined = MPC.keyCombine(bitgoKeyShare.uShare, [params.userKeyShare.yShares[3], params.backupKeyShare.yShares[3]]);
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
 
@@ -161,7 +166,9 @@ describe('TSS Utils:', async function () {
       format: 'armored',
     });
 
-    const bitgoToBackupMessage = await openpgp.createMessage({ text: bitgoKeyShare.yShares[2].u });
+    const bitgoToBackupMessage = await openpgp.createMessage({
+      text: Buffer.from(bitgoKeyShare.yShares[2].u, 'hex').toString('hex')
+    });
     const encryptedBitgoToBackupMessage = await openpgp.encrypt({
       message: bitgoToBackupMessage,
       encryptionKeys: [userGpgKeyActual.toPublic()],
