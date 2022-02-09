@@ -3,7 +3,7 @@ import { BaseCoin } from '../baseCoin';
 import { Dot } from './dot';
 
 export class Tdot extends Dot {
-  constructor(bitgo) {
+  constructor(bitgo: BitGo) {
     super(bitgo);
   }
 
