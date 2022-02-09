@@ -57,7 +57,7 @@ interface YShare {
   u: string;
 }
 
-interface KeyShare {
+export interface KeyShare {
   uShare: UShare;
   yShares: Record<string, YShare>;
 }

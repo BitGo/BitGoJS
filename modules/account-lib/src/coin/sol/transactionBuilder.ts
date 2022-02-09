@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseTransactionBuilder, Interface, TransactionType } from '../baseCoin';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey, FeeOptions } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, FeeOptions, PublicKey as BasePublicKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { isValidAddress, isValidBlockId, isValidMemo, validateAddress, validateRawTransaction } from './utils';
@@ -15,6 +15,7 @@ import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
+  private _signatures: Interface.Signature[] = [];
   private _lamportsPerSignature: number;
 
   protected _sender: string;
@@ -121,6 +122,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       assert(secretKey instanceof Uint8Array);
       tx.partialSign({ publicKey, secretKey });
     }
+
+    for (const signature of this._signatures) {
+      const solPublicKey = new PublicKey(signature.publicKey.pub);
+      tx.addSignature(solPublicKey, signature.signature);
+    }
+
     return tx;
   }
 
@@ -144,6 +151,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._signers.push(signer);
 
     return this._transaction;
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
   }
 
   /**

@@ -14,6 +14,8 @@ export interface Keychain {
   encryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
+  commonPub?: string;
+  keyShares?: KeyShare[];
   addressDerivationKeypair?: {
     pub: string;
     encryptedPrv: string;
@@ -54,6 +56,7 @@ interface UpdateSingleKeychainPasswordOptions {
 
 interface AddKeychainOptions {
   pub?: string;
+  commonPub?: string;
   encryptedPrv?: string;
   type?: string;
   source?: string;
@@ -63,11 +66,21 @@ interface AddKeychainOptions {
   disableKRSEmail?: boolean;
   provider?: string;
   reqId?: RequestTracer;
-  krsSpecific?: any
+  krsSpecific?: any;
+  keyShares?: KeyShare[];
+  userGPGPublicKey?: string;
+  backupGPGPublicKey?: string;
   addressDerivationKeypair?: {
     pub: string;
     encryptedPrv: string;
   };
+}
+
+interface KeyShare {
+  from: string;
+  to: string;
+  publicShare: string;
+  privateShare: string;
 }
 
 export interface CreateBackupOptions {
@@ -77,6 +90,9 @@ export interface CreateBackupOptions {
   krsSpecific?: any;
   type?: string;
   reqId?: RequestTracer;
+  commonPub?: string;
+  prv?: string;
+  encryptedPrv?: string;
 }
 
 interface CreateBitGoOptions {
@@ -271,6 +287,7 @@ export class Keychains {
     return await this.bitgo.post(this.baseCoin.url('/key'))
       .send({
         pub: params.pub,
+        commonPub: params.commonPub,
         encryptedPrv: params.encryptedPrv,
         type: params.type,
         source: params.source,
@@ -280,6 +297,9 @@ export class Keychains {
         derivedFromParentWithSeed: params.derivedFromParentWithSeed,
         disableKRSEmail: params.disableKRSEmail,
         krsSpecific: params.krsSpecific,
+        keyShares: params.keyShares,
+        userGPGPublicKey: params.userGPGPublicKey,
+        backupGPGPublicKey: params.backupGPGPublicKey,
         addressDerivationKeypair: params.addressDerivationKeypair,
       })
       .result();
@@ -304,7 +324,9 @@ export class Keychains {
   async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
     params.source = 'backup';
 
-    if (_.isUndefined(params.provider)) {
+    const isTssBackupKey = params.prv && params.encryptedPrv && params.commonPub;
+
+    if (_.isUndefined(params.provider) && !isTssBackupKey) {
       // if the provider is undefined, we generate a local key and add the source details
       const key = this.create();
       _.extend(params, key);

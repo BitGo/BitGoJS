@@ -98,6 +98,10 @@ export class Sol extends BaseCoin {
     return true;
   }
 
+  supportsTss(): boolean {
+    return true;
+  }
+
   getChain(): string {
     return this._staticsCoin.name;
   }

@@ -7,8 +7,12 @@ import * as nock from 'nock';
 import * as common from '../../../src/common';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
+import * as sinon from 'sinon';
+import { Wallets } from '../../../src';
+import { TssUtils } from '../../../src/v2/internal/tssUtils';
 
 describe('V2 Wallets:', function () {
+  const bitgo = new TestBitGo({ env: 'mock' });
   let wallets;
   let bgUrl;
 
@@ -18,7 +22,6 @@ describe('V2 Wallets:', function () {
       .get('/api/v1/client/constants')
       .reply(200, { ttl: 3600, constants: {} });
 
-    const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
 
     const basecoin = bitgo.coin('tbtc');
@@ -341,6 +344,7 @@ describe('V2 Wallets:', function () {
           const params = {
             label: `${coinName} wallet`,
             passphrase: 'test123',
+            multisigType: 'onchain',
           };
 
           // bitgo key
@@ -381,6 +385,65 @@ describe('V2 Wallets:', function () {
         });
       });
 
+    });
+  });
+
+  describe('Generate TSS wallet:', function() {
+    const tsol = bitgo.coin('tsol');
+
+    it('should create a new TSS wallet', async function () {
+      const stubTssUtils = new TssUtils(bitgo, tsol);
+      sinon.stub(stubTssUtils, 'createKeychains').returns(Promise.resolve({
+        userKeychain: {
+          id: '1',
+          pub: '',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: '',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: '',
+        },
+      }));
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet')
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, tsol, stubTssUtils);
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss',
+      });
+
+      walletNock.isDone().should.be.true();
+      sinon.verify();
+    });
+
+    it('should fail to create TSS wallet with invalid inputs', async function () {
+      const tbtc = bitgo.coin('tbtc');
+      const wallets = new Wallets(bitgo, tbtc, new TssUtils(bitgo, tbtc));
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'passphrase',
+        multisigType: 'tss',
+      }).should.be.rejectedWith('coin btc does not support TSS at this time');
+
+      const tsolWallets = new Wallets(bitgo, tsol, new TssUtils(bitgo, tsol));
+      await tsolWallets.generateWallet({
+        label: 'tss wallet',
+      }).should.be.rejectedWith('cannot generate TSS keys without passphrase');
+
+      await tsolWallets.generateWallet({
+        label: 'tss cold wallet',
+        passphrase: 'passphrase',
+        userKey: 'user key',
+      }).should.be.rejectedWith('TSS cold wallets are not supported at this time');
     });
   });
 
