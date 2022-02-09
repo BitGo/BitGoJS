@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseAddress, BaseKey } from './iface';
+import { BaseAddress, BaseKey, PublicKey } from './iface';
 import { BaseTransaction } from './baseTransaction';
 import { SigningError } from './errors';
 
@@ -50,6 +50,16 @@ export abstract class BaseTransactionBuilder {
     }
 
     this.transaction = this.signImplementation(key);
+  }
+
+  /**
+   * Adds a signature to the transaction.
+   *
+   * @param publicKey public key that produced the signature
+   * @param signature raw signature as a hex encoded Buffer
+   */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    throw new SigningError(`${this.coinName()} does not support adding signatures directly.`);
   }
 
   /**
