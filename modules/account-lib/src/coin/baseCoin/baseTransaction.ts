@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey, Entry } from './iface';
 import { TransactionType } from './enum';
+import { NotImplementedError } from './errors';
 
 /**
  * Generic transaction to be extended with coin specific logic.
@@ -81,6 +82,13 @@ export abstract class BaseTransaction {
    * Return the transaction in a format it can be broadcasted to the blockchain.
    */
   abstract toBroadcastFormat(): any;
+
+  /**
+   * Returns the portion of the transaction that needs to be signed in Buffer format.
+   */
+  get signablePayload(): Buffer {
+    throw new NotImplementedError('signablePayload not implemented');
+  }
 
   /**
    * Explain/parse a given coin transaction
