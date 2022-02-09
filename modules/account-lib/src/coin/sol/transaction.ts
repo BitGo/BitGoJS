@@ -333,6 +333,8 @@ export class Transaction extends BaseTransaction {
           });
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          continue;
         default:
           continue;
       }
