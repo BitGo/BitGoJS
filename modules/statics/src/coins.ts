@@ -253,7 +253,7 @@ export const coins = CoinMap.fromCoins([
   erc20('btrst', 'Braintrust', 18, '0x799ebfabe77a6e34311eeee9825190b9ece32824', UnderlyingAsset.BTRST),
   erc20('btt', 'Blocktrade', 18, '0xfa456cf55250a839088b27ee32a424d7dacb54ff', UnderlyingAsset.BTT),
   erc20('btu', 'BTU Protocol', 18, '0xb683d83a532e2cb7dfa5275eed3698436371cc9f', UnderlyingAsset.BTU),
-  erc20('burp', 'Burp', 18, '0x33f391f4c4fe802b70b77ae37670037a92114a7c', UnderlyingAsset.BURP),
+  erc20('burp', 'Big Town Chef', 18, '0x33f391f4c4fe802b70b77ae37670037a92114a7c', UnderlyingAsset.BURP),
   erc20('busd', 'Binance USD', 18, '0x4fabb145d64652a948d72533023f6e7a623c7c53', UnderlyingAsset.BUSD),
   erc20('buy', 'buying.com', 18, '0x0d7f0fa3a79bfedbab291da357958596c74e27d7', UnderlyingAsset.BUY),
   erc20('bxx', 'Baanx', 18, '0x6b1a8f210ec6b7b6643cea3583fb0c079f367898', UnderlyingAsset.BXX),
