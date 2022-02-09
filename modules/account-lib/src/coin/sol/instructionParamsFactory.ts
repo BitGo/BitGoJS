@@ -3,9 +3,9 @@ import { SystemInstruction, TransactionInstruction } from '@solana/web3.js';
 import { TransactionType } from '../baseCoin';
 import { NotSupported } from '../baseCoin/errors';
 import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
-import { InstructionParams, WalletInit, Transfer, Nonce, Memo } from './iface';
+import { InstructionParams, WalletInit, Transfer, Nonce, Memo, TokenTransfer } from './iface';
 import { getInstructionType } from './utils';
-
+const splToken = require('@solana/spl-token');
 /**
  * Construct instructions params from Solana instructions
  *
@@ -66,8 +66,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseSendInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | Transfer> {
-  const instructionData: Array<Nonce | Memo | Transfer> = [];
+function parseSendInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | Transfer | TokenTransfer> {
+  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -97,6 +97,24 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
           },
         };
         instructionData.push(transfer);
+        break;
+      case ValidInstructionTypesEnum.TokenTransfer:
+        const tokenTransferInstruction = splToken.decodeTransferCheckedInstruction(
+          instruction,
+          splToken.TOKEN_PROGRAM_ID,
+        );
+        const tokenTransfer: TokenTransfer = {
+          type: InstructionBuilderTypes.TokenTransfer,
+          params: {
+            source: tokenTransferInstruction.keys.source.toString(),
+            fromAddress: tokenTransferInstruction.keys.owner.toString(),
+            toAddress: tokenTransferInstruction.keys.destination.toString(),
+            mint: tokenTransferInstruction.keys.mint.toString(),
+            amount: tokenTransferInstruction.data.amount.toString(),
+            multiSigners: tokenTransferInstruction.multiSigners,
+          },
+        };
+        instructionData.push(tokenTransfer);
         break;
       default:
         throw new NotSupported(

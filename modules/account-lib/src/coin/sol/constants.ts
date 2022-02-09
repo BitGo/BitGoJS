@@ -11,6 +11,7 @@ export enum ValidInstructionTypesEnum {
   Create = 'Create',
   InitializeNonceAccount = 'InitializeNonceAccount',
   Transfer = 'Transfer',
+  TokenTransfer = 'TokenTransfer',
   Memo = 'Memo',
 }
 
@@ -19,6 +20,7 @@ export enum InstructionBuilderTypes {
   Transfer = 'Transfer',
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
+  TokenTransfer = 'TokenTransfer',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -27,6 +29,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Transfer,
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
+  ValidInstructionTypesEnum.TokenTransfer,
 ];
 
 export enum walletInitInstructionIndexes {

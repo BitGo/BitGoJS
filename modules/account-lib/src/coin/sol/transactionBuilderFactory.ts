@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, TransactionType } from '../baseCoin';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
@@ -22,6 +23,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const tx = this.parseTransaction(raw);
     try {
       switch (tx.type) {
+        case TransactionType.TokenTransfer:
+          return this.getTokenTransferBuilder(tx);
         case TransactionType.Send:
           return this.getTransferBuilder(tx);
         case TransactionType.WalletInitialization:
@@ -42,6 +45,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
   }
 
   /**

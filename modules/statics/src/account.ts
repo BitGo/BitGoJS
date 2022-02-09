@@ -73,6 +73,7 @@ export interface EosCoinConstructorOptions extends AccountConstructorOptions {
 
 export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
+  mintAddress: string;
 }
 
 export interface ContractAddress extends String {
@@ -246,12 +247,14 @@ export class EosCoin extends AccountCoinToken {
  */
 export class SolCoin extends AccountCoinToken {
   public tokenAddress: string;
+  public mintAddress: string;
   constructor(options: SolCoinConstructorOptions) {
     super({
       ...options,
     });
 
     this.tokenAddress = options.tokenAddress;
+    this.mintAddress = options.mintAddress;
   }
 }
 
@@ -837,6 +840,7 @@ export function teosToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param tokenAddress Token address of this token
+ * @param mintAddress Mint authority address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -849,6 +853,7 @@ export function solToken(
   fullName: string,
   decimalPlaces: number,
   tokenAddress: string,
+  mintAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix: string = '',
@@ -862,6 +867,7 @@ export function solToken(
       fullName,
       network,
       tokenAddress,
+      mintAddress,
       prefix,
       suffix,
       features,
@@ -891,13 +897,14 @@ export function tsolToken(
   fullName: string,
   decimalPlaces: number,
   tokenAddress: string,
+  mintAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.sol
 ) {
-  return solToken(name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
+  return solToken(name, fullName, decimalPlaces, tokenAddress, mintAddress, asset, features, prefix, suffix, network);
 }
 
 /**

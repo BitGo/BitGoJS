@@ -493,6 +493,7 @@ export enum UnderlyingAsset {
   OPT = 'opt',
   ORAI = 'orai',
   ORBS = 'orbs',
+  ORCA = 'orca',
   OXT = 'oxt',
   OXY = 'oxy',
   OHM = 'ohm',

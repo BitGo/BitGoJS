@@ -146,6 +146,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.Send:
           this.setTransactionType(TransactionType.Send);
           break;
+        case TransactionType.TokenTransfer:
+          this.setTransactionType(TransactionType.TokenTransfer);
+          break;
       }
       this.loadInputsAndOutputs();
     } catch (e) {

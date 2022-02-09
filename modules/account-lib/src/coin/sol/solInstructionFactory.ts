@@ -2,8 +2,8 @@ import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.j
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
-import { InstructionParams, Memo, Nonce, Transfer, WalletInit } from './iface';
-
+import { InstructionParams, Memo, Nonce, TokenTransfer, Transfer, WalletInit } from './iface';
+const splToken = require('@solana/spl-token');
 /**
  * Construct Solana instructions from instructions params
  *
@@ -20,6 +20,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return transferInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateNonceAccount:
       return createNonceAccountInstruction(instructionToBuild);
+    case InstructionBuilderTypes.TokenTransfer:
+      return tokenTransferInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -82,6 +84,35 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
     lamports: new BigNumber(amount).toNumber(),
   });
   return [transferInstruction];
+}
+
+/**
+ * Construct Token Transfer Solana instructions
+ *
+ * @param {Transfer} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Transfer Solana instruction
+ */
+function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[] {
+  const {
+    params: { source, fromAddress, toAddress, mint, amount, multiSigners },
+  } = data;
+  assert(source, 'Missing source param');
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(toAddress, 'Missing toAddress param');
+  assert(mint, 'Missing mint param');
+  assert(amount, 'Missing toAddress param');
+  // check multiSigners? could just be []?
+  const tokenTransferInstruction = splToken.createTransferCheckedInstruction(
+    splToken.TOKEN_PROGRAM_ID,
+    new PublicKey(source),
+    new PublicKey(mint),
+    new PublicKey(toAddress),
+    new PublicKey(fromAddress),
+    multiSigners,
+    new BigNumber(amount).toNumber(),
+    6,
+  );
+  return [tokenTransferInstruction];
 }
 
 /**

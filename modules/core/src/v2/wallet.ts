@@ -371,6 +371,7 @@ export interface SendManyOptions {
     amount: string | number;
     feeLimit?: string;
     data?: string;
+    tokenName?: string;
   }[];
   numBlocks?: number;
   feeRate?: number;
@@ -2028,6 +2029,7 @@ export class Wallet {
       {
         address: params.address,
         amount: params.amount,
+        tokenName: coin.getChain(),
       },
     ];
 
@@ -2080,6 +2082,7 @@ export class Wallet {
     if (_.isObject(params.recipients)) {
       params.recipients.map(function (recipient) {
         const amount = new BigNumber(recipient.amount);
+
         if (amount.isNegative()) {
           throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
         }

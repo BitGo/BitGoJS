@@ -17,6 +17,8 @@ import {
   teosToken,
   eosToken,
   algoToken,
+  solToken,
+  tsolToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -1202,4 +1204,28 @@ export const coins = CoinMap.fromCoins([
     '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
     UnderlyingAsset['avaxc:USDC.E']
   ),
+  solToken(
+    'sol:ORCA',
+    'Orca',
+    6,
+    'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
+    '8DzsCSvbvBDYxGB4ytNF698zi6Dyo9dUBVRNjZQFHSUt', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
+    UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'ORCA'
+  ),
+  solToken(
+    'sol:USDC',
+    'USD Coin',
+    6,
+    '2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/largest
+    '2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/largest
+    UnderlyingAsset.USDC,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USDC'
+  ),
+  tsolToken('tsol:ORCA', 'Orca', 6, 'Test ORCA', UnderlyingAsset.ORCA, AccountCoin.DEFAULT_FEATURES, '', 'ORCA'),
+  tsolToken('tsol:USDC', 'USD Coin', 6, 'Test USDC', UnderlyingAsset.USDC, AccountCoin.DEFAULT_FEATURES, '', 'USDC'),
 ]);

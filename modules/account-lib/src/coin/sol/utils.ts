@@ -12,8 +12,8 @@ import BigNumber from 'bignumber.js';
 import {
   MAX_MEMO_LENGTH,
   MEMO_PROGRAM_PK,
-  ValidInstructionTypesEnum,
   VALID_SYSTEM_INSTRUCTION_TYPES,
+  ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
 } from './constants';
 import { TransactionType } from '../baseCoin';
@@ -21,6 +21,7 @@ import { NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/err
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
+const splToken = require("@solana/spl-token");
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
@@ -196,9 +197,26 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
       ValidInstructionTypesEnum.InitializeNonceAccount
   ) {
     return TransactionType.WalletInitialization;
+  } else if (isTokenTransfer(transaction)) {
+    return TransactionType.TokenTransfer;
   } else {
     return TransactionType.Send;
   }
+}
+
+function isTokenTransfer(transaction: SolTransaction): boolean {
+
+  let isTokenProgram = false;
+  let isTransfer = false;
+  for (let instr in transaction) {
+    if (instr['programId']) === 'Token Program') { // ???
+      isTokenProgram = true;
+    }
+    if (getInstructionType(instr) === 'Transfer') { // ???
+      isTransfer = true;
+    }
+  }
+  return isTokenProgram && isTransfer;
 }
 
 /**
