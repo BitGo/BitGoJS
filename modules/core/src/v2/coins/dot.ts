@@ -83,6 +83,11 @@ export class Dot extends BaseCoin {
     return true;
   }
 
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
   /**
    * Generate ed25519 key pair
    *

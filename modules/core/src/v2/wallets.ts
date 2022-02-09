@@ -1,18 +1,21 @@
 /**
  * @prettier
  */
+import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
+import * as _ from 'lodash';
+
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
+import { Keychain } from './keychains';
 import { RequestTracer as IRequestTracer } from './types';
 import { PaginationOptions, Wallet } from './wallet';
-import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 import { sanitizeLegacyPath } from '../bip32path';
 import { getSharedSecret } from '../ecdh';
-import { BigNumber } from 'bignumber.js';
 import { promiseProps } from './promise-utils';
+import { TssUtils } from './internal/tssUtils';
 
 export interface WalletWithKeychains extends KeychainsTriplet {
   wallet: Wallet;
@@ -23,6 +26,11 @@ export interface GetWalletOptions {
   allTokens?: boolean;
   reqId?: IRequestTracer;
   id?: string;
+}
+
+export interface GenerateTssWalletOptions {
+  label: string;
+  passphrase: string;
 }
 
 export interface GenerateWalletOptions {
@@ -46,6 +54,7 @@ export interface GenerateWalletOptions {
   };
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
+  multisigType?: 'onchain' | 'tss';
 }
 
 export interface GetWalletByAddressOptions {
@@ -93,10 +102,12 @@ export interface ListWalletOptions extends PaginationOptions {
 export class Wallets {
   private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
+  private readonly tssUtils: TssUtils;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, tssUtils: TssUtils) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
+    this.tssUtils = tssUtils;
   }
 
   /**
@@ -265,6 +276,7 @@ export class Wallets {
    * @param params.gasPrice
    * @param params.disableKRSEmail
    * @param params.walletVersion
+   * @param params.multisigType optional multisig type, 'onchain' or 'tss'; if absent, we will defer to the coin's default type
    * @returns {*}
    */
   async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
@@ -272,10 +284,28 @@ export class Wallets {
     if (!_.isString(params.label)) {
       throw new Error('missing required string parameter label');
     }
+
+    const isTss = params.multisigType ? params.multisigType === 'tss' : this.baseCoin.supportsTss();
     const label = params.label;
     const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
     const isCold = !canEncrypt || !!params.userKey;
+
+    if (isTss) {
+      if (!canEncrypt) {
+        throw new Error('cannot generate TSS keys without passphrase');
+      }
+
+      if (isCold) {
+        throw new Error('TSS cold wallets are not supported at this time');
+      }
+
+      if (!this.baseCoin.supportsTss()) {
+        throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
+      }
+
+      return this.generateTssWallet({ label, passphrase: passphrase! });
+    }
 
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
@@ -368,7 +398,7 @@ export class Wallets {
     const reqId = new RequestTracer();
 
     // Add the user keychain
-    const userKeychainPromise = async (): Promise<any> => {
+    const userKeychainPromise = async (): Promise<Keychain> => {
       let userKeychainParams;
       let userKeychain;
       // User provided user key
@@ -417,7 +447,7 @@ export class Wallets {
       return _.extend({}, newUserKeychain, userKeychain);
     };
 
-    const backupKeychainPromise = async (): Promise<any> => {
+    const backupKeychainPromise = async (): Promise<Keychain> => {
       if (params.backupXpubProvider) {
         // If requested, use a KRS or backup key provider
         return this.baseCoin.keychains().createBackup({
@@ -676,5 +706,48 @@ export class Wallets {
    */
   async getTotalBalances(params: Record<string, never> = {}): Promise<any> {
     return await this.bitgo.get(this.baseCoin.url('/wallet/balances')).result();
+  }
+
+  /**
+   * Generates a TSS Wallet.
+   * @param params
+   * @private
+   */
+  private async generateTssWallet(params: GenerateTssWalletOptions): Promise<WalletWithKeychains> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const walletParams: SupplementGenerateWalletOptions = {
+      label: params.label,
+      m: 2,
+      n: 3,
+      keys: [],
+      isCold: false,
+      multisigType: 'tss',
+    };
+
+    // Create TSS Keychains
+    const keychains = await this.tssUtils.createKeychains({
+      passphrase: params.passphrase,
+    });
+    const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
+    walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+
+    // Create Wallet
+    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+
+    const result: WalletWithKeychains = {
+      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+      userKeychain,
+      backupKeychain,
+      bitgoKeychain,
+    };
+
+    if (!_.isUndefined(backupKeychain.prv)) {
+      result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
+    }
+
+    return result;
   }
 }
