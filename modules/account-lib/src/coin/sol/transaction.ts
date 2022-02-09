@@ -44,6 +44,11 @@ export class Transaction extends BaseTransaction {
     return this._solTransaction.compileMessage().header.numRequiredSignatures;
   }
 
+  /** @inheritDoc */
+  get signablePayload(): Buffer {
+    return this._solTransaction.serializeMessage();
+  }
+
   /** @inheritDoc **/
   get id(): string {
     // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id

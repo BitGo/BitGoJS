@@ -1,4 +1,7 @@
 import should from 'should';
+import * as bs58 from 'bs58';
+
+import Eddsa from '../../../../../src/mpc/tss';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/sol';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -280,5 +283,155 @@ describe('Sol Transaction Builder', async () => {
       should(() => builder.validateMemo(invalidMemo)).throwError('Memo is too long');
       should((memo: string) => builder.validateMemo(memo)).throwError('Invalid memo, got: undefined');
     }
+  });
+
+  describe('add signature', () => {
+    it('should add signature to transaction', async () => {
+      const transferBuilder = factory
+        .getTransferBuilder()
+        .sender(authAccount.pub)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder.sign({ key: authAccount.prv });
+
+      const signedTransaction = await transferBuilder.build();
+      // signature is base58 encoded
+      const signature = signedTransaction.signature[0];
+
+      // verify rebuilt transaction contains signature
+      const rawTransaction = signedTransaction.toBroadcastFormat() as string;
+      const rebuiltSignedTransaction = await factory.from(rawTransaction).build();
+      rebuiltSignedTransaction.signature.should.deepEqual(signedTransaction.signature);
+
+      const transferBuilder2 = factory
+        .getTransferBuilder()
+        .sender(authAccount.pub)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder2.addSignature({ pub: authAccount.pub }, bs58.decode(signature));
+      const signedTransaction2 = await transferBuilder2.build();
+
+      // verify signatures are correct
+      signedTransaction.signature.should.deepEqual(signedTransaction2.signature);
+
+      // verify rebuilt transaction contains signature
+      const rawTransaction2 = signedTransaction2.toBroadcastFormat() as string;
+      const rebuiltTransaction2 = await factory.from(rawTransaction2).build();
+      rebuiltTransaction2.signature.should.deepEqual(signedTransaction2.signature);
+    });
+
+    it('should add TSS signature', async () => {
+      const MPC = await Eddsa();
+      const A = MPC.keyShare(1, 2, 3);
+      const B = MPC.keyShare(2, 2, 3);
+      const C = MPC.keyShare(3, 2, 3);
+
+      const A_combine = MPC.keyCombine(A.uShare, [B.yShares[1], C.yShares[1]]);
+      const B_combine = MPC.keyCombine(B.uShare, [A.yShares[2], C.yShares[2]]);
+      const C_combine = MPC.keyCombine(C.uShare, [A.yShares[3], B.yShares[3]]);
+
+      const commonPub = A_combine.pShare.y;
+      const solPublicKey = new KeyPair({ pub: commonPub });
+      const sender = solPublicKey.getAddress();
+
+      let transferBuilder = factory
+        .getTransferBuilder()
+        .sender(sender)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      const unsignedTransaction = await transferBuilder.build();
+      const signablePayload = unsignedTransaction.signablePayload;
+
+      // signing with 3-3 signatures
+      let A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[2], A_combine.jShares[3]]);
+      let B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[1], B_combine.jShares[3]]);
+      let C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[1], C_combine.jShares[2]]);
+      let A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [B_sign_share.rShares[1], C_sign_share.rShares[1]]);
+      let B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
+      let C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
+      let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
+      let rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+      transferBuilder = factory
+        .getTransferBuilder()
+        .sender(sender)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder.addSignature({ pub: sender }, rawSignature);
+
+      let signedTransaction = await transferBuilder.build();
+      signedTransaction.signature.length.should.equal(1);
+      signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
+      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+
+      // signing with A and B
+      A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[2]]);
+      B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[1]]);
+      A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [B_sign_share.rShares[1]]);
+      B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [A_sign_share.rShares[2]]);
+      signature = MPC.signCombine([A_sign, B_sign]);
+      rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+      transferBuilder = factory
+        .getTransferBuilder()
+        .sender(sender)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder.addSignature({ pub: sender }, rawSignature);
+      signedTransaction = await transferBuilder.build();
+      signedTransaction.signature.length.should.equal(1);
+      signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
+      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+
+      // signing with A and C
+      A_sign_share = MPC.signShare(signablePayload, A_combine.pShare, [A_combine.jShares[3]]);
+      C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[1]]);
+      A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [C_sign_share.rShares[1]]);
+      C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [A_sign_share.rShares[3]]);
+      signature = MPC.signCombine([A_sign, C_sign]);
+      rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+      transferBuilder = factory
+        .getTransferBuilder()
+        .sender(sender)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder.addSignature({ pub: sender }, rawSignature);
+      signedTransaction = await transferBuilder.build();
+      signedTransaction.signature.length.should.equal(1);
+      signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
+      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+
+      // signing with B and C
+      B_sign_share = MPC.signShare(signablePayload, B_combine.pShare, [B_combine.jShares[3]]);
+      C_sign_share = MPC.signShare(signablePayload, C_combine.pShare, [C_combine.jShares[2]]);
+      B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [C_sign_share.rShares[2]]);
+      C_sign = MPC.sign(signablePayload, C_sign_share.xShare, [B_sign_share.rShares[3]]);
+      signature = MPC.signCombine([B_sign, C_sign]);
+      rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+      transferBuilder = factory
+        .getTransferBuilder()
+        .sender(sender)
+        .nonce(validBlockhash)
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+      transferBuilder.addSignature({ pub: sender }, rawSignature);
+      signedTransaction = await transferBuilder.build();
+      signedTransaction.signature.length.should.equal(1);
+      signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
+      signedTransaction.id.should.equal(bs58.encode(rawSignature));
+
+      const rawTransaction = signedTransaction.toBroadcastFormat() as string;
+      const rebuiltTransaction = await factory.from(rawTransaction).build();
+      rebuiltTransaction.id.should.equal(signedTransaction.id);
+      rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
+    });
   });
 });
