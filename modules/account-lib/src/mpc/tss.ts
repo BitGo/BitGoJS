@@ -62,14 +62,14 @@ export interface KeyShare {
   yShares: Record<string, YShare>;
 }
 
-interface PShare {
+export interface PShare {
   i: string;
   x: string;
   y: string;
   prefix: string;
 }
 
-interface JShare {
+export interface JShare {
   i: string;
   j: string;
 }
@@ -79,7 +79,7 @@ interface KeyCombine {
   jShares: Record<string, JShare>;
 }
 
-interface XShare {
+export interface XShare {
   i: string;
   y: string;
   x: string;
@@ -87,19 +87,19 @@ interface XShare {
   R: string;
 }
 
-interface RShare {
+export interface RShare {
   i: string;
   j: string;
   r: string;
   R: string;
 }
 
-interface SignShare {
+export interface SignShare {
   xShare: XShare;
   rShares: Record<string, RShare>;
 }
 
-interface GShare {
+export interface GShare {
   i: string;
   y: string;
   gamma: string;
