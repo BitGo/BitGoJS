@@ -34,6 +34,14 @@ export type DkgOptions = {
   participants: number;
 };
 
+/**
+ * Representation of a Signature to be added to a Transaction.
+ */
+export type Signature = {
+  publicKey: PublicKey;
+  signature: Buffer;
+};
+
 export type BlsKeyPairOptions = DkgOptions | BlsKeys;
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey | BlsKeyPairOptions;
