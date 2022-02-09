@@ -149,11 +149,14 @@ export class TssUtils {
       throw new Error('Failed to create backup keychain - commonPubs do not match.');
     }
 
-    return await this.baseCoin.keychains().add({
+    const prv = JSON.stringify(backupCombined.pShare);
+
+    return await this.baseCoin.keychains().createBackup({
       source: 'backup',
       type: 'tss',
       commonPub,
-      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(backupCombined.pShare), password: passphrase }),
+      prv: prv,
+      encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
     });
   }
 

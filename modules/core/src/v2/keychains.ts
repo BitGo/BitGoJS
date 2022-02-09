@@ -90,6 +90,9 @@ export interface CreateBackupOptions {
   krsSpecific?: any;
   type?: string;
   reqId?: RequestTracer;
+  commonPub?: string;
+  prv?: string;
+  encryptedPrv?: string;
 }
 
 interface CreateBitGoOptions {
@@ -321,7 +324,9 @@ export class Keychains {
   async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
     params.source = 'backup';
 
-    if (_.isUndefined(params.provider)) {
+    const isTssBackupKey = params.prv && params.encryptedPrv && params.commonPub;
+
+    if (_.isUndefined(params.provider) && !isTssBackupKey) {
       // if the provider is undefined, we generate a local key and add the source details
       const key = this.create();
       _.extend(params, key);
