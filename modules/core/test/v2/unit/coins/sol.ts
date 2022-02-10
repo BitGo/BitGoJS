@@ -775,4 +775,13 @@ describe('SOL:', function () {
     });
   });
 
+  describe('Get Signing Payload', () => {
+
+    it('should return a valid signing payload', async function () {
+      const factory = accountLib.register(basecoin.getChain(), accountLib.Sol.TransactionBuilderFactory);
+      const rebuiltSignablePayload = (await factory.from(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO).build()).signablePayload;
+      const signingPayload = await basecoin.getSignablePayload(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO);
+      signingPayload.should.be.deepEqual(rebuiltSignablePayload);
+    });
+  });
 });
