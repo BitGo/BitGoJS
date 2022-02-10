@@ -7,8 +7,12 @@ import * as nock from 'nock';
 import * as common from '../../../src/common';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
+import * as sinon from 'sinon';
+import { Wallets } from '../../../src';
+import { TssUtils } from '../../../src/v2/internal/tssUtils';
 
 describe('V2 Wallets:', function () {
+  const bitgo = new TestBitGo({ env: 'mock' });
   let wallets;
   let bgUrl;
 
@@ -18,7 +22,6 @@ describe('V2 Wallets:', function () {
       .get('/api/v1/client/constants')
       .reply(200, { ttl: 3600, constants: {} });
 
-    const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
 
     const basecoin = bitgo.coin('tbtc');
@@ -330,51 +333,119 @@ describe('V2 Wallets:', function () {
       }
     });
 
-    it('should build a sol wallet and create user Key with addressDerivationKeyPair', async function () {
-      const solBitGo = new TestBitGo({ env: 'mock' });
-      solBitGo.initializeTestVars();
-      const solCoin = solBitGo.coin('tsol');
-      const solWallets = solCoin.wallets();
-      const params = {
-        label: 'sol wallet',
-        passphrase: 'test123',
+    describe('should build a wallet and create user Key with addressDerivationKeypair property', () => {
+      const coins = ['tdot', 'tsol'];
+      const coinBitGo = new TestBitGo({ env: 'mock' });
+      coins.forEach((coinName) => {
+        it(`should succeed for ${coinName}`, async () => {
+          coinBitGo.initializeTestVars();
+          const coin = coinBitGo.coin(coinName);
+          const coinWallets = coin.wallets();
+          const params = {
+            label: `${coinName} wallet`,
+            passphrase: 'test123',
+            multisigType: 'onchain',
+          };
+
+          // bitgo key
+          const bitgoNock = nock(bgUrl)
+            .post(`/api/v2/${coinName}/key`, _.matches({ source: 'bitgo' }))
+            .reply(200, {
+              source: 'bitgo',
+              pub: 'xpub661MyMwAqRbcG2BHZQ4yyTUahESFuDxGdYvi5BboL55NUw5awfZNowj7bYyxmPDcVgW7ocrVKD45u7hejWUmhXFa6G8SEMrj7wm5g9weJnH',
+              prv: 'xprv9s21ZrQH143K3Y6pTNXycKXr9CbmVmERGL17GoCBmjYPc8kSQ8F8G9QdkJGAyriQ9Bmzn3jqsmbQLzFRbgxn8rnaE4LWJuts9pjxvSeVX8F',
+            });
+
+          // user key
+          const userNock = nock(bgUrl)
+            .post(`/api/v2/${coinName}/key`, _.conforms({ addressDerivationKeypair: (a) => _.isString(a.pub) && _.isString(a.encryptedPrv) }))
+            .reply(200, (uri, requestBody) => {
+              const parsedBody = JSON.parse(requestBody as string);
+              parsedBody.should.properties(['pub', 'encryptedPrv', 'addressDerivationKeypair']);
+              parsedBody.addressDerivationKeypair.should.properties(['pub', 'encryptedPrv']);
+              return parsedBody;
+            });
+
+          // backup key
+          const backupNock = nock(bgUrl)
+            .post(`/api/v2/${coinName}/key`, _.matches({ source: 'backup' }))
+            .reply(200, (uri, requestBody) => JSON.parse(requestBody as string));
+
+          // wallet
+          const walletNock = nock(bgUrl)
+            .post(`/api/v2/${coinName}/wallet`)
+            .reply(200);
+
+          await coinWallets.generateWallet(params);
+
+          bitgoNock.isDone().should.be.true();
+          userNock.isDone().should.be.true();
+          backupNock.isDone().should.be.true();
+          walletNock.isDone().should.be.true();
+        });
+      });
+
+    });
+  });
+
+  describe('Generate TSS wallet:', function() {
+    const tsol = bitgo.coin('tsol');
+
+    it('should create a new TSS wallet', async function () {
+      const stubbedKeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+        },
       };
+      sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      // bitgo key
-      const bitgoNock = nock(bgUrl)
-        .post('/api/v2/tsol/key', _.matches({ source: 'bitgo' }))
-        .reply(200, {
-          source: 'bitgo',
-          pub: 'xpub661MyMwAqRbcG2BHZQ4yyTUahESFuDxGdYvi5BboL55NUw5awfZNowj7bYyxmPDcVgW7ocrVKD45u7hejWUmhXFa6G8SEMrj7wm5g9weJnH',
-          prv: 'xprv9s21ZrQH143K3Y6pTNXycKXr9CbmVmERGL17GoCBmjYPc8kSQ8F8G9QdkJGAyriQ9Bmzn3jqsmbQLzFRbgxn8rnaE4LWJuts9pjxvSeVX8F',
-        });
-
-      // user key
-      const userNock = nock(bgUrl)
-        .post('/api/v2/tsol/key', _.conforms({ addressDerivationKeypair: (a) => _.isString(a.pub) && _.isString(a.encryptedPrv) }))
-        .reply(200, (uri, requestBody) => {
-          const parsedBody = JSON.parse(requestBody);
-          parsedBody.should.properties(['pub', 'encryptedPrv', 'addressDerivationKeypair']);
-          parsedBody.addressDerivationKeypair.should.properties(['pub', 'encryptedPrv']);
-          return parsedBody;
-        });
-
-      // backup key
-      const backupNock = nock(bgUrl)
-        .post('/api/v2/tsol/key', _.matches({ source: 'backup' }))
-        .reply(200, (uri, requestBody) => JSON.parse(requestBody));
-
-      // wallet
-      const walletNock = nock(bgUrl)
+      const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet')
         .reply(200);
 
-      await solWallets.generateWallet(params);
+      const wallets = new Wallets(bitgo, tsol);
 
-      bitgoNock.isDone().should.be.true();
-      userNock.isDone().should.be.true();
-      backupNock.isDone().should.be.true();
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss',
+      });
+
       walletNock.isDone().should.be.true();
+      sinon.verify();
+    });
+
+    it('should fail to create TSS wallet with invalid inputs', async function () {
+
+
+      const tbtc = bitgo.coin('tbtc');
+      const wallets = new Wallets(bitgo, tbtc);
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'passphrase',
+        multisigType: 'tss',
+      }).should.be.rejectedWith('coin btc does not support TSS at this time');
+
+      const tsolWallets = new Wallets(bitgo, tsol);
+      await tsolWallets.generateWallet({
+        label: 'tss wallet',
+      }).should.be.rejectedWith('cannot generate TSS keys without passphrase');
+
+      await tsolWallets.generateWallet({
+        label: 'tss cold wallet',
+        passphrase: 'passphrase',
+        userKey: 'user key',
+      }).should.be.rejectedWith('TSS cold wallets are not supported at this time');
     });
   });
 

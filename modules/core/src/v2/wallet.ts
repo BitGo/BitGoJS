@@ -122,6 +122,9 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   // Consolidate ID is used for consolidate account transactions and indicates if this is
   // a consolidation and what consolidate group it should be referenced by.
   consolidateId?: string;
+  consolidationDetails?: {
+    senderAddressIndex: number;
+  };
 }
 
 export interface CustomSigningFunction {
@@ -268,6 +271,22 @@ export interface GetAddressOptions {
   address?: string;
   id?: string;
   reqId?: RequestTracer;
+}
+
+export interface DeployForwardersOptions {
+  address?: string;
+  id?: string;
+}
+
+export interface FlushForwarderTokenOptions {
+  address?: string;
+  id?: string;
+  tokenName: string;
+  gasPrice?: number;
+  eip1559?: {
+    maxPriorityFeePerGas: number;
+    maxFeePerGas: number;
+  };
 }
 
 export interface CreateAddressApiParams {
@@ -1094,6 +1113,57 @@ export class Wallet {
     }
     this._wallet = await this.bitgo.put(this.url()).send(forwarderFlags).result();
   }
+
+  /**
+   * To manually deploy an ETH address
+   *
+   * @param {Object} params - parameters object
+   * @param {String} [params.address] - addressId
+   * @param {String} [params.id] - addressId could be received also as id
+   * @returns {Object} Http response
+   */
+  async deployForwarders(params: DeployForwardersOptions): Promise<any> {
+    if (_.isUndefined(params.address) && _.isUndefined(params.id)) {
+      throw new Error('address or id of address required');
+    }
+    let query;
+    if (params.address) {
+      query = params.address;
+    } else {
+      query = params.id;
+    }
+    const url = this.url(`/address/${encodeURIComponent(query)}/deployment`);
+    this._wallet = await this.bitgo.post(url).send(params).result();
+    return this._wallet;
+  }
+
+  /**
+   * To manually forward tokens from an ETH or CELO address
+   *
+   * @param {Object} params - parameters object
+   * @param {String} params.tokenName - Name of token that needs to be forwarded from the address
+   * @param {String} [params.address] -
+   * @param {String} [params.address] - addressId
+   * @param {String} [params.id] - addressId could be received also as id
+   * @param {String} [params.gasPrice] - Explicit gas price to use when forwarding token from the forwarder contract (ETH and Celo only). If not given, defaults to the current estimated network gas price.
+   * @param {String} [params.eip1559] - Specify eip1559 fee parameters in token forwarding transaction.
+   * @returns {Object} Http response
+   */
+  async flushForwarderToken(params: FlushForwarderTokenOptions): Promise<any> {
+    if (_.isUndefined(params.address) && _.isUndefined(params.id)) {
+      throw new Error('address or id of address required');
+    }
+    let query;
+    if (params.address) {
+      query = params.address;
+    } else {
+      query = params.id;
+    }
+    const url = this.url(`/address/${encodeURIComponent(query)}/tokenforward`);
+    this._wallet = await this.bitgo.post(url).send(params).result();
+    return this._wallet;
+  }
+
   /**
    * Sweep funds for a wallet
    *
@@ -1414,7 +1484,7 @@ export class Wallet {
         });
 
         if (derivedKeypair) {
-          addressParams.derivedAddress = derivedKeypair.pub;
+          addressParams.derivedAddress = derivedKeypair.address;
           addressParams.index = newChainIndex;
         }
       }
@@ -1927,13 +1997,13 @@ export class Wallet {
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
 
-    const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId })) as any;
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
 
-    const txPrebuild = (await txPrebuildQuery) as any;
+    const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
 
     try {
       await this.baseCoin.verifyTransaction({
-        txParams: params,
+        txParams: txPrebuild.buildParams || params,
         txPrebuild,
         wallet: this,
         verification: params.verification ?? {},
@@ -1949,7 +2019,6 @@ export class Wallet {
       console.trace(e);
       throw e;
     }
-
     // pass our three keys
     const signingParams = {
       ...params,
@@ -1961,6 +2030,35 @@ export class Wallet {
       keychain: keychains[0],
       pubs: keychains.map((k) => k.pub),
     };
+
+    if (txPrebuild.consolidationDetails && this.baseCoin.supportsDerivationKeypair()) {
+      const encryptedDerivationPrv = keychains[0].addressDerivationKeypair?.encryptedPrv;
+      const derivationPub = keychains[0].addressDerivationKeypair?.pub || ''; // required but no used
+      if (_.isNil(encryptedDerivationPrv)) {
+        throw new Error('Derivation Private Key not found');
+      }
+
+      if (_.isNil(params.walletPassphrase)) {
+        throw new Error('Missing is passphrase');
+      }
+
+      const decryptedDerivationPrv = this.bitgo.decrypt({
+        password: params.walletPassphrase,
+        input: encryptedDerivationPrv,
+      });
+
+      const derivedKeypair = this.baseCoin.deriveKeypair({
+        index: txPrebuild.consolidationDetails.senderAddressIndex,
+        addressDerivationPrv: decryptedDerivationPrv,
+        addressDerivationPub: derivationPub,
+      });
+
+      if (_.isNil(derivedKeypair)) {
+        throw new Error('Derivation failed');
+      }
+
+      signingParams.prv = derivedKeypair.prv;
+    }
 
     try {
       return await this.signTransaction(signingParams);

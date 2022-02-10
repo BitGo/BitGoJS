@@ -1,10 +1,7 @@
 /**
  * @prettier
  */
-import * as bodyParser from 'body-parser';
-import * as bluebird from 'bluebird';
-import * as url from 'url';
-import * as debugLib from 'debug';
+import { CoinFamily } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGo,
@@ -15,8 +12,12 @@ import {
   SignedTransaction,
   TransactionPrebuild,
 } from 'bitgo';
-import * as _ from 'lodash';
+import * as bodyParser from 'body-parser';
+import * as debugLib from 'debug';
 import * as express from 'express';
+import type { ParamsDictionary } from 'express-serve-static-core';
+import * as _ from 'lodash';
+import * as url from 'url';
 import * as superagent from 'superagent';
 
 // RequestTracer should be extracted into a separate npm package (along with
@@ -25,7 +26,6 @@ import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
 import { ApiResponseError } from './errors';
-import { CoinFamily } from '@bitgo/statics';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -710,7 +710,7 @@ async function handleProxyReq(req: express.Request, res: express.Response, next:
 
   // user tried to access a url which is not an api route, do not proxy
   debug('unable to proxy %s request to %s', req.method, fullUrl);
-  res.status(404).send('bitgo-express can only proxy BitGo API requests');
+  throw new ApiResponseError('bitgo-express can only proxy BitGo API requests', 404);
 }
 
 /**
@@ -770,57 +770,57 @@ function prepareBitGo(config: Config) {
   };
 }
 
+type RequestHandlerResponse = string | unknown | undefined;
+interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, RequestHandlerResponse> {
+  (req: express.Request, res: express.Response, next: express.NextFunction):
+    | RequestHandlerResponse
+    | Promise<RequestHandlerResponse>;
+}
+
+function handleRequestHandlerError(res: express.Response, error: unknown) {
+  let err;
+  if (error instanceof Error) {
+    err = error;
+  } else if (typeof error === 'string') {
+    err = new Error('(string_error) ' + error);
+  } else {
+    err = new Error('(object_error) ' + JSON.stringify(error));
+  }
+
+  const message = err.message || 'local error';
+  // use attached result, or make one
+  let result = err.result || { error: message };
+  result = _.extend({}, result, {
+    message: err.message,
+    bitgoJsVersion: version,
+    bitgoExpressVersion: pjson.version,
+  });
+  const status = err.status || 500;
+  if (!(status >= 200 && status < 300)) {
+    console.log('error %s: %s', status, err.message);
+  }
+  if (status >= 500 && status <= 599) {
+    if (err.response && err.response.request) {
+      console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+    }
+    console.log(err.stack);
+  }
+  res.status(status).send(result);
+}
+
 /**
  * Promise handler wrapper to handle sending responses and error cases
  * @param promiseRequestHandler
  */
-function promiseWrapper(promiseRequestHandler: express.RequestHandler) {
-  return function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
+function promiseWrapper(promiseRequestHandler: RequestHandler) {
+  return async function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
-    bluebird
-      .try(promiseRequestHandler.bind(null, req, res, next))
-      .then(function (result: any) {
-        let status = 200;
-        if (result.__redirect) {
-          res.redirect(result.url);
-          status = 302;
-        } else if (result.__render) {
-          res.render(result.template, result.params);
-        } else {
-          res.status(status).send(result);
-        }
-      })
-      .catch(function (caught) {
-        let err;
-        if (caught instanceof Error) {
-          err = caught;
-        } else if (typeof caught === 'string') {
-          err = new Error('(string_error) ' + caught);
-        } else {
-          err = new Error('(object_error) ' + JSON.stringify(caught));
-        }
-
-        const message = err.message || 'local error';
-        // use attached result, or make one
-        let result = err.result || { error: message };
-        result = _.extend({}, result, {
-          message: err.message,
-          bitgoJsVersion: version,
-          bitgoExpressVersion: pjson.version,
-        });
-        const status = err.status || 500;
-        if (!(status >= 200 && status < 300)) {
-          console.log('error %s: %s', status, err.message);
-        }
-        if (status >= 500 && status <= 599) {
-          if (err.response && err.response.request) {
-            console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
-          }
-          console.log(err.stack);
-        }
-        res.status(status).send(result);
-      })
-      .done();
+    try {
+      const result = await promiseRequestHandler(req, res, next);
+      res.status(200).send(result);
+    } catch (e: unknown) {
+      handleRequestHandlerError(res, e);
+    }
   };
 }
 
@@ -993,7 +993,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // everything else should use the proxy handler
   if (!config.disableProxy) {
-    app.use(prepareBitGo(config), promiseWrapper(handleProxyReq));
+    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
 }
 

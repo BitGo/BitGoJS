@@ -2,17 +2,17 @@ import BigNumber from 'bignumber.js';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
-import { Blockhash, PublicKey, Signer, Transaction as SolTransaction, SystemInstruction } from '@solana/web3.js';
+import { Blockhash, PublicKey, Signer, SystemInstruction, Transaction as SolTransaction } from '@solana/web3.js';
 import {
-  Memo,
-  Transfer,
-  TransactionExplanation,
-  TxData,
-  WalletInit,
-  Nonce,
   DurableNonceParams,
+  Memo,
+  Nonce,
   StakingActivate,
   StakingWithdraw,
+  TransactionExplanation,
+  Transfer,
+  TxData,
+  WalletInit,
 } from './iface';
 import base58 from 'bs58';
 import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
@@ -42,6 +42,11 @@ export class Transaction extends BaseTransaction {
 
   private get numberOfRequiredSignatures(): number {
     return this._solTransaction.compileMessage().header.numRequiredSignatures;
+  }
+
+  /** @inheritDoc */
+  get signablePayload(): Buffer {
+    return this._solTransaction.serializeMessage();
   }
 
   /** @inheritDoc **/
@@ -164,6 +169,9 @@ export class Transaction extends BaseTransaction {
           break;
         case TransactionType.StakingWithdraw:
           this.setTransactionType(TransactionType.StakingWithdraw);
+          break;
+        case TransactionType.AssociatedTokenAccountInitialization:
+          this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
           break;
       }
       this.loadInputsAndOutputs();

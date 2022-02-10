@@ -42,6 +42,7 @@ export class Utils implements BaseUtils {
   isValidTransactionId(txId: string): boolean {
     return this.isBase58(txId, 32);
   }
+
   /**
    * Check if base58 decoded string is equale to length
    *

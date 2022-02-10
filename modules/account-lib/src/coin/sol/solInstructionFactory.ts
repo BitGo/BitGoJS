@@ -11,6 +11,7 @@ import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
 import {
+  AtaInit,
   InstructionParams,
   Memo,
   Nonce,
@@ -20,6 +21,7 @@ import {
   Transfer,
   WalletInit,
 } from './iface';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 /**
  * Construct Solana instructions from instructions params
@@ -43,6 +45,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingDeactivateInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingWithdraw:
       return stakingWithdrawInstruction(instructionToBuild);
+    case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+      return createATAInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -212,4 +216,30 @@ function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstructi
   });
 
   return withdrawStaking.instructions;
+}
+
+/**
+ * Construct Create and Initialize Nonce Solana instructions
+ *
+ * @param {WalletInit} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Create and Initialize Nonce Solana instruction
+ */
+function createATAInstruction(data: AtaInit): TransactionInstruction[] {
+  const {
+    params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+  } = data;
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(ataAddress, 'Missing ataAddress param');
+  assert(ownerAddress, 'Missing ownerAddress param');
+  assert(payerAddress, 'Missing payerAddress param');
+
+  const associatedTokenAccountInstruction = Token.createAssociatedTokenAccountInstruction(
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    new PublicKey(mintAddress),
+    new PublicKey(ataAddress),
+    new PublicKey(ownerAddress),
+    new PublicKey(payerAddress),
+  );
+  return [associatedTokenAccountInstruction];
 }

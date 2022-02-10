@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "9.10.1",
+  "version": "9.11.0",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -39,9 +39,10 @@
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^13.1.0",
+    "bitgo": "^14.0.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.19.0",
+    "connect-timeout": "^1.9.0",
     "debug": "^3.1.0",
     "express": "^4.16.4",
     "lodash": "^4.17.20",
@@ -65,7 +66,7 @@
     "mocha-junit-reporter": "^1.22.0",
     "mocha-lcov-reporter": "^1.3.0",
     "mochawesome": "^5.0.0",
-    "nock": "^10.0.6",
+    "nock": "^13.0.0",
     "nyc": "^15.0.0",
     "should": "^13.2.3",
     "should-http": "^0.1.1",

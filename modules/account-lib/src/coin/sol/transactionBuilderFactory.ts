@@ -9,6 +9,7 @@ import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { Transaction } from './transaction';
 import { validateRawTransaction } from './utils';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { AtaInitializationBuilder } from './ataInitializationBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -35,6 +36,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawBuilder(tx);
+        case TransactionType.AssociatedTokenAccountInitialization:
+          return this.getAtaInitializationBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -91,6 +94,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return this.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getAtaInitializationBuilder(tx?: Transaction): AtaInitializationBuilder {
+    return this.initializeBuilder(tx, new AtaInitializationBuilder(this._coinConfig));
   }
 
   /**

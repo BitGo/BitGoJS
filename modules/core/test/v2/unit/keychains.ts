@@ -10,6 +10,7 @@ import * as sinon from 'sinon';
 
 import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
+import { TssUtils } from '../../../src/v2/internal/tssUtils';
 
 describe('V2 Keychains', function () {
   let bitgo;
@@ -237,6 +238,28 @@ describe('V2 Keychains', function () {
 
         const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
         decryptedPrv.should.equal(prv);
+      });
+    });
+
+    describe('Create TSS Keychains', function() {
+      it('should create TSS Keychains', async function () {
+        const stubbedKeychainsTriplet = {
+          userKeychain: {
+            id: '1',
+            pub: 'userPub',
+          },
+          backupKeychain: {
+            id: '2',
+            pub: 'userPub',
+          },
+          bitgoKeychain: {
+            id: '3',
+            pub: 'userPub',
+          },
+        };
+        sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+        const keychains = await bitgo.coin('tsol').keychains().createTss({ passphrase: 'password' });
+        keychains.should.deepEqual(stubbedKeychainsTriplet);
       });
     });
 

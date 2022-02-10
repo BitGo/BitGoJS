@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
 
-import { BaseCoin, KeyPair } from './baseCoin';
+import { BaseCoin, KeychainsTriplet, KeyPair } from './baseCoin';
 import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { validateParams } from '../common';
+import { TssUtils } from './internal/tssUtils';
 
 export interface Keychain {
   id: string;
@@ -14,6 +15,8 @@ export interface Keychain {
   encryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
+  commonPub?: string;
+  keyShares?: KeyShare[];
   addressDerivationKeypair?: {
     pub: string;
     encryptedPrv: string;
@@ -54,6 +57,7 @@ interface UpdateSingleKeychainPasswordOptions {
 
 interface AddKeychainOptions {
   pub?: string;
+  commonPub?: string;
   encryptedPrv?: string;
   type?: string;
   source?: string;
@@ -63,11 +67,21 @@ interface AddKeychainOptions {
   disableKRSEmail?: boolean;
   provider?: string;
   reqId?: RequestTracer;
-  krsSpecific?: any
+  krsSpecific?: any;
+  keyShares?: KeyShare[];
+  userGPGPublicKey?: string;
+  backupGPGPublicKey?: string;
   addressDerivationKeypair?: {
     pub: string;
     encryptedPrv: string;
   };
+}
+
+interface KeyShare {
+  from: string;
+  to: string;
+  publicShare: string;
+  privateShare: string;
 }
 
 export interface CreateBackupOptions {
@@ -77,12 +91,19 @@ export interface CreateBackupOptions {
   krsSpecific?: any;
   type?: string;
   reqId?: RequestTracer;
+  commonPub?: string;
+  prv?: string;
+  encryptedPrv?: string;
 }
 
 interface CreateBitGoOptions {
   source?: 'bitgo';
   enterprise?: string;
   reqId?: RequestTracer;
+}
+
+interface CreateTssOptions {
+  passphrase: string;
 }
 
 interface GetKeysForSigningOptions {
@@ -271,6 +292,7 @@ export class Keychains {
     return await this.bitgo.post(this.baseCoin.url('/key'))
       .send({
         pub: params.pub,
+        commonPub: params.commonPub,
         encryptedPrv: params.encryptedPrv,
         type: params.type,
         source: params.source,
@@ -280,6 +302,9 @@ export class Keychains {
         derivedFromParentWithSeed: params.derivedFromParentWithSeed,
         disableKRSEmail: params.disableKRSEmail,
         krsSpecific: params.krsSpecific,
+        keyShares: params.keyShares,
+        userGPGPublicKey: params.userGPGPublicKey,
+        backupGPGPublicKey: params.backupGPGPublicKey,
         addressDerivationKeypair: params.addressDerivationKeypair,
       })
       .result();
@@ -304,7 +329,9 @@ export class Keychains {
   async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
     params.source = 'backup';
 
-    if (_.isUndefined(params.provider)) {
+    const isTssBackupKey = params.prv && params.encryptedPrv && params.commonPub;
+
+    if (_.isUndefined(params.provider) && !isTssBackupKey) {
       // if the provider is undefined, we generate a local key and add the source details
       const key = this.create();
       _.extend(params, key);
@@ -330,5 +357,19 @@ export class Keychains {
       (id) => this.get({ id: wallet.keyIds()[id], reqId })
     );
     return Promise.all(keychainQueriesBluebirds);
+  }
+
+  /**
+   * Convenience function to create and store TSS keychains with BitGo.
+   * @param params passphrase used to encrypt secret materials
+   * @return {Promise<KeychainsTriplet>} newly created User, Backup, and BitGo keys
+   */
+  async createTss(params: CreateTssOptions): Promise<KeychainsTriplet> {
+    if (_.isUndefined(params.passphrase)) {
+      throw new Error('missing required param passphrase');
+    }
+
+    const tssUtils = new TssUtils(this.bitgo, this.baseCoin);
+    return await tssUtils.createKeychains({ passphrase: params.passphrase });
   }
 }

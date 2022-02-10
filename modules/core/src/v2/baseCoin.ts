@@ -52,6 +52,14 @@ export interface KeyPair {
   prv: string;
 }
 
+export interface DerivedKeyPair extends KeyPair {
+  address?: string;
+}
+
+export interface BlsKeyPair extends KeyPair {
+  secretShares?: string[];
+}
+
 export interface VerifyAddressOptions {
   address: string;
   addressType?: string;
@@ -115,6 +123,7 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
+  multisigType?: 'tss' | 'onchain';
 }
 
 export interface DeriveKeypairOptions {
@@ -311,6 +320,14 @@ export abstract class BaseCoin {
    * @returns {boolean} True if okay to consolidate over this coin; false, otherwise
    */
   allowsAccountConsolidations(): boolean {
+    return false;
+  }
+
+  /**
+   * Flag indicating if this coin supports TSS wallets.
+   * @returns {boolean} True if TSS Wallets can be created for this coin
+   */
+  supportsTss(): boolean {
     return false;
   }
 
@@ -547,9 +564,20 @@ export abstract class BaseCoin {
    * @param {DeriveKeypairOptions} params
    * @param {String} params.addressDerivationPrv - private key
    * @param {Number} params.index - index
-   * @returns {KeyPair|undefined} - a derived Keypair or undefined
+   * @returns {DerivedKeyPair|undefined} - a derived Keypair or undefined
    */
-  deriveKeypair(params: DeriveKeypairOptions): KeyPair | undefined {
+  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
     return undefined;
+  }
+
+  /**
+   * Returns the portion of the transaction that needs to be signed in Buffer format.
+   * Only needed for coins that support adding signatures directly (e.g. TSS).
+   *
+   * @param {String} serializedTx - the unsigned transaction in broadcast format
+   * @returns {Promise<Buffer>} - the portion of the transaction that needs to be signed
+   */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    return Buffer.from(serializedTx);
   }
 }

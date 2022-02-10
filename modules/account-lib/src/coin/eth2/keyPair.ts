@@ -1,5 +1,6 @@
 import { BlsKeyPair } from '../baseCoin/blsKeyPair';
-import { DefaultKeys } from '../baseCoin/iface';
+import { KeyPairOptions, BlsKeys } from '../baseCoin/iface';
+import { isValidBLSPublicKey, isValidBLSPrivateKey } from '../../utils/crypto';
 
 /**
  * Ethereum keys and address management.
@@ -9,42 +10,54 @@ export class KeyPair extends BlsKeyPair {
    * Public constructor. By default, creates a key pair with a random master seed.
    *
    */
-  constructor() {
-    super();
+  constructor(source?: KeyPairOptions) {
+    super(source);
   }
 
   /**
    * ETH2 default keys format is a pair of Uint8Array keys
    *
-   * @returns { DefaultKeys } The keys in the defined format
+   * @returns { BlsKeys } The keys in the defined format
    */
-  getKeys(): DefaultKeys {
+  getKeys(): BlsKeys {
     if (this.keyPair) {
-      return { prv: this.keyPair.privateKey.toHexString(), pub: this.keyPair.publicKey.toHexString() };
+      return this.keyPair;
     }
-    throw new Error('Error geting keys. Check keyPair has been specified & privae key is valid');
+    throw new Error('Error getting keys. Check keyPair has been specified & private key is valid');
   }
 
   /**
-   * Get an Ethereum public address
+   * Whether input is a valid BLS public key
    *
-   * @returns {string} The address derived from the public key
+   * @param {string} pub the public key to validate
+   * @returns {boolean} Whether input is a valid public key or not
    */
-  getAddress(): string {
-    return this.getKeys().pub;
-  }
-
   static isValidPub(pub: string): boolean {
-    return BlsKeyPair.isValidBLSPub(pub);
+    return isValidBLSPublicKey(pub);
   }
 
-  static isValidPrv(prv: string | Buffer) {
+  /**
+   * Whether the input is a valid BLS private key
+   *
+   * @param {string | Buffer | bigint} prv a private key to validate
+   * @returns {boolean} Whether the input is a valid private key or not
+   */
+  static isValidPrv(prv: string | Buffer | bigint): boolean {
     if (typeof prv === 'string') {
-      return BlsKeyPair.isValidBLSPrv(prv);
+      return isValidBLSPrivateKey(prv);
+    }
+    if (typeof prv === 'bigint') {
+      return isValidBLSPrivateKey('0x' + prv.toString(16));
     }
     try {
-      prv = '0x' + Buffer.from(prv).toString('hex');
-      return BlsKeyPair.isValidBLSPrv(prv);
+      const hexPrv = Array.from(prv)
+        .map(function (val) {
+          const hex = val.toString(16);
+          return '0'.slice(0, hex.length % 2) + hex;
+        })
+        .join('');
+      const privateKey = '0x' + hexPrv;
+      return isValidBLSPrivateKey(privateKey);
     } catch (e) {
       return false;
     }

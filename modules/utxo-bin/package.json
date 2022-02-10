@@ -26,8 +26,8 @@
   "bin": "./dist/bin/index.js",
   "dependencies": {
     "@bitgo/blockapis": "^1.0.0",
-    "@bitgo/statics": "^6.15.0",
-    "@bitgo/utxo-lib": "^2.2.0",
+    "@bitgo/statics": "^6.16.0",
+    "@bitgo/utxo-lib": "^2.2.1",
     "archy": "^1.0.0",
     "chalk": "4",
     "yargs": "^17.3.1"
