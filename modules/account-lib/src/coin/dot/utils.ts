@@ -12,10 +12,10 @@ import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { Seed } from '../baseCoin/iface';
-import { ProxyCallArgs, TransferArgs, ProxyArgs, TxMethod, Material } from './iface';
+import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
-import { createTypeUnsafe, GenericExtrinsicPayload, GenericCall, GenericExtrinsic } from '@polkadot/types';
+import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
 
 const PROXY_METHOD_ARG = 2;
 export class Utils implements BaseUtils {
@@ -150,12 +150,16 @@ export class Utils implements BaseUtils {
    *
    * @param {KeyringPair} pair - The signing pair.
    * @param {string} signingPayload - Payload to sign.
+   * @param {UnsignedTransaction} transaction - raw transaction to sign
+   * @param {Object} options
+   * @param {HexString} options.metadataRpc - metadata that is needed for dot to sign
+   * @param {TypeRegistry} options.registry - metadata that is needed for dot to sign
    */
   createSignedTx(
     pair: KeyringPair,
     signingPayload: string,
     transaction: UnsignedTransaction,
-    options: { metadataRpc: `0x${string}`; registry: TypeRegistry },
+    options: { metadataRpc: HexString; registry: TypeRegistry },
   ): string {
     const { registry, metadataRpc } = options;
     // Important! The registry needs to be updated with latest metadata, so make
@@ -168,17 +172,17 @@ export class Utils implements BaseUtils {
       .sign(pair);
 
     // Serialize a signed transaction.
-    const txHex = construct.signedTx(transaction, signature, {
+    return construct.signedTx(transaction, signature, {
       metadataRpc,
       registry,
     });
-    return txHex;
   }
 
   /**
    * Decodes the dot address from the given format
    *
-   * @param address Decodes
+   * @param {string} address
+   * @param {number} [ss58Format]
    * @returns {string}
    */
   decodeDotAddress(address: string, ss58Format?: number): string {
@@ -189,7 +193,8 @@ export class Utils implements BaseUtils {
   /**
    * Decodes the dot address from the given format
    *
-   * @param address Decodes
+   * @param {string} address
+   * @param {number} [ss58Format]
    * @returns {string}
    */
   encodeDotAddress(address: string, ss58Format?: number): string {
@@ -230,6 +235,22 @@ export class Utils implements BaseUtils {
 
   isTransfer(arg: TxMethod['args']): arg is TransferArgs {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
+  }
+
+  checkValidHex(str: string): asserts str is HexString {
+    if (!str.startsWith(`0x`)) {
+      throw new Error(`This is not in correct format of hex string: ${str}`);
+    }
+  }
+
+  recoverSignatureFromRawTx(rawTx: string, options: { registry: TypeRegistry }): HexString {
+    const { registry } = options;
+    const methodCall = registry.createType('Extrinsic', rawTx, {
+      isSigned: true,
+    });
+    const signature = u8aToHex(methodCall.signature).replace('0x', '0x00');
+    this.checkValidHex(signature);
+    return signature;
   }
 }
 

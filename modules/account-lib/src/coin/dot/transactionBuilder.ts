@@ -2,14 +2,14 @@ import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseTransactionBuilder, TransactionType, Interface } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, FeeOptions, SequenceId, ValidityWindow } from '../baseCoin/iface';
 import { AddressValidationError, InvalidFeeError } from './errors';
-import { CreateBaseTxInfo, Material, TxMethod } from './iface';
+import { CreateBaseTxInfo, Material, TxMethod, HexString } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
@@ -28,6 +28,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _registry: TypeRegistry;
   protected _method?: TxMethod;
   protected __material?: Material;
+  protected _signatures: Interface.Signature[]; // only support single sig for now
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -184,6 +185,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
       this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
+      const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
+      this._transaction.signature.push(edSignature);
     }
     this.validity({ maxDuration: decodedTxn.eraPeriod });
     this.sequenceId({
@@ -205,7 +208,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.registry(this._registry);
     this.transaction.chainName(this._material.chainName);
     if (this._keyPair) {
-      this.transaction.sign(this._keyPair);
+      await this.transaction.sign(this._keyPair);
+    }
+    if (this.signatures?.length > 0) {
+      this.transaction.signatures = this.signatures.map((v) => v.signature.toString('hex'));
     }
     this._transaction.loadInputsAndOutputs();
     return this._transaction;
@@ -371,6 +377,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   // endregion
+
+  /** @inheritdoc */
+  addSignature(publicKey: unknown, signature: Buffer): void {
+    const edSignature = `0x00${signature.toString('hex')}` as HexString;
+    this.transaction.constructSignedPayload(edSignature);
+    this._signatures.push({ publicKey: this._keyPair.getKeys(), signature });
+  }
+
+  get signatures(): Interface.Signature[] {
+    return this._signatures;
+  }
 
   /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {

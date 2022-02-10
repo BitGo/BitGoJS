@@ -3,6 +3,8 @@ import { BaseTxInfo, TypeRegistry, DecodedUnsignedTx } from '@substrate/txwrappe
 import { TransactionType } from '../baseCoin';
 import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
+export { HexString } from '@polkadot/util/types';
+
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'bond' for the staking transaction
  */
