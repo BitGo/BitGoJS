@@ -162,10 +162,7 @@ export function createBaseUri(config: Config): string {
 function checkSignerPrvPath(path: string) {
   try {
     const privKeyFile = fs.readFileSync(path, { encoding: 'utf8' });
-    const privKey = JSON.parse(privKeyFile);
-    if (privKey.prv === undefined) {
-      throw new Error(`required field "prv" is missing`);
-    }
+    JSON.parse(privKeyFile);
   } catch (e) {
     throw new Error(`Failed to parse ${path} - ${e.message}`);
   }

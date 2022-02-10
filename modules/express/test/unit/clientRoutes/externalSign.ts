@@ -16,12 +16,17 @@ import { BitGo } from 'bitgo';
 describe('External signer', () => {
   it('should read prv from signerFileSystemPath and pass it to coin.signTransaction', async () => {
     const validPrv =
-      '{"prv":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
+      '{"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
     const signTransactionStub = sinon.stub(Btc.prototype, 'signTransaction').resolves('signedTx');
 
     const req = {
       bitgo: new BitGo({ env: 'test' }),
+      body: {
+        txPrebuild: {
+          walletId: '61f039aad587c2000745c687373e0fa9',
+        },
+      },
       params: {
         coin: 'tbtc',
       },
