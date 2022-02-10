@@ -157,6 +157,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   dataToSign: string;
   nextContractSequenceId?: string;
   expireTime?: number;
+  hopTransaction?: string;
 }
 
 // For signTransaction
@@ -516,13 +517,14 @@ export class AvaxC extends BaseCoin {
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
 
-    return {
-      halfSigned: {
-        txHex: transaction.toBroadcastFormat(),
-        recipients: recipients,
-        expiration: params.txPrebuild.expireTime,
-      },
+    const txParams = {
+      txHex: transaction.toBroadcastFormat(),
+      recipients: recipients,
+      expiration: params.txPrebuild.expireTime,
+      hopTransaction: params.txPrebuild.hopTransaction,
     };
+
+    return { halfSigned: txParams };
   }
 
   /**
