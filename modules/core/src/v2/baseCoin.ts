@@ -570,4 +570,15 @@ export abstract class BaseCoin {
   deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
     return undefined;
   }
+
+  /**
+   * Returns the portion of the transaction that needs to be signed in Buffer format.
+   * Only needed for coins that support adding signatures directly (e.g. TSS).
+   *
+   * @param {String} serializedTx - the unsigned transaction in broadcast format
+   * @returns {Promise<Buffer>} - the portion of the transaction that needs to be signed
+   */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    return Buffer.from(serializedTx);
+  }
 }
