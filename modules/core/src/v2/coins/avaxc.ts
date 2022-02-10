@@ -6,8 +6,6 @@ import * as bip32 from 'bip32';
 import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-// import * as debugLib from 'debug';
-
 import {
   BaseCoin,
   FeeEstimateOptions,
@@ -21,13 +19,11 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionFee,
-  // TransactionRecipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
   TransactionRecipient,
   TransactionParams,
 } from '../baseCoin';
-
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
@@ -35,10 +31,13 @@ import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import * as common from '../../common';
 
 import { optionalDeps } from './eth';
-import { Erc20Token } from './erc20Token';
 import { Wallet } from '../wallet';
 
-// const debug = debugLib('bitgo:v2:avaxc');
+// For precreateBitgo
+interface PrecreateBitGoOptions {
+  enterprise?: string;
+  newFeeAddress?: string;
+}
 
 // For explainTransaction
 export interface ExplainTransactionOptions {
@@ -157,10 +156,11 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   dataToSign: string;
   nextContractSequenceId?: string;
   expireTime?: number;
+  hopTransaction?: string;
 }
 
 // For signTransaction
-export interface SignTransactionOptions extends BaseSignTransactionOptions {
+export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TxPreBuild;
   prv: string;
 }
@@ -194,11 +194,6 @@ export class AvaxC extends BaseCoin {
     return new AvaxC(bitgo, staticsCoin);
   }
 
-  // static buildTransaction() : {
-  //
-  //
-  // }
-
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
@@ -218,10 +213,6 @@ export class AvaxC extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  // getNetwork(): EthereumNetwork | undefined {
-  //   return this._staticsCoin?.network as EthereumNetwork;
-  // }
-
   getFullName() {
     return this._staticsCoin.fullName;
   }
@@ -232,6 +223,10 @@ export class AvaxC extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     return !!address && AvaxCAccountLib.Utils.isValidEthAddress(address);
+  }
+
+  isToken(): boolean {
+    return false;
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
@@ -264,7 +259,6 @@ export class AvaxC extends BaseCoin {
    * @returns {boolean}
    */
   async verifyTransaction(params: VerifyAvaxcTransactionOptions): Promise<boolean> {
-    // const ethNetwork = this.getNetwork();
     const { txParams, txPrebuild, wallet } = params;
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error(`missing params`);
@@ -312,15 +306,6 @@ export class AvaxC extends BaseCoin {
           'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
         );
       }
-
-      // // Check batch transaction is sent to the batcher contract address for the chain
-      // const batcherContractAddress = ethNetwork?.batcherContractAddress;
-      // if (
-      //   !batcherContractAddress ||
-      //   batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
-      // ) {
-      //   throw new Error('recipient address of txPrebuild does not match batcher address');
-      // }
     } else {
       // Check recipient address and amount for normal transaction
       if (txParams.recipients.length !== 1) {
@@ -482,7 +467,7 @@ export class AvaxC extends BaseCoin {
       const originalAmount = new BigNumber(recipients[0].amount);
       const originalDestination: string = recipients[0].address;
 
-      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
+      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(<Buffer>builtHopTx.value));
       if (!builtHopTx.to) {
         throw new Error(`Transaction does not have a destination address`);
       }
@@ -496,7 +481,7 @@ export class AvaxC extends BaseCoin {
     }
 
     if (!builtHopTx.verifySignature()) {
-      // We dont want to continue at all in this case, at risk of ETH being stuck on the hop address
+      // We dont want to continue at all in this case, at risk of AVAX being stuck on the hop address
       throw new Error(`Invalid hop transaction signature, txid: ${id}`);
     }
     if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
@@ -508,7 +493,7 @@ export class AvaxC extends BaseCoin {
    * Assemble half-sign prebuilt transaction
    * @param params
    */
-  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+  async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new AvaxCAccountLib.KeyPair({ prv: params.prv }).getKeys().prv!);
@@ -516,13 +501,14 @@ export class AvaxC extends BaseCoin {
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
 
-    return {
-      halfSigned: {
-        txHex: transaction.toBroadcastFormat(),
-        recipients: recipients,
-        expiration: params.txPrebuild.expireTime,
-      },
+    const txParams = {
+      txHex: transaction.toBroadcastFormat(),
+      recipients: recipients,
+      expiration: params.txPrebuild.expireTime,
+      hopTransaction: params.txPrebuild.hopTransaction,
     };
+
+    return { halfSigned: txParams };
   }
 
   /**
@@ -541,9 +527,9 @@ export class AvaxC extends BaseCoin {
       !_.isUndefined(buildParams.recipients) &&
       !_.isUndefined(buildParams.walletPassphrase)
     ) {
-      if (this instanceof Erc20Token) {
+      if (this.isToken()) {
         throw new Error(
-          `Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`
+          `Hop transactions are not enabled for AVAXC tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`
         );
       }
       return (await this.createHopTransactionParams({
@@ -649,5 +635,44 @@ export class AvaxC extends BaseCoin {
     const hash = new Keccak('keccak256');
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
+  }
+
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    // TODO: Fix this later
+    return true;
+  }
+
+  /**
+   * Ensure either enterprise or newFeeAddress is passed, to know whether to create new key or use enterprise key
+   * @param params
+   * @param params.enterprise {String} the enterprise id to associate with this key
+   * @param params.newFeeAddress {Boolean} create a new fee address (enterprise not needed in this case)
+   */
+  preCreateBitGo(params: PrecreateBitGoOptions): void {
+    // We always need params object, since either enterprise or newFeeAddress is required
+    if (!_.isObject(params)) {
+      throw new Error(`preCreateBitGo must be passed a params object. Got ${params} (type ${typeof params})`);
+    }
+
+    if (_.isUndefined(params.enterprise) && _.isUndefined(params.newFeeAddress)) {
+      throw new Error(
+        'expecting enterprise when adding BitGo key. If you want to create a new AVAX bitgo key, set the newFeeAddress parameter to true.'
+      );
+    }
+
+    // Check whether key should be an enterprise key or a BitGo key for a new fee address
+    if (!_.isUndefined(params.enterprise) && !_.isUndefined(params.newFeeAddress)) {
+      throw new Error(`Incompatible arguments - cannot pass both enterprise and newFeeAddress parameter.`);
+    }
+
+    if (!_.isUndefined(params.enterprise) && !_.isString(params.enterprise)) {
+      throw new Error(`enterprise should be a string - got ${params.enterprise} (type ${typeof params.enterprise})`);
+    }
+
+    if (!_.isUndefined(params.newFeeAddress) && !_.isBoolean(params.newFeeAddress)) {
+      throw new Error(
+        `newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`
+      );
+    }
   }
 }
