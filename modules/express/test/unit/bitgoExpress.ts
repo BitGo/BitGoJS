@@ -31,6 +31,8 @@ import * as clientRoutes from '../../src/clientRoutes';
 describe('Bitgo Express', function () {
 
   describe('server initialization', function () {
+    const validPrvJSON =
+      '{"prv":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
 
     it('should require NODE_ENV to be production when running against prod env', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
@@ -372,7 +374,7 @@ describe('Bitgo Express', function () {
     it('should only call setupAPIRoutes when running in regular mode', () => {
       const args: any = {
         env: 'test',
-        signerMode: '',
+        signerMode: undefined,
       };
 
       const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
@@ -389,16 +391,106 @@ describe('Bitgo Express', function () {
       const args: any = {
         env: 'test',
         signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
       };
 
       const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
       const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
 
       expressApp(args);
       signerStub.should.have.been.calledOnce();
       apiStub.called.should.be.false();
       apiStub.restore();
       signerStub.restore();
+      readFileStub.restore();
+    });
+
+    it('should require a signerFileSystemPath and signerMode are both set when running in signer mode', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        signerFileSystemPath: undefined,
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+      });
+
+      args.signerMode = undefined;
+      args.signerFileSystemPath = 'signerFileSystemPath';
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+      });
+
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      args.signerMode = 'signerMode';
+      (() => expressApp(args)).should.not.throw();
+
+      readFileStub.restore();
+    });
+
+    it('should require that an externalSignerUrl and signerMode are not both set', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        externalSignerUrl: 'externalSignerUrl',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
+      });
+
+      args.signerMode = undefined;
+      (() => expressApp(args)).should.not.throw();
+    });
+
+    it('should require that an signerFileSystemPath contains a json with a prv field', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'invalidSignerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw();
+
+      const invalidPrv =
+        '{"invalidField":"invalidPrivKey"}';
+      const readInvalidStub = sinon.stub(fs, 'readFileSync').returns(invalidPrv);
+      (() => expressApp(args)).should.throw(`Failed to parse ${args.signerFileSystemPath} - required field "prv" is missing`);
+      readInvalidStub.restore();
+
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      (() => expressApp(args)).should.not.throw();
+      readValidStub.restore();
+    });
+
+    it('should require express to be in test mode when using the external signer feature', function () {
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+
+      const args: any = {
+        env: 'notTestMode',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'external signer feature is only enabled for test mode.'
+      });
+
+      args.signerMode = undefined;
+      args.signerFileSystemPath = undefined;
+      args.externalSignerUrl = 'externalSignerUrl';
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message: 'external signer feature is only enabled for test mode.'
+      });
+
+      args.env = 'test';
+      (() => expressApp(args)).should.not.throw();
+
+      readValidStub.restore();
     });
   });
 });

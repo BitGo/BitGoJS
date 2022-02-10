@@ -26,6 +26,8 @@ import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
 import { ApiResponseError } from './errors';
+import { promises as fs } from 'fs';
+import * as assert from 'assert';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -372,8 +374,19 @@ function handleV1Sign(req: express.Request) {
   throw new Error('not yet implemented');
 }
 
-function handleV2Sign(req: express.Request) {
-  throw new Error('not yet implemented');
+export async function handleV2Sign(req: express.Request) {
+  const path = req.config.signerFileSystemPath;
+  assert(typeof path === 'string');
+  const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
+  const privKey = JSON.parse(privKeyFile);
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  try {
+    return await coin.signTransaction({ ...req.body, ...privKey });
+  } catch (error) {
+    console.log('error while signing wallet transaction ', error);
+    throw error;
+  }
 }
 
 /**

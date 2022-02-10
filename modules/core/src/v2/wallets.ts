@@ -15,7 +15,6 @@ import { RequestTracer } from './internal/util';
 import { sanitizeLegacyPath } from '../bip32path';
 import { getSharedSecret } from '../ecdh';
 import { promiseProps } from './promise-utils';
-import { TssUtils } from './internal/tssUtils';
 
 export interface WalletWithKeychains extends KeychainsTriplet {
   wallet: Wallet;
@@ -102,12 +101,10 @@ export interface ListWalletOptions extends PaginationOptions {
 export class Wallets {
   private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
-  private readonly tssUtils: TssUtils;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, tssUtils: TssUtils) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
-    this.tssUtils = tssUtils;
   }
 
   /**
@@ -727,9 +724,8 @@ export class Wallets {
     };
 
     // Create TSS Keychains
-    const keychains = await this.tssUtils.createKeychains({
-      passphrase: params.passphrase,
-    });
+
+    const keychains = await this.baseCoin.keychains().createTss({ passphrase: params.passphrase });
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
 

@@ -329,4 +329,11 @@ export class Sol extends BaseCoin {
       pub: derivedBase58Keys.pub,
     };
   }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
+    const rebuiltTransaction = await factory.from(serializedTx).build();
+    return rebuiltTransaction.signablePayload;
+  }
 }

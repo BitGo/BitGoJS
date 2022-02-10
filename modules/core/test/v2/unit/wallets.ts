@@ -392,27 +392,27 @@ describe('V2 Wallets:', function () {
     const tsol = bitgo.coin('tsol');
 
     it('should create a new TSS wallet', async function () {
-      const stubTssUtils = new TssUtils(bitgo, tsol);
-      sinon.stub(stubTssUtils, 'createKeychains').returns(Promise.resolve({
+      const stubbedKeychainsTriplet = {
         userKeychain: {
           id: '1',
-          pub: '',
+          pub: 'userPub',
         },
         backupKeychain: {
           id: '2',
-          pub: '',
+          pub: 'userPub',
         },
         bitgoKeychain: {
           id: '3',
-          pub: '',
+          pub: 'userPub',
         },
-      }));
+      };
+      sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
       const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet')
         .reply(200);
 
-      const wallets = new Wallets(bitgo, tsol, stubTssUtils);
+      const wallets = new Wallets(bitgo, tsol);
 
       await wallets.generateWallet({
         label: 'tss wallet',
@@ -425,8 +425,10 @@ describe('V2 Wallets:', function () {
     });
 
     it('should fail to create TSS wallet with invalid inputs', async function () {
+
+
       const tbtc = bitgo.coin('tbtc');
-      const wallets = new Wallets(bitgo, tbtc, new TssUtils(bitgo, tbtc));
+      const wallets = new Wallets(bitgo, tbtc);
 
       await wallets.generateWallet({
         label: 'tss wallet',
@@ -434,7 +436,7 @@ describe('V2 Wallets:', function () {
         multisigType: 'tss',
       }).should.be.rejectedWith('coin btc does not support TSS at this time');
 
-      const tsolWallets = new Wallets(bitgo, tsol, new TssUtils(bitgo, tsol));
+      const tsolWallets = new Wallets(bitgo, tsol);
       await tsolWallets.generateWallet({
         label: 'tss wallet',
       }).should.be.rejectedWith('cannot generate TSS keys without passphrase');

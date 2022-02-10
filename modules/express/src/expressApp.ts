@@ -17,7 +17,7 @@ import { Config, config } from './config';
 const debug = debugLib('bitgo:express');
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
-import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
+import { IpcError, NodeEnvironmentError, TlsConfigurationError, ExternalSignerConfigError } from './errors';
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
@@ -156,11 +156,40 @@ export function createBaseUri(config: Config): string {
 }
 
 /**
+ * Check the that the json file containing the external signer private key exists
+ * @param path
+ */
+function checkSignerPrvPath(path: string) {
+  try {
+    const privKeyFile = fs.readFileSync(path, { encoding: 'utf8' });
+    const privKey = JSON.parse(privKeyFile);
+    if (privKey.prv === undefined) {
+      throw new Error(`required field "prv" is missing`);
+    }
+  } catch (e) {
+    throw new Error(`Failed to parse ${path} - ${e.message}`);
+  }
+}
+
+/**
  * Check environment and other preconditions to ensure bitgo-express can start safely
  * @param config
  */
 function checkPreconditions(config: Config) {
-  const { env, disableEnvCheck, bind, ipc, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
+  const {
+    env,
+    disableEnvCheck,
+    bind,
+    ipc,
+    disableSSL,
+    keyPath,
+    crtPath,
+    customRootUri,
+    customBitcoinNetwork,
+    externalSignerUrl,
+    signerMode,
+    signerFileSystemPath,
+  } = config;
 
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
@@ -189,6 +218,30 @@ function checkPreconditions(config: Config) {
   if ((customRootUri || customBitcoinNetwork) && env !== 'custom') {
     console.warn(`customRootUri or customBitcoinNetwork is set, but env is '${env}'. Setting env to 'custom'.`);
     config.env = 'custom';
+  }
+
+  if (env !== 'test' && (externalSignerUrl !== undefined || signerMode !== undefined)) {
+    throw new ExternalSignerConfigError('external signer feature is only enabled for test mode.');
+  }
+
+  if (externalSignerUrl !== undefined && (signerMode !== undefined || signerFileSystemPath !== undefined)) {
+    throw new ExternalSignerConfigError(
+      'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
+    );
+  }
+
+  if ((signerMode !== undefined || signerFileSystemPath !== undefined) && !(signerMode && signerFileSystemPath)) {
+    throw new ExternalSignerConfigError(
+      'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+    );
+  }
+
+  if (signerFileSystemPath !== undefined) {
+    try {
+      checkSignerPrvPath(signerFileSystemPath);
+    } catch (e) {
+      throw e;
+    }
   }
 }
 
