@@ -8,7 +8,6 @@ import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { BitGo } from '../bitgo';
-import { TssUtils } from './internal/tssUtils';
 import { RequestTracer } from './internal/util';
 import { Wallet } from './wallet';
 import { Wallets } from './wallets';
@@ -232,7 +231,7 @@ export abstract class BaseCoin {
   protected constructor(bitgo: BitGo) {
     this.bitgo = bitgo;
     this._url = this.bitgo.url('/', 2);
-    this._wallets = new Wallets(this.bitgo, this, new TssUtils(this.bitgo, this));
+    this._wallets = new Wallets(this.bitgo, this);
     this._keychains = new Keychains(this.bitgo, this);
     this._webhooks = new Webhooks(this.bitgo, this);
     this._pendingApprovals = new PendingApprovals(this.bitgo, this);
