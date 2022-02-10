@@ -17,6 +17,8 @@ import {
   teosToken,
   eosToken,
   algoToken,
+  solToken,
+  tsolToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -1251,5 +1253,101 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     UnderlyingAsset['avaxc:USDC']
+  ),
+  solToken(
+    'sol:SRM',
+    'Serum',
+    6,
+    'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt', // https://explorer.solana.com/address/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt
+    UnderlyingAsset.SRM,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:ORCA',
+    'Orca',
+    6,
+    'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
+    UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:USDC',
+    'USD Coin',
+    6,
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+    UnderlyingAsset.USDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:RAY',
+    'Raydium',
+    6,
+    '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', // https://explorer.solana.com/address/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R
+    UnderlyingAsset.RAY,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:MNDE',
+    'Marinade',
+    9,
+    'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', // https://explorer.solana.com/address/MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey/metadata
+    UnderlyingAsset.MNDE,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'sol:SLND',
+    'Solend',
+    6,
+    'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
+    UnderlyingAsset.SLND,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:SRM',
+    'Serum',
+    6,
+    '59o2ZdFx9BdtV63gRtrCFP3Wkc2J8uBYcm4D6WLj4QLL',
+    UnderlyingAsset.SRM,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:ORCA',
+    'Orca',
+    6,
+    'FQ9UD9fnmbHbVU2QXFnLPCFL4ESDPyWVvjSztFyzF2p5',
+    UnderlyingAsset.ORCA,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:USDC',
+    'USD Coin',
+    6,
+    '7a3sJZpKgjTsHCEh9NKMx4HKRE6NAS9XioN8i61v9fR7',
+    UnderlyingAsset.USDC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:RAY',
+    'Raydium',
+    6,
+    '9res2seVB9KJdisFaZZzquuSGRjsVTLqbFuxFUNsgjgJ',
+    UnderlyingAsset.RAY,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:MNDE',
+    'Marinade',
+    9,
+    '7TAyjuoa2wgkcEC3FsJkWiE62Dfh728wkvYhzwQywWKJ',
+    UnderlyingAsset.MNDE,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:SLND',
+    'Solend',
+    6,
+    '9yj9s88efxD6t7LkJGh5N32Xtn2z3mqNvpftaczK8i3F',
+    UnderlyingAsset.SLND,
+    AccountCoin.DEFAULT_FEATURES
   ),
 ]);
