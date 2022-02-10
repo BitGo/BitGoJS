@@ -16,6 +16,7 @@ import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  PresignTransactionOptions as BasePresignTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -23,6 +24,8 @@ import {
   // TransactionRecipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
+  TransactionRecipient,
+  TransactionParams,
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
@@ -44,6 +47,37 @@ export interface ExplainTransactionOptions {
     txHex: string;
   };
   feeInfo: TransactionFee;
+}
+
+interface AvaxcTransactionParams extends TransactionParams {
+  gasPrice?: number;
+  gasLimit?: number;
+  hopParams?: HopParams;
+  hop?: boolean;
+}
+
+interface VerifyAvaxcTransactionOptions extends VerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  txParams: AvaxcTransactionParams;
+}
+
+// For preSign
+interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTransactionOptions {
+  wallet: Wallet;
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  hopTransaction?: HopPrebuild;
+  buildParams: {
+    recipients: Recipient[];
+  };
+  recipients: TransactionRecipient[];
+  nextContractSequenceId: string;
+  gasPrice: number;
+  gasLimit: number;
+  isBatch: boolean;
+  coin: string;
+  token?: string;
 }
 
 // For createHopTransactionParams
@@ -115,7 +149,7 @@ export interface EthTransactionFee {
   gasLimit?: string;
 }
 
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
+export interface TxPreBuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
   feeInfo: EthTransactionFee;
@@ -127,7 +161,7 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
 
 // For signTransaction
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
+  txPrebuild: TxPreBuild;
   prv: string;
 }
 
@@ -164,7 +198,7 @@ export class AvaxC extends BaseCoin {
   //
   //
   // }
-  //
+
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
@@ -183,6 +217,10 @@ export class AvaxC extends BaseCoin {
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
+
+  // getNetwork(): EthereumNetwork | undefined {
+  //   return this._staticsCoin?.network as EthereumNetwork;
+  // }
 
   getFullName() {
     return this._staticsCoin.fullName;
@@ -216,8 +254,104 @@ export class AvaxC extends BaseCoin {
     return true;
   }
 
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+  /**
+   * Verify that a transaction prebuild complies with the original intention
+   *
+   * @param params
+   * @param params.txParams params object passed to send
+   * @param params.txPrebuild prebuild object returned by server
+   * @param params.wallet Wallet object to obtain keys to verify against
+   * @returns {boolean}
+   */
+  async verifyTransaction(params: VerifyAvaxcTransactionOptions): Promise<boolean> {
+    // const ethNetwork = this.getNetwork();
+    const { txParams, txPrebuild, wallet } = params;
+    if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
+      throw new Error(`missing params`);
+    }
+    if (txParams.hop && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+    if (txPrebuild.recipients.length !== 1) {
+      throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
+    }
+    if (txParams.hop && txPrebuild.hopTransaction) {
+      // Check recipient amount for hop transaction
+      if (txParams.recipients.length !== 1) {
+        throw new Error(`hop transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+      }
+
+      // Check tx sends to hop address
+      const decodedHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(
+        optionalDeps.ethUtil.toBuffer(txPrebuild.hopTransaction.tx)
+      );
+      const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
+      const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
+      if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
+        throw new Error('recipient address of txPrebuild does not match hop address');
+      }
+
+      // Convert TransactionRecipient array to Recipient array
+      const recipients: Recipient[] = txParams.recipients.map((r) => {
+        return {
+          address: r.address,
+          amount: typeof r.amount === 'number' ? r.amount.toString() : r.amount,
+        };
+      });
+
+      // Check destination address and amount
+      await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
+    } else if (txParams.recipients.length > 1) {
+      // Check total amount for batch transaction
+      let expectedTotalAmount = new BigNumber(0);
+      for (let i = 0; i < txParams.recipients.length; i++) {
+        expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+      }
+      if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+        throw new Error(
+          'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+        );
+      }
+
+      // // Check batch transaction is sent to the batcher contract address for the chain
+      // const batcherContractAddress = ethNetwork?.batcherContractAddress;
+      // if (
+      //   !batcherContractAddress ||
+      //   batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
+      // ) {
+      //   throw new Error('recipient address of txPrebuild does not match batcher address');
+      // }
+    } else {
+      // Check recipient address and amount for normal transaction
+      if (txParams.recipients.length !== 1) {
+        throw new Error(`normal transaction only supports 1 recipient but ${txParams.recipients.length} found`);
+      }
+      const expectedAmount = new BigNumber(txParams.recipients[0].amount);
+      if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+        throw new Error(
+          'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+        );
+      }
+      if (
+        AvaxC.isAVAXCAddress(txParams.recipients[0].address) &&
+        txParams.recipients[0].address !== txPrebuild.recipients[0].address
+      ) {
+        throw new Error('destination address in normal txPrebuild does not match that in txParams supplied by client');
+      }
+    }
+    // Check coin is correct for all transaction types
+    if (!this.verifyCoin(txPrebuild)) {
+      throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
+    }
     return true;
+  }
+
+  private static isAVAXCAddress(address: string): boolean {
+    return !!address.match(/0x[a-fA-F0-9]{40}/);
+  }
+
+  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
+    return txPrebuild.coin === this.getChain();
   }
 
   isValidPub(pub: string): boolean {
@@ -290,6 +424,27 @@ export class AvaxC extends BaseCoin {
    * ================================================================================================================
    * Below is transaction functions
    */
+
+  /**
+   * Coin-specific things done before signing a transaction, i.e. verification
+   * @param params
+   */
+  async presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
+    if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+      await this.validateHopPrebuild(params.wallet, params.hopTransaction);
+    }
+    return params;
+  }
+
+  /**
+   * Modify prebuild after receiving it from the server. Add things like nlocktime
+   */
+  async postProcessPrebuild(params: TransactionPrebuild): Promise<TransactionPrebuild> {
+    if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+      await this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+    }
+    return params;
+  }
 
   /**
    * Validates that the hop prebuild from the HSM is valid and correct
@@ -495,6 +650,4 @@ export class AvaxC extends BaseCoin {
     hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
   }
-
-  // async getExtraPreBuildParams(buildParams: )
 }
