@@ -20,8 +20,10 @@ import {
   StakingWithdraw,
   Transfer,
   WalletInit,
+  TokenTransfer
 } from './iface';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+const splToken = require('@solana/spl-token');
 
 /**
  * Construct Solana instructions from instructions params
@@ -47,6 +49,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingWithdrawInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateAssociatedTokenAccount:
       return createATAInstruction(instructionToBuild);
+    case InstructionBuilderTypes.TokenTransfer:
+      return tokenTransferInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -242,4 +246,33 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
     new PublicKey(payerAddress),
   );
   return [associatedTokenAccountInstruction];
+}
+
+/**
+ * Construct Token Transfer Solana instructions
+ *
+ * @param {Transfer} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Transfer Solana instruction
+ */
+function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[] {
+  const {
+    params: { source, fromAddress, toAddress, mint, amount, multiSigners },
+  } = data;
+  assert(source, 'Missing source param');
+  assert(fromAddress, 'Missing fromAddress param');
+  assert(toAddress, 'Missing toAddress param');
+  assert(mint, 'Missing mint param');
+  assert(amount, 'Missing toAddress param');
+  // check multiSigners? could just be []?
+  const tokenTransferInstruction = splToken.createTransferCheckedInstruction(
+    splToken.TOKEN_PROGRAM_ID,
+    new PublicKey(source),
+    new PublicKey(mint),
+    new PublicKey(toAddress),
+    new PublicKey(fromAddress),
+    multiSigners,
+    new BigNumber(amount).toNumber(),
+    6,
+  );
+  return [tokenTransferInstruction];
 }

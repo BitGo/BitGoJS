@@ -1,4 +1,4 @@
-import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
+import { Blockhash, Signer, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
 
@@ -32,7 +32,8 @@ export type InstructionParams =
   | StakingActivate
   | StakingDeactivate
   | StakingWithdraw
-  | AtaInit;
+  | AtaInit
+  | TokenTransfer;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -74,11 +75,24 @@ export interface AtaInit {
   params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string };
 }
 
+export interface TokenTransfer {
+  type: InstructionBuilderTypes.TokenTransfer;
+  params: {
+    source: string;
+    fromAddress: string;
+    toAddress: string;
+    mint: string;
+    amount: string;
+    multiSigners: Array<Signer>;
+  };
+}
+
 export type ValidInstructionTypes =
   | SystemInstructionType
   | StakeInstructionType
   | 'Memo'
-  | 'InitializeAssociatedTokenAccount';
+  | 'InitializeAssociatedTokenAccount'
+  | 'TokenTransfer';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: string;

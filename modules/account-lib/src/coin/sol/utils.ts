@@ -243,6 +243,8 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingWithdraw;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataInitInstructionIndexes)) {
     return TransactionType.AssociatedTokenAccountInitialization;
+  } else if (matchTransactionTypeByInstructionsOrder(instructions, tokenTransferInstructionIndexes) {
+    return TransactionType.TokenTransfer;
   }
   return TransactionType.Send;
 }

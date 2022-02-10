@@ -173,6 +173,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.AssociatedTokenAccountInitialization:
           this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
           break;
+        case TransactionType.TokenTransfer:
+          this.setTransactionType(TransactionType.TokenTransfer);
+          break;
       }
       this.loadInputsAndOutputs();
     } catch (e) {
