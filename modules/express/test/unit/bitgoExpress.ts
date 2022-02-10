@@ -32,7 +32,7 @@ describe('Bitgo Express', function () {
 
   describe('server initialization', function () {
     const validPrvJSON =
-      '{"prv":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
+      '{"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
 
     it('should require NODE_ENV to be production when running against prod env', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
@@ -447,7 +447,7 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.not.throw();
     });
 
-    it('should require that an signerFileSystemPath contains a json with a prv field', function () {
+    it('should require that an signerFileSystemPath contains a parsable json', function () {
       const args: any = {
         env: 'test',
         signerMode: 'signerMode',
@@ -455,10 +455,9 @@ describe('Bitgo Express', function () {
       };
       (() => expressApp(args)).should.throw();
 
-      const invalidPrv =
-        '{"invalidField":"invalidPrivKey"}';
+      const invalidPrv = '{"invalid json"}';
       const readInvalidStub = sinon.stub(fs, 'readFileSync').returns(invalidPrv);
-      (() => expressApp(args)).should.throw(`Failed to parse ${args.signerFileSystemPath} - required field "prv" is missing`);
+      (() => expressApp(args)).should.throw();
       readInvalidStub.restore();
 
       const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
