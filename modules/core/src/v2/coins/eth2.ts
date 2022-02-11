@@ -109,6 +109,11 @@ export class Eth2 extends BaseCoin {
     return new Eth2(bitgo);
   }
 
+  /** @inheritDoc */
+  supportsBlsDkg(): boolean {
+    return true;
+  }
+
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}

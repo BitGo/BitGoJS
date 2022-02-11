@@ -123,7 +123,7 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
-  multisigType?: 'tss' | 'onchain';
+  multisigType?: 'tss' | 'onchain' | 'blsdkg';
 }
 
 export interface DeriveKeypairOptions {
@@ -328,6 +328,14 @@ export abstract class BaseCoin {
    * @returns {boolean} True if TSS Wallets can be created for this coin
    */
   supportsTss(): boolean {
+    return false;
+  }
+
+  /**
+   * Flag indicating if this coin supports BLS-DKG wallets.
+   * @returns {boolean} True if BLS-DKG Wallets can be created for this coin
+   */
+  supportsBlsDkg(): boolean {
     return false;
   }
 

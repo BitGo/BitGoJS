@@ -11,6 +11,7 @@ import * as sinon from 'sinon';
 import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils } from '../../../src/v2/internal/tssUtils';
+import { BlsUtils } from '../../../src/v2/internal/blsUtils';
 
 describe('V2 Keychains', function () {
   let bitgo;
@@ -258,7 +259,29 @@ describe('V2 Keychains', function () {
           },
         };
         sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-        const keychains = await bitgo.coin('tsol').keychains().createTss({ passphrase: 'password' });
+        const keychains = await bitgo.coin('tsol').keychains().createMpc({ multisigType: 'tss', passphrase: 'password' });
+        keychains.should.deepEqual(stubbedKeychainsTriplet);
+      });
+    });
+
+    describe('Create BLS-DKG Keychains', function() {
+      it('should create BLS-DKG Keychains', async function () {
+        const stubbedKeychainsTriplet = {
+          userKeychain: {
+            id: '1',
+            pub: 'userPub',
+          },
+          backupKeychain: {
+            id: '2',
+            pub: 'userPub',
+          },
+          bitgoKeychain: {
+            id: '3',
+            pub: 'userPub',
+          },
+        };
+        sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+        const keychains = await bitgo.coin('eth2').keychains().createMpc({ multisigType: 'blsdkg', passphrase: 'password' });
         keychains.should.deepEqual(stubbedKeychainsTriplet);
       });
     });

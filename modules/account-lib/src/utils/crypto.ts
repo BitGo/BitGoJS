@@ -197,3 +197,14 @@ export function isValidBLSPublicKey(pub: string): boolean {
 export function toHex(buffer: Buffer | Uint8Array): string {
   return hex.encode(buffer, true);
 }
+
+/**
+ * Returns an hex string of the given bigint
+ *
+ * @param {bigint} bigint - the bigint to be converted to hex
+ * @returns {string} - the hex value
+ */
+export function bigIntToHex(bigint: bigint): string {
+  const hex = bigint.toString(16);
+  return '0x' + '0'.slice(0, hex.length % 2) + hex;
+}
