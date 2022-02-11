@@ -128,14 +128,13 @@ function runTestFetch(api: UtxoApi, coinName: string) {
   getTestCases(coinName).forEach((testCase) => {
     describe(`${api.constructor.name} ${testCase.title()}`, function () {
       it('fetches resource', async function () {
-        this.timeout(10_000);
         if (testCase.expectError(api)) {
           assert.rejects(() => testCase.func(api));
           return;
         }
         const resource = await testCase.func(api);
         deepStrictEqualJSON(resource, await testCase.getFixture(api, resource));
-      });
+      }, 10_000);
     });
   });
 }
