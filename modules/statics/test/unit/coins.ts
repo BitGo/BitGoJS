@@ -1,5 +1,14 @@
 import 'should';
-import { BaseNetwork, CoinFamily, CoinFeature, coins, Erc20Coin, EthereumNetwork, NetworkType } from '../../src';
+import {
+  BaseNetwork,
+  CoinFamily,
+  CoinFeature,
+  coins,
+  DotNetwork,
+  Erc20Coin,
+  EthereumNetwork,
+  NetworkType,
+} from '../../src';
 
 interface DuplicateCoinObject {
   name: string;
@@ -24,6 +33,11 @@ coins.forEach((coin, coinName) => {
       });
     }
 
+    if (coin.family === CoinFamily.DOT) {
+      it('Should return metadata', () => {
+        (coin.network as DotNetwork).metadataRpc.startsWith('0x').should.be.true();
+      });
+    }
     if (coin.family === CoinFamily.XTZ) {
       it('does not support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);

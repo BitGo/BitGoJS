@@ -12,7 +12,8 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "precommit": "lint-staged",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "postbuild": "cp -R resources dist"
   },
   "author": "Tyler Levine <tyler@bitgo.com>",
   "license": "Apache-2.0",

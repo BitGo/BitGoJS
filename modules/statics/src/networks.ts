@@ -1,5 +1,5 @@
 import { CoinFamily } from './base';
-import * as DotResources from '../resources/dot';
+import * as fs from 'fs';
 
 export enum NetworkType {
   MAINNET = 'mainnet',
@@ -184,15 +184,17 @@ class DashTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
 
+const loadMetadata = (path: string) => fs.readFileSync(path, 'binary') as '0x${string}';
+
 class Polkadot extends Mainnet implements DotNetwork {
   name = 'Polkadot';
   family = CoinFamily.DOT;
   explorerUrl = 'https://polkadot.subscan.io/extrinsic/';
   specName = 'polkadot' as PolkadotSpecNameType;
   genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  specVersion = 9140;
+  specVersion = 9160;
   chainName = 'Polkadot';
-  metadataRpc = DotResources.mainnetMetadataRpc as `0x${string}`;
+  metadataRpc = loadMetadata(__dirname + '/../resources/dot/mainnet.txt');
   txVersion = 9;
 }
 
@@ -204,7 +206,7 @@ class PolkadotTestnet extends Testnet implements DotNetwork {
   genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
   specVersion = 9160;
   chainName = 'Westend';
-  metadataRpc = DotResources.westendMetadataRpc as `0x${string}`;
+  metadataRpc = loadMetadata(__dirname + '/../resources/dot/westend.txt');
   txVersion = 9;
 }
 
