@@ -104,7 +104,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
-    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+    this.contractAddress = options.contractAddress as unknown as ContractAddress;
   }
 }
 
@@ -123,7 +123,7 @@ export class Base58ContractAddressDefinedToken extends AccountCoinToken {
       throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
-    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+    this.contractAddress = options.contractAddress as unknown as ContractAddress;
   }
 }
 

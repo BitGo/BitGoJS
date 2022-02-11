@@ -469,7 +469,6 @@ export enum UnderlyingAsset {
   MIZN = 'mizn',
   MKR = 'mkr',
   MNS = 'mns',
-  MNDE = 'mnde',
   MOC = 'moc',
   MOF = 'mof',
   MPAY = 'mpay',
@@ -501,7 +500,6 @@ export enum UnderlyingAsset {
   OPT = 'opt',
   ORAI = 'orai',
   ORBS = 'orbs',
-  ORCA = 'orca',
   OXT = 'oxt',
   OXY = 'oxy',
   OHM = 'ohm',
@@ -550,7 +548,6 @@ export enum UnderlyingAsset {
   RCOIN = 'rcoin',
   RARE = 'rare',
   RARI = 'rari',
-  RAY = 'ray',
   RBY = 'rby',
   RDN = 'rdn',
   REB = 'reb',
@@ -584,7 +581,6 @@ export enum UnderlyingAsset {
   SILV = 'silv',
   SKALE = 'skale',
   SLAB = 'slab',
-  SLND = 'slnd',
   SLOT = 'slot',
   SLP = 'slp',
   SLVX = 'slvx',
@@ -596,7 +592,6 @@ export enum UnderlyingAsset {
   SPO = 'spo',
   SOLVE = 'solve',
   SRNT = 'srnt',
-  SRM = 'srm',
   STBU = 'stbu',
   STC = 'stc',
   STCV2 = 'stcv2',
@@ -840,7 +835,7 @@ export abstract class BaseCoin {
     const requiredFeatures = this.requiredFeatures();
     const disallowedFeatures = this.disallowedFeatures();
 
-    const intersectionFeatures = Array.from(requiredFeatures).filter(feat => disallowedFeatures.has(feat));
+    const intersectionFeatures = Array.from(requiredFeatures).filter((feat) => disallowedFeatures.has(feat));
 
     if (intersectionFeatures.length > 0) {
       throw new ConflictingCoinFeaturesError(options.name, intersectionFeatures);
