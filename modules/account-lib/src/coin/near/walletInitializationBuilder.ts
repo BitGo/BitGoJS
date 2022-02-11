@@ -1,8 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
+import { NotImplementedError } from '../baseCoin/errors';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -11,11 +11,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new NotImplementedError('method not implemented');
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: any): Transaction {
     throw new NotImplementedError('method not implemented');
   }
 
