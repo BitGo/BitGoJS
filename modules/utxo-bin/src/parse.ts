@@ -22,6 +22,7 @@ export type ParserArgs = {
   parseScriptAsm: boolean;
   parseSignatureData: boolean;
   hide?: string[];
+  maxOutputs?: number;
 };
 
 export type ChainInfo = {
@@ -35,6 +36,11 @@ function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
   buf.writeUInt32LE(n);
   return buf;
+}
+
+function isPrintable(s: string): boolean {
+  // https://stackoverflow.com/a/66447494
+  return !s.match(/[\p{Cc}\p{Cn}\p{Cs}]+/gu);
 }
 
 export class Parser {
@@ -142,17 +148,21 @@ export class Parser {
   }
 
   parseSigScript(tx: utxolib.bitgo.UtxoTransaction, inputIndex: number, prevOutputs?: utxolib.TxOutput[]): TxNode {
-    const parsed = utxolib.bitgo.parseSignatureScript(tx.ins[inputIndex]);
-    return this.node(
-      'sigScript',
-      parsed.scriptType ?? 'unknown',
-      parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)
-        ? [
-            this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
-            this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
-          ]
-        : []
-    );
+    try {
+      const parsed = utxolib.bitgo.parseSignatureScript(tx.ins[inputIndex]);
+      return this.node(
+        'sigScript',
+        parsed.scriptType ?? 'unknown',
+        parsed.scriptType && utxolib.bitgo.outputScripts.isScriptType2Of3(parsed.scriptType)
+          ? [
+              this.parsePubkeys(parsed as utxolib.bitgo.ParsedSignatureScript2Of3),
+              this.parseSignatures(parsed as utxolib.bitgo.ParsedSignatureScript2Of3, tx, inputIndex, prevOutputs),
+            ]
+          : []
+      );
+    } catch (e) {
+      return this.node('error', String(e));
+    }
   }
 
   parsePrevOut(
@@ -207,10 +217,52 @@ export class Parser {
     });
   }
 
+  tryParseOpReturn(script: Buffer): TxNode[] {
+    let data: Buffer[] | undefined;
+    try {
+      ({ data } = utxolib.payments.embed({ output: script }));
+    } catch (e) {
+      // ignore
+    }
+    if (!data) {
+      return [];
+    }
+    return data.map((buf, i) => {
+      let utf8;
+      try {
+        utf8 = buf.toString('utf8');
+      } catch (e) {
+        // ignore
+      }
+      return this.node(i, `${buf.length} bytes`, [
+        this.node('hex', buf),
+        ...(utf8 && isPrintable(utf8) ? [this.node('utf8', utf8)] : []),
+      ]);
+    });
+  }
+
+  tryFormatAddress(script: Buffer, network: utxolib.Network): string | Buffer {
+    const opReturnNodes = this.tryParseOpReturn(script);
+    if (opReturnNodes.length) {
+      return `OP_RETURN`;
+    }
+
+    try {
+      return utxolib.address.fromOutputScript(script, network);
+    } catch (e) {
+      return script;
+    }
+  }
+
   parseOuts(outs: utxolib.TxOutput[], tx: utxolib.bitgo.UtxoTransaction, params: ChainInfo): TxNode[] {
+    if (outs.length > (this.params.maxOutputs ?? 200)) {
+      return [this.node('(omitted)', undefined)];
+    }
+
     const txid = tx.getId();
     return outs.map((o, i) =>
-      this.node(i, utxolib.address.fromOutputScript(o.script, tx.network), [
+      this.node(i, this.tryFormatAddress(o.script, tx.network), [
+        ...this.tryParseOpReturn(o.script),
         this.node(`value`, o.value / 1e8),
         ...this.parseSpend(txid, i, params.outputSpends, { conflict: false }),
       ])
