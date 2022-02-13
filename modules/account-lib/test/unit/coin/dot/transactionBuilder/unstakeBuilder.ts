@@ -10,12 +10,11 @@ describe('Dot Unstake Builder', () => {
   let builder: UnstakeBuilder;
 
   const sender = DotResources.accounts.account1;
-  const materialData = Networks.test.dot;
-  const config = buildTestConfig();
-  const material = utils.getMaterial(config);
+  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
-    builder = new UnstakeBuilder(config).material(material);
+    const config = buildTestConfig();
+    builder = new UnstakeBuilder(config).material(utils.getMaterial(config));
   });
 
   describe('setter validation', () => {
@@ -46,12 +45,12 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -69,12 +68,12 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -89,12 +88,12 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -111,13 +110,13 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
     });
   });
 });

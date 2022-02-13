@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig, coins, DotNetwork, Networks } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import sinon from 'sinon';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 import { TransactionBuilder, Transaction } from '../../../../../src/coin/dot';
@@ -80,12 +80,11 @@ describe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = DotResources.accounts.account1;
-  const materialData = Networks.test.dot;
+  const { specName, specVersion, genesisHash, chainName } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    const material = utils.getMaterial(config);
-    builder = new StubTransactionBuilder(config).material(material);
+    builder = new StubTransactionBuilder(config).material(utils.getMaterial(config));
   });
 
   describe('setter validation', () => {
@@ -96,7 +95,7 @@ describe('Dot Transfer Builder', () => {
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
       should.doesNotThrow(() => builder.sender({ address: sender.address }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate eraPeriod', () => {
@@ -106,7 +105,7 @@ describe('Dot Transfer Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.validity({ maxDuration: 64 }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate nonce', () => {
@@ -116,7 +115,7 @@ describe('Dot Transfer Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.sequenceId({ name: 'Nonce', keyword: 'nonce', value: 10 }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate tip', () => {
@@ -126,7 +125,7 @@ describe('Dot Transfer Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.fee({ amount: 10, type: 'tip' }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate blockNumber', () => {
@@ -136,7 +135,7 @@ describe('Dot Transfer Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.validity({ firstValid: 10 }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
   });
 
@@ -153,10 +152,10 @@ describe('Dot Transfer Builder', () => {
 
     it('should build a base transaction on testnet', async () => {
       const material = builder.getMaterial();
-      should.deepEqual(material.specName, materialData.specName);
-      should.deepEqual(material.genesisHash, materialData.genesisHash);
-      should.deepEqual(material.specVersion, materialData.specVersion);
-      should.deepEqual(material.chainName, materialData.chainName);
+      should.deepEqual(material.specName, specName);
+      should.deepEqual(material.genesisHash, genesisHash);
+      should.deepEqual(material.specVersion, specVersion);
+      should.deepEqual(material.chainName, chainName);
     });
 
     it('should build from raw signed tx', async () => {
