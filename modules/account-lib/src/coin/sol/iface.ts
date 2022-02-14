@@ -71,7 +71,7 @@ export interface StakingWithdraw {
 
 export interface AtaInit {
   type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
-  params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string };
+  params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; amount?: string };
 }
 
 export type ValidInstructionTypes =
