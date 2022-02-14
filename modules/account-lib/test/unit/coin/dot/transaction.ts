@@ -24,11 +24,9 @@ class StubTransaction extends Transaction {
 
 describe('Dot Transaction', () => {
   let tx: StubTransaction;
-  const config = buildTestConfig();
-  const material = utils.getMaterial(config);
 
   beforeEach(() => {
-    tx = new StubTransaction(config);
+    tx = new StubTransaction(buildTestConfig());
   });
 
   describe('empty transaction', () => {
@@ -68,7 +66,7 @@ describe('Dot Transaction', () => {
 
   describe('should build from raw unsigned tx', async () => {
     it('Transaction size validation', async () => {
-      const builder = new TransferBuilder(coins.get('tdot')).material(material);
+      const builder = new TransferBuilder(coins.get('tdot')).material(utils.getMaterial(buildTestConfig()));
       builder.from(DotResources.rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })
