@@ -28,6 +28,7 @@ import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
 import * as assert from 'assert';
+import { retryPromise } from './retryPromise';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1025,11 +1026,16 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
     txPrebuild: TransactionPrebuild;
     pubs?: string[];
   }): Promise<SignedTransaction> {
-    const { body: signedTx } = await superagent
-      .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
-      .type('json')
-      .send({ txPrebuild: params.txPrebuild, pubs: params.pubs });
-
+    const { body: signedTx } = await retryPromise(
+      () =>
+        superagent
+          .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
+          .type('json')
+          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs }),
+      (err, tryCount) => {
+        console.error(`attempt number ${tryCount}`);
+      }
+    );
     return signedTx;
   };
 }
