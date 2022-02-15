@@ -13,8 +13,11 @@ describe('TSS EDDSA key generation and signing', () => {
     const C = MPC.keyShare(3, 2, 3);
 
     const A_combine = MPC.keyCombine(A.uShare, [B.yShares[1], C.yShares[1]]);
+    console.log(A_combine.jShares['3']);
     const B_combine = MPC.keyCombine(B.uShare, [A.yShares[2], C.yShares[2]]);
     const C_combine = MPC.keyCombine(C.uShare, [A.yShares[3], B.yShares[3]]);
+
+    // console.log(A_combine.pShare);
 
     const message = 'MPC on a Friday night';
     const message_buffer = Buffer.from(message, 'utf-8');
@@ -41,9 +44,17 @@ describe('TSS EDDSA key generation and signing', () => {
 
     // signing with A and C
     A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]]);
+    console.log(A_combine.jShares[3]);
+    // console.log(JSON.stringify(A_sign_share, undefined, 2));
     C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]]);
+    // console.log(C_sign_share.rShares[1]);
+    // console.log(A_sign_share.rShares[3]);
     A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]]);
+    console.log(C_sign_share.rShares[1]);
     C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]]);
+    console.log('BitGo sign', C_sign);
+    console.log('User sign', A_sign);
+
     signature = MPC.signCombine([A_sign, C_sign]);
     result = MPC.verify(message_buffer, signature).toString();
     result.should.equal(message);
