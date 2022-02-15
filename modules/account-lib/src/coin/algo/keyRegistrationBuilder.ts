@@ -161,8 +161,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     if (algoTxn) {
       if (algoTxn.nonParticipation) {
         this.nonParticipation(algoTxn.nonParticipation);
-      } 
-      if (!this.isOfflineKeyRegAlgoSDKTransaction(algoTxn)) {
+      }
+      if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
         this.voteKey(algoTxn.voteKey.toString('base64'));
         this.selectionKey(algoTxn.selectionKey.toString('base64'));
         this.voteFirst(algoTxn.voteFirst);
@@ -183,7 +183,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       );
     }
 
-    if (!(this.isOfflineKeyRegAlgoSDKTransaction(algoTxn) || this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn))) {
+    if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
       this.validateFields(
         algoTxn.voteKey.toString('base64'),
         algoTxn.selectionKey.toString('base64'),
@@ -196,28 +196,70 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   isNonParticipationKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
-    return (!algoTxn.voteKey && !algoTxn.selectionKey && !algoTxn.voteFirst && !algoTxn.voteLast && !algoTxn.voteKeyDilution && algoTxn.nonParticipation && algoTxn.reKeyTo);
+    return (
+      !algoTxn.voteKey &&
+      !algoTxn.selectionKey &&
+      !algoTxn.voteFirst &&
+      !algoTxn.voteLast &&
+      !algoTxn.voteKeyDilution &&
+      algoTxn.nonParticipation &&
+      algoTxn.reKeyTo
+    );
   }
 
   /** @inheritdoc */
   isNonParticipationKeyRegAccountLibTransaction(): boolean {
-    return (!this._voteKey && !this._selectionKey && !this._voteFirst && !this._voteLast && !this._voteKeyDilution && this._nonParticipation && !!this._reKeyTo);
+    return (
+      !this._voteKey &&
+      !this._selectionKey &&
+      !this._voteFirst &&
+      !this._voteLast &&
+      !this._voteKeyDilution &&
+      this._nonParticipation &&
+      !!this._reKeyTo
+    );
+  }
+
+  /** @inheritdoc */
+  isOnlineKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return !(
+      this.isOfflineKeyRegAlgoSDKTransaction(algoTxn) || this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn)
+    );
+  }
+
+  /** @inheritdoc */
+  isOnlineKeyRegAccountLibTransaction(): boolean {
+    return !(this.isOfflineKeyRegAccountLibTransaction() || this.isNonParticipationKeyRegAccountLibTransaction());
   }
 
   /** @inheritdoc */
   isOfflineKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
-    return (!algoTxn.voteKey && !algoTxn.selectionKey && !algoTxn.voteFirst && !algoTxn.voteLast && !algoTxn.voteKeyDilution && !algoTxn.nonParticipation);
+    return (
+      !algoTxn.voteKey &&
+      !algoTxn.selectionKey &&
+      !algoTxn.voteFirst &&
+      !algoTxn.voteLast &&
+      !algoTxn.voteKeyDilution &&
+      !algoTxn.nonParticipation
+    );
   }
 
   /** @inheritdoc */
   isOfflineKeyRegAccountLibTransaction(): boolean {
-    return (!this._voteKey && !this._selectionKey && !this._voteFirst && !this._voteLast && !this._voteKeyDilution && !this._nonParticipation);
+    return (
+      !this._voteKey &&
+      !this._selectionKey &&
+      !this._voteFirst &&
+      !this._voteLast &&
+      !this._voteKeyDilution &&
+      !this._nonParticipation
+    );
   }
 
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    if (!(this.isNonParticipationKeyRegAccountLibTransaction() || this.isOfflineKeyRegAccountLibTransaction())) {
+    if (this.isOfflineKeyRegAccountLibTransaction()) {
       this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
     }
   }

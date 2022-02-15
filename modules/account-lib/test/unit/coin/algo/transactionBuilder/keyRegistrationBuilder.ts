@@ -211,12 +211,7 @@ describe('Algo KeyRegistration Builder', () => {
     });
 
     it('should build an unsigned offline key registration transaction', async () => {
-      builder
-        .sender({ address: sender.address })
-        .fee({ fee: '1000' })
-        .firstRound(1)
-        .lastRound(100)
-        .testnet();
+      builder.sender({ address: sender.address }).fee({ fee: '1000' }).firstRound(1).lastRound(100).testnet();
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.from, sender.address);
