@@ -2,10 +2,29 @@ import { register } from '../../../../../src';
 import { TransactionBuilderFactory, KeyPair, Utils } from '../../../../../src/coin/sol';
 import should from 'should';
 import * as testData from '../../../../resources/sol/sol';
+import { BaseTransaction } from '../../../../../src/coin/baseCoin';
+
+const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
 describe('Sol Associated Token Account Builder', () => {
-  const factory = register('tsol', TransactionBuilderFactory);
+  function verifyInputOutputAndRawTransaction(tx: BaseTransaction, rawTx: string) {
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: account.pub,
+      value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+      coin: mint,
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: ataPubkey,
+      value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+      coin: mint,
+    });
 
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+  }
+
+  const factory = register('sol', TransactionBuilderFactory);
   const ataInitBuilder = () => {
     const txBuilder = factory.getAtaInitializationBuilder();
     txBuilder.nonce(recentBlockHash);
@@ -16,6 +35,7 @@ describe('Sol Associated Token Account Builder', () => {
   };
 
   const account = new KeyPair(testData.associatedTokenAccounts.accounts[0]).getKeys();
+  const ataPubkey = testData.associatedTokenAccounts.accounts[0].ata;
   const wrongAccount = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
   const mint = testData.associatedTokenAccounts.mint;
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
@@ -27,9 +47,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_UNSIGNED_TX);
       });
 
@@ -39,9 +57,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_UNSIGNED_TX_WITH_MEMO);
       });
 
@@ -52,9 +68,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX);
       });
 
@@ -66,9 +80,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_WITH_MEMO);
       });
     });
@@ -76,7 +88,7 @@ describe('Sol Associated Token Account Builder', () => {
     describe('Fail', () => {
       it('build an associated token account init tx when mint is invalid', () => {
         const txBuilder = ataInitBuilder();
-        should(() => txBuilder.mint('randomstring')).throwError('Invalid or missing mint, got: randomstring');
+        should(() => txBuilder.mint('invalidToken')).throwError("coin 'invalidToken' is not defined");
       });
 
       it('build a wallet init tx and sign with an incorrect account', async () => {
@@ -107,7 +119,19 @@ describe('Sol Associated Token Account Builder', () => {
         txBuilder.sender(account.pub);
         txBuilder.nonce(recentBlockHash);
         txBuilder.sign({ key: account.prv });
-        await txBuilder.build().should.rejectedWith('Invalid transaction: missing mint');
+        await txBuilder.build().should.rejectedWith('Invalid transaction: invalid or missing mint, got: undefined');
+      });
+
+      it('build when mint is invalid', async () => {
+        const txBuilder = factory.getAtaInitializationBuilder();
+        should(() => txBuilder.mint('sol:invalid mint')).throwError("coin 'sol:invalid mint' is not defined");
+      });
+
+      it('build when rentExemptAmount is invalid', async () => {
+        const txBuilder = ataInitBuilder();
+        should(() => txBuilder.rentExemptAmount('invalid amount')).throwError(
+          'Invalid transaction: invalid rentExemptAmount, got: invalid amount',
+        );
       });
 
       it('to sign twice with the same key', () => {
@@ -126,9 +150,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX);
       });
 
@@ -138,9 +160,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        tx.inputs.length.should.equal(0);
-        tx.outputs.length.should.equal(0);
-        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_WITH_MEMO);
       });
     });
