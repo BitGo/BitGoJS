@@ -6,7 +6,7 @@
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "test": "yarn unit-test",
-    "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\"",
+    "unit-test": "nyc -- mocha",
     "build": "tsc",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
@@ -24,8 +24,6 @@
   "devDependencies": {
     "husky": "^1.3.1",
     "lint-staged": "^8.1.5",
-    "mocha": "^6.2.1",
-    "mochawesome": "^3.1.2",
     "nyc": "^15.0.0",
     "should": "^13.2.3"
   },

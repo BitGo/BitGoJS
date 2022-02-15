@@ -1,3 +1,4 @@
+import 'mocha';
 import * as assert from 'assert';
 import { BlockchairApi, BlockstreamApi, UtxoApi } from '../src';
 import { deepStrictEqualJSON, getFixture } from './fixtures';
@@ -130,7 +131,7 @@ function runTestFetch(api: UtxoApi, coinName: string) {
       it('fetches resource', async function () {
         this.timeout(10_000);
         if (testCase.expectError(api)) {
-          assert.rejects(() => testCase.func(api));
+          await assert.rejects(() => testCase.func(api));
           return;
         }
         const resource = await testCase.func(api);
