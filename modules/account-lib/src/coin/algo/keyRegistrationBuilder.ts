@@ -116,9 +116,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    *
    * @returns {KeyRegistrationBuilder} This Key Registration builder.
    *
-   * @param {boolean} nonPart. All new Algorand accounts are participating by default.
+   * @param {boolean} nonParticipation All new Algorand accounts are participating by default.
    * This means that they earn rewards. Mark an account nonparticipating by setting this value to true and this account
-   * will no longer earn rewards
+   * will no longer earn rewards NEVER.
    * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
    */
   nonParticipation(nonParticipation: boolean): KeyRegistrationBuilder {
@@ -189,7 +189,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     const algoTxn = tx.getAlgoTransaction();
 
     if (algoTxn) {
-      if (!algoTxn.nonParticipation) {
+      if (this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn)) {
+        this.nonParticipation(!!algoTxn.nonParticipation);
+      } else if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
         this.voteKey(algoTxn.voteKey.toString('base64'));
         this.selectionKey(algoTxn.selectionKey.toString('base64'));
         this.voteFirst(algoTxn.voteFirst);
@@ -213,7 +215,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       );
     }
 
-    if (!algoTxn.nonParticipation) {
+    if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
       this.validateFields(
         algoTxn.voteKey.toString('base64'),
         algoTxn.selectionKey.toString('base64'),
