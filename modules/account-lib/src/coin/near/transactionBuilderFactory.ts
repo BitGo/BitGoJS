@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { BaseTransactionBuilderFactory, TransactionType } from '../baseCoin';
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
@@ -12,8 +12,21 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  from(raw: string): TransactionBuilder {
+    try {
+      const tx = new Transaction(this._coinConfig);
+      tx.fromRawTransaction(raw);
+      switch (tx.type) {
+        case TransactionType.Send:
+          return this.getTransferBuilder(tx);
+        case TransactionType.WalletInitialization:
+          return this.getWalletInitializationBuilder(tx);
+        default:
+          throw new InvalidTransactionError('unsupported transaction');
+      }
+    } catch (e) {
+      throw e;
+    }
   }
 
   /** @inheritdoc */

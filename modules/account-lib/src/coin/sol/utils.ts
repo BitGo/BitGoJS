@@ -27,6 +27,9 @@ import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { BaseCoin, BaseNetwork, coins } from '@bitgo/statics';
+import { SolCoin } from '@bitgo/statics/dist/src/account';
+import assert from 'assert';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
@@ -317,4 +320,27 @@ export function validateAddress(address: string, fieldName: string): void {
   if (!address || !isValidPublicKey(address)) {
     throw new BuildTransactionError(`Invalid or missing ${fieldName}, got: ${address}`);
   }
+}
+
+/**
+ * Get the statics coin object matching a given Solana token address if it exists
+ *
+ * @param tokenAddress The token address to match against
+ * @param network Solana Mainnet or Testnet
+ * @returns statics BaseCoin object for the matching token
+ */
+export function getSolTokenFromAddress(tokenAddress: string, network: BaseNetwork): Readonly<BaseCoin> | undefined {
+  const tokens = coins.filter((coin) => {
+    if (coin instanceof SolCoin) {
+      return coin.network.type === network.type && coin.tokenAddress.toLowerCase() === tokenAddress.toLowerCase();
+    }
+    return false;
+  });
+  const tokensArray = tokens.map((token) => token);
+  if (tokensArray.length >= 1) {
+    // there should never be two tokens with the same contract address, so we assert that here
+    assert(tokensArray.length === 1);
+    return tokensArray[0];
+  }
+  return undefined;
 }

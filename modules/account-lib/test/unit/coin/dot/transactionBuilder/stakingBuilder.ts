@@ -1,21 +1,23 @@
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import sinon from 'sinon';
 import { StakingBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
+import { Networks } from '@bitgo/statics';
 
 describe('Dot Stake Builder', () => {
   let builder: StakingBuilder;
 
   const sender = DotResources.accounts.account1;
   const receiver = DotResources.accounts.account2;
-  const config = buildTestConfig();
-  const materialData = utils.getMaterial(config);
+  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
-    builder = new StakingBuilder(config).material(materialData);
+    const config = buildTestConfig();
+    builder = new StakingBuilder(config).material(utils.getMaterial(config));
   });
+
   describe('setter validation', () => {
     it('should validate stake amount', () => {
       const spy = sinon.spy(builder, 'validateValue');
@@ -24,7 +26,7 @@ describe('Dot Stake Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.amount('1000'));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate controller address', () => {
@@ -34,7 +36,7 @@ describe('Dot Stake Builder', () => {
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
       should.doesNotThrow(() => builder.owner({ address: sender.address }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate payee', () => {
@@ -47,7 +49,7 @@ describe('Dot Stake Builder', () => {
       should.doesNotThrow(() => builder.payee('Staked'));
       should.doesNotThrow(() => builder.payee('Controller'));
       should.doesNotThrow(() => builder.payee('Stash'));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
   });
 
@@ -71,12 +73,12 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -98,12 +100,12 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -120,12 +122,12 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -144,13 +146,13 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
     });
 
     it('should build from raw signed tx with receiver account', async () => {
@@ -166,12 +168,12 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -190,13 +192,13 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
     });
   });
 });

@@ -1,7 +1,8 @@
 import { Ed25519KeyPair } from '../baseCoin';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
 import * as nearApi from 'near-api-js';
-import { toHex } from '../hbar/utils';
+import { toHex, toUint8Array } from '../hbar/utils';
+import * as nacl from 'tweetnacl';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -37,5 +38,20 @@ export class KeyPair extends Ed25519KeyPair {
       result.prv = this.keyPair.prv;
     }
     return result;
+  }
+
+  /**
+   *  Sign the message in Uint8Array
+   *
+   * @param {Uint8Array} message to be signed
+   * @returns {Uint8Array} signed message
+   */
+
+  signMessageinUint8Array(message: Uint8Array): Uint8Array {
+    const { prv } = this.keyPair;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }

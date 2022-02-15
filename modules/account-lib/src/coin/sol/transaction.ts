@@ -4,6 +4,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { Blockhash, PublicKey, Signer, SystemInstruction, Transaction as SolTransaction } from '@solana/web3.js';
 import {
+  AtaInit,
   DurableNonceParams,
   Memo,
   Nonce,
@@ -15,13 +16,15 @@ import {
   WalletInit,
 } from './iface';
 import base58 from 'bs58';
-import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import { getSolTokenFromAddress, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
 import { Entry, TransactionRecipient } from '../baseCoin/iface';
 
 const UNAVAILABLE_TEXT = 'UNAVAILABLE';
+const UNSUPPORTED_TOKEN_NAME = 'UNSUPPORTED_TOKEN';
+const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
 export class Transaction extends BaseTransaction {
   private _solTransaction: SolTransaction;
@@ -277,6 +280,19 @@ export class Transaction extends BaseTransaction {
             coin: this._coinConfig.name,
           });
           break;
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          const token = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
+          const tokenName = token ? token.name : UNSUPPORTED_TOKEN_NAME;
+          inputs.push({
+            address: instruction.params.ownerAddress,
+            value: instruction.params.amount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
+            coin: tokenName,
+          });
+          outputs.push({
+            address: instruction.params.ataAddress,
+            value: instruction.params.amount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
+            coin: tokenName,
+          });
       }
     }
     this._outputs = outputs;
@@ -332,6 +348,13 @@ export class Transaction extends BaseTransaction {
             amount: stakingWithdrawInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          const createAtaInstruction = instruction as AtaInit;
+          outputs.push({
+            address: createAtaInstruction.params.ataAddress,
+            amount: createAtaInstruction.params.amount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
+          });
           break;
         default:
           continue;

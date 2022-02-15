@@ -88,6 +88,10 @@ export class Dot extends BaseCoin {
     return true;
   }
 
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
   /**
    * Generate ed25519 key pair
    *

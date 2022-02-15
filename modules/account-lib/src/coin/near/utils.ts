@@ -43,6 +43,14 @@ export class Utils implements BaseUtils {
     return this.isBase58(txId, 32);
   }
 
+  /**
+   * Check if base58 decoded string is equale to length
+   *
+   * @param {string} value - string to be checked
+   * @param {number} length - expected decoded length
+   * @return {boolean} if the string can decoded as base58 and match the expected length
+   */
+
   isBase58(value: string, length: number): boolean {
     try {
       return !!value && bs58.decode(value).length === length;

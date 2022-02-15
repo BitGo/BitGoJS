@@ -7,13 +7,12 @@ import { Networks } from '@bitgo/statics';
 describe('Dot Unnominate Builder', () => {
   let builder: UnnominateBuilder;
 
-  const materialData = Networks.test.dot;
+  const { genesisHash, specVersion, txVersion } = Networks.test.dot;
   const sender = DotResources.accounts.account1;
   const refBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
 
   beforeEach(() => {
-    const config = buildTestConfig();
-    builder = new UnnominateBuilder(config);
+    builder = new UnnominateBuilder(buildTestConfig());
   });
 
   describe('build unnominate transaction', () => {
@@ -31,11 +30,11 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -53,11 +52,11 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -70,11 +69,11 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
@@ -91,12 +90,12 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, refBlock);
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
+      should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, 'Westend');
     });
   });

@@ -163,6 +163,24 @@ BitGo Express currently supports the following proxy protocols:
 * SOCKSv5
 * PAC
 
+### External Signing Mode
+**Note:** External signing mode is currently available only in testnet and is under active development. Breaking changes may be made to it without incrementing the major version until the feature is stabilized and made available in production.
+
+BitGo Express can be run in an external signing mode, where the signing of transactions is performed in a separate instance of BitGo Express that has access to the private keys. This may be preferable for users who would like to apply their signature to their transactions using a more secure environment than BitGo SDK or BitGo Express, such as a signer with restricted access or network connectivity.
+
+To set up BitGo Express with an external signer, a url to the external signer instance of BitGo Express must be provided using the `externalSignerUrl` configuration option. The corresponding external signer instance of BitGo Express must have `signerMode` set, and `signerFileSystemPath` set to the path of a json containing the private key.
+
+The JSON file containing the unencrypted private key(s) must be in the format `"<walletId>": "<privateKey>"` wallet ID and private key. Here is an example json file containing two wallet IDs and their corresponding private keys.
+
+  ```
+{
+"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2",
+"61fb21819c54dd000755f8de3a18e46f":"xprv9s21ZrQH143K2tc1uz6E1rY1WYEaAQyFzY4C3qs4GMyX1uXy6YqdUXrWyKpm3AJmugPR56mC2ggJK5BsCenznJw2nGQ2P9AAEwZVLSVgjGr"
+}
+```
+
+![BitGo Express Signer Diagram](express_signer.png)
+
 ## Configuration Values
 
 BitGo Express is able to take configuration options from either command line arguments, or via environment variables.
@@ -185,9 +203,9 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --disableenvcheck      | `BITGO_DISABLE_ENV_CHECK` <sup>0</sup>   | N/A           | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment.         |
 | -i              | --ipc                  | `BITGO_IPC`                              | N/A           | If set, bind to the given IPC (unix domain) socket. Binding to an IPC socket can be useful if the caller of bitgo-express resides on the same host as the bitgo-express instance itself, since the socket can be secured using normal file permissions and ownership semantics. Note: This is not supported on Windows platforms. |
 | N/A             | --authversion          | `BITGO_AUTH_VERSION`                     | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. Please see the [BitGo API documentation](https://app.bitgo.com/docs) for more info on authentication scheme versions. |
-| N/A             | --externalSignerUrl    | `BITGO_EXTERNAL_SIGNER_URL`              | N/A           | URL specifying the external API to call for remote signing.                                                                                                                                                                                                                                                                                         |
-| N/A             | --signerMode           | `BITGO_SIGNER_MODE `                     | N/A           | If set, run Express as a remote signer.                                                                                                                                                                                                                                                                                                             |
-| N/A             | --signerFileSystemPath | `BITGO_SIGNER_FILE_SYSTEM_PATH `         | N/A           | Local path specifying where an Express signer machine keeps encrypted user private keys. Required when signerMode is set.                                                                                                                                                                                                                           |
+| N/A             | --externalSignerUrl    | `BITGO_EXTERNAL_SIGNER_URL`              | N/A           | URL specifying the external API to call for remote signing. |
+| N/A             | --signerMode           | `BITGO_SIGNER_MODE `                     | N/A           | If set, run Express as a remote signer. |
+| N/A             | --signerFileSystemPath | `BITGO_SIGNER_FILE_SYSTEM_PATH `         | N/A           | Local path specifying where an Express signer machine keeps the unencrypted user private keys. Required when signerMode is set. |
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
 * Disable SSL

@@ -375,14 +375,18 @@ function handleV1Sign(req: express.Request) {
 }
 
 export async function handleV2Sign(req: express.Request) {
+  const walletId = req.body.txPrebuild.walletId;
   const path = req.config.signerFileSystemPath;
   assert(typeof path === 'string');
   const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
   const privKey = JSON.parse(privKeyFile);
+  if (privKey[walletId] === undefined) {
+    throw new Error(`Could not find a field for walletId: ${walletId} in ${req.config.signerFileSystemPath}`);
+  }
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   try {
-    return await coin.signTransaction({ ...req.body, ...privKey });
+    return await coin.signTransaction({ ...req.body, ...{ prv: privKey[walletId] } });
   } catch (error) {
     console.log('error while signing wallet transaction ', error);
     throw error;

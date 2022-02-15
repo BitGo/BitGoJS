@@ -1,21 +1,22 @@
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import sinon from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
 import * as DotResources from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
+import { Networks } from '@bitgo/statics';
 
 describe('Dot Address Initialization Builder', () => {
   let builder: AddressInitializationBuilder;
 
   const sender = DotResources.accounts.account1;
   const receiver = DotResources.accounts.account3;
-  const config = buildTestConfig();
-  const materialData = utils.getMaterial(config);
+  const { txVersion, specVersion, genesisHash, chainName } = Networks.test.dot;
 
   beforeEach(() => {
-    builder = new AddressInitializationBuilder(config).material(materialData);
+    const config = buildTestConfig();
+    builder = new AddressInitializationBuilder(config).material(utils.getMaterial(config));
   });
 
   describe('setter validation', () => {
@@ -26,7 +27,7 @@ describe('Dot Address Initialization Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.delay('0'));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate owner address', () => {
@@ -36,7 +37,7 @@ describe('Dot Address Initialization Builder', () => {
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
       should.doesNotThrow(() => builder.owner({ address: sender.address }));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
 
     it('should validate index', () => {
@@ -46,7 +47,7 @@ describe('Dot Address Initialization Builder', () => {
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.index(0));
-      assert.calledTwice(spy);
+      sinon.assert.calledTwice(spy);
     });
   });
 
@@ -70,12 +71,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -97,12 +98,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -119,12 +120,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -143,13 +144,13 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
     });
   });
 
@@ -173,12 +174,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -200,12 +201,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -227,12 +228,12 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      should.deepEqual(txJson.genesisHash, materialData.genesisHash);
-      should.deepEqual(txJson.specVersion, materialData.specVersion);
+      should.deepEqual(txJson.genesisHash, genesisHash);
+      should.deepEqual(txJson.specVersion, specVersion);
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -252,8 +253,8 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -275,8 +276,8 @@ describe('Dot Address Initialization Builder', () => {
       should.deepEqual(txJson.genesisHash, '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e');
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
-      should.deepEqual(txJson.transactionVersion, materialData.txVersion);
-      should.deepEqual(txJson.chainName, materialData.chainName);
+      should.deepEqual(txJson.transactionVersion, txVersion);
+      should.deepEqual(txJson.chainName, chainName);
       should.deepEqual(txJson.eraPeriod, 64);
     });
   });
