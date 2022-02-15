@@ -62,7 +62,7 @@ describe('Sol Transaction Builder', async () => {
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
-      value: '300000',
+      value: testData.tokenTransfers.amount.toString(),
       coin: 'tsol',
     });
     builtTx.outputs.length.should.equal(0);
@@ -96,7 +96,7 @@ describe('Sol Transaction Builder', async () => {
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
-      value: '300000',
+      value: testData.tokenTransfers.amount.toString(),
       coin: 'tsol',
     });
     builtTx.outputs.length.should.equal(1);
@@ -130,13 +130,13 @@ describe('Sol Transaction Builder', async () => {
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
-      value: '300000',
+      value: testData.tokenTransfers.amount.toString(),
       coin: 'tsol',
     });
     builtTx.outputs.length.should.equal(1);
     builtTx.outputs[0].should.deepEqual({
       address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-      value: '300000',
+      value: testData.tokenTransfers.amount.toString(),
       coin: 'tsol',
     });
     const jsonTx = builtTx.toJson();
@@ -163,6 +163,54 @@ describe('Sol Transaction Builder', async () => {
       },
     ]);
     builtTx.toBroadcastFormat().should.equal(testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
+  });
+
+  it('build a send from raw token transaction', async () => {
+    const txBuilder = factory.from(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
+    const builtTx = await txBuilder.build();
+    should.equal(builtTx.type, TransactionType.Send);
+    should.equal(
+      builtTx.id,
+      '61y3eZC1L9AXhw5jvMaeVUe3cz7WZ5vGyH3PHgb3k18Lcwa3A97qbj2zco6SWw2Hxo3m4F2MLs1gzNrqvB8VNjfV',
+    );
+    builtTx.inputs.length.should.equal(1);
+    builtTx.inputs[0].should.deepEqual({
+      address: testData.associatedTokenAccounts.accounts[0].pub,
+      value: testData.tokenTransfers.amount.toString(),
+      coin: 'tsol:ORCA',
+    });
+    builtTx.outputs.length.should.equal(1);
+    builtTx.outputs[0].should.deepEqual({
+      address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+      value: testData.tokenTransfers.amount.toString(),
+      coin: 'tsol:ORCA',
+    });
+    const jsonTx = builtTx.toJson();
+    jsonTx.id.should.equal('61y3eZC1L9AXhw5jvMaeVUe3cz7WZ5vGyH3PHgb3k18Lcwa3A97qbj2zco6SWw2Hxo3m4F2MLs1gzNrqvB8VNjfV');
+    jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
+    jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
+    jsonTx.numSignatures.should.equal(1);
+    jsonTx.durableNonce.should.deepEqual({
+      walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+      authWalletAddress: testData.associatedTokenAccounts.accounts[0].pub,
+    });
+    jsonTx.instructionsData.should.deepEqual([
+      {
+        type: 'TokenTransfer',
+        params: {
+          fromAddress: testData.associatedTokenAccounts.accounts[0].pub,
+          toAddress: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+          amount: testData.tokenTransfers.amount.toString(),
+          mintAddress: testData.tokenTransfers.mintORCA.toString(),
+          sourceAddress: '2SN4FRheJhoFKae16QQEvh4RnbraUa5Wm5i2fEQ5A84o',
+        },
+      },
+      {
+        type: 'Memo',
+        params: { memo: 'test memo' },
+      },
+    ]);
+    builtTx.toBroadcastFormat().should.equal(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
   });
 
   describe('Nonce tests', async () => {

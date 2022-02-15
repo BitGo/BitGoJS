@@ -26,7 +26,7 @@ import { BuildTransactionError, NotSupported, ParseTransactionError, UtilsError 
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
-import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { BaseCoin, BaseNetwork, coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
 
@@ -262,6 +262,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return 'Memo';
     case SystemProgram.programId.toString():
       return SystemInstruction.decodeInstructionType(instruction);
+    case TOKEN_PROGRAM_ID.toString():
+      return 'TokenTransfer';
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
     case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
