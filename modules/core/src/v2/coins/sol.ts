@@ -292,7 +292,7 @@ export class Sol extends BaseCoin {
 
     try {
       rebuiltTransaction = await factory.from(params.txBase64).fee({ amount: params.feeInfo.fee }).build();
-    } catch {
+    } catch (e) {
       throw new Error('Invalid transaction');
     }
 

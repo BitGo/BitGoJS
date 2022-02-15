@@ -294,13 +294,17 @@ describe('SOL:', function () {
 
       parsedTransaction.should.deepEqual({
         inputs: [{
-          address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-          amount: 305000,
+          address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+          amount: 7000,
         }],
         outputs: [
           {
-            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-            amount: '300000',
+            address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+            amount: '1000',
+          },
+          {
+            address: 'EQPQFgKdBNWnT8dFMMx5WnbHhwfJCnkz79bi29HkvvXX',
+            amount: '1000',
           },
         ],
       });
@@ -316,13 +320,17 @@ describe('SOL:', function () {
 
       parsedTransaction.should.deepEqual({
         inputs: [{
-          address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-          amount: 305000,
+          address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+          amount: 7000,
         }],
         outputs: [
           {
-            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-            amount: '300000',
+            address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+            amount: '1000',
+          },
+          {
+            address: 'EQPQFgKdBNWnT8dFMMx5WnbHhwfJCnkz79bi29HkvvXX',
+            amount: '1000',
           },
         ],
       });
@@ -338,13 +346,13 @@ describe('SOL:', function () {
 
       parsedTransaction.should.deepEqual({
         inputs: [{
-          address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-          amount: 310000,
+          address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+          amount: 1457680,
         }],
         outputs: [
           {
-            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-            amount: '300000',
+            address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+            amount: '1447680',
           },
         ],
       });
@@ -360,13 +368,13 @@ describe('SOL:', function () {
 
       parsedTransaction.should.deepEqual({
         inputs: [{
-          address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-          amount: 310000,
+          address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+          amount: 1457680,
         }],
         outputs: [
           {
-            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-            amount: '300000',
+            address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+            amount: '1447680',
           },
         ],
       });
@@ -398,19 +406,23 @@ describe('SOL:', function () {
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '300000',
+        outputAmount: '2000',
         outputs: [
           {
-            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-            amount: '300000',
+            address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+            amount: '1000',
+          },
+          {
+            address: 'EQPQFgKdBNWnT8dFMMx5WnbHhwfJCnkz79bi29HkvvXX',
+            amount: '1000',
           },
         ],
         fee: {
           fee: '5000',
           feeRate: 5000,
         },
-        memo: 'test memo',
-        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        memo: 'testing memo',
+        blockhash: '956SJtZW3vNUGhiFtXnzD3VqEg2HA8SjcMyMKYUtTSbf',
         durableNonce: undefined,
       });
     });
@@ -435,23 +447,27 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT',
+        id: '29YGyxQPfQUbt9V4RNWktMR6RFAoQURhMwu7xgyZHZJBSE7iGzv1R7dhhLVdzTepu3NTR2T3ApqQDstdB9TGMv2H',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '300000',
+        outputAmount: '2000',
         outputs: [
           {
-            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-            amount: '300000',
+            address: '2Qp2jDJQmcHZtaAB4pAPvn6v4PERohyL9Wdo32KUJDwq',
+            amount: '1000',
+          },
+          {
+            address: 'EQPQFgKdBNWnT8dFMMx5WnbHhwfJCnkz79bi29HkvvXX',
+            amount: '1000',
           },
         ],
         fee: {
           fee: '5000',
           feeRate: 5000,
         },
-        memo: 'test memo',
-        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        memo: 'testing memo',
+        blockhash: '956SJtZW3vNUGhiFtXnzD3VqEg2HA8SjcMyMKYUtTSbf',
         durableNonce: undefined,
       });
     });
@@ -481,20 +497,20 @@ describe('SOL:', function () {
         type: 'WalletInitialization',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '300000',
+        outputAmount: '1447680',
         outputs: [
           {
-            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-            amount: '300000',
+            address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+            amount: '1447680',
           },
         ],
         fee: {
           fee: '10000',
           feeRate: 5000,
         },
-        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        blockhash: 'DHuNtDBeHZCSZs8PkrTxb7BufQtvFiLmiHmyo4VgAzcT',
         durableNonce: undefined,
-        memo: undefined,
+        memo: 'testing create nonce',
       });
     });
 
@@ -519,24 +535,24 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '2QdKALq4adaTahJH13AGzM5bAFuNshw43iQBdVS9D2Loq736zUgPXfHj32cNJKX6FyjUzYJhGfEyAAB5FgYUW6zR',
+        id: '5hmVrJ6QftWDvYTUE3ut3KTkSCQVQFP6yEEBeK6N8HGv4b2NoiEjwjbhJjU5MWWtN7Y4kFYZuWpennLdHbaDqhTg',
         type: 'WalletInitialization',
         changeOutputs: [],
         changeAmount: '0',
-        outputAmount: '300000',
+        outputAmount: '1447680',
         outputs: [
           {
-            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-            amount: '300000',
+            address: 'JtcP5tdeD2iZnhSTZK9GJjimA13zfLxgEH5yZnnGRLo',
+            amount: '1447680',
           },
         ],
         fee: {
           fee: '10000',
           feeRate: 5000,
         },
-        blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        blockhash: 'DHuNtDBeHZCSZs8PkrTxb7BufQtvFiLmiHmyo4VgAzcT',
         durableNonce: undefined,
-        memo: undefined,
+        memo: 'testing create nonce',
       });
     });
 
