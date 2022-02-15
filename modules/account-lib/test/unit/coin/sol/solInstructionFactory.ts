@@ -85,7 +85,7 @@ describe('Instruction Builder Tests: ', function () {
     });
 
     it('Create associated token account', () => {
-      const mintAddress = testData.associatedTokenAccounts.mint;
+      const mintAddress = testData.associatedTokenAccounts.mintId;
       const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
       const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
       const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;

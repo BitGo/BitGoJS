@@ -77,7 +77,7 @@ describe('Instruction Parser Tests: ', function () {
     });
 
     it('ATA init tx instructions', () => {
-      const mintAddress = testData.associatedTokenAccounts.mint;
+      const mintAddress = testData.associatedTokenAccounts.mintId;
       const ownerAddress = testData.associatedTokenAccounts.accounts[0].pub;
       const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
       const ataAddress = testData.associatedTokenAccounts.accounts[0].ata;
