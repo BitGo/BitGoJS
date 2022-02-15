@@ -99,9 +99,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    *
    * @returns {KeyRegistrationBuilder} This Key Registration builder.
    *
-   * @param {boolean} nonPart. All new Algorand accounts are participating by default.
+   * @param {boolean} nonParticipation All new Algorand accounts are participating by default.
    * This means that they earn rewards. Mark an account nonparticipating by setting this value to true and this account
-   * will no longer earn rewards
+   * will no longer earn rewards NEVER.
    * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
    */
   nonParticipation(nonParticipation: boolean): KeyRegistrationBuilder {
@@ -111,18 +111,19 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    if (!this._nonParticipation) {
+    if (this.isOfflineKeyRegAccountLibTransaction()) {
       return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
-        this._voteKey,
-        this._selectionKey,
-        this._voteFirst,
-        this._voteLast,
-        this._voteKeyDilution,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         this.suggestedParams,
       );
-    } else {
+    }
+    if (this._nonParticipation) {
       return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
         this._sender,
         this._note,
@@ -136,6 +137,16 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._nonParticipation,
       );
     }
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      this._sender,
+      this._note,
+      this._voteKey,
+      this._selectionKey,
+      this._voteFirst,
+      this._voteLast,
+      this._voteKeyDilution,
+      this.suggestedParams,
+    );
   }
 
   protected get transactionType(): TransactionType {
@@ -148,14 +159,15 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     const algoTxn = tx.getAlgoTransaction();
 
     if (algoTxn) {
-      if (!algoTxn.nonParticipation) {
+      if (algoTxn.nonParticipation) {
+        this.nonParticipation(algoTxn.nonParticipation);
+      } 
+      if (!this.isOfflineKeyRegAlgoSDKTransaction(algoTxn)) {
         this.voteKey(algoTxn.voteKey.toString('base64'));
         this.selectionKey(algoTxn.selectionKey.toString('base64'));
         this.voteFirst(algoTxn.voteFirst);
         this.voteLast(algoTxn.voteLast);
         this.voteKeyDilution(algoTxn.voteKeyDilution);
-      } else {
-        this.nonParticipation(algoTxn.nonParticipation);
       }
     }
     return tx;
@@ -171,7 +183,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       );
     }
 
-    if (!algoTxn.nonParticipation) {
+    if (!(this.isOfflineKeyRegAlgoSDKTransaction(algoTxn) || this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn))) {
       this.validateFields(
         algoTxn.voteKey.toString('base64'),
         algoTxn.selectionKey.toString('base64'),
@@ -183,9 +195,29 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
+  isNonParticipationKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return (!algoTxn.voteKey && !algoTxn.selectionKey && !algoTxn.voteFirst && !algoTxn.voteLast && !algoTxn.voteKeyDilution && algoTxn.nonParticipation && algoTxn.reKeyTo);
+  }
+
+  /** @inheritdoc */
+  isNonParticipationKeyRegAccountLibTransaction(): boolean {
+    return (!this._voteKey && !this._selectionKey && !this._voteFirst && !this._voteLast && !this._voteKeyDilution && this._nonParticipation && !!this._reKeyTo);
+  }
+
+  /** @inheritdoc */
+  isOfflineKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return (!algoTxn.voteKey && !algoTxn.selectionKey && !algoTxn.voteFirst && !algoTxn.voteLast && !algoTxn.voteKeyDilution && !algoTxn.nonParticipation);
+  }
+
+  /** @inheritdoc */
+  isOfflineKeyRegAccountLibTransaction(): boolean {
+    return (!this._voteKey && !this._selectionKey && !this._voteFirst && !this._voteLast && !this._voteKeyDilution && !this._nonParticipation);
+  }
+
+  /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    if (!this._nonParticipation) {
+    if (!(this.isNonParticipationKeyRegAccountLibTransaction() || this.isOfflineKeyRegAccountLibTransaction())) {
       this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
     }
   }

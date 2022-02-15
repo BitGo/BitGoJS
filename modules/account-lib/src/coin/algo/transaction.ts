@@ -220,11 +220,13 @@ export class Transaction extends BaseTransaction {
     }
     if (this.type === TransactionType.WalletInitialization) {
       if (!this._algoTransaction.nonParticipation) {
-        result.voteKey = this._algoTransaction.voteKey.toString('base64');
-        result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
-        result.voteFirst = this._algoTransaction.voteFirst;
-        result.voteLast = this._algoTransaction.voteLast;
-        result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+        if (!!this._algoTransaction.voteKey && !!this._algoTransaction.selectionKey && !!this._algoTransaction.voteFirst && !!this._algoTransaction.voteLast && !!this._algoTransaction.voteKeyDilution) {
+          result.voteKey = this._algoTransaction.voteKey.toString('base64');
+          result.selectionKey = this._algoTransaction.selectionKey.toString('base64');
+          result.voteFirst = this._algoTransaction.voteFirst;
+          result.voteLast = this._algoTransaction.voteLast;
+          result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+        }
       } else {
         result.nonParticipation = this._algoTransaction.nonParticipation;
       }
