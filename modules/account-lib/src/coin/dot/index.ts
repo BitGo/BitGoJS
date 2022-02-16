@@ -10,5 +10,6 @@ export { AddressInitializationBuilder } from './addressInitializationBuilder';
 export { BatchTransactionBuilder } from './batchTransactionBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { UnnominateBuilder } from './unnominateBuilder';
+export { WithdrawUnstakedBuilder } from './withdrawUnstakedBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Interface, Utils };
