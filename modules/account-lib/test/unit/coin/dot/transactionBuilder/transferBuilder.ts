@@ -2,7 +2,7 @@ import { coins, Networks } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/dot';
-import * as DotResources from '../../../../resources/dot';
+import { accounts, rawTx } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -10,9 +10,9 @@ import utils from '../../../../../src/coin/dot/utils';
 describe('Dot Transfer Builder', () => {
   let builder: TransferBuilder;
 
-  const proxySender = DotResources.accounts.account3;
-  const sender = DotResources.accounts.account1;
-  const receiver = DotResources.accounts.account2;
+  const proxySender = accounts.account3;
+  const sender = accounts.account1;
+  const receiver = accounts.account2;
   const { chainName, txVersion, genesisHash, specVersion } = Networks.test.dot;
 
   beforeEach(() => {
@@ -50,7 +50,8 @@ describe('Dot Transfer Builder', () => {
     });
   });
 
-  describe('build transfer transaction', () => {
+  // TODO: BG-43197
+  xdescribe('build transfer transaction', () => {
     it('should build a transfer transaction', async () => {
       builder
         .amount('90034235235322')
@@ -145,7 +146,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.transfer.signed);
+      builder.from(rawTx.transfer.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -166,7 +167,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.transfer.unsigned);
+      builder.from(rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -191,7 +192,7 @@ describe('Dot Transfer Builder', () => {
     it('should build from raw signed westend tx', async () => {
       const config = coins.get('tdot');
       const westendBuilder = new TransferBuilder(config);
-      westendBuilder.from(DotResources.rawTx.transfer.westendSigned);
+      westendBuilder.from(rawTx.transfer.westendSigned);
       westendBuilder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -275,7 +276,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.proxy.signed);
+      builder.from(rawTx.proxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -296,7 +297,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.proxy.unsigned);
+      builder.from(rawTx.proxy.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')

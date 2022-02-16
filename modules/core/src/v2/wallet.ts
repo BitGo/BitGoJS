@@ -1470,7 +1470,9 @@ export class Wallet {
     const addressDerivationKeypair = _.get(keychains[KeyIndices.USER], 'addressDerivationKeypair');
     const lastChainIndex = _.get(this.coinSpecific(), `lastChainIndex.${chain || 0}`, 0);
 
-    const newAddresses = _.times(count, async (index) => {
+    const newAddresses: Record<string, any>[] = [];
+    for (let index = 0; index < count; index++) {
+      // synchronously make requests to keep order of derivation index when POSTing derived addresses
       if (addressDerivationKeypair && passphrase) {
         const addressDerivationPrv = this.bitgo.decrypt({
           password: passphrase,
@@ -1524,8 +1526,8 @@ export class Wallet {
         throw new Error(`address verification skipped for count = ${count}`);
       }
 
-      return newAddress;
-    });
+      newAddresses.push(newAddress);
+    }
 
     if (newAddresses.length === 1) {
       return newAddresses[0];

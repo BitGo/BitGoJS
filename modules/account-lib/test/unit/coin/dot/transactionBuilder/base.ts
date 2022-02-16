@@ -7,7 +7,7 @@ import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 import { TransactionBuilder, Transaction } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import * as DotResources from '../../../../resources/dot';
+import { rawTx, accounts } from '../../../../resources/dot';
 
 export interface TestDotNetwork extends DotNetwork {
   genesisHash: string;
@@ -76,10 +76,11 @@ class StubTransactionBuilder extends TransactionBuilder {
   }
 }
 
-describe('Dot Transfer Builder', () => {
+// TODO: BG-43197
+xdescribe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
-  const sender = DotResources.accounts.account1;
+  const sender = accounts.account1;
   const { specName, specVersion, genesisHash, chainName } = Networks.test.dot;
 
   beforeEach(() => {
@@ -159,7 +160,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.transfer.signed);
+      builder.from(rawTx.transfer.signed);
       should.deepEqual(builder.getSender(), sender.address);
       should.deepEqual(builder.getNonce(), 200);
       should.deepEqual(builder.getEraPeriod(), 64);
@@ -167,7 +168,7 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.transfer.unsigned);
+      builder.from(rawTx.transfer.unsigned);
       should.deepEqual(
         builder.getReferenceBlock(),
         '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',

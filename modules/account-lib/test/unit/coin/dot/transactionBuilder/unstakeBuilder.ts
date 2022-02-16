@@ -2,14 +2,14 @@ import should from 'should';
 import sinon, { assert } from 'sinon';
 import { UnstakeBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
-import * as DotResources from '../../../../resources/dot';
+import { rawTx, accounts } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { Networks } from '@bitgo/statics';
 
 describe('Dot Unstake Builder', () => {
   let builder: UnstakeBuilder;
 
-  const sender = DotResources.accounts.account1;
+  const sender = accounts.account1;
   const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
@@ -78,7 +78,7 @@ describe('Dot Unstake Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.unstake.signed);
+      builder.from(rawTx.unstake.signed);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -98,7 +98,7 @@ describe('Dot Unstake Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.unstake.unsigned);
+      builder.from(rawTx.unstake.unsigned);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')

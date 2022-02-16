@@ -2,15 +2,15 @@ import should from 'should';
 import sinon from 'sinon';
 import { StakingBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
-import * as DotResources from '../../../../resources/dot';
+import { accounts, rawTx } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { Networks } from '@bitgo/statics';
 
 describe('Dot Stake Builder', () => {
   let builder: StakingBuilder;
 
-  const sender = DotResources.accounts.account1;
-  const receiver = DotResources.accounts.account2;
+  const sender = accounts.account1;
+  const receiver = accounts.account2;
   const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
@@ -53,7 +53,8 @@ describe('Dot Stake Builder', () => {
     });
   });
 
-  describe('build stake transaction', () => {
+  // TODO: BG-43197
+  xdescribe('build stake transaction', () => {
     it('should build a stake transaction', async () => {
       builder
         .amount('90034235235322')
@@ -110,7 +111,7 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.stake.signed);
+      builder.from(rawTx.stake.signed);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -132,7 +133,7 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.stake.unsigned);
+      builder.from(rawTx.stake.unsigned);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -156,7 +157,7 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw signed tx with receiver account', async () => {
-      builder.from(DotResources.rawTx.stake.signedAlt);
+      builder.from(rawTx.stake.signedAlt);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -178,7 +179,7 @@ describe('Dot Stake Builder', () => {
     });
 
     it('should build from raw unsigned tx with payee account', async () => {
-      builder.from(DotResources.rawTx.stake.unsignedAlt);
+      builder.from(rawTx.stake.unsignedAlt);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
