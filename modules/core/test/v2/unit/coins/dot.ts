@@ -46,7 +46,8 @@ describe('DOT:', function () {
       amount: '10000000000',
     };
 
-    it('should sign transaction', async function () {
+    // TODO: BG-43197
+    xit('should sign transaction', async function () {
       const signed = await basecoin.signTransaction({
         txPrebuild: {
           txHex: DotResources.rawTx.transfer.unsigned,
@@ -60,7 +61,8 @@ describe('DOT:', function () {
       signed.txHex.should.equal(DotResources.rawTx.transfer.signed);
     });
 
-    it('should fail to sign transaction with an invalid key', async function () {
+    // TODO: BG-43197
+    xit('should fail to sign transaction with an invalid key', async function () {
       try {
         await basecoin.signTransaction({
           txPrebuild: {

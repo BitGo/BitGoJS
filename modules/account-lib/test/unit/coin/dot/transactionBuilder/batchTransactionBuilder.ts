@@ -32,7 +32,8 @@ describe('Dot Batch Transaction Builder', () => {
     });
   });
 
-  describe('build batch transaction', () => {
+  // TODO: BG-43197
+  xdescribe('build batch transaction', () => {
     it('should build a batch transaction', async () => {
       builder
         .calls(DotResources.rawTx.anonymous.batch)

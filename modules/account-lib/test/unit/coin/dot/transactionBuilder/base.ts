@@ -76,7 +76,8 @@ class StubTransactionBuilder extends TransactionBuilder {
   }
 }
 
-describe('Dot Transfer Builder', () => {
+// TODO: BG-43197
+xdescribe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = DotResources.accounts.account1;
