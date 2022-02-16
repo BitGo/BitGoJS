@@ -1,13 +1,11 @@
 import should from 'should';
 import { Dot } from '../../../../src';
-import * as DotResources from '../../../resources/dot';
+import { accounts } from '../../../resources/dot';
 
 describe('Dot KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
 
-  const {
-    accounts: { account1, account2, account3, default: defaultAccount },
-  } = DotResources;
+  const { account1, account2, account3, default: defaultAccount } = accounts;
 
   describe('Keypair creation', () => {
     it('initial state', () => {

@@ -1,6 +1,6 @@
 import should from 'should';
 import { UnnominateBuilder } from '../../../../../src/coin/dot';
-import * as DotResources from '../../../../resources/dot';
+import { accounts, rawTx } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { Networks } from '@bitgo/statics';
 
@@ -8,7 +8,7 @@ describe('Dot Unnominate Builder', () => {
   let builder: UnnominateBuilder;
 
   const { genesisHash, specVersion, txVersion } = Networks.test.dot;
-  const sender = DotResources.accounts.account1;
+  const sender = accounts.account1;
   const refBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
 
   beforeEach(() => {
@@ -62,7 +62,7 @@ describe('Dot Unnominate Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.unnominate.signed);
+      builder.from(rawTx.unnominate.signed);
       builder.validity({ firstValid: 3933 }).referenceBlock(refBlock).version(8);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -79,7 +79,7 @@ describe('Dot Unnominate Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.unnominate.unsigned);
+      builder.from(rawTx.unnominate.unsigned);
       builder
         .validity({ firstValid: 3933 })
         .referenceBlock(refBlock)

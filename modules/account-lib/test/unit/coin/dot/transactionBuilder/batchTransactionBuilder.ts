@@ -1,7 +1,7 @@
 import should from 'should';
 import sinon from 'sinon';
 import { BatchTransactionBuilder } from '../../../../../src/coin/dot';
-import * as DotResources from '../../../../resources/dot';
+import { accounts, rawTx } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -12,7 +12,7 @@ describe('Dot Batch Transaction Builder', () => {
 
   const { specVersion, txVersion } = Networks.test.dot;
   const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
-  const sender = DotResources.accounts.account1;
+  const sender = accounts.account1;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -27,7 +27,7 @@ describe('Dot Batch Transaction Builder', () => {
         () => builder.calls([call]),
         (e: Error) => e.message === `call in string format must be hex format of a method and its arguments`,
       );
-      should.doesNotThrow(() => builder.calls(DotResources.rawTx.anonymous.batch));
+      should.doesNotThrow(() => builder.calls(rawTx.anonymous.batch));
       sinon.assert.calledTwice(spy);
     });
   });
@@ -36,7 +36,7 @@ describe('Dot Batch Transaction Builder', () => {
   xdescribe('build batch transaction', () => {
     it('should build a batch transaction', async () => {
       builder
-        .calls(DotResources.rawTx.anonymous.batch)
+        .calls(rawTx.anonymous.batch)
         .sender({ address: sender.address })
         .validity({ firstValid: 9279281, maxDuration: 64 })
         .referenceBlock(referenceBlock)
@@ -45,12 +45,12 @@ describe('Dot Batch Transaction Builder', () => {
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.batchCalls.length, DotResources.rawTx.anonymous.batch.length);
-      should.deepEqual(txJson.batchCalls[0].callIndex, DotResources.rawTx.anonymous.batch[0].slice(0, 6));
+      should.deepEqual(txJson.batchCalls.length, rawTx.anonymous.batch.length);
+      should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.anonymous.batch[0].slice(0, 6));
       should.deepEqual(txJson.batchCalls[0].args?.proxy_type, ProxyType.ANY);
       should.deepEqual(txJson.batchCalls[0].args?.delay, 0);
       should.deepEqual(txJson.batchCalls[0].args?.index, 0);
-      should.deepEqual(txJson.batchCalls[1].callIndex, DotResources.rawTx.anonymous.batch[0].slice(0, 6));
+      should.deepEqual(txJson.batchCalls[1].callIndex, rawTx.anonymous.batch[0].slice(0, 6));
       should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.ANY);
       should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
       should.deepEqual(txJson.batchCalls[1].args?.index, 1);
@@ -67,7 +67,7 @@ describe('Dot Batch Transaction Builder', () => {
     });
     it('should build an unsigned batch transaction', async () => {
       builder
-        .calls(DotResources.rawTx.anonymous.batch)
+        .calls(rawTx.anonymous.batch)
         .sender({ address: sender.address })
         .validity({ firstValid: 9266787, maxDuration: 64 })
         .referenceBlock(referenceBlock)
@@ -75,12 +75,12 @@ describe('Dot Batch Transaction Builder', () => {
         .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.batchCalls.length, DotResources.rawTx.anonymous.batch.length);
-      should.deepEqual(txJson.batchCalls[0].callIndex, DotResources.rawTx.anonymous.batch[0].slice(0, 6));
+      should.deepEqual(txJson.batchCalls.length, rawTx.anonymous.batch.length);
+      should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.anonymous.batch[0].slice(0, 6));
       should.deepEqual(txJson.batchCalls[0].args?.proxy_type, ProxyType.ANY);
       should.deepEqual(txJson.batchCalls[0].args?.delay, 0);
       should.deepEqual(txJson.batchCalls[0].args?.index, 0);
-      should.deepEqual(txJson.batchCalls[1].callIndex, DotResources.rawTx.anonymous.batch[0].slice(0, 6));
+      should.deepEqual(txJson.batchCalls[1].callIndex, rawTx.anonymous.batch[0].slice(0, 6));
       should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.ANY);
       should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
       should.deepEqual(txJson.batchCalls[1].args?.index, 1);
@@ -96,7 +96,7 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.batch.signed);
+      builder.from(rawTx.batch.signed);
       builder.validity({ firstValid: 9266787, maxDuration: 64 }).referenceBlock(referenceBlock);
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -123,7 +123,7 @@ describe('Dot Batch Transaction Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.batch.unsigned);
+      builder.from(rawTx.batch.unsigned);
       builder
         .validity({ firstValid: 9266787, maxDuration: 64 })
         .referenceBlock(referenceBlock)

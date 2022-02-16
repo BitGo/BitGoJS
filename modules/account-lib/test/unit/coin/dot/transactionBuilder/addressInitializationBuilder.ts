@@ -1,7 +1,7 @@
 import should from 'should';
 import sinon from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
-import * as DotResources from '../../../../resources/dot';
+import { rawTx, accounts } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -10,8 +10,8 @@ import { Networks } from '@bitgo/statics';
 describe('Dot Address Initialization Builder', () => {
   let builder: AddressInitializationBuilder;
 
-  const sender = DotResources.accounts.account1;
-  const receiver = DotResources.accounts.account3;
+  const sender = accounts.account1;
+  const receiver = accounts.account3;
   const { txVersion, specVersion, genesisHash, chainName } = Networks.test.dot;
 
   beforeEach(() => {
@@ -108,7 +108,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.addProxy.signed);
+      builder.from(rawTx.addProxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
@@ -130,7 +130,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.addProxy.unsigned);
+      builder.from(rawTx.addProxy.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -238,7 +238,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(DotResources.rawTx.anonymous.signed);
+      builder.from(rawTx.anonymous.signed);
       builder
         .validity({ firstValid: 8975007, maxDuration: 64 })
         .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05');
@@ -259,7 +259,7 @@ describe('Dot Address Initialization Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(DotResources.rawTx.anonymous.unsigned);
+      builder.from(rawTx.anonymous.unsigned);
       builder
         .validity({ firstValid: 8975007, maxDuration: 64 })
         .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05')
