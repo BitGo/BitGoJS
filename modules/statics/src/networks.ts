@@ -389,13 +389,13 @@ class StellarTestnet extends Testnet implements AccountNetwork {
 class Sol extends Mainnet implements AccountNetwork {
   name = 'Sol';
   family = CoinFamily.SOL;
-  explorerUrl = 'https://explorer.solana.com/';
+  explorerUrl = 'https://explorer.solana.com/tx/';
 }
 
 class SolTestnet extends Testnet implements AccountNetwork {
   name = 'SolTestnet';
   family = CoinFamily.SOL;
-  explorerUrl = 'https://explorer.solana.com/?cluster=devnet';
+  explorerUrl = 'https://explorer.solana.com/tx/?cluster=devnet';
 }
 
 class Stx extends Mainnet implements StacksNetwork {
