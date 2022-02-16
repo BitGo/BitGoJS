@@ -181,7 +181,7 @@ export class TssUtils {
     const bitgoKey = await openpgp.readKey({ armoredKey: bitgoPublicKeyStr });
 
     const userToBitGoMessage = await openpgp.createMessage({
-      text: Buffer.from(userKeyShare.yShares[3].u).toString('hex'),
+      text: Buffer.concat([Buffer.from(userKeyShare.yShares[3].u, 'hex'), Buffer.alloc(32)]).toString('hex'),
     });
     const encUserToBitGoMessage = await openpgp.encrypt({
       message: userToBitGoMessage,
@@ -195,7 +195,7 @@ export class TssUtils {
     });
 
     const backupToBitGoMessage = await openpgp.createMessage({
-      text: Buffer.from(backupKeyShare.yShares[3].u).toString('hex'),
+      text: Buffer.concat([Buffer.from(backupKeyShare.yShares[3].u, 'hex'), Buffer.alloc(32)]).toString('hex'),
     });
     const encBackupToBitGoMessage = await openpgp.encrypt({
       message: backupToBitGoMessage,
