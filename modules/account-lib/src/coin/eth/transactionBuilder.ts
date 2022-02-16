@@ -297,6 +297,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
         this.validateContractAddress();
         break;
+      case TransactionType.SendERC721:
+        // TODO:
+        break;
+      case TransactionType.SendERC1155:
+        // TODO:
+        break;
       case TransactionType.AddressInitialization:
         this.validateContractAddress();
         break;
@@ -546,6 +552,27 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return this._transfer;
   }
+
+  erc721Transfer(data?: string): ERC721TransferBuilder {
+    if (this._type !== TransactionType.SendERC721) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
+    }
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder(data);
+    }
+    return this._transfer;
+  }
+
+  erc1155Transfer(data?: string): ERC1155TransferBuilder {
+    if (this._type !== TransactionType.SendERC1155) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
+    }
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder(data);
+    }
+    return this._transfer;
+  }
+
 
   /**
    * Returns the serialized sendMultiSig contract method data

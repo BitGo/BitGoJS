@@ -3,6 +3,8 @@
  */
 export enum TransactionType {
   Send,
+  SendERC721,
+  SendERC1155,
   // Initialize a wallet on-chain (e.g. Multi-sig contract deployment)
   WalletInitialization,
   // Initialize an address on-chain(e.g. Forwarder contract deployment)
