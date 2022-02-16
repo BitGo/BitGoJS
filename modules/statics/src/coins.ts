@@ -1308,7 +1308,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:SRM',
     'Serum',
     6,
-    '59o2ZdFx9BdtV63gRtrCFP3Wkc2J8uBYcm4D6WLj4QLL',
+    'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
     UnderlyingAsset.SRM,
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1316,7 +1316,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:ORCA',
     'Orca',
     6,
-    'FQ9UD9fnmbHbVU2QXFnLPCFL4ESDPyWVvjSztFyzF2p5',
+    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1324,7 +1324,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:USDC',
     'USD Coin',
     6,
-    '7a3sJZpKgjTsHCEh9NKMx4HKRE6NAS9XioN8i61v9fR7',
+    'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     UnderlyingAsset.USDC,
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1332,7 +1332,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:RAY',
     'Raydium',
     6,
-    '9res2seVB9KJdisFaZZzquuSGRjsVTLqbFuxFUNsgjgJ',
+    '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
     UnderlyingAsset.RAY,
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1340,7 +1340,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:MNDE',
     'Marinade',
     9,
-    '7TAyjuoa2wgkcEC3FsJkWiE62Dfh728wkvYhzwQywWKJ',
+    '7gRLy19WNhGx5D4znmak436sa1ZMqYkxF7aNi5fL1ZXg',
     UnderlyingAsset.MNDE,
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1348,7 +1348,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:SLND',
     'Solend',
     6,
-    '9yj9s88efxD6t7LkJGh5N32Xtn2z3mqNvpftaczK8i3F',
+    'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
