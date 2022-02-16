@@ -99,9 +99,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
    *
    * @returns {KeyRegistrationBuilder} This Key Registration builder.
    *
-   * @param {boolean} nonPart. All new Algorand accounts are participating by default.
+   * @param {boolean} nonParticipation All new Algorand accounts are participating by default.
    * This means that they earn rewards. Mark an account nonparticipating by setting this value to true and this account
-   * will no longer earn rewards
+   * will no longer earn rewards NEVER.
    * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
    */
   nonParticipation(nonParticipation: boolean): KeyRegistrationBuilder {
@@ -111,31 +111,52 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   }
 
   protected buildAlgoTxn(): algosdk.Transaction {
-    if (!this._nonParticipation) {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
-        this._sender,
-        this._note,
-        this._voteKey,
-        this._selectionKey,
-        this._voteFirst,
-        this._voteLast,
-        this._voteKeyDilution,
-        this.suggestedParams,
-      );
-    } else {
-      return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
-        this._sender,
-        this._note,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        this.suggestedParams,
-        this._reKeyTo,
-        this._nonParticipation,
-      );
-    }
+    return this.isOfflineKeyRegAccountLibTransaction()
+      ? this.buildOfflineKeyRegTransaction()
+      : this.isNonParticipationKeyRegAccountLibTransaction()
+      ? this.buildNonParticipationKeyRegTransaction()
+      : this.buildOnlineKeyRegTransaction();
+  }
+
+  private buildOfflineKeyRegTransaction(): algosdk.Transaction {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      this._sender,
+      this._note,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      this.suggestedParams,
+    );
+  }
+
+  private buildOnlineKeyRegTransaction(): algosdk.Transaction {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      this._sender,
+      this._note,
+      this._voteKey,
+      this._selectionKey,
+      this._voteFirst,
+      this._voteLast,
+      this._voteKeyDilution,
+      this.suggestedParams,
+    );
+  }
+
+  private buildNonParticipationKeyRegTransaction(): algosdk.Transaction {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
+      this._sender,
+      this._note,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      this.suggestedParams,
+      this._reKeyTo,
+      true,
+    );
   }
 
   protected get transactionType(): TransactionType {
@@ -148,14 +169,14 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     const algoTxn = tx.getAlgoTransaction();
 
     if (algoTxn) {
-      if (!algoTxn.nonParticipation) {
+      if (this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn)) {
+        this.nonParticipation(!!algoTxn.nonParticipation);
+      } else if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
         this.voteKey(algoTxn.voteKey.toString('base64'));
         this.selectionKey(algoTxn.selectionKey.toString('base64'));
         this.voteFirst(algoTxn.voteFirst);
         this.voteLast(algoTxn.voteLast);
         this.voteKeyDilution(algoTxn.voteKeyDilution);
-      } else {
-        this.nonParticipation(algoTxn.nonParticipation);
       }
     }
     return tx;
@@ -171,7 +192,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       );
     }
 
-    if (!algoTxn.nonParticipation) {
+    if (this.isOnlineKeyRegAlgoSDKTransaction(algoTxn)) {
       this.validateFields(
         algoTxn.voteKey.toString('base64'),
         algoTxn.selectionKey.toString('base64'),
@@ -182,11 +203,59 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     }
   }
 
+  private isNonParticipationKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return !!algoTxn.nonParticipation;
+  }
+
+  private isNonParticipationKeyRegAccountLibTransaction(): boolean {
+    return !!this._nonParticipation;
+  }
+
+  private isOnlineKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return !(
+      this.isOfflineKeyRegAlgoSDKTransaction(algoTxn) || this.isNonParticipationKeyRegAlgoSDKTransaction(algoTxn)
+    );
+  }
+
+  private isOnlineKeyRegAccountLibTransaction(): boolean {
+    return !(this.isOfflineKeyRegAccountLibTransaction() || this.isNonParticipationKeyRegAccountLibTransaction());
+  }
+
+  private isOfflineKeyRegAlgoSDKTransaction(algoTxn: algosdk.Transaction): boolean {
+    return (
+      !algoTxn.voteKey &&
+      !algoTxn.selectionKey &&
+      !algoTxn.voteFirst &&
+      !algoTxn.voteLast &&
+      !algoTxn.voteKeyDilution &&
+      !algoTxn.nonParticipation
+    );
+  }
+
+  private isOfflineKeyRegAccountLibTransaction(): boolean {
+    return (
+      !this._voteKey &&
+      !this._selectionKey &&
+      !this._voteFirst &&
+      !this._voteLast &&
+      !this._voteKeyDilution &&
+      !this._nonParticipation
+    );
+  }
+
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     super.validateTransaction(transaction);
-    if (!this._nonParticipation) {
+    if (this.isOnlineKeyRegAccountLibTransaction()) {
+      // invalid offline will reach here
       this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
+    } else {
+      // offline or nonparticipation transaction
+      if (this._voteKey || this._selectionKey || this._voteFirst || this._voteLast || this._voteKeyDilution) {
+        throw new InvalidTransactionError(
+          'VoteKey, SelectionKey, VoteFirst, VoteLast, VoteKeyDilution fields cannot be set when offline or nonparticipation is set',
+        );
+      }
     }
   }
 
