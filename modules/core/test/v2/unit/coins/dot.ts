@@ -1,7 +1,7 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as DotResources from '../../fixtures/coins/dot';
+import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
 
 describe('DOT:', function () {
@@ -50,15 +50,15 @@ describe('DOT:', function () {
     xit('should sign transaction', async function () {
       const signed = await basecoin.signTransaction({
         txPrebuild: {
-          txHex: DotResources.rawTx.transfer.unsigned,
+          txHex: rawTx.transfer.unsigned,
           transaction,
         },
         pubs: [
-          DotResources.accounts.account1.publicKey,
+          accounts.account1.publicKey,
         ],
-        prv: DotResources.accounts.account1.secretKey,
+        prv: accounts.account1.secretKey,
       });
-      signed.txHex.should.equal(DotResources.rawTx.transfer.signed);
+      signed.txHex.should.equal(rawTx.transfer.signed);
     });
 
     // TODO: BG-43197
@@ -66,13 +66,13 @@ describe('DOT:', function () {
       try {
         await basecoin.signTransaction({
           txPrebuild: {
-            txHex: DotResources.rawTx.transfer.unsigned,
+            txHex: rawTx.transfer.unsigned,
             transaction,
           },
           pubs: [
-            DotResources.accounts.account2.publicKey,
+            accounts.account2.publicKey,
           ],
-          prv: DotResources.accounts.account1.secretKey,
+          prv: accounts.account1.secretKey,
         });
       } catch (e) {
         should.equal(e.message, 'Private key cannot sign the transaction');
@@ -83,10 +83,10 @@ describe('DOT:', function () {
       try {
         await basecoin.signTransaction({
           txPrebuild: {
-            txHex: DotResources.rawTx.transfer.unsigned,
-            key: DotResources.accounts.account1.publicKey,
+            txHex: rawTx.transfer.unsigned,
+            key: accounts.account1.publicKey,
           },
-          prv: DotResources.accounts.account1.secretKey,
+          prv: accounts.account1.secretKey,
         });
       } catch (e) {
         should.notEqual(e, null);
@@ -111,8 +111,8 @@ describe('DOT:', function () {
 
   describe('Derive Keypair', () => {
     const params = {
-      addressDerivationPrv: DotResources.accounts.account1.secretKey,
-      addressDerivationPub: DotResources.accounts.account1.publicKey,
+      addressDerivationPrv: accounts.account1.secretKey,
+      addressDerivationPub: accounts.account1.publicKey,
       index: 0,
     };
     it('should derive valid key pairs', async () => {
@@ -134,7 +134,7 @@ describe('DOT:', function () {
       should(() => basecoin.deriveKeypair(params)).throw();
     });
     it('should throw if index is invalid', async () => {
-      params.addressDerivationPrv = DotResources.accounts.account1.secretKey;
+      params.addressDerivationPrv = accounts.account1.secretKey;
       params.index = -1;
       should(() => basecoin.deriveKeypair(params)).throw();
     });
