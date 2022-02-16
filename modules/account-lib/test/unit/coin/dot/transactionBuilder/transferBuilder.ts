@@ -50,7 +50,8 @@ describe('Dot Transfer Builder', () => {
     });
   });
 
-  describe('build transfer transaction', () => {
+  // TODO: BG-43197
+  xdescribe('build transfer transaction', () => {
     it('should build a transfer transaction', async () => {
       builder
         .amount('90034235235322')
