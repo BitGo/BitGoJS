@@ -1,4 +1,5 @@
 import * as accountLib from '@bitgo/account-lib';
+import { Material } from '@bitgo/account-lib/dist/src/coin/dot/iface';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
@@ -41,6 +42,8 @@ export interface VerifiedTransactionParameters {
 const dotUtils = accountLib.Dot.Utils.default;
 
 export class Dot extends BaseCoin {
+  private static materialData: Material;
+
   readonly MAX_VALIDITY_DURATION = 2400;
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -90,6 +93,17 @@ export class Dot extends BaseCoin {
 
   allowsAccountConsolidations(): boolean {
     return true;
+  }
+
+
+  /**
+   * Url at which the material data can be reached
+   */
+  private async materialDataLookup(): Promise<Material> {
+    if (!Dot.materialData) {
+      Dot.materialData = await this.bitgo.get(this.url('/material')).result();
+    }
+    return Dot.materialData;
   }
 
   /**
@@ -238,7 +252,10 @@ export class Dot extends BaseCoin {
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, prv } = this.verifySignTransactionParams(params);
-    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
+    
+    const material = await this.materialDataLookup();
+    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory).material(material);
+
     const txBuilder = factory.from(txHex);
     const keyPair = new accountLib.Dot.KeyPair({ prv: prv });
     const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;

@@ -1,8 +1,13 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
+import * as materialData from '@bitgo/account-lib/test/resources/dot/materialData.json';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as DotResources from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
+
+import { Environments } from '../../../../src';
+import * as nock from 'nock';
+nock.enableNetConnect();
 
 describe('DOT:', function () {
   let bitgo;
@@ -12,6 +17,13 @@ describe('DOT:', function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
+
+    const uri = Environments[bitgo.getEnv()].uri;
+    nock(uri)
+      .get('/api/v2/tdot/material')
+      .reply(200, {
+        ...materialData
+      });
   });
 
   describe('Sign Message', () => {
