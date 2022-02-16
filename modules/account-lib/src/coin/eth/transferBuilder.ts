@@ -4,7 +4,12 @@ import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 
-/** ETH transfer builder */
+// https://eips.ethereum.org/EIPS/eip-721
+// function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
+// https://eips.ethereum.org/EIPS/eip-721
+// function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external;
+// function safeBatchTransferFrom(address _from, address _to, uint256[] calldata _ids, uint256[] calldata _values, bytes calldata _data) external;
+
 export class TransferBuilder {
   private readonly _EMPTY_HEX_VALUE = '0x';
   protected _amount: string;
