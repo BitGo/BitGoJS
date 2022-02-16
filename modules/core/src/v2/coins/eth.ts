@@ -1516,7 +1516,7 @@ export class Eth extends BaseCoin {
   }
 
   /**
-   * Make sure an address is valid and throw an error if it's not.
+   * Make sure an address is a wallet address and throw an error if it's not.
    * @param {Object} params
    * @param {String} params.address The derived address string on the network
    * @param {Object} params.coinSpecific Coin-specific details for the address such as a forwarderVersion
@@ -1524,9 +1524,9 @@ export class Eth extends BaseCoin {
    * @throws {InvalidAddressError}
    * @throws {InvalidAddressVerificationObjectPropertyError}
    * @throws {UnexpectedAddressError}
-   * @returns {Boolean} True if address is valid
+   * @returns {Boolean} True iff address is a wallet address
    */
-  verifyAddress(params: VerifyEthAddressOptions): boolean {
+  isWalletAddress(params: VerifyEthAddressOptions): boolean {
     let expectedAddress;
     let actualAddress;
 

@@ -207,8 +207,8 @@ export class Near extends BaseCoin {
     throw new MethodNotImplementedError('Near parse transaction not implemented');
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

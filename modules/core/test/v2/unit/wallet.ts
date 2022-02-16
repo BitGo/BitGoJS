@@ -214,7 +214,7 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('Wallet Transactions', function () {
+  describe('TETH Wallet Transactions', function () {
     let ethWallet;
 
     before(async function () {
@@ -365,7 +365,7 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('Create Address', () => {
+  describe('TETH Create Address', () => {
     let ethWallet, nocks;
     const walletData = {
       id: '598f606cd8fc24710d2ebadb1d9459bb',

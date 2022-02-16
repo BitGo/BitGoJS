@@ -14,14 +14,6 @@ describe('STX:', function () {
     'SP244HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
     'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY',
   ];
-  const badVerifyAddresses = [
-    ...badValidAddresses,
-    'SB1DP9Q0QPPKB07FK79MQE0CDJAYEFSGFVXE1KZ8X',
-    'SYB44HYPYAT2BB2QE513NSP81HTMYWBJP2Q9N4TN',
-    'S32T758K6T2YRKG9Q0TJ16B6FP5QQREWZSE461MK8',
-    'SM3W5QFWGPG1JC8R25EVZDEP3BESJZ831JPNNQFTZ?memoId=',
-    'SM3W5QFWGPG1JC8R25EVZDEP3BESJZ831JPNNQFTZ?memoId=null',
-  ];
 
   const goodAddresses = [
     'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
@@ -102,10 +94,10 @@ describe('STX:', function () {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
-  it('should verify addresses', (function () {
-    goodAddresses.map(address => { basecoin.verifyAddress({ address }).should.equal(true); });
-    badVerifyAddresses.map(address => (() => basecoin.verifyAddress({ address })).should.throw());
-  }));
+  it('should verify addresses', function () {
+    // FIXME(BG-43225): not implemented
+    this.skip();
+  });
 
   it('should explain a transfer transaction', async function () {
     const explain = await basecoin.explainTransaction({
