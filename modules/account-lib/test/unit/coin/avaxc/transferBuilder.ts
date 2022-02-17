@@ -10,22 +10,22 @@ const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
 const keyPair = new AvaxC.KeyPair();
 const key = keyPair.getKeys().prv as string;
 const tokensNames = [
-  'avaxc:PNG',
-  'avaxc:XAVA',
-  'avaxc:KLO',
-  'avaxc:JOE',
-  'avaxc:QI',
-  'avaxc:USDT',
-  'avaxc:USDC',
-  'avaxc:LINK',
-  'tavaxc:PNG',
-  'tavaxc:XAVA',
-  'tavaxc:KLO',
-  'tavaxc:JOE',
-  'tavaxc:QI',
-  'tavaxc:USDT',
-  'tavaxc:USDC',
-  'tavaxc:LINK',
+  'avaxc:png',
+  'avaxc:xava',
+  'avaxc:klo',
+  'avaxc:joe',
+  'avaxc:qi',
+  'avaxc:usdt',
+  'avaxc:usdc',
+  'avaxc:link',
+  'tavaxc:png',
+  'tavaxc:xava',
+  'tavaxc:klo',
+  'tavaxc:joe',
+  'tavaxc:qi',
+  'tavaxc:usdt',
+  'tavaxc:usdc',
+  'tavaxc:link',
 ];
 
 let txBuilder: AvaxC.TransactionBuilder;
@@ -66,7 +66,7 @@ describe('AVAXERC20 Tokens', () => {
     txBuilder.contract(contractAddress);
     txBuilder
       .transfer()
-      .coin('tavaxc:PNG')
+      .coin('tavaxc:png')
       .amount(amount)
       .to(testData.TEST_ACCOUNT_2.ethAddress)
       .expirationTime(1590066728)
@@ -80,11 +80,11 @@ describe('AVAXERC20 Tokens', () => {
     should.equal(tx.inputs.length, 1);
     should.equal(tx.inputs[0].address.toLowerCase(), contractAddress.toLowerCase());
     should.equal(tx.inputs[0].value, amount);
-    should.equal(tx.inputs[0].coin, 'tavaxc:PNG');
+    should.equal(tx.inputs[0].coin, 'tavaxc:png');
 
     should.equal(tx.outputs.length, 1);
     should.equal(tx.outputs[0].address.toLowerCase(), testData.TEST_ACCOUNT_2.ethAddress.toLowerCase());
     should.equal(tx.outputs[0].value, amount);
-    should.equal(tx.outputs[0].coin, 'tavaxc:PNG');
+    should.equal(tx.outputs[0].coin, 'tavaxc:png');
   });
 });
