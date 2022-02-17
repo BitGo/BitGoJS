@@ -23,10 +23,7 @@ class StubTransactionBuilderFactory extends TransactionBuilderFactory {
 // TODO: BG-43197
 xdescribe('dot Transaction Builder Factory', () => {
   const factory = register('tdot', StubTransactionBuilderFactory).material(materialData as Material);
-  const { rawTx } = dotResources;
-  const sender = dotResources.accounts.account1;
   const sender = accounts.account1;
-  const sender2 = accounts.account3;
 
   [
     { type: 'transfer', builder: TransferBuilder },

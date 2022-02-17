@@ -17,8 +17,6 @@ import {
   TransactionExplanation,
   TxData,
   UnstakeArgs,
-  AddAnonymousProxyArgs,
-  BatchArgs,
   WithdrawUnstakedArgs,
   HexString,
 } from './iface';

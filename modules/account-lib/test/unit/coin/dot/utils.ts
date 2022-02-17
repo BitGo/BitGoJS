@@ -1,18 +1,11 @@
 import should from 'should';
 import utils from '../../../../src/coin/dot/utils';
 import { accounts, blockHash, signatures, txIds, rawTx } from '../../../resources/dot';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { getRegistry } from '@substrate/txwrapper-polkadot';
 import * as material from '../../../resources/dot/materialData.json';
-import { PolkadotSpecNameType } from '@bitgo/statics';
-
+import { SingletonRegistry } from '../../../../src/coin/dot/singletonRegistry';
 describe('utils', () => {
-  const registry: TypeRegistry = getRegistry({
-    chainName: material.chainName,
-    specName: material.specName as PolkadotSpecNameType,
-    specVersion: material.specVersion,
-    metadataRpc: material.metadata as `0x${string}`,
-  });
+  const registry = SingletonRegistry.getInstance(material);
+
   it('should validate addresses correctly', () => {
     should.equal(utils.isValidAddress(accounts.account1.address), true);
     should.equal(utils.isValidAddress(accounts.account2.address), true);
@@ -89,7 +82,7 @@ describe('utils', () => {
   it('should recover signature from raw tx correctly', () => {
     should.equal(
       utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry }),
-      '0x00b6d868a11d202b56df1959f5d5f81f44ce1f95c8e70424b17080ea869d1c39d453f16c38fbef600a636c9a62a49ede5ee695a1822faf2f94fcfbb184a4254009',
+      'b6d868a11d202b56df1959f5d5f81f44ce1f95c8e70424b17080ea869d1c39d453f16c38fbef600a636c9a62a49ede5ee695a1822faf2f94fcfbb184a4254009',
     );
   });
 
@@ -97,7 +90,7 @@ describe('utils', () => {
     const signature = utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry });
     const txHex = utils.serializeSignedTransaction(
       rawTx.transfer.unsigned,
-      signature,
+      signature.replace(/^/, '0x00'),
       material.metadata as `0x${string}`,
       registry,
     );

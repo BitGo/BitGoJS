@@ -79,7 +79,7 @@ class StubTransactionBuilder extends TransactionBuilder {
 }
 
 // TODO: BG-43197
-xdescribe('Dot Transfer Builder', () => {
+describe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = accounts.account1;

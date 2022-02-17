@@ -172,6 +172,19 @@ export class Utils implements BaseUtils {
       .sign(pair);
 
     // Serialize a signed transaction.
+    return this.serializeSignedTransaction(transaction, signature, metadataRpc, registry);
+  }
+
+  /**
+   * Serializes the signed transaction
+   *
+   * @param transaction Transaction to serialize
+   * @param signature Signature of the message
+   * @param metadataRpc Network metadata
+   * @param registry Transaction registry
+   * @returns string Serialized transaction
+   */
+  serializeSignedTransaction(transaction, signature, metadataRpc, registry) {
     return construct.signedTx(transaction, signature, {
       metadataRpc,
       registry,
