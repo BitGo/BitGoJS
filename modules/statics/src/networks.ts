@@ -494,6 +494,22 @@ class NearTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.testnet.near.org/transactions/';
 }
 
+class MaticL extends Mainnet implements EthereumNetwork {
+  name = 'MaticL';
+  family = CoinFamily.MATICL;
+  explorerUrl = 'https://polygonscan.com/tx/';
+  accountExplorerUrl = 'https://polygonscan.com/address/';
+  chainId = 137;
+}
+
+class MaticLTestnet extends Testnet implements EthereumNetwork {
+  name = 'MaticLTestnet';
+  family = CoinFamily.MATICL;
+  explorerUrl = 'https://mumbai.polygonscan.com/tx/';
+  accountExplorerUrl = 'https://mumbai.polygonscan.com/address/';
+  chainId = 80001;
+}
+
 export const Networks = {
   main: {
     algorand: Object.freeze(new Algorand()),
@@ -513,6 +529,7 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
+    maticl: Object.freeze(new MaticL()),
     ofc: Object.freeze(new Ofc()),
     rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
@@ -544,6 +561,7 @@ export const Networks = {
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     litecoin: Object.freeze(new LitecoinTestnet()),
+    maticl: Object.freeze(new MaticLTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
