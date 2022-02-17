@@ -15,6 +15,7 @@ describe('SOL:', function () {
   let newTxParamsWithError;
   let newTxParamsWithExtraData;
   const badAddresses = resources.addresses.invalidAddresses;
+  const goodAddresses = resources.addresses.validAddresses;
 
   const keypair = {
     pub: resources.accountWithSeed.publicKey,
@@ -253,13 +254,16 @@ describe('SOL:', function () {
   });
 
 
-  it('should verify wallet address', (function () {
-    // FIXME(BG-43225): not implemented
-    this.skip();
+  it('should accept valid address', (function () {
+    goodAddresses.forEach(addr => {
+      basecoin.isValidAddress(addr).should.equal(true);
+    });
   }));
 
-  it('should check invalid address', (function () {
-    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
+  it('should reject invalid address', (function () {
+    badAddresses.forEach(addr => {
+      basecoin.isValidAddress(addr).should.equal(false);
+    });
   }));
 
   it('should check valid pub keys', (function () {
