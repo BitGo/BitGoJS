@@ -234,11 +234,7 @@ function checkPreconditions(config: Config) {
   }
 
   if (signerFileSystemPath !== undefined) {
-    try {
-      checkSignerPrvPath(signerFileSystemPath);
-    } catch (e) {
-      throw e;
-    }
+    checkSignerPrvPath(signerFileSystemPath);
   }
 }
 

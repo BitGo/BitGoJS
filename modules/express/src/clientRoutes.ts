@@ -28,6 +28,7 @@ import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
 import * as assert from 'assert';
+import { retryPromise } from './retryPromise';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -114,7 +115,6 @@ function handleSendCoins(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
-      // signs a tx, needs custom signing function passed in
       return wallet.sendCoins(req.body);
     })
     .catch(function (err) {
@@ -138,7 +138,6 @@ function handleSendMany(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
-      // signs a tx, needs custom signing function passed in
       return wallet.sendMany(req.body);
     })
     .catch(function (err) {
@@ -179,7 +178,6 @@ function handleSignTransaction(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
-      // signs a tx, needs custom signing function passed in
       return wallet.signTransaction(req.body);
     });
 }
@@ -247,7 +245,6 @@ function handleConsolidateUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
-      // signs a tx, needs custom signing function passed in
       return wallet.consolidateUnspents(req.body);
     });
 }
@@ -261,7 +258,6 @@ function handleFanOutUnspents(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function (wallet) {
-      // signs a tx, needs custom signing function passed in
       return wallet.fanOutUnspents(req.body);
     });
 }
@@ -368,10 +364,6 @@ function handleCanonicalAddress(req: express.Request) {
   const fallbackVersion = req.body.scriptHashVersion; // deprecate
   const version = req.body.version;
   return (coin as Coin.Bch | Coin.Bsv | Coin.Ltc).canonicalAddress(address, version || fallbackVersion);
-}
-
-function handleV1Sign(req: express.Request) {
-  throw new Error('not yet implemented');
 }
 
 export async function handleV2Sign(req: express.Request) {
@@ -1015,7 +1007,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
-  app.post('/api/v1/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV1Sign));
   app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
 }
 
@@ -1025,11 +1016,16 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
     txPrebuild: TransactionPrebuild;
     pubs?: string[];
   }): Promise<SignedTransaction> {
-    const { body: signedTx } = await superagent
-      .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
-      .type('json')
-      .send({ txPrebuild: params.txPrebuild, pubs: params.pubs });
-
+    const { body: signedTx } = await retryPromise(
+      () =>
+        superagent
+          .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
+          .type('json')
+          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs }),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
     return signedTx;
   };
 }

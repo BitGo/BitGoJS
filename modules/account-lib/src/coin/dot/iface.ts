@@ -15,6 +15,7 @@ export enum MethodNames {
   Anonymous = 'anonymous',
   Batch = 'batch',
   Chill = 'chill',
+  WithdrawUnbonded = 'withdrawUnbonded',
 }
 
 /**
@@ -44,6 +45,7 @@ export interface TxData {
   forceProxyType?: ProxyType;
   index?: string;
   batchCalls?: BatchCallObject[];
+  numSlashingSpans?: number;
 }
 
 /**
@@ -81,6 +83,10 @@ export interface StakeArgs {
 
 export interface UnstakeArgs {
   value: string;
+}
+
+export interface WithdrawUnstakedArgs {
+  numSlashingSpans: number;
 }
 
 /**
@@ -144,7 +150,15 @@ export interface ProxyArgs {
  * Decoded TxMethod from a transaction hex
  */
 export interface TxMethod {
-  args: TransferArgs | StakeArgs | AddProxyArgs | ProxyArgs | UnstakeArgs | AddAnonymousProxyArgs | BatchArgs;
+  args:
+    | TransferArgs
+    | StakeArgs
+    | AddProxyArgs
+    | ProxyArgs
+    | UnstakeArgs
+    | AddAnonymousProxyArgs
+    | BatchArgs
+    | WithdrawUnstakedArgs;
   name: MethodNames;
   pallet: string;
 }

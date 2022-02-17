@@ -32,6 +32,7 @@ export enum CoinFamily {
   EOS = 'eos',
   HBAR = 'hbar',
   LTC = 'ltc',
+  MATICL = 'maticl',
   NEAR = 'near',
   OFC = 'ofc',
   RBTC = 'rbtc',
@@ -152,6 +153,7 @@ export enum UnderlyingAsset {
   EOS = 'eos',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
+  MATICL = 'maticl',
   NEAR = 'near',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
@@ -750,14 +752,14 @@ export enum UnderlyingAsset {
   EOS_BOX = 'eos:box',
 
   // Avax Token ERC-20
-  'avaxc:QI' = 'avaxc:qi',
-  'avaxc:XAVA' = 'avaxc:xava',
-  'avaxc:KLO' = 'avaxc:klo',
-  'avaxc:JOE' = 'avaxc:joe',
-  'avaxc:PNG' = 'avaxc:png',
-  'avaxc:USDT' = 'avaxc:usdt',
-  'avaxc:USDC' = 'avaxc:usdc',
-  'avaxc:LINK' = 'avaxc:link',
+  'avaxc:qi' = 'avaxc:qi',
+  'avaxc:xava' = 'avaxc:xava',
+  'avaxc:klo' = 'avaxc:klo',
+  'avaxc:joe' = 'avaxc:joe',
+  'avaxc:png' = 'avaxc:png',
+  'avaxc:usdt' = 'avaxc:usdt',
+  'avaxc:usdc' = 'avaxc:usdc',
+  'avaxc:link' = 'avaxc:link',
 }
 
 /**

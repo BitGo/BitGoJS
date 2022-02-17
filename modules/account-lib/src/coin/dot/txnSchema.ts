@@ -103,3 +103,7 @@ export const ProxyTransactionSchema = joi.object({
 export const UnstakeTransactionSchema = joi.object({
   value: joi.string().required(),
 });
+
+export const WithdrawUnstakedTransactionSchema = joi.object({
+  value: joi.number().required(),
+});
