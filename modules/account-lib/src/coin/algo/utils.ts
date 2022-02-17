@@ -249,7 +249,13 @@ export class Utils implements BaseUtils {
     // release standard.
     // This way we can decode transactions successfully by still maintaining backward compatibility.
     const decodedTx = encoding.decode(buffer);
-    if (decodedTx.txn && decodedTx.txn.type === 'keyreg') {
+    if (
+      decodedTx.txn &&
+      decodedTx.txn.type === 'keyreg' &&
+      decodedTx.txn.votefst &&
+      decodedTx.txn.votelst &&
+      decodedTx.txn.votekd
+    ) {
       decodedTx.txn.votekey = decodedTx.txn.votekey || decodedTx.msig.subsig[0].pk;
       decodedTx.txn.selkey = decodedTx.txn.selkey || decodedTx.msig.subsig[0].pk;
       buffer = decodedTx.msig || decodedTx.sig ? encoding.encode(decodedTx) : encoding.encode(decodedTx.txn);
