@@ -1,0 +1,52 @@
+name: Package updates
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "*/**/package.json"
+      - "!*/**/node_modules/package.json"
+      - "package.json"
+      - "!node_modules/package.json"
+  pull_request:
+    branches:
+      - master
+      - rel/**
+    paths:
+      - "*/**/package.json"
+      - "!*/**/node_modules/package.json"
+      - "package.json"
+      - "!node_modules/package.json"
+
+jobs:
+  unit-test-all:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node:${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Fetch Base Ref
+        run: git fetch origin $GITHUB_BASE_REF
+
+      - name: Remove yarn.lock to simulate downstream installs
+        run: rm yarn.lock
+
+      - name: Install Packages
+        run: yarn install
+
+      - name: Unit test all
+        run: yarn unit-test
+        env:
+          BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
