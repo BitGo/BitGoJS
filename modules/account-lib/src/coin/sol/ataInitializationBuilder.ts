@@ -10,6 +10,7 @@ import { BuildTransactionError } from '../baseCoin/errors';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import assert from 'assert';
 import { SolCoin } from '@bitgo/statics/dist/src/account';
+import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
 export class AtaInitializationBuilder extends TransactionBuilder {
   private _mint: string;
@@ -17,6 +18,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new AtaInitializationTransaction(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
@@ -101,10 +103,10 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         ataAddress: ataPk.toString(),
         ownerAddress: this._sender,
         payerAddress: this._sender,
-        amount: this._rentExemptAmount,
       },
     };
     this._instructionsData = [ataInitData];
+    (this.transaction as AtaInitializationTransaction).tokenAccountRentExemptAmount = this._rentExemptAmount;
     return await super.buildImplementation();
   }
 }
