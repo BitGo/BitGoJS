@@ -91,6 +91,7 @@ export interface AddWalletOptions {
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
   walletVersion?: number;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
 }
 
 export interface ListWalletOptions extends PaginationOptions {
@@ -246,6 +247,10 @@ export class Wallets {
 
     if (params.disableTransactionNotifications) {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
+    }
+
+    if (params.multisigType) {
+      walletParams.multisigType = params.multisigType;
     }
 
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result();
