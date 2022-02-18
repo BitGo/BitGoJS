@@ -19,6 +19,11 @@ export const accounts = {
     publicKey: '38EYs2D2t9fYEwE66Eqdj7canW1PfSszieqtNorqfJWm',
     address: '1f91c283682b6014e68c56ba09302730fac1f4a1de5ec8f729bfe1fb51d2b9b2',
   },
+  account5: {
+    secretKey: '3Yezqc8eWT9coM2dSguT1XCDcfC3BYYdtGVPEdczRBgqmWmLU7LEDzBwcNEHA31cXFsKyXoE4UC1H9n33C4np7EZ',
+    publicKey: '38EYs2D2t9fYEwE66Eqdj7canW1PfSszieqtNorqfJWm',
+    address: 'btdev.testnet',
+  },
   default: {
     secretKey: '0000000000000000000000000000000000000000000000000000000000000000',
     publicKey: '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29',

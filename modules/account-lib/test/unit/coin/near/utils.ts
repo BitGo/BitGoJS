@@ -8,6 +8,7 @@ describe('utils', () => {
     should.equal(utils.isValidAddress(accounts.account2.address), true);
     should.equal(utils.isValidAddress(accounts.account3.address), true);
     should.equal(utils.isValidAddress(accounts.account4.address), true);
+    should.equal(utils.isValidAddress(accounts.account5.address), true);
   });
 
   it('should validate block hash correctly', () => {
