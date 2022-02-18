@@ -1,6 +1,6 @@
 import { BlsKeyPair } from '../baseCoin/blsKeyPair';
 import { KeyPairOptions, BlsKeys } from '../baseCoin/iface';
-import { isValidBLSPublicKey, isValidBLSPrivateKey } from '../../utils/crypto';
+import { isValidBLSPublicKey, isValidBLSPrivateKey, bigIntToHex } from '../../utils/crypto';
 
 /**
  * Ethereum keys and address management.
@@ -47,7 +47,7 @@ export class KeyPair extends BlsKeyPair {
       return isValidBLSPrivateKey(prv);
     }
     if (typeof prv === 'bigint') {
-      return isValidBLSPrivateKey('0x' + prv.toString(16));
+      return isValidBLSPrivateKey(bigIntToHex(prv));
     }
     try {
       const hexPrv = Array.from(prv)

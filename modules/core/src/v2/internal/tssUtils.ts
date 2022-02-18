@@ -6,17 +6,15 @@ import Eddsa, { KeyShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychains';
 import { BitGo } from '../../bitgo';
+import { MpcUtils } from './mpcUtils';
 
 /**
  * Utility functions for TSS work flows.
  */
-export class TssUtils {
-  private bitgo: BitGo;
-  private baseCoin: BaseCoin;
+export class TssUtils extends MpcUtils {
 
   constructor(bitgo: BitGo, baseCoin: BaseCoin) {
-    this.bitgo = bitgo;
-    this.baseCoin = baseCoin;
+    super(bitgo, baseCoin);
   }
 
   /**

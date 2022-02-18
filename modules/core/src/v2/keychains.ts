@@ -6,6 +6,7 @@ import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { validateParams } from '../common';
 import { TssUtils } from './internal/tssUtils';
+import { BlsUtils } from './internal/blsUtils';
 
 export interface Keychain {
   id: string;
@@ -102,7 +103,8 @@ interface CreateBitGoOptions {
   reqId?: RequestTracer;
 }
 
-interface CreateTssOptions {
+interface CreateMpcOptions {
+  multisigType: 'onchain' | 'tss' | 'blsdkg';
   passphrase: string;
 }
 
@@ -360,16 +362,28 @@ export class Keychains {
   }
 
   /**
-   * Convenience function to create and store TSS keychains with BitGo.
+   * Convenience function to create and store MPC keychains with BitGo.
    * @param params passphrase used to encrypt secret materials
    * @return {Promise<KeychainsTriplet>} newly created User, Backup, and BitGo keys
    */
-  async createTss(params: CreateTssOptions): Promise<KeychainsTriplet> {
+  async createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet> {
     if (_.isUndefined(params.passphrase)) {
       throw new Error('missing required param passphrase');
     }
 
-    const tssUtils = new TssUtils(this.bitgo, this.baseCoin);
-    return await tssUtils.createKeychains({ passphrase: params.passphrase });
+    let MpcUtils;
+    switch (params.multisigType) {
+      case 'tss':
+        MpcUtils = TssUtils;
+        break;
+      case 'blsdkg':
+        MpcUtils = BlsUtils;
+        break;
+      default:
+        throw new Error('Unsupported multi-sig type');
+    }
+
+    const mpcUtils = new MpcUtils(this.bitgo, this.baseCoin);
+    return await mpcUtils.createKeychains({ passphrase: params.passphrase });
   }
 }
