@@ -25,9 +25,10 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    const accountIDAddressRegex = '^(([a-z\\d]+[\\-_])*[a-z\\d]+\\.)*([a-z\\d]+[\\-_])*[a-z\\d]+$';
     try {
-      new RegExp(accountIDAddressRegex).test(key) || new KeyPair({ pub: key });
+      // this regex is from near doc, https://docs.near.org/docs/concepts/account
+      (/^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$/.test(key) && key.length > 2 && key.length < 64) ||
+        new KeyPair({ pub: key });
       return true;
     } catch {
       return false;
