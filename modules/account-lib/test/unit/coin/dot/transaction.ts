@@ -2,9 +2,10 @@ import { coins } from '@bitgo/statics';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import { KeyPair, Transaction, TransferBuilder, Utils } from '../../../../src/coin/dot';
-import { TxData } from '../../../../src/coin/dot/iface';
+import { Material, TxData } from '../../../../src/coin/dot/iface';
 import utils from '../../../../src/coin/dot/utils';
 import { rawTx, accounts, jsonTransactions } from '../../../resources/dot';
+import * as materialData from '../../../resources/dot/materialData.json';
 import { buildTestConfig } from './transactionBuilder/base';
 
 class StubTransaction extends Transaction {
@@ -67,7 +68,7 @@ describe('Dot Transaction', () => {
   describe('should build from raw unsigned tx', async () => {
     // TODO: BG-43197
     xit('Transaction size validation', async () => {
-      const builder = new TransferBuilder(coins.get('tdot')).material(utils.getMaterial(buildTestConfig()));
+      const builder = new TransferBuilder(coins.get('tdot')).material(materialData as Material);
       builder.from(rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })

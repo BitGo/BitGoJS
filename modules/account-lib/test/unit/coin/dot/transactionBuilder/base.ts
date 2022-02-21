@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, coins, DotNetwork, Networks } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import Eddsa from '../../../../../src/mpc/tss';
 import should from 'should';
@@ -7,15 +7,9 @@ import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 import { TransactionBuilder, Transaction, KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
-import utils from '../../../../../src/coin/dot/utils';
+import * as materialData from '../../../../resources/dot/materialData.json'
 import { rawTx, accounts } from '../../../../resources/dot';
 import { register } from '../../../../../src';
-
-export interface TestDotNetwork extends DotNetwork {
-  genesisHash: string;
-  specVersion: number;
-  metadataRpc: `0x${string}`;
-}
 
 export const buildTestConfig = (): Readonly<CoinConfig> => {
   return coins.get('tdot');
@@ -83,12 +77,12 @@ xdescribe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = accounts.account1;
-  const { specName, specVersion, genesisHash, chainName } = Networks.test.dot;
+  const { specName, specVersion, genesisHash, chainName } = materialData;
   const receiver = accounts.account2;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new StubTransactionBuilder(config).material(utils.getMaterial(config));
+    builder = new StubTransactionBuilder(config).material(materialData as Material);
   });
 
   describe('setter validation', () => {

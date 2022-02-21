@@ -168,9 +168,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   protected get _material(): Material {
     if (!this.__material) {
-      const m = utils.getMaterial(this._coinConfig);
-      this.material(m);
-      return m;
+      throw new Error('material');
     }
     return this.__material;
   }

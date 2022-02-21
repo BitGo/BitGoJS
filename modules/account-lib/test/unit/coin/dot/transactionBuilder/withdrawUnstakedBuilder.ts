@@ -3,19 +3,19 @@ import sinon from 'sinon';
 import { WithdrawUnstakedBuilder } from '../../../../../src/coin/dot';
 import { buildTestConfig } from './base';
 import { accounts, rawTx } from '../../../../resources/dot';
-import utils from '../../../../../src/coin/dot/utils';
-import { Networks } from '@bitgo/statics';
+import * as materialData from '../../../../resources/dot/materialData.json'
+import { Material } from '../../../../../src/coin/dot/iface';
 
 describe('Dot WithdrawUnstaked Builder', () => {
   let builder: WithdrawUnstakedBuilder;
 
   const sender = accounts.account1;
   const refBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
-  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
+  const { specVersion, txVersion, chainName, genesisHash } = materialData;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new WithdrawUnstakedBuilder(config).material(utils.getMaterial(config));
+    builder = new WithdrawUnstakedBuilder(config).material(materialData as Material);
   });
 
   describe('setter validation', () => {

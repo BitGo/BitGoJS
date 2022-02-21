@@ -12,9 +12,8 @@ import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
 import { Seed } from '../baseCoin/iface';
-import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
 import nacl from 'tweetnacl';
-import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
 
 const PROXY_METHOD_ARG = 2;
@@ -209,20 +208,6 @@ export class Utils implements BaseUtils {
    */
   getTxHash(txHex: string): string {
     return construct.txHash(txHex);
-  }
-
-  getMaterial(coinConfig: Readonly<CoinConfig>): Material {
-    const networkConfig = coinConfig.network as DotNetwork;
-    const { specName, specVersion, chainName, txVersion, genesisHash } = networkConfig;
-
-    return {
-      specName,
-      specVersion,
-      chainName,
-      metadata: networkConfig.metadataRpc,
-      txVersion,
-      genesisHash,
-    } as Material;
   }
 
   isSigningPayload(payload: DecodedSigningPayload | DecodedSignedTx): payload is DecodedSigningPayload {

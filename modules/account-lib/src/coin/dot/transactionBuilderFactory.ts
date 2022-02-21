@@ -16,7 +16,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._material = utils.getMaterial(_coinConfig);
   }
 
   getTransferBuilder(): TransferBuilder {
@@ -63,6 +62,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
+    if (!this._material) {
+      throw new Error('material');
+    }
+
     const registry = getRegistry({
       chainName: this._material.chainName,
       specName: this._material.specName,

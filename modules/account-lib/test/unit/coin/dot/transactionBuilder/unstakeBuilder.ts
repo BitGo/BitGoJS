@@ -1,20 +1,20 @@
 import should from 'should';
 import sinon, { assert } from 'sinon';
 import { UnstakeBuilder } from '../../../../../src/coin/dot';
-import utils from '../../../../../src/coin/dot/utils';
 import { rawTx, accounts } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
-import { Networks } from '@bitgo/statics';
+import * as materialData from '../../../../resources/dot/materialData.json'
+import { Material } from '../../../../../src/coin/dot/iface';
 
 describe('Dot Unstake Builder', () => {
   let builder: UnstakeBuilder;
 
   const sender = accounts.account1;
-  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
+  const { specVersion, txVersion, chainName, genesisHash } = materialData;
 
   beforeEach(() => {
     const config = buildTestConfig();
-    builder = new UnstakeBuilder(config).material(utils.getMaterial(config));
+    builder = new UnstakeBuilder(config).material(materialData as Material);
   });
 
   describe('setter validation', () => {
