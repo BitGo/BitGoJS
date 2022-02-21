@@ -3732,10 +3732,10 @@ algo-msgpack-with-bigint@^2.1.1:
   resolved "https://registry.yarnpkg.com/algo-msgpack-with-bigint/-/algo-msgpack-with-bigint-2.1.1.tgz#38bb717220525b3ff42232eefdcd9efb9ad405d6"
   integrity sha512-F1tGh056XczEaEAqu7s+hlZUDWwOBT70Eq0lfMpBP2YguSQVyxRbprLq5rELXKQOyOaixTWYhMeMQMzP0U5FoQ==
 
-algosdk@^1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/algosdk/-/algosdk-1.12.0.tgz#77e2a22568495210d26ecd1f830e98cc069815b5"
-  integrity sha512-Iqek0AwcCeXLywVg4E8gWWjmuPZ10P7PUmpZrlR71FSNyEtX4Ie+UgrNHWhkYnhyykRU5mjtvD4Hrb2eOepsGA==
+algosdk@^1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/algosdk/-/algosdk-1.14.0.tgz#729dada87cec141f8204fc77788a01a318fd6ea7"
+  integrity sha512-IaaomouKmuCnK+xLuz27X8DQro0ZjVyw4zHvV8HJap9PPDOQKbvpm+UIIsEf0CmC0xWPXIxfFbmlJ0y5CeGlqQ==
   dependencies:
     algo-msgpack-with-bigint "^2.1.1"
     buffer "^6.0.2"

@@ -15,6 +15,7 @@ export interface TxData {
   voteFirst?: number;
   voteLast?: number;
   voteKeyDilution?: number;
+  stateProofKey?: string;
   tokenId?: number;
   genesisID: string;
   genesisHash: string | Buffer;

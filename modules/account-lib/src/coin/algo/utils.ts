@@ -541,6 +541,21 @@ export class Utils implements BaseUtils {
     }
     return type;
   }
+
+  /**
+   * Validate if the key is a valid base64 string
+   * @param key the key to validate
+   */
+  validateBase64(key: string): void {
+    if (!key || typeof key !== 'string') {
+      throw new Error('Invalid base64 string');
+    }
+    const base64RegExp =
+      /^(?:[a-zA-Z0-9+\/]{4})*(?:|(?:[a-zA-Z0-9+\/]{3}=)|(?:[a-zA-Z0-9+\/]{2}==)|(?:[a-zA-Z0-9+\/]{1}===))$/;
+    if (!base64RegExp.test(key)) {
+      throw new Error('Invalid base64 string');
+    }
+  }
 }
 
 const utils = new Utils();
