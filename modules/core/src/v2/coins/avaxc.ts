@@ -158,6 +158,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   nextContractSequenceId?: string;
   expireTime?: number;
   hopTransaction?: string;
+  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
 }
 
 // For signTransaction
@@ -522,6 +523,7 @@ export class AvaxC extends BaseCoin {
       recipients: recipients,
       expiration: params.txPrebuild.expireTime,
       hopTransaction: params.txPrebuild.hopTransaction,
+      eip1599: params.txPrebuild.eip1559,
     };
 
     return { halfSigned: txParams };
