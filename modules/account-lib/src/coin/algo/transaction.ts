@@ -232,6 +232,9 @@ export class Transaction extends BaseTransaction {
           result.voteFirst = this._algoTransaction.voteFirst;
           result.voteLast = this._algoTransaction.voteLast;
           result.voteKeyDilution = this._algoTransaction.voteKeyDilution;
+          if (this._algoTransaction.stateProofKey) {
+            result.stateProofKey = this._algoTransaction.stateProofKey.toString('base64');
+          }
         }
       } else {
         result.nonParticipation = this._algoTransaction.nonParticipation;
