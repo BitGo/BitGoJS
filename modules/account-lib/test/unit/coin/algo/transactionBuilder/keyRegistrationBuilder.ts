@@ -77,7 +77,10 @@ describe('Algo KeyRegistration Builder', () => {
   });
 
   describe('build key registration transaction', () => {
-    it('should build a key registration transaction', async () => {
+    const requiredFieldErrorRegEx =
+      /Transaction validation failed: "(voteLast|voteKey|voteFirst|voteKeyDilution|selectionKey)" is required/;
+
+    it('should build an online key registration transaction without stateProof param', async () => {
       builder
         .sender({ address: sender.address })
         .fee({ fee: '1000' })
@@ -107,7 +110,55 @@ describe('Algo KeyRegistration Builder', () => {
       should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
     });
 
-    it('should build a key registration transaction with non participation', async () => {
+    it('should build an online key registration transaction with stateProof Param', async () => {
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9)
+        .stateProofKey(sender.stateProofKey)
+        .testnet()
+        .numberOfSigners(1);
+      builder.sign({ key: sender.prvKey });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.voteKey }));
+      should.deepEqual(txJson.voteKey.toString('base64'), sender.voteKey);
+      should.doesNotThrow(() => builder.validateKey({ key: txJson.selectionKey }));
+      should.deepEqual(txJson.selectionKey.toString('base64'), sender.selectionKey);
+      should.deepEqual(txJson.from, sender.address);
+      should.deepEqual(txJson.firstRound, 1);
+      should.deepEqual(txJson.lastRound, 100);
+      should.deepEqual(txJson.voteFirst, 1);
+      should.deepEqual(txJson.voteLast, 100);
+      should.deepEqual(txJson.voteKeyDilution, 9);
+      should.deepEqual(txJson.genesisID, genesisID.toString());
+      should.deepEqual(txJson.genesisHash.toString('base64'), genesisHash);
+      should.deepEqual(txJson.stateProofKey.toString('base64'), sender.stateProofKey);
+    });
+
+    it('should build an online keyreg transaction with malformated stateProof Param', async () => {
+      const malformatedStateProofKey = '0x' + '0'.repeat(64);
+
+      builder
+        .sender({ address: sender.address })
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .voteKey(sender.voteKey)
+        .selectionKey(sender.selectionKey)
+        .voteFirst(1)
+        .voteLast(100)
+        .voteKeyDilution(9);
+      should.throws(() => builder.stateProofKey(malformatedStateProofKey), 'Error: Invalid base64 string');
+    });
+
+    it('should build an offline key registration transaction', async () => {
       builder
         .sender({ address: sender.address })
         .fee({ fee: '1000' })
