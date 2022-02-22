@@ -33,7 +33,7 @@ describe('Dot Batch Transaction Builder', () => {
   });
 
   // TODO: BG-43197
-  xdescribe('build batch transaction', () => {
+  describe('build batch transaction', () => {
     it('should build a batch transaction', async () => {
       builder
         .calls(rawTx.anonymous.batch)
