@@ -6,7 +6,7 @@ import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEth
 
 // https://eips.ethereum.org/EIPS/eip-721
 // function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
-// https://eips.ethereum.org/EIPS/eip-721
+// https://eips.ethereum.org/EIPS/eip-1155
 // function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external;
 // function safeBatchTransferFrom(address _from, address _to, uint256[] calldata _ids, uint256[] calldata _values, bytes calldata _data) external;
 

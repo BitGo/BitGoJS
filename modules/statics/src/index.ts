@@ -9,6 +9,8 @@ export {
   CeloCoin,
   ContractAddressDefinedToken,
   Erc20Coin,
+  Erc721Coin,
+  Erc1155Coin,
   StellarCoin,
   EosCoin,
   AlgoCoin,
