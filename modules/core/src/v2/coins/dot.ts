@@ -85,7 +85,8 @@ export class Dot extends BaseCoin {
 
   /** @inheritDoc */
   supportsTss(): boolean {
-    return true;
+    // return true once TSS integration is supported
+    return false;
   }
 
   allowsAccountConsolidations(): boolean {
