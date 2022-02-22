@@ -50,7 +50,6 @@ describe('Dot Transfer Builder', () => {
     });
   });
 
-  // TODO: BG-43197
   describe('build transfer transaction', () => {
     it('should build a transfer transaction', async () => {
       builder

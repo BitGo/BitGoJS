@@ -53,7 +53,6 @@ describe('Dot Stake Builder', () => {
     });
   });
 
-  // TODO: BG-43197
   describe('build stake transaction', () => {
     it('should build a stake transaction', async () => {
       builder
