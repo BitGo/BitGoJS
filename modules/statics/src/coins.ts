@@ -2,6 +2,8 @@ import {
   account,
   celoToken,
   erc20,
+  erc721,
+  erc1155,
   erc20CompatibleAccountCoin,
   hederaCoin,
   stellarToken,

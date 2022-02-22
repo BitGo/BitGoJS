@@ -93,13 +93,6 @@ export interface EthLikeTransactionData {
   toSerialized(): string;
 }
 
-export interface FieldStruct {
-  components?: any;
-  name: string;
-  inputs?: any;
-  type: string;
-}
-
 export interface SignatureParts {
   v: string;
   r: string;

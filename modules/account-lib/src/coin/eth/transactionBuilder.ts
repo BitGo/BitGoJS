@@ -35,6 +35,7 @@ const DEFAULT_M = 3;
  */
 export class TransactionBuilder extends BaseTransactionBuilder {
   protected _type: TransactionType;
+  // Specifies common chain and hardfork parameters.
   protected _common: EthereumCommon;
   private _transaction: Transaction;
   private _sourceKeyPair: KeyPair;
@@ -100,6 +101,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.WalletInitialization:
         return this.buildWalletInitializationTransaction();
       case TransactionType.Send:
+      case TransactionType.SendERC721:
+      case TransactionType.SendERC1155:
         return this.buildSendTransaction();
       case TransactionType.AddressInitialization:
         return this.buildAddressInitializationTransaction();
@@ -181,6 +184,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.setContract(transactionJson.to);
         break;
       case TransactionType.Send:
+      case TransactionType.SendERC1155:
+      case TransactionType.SendERC721:
         this.setContract(transactionJson.to);
         this._transfer = this.transfer(transactionJson.data);
         break;
@@ -261,7 +266,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     try {
       FeeMarketEIP1559Transaction.fromSerializedTx(txn);
       return true;
-    } catch (_: unknown) {
+    } catch (_) {
       return false;
     }
   }
@@ -270,7 +275,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     try {
       ethUtil.rlp.decode(bytes);
       return true;
-    } catch (_: unknown) {
+    } catch (_) {
       return false;
     }
   }
@@ -295,13 +300,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.validateWalletInitializationFields();
         break;
       case TransactionType.Send:
-        this.validateContractAddress();
-        break;
       case TransactionType.SendERC721:
-        // TODO:
-        break;
       case TransactionType.SendERC1155:
-        // TODO:
+        this.validateContractAddress();
         break;
       case TransactionType.AddressInitialization:
         this.validateContractAddress();
@@ -544,7 +545,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransferBuilder} the transfer builder
    */
   transfer(data?: string): TransferBuilder {
-    if (this._type !== TransactionType.Send) {
+    if (
+      !(
+        this._type === TransactionType.Send ||
+        this._type === TransactionType.SendERC721 ||
+        this._type === TransactionType.SendERC1155
+      )
+    ) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     if (!this._transfer) {
@@ -553,26 +560,25 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this._transfer;
   }
 
-  erc721Transfer(data?: string): ERC721TransferBuilder {
-    if (this._type !== TransactionType.SendERC721) {
-      throw new BuildTransactionError('Transfers can only be set for send transactions');
-    }
-    if (!this._transfer) {
-      this._transfer = new TransferBuilder(data);
-    }
-    return this._transfer;
-  }
-
-  erc1155Transfer(data?: string): ERC1155TransferBuilder {
-    if (this._type !== TransactionType.SendERC1155) {
-      throw new BuildTransactionError('Transfers can only be set for send transactions');
-    }
-    if (!this._transfer) {
-      this._transfer = new TransferBuilder(data);
-    }
-    return this._transfer;
-  }
-
+  // erc721Transfer(data?: string): ERC721TransferBuilder {
+  //   if (this._type !== TransactionType.SendERC721) {
+  //     throw new BuildTransactionError('Transfers can only be set for send transactions');
+  //   }
+  //   if (!this._transfer) {
+  //     this._transfer = new TransferBuilder(data);
+  //   }
+  //   return this._transfer;
+  // }
+  //
+  // erc1155Transfer(data?: string): ERC1155TransferBuilder {
+  //   if (this._type !== TransactionType.SendERC1155) {
+  //     throw new BuildTransactionError('Transfers can only be set for send transactions');
+  //   }
+  //   if (!this._transfer) {
+  //     this._transfer = new TransferBuilder(data);
+  //   }
+  //   return this._transfer;
+  // }
 
   /**
    * Returns the serialized sendMultiSig contract method data
@@ -592,6 +598,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     tx.to = this._contractAddress;
     return tx;
   }
+
   // endregion
 
   // region AddressInitialization builder methods
