@@ -117,6 +117,20 @@ export interface TransferData {
 
 export interface TokenTransferData extends TransferData {
   tokenContractAddress: string;
+  amount: string;
+}
+
+export interface ERC721TransferData extends TokenTransferData {
+  from: string,
+  tokenId: number;
+  userData: string;
+}
+
+export interface ERC1155TransferData extends TokenTransferData {
+  from: string,
+  tokenIds: number[];
+  values: number[];
+  userData: string;
 }
 
 export interface FlushTokensData {

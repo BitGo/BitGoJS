@@ -26,10 +26,15 @@ import {
   VoteMethodId,
   WithdrawMethodId,
 } from '../celo/stakingUtils';
-import { FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
+import { ERC1155TransferData, ERC721TransferData, FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
+  ERC1155BatchTransferTypes,
+  ERC1155SafeTransferTypeMethodId,
+  ERC1155SafeTransferTypes,
+  ERC721SafeTransferTypeMethodId,
+  ERC721SafeTransferTypes,
   flushCoinsMethodId,
   flushCoinsTypes,
   flushForwarderTokensMethodId,
@@ -42,6 +47,7 @@ import {
   walletSimpleConstructor,
 } from './walletUtil';
 import { EthTransactionData } from './types';
+import { TLSSocket } from 'tls';
 
 /**
  * @param network
@@ -137,6 +143,7 @@ export function sendMultiSigTokenData(
   signature: string,
 ): string {
   const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
+
   const method = EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes);
   const args = EthereumAbi.rawEncode(sendMultiSigTokenTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
@@ -268,6 +275,88 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
     signature: bufferToHex(signature),
     tokenContractAddress: addHexPrefix(tokenContractAddress),
   };
+}
+
+export function decodeERC721TransferData(data: string): ERC721TransferData {
+  if (!data.startsWith(sendMultisigMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
+    sendMultiSigTypes,
+    getBufferedByteCode(sendMultisigMethodId, data),
+  );
+ 
+  // FIXME: Is this corrrect?
+  if (!bufferToHex(internalData).startsWith(ERC721SafeTransferTypeMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [from, receiver, tokenId, userSentData] = getRawDecoded(
+    ERC721SafeTransferTypes,
+    internalData
+  );
+  
+  return {
+    to: addHexPrefix(receiver),
+    from: addHexPrefix(from),
+    expireTime: bufferToInt(expireTime),
+    amount: new BigNumber(bufferToHex(amount)).toFixed(),
+    tokenId: bufferToInt(tokenId),
+    sequenceId: bufferToInt(sequenceId),
+    signature: bufferToHex(signature),
+    tokenContractAddress: addHexPrefix(to),
+    userData: bufferToHex(userSentData)
+  };
+}
+
+export function decodeERC1155TransferData(data: string): ERC1155TransferData {
+  let from, receiver, userSentData;
+  let tokenIds: number[];
+  let values: number[];
+
+  if (!data.startsWith(sendMultisigMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
+    sendMultiSigTypes,
+    getBufferedByteCode(sendMultisigMethodId, data),
+  );
+  
+  if (bufferToHex(internalData).startsWith(ERC1155SafeTransferTypeMethodId)) {
+    let tokenId, value; // temp values
+    [from, receiver, tokenId, value, userSentData] = getRawDecoded(
+      ERC1155SafeTransferTypes,
+      internalData
+    );
+    tokenIds = [bufferToInt(tokenId)];
+    values = [bufferToInt(value)];
+  } else if (bufferToHex(internalData).startsWith(ERC1155BatchTransferTypes)) {
+    let tempTokenIds, tempValues;
+    [from, receiver, tempTokenIds, tempValues, userSentData] = getRawDecoded(
+      ERC1155SafeTransferTypes,
+      internalData
+    );
+    tokenIds = tempTokenIds.map( x => bufferToInt(x));
+    values = tempValues.map(x => bufferToInt(x));
+  } else {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  return {
+    to: addHexPrefix(receiver),
+    from: addHexPrefix(from),
+    expireTime: bufferToInt(expireTime),
+    amount: new BigNumber(bufferToHex(amount)).toFixed(),
+    tokenIds, 
+    values, 
+    sequenceId: bufferToInt(sequenceId),
+    signature: bufferToHex(signature),
+    tokenContractAddress: addHexPrefix(to),
+    userData: userSentData
+  };
+  
 }
 
 /**

@@ -2,12 +2,6 @@ import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './ba
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
-export enum EthLikeTokenTypes {
-  ERC20 = 'erc20',
-  ERC721 = 'erc721',
-  ERC1155 = 'erc1155',
-}
-
 export interface AccountConstructorOptions {
   fullName: string;
   name: string;
@@ -57,16 +51,9 @@ export class AccountCoin extends BaseCoin {
   }
 }
 
-export interface EthLikeTokenConstructorOptions extends AccountConstructorOptions {
+export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
-  ethLikeTokenType?: EthLikeTokenTypes;
 }
-
-export interface Erc20ConstructorOptions extends EthLikeTokenConstructorOptions {}
-
-export interface Erc721ConstructorOptions extends EthLikeTokenConstructorOptions {}
-
-export interface Erc155ConstructorOptions extends EthLikeTokenConstructorOptions {}
 
 export interface StellarCoinConstructorOptions extends AccountConstructorOptions {
   domain: string;
@@ -107,7 +94,7 @@ export class AccountCoinToken extends AccountCoin {
 export class ContractAddressDefinedToken extends AccountCoinToken {
   public contractAddress: ContractAddress;
 
-  constructor(options: EthLikeTokenConstructorOptions) {
+  constructor(options: Erc20ConstructorOptions) {
     super({
       ...options,
     });
@@ -127,7 +114,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
 export class Base58ContractAddressDefinedToken extends AccountCoinToken {
   public contractAddress: ContractAddress;
 
-  constructor(options: EthLikeTokenConstructorOptions) {
+  constructor(options: Erc20ConstructorOptions) {
     super({
       ...options,
     });
@@ -146,10 +133,6 @@ export class Base58ContractAddressDefinedToken extends AccountCoinToken {
  */
 export class Erc20Coin extends ContractAddressDefinedToken {}
 
-export class Erc721Coin extends ContractAddressDefinedToken {}
-
-export class Erc1155Coin extends ContractAddressDefinedToken {}
-
 /**
  * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
  */
@@ -158,8 +141,8 @@ export class TronErc20Coin extends Base58ContractAddressDefinedToken {}
 /**
  * Some blockchains have native coins which also support the ERC20 interface such as CELO.
  */
-export class EthLikeTokensCompatibleAccountCoin extends ContractAddressDefinedToken {
-  constructor(options: EthLikeTokenConstructorOptions) {
+export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
     super({
       ...options,
       // These coins should not be classified as tokens as they are not children of other coins
@@ -367,66 +350,6 @@ export function erc20(
   );
 }
 
-// TODO: does this need different characteristics
-export function erc721(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.main.ethereum,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
-) {
-  return Object.freeze(
-    new Erc721Coin({
-      name,
-      fullName,
-      network,
-      contractAddress,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-    })
-  );
-}
-
-// TODO: does this need different parameters
-export function erc1155(
-  name: string,
-  fullName: string,
-  decimalPlaces: number,
-  contractAddress: string,
-  asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.main.ethereum,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
-) {
-  return Object.freeze(
-    new Erc1155Coin({
-      name,
-      fullName,
-      network,
-      contractAddress,
-      prefix,
-      suffix,
-      features,
-      decimalPlaces,
-      asset,
-      isToken: true,
-      primaryKeyCurve,
-    })
-  );
-}
-
 /**
  * Factory function for testnet erc20 token instances.
  *
@@ -481,7 +404,7 @@ export function erc20CompatibleAccountCoin(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
-    new EthLikeTokensCompatibleAccountCoin({
+    new Erc20CompatibleAccountCoin({
       name,
       fullName,
       network,

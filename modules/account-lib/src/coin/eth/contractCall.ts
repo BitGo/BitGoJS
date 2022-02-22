@@ -4,9 +4,9 @@ import { addHexPrefix, toBuffer } from 'ethereumjs-util';
 export class ContractCall {
   private _methodId: string;
   private _types: string[];
-  private _params: string[];
+  private _params: any[];
 
-  constructor(_methodId: string, _types: string[], _params: string[]) {
+  constructor(_methodId: string, _types: string[], _params: any[]) {
     this._methodId = _methodId;
     this._types = _types;
     this._params = _params;
