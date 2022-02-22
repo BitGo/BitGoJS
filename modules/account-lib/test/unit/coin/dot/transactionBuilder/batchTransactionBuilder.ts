@@ -1,39 +1,41 @@
 import should from 'should';
-import sinon from 'sinon';
+import { spy, assert } from 'sinon';
 import { BatchTransactionBuilder } from '../../../../../src/coin/dot';
-import { accounts, rawTx } from '../../../../resources/dot';
+import { accounts, rawTx, specVersion, txVersion } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot Batch Transaction Builder', () => {
   let builder: BatchTransactionBuilder;
 
-  const { specVersion, txVersion } = Networks.test.dot;
-  const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
-  const sender = accounts.account1;
-
-  beforeEach(() => {
-    const config = buildTestConfig();
-    builder = new BatchTransactionBuilder(config).material(utils.getMaterial(config));
-  });
-
   describe('setter validation', () => {
+    before(function () {
+      builder = new BatchTransactionBuilder(buildTestConfig());
+    });
+
     it('should validate list of calls', () => {
       const call = 'invalidUnsignedTransaction';
-      const spy = sinon.spy(builder, 'validateCalls');
+      const spyValidateCalls = spy(builder, 'validateCalls');
       should.throws(
         () => builder.calls([call]),
         (e: Error) => e.message === `call in string format must be hex format of a method and its arguments`,
       );
       should.doesNotThrow(() => builder.calls(rawTx.anonymous.batch));
-      sinon.assert.calledTwice(spy);
+      assert.calledTwice(spyValidateCalls);
     });
   });
 
   // TODO: BG-43197
-  xdescribe('build batch transaction', () => {
+  xdescribe('build batch transaction', function () {
+    const sender = accounts.account1;
+    const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
+
+    beforeEach(() => {
+      const config = buildTestConfig();
+      builder = new BatchTransactionBuilder(config).material(utils.getMaterial(config));
+    });
+
     it('should build a batch transaction', async () => {
       builder
         .calls(rawTx.anonymous.batch)

@@ -1,7 +1,6 @@
-import { coins } from '@bitgo/statics';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
-import { KeyPair, Transaction, TransferBuilder, Utils } from '../../../../src/coin/dot';
+import { KeyPair, Transaction, TransferBuilder } from '../../../../src/coin/dot';
 import { TxData } from '../../../../src/coin/dot/iface';
 import utils from '../../../../src/coin/dot/utils';
 import { rawTx, accounts, jsonTransactions } from '../../../resources/dot';
@@ -37,7 +36,7 @@ describe('Dot Transaction', () => {
 
     it('should not sign', async () => {
       try {
-        await tx.sign(new KeyPair({ prv: accounts.account1.secretKey }));
+        tx.sign(new KeyPair({ prv: accounts.account1.secretKey }));
       } catch (e) {
         should.equal(e.message, 'No transaction data to sign');
       }
@@ -57,7 +56,7 @@ describe('Dot Transaction', () => {
 
     it('can generate valid txHash from signed transaction', () => {
       const signedTx = rawTx.transfer.westendSigned2;
-      const txHash = Utils.default.getTxHash(signedTx);
+      const txHash = utils.getTxHash(signedTx);
       const expectedHash = '0x252e9b53c1d068c275ef4c9b5afcffb2df42859203be1305d148c0c1441a5b20';
 
       txHash.should.equal(expectedHash);
@@ -65,9 +64,8 @@ describe('Dot Transaction', () => {
   });
 
   describe('should build from raw unsigned tx', async () => {
-    // TODO: BG-43197
-    xit('Transaction size validation', async () => {
-      const builder = new TransferBuilder(coins.get('tdot')).material(utils.getMaterial(buildTestConfig()));
+    it('Transaction size validation', async () => {
+      const builder = new TransferBuilder(buildTestConfig()).material(utils.getMaterial(buildTestConfig()));
       builder.from(rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933 })
