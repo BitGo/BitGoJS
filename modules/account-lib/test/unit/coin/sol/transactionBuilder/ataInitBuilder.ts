@@ -1,23 +1,21 @@
 import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair, Utils } from '../../../../../src/coin/sol';
+import { TransactionBuilderFactory, KeyPair, Utils, AtaInitializationBuilder } from '../../../../../src/coin/sol';
 import should from 'should';
 import * as testData from '../../../../resources/sol/sol';
 import { BaseTransaction } from '../../../../../src/coin/baseCoin';
-
-const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
 describe('Sol Associated Token Account Builder', () => {
   function verifyInputOutputAndRawTransaction(tx: BaseTransaction, rawTx: string) {
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
       address: account.pub,
-      value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+      value: rentAmount,
       coin: mint,
     });
     tx.outputs.length.should.equal(1);
     tx.outputs[0].should.deepEqual({
       address: ataPubkey,
-      value: TRANSFER_AMOUNT_UNKNOWN_TEXT,
+      value: rentAmount,
       coin: mint,
     });
 
@@ -30,6 +28,7 @@ describe('Sol Associated Token Account Builder', () => {
     txBuilder.nonce(recentBlockHash);
     txBuilder.sender(account.pub);
     txBuilder.mint(mint);
+    txBuilder.rentExemptAmount(rentAmount);
 
     return txBuilder;
   };
@@ -39,6 +38,7 @@ describe('Sol Associated Token Account Builder', () => {
   const wrongAccount = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
   const mint = testData.associatedTokenAccounts.mint;
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+  const rentAmount = '30000';
 
   describe('Build and sign', () => {
     describe('Succeed', () => {
@@ -146,6 +146,7 @@ describe('Sol Associated Token Account Builder', () => {
     describe('Succeed', () => {
       it('build from a unsigned ATA init and sign it', async () => {
         const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_TX);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
         txBuilder.sign({ key: account.prv });
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
@@ -156,6 +157,7 @@ describe('Sol Associated Token Account Builder', () => {
 
       it('build from a unsigned ATA init with memo and sign it', async () => {
         const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_TX_WITH_MEMO);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
         txBuilder.sign({ key: account.prv });
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
