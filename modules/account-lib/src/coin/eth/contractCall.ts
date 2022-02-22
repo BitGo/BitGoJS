@@ -17,3 +17,8 @@ export class ContractCall {
     return addHexPrefix(Buffer.concat([toBuffer(this._methodId), args]).toString('hex'));
   }
 }
+
+export function serializeAnyTypeContractCalls(methodId: string, types: string[], params: any) {
+  const args = EthereumAbi.rawEncode(this._types, this._params);
+  return addHexPrefix(Buffer.concat([toBuffer(this._methodId), args]).toString('hex'));
+}
