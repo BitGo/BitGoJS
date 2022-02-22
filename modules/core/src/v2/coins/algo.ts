@@ -13,7 +13,6 @@ import {
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
   SignedTransaction,
   TransactionRecipient,
@@ -21,6 +20,7 @@ import {
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { TokenManagementType } from '../types';
+import { MethodNotImplementedError } from '../../errors';
 
 export interface AlgoTransactionExplanation extends TransactionExplanation {
   memo?: string;
@@ -441,8 +441,8 @@ export class Algo extends BaseCoin {
     return {};
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

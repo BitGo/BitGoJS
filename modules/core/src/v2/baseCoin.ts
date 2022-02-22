@@ -394,10 +394,17 @@ export abstract class BaseCoin {
   abstract verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
 
   /**
-   * Verify that an address belongs to a wallet
-   * @returns {boolean}
+   * @deprecated use {@see isWalletAddress} instead
    */
-  abstract verifyAddress(params: VerifyAddressOptions): boolean;
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return this.isWalletAddress(params);
+  }
+
+  /**
+   * @param params
+   * @return true iff address is a wallet address. Must return false if address is outside wallet.
+   */
+  abstract isWalletAddress(params: VerifyAddressOptions): boolean;
 
   /**
    * convert address into desired address format.

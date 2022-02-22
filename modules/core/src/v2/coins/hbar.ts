@@ -145,8 +145,8 @@ export class Hbar extends BaseCoin {
     return {};
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

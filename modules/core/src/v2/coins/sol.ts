@@ -24,6 +24,7 @@ import { BitGo } from '../../bitgo';
 import { Memo } from '../wallet';
 import * as _ from 'lodash';
 import { DerivedKeyPair, DeriveKeypairOptions } from '..';
+import { MethodNotImplementedError } from '../../errors';
 
 export interface TransactionFee {
   fee: string;
@@ -169,8 +170,8 @@ export class Sol extends BaseCoin {
     return true;
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return this.isValidAddress(params.address);
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   /**

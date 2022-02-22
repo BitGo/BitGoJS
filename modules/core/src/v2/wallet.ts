@@ -9,7 +9,7 @@ import * as debugLib from 'debug';
 import { makeRandomKey } from '../bitcoin';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
-import { AddressGenerationError } from '../errors';
+import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import {
   BaseCoin,
   SignedTransaction,
@@ -1539,7 +1539,19 @@ export class Wallet {
         (!verificationData.coinSpecific.pendingChainInitialization || verificationData.impliedForwarderVersion === 1)
       ) {
         // can't verify addresses which are pending chain initialization, as the address is hidden
-        this.baseCoin.verifyAddress(verificationData);
+        let isWalletAddress = false;
+        try {
+          isWalletAddress = this.baseCoin.isWalletAddress(verificationData);
+        } catch (e) {
+          if (!(e instanceof MethodNotImplementedError)) {
+            throw e;
+          }
+          // FIXME(BG-43225): implement this correctly
+          isWalletAddress = true;
+        }
+        if (!isWalletAddress) {
+          throw new Error(`not a wallet address`);
+        }
       } else if (!allowSkipVerifyAddress) {
         throw new Error(`address verification skipped for count = ${count}`);
       }

@@ -14,7 +14,6 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   SignTransactionOptions,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionFee,
   TransactionRecipient as Recipient,
@@ -23,7 +22,7 @@ import {
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
-import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
+import { MethodNotImplementedError } from '../../errors';
 import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
@@ -131,11 +130,8 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return {};
   }
 
-  verifyAddress({ address }: VerifyAddressOptions): boolean {
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-    return true;
+  isWalletAddress(): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

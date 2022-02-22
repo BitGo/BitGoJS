@@ -27,6 +27,7 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import { MethodNotImplementedError } from '../../errors';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -196,8 +197,8 @@ export class Trx extends BaseCoin {
     return {};
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

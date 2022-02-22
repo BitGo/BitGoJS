@@ -19,6 +19,7 @@ import {
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
+import { MethodNotImplementedError } from '../../errors';
 
 interface Recipient {
   address: string;
@@ -309,8 +310,8 @@ export class Eth2 extends BaseCoin {
     return {};
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
