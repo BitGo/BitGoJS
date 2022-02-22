@@ -237,12 +237,6 @@ export class Utils implements BaseUtils {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
   }
 
-  checkValidHex(str: string): asserts str is HexString {
-    if (!str.startsWith(`0x`)) {
-      throw new Error(`This is not in correct format of hex string: ${str}`);
-    }
-  }
-
   /**
    * extracts and returns the signature in hex format given a raw signed transaction
    *

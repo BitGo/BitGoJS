@@ -1,17 +1,15 @@
 import should from 'should';
-import sinon from 'sinon';
+import { spy, assert } from 'sinon';
 import { StakingBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
-import { accounts, rawTx } from '../../../../resources/dot';
+import { accounts, rawTx, specVersion, txVersion, chainName, genesisHash } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot Stake Builder', () => {
   let builder: StakingBuilder;
 
   const sender = accounts.account1;
   const receiver = accounts.account2;
-  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -20,27 +18,27 @@ describe('Dot Stake Builder', () => {
 
   describe('setter validation', () => {
     it('should validate stake amount', () => {
-      const spy = sinon.spy(builder, 'validateValue');
+      const spyValidateAddress = spy(builder, 'validateValue');
       should.throws(
         () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.amount('1000'));
-      sinon.assert.calledTwice(spy);
+      assert.calledTwice(spyValidateAddress);
     });
 
     it('should validate controller address', () => {
-      const spy = sinon.spy(builder, 'validateAddress');
+      const spyValidateAddress = spy(builder, 'validateAddress');
       should.throws(
         () => builder.owner({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
       should.doesNotThrow(() => builder.owner({ address: sender.address }));
-      sinon.assert.calledTwice(spy);
+      assert.calledTwice(spyValidateAddress);
     });
 
     it('should validate payee', () => {
-      const spy = sinon.spy(builder, 'validateAddress');
+      const spyValidateAddress = spy(builder, 'validateAddress');
       should.throws(
         () => builder.payee({ Account: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
@@ -49,7 +47,7 @@ describe('Dot Stake Builder', () => {
       should.doesNotThrow(() => builder.payee('Staked'));
       should.doesNotThrow(() => builder.payee('Controller'));
       should.doesNotThrow(() => builder.payee('Stash'));
-      sinon.assert.calledTwice(spy);
+      assert.calledTwice(spyValidateAddress);
     });
   });
 

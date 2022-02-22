@@ -1,8 +1,7 @@
-import { coins, Networks } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/dot';
-import { accounts, rawTx } from '../../../../resources/dot';
+import { accounts, rawTx, chainName, txVersion, genesisHash, specVersion } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -13,7 +12,6 @@ describe('Dot Transfer Builder', () => {
   const proxySender = accounts.account3;
   const sender = accounts.account1;
   const receiver = accounts.account2;
-  const { chainName, txVersion, genesisHash, specVersion } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -189,13 +187,11 @@ describe('Dot Transfer Builder', () => {
     });
 
     it('should build from raw signed westend tx', async () => {
-      const config = coins.get('tdot');
-      const westendBuilder = new TransferBuilder(config);
-      westendBuilder.from(rawTx.transfer.westendSigned);
-      westendBuilder
+      builder.from(rawTx.transfer.westendSigned);
+      builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
-      const tx = await westendBuilder.build();
+      const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '10000000000');
       should.deepEqual(txJson.to, receiver.address);

@@ -1,17 +1,15 @@
 import should from 'should';
-import sinon from 'sinon';
+import { assert, spy } from 'sinon';
 import { WithdrawUnstakedBuilder } from '../../../../../src/coin/dot';
 import { buildTestConfig } from './base';
-import { accounts, rawTx } from '../../../../resources/dot';
+import { accounts, rawTx, specVersion, txVersion, chainName, genesisHash } from '../../../../resources/dot';
 import utils from '../../../../../src/coin/dot/utils';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot WithdrawUnstaked Builder', () => {
   let builder: WithdrawUnstakedBuilder;
 
   const sender = accounts.account1;
   const refBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
-  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -20,13 +18,13 @@ describe('Dot WithdrawUnstaked Builder', () => {
 
   describe('setter validation', () => {
     it('should validate slashing spans', () => {
-      const spy = sinon.spy(builder, 'validateValue');
+      const spyValidateValue = spy(builder, 'validateValue');
       should.throws(
         () => builder.slashingSpans(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.slashingSpans(10));
-      sinon.assert.calledTwice(spy);
+      assert.calledTwice(spyValidateValue);
     });
   });
 

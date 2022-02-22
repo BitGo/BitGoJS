@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, coins, DotNetwork, Networks } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import Eddsa from '../../../../../src/mpc/tss';
 import should from 'should';
@@ -8,7 +8,7 @@ import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 import { TransactionBuilder, Transaction, KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import { rawTx, accounts } from '../../../../resources/dot';
+import { rawTx, accounts, specName, specVersion, genesisHash, chainName } from '../../../../resources/dot';
 import { register } from '../../../../../src';
 
 export interface TestDotNetwork extends DotNetwork {
@@ -82,7 +82,6 @@ describe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = accounts.account1;
-  const { specName, specVersion, genesisHash, chainName } = Networks.test.dot;
   const receiver = accounts.account2;
 
   beforeEach(() => {
