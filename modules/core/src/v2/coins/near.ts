@@ -44,6 +44,8 @@ export interface VerifiedTransactionParameters {
   signer: string;
 }
 
+const nearUtils = accountLib.Near.Utils.default;
+
 export class Near extends BaseCoin {
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -108,7 +110,7 @@ export class Near extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Near.Utils.default.isValidPublicKey(pub);
+    return nearUtils.isValidPublicKey(pub);
   }
 
   /**
@@ -118,7 +120,7 @@ export class Near extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Near.Utils.default.isValidPrivateKey(prv);
+    return nearUtils.isValidPrivateKey(prv);
   }
 
   /**
@@ -128,7 +130,7 @@ export class Near extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidAddress(address: string): boolean {
-    return accountLib.Near.Utils.default.isValidAddress(address);
+    return nearUtils.isValidAddress(address);
   }
 
   /**
@@ -172,7 +174,7 @@ export class Near extends BaseCoin {
     }
 
     // if we are receiving addresses do not try to convert them
-    const signer = !accountLib.Near.Utils.default.isValidAddress(params.txPrebuild.key)
+    const signer = !nearUtils.isValidAddress(params.txPrebuild.key)
       ? new accountLib.Near.KeyPair({ pub: params.txPrebuild.key }).getAddress()
       : params.txPrebuild.key;
     return { txHex, addressVersion, prv, signer };
@@ -207,8 +209,8 @@ export class Near extends BaseCoin {
     throw new MethodNotImplementedError('Near parse transaction not implemented');
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

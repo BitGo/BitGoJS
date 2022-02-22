@@ -85,7 +85,8 @@ export class Dot extends BaseCoin {
 
   /** @inheritDoc */
   supportsTss(): boolean {
-    return true;
+    // return true once TSS integration is supported
+    return false;
   }
 
   allowsAccountConsolidations(): boolean {
@@ -271,8 +272,8 @@ export class Dot extends BaseCoin {
     return {};
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    return this.isValidAddress(params.address);
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

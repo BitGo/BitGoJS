@@ -383,8 +383,9 @@ export class Xrp extends BaseCoin {
    * This prevents attacks where an attack may switch out the new address for one of their own
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
+   * @return true iff address is a wallet address (based on rootAddress)
    */
-  public verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+  public isWalletAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
     }

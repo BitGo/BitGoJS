@@ -3,7 +3,6 @@
  */
 import * as accountLib from '@bitgo/account-lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { c32addressDecode } from 'c32check';
 
 import {
   BaseCoin,
@@ -17,7 +16,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { InvalidAddressError } from '../../errors';
+import { MethodNotImplementedError } from '../../errors';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {
@@ -91,20 +90,8 @@ export class Stx extends BaseCoin {
     return true;
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    const { address } = params;
-    if (!this.isValidAddress(address)) throw new InvalidAddressError(`invalid address: ${address}`);
-
-    const addressDetails = accountLib.Stx.Utils.getAddressDetails(address);
-    try {
-      const [version] = c32addressDecode(addressDetails.address);
-      const versionString = accountLib.Stx.AddressVersion[version];
-      if (versionString === undefined) throw new InvalidAddressError(`invalid address version: ${address}`);
-    } catch (e) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    return true;
+  isWalletAddress(params: VerifyAddressOptions): boolean {
+    throw new MethodNotImplementedError();
   }
 
   /**

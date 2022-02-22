@@ -123,7 +123,7 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
-  multisigType?: 'tss' | 'onchain';
+  multisigType?: 'tss' | 'onchain' | 'blsdkg';
 }
 
 export interface DeriveKeypairOptions {
@@ -332,6 +332,14 @@ export abstract class BaseCoin {
   }
 
   /**
+   * Flag indicating if this coin supports BLS-DKG wallets.
+   * @returns {boolean} True if BLS-DKG Wallets can be created for this coin
+   */
+  supportsBlsDkg(): boolean {
+    return false;
+  }
+
+  /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
@@ -386,10 +394,17 @@ export abstract class BaseCoin {
   abstract verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
 
   /**
-   * Verify that an address belongs to a wallet
-   * @returns {boolean}
+   * @deprecated use {@see isWalletAddress} instead
    */
-  abstract verifyAddress(params: VerifyAddressOptions): boolean;
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return this.isWalletAddress(params);
+  }
+
+  /**
+   * @param params
+   * @return true iff address is a wallet address. Must return false if address is outside wallet.
+   */
+  abstract isWalletAddress(params: VerifyAddressOptions): boolean;
 
   /**
    * convert address into desired address format.

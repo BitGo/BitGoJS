@@ -876,7 +876,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {InvalidAddressDerivationPropertyError}
    * @throws {UnexpectedAddressError}
    */
-  verifyAddress(params: VerifyAddressOptions): boolean {
+  isWalletAddress(params: VerifyAddressOptions): boolean {
     const { address, addressType, keychains, coinSpecific, chain, index } = params;
 
     if (!this.isValidAddress(address)) {

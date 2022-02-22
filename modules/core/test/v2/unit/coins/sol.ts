@@ -254,13 +254,16 @@ describe('SOL:', function () {
   });
 
 
-  it('should verify valid address', (function () {
-    const params = { address: goodAddresses[0] };
-    basecoin.verifyAddress(params).should.equal(true);
+  it('should accept valid address', (function () {
+    goodAddresses.forEach(addr => {
+      basecoin.isValidAddress(addr).should.equal(true);
+    });
   }));
 
-  it('should check invalid address', (function () {
-    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
+  it('should reject invalid address', (function () {
+    badAddresses.forEach(addr => {
+      basecoin.isValidAddress(addr).should.equal(false);
+    });
   }));
 
   it('should check valid pub keys', (function () {

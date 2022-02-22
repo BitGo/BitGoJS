@@ -54,7 +54,7 @@ describe('Dot Stake Builder', () => {
   });
 
   // TODO: BG-43197
-  xdescribe('build stake transaction', () => {
+  describe('build stake transaction', () => {
     it('should build a stake transaction', async () => {
       builder
         .amount('90034235235322')

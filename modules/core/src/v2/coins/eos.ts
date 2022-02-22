@@ -392,12 +392,11 @@ export class Eos extends BaseCoin {
   }
 
   /**
-   * Check if address is a valid EOS address, then verify it matches the root address.
-   *
    * @param address - the address to verify
    * @param rootAddress - the wallet's root address
+   * @return true iff address is a wallet address (based on rootAddress)
    */
-  verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+  isWalletAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
     if (!rootAddress || !_.isString(rootAddress)) {
       throw new Error('missing required string rootAddress');
     }

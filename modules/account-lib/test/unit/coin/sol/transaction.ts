@@ -1,8 +1,7 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/sol/transaction';
+import { KeyPair, Transaction, TransactionBuilderFactory } from '../../../../src/coin/sol';
 import * as testData from '../../../resources/sol/sol';
-import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/sol';
 import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { register } from '../../../../src';
 
@@ -538,6 +537,51 @@ describe('Sol Transaction', () => {
         ],
         fee: {
           fee: '10000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain create ATA transaction', async function () {
+      const tx = await factory
+        .getAtaInitializationBuilder()
+        .fee({ amount: 5000 })
+        .sender(sender)
+        .nonce(blockHash)
+        .mint('tsol:ORCA')
+        .rentExemptAmount(amount)
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'AssociatedTokenAccountInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '10000',
+        outputs: [
+          {
+            address: '9nEfQqahxpyYP5RPExt9TGssPmV5MxjEw9YjGWmepMAt',
+            amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
           feeRate: 5000,
         },
         memo: undefined,

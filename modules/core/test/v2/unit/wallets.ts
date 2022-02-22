@@ -10,6 +10,7 @@ import { TestBitGo } from '../../lib/test_bitgo';
 import * as sinon from 'sinon';
 import { Wallets } from '../../../src';
 import { TssUtils } from '../../../src/v2/internal/tssUtils';
+import { BlsUtils } from '../../../src/v2/internal/blsUtils';
 
 describe('V2 Wallets:', function () {
   const bitgo = new TestBitGo({ env: 'mock' });
@@ -446,6 +447,65 @@ describe('V2 Wallets:', function () {
         passphrase: 'passphrase',
         userKey: 'user key',
       }).should.be.rejectedWith('TSS cold wallets are not supported at this time');
+    });
+  });
+
+  describe('Generate BLS-DKG wallet:', function() {
+    const eth2 = bitgo.coin('eth2');
+
+    it('should create a new BLS-DKG wallet', async function () {
+      const stubbedKeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+        },
+      };
+      sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/eth2/wallet')
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, eth2);
+
+      await wallets.generateWallet({
+        label: 'blsdkg wallet',
+        passphrase: 'blsdkg password',
+        multisigType: 'blsdkg',
+      });
+
+      walletNock.isDone().should.be.true();
+      sinon.verify();
+    });
+
+    it('should fail to create BLS-DKG wallet with invalid inputs', async function () {
+      const tbtc = bitgo.coin('tbtc');
+      const wallets = new Wallets(bitgo, tbtc);
+
+      await wallets.generateWallet({
+        label: 'blsdkg wallet',
+        passphrase: 'passphrase',
+        multisigType: 'blsdkg',
+      }).should.be.rejectedWith('coin btc does not support BLS-DKG at this time');
+
+      const eth2Wallets = new Wallets(bitgo, eth2);
+      await eth2Wallets.generateWallet({
+        label: 'blsdkg wallet',
+      }).should.be.rejectedWith('cannot generate BLS-DKG keys without passphrase');
+
+      await eth2Wallets.generateWallet({
+        label: 'blsdkg cold wallet',
+        passphrase: 'passphrase',
+        userKey: 'user key',
+      }).should.be.rejectedWith('BLS-DKG cold wallets are not supported at this time');
     });
   });
 

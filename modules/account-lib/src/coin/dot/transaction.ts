@@ -18,8 +18,10 @@ import {
   AddAnonymousProxyArgs,
   BatchArgs,
   WithdrawUnstakedArgs,
+  HexString,
 } from './iface';
 import utils from './utils';
+import { u8aToBuffer } from '@polkadot/util';
 
 export class Transaction extends BaseTransaction {
   protected _dotTransaction: UnsignedTransaction;
@@ -36,14 +38,15 @@ export class Transaction extends BaseTransaction {
   canSign({ key }: BaseKey): boolean {
     const kp = new KeyPair({ prv: key });
     const addr = kp.getAddress();
-    if (addr === this._sender) {
-      return true;
-    }
-    return false;
+    return addr === this._sender;
   }
 
-  /** @inheritdoc */
-  async sign(keyPair: KeyPair): Promise<void> {
+  /**
+   * Sign a polkadot transaction and update the transaction hex
+   *
+   * @param {KeyPair} keyPair - ed signature
+   */
+  sign(keyPair: KeyPair): void {
     if (!this._dotTransaction) {
       throw new InvalidTransactionError('No transaction data to sign');
     }
@@ -64,6 +67,8 @@ export class Transaction extends BaseTransaction {
       registry: this._registry,
     });
 
+    // get signature from signed txHex generated above
+    this._signatures = [utils.recoverSignatureFromRawTx(txHex, { registry: this._registry })];
     this._signedTransaction = txHex;
   }
 
@@ -352,8 +357,40 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Constructs a signed payload using construct.signTx
+   * This method will be called during the build step if a TSS signature
+   * is added and will set the signTransaction which is the txHex that will be broadcasted
+   * As well as add the signature used to sign to the signature array in hex format
+   *
+   * @param {Buffer} signature The signature to be added to a dot transaction
+   */
+  constructSignedPayload(signature: Buffer): void {
+    // 0x00 means its an ED25519 signature
+    const edSignature = `0x00${signature.toString('hex')}` as HexString;
+
+    try {
+      this._signedTransaction = construct.signedTx(this._dotTransaction, edSignature, {
+        registry: this._registry,
+        metadataRpc: this._dotTransaction.metadataRpc,
+      });
+    } catch (e) {
+      throw new SigningError(`Unable to sign dot transaction with signature ${edSignature} ` + e);
+    }
+
+    this._signatures = [signature.toString('hex')];
+  }
+
   setTransaction(tx: UnsignedTransaction): void {
     this._dotTransaction = tx;
+  }
+
+  /** @inheritdoc **/
+  get signablePayload(): Buffer {
+    const extrinsicPayload = this._registry.createType('ExtrinsicPayload', this._dotTransaction, {
+      version: this._dotTransaction.version,
+    });
+    return u8aToBuffer(extrinsicPayload.toU8a({ method: true }));
   }
 
   /**

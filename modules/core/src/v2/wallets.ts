@@ -27,7 +27,8 @@ export interface GetWalletOptions {
   id?: string;
 }
 
-export interface GenerateTssWalletOptions {
+export interface GenerateMpcWalletOptions {
+  multisigType: 'onchain' | 'tss' | 'blsdkg';
   label: string;
   passphrase: string;
 }
@@ -53,7 +54,7 @@ export interface GenerateWalletOptions {
   };
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
-  multisigType?: 'onchain' | 'tss';
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
 }
 
 export interface GetWalletByAddressOptions {
@@ -90,6 +91,7 @@ export interface AddWalletOptions {
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
   walletVersion?: number;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
 }
 
 export interface ListWalletOptions extends PaginationOptions {
@@ -247,6 +249,10 @@ export class Wallets {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
 
+    if (params.multisigType) {
+      walletParams.multisigType = params.multisigType;
+    }
+
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result();
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -273,7 +279,7 @@ export class Wallets {
    * @param params.gasPrice
    * @param params.disableKRSEmail
    * @param params.walletVersion
-   * @param params.multisigType optional multisig type, 'onchain' or 'tss'; if absent, we will defer to the coin's default type
+   * @param params.multisigType optional multisig type, 'onchain' or 'tss' or 'blsdkg'; if absent, we will defer to the coin's default type
    * @returns {*}
    */
   async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
@@ -301,7 +307,24 @@ export class Wallets {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
       }
 
-      return this.generateTssWallet({ label, passphrase: passphrase! });
+      return this.generateMpcWallet({ multisigType: 'tss', label, passphrase: passphrase! });
+    }
+
+    const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
+    if (isBlsDkg) {
+      if (!canEncrypt) {
+        throw new Error('cannot generate BLS-DKG keys without passphrase');
+      }
+
+      if (isCold) {
+        throw new Error('BLS-DKG cold wallets are not supported at this time');
+      }
+
+      if (!this.baseCoin.supportsBlsDkg()) {
+        throw new Error(`coin ${this.baseCoin.getFamily()} does not support BLS-DKG at this time`);
+      }
+
+      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase: passphrase! });
     }
 
     const walletParams: SupplementGenerateWalletOptions = {
@@ -706,11 +729,11 @@ export class Wallets {
   }
 
   /**
-   * Generates a TSS Wallet.
+   * Generates a TSS or BLS-DKG Wallet.
    * @param params
    * @private
    */
-  private async generateTssWallet(params: GenerateTssWalletOptions): Promise<WalletWithKeychains> {
+  private async generateMpcWallet(params: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
@@ -720,12 +743,14 @@ export class Wallets {
       n: 3,
       keys: [],
       isCold: false,
-      multisigType: 'tss',
+      multisigType: params.multisigType,
     };
 
-    // Create TSS Keychains
+    // Create MPC Keychains
 
-    const keychains = await this.baseCoin.keychains().createTss({ passphrase: params.passphrase });
+    const keychains = await this.baseCoin
+      .keychains()
+      .createMpc({ multisigType: params.multisigType, passphrase: params.passphrase });
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
 

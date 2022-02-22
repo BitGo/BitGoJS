@@ -2,12 +2,19 @@ import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseTransactionBuilder, TransactionType, Interface } from '../baseCoin';
 import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey, FeeOptions, SequenceId, ValidityWindow } from '../baseCoin/iface';
+import {
+  BaseAddress,
+  BaseKey,
+  FeeOptions,
+  SequenceId,
+  ValidityWindow,
+  PublicKey as BasePublicKey,
+} from '../baseCoin/iface';
 import { AddressValidationError, InvalidFeeError } from './errors';
 import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
@@ -28,6 +35,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _registry: TypeRegistry;
   protected _method?: TxMethod;
   protected __material?: Material;
+  // signatures that will be used to sign a transaction when building
+  // not the same as the _signatures in transaction which is the signature in
+  // string hex format used for validation after we call .build()
+  protected _signatures: Interface.Signature[] = []; // only support single sig for now
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -184,6 +195,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
       this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
+      const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
+      this._transaction.signature.push(edSignature);
     }
     this.validity({ maxDuration: decodedTxn.eraPeriod });
     this.sequenceId({
@@ -207,7 +220,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._keyPair) {
       this.transaction.sign(this._keyPair);
     }
+    if (this._signatures?.length > 0) {
+      // if we have a signature, apply that and update this._signedTransaction
+      this.transaction.constructSignedPayload(this._signatures[0].signature);
+    }
     this._transaction.loadInputsAndOutputs();
+
     return this._transaction;
   }
 
@@ -371,6 +389,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   // endregion
+  /** @inheritdoc */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
+  }
 
   /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {

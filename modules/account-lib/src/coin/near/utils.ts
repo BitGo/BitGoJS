@@ -25,8 +25,9 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
+    const accountIDAddressRegex = '^(([a-z\\d]+[\\-_])*[a-z\\d]+\\.)*([a-z\\d]+[\\-_])*[a-z\\d]+$';
     try {
-      new KeyPair({ pub: key });
+      new RegExp(accountIDAddressRegex).test(key) || new KeyPair({ pub: key });
       return true;
     } catch {
       return false;

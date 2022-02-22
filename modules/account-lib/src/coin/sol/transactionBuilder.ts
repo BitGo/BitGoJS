@@ -14,7 +14,7 @@ import { DurableNonceParams, InstructionParams, Memo, Nonce } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
+  protected _transaction: Transaction;
   private _signatures: Interface.Signature[] = [];
   private _lamportsPerSignature: number;
 

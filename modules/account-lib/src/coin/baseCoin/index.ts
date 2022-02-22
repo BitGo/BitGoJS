@@ -5,6 +5,7 @@ export { BaseUtils } from './baseUtils';
 export { BaseKeyPair } from './baseKeyPair';
 export { Ed25519KeyPair } from './ed25519KeyPair';
 export { TransactionType, StakingOperationTypes } from './enum';
+export { BlsKeyPair } from './blsKeyPair';
 
 import * as Error from './errors';
 import * as Interface from './iface';
