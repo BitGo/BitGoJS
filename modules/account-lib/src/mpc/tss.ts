@@ -34,9 +34,10 @@ import Ed25519Curve from './curves';
 import { sha512 } from 'js-sha512';
 import Shamir from './shamir';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
+import _ from 'lodash';
 
 const convertObjectHexToBuffer = (object: Record<string, any>, keys: string[]) => {
-  const result: any = object;
+  const result: any = _.cloneDeep(object);
   keys.forEach((key) => {
     result[key] = Buffer.from(object[key], 'hex');
   });
@@ -62,14 +63,14 @@ export interface KeyShare {
   yShares: Record<string, YShare>;
 }
 
-interface PShare {
+export interface PShare {
   i: string;
   x: string;
   y: string;
   prefix: string;
 }
 
-interface JShare {
+export interface JShare {
   i: string;
   j: string;
 }
@@ -79,7 +80,7 @@ interface KeyCombine {
   jShares: Record<string, JShare>;
 }
 
-interface XShare {
+export interface XShare {
   i: string;
   y: string;
   x: string;
@@ -87,19 +88,19 @@ interface XShare {
   R: string;
 }
 
-interface RShare {
+export interface RShare {
   i: string;
   j: string;
   r: string;
   R: string;
 }
 
-interface SignShare {
+export interface SignShare {
   xShare: XShare;
   rShares: Record<string, RShare>;
 }
 
-interface GShare {
+export interface GShare {
   i: string;
   y: string;
   gamma: string;

@@ -26,6 +26,7 @@ import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';
 import { KeyIndices } from '.';
+import { TssUtils } from './internal/tssUtils';
 
 const debug = debugLib('bitgo:v2:wallet');
 
@@ -109,6 +110,7 @@ export interface PrebuildTransactionOptions {
   idfSignedTimestamp?: string;
   idfUserId?: string;
   idfVersion?: number;
+  comment?: string;
   [index: string]: unknown;
 }
 
@@ -451,6 +453,7 @@ export interface WalletData {
     backup?: string;
     bitgo?: string;
   };
+  multisigType: 'onchain' | 'tss';
 }
 
 export interface RecoverTokenOptions {
@@ -500,16 +503,31 @@ export interface DownloadKeycardOptions {
   backupKeyID?: string;
 }
 
+// #region TSS interfaces
+
+interface TSSSendManyOptions extends SendManyOptions {
+  reqId: RequestTracer;
+  intentType: string;
+  recipients: {
+    address: string;
+    amount: string | number;
+  }[];
+}
+
+// #endregion
+
 export class Wallet {
   public readonly bitgo: BitGo;
   public readonly baseCoin: BaseCoin;
   private _wallet: WalletData;
   private readonly _permissions?: string[];
+  private tssUtils: TssUtils;
 
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this._wallet = walletData;
+    this.tssUtils = new TssUtils(this.bitgo, this.baseCoin, this);
     const userId = _.get(bitgo, '_user.id');
     if (_.isString(userId)) {
       const userDetails = _.find(walletData.users, { user: userId });
@@ -2244,6 +2262,7 @@ export class Wallet {
     debug('sendMany called');
     const reqId = params.reqId || new RequestTracer();
     params.reqId = reqId;
+    this.bitgo.setRequestTracer(reqId);
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
       params.recipients.map(function (recipient) {
@@ -2256,38 +2275,42 @@ export class Wallet {
         }
       });
     }
+    if (this._wallet.multisigType !== 'tss') {
+      const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
+      const selectParams = _.pick(params, [
+        'recipients',
+        'numBlocks',
+        'feeRate',
+        'maxFeeRate',
+        'minConfirms',
+        'enforceMinConfirmsForChange',
+        'targetWalletUnspents',
+        'message',
+        'minValue',
+        'maxValue',
+        'sequenceId',
+        'lastLedgerSequence',
+        'ledgerSequenceDelta',
+        'gasPrice',
+        'noSplitChange',
+        'unspents',
+        'comment',
+        'otp',
+        'changeAddress',
+        'instant',
+        'memo',
+        'type',
+        'trustlines',
+        'transferId',
+        'stakingOptions',
+      ]);
+      const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
-    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
-    const selectParams = _.pick(params, [
-      'recipients',
-      'numBlocks',
-      'feeRate',
-      'maxFeeRate',
-      'minConfirms',
-      'enforceMinConfirmsForChange',
-      'targetWalletUnspents',
-      'message',
-      'minValue',
-      'maxValue',
-      'sequenceId',
-      'lastLedgerSequence',
-      'ledgerSequenceDelta',
-      'gasPrice',
-      'noSplitChange',
-      'unspents',
-      'comment',
-      'otp',
-      'changeAddress',
-      'instant',
-      'memo',
-      'type',
-      'trustlines',
-      'transferId',
-      'stakingOptions',
-    ]);
-    const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-    this.bitgo.setRequestTracer(reqId);
-    return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
+      return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
+    } else {
+      const tssParams = _.assign(params, { intentType: 'payment' }) as TSSSendManyOptions;
+      return this.sendManyTSS(tssParams);
+    }
   }
 
   /**
@@ -2656,4 +2679,24 @@ export class Wallet {
       };
     }
   }
+
+  // #region TSS
+
+  /**
+   * Builds, sign and send a transaction using TSS keys
+   *
+   * @param {TSSSendManyOptions} params - parameters to build and sign the tx
+   * @returns {Promise<any>}
+   */
+  private async sendManyTSS(params: TSSSendManyOptions): Promise<any> {
+    // improve validations
+    if (_.isNil(params.walletPassphrase)) {
+      throw new Error('Missing wallet passphrase');
+    }
+
+    const unsignedTx = await this.tssUtils.prebuildTxWithIntent(params);
+
+    return this.tssUtils.signAndSendTxRequest(unsignedTx, params.walletPassphrase, params.reqId);
+  }
+  // #endregion
 }
