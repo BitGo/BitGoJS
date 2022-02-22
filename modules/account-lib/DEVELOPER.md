@@ -77,7 +77,7 @@ code and stick them in `resources/`. See
 To run the test suite locally:
 
 ```
-npm test
+yarn test
 ```
 
 ## Coding Norms & Expectations
