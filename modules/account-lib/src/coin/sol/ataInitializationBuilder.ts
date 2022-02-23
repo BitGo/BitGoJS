@@ -15,6 +15,7 @@ import { AtaInitializationTransaction } from './ataInitializationTransaction';
 export class AtaInitializationBuilder extends TransactionBuilder {
   private _mint: string;
   private _rentExemptAmount: string;
+  protected _transaction: AtaInitializationTransaction;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -106,7 +107,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
       },
     };
     this._instructionsData = [ataInitData];
-    (this.transaction as AtaInitializationTransaction).tokenAccountRentExemptAmount = this._rentExemptAmount;
+    this._transaction.tokenAccountRentExemptAmount = this._rentExemptAmount;
     return await super.buildImplementation();
   }
 }
