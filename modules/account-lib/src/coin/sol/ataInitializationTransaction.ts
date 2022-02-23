@@ -6,8 +6,8 @@ import { InstructionBuilderTypes } from './constants';
 import { getSolTokenFromAddress } from './utils';
 import { AtaInit, Memo, TransactionExplanation } from './iface';
 import BigNumber from 'bignumber.js';
+import { NotSupported } from '../baseCoin/errors';
 
-const UNSUPPORTED_TOKEN_NAME = 'UNSUPPORTED_TOKEN';
 const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 
 export class AtaInitializationTransaction extends Transaction {
@@ -37,16 +37,20 @@ export class AtaInitializationTransaction extends Transaction {
     for (const instruction of instructionParams) {
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
         const token = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
-        const tokenName = token ? token.name : UNSUPPORTED_TOKEN_NAME;
+        if (!token) {
+          throw new NotSupported(
+            'Invalid transaction, token mint address not supported: ' + instruction.params.mintAddress,
+          );
+        }
         inputs.push({
           address: instruction.params.ownerAddress,
           value: this.tokenAccountRentExemptAmount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
-          coin: tokenName,
+          coin: token.name,
         });
         outputs.push({
           address: instruction.params.ataAddress,
           value: this.tokenAccountRentExemptAmount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
-          coin: tokenName,
+          coin: token.name,
         });
       }
     }
