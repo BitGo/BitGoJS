@@ -6,10 +6,6 @@ declare module 'bitcoinjs-lib/src/bufferutils' {
   export * from 'bitcoinjs-lib/types/bufferutils';
 }
 
-declare module 'bitcoinjs-lib/src/classify' {
-  export * from 'bitcoinjs-lib/types/classify';
-}
-
 declare module 'bitcoinjs-lib/src/script_signature' {
   export * from 'bitcoinjs-lib/types/script_signature';
 }
