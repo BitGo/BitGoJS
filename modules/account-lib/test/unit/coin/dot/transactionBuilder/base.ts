@@ -33,10 +33,6 @@ class StubTransactionBuilder extends TransactionBuilder {
     return this._sender;
   }
 
-  getBlockNumber(): number {
-    return this._blockNumber;
-  }
-
   getReferenceBlock(): string {
     return this._referenceBlock;
   }
@@ -85,8 +81,7 @@ describe('Dot Transfer Builder', () => {
   const receiver = accounts.account2;
 
   beforeEach(() => {
-    const config = buildTestConfig();
-    builder = new StubTransactionBuilder(config).material(utils.getMaterial(config));
+    builder = new StubTransactionBuilder(buildTestConfig());
   });
 
   describe('setter validation', () => {
@@ -144,6 +139,7 @@ describe('Dot Transfer Builder', () => {
   describe('build base transaction', () => {
     it('should build validate base fields', async () => {
       builder
+        .material(utils.getMaterial(buildTestConfig()))
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -181,9 +177,8 @@ describe('Dot Transfer Builder', () => {
   });
 
   describe('add signature', () => {
-    const factory = register('tdot', TransactionBuilderFactory);
-
     it('should add a signature to transaction', async () => {
+      const factory = register('tdot', TransactionBuilderFactory);
       const transferBuilder = factory
         .getTransferBuilder()
         .amount('90034235235322')
@@ -229,8 +224,11 @@ describe('Dot Transfer Builder', () => {
         .build();
       rebuiltTransaction2.signature.should.deepEqual(signedTransaction2.signature);
     });
+  });
 
+  describe('add TSS signature', function () {
     it('should add TSS signature', async () => {
+      const factory = register('tdot', TransactionBuilderFactory);
       const MPC = await Eddsa();
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);

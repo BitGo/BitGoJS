@@ -7,6 +7,7 @@ import { BatchCallObject, BatchArgs, MethodNames } from './iface';
 import { BuildTransactionError, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { BatchTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
+import { ValidationResult } from 'joi';
 
 export class BatchTransactionBuilder extends TransactionBuilder {
   protected _calls: string[];
@@ -122,7 +123,7 @@ export class BatchTransactionBuilder extends TransactionBuilder {
     }
   }
 
-  private validateBatchTransactionFields(calls: (string | BatchCallObject)[]): any {
+  private validateBatchTransactionFields(calls: (string | BatchCallObject)[]): ValidationResult {
     return BatchTransactionSchema.validate({
       calls,
     });

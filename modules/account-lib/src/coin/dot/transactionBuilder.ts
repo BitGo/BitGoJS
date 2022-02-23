@@ -20,7 +20,7 @@ import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
-import { default as utils } from './utils';
+import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;

@@ -1,6 +1,6 @@
 import should from 'should';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { register } from '../../../../../src/index';
+import { register } from '../../../../../src';
 import {
   TransactionBuilderFactory,
   TransferBuilder,
@@ -20,9 +20,22 @@ class StubTransactionBuilderFactory extends TransactionBuilderFactory {
   }
 }
 
+function memPrint(str: string) {
+  const formatMemoryUsage = (data: number) => `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
+  const memoryData = process.memoryUsage();
+  const memoryUsage = {
+    rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
+    heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
+    heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
+    external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
+    test: `${str} => The test we are in`,
+  };
+  console.log(memoryUsage);
+}
+
 // TODO: BG-43197
-xdescribe('dot Transaction Builder Factory', () => {
-  const factory = register('tdot', StubTransactionBuilderFactory).material(materialData as Material);
+xdescribe('dot Transaction Builder Factory', async () => {
+  const factory = register('tdot', StubTransactionBuilderFactory);
   const sender = accounts.account1;
   const sender2 = accounts.account3;
 
@@ -33,7 +46,8 @@ xdescribe('dot Transaction Builder Factory', () => {
     { type: 'unstake', builder: UnstakeBuilder },
   ].forEach((txn) => {
     it(`should parse an unsigned ${txn.type} txn and return a ${txn.type} builder`, async () => {
-      const builder = factory.from(rawTx[txn.type].unsigned);
+      memPrint(`should parse an unsigned ${txn.type} txn and return a ${txn.type} builder`);
+      const builder = factory.material(materialData as Material).from(rawTx[txn.type].unsigned);
 
       should(builder).instanceOf(txn.builder);
 
@@ -46,7 +60,7 @@ xdescribe('dot Transaction Builder Factory', () => {
     });
 
     it(`should parse a signed ${txn.type} txn and return a ${txn.type} builder`, async () => {
-      const builder = factory.from(rawTx[txn.type].signed);
+      const builder = factory.material(materialData as Material).from(rawTx[txn.type].signed);
 
       should(builder).instanceOf(txn.builder);
 
@@ -58,10 +72,11 @@ xdescribe('dot Transaction Builder Factory', () => {
       const tx = await builder.build();
       should.equal(tx.toBroadcastFormat(), rawTx[txn.type].signed);
     });
+    // memPrint();
   });
 
   it('should parse an unsigned proxy txn and return a proxy builder', async () => {
-    const builder = factory.from(rawTx.proxy.unsigned);
+    const builder = factory.material(materialData as Material).from(rawTx.proxy.unsigned);
     should(builder).instanceOf(TransferBuilder);
     builder
       .validity({ firstValid: 3933 })
@@ -69,10 +84,11 @@ xdescribe('dot Transaction Builder Factory', () => {
       .sender({ address: sender.address });
     const tx = await builder.build();
     should.equal(tx.toBroadcastFormat(), rawTx.proxy.unsigned);
+    memPrint('should parse an unsigned proxy txn and return a proxy builder');
   });
 
   it('should parse a signed proxy txn and return a proxy builder', async () => {
-    const builder = factory.from(rawTx.proxy.signed);
+    const builder = factory.material(materialData as Material).from(rawTx.proxy.signed);
     should(builder).instanceOf(TransferBuilder);
     builder
       .validity({ firstValid: 3933, maxDuration: 64 })
