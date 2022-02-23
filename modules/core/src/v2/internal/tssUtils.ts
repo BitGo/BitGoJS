@@ -1,14 +1,26 @@
+/**
+ * @prettier
+ */
+
 import * as bs58 from 'bs58';
 import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
-import Eddsa, { KeyShare, JShare, SignShare, PShare, XShare, RShare, GShare } from '@bitgo/account-lib/dist/src/mpc/tss';
+import Eddsa, {
+  KeyShare,
+  JShare,
+  SignShare,
+  PShare,
+  XShare,
+  RShare,
+  GShare,
+} from '@bitgo/account-lib/dist/src/mpc/tss';
 
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychains';
 import { BitGo } from '../../bitgo';
 import { MpcUtils } from './mpcUtils';
-import { KeyIndices, Memo, Wallet } from '..';
-import { RequestTracer } from './util';
+import { Memo, Wallet } from '..';
+import { RequestTracer } from '../internal/util';
 import _ = require('lodash');
 
 // #region Interfaces
@@ -31,7 +43,7 @@ enum ShareKeyPosition {
 }
 
 // complete with more props if neccesary
-interface TxRequest {
+export interface TxRequest {
   txRequestId: string;
   unsignedTxs: {
     serializedTx: string;
@@ -60,12 +72,12 @@ export interface SignatureShareRecord {
 export class TssUtils extends MpcUtils {
   private _wallet?: Wallet;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, wallet?:Wallet) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, wallet?: Wallet) {
     super(bitgo, baseCoin);
     this._wallet = wallet;
   }
 
-  private get wallet() : Wallet {
+  private get wallet(): Wallet {
     if (_.isNil(this._wallet)) {
       throw new Error('Wallet not defined');
     }
@@ -111,7 +123,6 @@ export class TssUtils extends MpcUtils {
         format: 'utf8',
       })
     ).data;
-
 
     const bitgoToUser = {
       i: '1',
@@ -340,24 +351,28 @@ export class TssUtils extends MpcUtils {
   }
 
   /**
-   * Signs and sends the transaction associated to the transaction request
+   * Signs the transaction associated to the transaction request.
    *
-   * @param txRequest - unsigned transaction request
-   * @param walletPassphrase - wallet passphrase used to decrypt user's signing material
+   * @param txRequest - transaction request object or id
+   * @param prv - decrypted private key
    * @param reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signAndSendTxRequest(
-    txRequest: TxRequest,
-    walletPassphrase: string,
-    reqId: RequestTracer
-  ): Promise<any> {
-    const { txRequestId } = txRequest;
+  async signTxRequest(txRequest: string | TxRequest, prv: string, reqId: RequestTracer): Promise<TxRequest> {
+    let txRequestResolved: TxRequest;
+    let txRequestId: string;
 
-    const signablePayload = Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex');
+    if (typeof txRequest === 'string') {
+      txRequestResolved = await this.getTxRequest(txRequest);
+      txRequestId = txRequestResolved.txRequestId;
+    } else {
+      txRequestResolved = txRequest;
+      txRequestId = txRequest.txRequestId;
+    }
 
-    const userPShare = await this.getUserPShare(reqId, walletPassphrase);
+    const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
 
-    const userSignShare = await this.createUserSignShare(signablePayload, userPShare);
+    const userSignShare = await this.createUserSignShare(signablePayload, prv);
 
     await this.offerUserToBitgoRShare(txRequestId, userSignShare);
 
@@ -367,7 +382,7 @@ export class TssUtils extends MpcUtils {
 
     await this.sendUserToBitgoGShare(txRequestId, userToBitGoGShare);
 
-    return this.sendTxRequest(txRequestId);
+    return await this.getTxRequest(txRequestId);
   }
 
   /**
@@ -403,23 +418,10 @@ export class TssUtils extends MpcUtils {
   }
 
   /**
-   * Gets the User PShare from the user Key
-   *
-   * @param {RequestTracer} reqId - request id
-   * @param {String} passphrase - wallet passphrase
-   * @returns {Promise<string>} - the user PShare as a JSON stringified 
-   */
-  async getUserPShare(reqId: RequestTracer, passphrase: string): Promise<string> {
-    const keys = await this.baseCoin.keychains().getKeysForSigning({ wallet: this.wallet, reqId });
-    const userKey = keys[KeyIndices.USER];
-    return this.wallet.getUserPrv({ walletPassphrase: passphrase, key: userKey });
-  }
-
-  /**
    * Creates the User Sign Share containing the User XShare and the User to Bitgo RShare
    *
    * @param {Buffer} signablePayload - the signablePayload as a buffer
-   * @param {String} userPShare - User PShare as a JSON stringified 
+   * @param {String} userPShare - User PShare as a JSON stringified
    * @returns {Promise<SignShare>} - User Sign Share
    */
   async createUserSignShare(signablePayload: Buffer, userPShare: string): Promise<SignShare> {
@@ -458,7 +460,7 @@ export class TssUtils extends MpcUtils {
     if (_.isNil(rShare)) {
       throw new Error('userToBitgo RShare not found');
     }
-    if (rShare.i !== ShareKeyPosition.BITGO || rShare.j !== ShareKeyPosition.USER ) {
+    if (rShare.i !== ShareKeyPosition.BITGO || rShare.j !== ShareKeyPosition.USER) {
       throw new Error('Invalid RShare, is not from User to Bitgo');
     }
     const signatureShare: SignatureShareRecord = {
@@ -470,17 +472,14 @@ export class TssUtils extends MpcUtils {
   }
 
   /**
-   * Gets the Bitgo to User RShare from Bitgo 
+   * Gets the Bitgo to User RShare from Bitgo
    *
    * @param {String} txRequestId - the txRequest Id
-   * @returns {Promise<SignatureShareRecord>} - a Signature Share 
+   * @returns {Promise<SignatureShareRecord>} - a Signature Share
    */
   async getBitgoToUserRShare(txRequestId: string): Promise<SignatureShareRecord> {
     const txRequest = await this.getTxRequest(txRequestId);
-    if (_.isEmpty(txRequest.txRequests)) {
-      throw new Error(`No txRequest found for id: ${txRequestId}`);
-    }
-    const signatureShares = txRequest.txRequests[0].signatureShares;
+    const signatureShares = txRequest.signatureShares;
     if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
       throw new Error(`No signatures shares found for id: ${txRequestId}`);
     }
@@ -496,16 +495,22 @@ export class TssUtils extends MpcUtils {
   }
 
   /**
-   * Gets a Tx Request by id
+   * Gets the latest Tx Request by id
    *
    * @param {String} txRequestId - the txRequest Id
    * @returns {Promise<{ txRequests: TxRequest[] }>}
    */
-  async getTxRequest(txRequestId: string): Promise<{ txRequests: TxRequest[] }> {
-    return this.bitgo
+  async getTxRequest(txRequestId: string): Promise<TxRequest> {
+    const txRequestRes: { txRequests: TxRequest[] } = await this.bitgo
       .get(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
       .query({ txRequestIds: txRequestId, latest: 'true' })
       .result();
+
+    if (txRequestRes.txRequests.length <= 0) {
+      throw new Error(`Unable to find TxRequest with id ${txRequestId}`);
+    }
+
+    return txRequestRes.txRequests[0];
   }
 
   /**
@@ -524,7 +529,7 @@ export class TssUtils extends MpcUtils {
     if (userSignShare.xShare.i !== ShareKeyPosition.USER) {
       throw new Error('Invalid XShare, doesnt belong to the User');
     }
-    if (bitgoToUserRShare.from !== SignatureShareType.BITGO || bitgoToUserRShare.to !== SignatureShareType.USER ) {
+    if (bitgoToUserRShare.from !== SignatureShareType.BITGO || bitgoToUserRShare.to !== SignatureShareType.USER) {
       throw new Error('Invalid RShare, is not from Bitgo to User');
     }
 

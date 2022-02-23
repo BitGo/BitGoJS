@@ -188,6 +188,7 @@ export interface TransactionPrebuild {
   wallet?: Wallet;
   buildParams?: any;
   consolidateId?: string;
+  txRequestId?: string;
 }
 
 export interface AddressCoinSpecific {
@@ -215,7 +216,15 @@ export interface HalfSignedAccountTransaction {
   };
 }
 
-export type SignedTransaction = HalfSignedAccountTransaction | HalfSignedUtxoTransaction | FullySignedTransaction;
+export interface SignedTransactionRequest {
+  txRequestId: string;
+}
+
+export type SignedTransaction =
+  | HalfSignedAccountTransaction
+  | HalfSignedUtxoTransaction
+  | FullySignedTransaction
+  | SignedTransactionRequest;
 
 export abstract class BaseCoin {
   protected readonly bitgo: BitGo;
