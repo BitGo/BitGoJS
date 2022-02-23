@@ -269,24 +269,24 @@ BitGo.prototype.checkFunded = async function () {
   const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
 
   const {
-    tethWallet,
+    gtethWallet,
     tbtcWallet,
     unspentWallet,
     sweep1Wallet,
   }: any = await promiseProps({
-    tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
+    gtethWallet: this.coin('gteth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
     unspentWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
     sweep1Wallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID }),
   });
 
-  const spendableBalance = tethWallet.spendableBalanceString;
+  const spendableBalance = gtethWallet.spendableBalanceString;
 
   let balance = new BigNumber(spendableBalance);
 
   // Check our balance is over 60000 (we spend 50000, add some cushion)
   if (balance.lt(60000)) {
-    throw new Error(`The TETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(`The GTETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
 
   // Check we have enough in the wallet to run test suite
@@ -330,7 +330,7 @@ BitGo.prototype.nockEthWallet = function () {
         permissions: [Object],
       },
     ],
-    coin: 'teth',
+    coin: 'gteth',
     label: 'my test ether wallet',
     m: 2,
     n: 3,
@@ -371,7 +371,7 @@ BitGo.prototype.nockEthWallet = function () {
       address: '0xa7f9ca5c1268b0082db1833d30f33d3cfd4286d8',
       chain: 0,
       index: 701,
-      coin: 'teth',
+      coin: 'gteth',
       lastNonce: 0,
       wallet: '598f606cd8fc24710d2ebadb1d9459bb',
       coinSpecific: {
@@ -385,20 +385,20 @@ BitGo.prototype.nockEthWallet = function () {
     pendingApprovals: [],
   };
 
-  const wallet = new Wallet(this, this.coin('teth'), walletData);
+  const wallet = new Wallet(this, this.coin('gteth'), walletData);
 
   // Nock calls to platform for building transactions and getting user key
   // Should be OK to persist these since they are wallet specific data reads
   nock(this._baseUrl)
     .persist()
     .filteringRequestBody(() => '*')
-    .post(`/api/v2/teth/wallet/${wallet.id()}/tx/build`, '*')
+    .post(`/api/v2/gteth/wallet/${wallet.id()}/tx/build`, '*')
     .reply(200, {
       gasLimit: 500000,
       gasPrice: 20000000000,
       nextContractSequenceId: 101,
     })
-    .get(`/api/v2/teth/key/${wallet.keyIds()[KeyIndices.USER]}`)
+    .get(`/api/v2/gteth/key/${wallet.keyIds()[KeyIndices.USER]}`)
     .reply(200, {
       id: '598f606cd8fc24710d2ebad89dce86c2',
       users: ['543c11ed356d00cb7600000b98794503'],
@@ -419,7 +419,7 @@ BitGo.prototype.nockEthWallet = function () {
   }
 
   // Nock tokens stuck on the wallet
-  nock('https://api-kovan.etherscan.io')
+  nock('https://api-goerli.etherscan.io')
     .get('/api')
     .query(params)
     .reply(200, { status: '1', message: 'OK', result: '2400' });
