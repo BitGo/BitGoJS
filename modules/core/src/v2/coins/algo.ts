@@ -17,14 +17,37 @@ import {
   SignedTransaction,
   TransactionRecipient,
   SignTransactionOptions as BaseSignTransactionOptions,
+  VerifyAddressOptions,
+  AddressCoinSpecific,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { TokenManagementType } from '../types';
-import { MethodNotImplementedError } from '../../errors';
+import * as errors from '../../errors';
+import { InvalidKey } from '@bitgo/account-lib/dist/src/coin/baseCoin/errors';
+import stellar from 'stellar-sdk';
+
+const SUPPORTED_ADDRESS_VERSION = 1;
+const MSIG_THRESHOLD = 2; // m in m-of-n
+
+export interface AlgoAddressCoinSpecifics extends AddressCoinSpecific {
+  rootAddress: string;
+  bitgoKey: string;
+  bitgoPubKey?: string;
+  addressVersion: number;
+  threshold: number;
+}
+
+export interface VerifyAlgoAddressOptions extends VerifyAddressOptions {
+  chain: number;
+  index: number;
+  coin: string;
+  wallet: string;
+  coinSpecific: AlgoAddressCoinSpecifics;
+}
 
 export interface AlgoTransactionExplanation extends TransactionExplanation {
   memo?: string;
-  type?: string;
+  type?: string | number;
   voteKey?: string;
   selectionKey?: string;
   voteFirst?: number;
@@ -123,7 +146,7 @@ export class Algo extends BaseCoin {
     return 'Algorand';
   }
 
-  getBaseFactor(): any {
+  getBaseFactor(): number | string {
     return 1e6;
   }
 
@@ -228,7 +251,7 @@ export class Algo extends BaseCoin {
     const factory = accountLib.getBuilder(this.getBaseChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
 
     const txBuilder = factory.from(txHex);
-    const tx = (await txBuilder.build()) as any;
+    const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
     if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
@@ -276,7 +299,7 @@ export class Algo extends BaseCoin {
         changeOutputs: [],
         fee: txJson.fee,
         memo: txJson.note,
-        type: tx.type,
+        type: tx.type.toString(),
         operations,
       };
 
@@ -414,7 +437,7 @@ export class Algo extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @returns {Bluebird<SignedTransaction>}
+   * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, signers, prv, isHalfSigned, numberSigners } = this.verifySignTransactionParams(params);
@@ -423,7 +446,7 @@ export class Algo extends BaseCoin {
     txBuilder.numberOfRequiredSigners(numberSigners);
     txBuilder.sign({ key: prv });
     txBuilder.setSigners(signers);
-    const transaction: any = await txBuilder.build();
+    const transaction = await txBuilder.build();
     if (!transaction) {
       throw new Error('Invalid transaction');
     }
@@ -441,8 +464,37 @@ export class Algo extends BaseCoin {
     return {};
   }
 
-  isWalletAddress(): boolean {
-    throw new MethodNotImplementedError();
+  /**
+   * Check if address can be used to send funds.
+   *
+   * @param params.address address to validate
+   * @param params.keychains public keys to generate the wallet
+   */
+  isWalletAddress(params: VerifyAlgoAddressOptions): boolean {
+    const {
+      address,
+      keychains,
+      coinSpecific: { bitgoPubKey },
+    } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new errors.InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    if (!keychains) {
+      throw new Error('missing required param keychains');
+    }
+
+    const effectiveKeychain = bitgoPubKey ? keychains.slice(0, -1).concat([{ pub: bitgoPubKey }]) : keychains;
+    const pubKeys = effectiveKeychain.map((key) => this.stellarAddressToAlgoAddress(key.pub));
+
+    if (!pubKeys.every((pubKey) => this.isValidPub(pubKey))) {
+      throw new InvalidKey('invalid public key');
+    }
+
+    const rootAddress = accountLib.Algo.algoUtils.multisigAddress(SUPPORTED_ADDRESS_VERSION, MSIG_THRESHOLD, pubKeys);
+
+    return rootAddress === address;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
@@ -453,7 +505,38 @@ export class Algo extends BaseCoin {
     return accountLib.Algo.algoUtils.decodeAlgoTxn(txn);
   }
 
-  getAddressFromPublicKey(Pubkey: Uint8Array): string {
-    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(Pubkey);
+  getAddressFromPublicKey(pubKey: Uint8Array): string {
+    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(pubKey);
+  }
+
+  /**
+   * Stellar and Algorand both use keys on the ed25519 curve, but use different encodings.
+   * As the HSM doesn't have explicit support to create Algorand addresses, we use the Stellar
+   * keys and re-encode them to the Algorand encoding.
+   *
+   * This method should only be used when creating Algorand custodial wallets reusing Stellar keys.
+   *
+   * @param {string} addressOrPubKey a Stellar pubkey or Algorand address
+   * @return {*}
+   */
+  private stellarAddressToAlgoAddress(addressOrPubKey: string): string {
+    if (this.isValidAddress(addressOrPubKey)) {
+      // we have an Algorand address
+      return addressOrPubKey;
+    }
+
+    if (!stellar.StrKey.isValidEd25519PublicKey(addressOrPubKey)) {
+      throw new errors.UnexpectedAddressError('Neither an Algorand address nor a stellar pubkey.');
+    }
+
+    // we have a stellar key
+    const stellarPub = stellar.StrKey.decodeEd25519PublicKey(addressOrPubKey);
+    const algoAddress = accountLib.Algo.algoUtils.encodeAddress(stellarPub);
+
+    if (!this.isValidAddress(algoAddress)) {
+      throw new errors.UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via pubkey.');
+    }
+
+    return algoAddress;
   }
 }

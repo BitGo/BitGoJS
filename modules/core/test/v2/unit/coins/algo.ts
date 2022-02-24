@@ -24,7 +24,7 @@ describe('ALGO:', function () {
     it('Does not have a fee', async () => {
       await basecoin.explainTransaction({
         params: {
-            txHex: 'Some Valid Hex',
+          txHex: 'Some Valid Hex',
         },
       }).should.be.rejectedWith('missing explain tx parameters');
     });
