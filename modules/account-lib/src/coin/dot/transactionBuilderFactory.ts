@@ -10,9 +10,11 @@ import { Material, MethodNames } from './iface';
 import utils from './utils';
 import { BatchTransactionBuilder, UnstakeBuilder, WithdrawUnstakedBuilder } from '.';
 import { UnnominateBuilder } from './unnominateBuilder';
+import { Transaction } from "./transaction";
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _material: Material;
+  private decodedTxn: any;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -63,19 +65,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   private getBuilder(rawTxn: string): TransactionBuilder {
-    const registry = getRegistry({
-      chainName: this._material.chainName,
-      specName: this._material.specName,
-      specVersion: this._material.specVersion,
-      metadataRpc: this._material.metadata,
-    });
-
-    const decodedTxn = decode(rawTxn, {
-      metadataRpc: this._material.metadata,
-      registry: registry,
-    });
-
-    const methodName = decodedTxn.method?.name;
+    const transaction = parseTransaction(rawTxn);
+    const methodName = this.decodedTxn.method?.name;
     if (methodName === MethodNames.TransferKeepAlive || methodName === MethodNames.Proxy) {
       return this.getTransferBuilder();
     } else if (methodName === MethodNames.Bond) {
@@ -89,5 +80,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
+  }
+
+
+  /** Parse the transaction from a raw transaction
+   *
+   * @param {string} rawTransaction - the raw tx
+   * @returns {Transaction} parsed transaction
+   */
+  private parseTransaction(rawTransaction: string): Transaction {
+    const registry = getRegistry({
+      chainName: this._material.chainName,
+      specName: this._material.specName,
+      specVersion: this._material.specVersion,
+      metadataRpc: this._material.metadata,
+    });
+    const tx = new Transaction(this._coinConfig).registry(registry);
+    tx.fromRawTransaction(rawTransaction);
+    return tx;
   }
 }

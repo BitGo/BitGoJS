@@ -194,9 +194,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (utils.isSigningPayload(decodedTxn)) {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
-      this.sender({ address: utils.decodeDotAddress(decodedTxn.address) });
+      const keypair = utils.decodeDotAddressToKeyPair(decodedTxn.address);
+      this.sender({ address: keypair.getAddress() });
       const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
-      this._transaction.signature.push(edSignature);
+      this.addSignature(keypair.getKeys(), Buffer.from(edSignature, 'hex'));
     }
     this.validity({ maxDuration: decodedTxn.eraPeriod });
     this.sequenceId({

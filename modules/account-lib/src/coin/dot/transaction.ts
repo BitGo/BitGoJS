@@ -1,30 +1,36 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError, SigningError, ParseTransactionError } from '../baseCoin/errors';
-import { construct, decode } from '@substrate/txwrapper-polkadot';
-import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import Keyring, { decodeAddress } from '@polkadot/keyring';
-import { KeyPair } from './keyPair';
+import {BaseCoin as CoinConfig} from '@bitgo/statics';
+import {BaseTransaction, TransactionType} from '../baseCoin';
+import {BaseKey, TransactionRecipient} from '../baseCoin/iface';
+import {InvalidTransactionError, NotSupported, ParseTransactionError, SigningError} from '../baseCoin/errors';
+import {construct, decode} from '@substrate/txwrapper-polkadot';
+import {UnsignedTransaction} from '@substrate/txwrapper-core';
+import {TypeRegistry} from '@substrate/txwrapper-core/lib/types';
+import Keyring, {decodeAddress} from '@polkadot/keyring';
+import {KeyPair} from './keyPair';
 import {
-  TxData,
+  AddAnonymousProxyArgs,
+  AddProxyArgs,
+  BatchArgs,
   DecodedTx,
+  HexString,
+  MethodNames,
   StakeArgs,
   StakeArgsPayeeRaw,
-  AddProxyArgs,
-  UnstakeArgs,
   TransactionExplanation,
-  AddAnonymousProxyArgs,
-  BatchArgs,
+  TxData,
+  UnstakeArgs,
   WithdrawUnstakedArgs,
-  HexString,
 } from './iface';
 import utils from './utils';
-import { u8aToBuffer } from '@polkadot/util';
+import {hexToU8a, u8aToBuffer} from '@polkadot/util';
+import {createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload} from "@polkadot/types";
+import {EXTRINSIC_VERSION} from "@polkadot/types/extrinsic/v4/Extrinsic";
+import {getTransactionType} from "../sol/utils";
+import {TxInfo, TxMethod} from "@substrate/txwrapper-core/lib/types/method";
 
 export class Transaction extends BaseTransaction {
-  protected _dotTransaction: UnsignedTransaction;
+  protected _dotTansaction: UnsignedTransaction;
+  protected _txInfo: TxInfo;
   private _signedTransaction?: string;
   private _registry: TypeRegistry;
   private _chainName: string;
@@ -70,6 +76,35 @@ export class Transaction extends BaseTransaction {
     // get signature from signed txHex generated above
     this._signatures = [utils.recoverSignatureFromRawTx(txHex, { registry: this._registry })];
     this._signedTransaction = txHex;
+  }
+
+  /**
+   * Adds the signature to the DOT Transaction
+   * @param {string} signature
+   */
+  addSignature(signature: string): void {
+    this._signedTransaction = utils.serializeSignedTransaction(
+      this._dotTransaction,
+      signature,
+      this._dotTransaction.metadataRpc,
+      this._registry,
+    );
+  }
+
+  /**
+   * Verifies the signature on a given message
+   * @param {string} signature the signature to verify
+   * TODO STLX-13276: exhaustive verifySignature testing is required
+   */
+  verifySignature(signature: string) {
+    if (!this._dotTransaction) {
+      throw new InvalidTransactionError('No transaction data to sign');
+    }
+    const signingPayload = construct.signingPayload(this._dotTransaction, {
+      registry: this._registry,
+    });
+    const result = utils.verifySignature(signingPayload, signature, this._sender);
+    return result;
   }
 
   registry(registry: TypeRegistry): void {
@@ -400,5 +435,72 @@ export class Transaction extends BaseTransaction {
    */
   transactionType(transactionType: TransactionType): void {
     this._type = transactionType;
+  }
+
+
+  /**
+   * Sets this transaction payload
+   *
+   * @param rawTransaction
+   */
+  fromRawTransaction(rawTransaction: string): void {
+     try {
+      const payload: GenericExtrinsicPayload = createTypeUnsafe(this._registry, 'ExtrinsicPayload', [
+        rawTransaction,
+        { version: EXTRINSIC_VERSION },
+      ]);
+
+       const methodCall: GenericCall = this._registry.createType('Call', payload.method);
+       const method: TxMethod = methodCall.toJSON();
+       this._txInfo =  {
+         blockHash: payload.blockHash.toHex(),
+         eraPeriod: payload.era.asMortalEra.period.toNumber(),
+         genesisHash: payload.genesisHash.toHex(),
+         method,
+         nonce: payload.nonce.toNumber(),
+         specVersion: payload.specVersion.toNumber(),
+         tip: payload.tip.toNumber(),
+         transactionVersion: payload.transactionVersion.toNumber(),
+       };
+    } catch (e) {
+      const extrinsic: GenericExtrinsic = this._registry.createType('Extrinsic', hexToU8a(rawTransaction), {
+        isSigned: true,
+      });
+       const methodCall: GenericCall = this._registry.createType('Call', extrinsic.method);
+       const method: TxMethod = methodCall.toJSON();
+       this._txInfo = {
+         address: extrinsic.signer.toString(),
+         eraPeriod: extrinsic.era.asMortalEra.period.toNumber(),
+         method,
+         nonce: extrinsic.nonce.toNumber(),
+         tip: extrinsic.tip.toNumber(),
+       };
+    }
+    this._type = getTransactionType(this._txInfo.method.name);
+
+    this.loadInputsAndOutputs();
+  }
+
+  /**
+   * Returns the transaction Type based on the  transaction instructions.
+   * Wallet initialization, Transfer and Staking transactions are supported.
+   *
+   * @param {SolTransaction} transaction - the solana transaction
+   * @returns {TransactionType} - the type of transaction
+   */
+   getTransactionType(methodName: string): TransactionType {
+    if (methodName === MethodNames.TransferKeepAlive || methodName === MethodNames.Proxy) {
+      return TransactionType.Send;
+    } else if (methodName === MethodNames.Bond) {
+      return TransactionType.StakingActivate;
+    } else if (methodName === MethodNames.AddProxy) {
+      return TransactionType.AddressInitialization;
+    } else if (methodName === MethodNames.Unbond) {
+      return TransactionType.StakingUnlock;
+    } else if (methodName === MethodNames.Chill) {
+      return TransactionType.StakingUnvote;
+    } else {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
   }
 }
