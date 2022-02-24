@@ -26,7 +26,6 @@ describe('Dot Batch Transaction Builder', () => {
     });
   });
 
-  // TODO: BG-43197
   describe('build batch transaction', function () {
     const sender = accounts.account1;
     const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
