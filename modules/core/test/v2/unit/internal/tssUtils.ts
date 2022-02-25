@@ -24,7 +24,7 @@ describe('TSS Utils:', async function () {
   const validUserPShare = '{"i":"1","y":"c4f36234dbcb78ba7efee44771692a71f1d366c70b99656922168590a63c96c2","x":"5d462225ce32327c1ad0c9b1c2263bdbdb154236fb4b3445f199f05b135d010b","prefix":"77e5611f781363b4e303bbe20bed8c62028d88ba22b47af9e77e6b134c373009"}';
   const txRequest = {
     txRequestId: 'randomId',
-    unsignedTxs: [{ signableHex: 'randomhex', serializedTx: 'randomhex2' }],
+    unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2' }],
     signatureShares: [
       { from: 'bitgo',
         to: 'user',
@@ -214,7 +214,7 @@ describe('TSS Utils:', async function () {
       txRequestId,
       unsignedTxs: [
         {
-          serializedTx: 'ababfefe',
+          serializedTxHex: 'ababfefe',
           signableHex: 'deadbeef',
         }
       ]

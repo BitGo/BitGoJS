@@ -46,7 +46,7 @@ enum ShareKeyPosition {
 export interface TxRequest {
   txRequestId: string;
   unsignedTxs: {
-    serializedTx: string;
+    serializedTxHex: string;
     signableHex: string;
   }[];
   signatureShares?: SignatureShareRecord[];
@@ -413,7 +413,6 @@ export class TssUtils extends MpcUtils {
       .send(whitelistedParams)
       .result()) as TxRequest;
 
-    // TODO(STLX-13411): Implement verify transaction
     return unsignedTx;
   }
 
