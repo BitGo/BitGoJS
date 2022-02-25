@@ -1,13 +1,14 @@
-import { TxOutput, Transaction, TransactionBuilder } from 'bitcoinjs-lib';
+import { TxOutput, Transaction } from 'bitcoinjs-lib';
 // eslint-disable-next-line
 import * as bitcoinjs from 'bitcoinjs-lib';
 import { Network } from '..';
+import { Signer, TransactionBuilder } from '../transaction_builder';
 import { UtxoTransaction } from './UtxoTransaction';
 
 export interface TxbSignArg {
   prevOutScriptType: string;
   vin: number;
-  keyPair: bitcoinjs.ECPair.Signer;
+  keyPair: Signer;
   redeemScript?: Buffer;
   hashType?: number;
   witnessValue?: number;
@@ -18,7 +19,7 @@ export interface TxbSignArg {
 export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction> extends TransactionBuilder {
   constructor(network: Network, txb?: TransactionBuilder, prevOutputs?: TxOutput[]) {
     super();
-    this.network = network as bitcoinjs.Network;
+    this.network = network;
 
     (this as any).__TX = this.createInitialTransaction(network, (txb as any)?.__TX);
 
@@ -64,7 +65,7 @@ export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction>
 
   sign(
     signParams: number | TxbSignArg,
-    keyPair?: bitcoinjs.ECPair.Signer,
+    keyPair?: Signer,
     redeemScript?: Buffer,
     hashType?: number,
     witnessValue?: number,

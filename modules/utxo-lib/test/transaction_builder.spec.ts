@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import { beforeEach, describe, it } from 'mocha';
-import { ECPair, payments, script as bscript, Transaction, TransactionBuilder } from '..';
-import { address as baddress, networks as NETWORKS } from 'bitcoinjs-lib';
+import { networks as NETWORKS, payments, script as bscript, Transaction, TransactionBuilder } from '..';
+import { address as baddress } from 'bitcoinjs-lib';
+import { ECPair } from '../src/noble_ecc';
 
 console.warn = (): void => {
   return;
@@ -393,6 +394,9 @@ for (const useOldSignArgs of [false, true]) {
           }).publicKey,
           sign: (): Buffer => {
             return Buffer.alloc(64, 0x5f);
+          },
+          signSchnorr: (): Buffer => {
+            return Buffer.alloc(64, 0x4f);
           },
         };
 

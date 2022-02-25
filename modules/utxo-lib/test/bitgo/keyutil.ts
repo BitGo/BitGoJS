@@ -1,8 +1,9 @@
 const assert = require('assert');
 const crypto = require('crypto');
 
-import { ECPair } from 'bitcoinjs-lib';
+import { ECPairInterface } from 'ecpair';
 import { privateKeyBufferFromECPair, privateKeyBufferToECPair } from '../../src/bitgo/keyutil';
+import { ECPair } from '../../src/noble_ecc';
 
 describe('privateKeyBufferFromECPair', function () {
   it('pads short private keys', function () {
@@ -25,7 +26,7 @@ describe('privateKeyBufferFromECPair', function () {
 
   it('throws if passed value is not ecpair', function () {
     assert.throws(function () {
-      privateKeyBufferFromECPair({} as ECPair.ECPairInterface);
+      privateKeyBufferFromECPair({} as ECPairInterface);
     }, new RegExp('invalid argument ecpair'));
   });
 });

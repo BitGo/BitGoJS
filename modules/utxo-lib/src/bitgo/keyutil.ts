@@ -1,5 +1,6 @@
-import { ECPair } from 'bitcoinjs-lib';
+import { ECPairInterface } from 'ecpair';
 import { Network } from '../networks';
+import { ECPair } from '../noble_ecc';
 
 /**
  * Create an ECPair from the raw private key bytes
@@ -7,7 +8,7 @@ import { Network } from '../networks';
  * @param {Object} [network] - Network for the ECPair. Defaults to bitcoin.
  * @return {ECPair}
  */
-export function privateKeyBufferToECPair(buffer: Buffer, network?: Network): ECPair.ECPairInterface {
+export function privateKeyBufferToECPair(buffer: Buffer, network?: Network): ECPairInterface {
   if (!Buffer.isBuffer(buffer) || buffer.length !== 32) {
     throw new Error('invalid private key buffer');
   }
@@ -20,7 +21,7 @@ export function privateKeyBufferToECPair(buffer: Buffer, network?: Network): ECP
  * @param {ECPair} ecPair
  * @return Buffer 32 bytes
  */
-export function privateKeyBufferFromECPair(ecPair: ECPair.ECPairInterface): Buffer {
+export function privateKeyBufferFromECPair(ecPair: ECPairInterface): Buffer {
   if (ecPair.constructor.name !== 'ECPair') {
     throw new TypeError(`invalid argument ecpair`);
   }

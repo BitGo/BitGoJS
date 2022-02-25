@@ -1,9 +1,9 @@
 // [pubKeys[0:n-1] OP_CHECKSIGVERIFY] pubKeys[n-1] OP_CHECKSIG
 
 import { Stack } from '../../';
-import { schnorrBip340 } from '../../';
 import { script as bscript } from '../../';
 import { opcodes } from '../../';
+import { ecc } from '../../noble_ecc';
 
 export function check(script: Buffer | Stack, allowIncomplete?: boolean): boolean {
   const chunks = bscript.decompile(script) as Stack;
@@ -17,7 +17,7 @@ export function check(script: Buffer | Stack, allowIncomplete?: boolean): boolea
   if (allowIncomplete) return true;
 
   const keys = chunks.filter((_, index) => index % 2 === 0) as Buffer[];
-  return keys.every(schnorrBip340.isXOnlyPoint);
+  return keys.every(ecc.isXOnlyPoint);
 }
 check.toJSON = (): string => {
   return 'taproot n-of-n output';

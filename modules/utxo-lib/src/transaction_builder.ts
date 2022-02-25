@@ -1,32 +1,28 @@
+import * as types from 'bitcoinjs-lib/src/types';
 import { address as baddress } from './';
 import * as classify from './classify';
 import { crypto as bcrypto } from './';
-import { ECPair } from './';
-import { Signer } from './';
 import { networks } from './';
 import { Network } from './';
 import { payments } from './';
 import { Payment } from './';
-import { schnorrBip340 } from './';
 import { script as bscript } from './';
 import { opcodes as ops } from './';
 import { taproot } from './';
 import { TxOutput, Transaction } from './';
+import { ECPair, ecc as eccLib } from './noble_ecc';
 
 const typeforce = require('typeforce');
 
-// Copied from bitcoinjs-lib/ts_src/types.ts
-const SATOSHI_MAX: number = 21 * 1e14;
-const types = {
-  Signer: (obj: any): boolean => {
-    return (
-      (typeforce.Buffer(obj.publicKey) || typeof obj.getPublicKey === 'function') && typeof obj.sign === 'function'
-    );
-  },
+export interface Signer {
+  publicKey: Buffer;
+  privateKey?: Buffer;
+  sign(hash: Buffer, lowR?: boolean): Buffer;
+  signSchnorr(hash: Buffer): Buffer;
+}
 
-  Satoshi: (value: number): boolean => {
-    return typeforce.UInt53(value) && value <= SATOSHI_MAX;
-  },
+const tfFullSigner = (obj: any): boolean => {
+  return typeforce.Buffer(obj.publicKey) && typeof obj.sign === 'function' && typeof obj.signSchnorr === 'function';
 };
 
 const SCRIPT_TYPES = classify.types;
@@ -515,7 +511,7 @@ function expandInput(scriptSig?: Buffer, witnessStack: Buffer[] = [], type?: str
           signatures: witnessStack.length ? witnessStack.reverse() : undefined,
           output: scriptPubKey,
         },
-        { allowIncomplete: true }
+        { allowIncomplete: true, eccLib }
       );
 
       return {
@@ -588,12 +584,15 @@ function expandInput(scriptSig?: Buffer, witnessStack: Buffer[] = [], type?: str
     } else {
       // script path spend
       const { tapscript, controlBlock, annex } = parsedWitness;
-      const prevOutScript = payments.p2tr({
-        redeems: [{ output: tapscript }],
-        redeemIndex: 0,
-        controlBlock,
-        annex,
-      }).output;
+      const prevOutScript = payments.p2tr(
+        {
+          redeems: [{ output: tapscript }],
+          redeemIndex: 0,
+          controlBlock,
+          annex,
+        },
+        { eccLib }
+      ).output;
       const witnessScriptType = classify.output(tapscript);
       const { pubkeys, signatures } = expandInput(undefined, parsedWitness.scriptSig, witnessScriptType, tapscript);
 
@@ -692,7 +691,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
       // HACK ourPubKey to BIP340-style
       if (ourPubKey.length === 33) ourPubKey = ourPubKey.slice(1);
       // TODO: support multiple pubkeys
-      const p2tr = payments.p2tr({ pubkey: ourPubKey, controlBlock });
+      const p2tr = payments.p2tr({ pubkey: ourPubKey, controlBlock }, { eccLib });
 
       // Does tweaked output for a single pubkey match?
       if (!script.equals(p2tr.output!)) return { type };
@@ -706,7 +705,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
     }
 
     case SCRIPT_TYPES.P2TR_NS: {
-      const p2trNs = payments.p2tr_ns({ output: script });
+      const p2trNs = payments.p2tr_ns({ output: script }, { eccLib });
       // P2TR ScriptPath
       return {
         type,
@@ -836,12 +835,15 @@ function prepareInput(
     /* tslint:disable-next-line:no-shadowed-variable */
     let prevOutScript = input.prevOutScript;
     if (!prevOutScript) {
-      prevOutScript = payments.p2tr({
-        redeems: [{ output: witnessScript }],
-        redeemIndex: 0,
-        controlBlock,
-        annex,
-      }).output;
+      prevOutScript = payments.p2tr(
+        {
+          redeems: [{ output: witnessScript }],
+          redeemIndex: 0,
+          controlBlock,
+          annex,
+        },
+        { eccLib }
+      ).output;
     }
 
     const expanded = expandOutput(witnessScript, ourPubKey);
@@ -1023,19 +1025,22 @@ function build(type: string, input: TxbInput, allowIncomplete?: boolean): Paymen
       if (input.witnessScriptType === SCRIPT_TYPES.P2TR_NS) {
         // ScriptPath
         const redeem = build(input.witnessScriptType!, input, allowIncomplete);
-        return payments.p2tr({
-          output: input.prevOutScript,
-          controlBlock: input.controlBlock,
-          annex: input.annex,
-          redeems: [redeem!],
-          redeemIndex: 0,
-        });
+        return payments.p2tr(
+          {
+            output: input.prevOutScript,
+            controlBlock: input.controlBlock,
+            annex: input.annex,
+            redeems: [redeem!],
+            redeemIndex: 0,
+          },
+          { eccLib }
+        );
       }
 
       // KeyPath
       if (signatures.length === 0) break;
 
-      return payments.p2tr({ pubkeys, signature: signatures[0] });
+      return payments.p2tr({ pubkeys, signature: signatures[0] }, { eccLib });
     }
     case SCRIPT_TYPES.P2TR_NS: {
       const m = input.maxSignatures;
@@ -1048,7 +1053,7 @@ function build(type: string, input: TxbInput, allowIncomplete?: boolean): Paymen
       // if the transaction is not not complete (complete), or if signatures.length === m, validate
       // otherwise, the number of OP_0's may be >= m, so don't validate (boo)
       const validate = !allowIncomplete || m === signatures.length;
-      return payments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate });
+      return payments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate, eccLib });
     }
   }
 }
@@ -1077,7 +1082,7 @@ function checkSignArgs(inputs: TxbInput[], signParams: TxbSignArg): void {
     throw new TypeError(`Unknown prevOutScriptType "${signParams.prevOutScriptType}"`);
   }
   tfMessage(typeforce.Number, signParams.vin, `sign must include vin parameter as Number (input index)`);
-  tfMessage(types.Signer, signParams.keyPair, `sign must include keyPair parameter as Signer interface`);
+  tfMessage(tfFullSigner, signParams.keyPair, `sign must include keyPair parameter as Signer interface`);
   tfMessage(typeforce.maybe(typeforce.Number), signParams.hashType, `sign hashType parameter must be a number`);
   const prevOutType = (inputs[signParams.vin] || []).prevOutType;
   const posType = signParams.prevOutScriptType;
@@ -1188,20 +1193,19 @@ function trySign({ input, ourPubKey, keyPair, signatureHash, hashType, useLowR, 
     }
 
     if (input.witnessVersion === 1) {
-      // FIXME: Workaround for not having general signSchnorr() support in
-      //        ECPair/bip32 yet.
-      let { privateKey } = keyPair as unknown as { privateKey: Buffer };
-      if (!privateKey) {
-        throw new Error(`unexpected keypair`);
-      }
       if (!input.witnessScript) {
-        privateKey = taproot.tapTweakPrivkey(ourPubKey, privateKey, taptreeRoot);
+        // FIXME: Workaround for not having proper tweaking support for key path
+        if (!keyPair.privateKey) {
+          throw new Error(`unexpected keypair`);
+        }
+        const privateKey = taproot.tapTweakPrivkey(eccLib, ourPubKey, keyPair.privateKey, taptreeRoot);
+        keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey));
       }
       // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki#common-signature-message
-      const signature = schnorrBip340.signSchnorrWithoutExtraData(signatureHash, privateKey);
+      const signature = keyPair.signSchnorr(signatureHash);
       // SIGHASH_DEFAULT is omitted from the signature
       if (hashType === Transaction.SIGHASH_DEFAULT) {
-        input.signatures![i] = signature;
+        input.signatures![i] = Buffer.from(signature);
       } else {
         input.signatures![i] = Buffer.concat([signature, Buffer.of(hashType)]);
       }
@@ -1257,8 +1261,6 @@ function getSigningData(
   if (keyPair === undefined) {
     throw new Error('sign requires keypair');
   }
-  // TODO: remove keyPair.network matching in 4.0.0
-  if (keyPair.network && keyPair.network !== network) throw new TypeError('Inconsistent network');
   if (!inputs[vin]) throw new Error('No input at index: ' + vin);
 
   const input = inputs[vin];
@@ -1268,7 +1270,7 @@ function getSigningData(
     throw new Error('Inconsistent redeemScript');
   }
 
-  const ourPubKey = keyPair.publicKey || (keyPair.getPublicKey && keyPair.getPublicKey());
+  const ourPubKey = keyPair.publicKey;
   if (!canSign(input)) {
     if (witnessValue !== undefined) {
       if (input.value !== undefined && input.value !== witnessValue)
@@ -1299,8 +1301,8 @@ function getSigningData(
   let leafHash;
   let taptreeRoot;
   if (controlBlock && witnessScript) {
-    leafHash = taproot.getTapleafHash(controlBlock, witnessScript);
-    taptreeRoot = taproot.getTaptreeRoot(controlBlock, witnessScript, leafHash);
+    leafHash = taproot.getTapleafHash(eccLib, controlBlock, witnessScript);
+    taptreeRoot = taproot.getTaptreeRoot(eccLib, controlBlock, witnessScript, leafHash);
   }
 
   // ready to sign
