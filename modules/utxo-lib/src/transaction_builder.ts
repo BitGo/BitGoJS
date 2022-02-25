@@ -1,21 +1,31 @@
-import * as baddress from './address';
-import { reverseBuffer } from './bufferutils';
-import * as classify from './classify';
-import * as bcrypto from './crypto';
-import * as ECPair from './ecpair';
-import { Signer } from './ecpair';
-import * as networks from './networks';
-import { Network } from './networks';
-import * as payments from './payments';
-import { Payment } from './payments';
-import { signSchnorrWithoutExtraData } from './schnorrBip340';
-import * as bscript from './script';
-import { OPS as ops } from './script';
-import * as taproot from './taproot';
-import { Output, Transaction } from './transaction';
-import * as types from './types';
+import * as types from 'bitcoinjs-lib/src/types';
+import { address as baddress } from './';
+import * as bufferutils from 'bitcoinjs-lib/src/bufferutils';
+import { classify } from './';
+import { crypto as bcrypto } from './';
+import { networks } from './';
+import { Network } from './';
+import { payments } from './';
+import { Payment } from './';
+import { script as bscript } from './';
+import { opcodes as ops } from './';
+import { taproot } from './';
+import { TxOutput, Transaction } from './';
+import { ECPair, ecc as eccLib } from './noble_ecc';
+
+export interface Signer {
+  privateKey?: Buffer;
+  publicKey: Buffer;
+  getPublicKey?(): Buffer;
+  sign(hash: Buffer, lowR?: boolean): Buffer;
+  signSchnorr(hash: Buffer): Buffer;
+}
 
 const typeforce = require('typeforce');
+
+const tfFullSigner = (obj: any): boolean => {
+  return typeforce.Buffer(obj.publicKey) && typeof obj.sign === 'function' && typeof obj.signSchnorr === 'function';
+};
 
 const SCRIPT_TYPES = classify.types;
 
@@ -125,7 +135,7 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
 
     // Copy outputs (done first to avoid signature invalidation)
     transaction.outs.forEach((txOut) => {
-      txb.addOutput(txOut.script, (txOut as Output<TNumber>).value);
+      txb.addOutput(txOut.script, (txOut as TxOutput<TNumber>).value);
     });
 
     // Copy inputs
@@ -214,13 +224,13 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
     // is it a hex string?
     if (txIsString(txHash)) {
       // transaction hashs's are displayed in reverse order, un-reverse it
-      txHash = reverseBuffer(Buffer.from(txHash, 'hex'));
+      txHash = bufferutils.reverseBuffer(Buffer.from(txHash, 'hex'));
 
       // is it a Transaction object?
     } else if (txIsTransaction(txHash)) {
       const txOut = txHash.outs[vout];
       prevOutScript = txOut.script;
-      value = (txOut as Output<TNumber>).value;
+      value = (txOut as TxOutput<TNumber>).value;
 
       txHash = txHash.getHash(false) as Buffer;
     }
@@ -431,7 +441,7 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
 
     // but all outputs do, and if we have any input value
     // we can immediately determine if the outputs are too small
-    const outgoing = this.__TX.outs.reduce((a, x) => a + BigInt((x as Output<TNumber>).value), BigInt(0));
+    const outgoing = this.__TX.outs.reduce((a, x) => a + BigInt((x as TxOutput<TNumber>).value), BigInt(0));
     const fee = incoming - outgoing;
     const feeRate = Number(fee) / bytes; // assume fee fits within number
 
@@ -515,7 +525,7 @@ function expandInput<TNumber extends number | bigint = number>(
           signatures: witnessStack.length ? witnessStack.reverse() : undefined,
           output: scriptPubKey,
         },
-        { allowIncomplete: true }
+        { allowIncomplete: true, eccLib }
       );
 
       return {
@@ -588,12 +598,15 @@ function expandInput<TNumber extends number | bigint = number>(
     } else {
       // script path spend
       const { tapscript, controlBlock, annex } = parsedWitness;
-      const prevOutScript = payments.p2tr({
-        redeems: [{ output: tapscript }],
-        redeemIndex: 0,
-        controlBlock,
-        annex,
-      }).output;
+      const prevOutScript = payments.p2tr(
+        {
+          redeems: [{ output: tapscript }],
+          redeemIndex: 0,
+          controlBlock,
+          annex,
+        },
+        { eccLib }
+      ).output;
       const witnessScriptType = classify.output(tapscript);
       const { pubkeys, signatures } = expandInput<TNumber>(
         undefined,
@@ -701,7 +714,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
       // HACK ourPubKey to BIP340-style
       if (ourPubKey.length === 33) ourPubKey = ourPubKey.slice(1);
       // TODO: support multiple pubkeys
-      const p2tr = payments.p2tr({ pubkey: ourPubKey, controlBlock });
+      const p2tr = payments.p2tr({ pubkey: ourPubKey, controlBlock }, { eccLib });
 
       // Does tweaked output for a single pubkey match?
       if (!script.equals(p2tr.output!)) return { type };
@@ -715,7 +728,7 @@ function expandOutput(script: Buffer, ourPubKey?: Buffer, controlBlock?: Buffer)
     }
 
     case SCRIPT_TYPES.P2TR_NS: {
-      const p2trNs = payments.p2tr_ns({ output: script });
+      const p2trNs = payments.p2tr_ns({ output: script }, { eccLib });
       // P2TR ScriptPath
       return {
         type,
@@ -847,12 +860,15 @@ function prepareInput<TNumber extends number | bigint = number>(
     /* tslint:disable-next-line:no-shadowed-variable */
     let prevOutScript = input.prevOutScript;
     if (!prevOutScript) {
-      prevOutScript = payments.p2tr({
-        redeems: [{ output: witnessScript }],
-        redeemIndex: 0,
-        controlBlock,
-        annex,
-      }).output;
+      prevOutScript = payments.p2tr(
+        {
+          redeems: [{ output: witnessScript }],
+          redeemIndex: 0,
+          controlBlock,
+          annex,
+        },
+        { eccLib }
+      ).output;
     }
 
     const expanded = expandOutput(witnessScript, ourPubKey);
@@ -1043,19 +1059,22 @@ function build<TNumber extends number | bigint = number>(
       if (input.witnessScriptType === SCRIPT_TYPES.P2TR_NS) {
         // ScriptPath
         const redeem = build<TNumber>(input.witnessScriptType!, input, allowIncomplete);
-        return payments.p2tr({
-          output: input.prevOutScript,
-          controlBlock: input.controlBlock,
-          annex: input.annex,
-          redeems: [redeem!],
-          redeemIndex: 0,
-        });
+        return payments.p2tr(
+          {
+            output: input.prevOutScript,
+            controlBlock: input.controlBlock,
+            annex: input.annex,
+            redeems: [redeem!],
+            redeemIndex: 0,
+          },
+          { eccLib }
+        );
       }
 
       // KeyPath
       if (signatures.length === 0) break;
 
-      return payments.p2tr({ pubkeys, signature: signatures[0] });
+      return payments.p2tr({ pubkeys, signature: signatures[0] }, { eccLib });
     }
     case SCRIPT_TYPES.P2TR_NS: {
       const m = input.maxSignatures;
@@ -1068,7 +1087,7 @@ function build<TNumber extends number | bigint = number>(
       // if the transaction is not not complete (complete), or if signatures.length === m, validate
       // otherwise, the number of OP_0's may be >= m, so don't validate (boo)
       const validate = !allowIncomplete || m === signatures.length;
-      return payments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate });
+      return payments.p2tr_ns({ pubkeys, signatures }, { allowIncomplete, validate, eccLib });
     }
   }
 }
@@ -1100,7 +1119,7 @@ function checkSignArgs<TNumber extends number | bigint = number>(
     throw new TypeError(`Unknown prevOutScriptType "${signParams.prevOutScriptType}"`);
   }
   tfMessage(typeforce.Number, signParams.vin, `sign must include vin parameter as Number (input index)`);
-  tfMessage(types.Signer, signParams.keyPair, `sign must include keyPair parameter as Signer interface`);
+  tfMessage(tfFullSigner, signParams.keyPair, `sign must include keyPair parameter as Signer interface`);
   tfMessage(typeforce.maybe(typeforce.Number), signParams.hashType, `sign hashType parameter must be a number`);
   const prevOutType = (inputs[signParams.vin] || []).prevOutType;
   const posType = signParams.prevOutScriptType;
@@ -1219,20 +1238,19 @@ function trySign<TNumber extends number | bigint = number>({
     }
 
     if (input.witnessVersion === 1) {
-      // FIXME: Workaround for not having general signSchnorr() support in
-      //        ECPair/bip32 yet.
-      let { privateKey } = keyPair as unknown as { privateKey: Buffer };
-      if (!privateKey) {
-        throw new Error(`unexpected keypair`);
-      }
       if (!input.witnessScript) {
-        privateKey = taproot.tapTweakPrivkey(ourPubKey, privateKey, taptreeRoot);
+        // FIXME: Workaround for not having proper tweaking support for key path
+        if (!keyPair.privateKey) {
+          throw new Error(`unexpected keypair`);
+        }
+        const privateKey = taproot.tapTweakPrivkey(eccLib, ourPubKey, keyPair.privateKey, taptreeRoot);
+        keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey));
       }
       // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki#common-signature-message
-      const signature = signSchnorrWithoutExtraData(signatureHash, privateKey);
+      const signature = keyPair.signSchnorr(signatureHash);
       // SIGHASH_DEFAULT is omitted from the signature
       if (hashType === Transaction.SIGHASH_DEFAULT) {
-        input.signatures![i] = signature;
+        input.signatures![i] = Buffer.from(signature);
       } else {
         input.signatures![i] = Buffer.concat([signature, Buffer.of(hashType)]);
       }
@@ -1288,8 +1306,6 @@ function getSigningData<TNumber extends number | bigint = number>(
   if (keyPair === undefined) {
     throw new Error('sign requires keypair');
   }
-  // TODO: remove keyPair.network matching in 4.0.0
-  if (keyPair.network && keyPair.network !== network) throw new TypeError('Inconsistent network');
   if (!inputs[vin]) throw new Error('No input at index: ' + vin);
 
   const input = inputs[vin];
@@ -1331,8 +1347,8 @@ function getSigningData<TNumber extends number | bigint = number>(
   let leafHash;
   let taptreeRoot;
   if (controlBlock && witnessScript) {
-    leafHash = taproot.getTapleafHash(controlBlock, witnessScript);
-    taptreeRoot = taproot.getTaptreeRoot(controlBlock, witnessScript, leafHash);
+    leafHash = taproot.getTapleafHash(eccLib, controlBlock, witnessScript);
+    taptreeRoot = taproot.getTaptreeRoot(eccLib, controlBlock, witnessScript, leafHash);
   }
 
   // ready to sign

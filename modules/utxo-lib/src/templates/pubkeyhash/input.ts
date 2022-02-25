@@ -1,7 +1,7 @@
 // {signature} {pubKey}
 
-import { Stack } from '../../payments';
-import * as bscript from '../../script';
+import { Stack } from '../../';
+import { script as bscript } from '../../';
 
 export function check(script: Buffer | Stack): boolean {
   const chunks = bscript.decompile(script) as Stack;

@@ -1,6 +1,6 @@
 // <scriptSig> {serialized scriptPubKey script}
 
-import * as bscript from '../../script';
+import { script as bscript } from '../../';
 const typeforce = require('typeforce');
 
 import * as p2ms from '../multisig';

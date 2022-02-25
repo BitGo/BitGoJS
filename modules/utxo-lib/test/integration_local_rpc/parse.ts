@@ -213,7 +213,6 @@ function runTestParse<TNumber extends number | bigint>(
 
         if (scriptType === 'p2tr') {
           // TODO implement verifySignature for p2tr
-          // @ts-expect-error - no implicit this
           this.skip();
         }
 

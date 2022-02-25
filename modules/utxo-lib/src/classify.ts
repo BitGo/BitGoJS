@@ -1,4 +1,4 @@
-import { decompile } from './script';
+import { script as bscript } from './';
 import * as multisig from './templates/multisig';
 import * as nullData from './templates/nulldata';
 import * as pubKey from './templates/pubkey';
@@ -31,8 +31,8 @@ function classifyOutput(script: Buffer): string {
   if (pubKeyHash.output.check(script)) return types.P2PKH;
   if (scriptHash.output.check(script)) return types.P2SH;
 
-  // XXX: optimization, below functions .decompile before use
-  const chunks = decompile(script);
+  // XXX: optimization, below functions bscript.decompile before use
+  const chunks = bscript.decompile(script);
   if (!chunks) throw new TypeError('Invalid script');
 
   if (taprootnofn.output.check(chunks)) return types.P2TR_NS;
@@ -45,8 +45,8 @@ function classifyOutput(script: Buffer): string {
 }
 
 function classifyInput(script: Buffer, allowIncomplete?: boolean): string {
-  // XXX: optimization, below functions .decompile before use
-  const chunks = decompile(script);
+  // XXX: optimization, below functions bscript.decompile before use
+  const chunks = bscript.decompile(script);
   if (!chunks) throw new TypeError('Invalid script');
 
   if (pubKeyHash.input.check(chunks)) return types.P2PKH;
@@ -59,8 +59,8 @@ function classifyInput(script: Buffer, allowIncomplete?: boolean): string {
 }
 
 function classifyWitness(script: Buffer[], allowIncomplete?: boolean): string {
-  // XXX: optimization, below functions .decompile before use
-  const chunks = decompile(script);
+  // XXX: optimization, below functions bscript.decompile before use
+  const chunks = bscript.decompile(script);
   if (!chunks) throw new TypeError('Invalid script');
 
   if (witnessPubKeyHash.input.check(chunks)) return types.P2WPKH;

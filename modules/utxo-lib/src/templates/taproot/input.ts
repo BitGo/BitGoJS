@@ -2,7 +2,7 @@
 // script path spend - [...stack elements] {tapscript} {control block}
 // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
 
-import * as taproot from '../../taproot';
+import { taproot } from '../../';
 
 export function check(chunks: Buffer[]): boolean {
   try {

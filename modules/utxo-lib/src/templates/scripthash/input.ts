@@ -1,6 +1,6 @@
 // <scriptSig> {serialized scriptPubKey script}
 
-import * as bscript from '../../script';
+import { script as bscript } from '../../';
 import * as p2ms from '../multisig';
 import * as p2pk from '../pubkey';
 import * as p2pkh from '../pubkeyhash';

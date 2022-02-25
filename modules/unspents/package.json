@@ -37,7 +37,7 @@
   "dependencies": {
     "@bitgo/utxo-lib": "^2.4.1",
     "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.5",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@7.0.0-rc.0",
     "lodash": "~4.17.21",
     "tcomb": "~3.2.29",
     "varuint-bitcoin": "^1.0.4"

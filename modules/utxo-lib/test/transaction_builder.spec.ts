@@ -1,9 +1,14 @@
 import * as assert from 'assert';
 import { beforeEach, describe, it } from 'mocha';
-import { ECPair, networks as NETWORKS, Transaction, TransactionBuilder } from '..';
-import * as baddress from '../src/address';
-import * as payments from '../src/payments';
-import * as bscript from '../src/script';
+import {
+  address as baddress,
+  networks as NETWORKS,
+  payments,
+  script as bscript,
+  Transaction,
+  TransactionBuilder,
+} from '..';
+import { ECPair } from '../src/noble_ecc';
 
 console.warn = (): void => {
   return;
@@ -168,7 +173,7 @@ function runTest<TNumber extends number | bigint>(
       Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
     );
     const scripts = ['1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH', '1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP'].map((x) => {
-      return baddress.toOutputScript(x);
+      return baddress.toOutputScript(x, NETWORKS.bitcoin);
     });
     const txHash = Buffer.from('0e7cea811c0be9f73c0aca591034396e7264473fc25c1ca45195d7417b36cbe2', 'hex');
 
@@ -439,6 +444,9 @@ function runTest<TNumber extends number | bigint>(
           }).publicKey,
           sign: (): Buffer => {
             return Buffer.alloc(64, 0x5f);
+          },
+          signSchnorr: (): Buffer => {
+            return Buffer.alloc(64, 0x4f);
           },
         };
 

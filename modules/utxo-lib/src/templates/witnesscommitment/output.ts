@@ -1,8 +1,8 @@
 // OP_RETURN {aa21a9ed} {commitment}
 
-import * as bscript from '../../script';
-import { OPS } from '../../script';
-import * as types from '../../types';
+import { script as bscript } from '../../';
+import { opcodes } from '../../';
+import * as types from 'bitcoinjs-lib/src/types';
 
 const typeforce = require('typeforce');
 
@@ -11,7 +11,9 @@ const HEADER: Buffer = Buffer.from('aa21a9ed', 'hex');
 export function check(script: Buffer | Array<number | Buffer>): boolean {
   const buffer = bscript.compile(script);
 
-  return buffer.length > 37 && buffer[0] === OPS.OP_RETURN && buffer[1] === 0x24 && buffer.slice(2, 6).equals(HEADER);
+  return (
+    buffer.length > 37 && buffer[0] === opcodes.OP_RETURN && buffer[1] === 0x24 && buffer.slice(2, 6).equals(HEADER)
+  );
 }
 
 check.toJSON = (): string => {
@@ -25,7 +27,7 @@ export function encode(commitment: Buffer): Buffer {
   HEADER.copy(buffer, 0);
   commitment.copy(buffer, 4);
 
-  return bscript.compile([OPS.OP_RETURN, buffer]);
+  return bscript.compile([opcodes.OP_RETURN, buffer]);
 }
 
 export function decode(buffer: Buffer): Buffer {

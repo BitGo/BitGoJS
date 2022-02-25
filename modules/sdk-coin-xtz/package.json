@@ -47,7 +47,7 @@
     "@taquito/signer": "6.3.5-beta.0",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.5",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@7.0.0-rc.0",
     "bs58check": "^2.1.2",
     "elliptic": "^6.5.2",
     "libsodium-wrappers": "^0.7.6",

@@ -46,7 +46,7 @@
     "@stacks/transactions": "2.0.1",
     "bignumber.js": "^9.0.0",
     "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.5",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@7.0.0-rc.0",
     "bn.js": "^5.2.1",
     "elliptic": "^6.5.2",
     "ethereumjs-util": "7.1.5",
