@@ -2,6 +2,9 @@
  * @prettier
  */
 
+import { randomBytes } from 'crypto';
+import { SerializedKeyPair, generateKey } from 'openpgp';
+
 import { BaseCoin as BaseCoinAccountLib } from '@bitgo/account-lib';
 
 import { BaseCoin, KeychainsTriplet, BlsKeyPair } from '../baseCoin';
@@ -20,12 +23,14 @@ export class BlsUtils extends MpcUtils {
   /**
    * Creates a Keychain containing the User's BLS-DKG signing materials.
    *
+   * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - user's BLS-DKG key share
    * @param backupKeyShare - backup's BLS-DKG key share
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param passphrase - wallet passphrase used to encrypt user's signing materials
    */
   async createUserKeychain(
+    userGpgKey: SerializedKeyPair<string>,
     userKeyShare: BlsKeyPair,
     backupKeyShare: BlsKeyPair,
     bitgoKeychain: Keychain,
@@ -49,18 +54,27 @@ export class BlsUtils extends MpcUtils {
       throw new Error('Invalid backup key shares');
     }
 
-    // TODO BG-43029: Aggregate pub shares and validate it is the same as commonPub when HSM includes the pub share from bitgo to user and backup
+    const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
+
     const userPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
       userKeyShare.secretShares[0],
       backupKeyShare.secretShares[0],
-      bitGoToUserShare.privateShare,
+      bitGoToUserPrivateShare,
     ]);
+    const commonPub = BaseCoinAccountLib.BlsKeyPair.aggregatePubkeys([
+      userKeyShare.pub,
+      backupKeyShare.pub,
+      bitGoToUserShare.publicShare,
+    ]);
+    if (commonPub !== bitgoKeychain.commonPub) {
+      throw new Error('Failed to create user keychain - commonPubs do not match.');
+    }
 
     const userKeychainParams: any = {
       source: 'user',
       type: 'blsdkg',
-      commonPub: bitgoKeychain.commonPub,
-      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userPrivateKey), password: passphrase }),
+      commonPub: commonPub,
+      encryptedPrv: this.bitgo.encrypt({ input: userPrivateKey, password: passphrase }),
       originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
     };
 
@@ -83,12 +97,14 @@ export class BlsUtils extends MpcUtils {
   /**
    * Creates a Keychain containing the Backup party's BLS-DKG signing materials.
    *
+   * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - User's BLS-DKG Keyshare
    * @param backupKeyShare - Backup's BLS-DKG Keyshare
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param passphrase - wallet passphrase used to encrypt user's signing materials
    */
   async createBackupKeychain(
+    userGpgKey: SerializedKeyPair<string>,
     userKeyShare: BlsKeyPair,
     backupKeyShare: BlsKeyPair,
     bitgoKeychain: Keychain,
@@ -111,29 +127,40 @@ export class BlsUtils extends MpcUtils {
       throw new Error('Invalid backup key shares');
     }
 
-    // TODO BG-43029: Aggregate pub shares and validate it is the same as commonPub when HSM includes the pub share from bitgo to user and backup
+    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
+
     const backupPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
       userKeyShare.secretShares[1],
       backupKeyShare.secretShares[1],
-      bitGoToBackupShare.privateShare,
+      bitGoToBackupPrivateShare,
     ]);
+    const commonPub = BaseCoinAccountLib.BlsKeyPair.aggregatePubkeys([
+      userKeyShare.pub,
+      backupKeyShare.pub,
+      bitGoToBackupShare.publicShare,
+    ]);
+    if (commonPub !== bitgoKeychain.commonPub) {
+      throw new Error('Failed to create backup keychain - commonPubs do not match.');
+    }
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
       type: 'blsdkg',
-      commonPub: bitgoKeychain.commonPub,
+      commonPub: commonPub,
       prv: backupPrivateKey,
-      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(backupPrivateKey), password: passphrase }),
+      encryptedPrv: this.bitgo.encrypt({ input: backupPrivateKey, password: passphrase }),
     });
   }
 
   /**
    * Creates a Keychain containing BitGo's BLS-DKG signing materials.
    *
+   * @param userGpgKey - ephemeral GPG key to encrypt / decrypt sensitve data exchanged between user and server
    * @param userKeyShare - user's BLS-DKG key share
    * @param backupKeyShare - backup's BLS-DKG key share
    */
   async createBitgoKeychain(
+    userGpgKey: SerializedKeyPair<string>,
     userKeyShare: BlsKeyPair,
     backupKeyShare: BlsKeyPair,
     enterprise?: string
@@ -145,27 +172,23 @@ export class BlsUtils extends MpcUtils {
       throw new Error('Invalid backup key shares');
     }
 
-    const createBitGoMPCParams = {
-      type: 'blsdkg',
-      source: 'bitgo',
-      keyShares: [
-        {
-          from: 'user',
-          to: 'bitgo',
-          publicShare: userKeyShare.pub,
-          privateShare: userKeyShare.secretShares[2],
-        },
-        {
-          from: 'backup',
-          to: 'bitgo',
-          publicShare: backupKeyShare.pub,
-          privateShare: backupKeyShare.secretShares[2],
-        },
-      ],
-      enterprise: enterprise,
+    const userToBitgoKeyShare = {
+      publicShare: userKeyShare.pub,
+      privateShare: userKeyShare.secretShares[2],
     };
 
-    return await this.baseCoin.keychains().add(createBitGoMPCParams);
+    const backupToBitgoKeyShare = {
+      publicShare: backupKeyShare.pub,
+      privateShare: backupKeyShare.secretShares[2],
+    };
+
+    return await this.createBitgoKeychainInWP(
+      userGpgKey,
+      userToBitgoKeyShare,
+      backupToBitgoKeyShare,
+      'blsdkg',
+      enterprise
+    );
   }
 
   /**
@@ -181,8 +204,20 @@ export class BlsUtils extends MpcUtils {
     const userKeyShare = this.baseCoin.generateKeyPair();
     const backupKeyShare = this.baseCoin.generateKeyPair();
 
-    const bitgoKeychain = await this.createBitgoKeychain(userKeyShare, backupKeyShare, params.enterprise);
+    const randomHexString = randomBytes(12).toString('hex');
+
+    const userGpgKey = await generateKey({
+      userIDs: [
+        {
+          name: randomHexString,
+          email: `${randomHexString}@${randomHexString}.com`,
+        },
+      ],
+    });
+
+    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
     const userKeychainPromise = this.createUserKeychain(
+      userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
@@ -190,6 +225,7 @@ export class BlsUtils extends MpcUtils {
       params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.createBackupKeychain(
+      userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,

@@ -25,6 +25,7 @@ import { Memo } from '../wallet';
 import * as _ from 'lodash';
 import { DerivedKeyPair, DeriveKeypairOptions } from '..';
 import { MethodNotImplementedError } from '../../errors';
+import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
 
 export interface TransactionFee {
   fee: string;
@@ -34,6 +35,7 @@ export type SolTransactionExplanation = TransactionExplanation;
 export interface ExplainTransactionOptions {
   txBase64: string;
   feeInfo: TransactionFee;
+  tokenAccountRentExemptAmount?: string;
 }
 
 export interface TxInfo {
@@ -76,6 +78,7 @@ export interface SolParsedTransaction extends BaseParsedTransaction {
 export interface SolParseTransactionOptions extends BaseParseTransactionOptions {
   txBase64: string;
   feeInfo: TransactionFee;
+  tokenAccountRentExemptAmount?: string;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -250,6 +253,7 @@ export class Sol extends BaseCoin {
     const transactionExplanation = await this.explainTransaction({
       txBase64: params.txBase64,
       feeInfo: params.feeInfo,
+      tokenAccountRentExemptAmount: params.tokenAccountRentExemptAmount,
     });
 
     if (!transactionExplanation) {
@@ -297,7 +301,11 @@ export class Sol extends BaseCoin {
     let rebuiltTransaction;
 
     try {
-      rebuiltTransaction = await factory.from(params.txBase64).fee({ amount: params.feeInfo.fee }).build();
+      const transactionBuilder = factory.from(params.txBase64).fee({ amount: params.feeInfo.fee });
+      if (transactionBuilder instanceof AtaInitializationBuilder && params.tokenAccountRentExemptAmount) {
+        transactionBuilder.rentExemptAmount(params.tokenAccountRentExemptAmount);
+      }
+      rebuiltTransaction = await transactionBuilder.build();
     } catch {
       throw new Error('Invalid transaction');
     }

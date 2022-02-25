@@ -1,8 +1,12 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
+import * as materialData from '@bitgo/account-lib/test/resources/dot/materialData.json';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
+
+import { Environments } from '../../../../src';
+import * as nock from 'nock';
 
 describe('DOT:', function () {
   let bitgo;
@@ -12,6 +16,44 @@ describe('DOT:', function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
+  });
+
+  describe('Material data lookup', () => {
+    it('should lookup material data', async () => {
+      const uri = Environments[bitgo.getEnv()].uri;
+      nock(uri)
+        .get('/api/v2/tdot/material')
+        .reply(200, {
+          ...materialData
+      });
+
+      const material = await basecoin['materialDataLookup']();
+
+      material.should.have.property('genesisHash');
+      material.should.have.property('chainName');
+      material.should.have.property('specName');
+      material.should.have.property('specVersion');
+      material.should.have.property('txVersion');
+      material.should.have.property('metadata');
+    });
+
+    it('should add material data to params', async function () {
+      const uri = Environments[bitgo.getEnv()].uri;
+      nock(uri)
+        .get('/api/v2/tdot/material')
+        .reply(200, {
+          ...materialData
+      });
+
+      const extraParams = await basecoin.getExtraPrebuildParams({});
+      extraParams.should.have.property('material');
+      extraParams.material.should.have.property('genesisHash');
+      extraParams.material.should.have.property('chainName');
+      extraParams.material.should.have.property('specName');
+      extraParams.material.should.have.property('specVersion');
+      extraParams.material.should.have.property('txVersion');
+      extraParams.material.should.have.property('metadata');
+    });
   });
 
   describe('Sign Message', () => {
@@ -47,7 +89,7 @@ describe('DOT:', function () {
     };
 
     // TODO: BG-43197
-    xit('should sign transaction', async function () {
+    it('should sign transaction', async function () {
       const signed = await basecoin.signTransaction({
         txPrebuild: {
           txHex: rawTx.transfer.unsigned,
@@ -57,12 +99,13 @@ describe('DOT:', function () {
           accounts.account1.publicKey,
         ],
         prv: accounts.account1.secretKey,
+        material: materialData,
       });
       signed.txHex.should.equal(rawTx.transfer.signed);
     });
 
     // TODO: BG-43197
-    xit('should fail to sign transaction with an invalid key', async function () {
+    it('should fail to sign transaction with an invalid key', async function () {
       try {
         await basecoin.signTransaction({
           txPrebuild: {
@@ -73,6 +116,7 @@ describe('DOT:', function () {
             accounts.account2.publicKey,
           ],
           prv: accounts.account1.secretKey,
+          material: materialData,
         });
       } catch (e) {
         should.equal(e.message, 'Private key cannot sign the transaction');

@@ -1433,7 +1433,7 @@ describe('V2 Wallet:', function () {
       const getSharingKeyNock = nock(bgUrl)
         .post('/api/v1/user/sharingkey', { email })
         .reply(200, { userId, pubkey, path });
-      
+
       const getKeyNock = nock(bgUrl)
         .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
         .reply(200, {
@@ -1456,7 +1456,7 @@ describe('V2 Wallet:', function () {
         }
       );
       await wallet.shareWallet({ email, permissions, walletPassphrase });
-      
+
       stub.calledOnce.should.be.true();
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
@@ -1497,6 +1497,10 @@ describe('V2 Wallet:', function () {
         {
           serializedTxHex: 'ababcdcd',
           signableHex: 'deadbeef',
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          }
         },
       ],
     };
@@ -1534,7 +1538,11 @@ describe('V2 Wallet:', function () {
           buildParams: {
             recipients,
             type: 'transfer',
-          }
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
         });
       });
 
@@ -1581,7 +1589,59 @@ describe('V2 Wallet:', function () {
               value: 'test memo',
             },
             type: 'transfer',
-          }
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build an enable token transaction', async function () {
+        const recipients = [];
+        const token = 'tokenName';
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'createAccount',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          token,
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'enabletoken',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          token,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'enabletoken',
+            token,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
         });
       });
 
@@ -1725,7 +1785,7 @@ describe('V2 Wallet:', function () {
         const getSharingKeyNock = nock(bgUrl)
           .post('/api/v1/user/sharingkey', { email })
           .reply(200, { userId, pubkey, path });
-        
+
         const getKeyNock = nock(bgUrl)
           .get(`/api/v2/tsol/key/${tssWallet.keyIds()[0]}`)
           .reply(200, {
@@ -1748,7 +1808,7 @@ describe('V2 Wallet:', function () {
           }
         );
         await tssWallet.shareWallet({ email, permissions, walletPassphrase });
-        
+
         stub.calledOnce.should.be.true();
         getSharingKeyNock.isDone().should.be.True();
         getKeyNock.isDone().should.be.True();

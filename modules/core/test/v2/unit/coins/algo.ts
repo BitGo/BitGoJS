@@ -649,6 +649,17 @@ describe('ALGO:', function () {
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
+
+    it('should deterministically derive keypair with seed', () => {
+      const derivedKeypair = basecoin.deriveKeyWithSeed({ key: 'UBI2KNGT742KGIPHMZDJHHSADIT56HRDPVOOCCRYIETD4BAJLCBMQNSCNE', seed: 'cold derivation seed' });
+      console.log(JSON.stringify(derivedKeypair));
+
+      basecoin.isValidPub(derivedKeypair.key).should.be.true();
+      derivedKeypair.should.deepEqual({
+        key: 'NAYUBR4HQKJBBTNNKXQIY7GMHUCHVAUH5DQ4ZVHVL67CUQLGHRWDKQAHYU',
+        derivationPath: "m/999999'/25725073'/5121434'",
+      });
+    });
   });
 
   describe('Enable, disable and transfer Token ', () => {

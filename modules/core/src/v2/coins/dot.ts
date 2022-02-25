@@ -1,4 +1,5 @@
 import * as accountLib from '@bitgo/account-lib';
+import { Material } from '@bitgo/account-lib/dist/src/coin/dot/iface';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
@@ -6,9 +7,11 @@ import {
   BaseCoin,
   DerivedKeyPair,
   DeriveKeypairOptions,
+  ExtraPrebuildParamsOptions,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  PresignTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
@@ -18,6 +21,7 @@ import {
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
+  material: Material;
 }
 
 export interface TransactionPrebuild {
@@ -36,11 +40,14 @@ export interface ExplainTransactionOptions {
 export interface VerifiedTransactionParameters {
   txHex: string;
   prv: string;
+  material: Material;
 }
 
 const dotUtils = accountLib.Dot.Utils.default;
 
 export class Dot extends BaseCoin {
+  private static materialData: Material;
+  
   readonly MAX_VALIDITY_DURATION = 2400;
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -90,6 +97,21 @@ export class Dot extends BaseCoin {
 
   allowsAccountConsolidations(): boolean {
     return true;
+  }
+
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>> {
+    buildParams.material = await this.materialDataLookup();
+    return buildParams;
+  }
+
+  /**
+   * Url at which the material data can be reached
+   */
+  private async materialDataLookup(): Promise<Material> {
+    if (!Dot.materialData) {
+      Dot.materialData = await this.bitgo.get(this.url('/material')).result();
+    }
+    return Dot.materialData;
   }
 
   /**
@@ -201,7 +223,7 @@ export class Dot extends BaseCoin {
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
-    const prv = params.prv;
+    const { prv, material } = params;
 
     const txHex = params.txPrebuild.txHex;
 
@@ -225,7 +247,19 @@ export class Dot extends BaseCoin {
       throw new Error('missing public key parameter to sign transaction');
     }
 
-    return { txHex, prv };
+    if (_.isUndefined(material)) {
+      throw new Error('missing material parameter to sign transaction');
+    }
+
+    if (!_.isObject(material)) {
+      throw new Error(`material must be an object, got type ${typeof prv}`);
+    }
+
+    return { txHex, prv, material };
+  }
+
+  async presignTransaction(params: PresignTransactionOptions): Promise<any> {
+    return params;
   }
 
   /**
@@ -234,11 +268,14 @@ export class Dot extends BaseCoin {
    * @param params
    * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
+   * @param params.material {Material} material data for the txn
    * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const { txHex, prv } = this.verifySignTransactionParams(params);
-    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory);
+    const { txHex, prv, material } = this.verifySignTransactionParams(params);
+    
+    const factory = accountLib.register(this.getChain(), accountLib.Dot.TransactionBuilderFactory).material(material);
+
     const txBuilder = factory.from(txHex);
     const keyPair = new accountLib.Dot.KeyPair({ prv: prv });
     const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
