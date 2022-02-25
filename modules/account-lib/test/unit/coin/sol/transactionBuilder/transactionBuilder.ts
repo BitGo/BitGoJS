@@ -310,7 +310,7 @@ describe('Sol Transaction Builder', async () => {
         .nonce(validBlockhash)
         .fee({ amount: 5000 })
         .send({ address: nonceAccount.pub, amount: '1000' });
-      transferBuilder2.addSignature({ pub: authAccount.pub }, bs58.decode(signature));
+      transferBuilder2.addSignature({ pub: authAccount.pub }, Buffer.from(bs58.decode(signature)));
       const signedTransaction2 = await transferBuilder2.build();
 
       // verify signatures are correct
