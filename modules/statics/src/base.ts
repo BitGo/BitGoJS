@@ -361,6 +361,8 @@ export enum UnderlyingAsset {
   GEC = 'gec',
   GEN = 'gen',
   GHUB = 'ghub',
+  GHCN = 'ghcn',
+  GHDO = 'ghdo',
   GIGDROP = 'gigdrop',
   GLDX = 'gldx',
   GLM = 'glm',
