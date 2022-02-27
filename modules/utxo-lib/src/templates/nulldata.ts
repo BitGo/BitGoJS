@@ -1,5 +1,5 @@
 // OP_RETURN {data}
-import { script as bscript } from '../'
+import { script as bscript } from '../';
 const OPS = bscript.OPS;
 
 export function check(script: Buffer | Array<number | Buffer>): boolean {

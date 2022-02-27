@@ -1,7 +1,7 @@
 // OP_1 {scriptHash}
 
-import { script as bscript } from '../../'
-import { opcodes } from '../../'
+import { script as bscript } from '../../';
+import { opcodes } from '../../';
 
 export function check(script: Buffer | Array<number | Buffer>): boolean {
   const buffer = bscript.compile(script);

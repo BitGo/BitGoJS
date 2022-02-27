@@ -6,7 +6,7 @@ export * as address from './address';
 
 export * as addressFormat from './addressFormat';
 
-export * as classify from './classify'
+export * as classify from './classify';
 
 export {
   networks,

@@ -31,7 +31,7 @@ const tmap = {
 
 describe('classify', () => {
   describe('input', () => {
-    fixtures.valid.forEach(f => {
+    fixtures.valid.forEach((f) => {
       if (!f.input) return;
 
       it('classifies ' + f.input + ' as ' + f.type, () => {
@@ -42,7 +42,7 @@ describe('classify', () => {
       });
     });
 
-    fixtures.valid.forEach(f => {
+    fixtures.valid.forEach((f) => {
       if (!f.input) return;
       if (!f.typeIncomplete) return;
 
@@ -56,7 +56,7 @@ describe('classify', () => {
   });
 
   describe('classifyOutput', () => {
-    fixtures.valid.forEach(f => {
+    fixtures.valid.forEach((f) => {
       if (!f.output) return;
 
       it('classifies ' + f.output + ' as ' + f.type, () => {
@@ -69,13 +69,11 @@ describe('classify', () => {
   });
 
   describe('classifyWitness', () => {
-    fixtures.valid.forEach(f => {
+    fixtures.valid.forEach((f) => {
       if (!f.witnessData) return;
 
       it('classifies ' + f.witnessData + ' as ' + f.type, () => {
-        const chunks = f.witnessData.map(chunkStr =>
-          Buffer.from(chunkStr, 'hex'),
-        );
+        const chunks = f.witnessData.map((chunkStr) => Buffer.from(chunkStr, 'hex'));
         if (f.witnessScript) {
           const witnessScript = bscript.fromASM(f.witnessScript);
           chunks.push(witnessScript);
@@ -98,12 +96,12 @@ describe('classify', () => {
     'multisig',
     'nullData',
     'witnessCommitment',
-  ].forEach(name => {
+  ].forEach((name) => {
     const inputType = (tmap as any)[name].input;
     const outputType = (tmap as any)[name].output;
 
     describe(name + '.input.check', () => {
-      fixtures.valid.forEach(f => {
+      fixtures.valid.forEach((f) => {
         if (name.toLowerCase() === classify.types.P2WPKH) return;
         if (name.toLowerCase() === classify.types.P2WSH) return;
         const expected = name.toLowerCase() === f.type.toLowerCase();
@@ -119,10 +117,7 @@ describe('classify', () => {
             const expectedIncomplete = name.toLowerCase() === f.typeIncomplete;
 
             it('returns ' + expected + ' for ' + f.input, () => {
-              assert.strictEqual(
-                inputType.check(input, true),
-                expectedIncomplete,
-              );
+              assert.strictEqual(inputType.check(input, true), expectedIncomplete);
             });
           }
         }
@@ -133,45 +128,30 @@ describe('classify', () => {
       (fixtures.invalid as any)[name].inputs.forEach((f: any) => {
         if (!f.input && !f.inputHex) return;
 
-        it(
-          'returns false for ' +
-            f.description +
-            ' (' +
-            (f.input || f.inputHex) +
-            ')',
-          () => {
-            let input;
+        it('returns false for ' + f.description + ' (' + (f.input || f.inputHex) + ')', () => {
+          let input;
 
-            if (f.input) {
-              input = bscript.fromASM(f.input);
-            } else {
-              input = Buffer.from(f.inputHex, 'hex');
-            }
+          if (f.input) {
+            input = bscript.fromASM(f.input);
+          } else {
+            input = Buffer.from(f.inputHex, 'hex');
+          }
 
-            assert.strictEqual(inputType.check(input), false);
-          },
-        );
+          assert.strictEqual(inputType.check(input), false);
+        });
       });
     });
 
     describe(name + '.output.check', () => {
-      fixtures.valid.forEach(f => {
+      fixtures.valid.forEach((f) => {
         const expected = name.toLowerCase() === f.type;
 
         if (outputType && f.output) {
           it('returns ' + expected + ' for ' + f.output, () => {
             const output = bscript.fromASM(f.output);
 
-            if (
-              name.toLowerCase() === 'nulldata' &&
-              f.type === classify.types.WITNESS_COMMITMENT
-            )
-              return;
-            if (
-              name.toLowerCase() === 'witnesscommitment' &&
-              f.type === classify.types.NULLDATA
-            )
-              return;
+            if (name.toLowerCase() === 'nulldata' && f.type === classify.types.WITNESS_COMMITMENT) return;
+            if (name.toLowerCase() === 'witnesscommitment' && f.type === classify.types.NULLDATA) return;
             assert.strictEqual(outputType.check(output), expected);
           });
         }
@@ -182,24 +162,17 @@ describe('classify', () => {
       (fixtures.invalid as any)[name].outputs.forEach((f: any) => {
         if (!f.output && !f.outputHex) return;
 
-        it(
-          'returns false for ' +
-            f.description +
-            ' (' +
-            (f.output || f.outputHex) +
-            ')',
-          () => {
-            let output;
+        it('returns false for ' + f.description + ' (' + (f.output || f.outputHex) + ')', () => {
+          let output;
 
-            if (f.output) {
-              output = bscript.fromASM(f.output);
-            } else {
-              output = Buffer.from(f.outputHex, 'hex');
-            }
+          if (f.output) {
+            output = bscript.fromASM(f.output);
+          } else {
+            output = Buffer.from(f.outputHex, 'hex');
+          }
 
-            assert.strictEqual(outputType.check(output), false);
-          },
-        );
+          assert.strictEqual(outputType.check(output), false);
+        });
       });
     });
   });

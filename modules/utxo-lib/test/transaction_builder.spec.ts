@@ -1,16 +1,7 @@
 import * as assert from 'assert';
 import { beforeEach, describe, it } from 'mocha';
-import {
-  ECPair,
-  payments,
-  script as bscript,
-  Transaction,
-  TransactionBuilder,
-} from '..';
-import {
-  address as baddress,
-  networks as NETWORKS,
-} from 'bitcoinjs-lib';
+import { ECPair, payments, script as bscript, Transaction, TransactionBuilder } from '..';
+import { address as baddress, networks as NETWORKS } from 'bitcoinjs-lib';
 
 console.warn = (): void => {
   return;
@@ -18,11 +9,7 @@ console.warn = (): void => {
 
 import * as fixtures from './fixtures/transaction_builder.json';
 
-function constructSign(
-  f: any,
-  txb: any,
-  useOldSignArgs: any,
-): TransactionBuilder {
+function constructSign(f: any, txb: any, useOldSignArgs: any): TransactionBuilder {
   const network = (NETWORKS as any)[f.network];
   const stages = f.stages && f.stages.concat();
 
@@ -53,15 +40,7 @@ function constructSign(
 
       if (useOldSignArgs) {
         // DEPRECATED: v6 will remove this interface
-        txb.sign(
-          index,
-          keyPair,
-          redeemScript,
-          sign.hashType,
-          witnessValue,
-          witnessScript,
-          controlBlock,
-        );
+        txb.sign(index, keyPair, redeemScript, sign.hashType, witnessValue, witnessScript, controlBlock);
       } else {
         // prevOutScriptType is required, see /ts_src/transaction_builder.ts
         // The PREVOUT_TYPES constant is a Set with all possible values.
@@ -88,11 +67,7 @@ function constructSign(
   return txb;
 }
 
-function construct(
-  f: any,
-  dontSign?: any,
-  useOldSignArgs?: any,
-): TransactionBuilder {
+function construct(f: any, dontSign?: any, useOldSignArgs?: any): TransactionBuilder {
   const network = (NETWORKS as any)[f.network];
   const txb = new TransactionBuilder(network);
 
@@ -144,24 +119,15 @@ for (const useOldSignArgs of [false, true]) {
   describe(`TransactionBuilder: useOldSignArgs === ${useOldSignArgs}`, () => {
     // constants
     const keyPair = ECPair.fromPrivateKey(
-      Buffer.from(
-        '0000000000000000000000000000000000000000000000000000000000000001',
-        'hex',
-      ),
+      Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
     );
-    const scripts = [
-      '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH',
-      '1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP',
-    ].map(x => {
+    const scripts = ['1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH', '1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP'].map((x) => {
       return baddress.toOutputScript(x);
     });
-    const txHash = Buffer.from(
-      '0e7cea811c0be9f73c0aca591034396e7264473fc25c1ca45195d7417b36cbe2',
-      'hex',
-    );
+    const txHash = Buffer.from('0e7cea811c0be9f73c0aca591034396e7264473fc25c1ca45195d7417b36cbe2', 'hex');
 
     describe('fromTransaction', () => {
-      fixtures.valid.build.forEach(f => {
+      fixtures.valid.build.forEach((f) => {
         it('returns TransactionBuilder, with ' + f.description, () => {
           const network = (NETWORKS as any)[f.network || 'bitcoin'];
 
@@ -174,22 +140,17 @@ for (const useOldSignArgs of [false, true]) {
         });
       });
 
-      fixtures.valid.fromTransaction.forEach(f => {
+      fixtures.valid.fromTransaction.forEach((f) => {
         it('returns TransactionBuilder, with ' + f.description, () => {
           const tx = new Transaction();
 
-          f.inputs.forEach(input => {
+          f.inputs.forEach((input) => {
             const txHash2 = Buffer.from(input.txId, 'hex').reverse() as Buffer;
 
-            tx.addInput(
-              txHash2,
-              input.vout,
-              undefined,
-              bscript.fromASM(input.scriptSig),
-            );
+            tx.addInput(txHash2, input.vout, undefined, bscript.fromASM(input.scriptSig));
           });
 
-          f.outputs.forEach(output => {
+          f.outputs.forEach((output) => {
             tx.addOutput(bscript.fromASM(output.script), output.value);
           });
 
@@ -197,42 +158,30 @@ for (const useOldSignArgs of [false, true]) {
           const txAfter = f.incomplete ? txb.buildIncomplete() : txb.build();
 
           txAfter.ins.forEach((input, i) => {
-            assert.strictEqual(
-              bscript.toASM(input.script),
-              f.inputs[i].scriptSigAfter,
-            );
+            assert.strictEqual(bscript.toASM(input.script), f.inputs[i].scriptSigAfter);
           });
 
           txAfter.outs.forEach((output, i) => {
-            assert.strictEqual(
-              bscript.toASM(output.script),
-              f.outputs[i].script,
-            );
+            assert.strictEqual(bscript.toASM(output.script), f.outputs[i].script);
           });
         });
       });
 
-      fixtures.valid.fromTransactionSequential.forEach(f => {
+      fixtures.valid.fromTransactionSequential.forEach((f) => {
         it('with ' + f.description, () => {
           const network = (NETWORKS as any)[f.network];
           const tx = Transaction.fromHex(f.txHex);
           const txb = TransactionBuilder.fromTransaction(tx, network);
 
           tx.ins.forEach((input, i) => {
-            assert.strictEqual(
-              bscript.toASM(input.script),
-              f.inputs[i].scriptSig,
-            );
+            assert.strictEqual(bscript.toASM(input.script), f.inputs[i].scriptSig);
           });
 
           constructSign(f, txb, useOldSignArgs);
           const txAfter = f.incomplete ? txb.buildIncomplete() : txb.build();
 
           txAfter.ins.forEach((input, i) => {
-            assert.strictEqual(
-              bscript.toASM(input.script),
-              f.inputs[i].scriptSigAfter,
-            );
+            assert.strictEqual(bscript.toASM(input.script), f.inputs[i].scriptSigAfter);
           });
 
           assert.strictEqual(txAfter.toHex(), f.txHexAfter);
@@ -249,7 +198,7 @@ for (const useOldSignArgs of [false, true]) {
         });
       });
 
-      fixtures.invalid.fromTransaction.forEach(f => {
+      fixtures.invalid.fromTransaction.forEach((f) => {
         it('throws ' + f.exception, () => {
           const tx = Transaction.fromHex(f.txHex);
 
@@ -449,10 +398,7 @@ for (const useOldSignArgs of [false, true]) {
 
         const txb = new TransactionBuilder();
         txb.setVersion(1);
-        txb.addInput(
-          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-          1,
-        );
+        txb.addInput('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
         txb.addOutput('1111111111111111111114oLvT2', 100000);
         txb.sign({
           prevOutScriptType: 'p2pkh',
@@ -466,17 +412,14 @@ for (const useOldSignArgs of [false, true]) {
             '5f5f5f5f5f5f5f5f5f5f5f5f5f02205f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f' +
             '5f5f5f5f5f5f5f5f5f5f5f5f5f5f0121031b84c5567b126440995d3ed5aaba0565' +
             'd71e1834604819ff9c17f5e9d5dd078fffffffff01a0860100000000001976a914' +
-            '000000000000000000000000000000000000000088ac00000000',
+            '000000000000000000000000000000000000000088ac00000000'
         );
       });
 
       it('supports low R signature signing', () => {
         let txb = new TransactionBuilder();
         txb.setVersion(1);
-        txb.addInput(
-          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-          1,
-        );
+        txb.addInput('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
         txb.addOutput('1111111111111111111114oLvT2', 100000);
         txb.sign({
           prevOutScriptType: 'p2pkh',
@@ -491,15 +434,12 @@ for (const useOldSignArgs of [false, true]) {
             '32574e0b2547d67e209ed14ff05d022059b36ad058be54e887a1a311d5c393cb49' +
             '41f6b93a0b090845ec67094de8972b01210279be667ef9dcbbac55a06295ce870b' +
             '07029bfcdb2dce28d959f2815b16f81798ffffffff01a0860100000000001976a9' +
-            '14000000000000000000000000000000000000000088ac00000000',
+            '14000000000000000000000000000000000000000088ac00000000'
         );
 
         txb = new TransactionBuilder();
         txb.setVersion(1);
-        txb.addInput(
-          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-          1,
-        );
+        txb.addInput('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
         txb.addOutput('1111111111111111111114oLvT2', 100000);
         txb.setLowR();
         txb.sign({
@@ -515,17 +455,14 @@ for (const useOldSignArgs of [false, true]) {
             '49d8be67685799fe51a4c8c62f02204d568d301d5ce14af390d566d4fd50e7b8ee' +
             '48e71ec67786c029e721194dae3601210279be667ef9dcbbac55a06295ce870b07' +
             '029bfcdb2dce28d959f2815b16f81798ffffffff01a0860100000000001976a914' +
-            '000000000000000000000000000000000000000088ac00000000',
+            '000000000000000000000000000000000000000088ac00000000'
         );
       });
 
       it('fails when missing required arguments', () => {
         const txb = new TransactionBuilder();
         txb.setVersion(1);
-        txb.addInput(
-          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-          1,
-        );
+        txb.addInput('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
         txb.addOutput('1111111111111111111114oLvT2', 100000);
         assert.throws(() => {
           (txb as any).sign();
@@ -565,69 +502,60 @@ for (const useOldSignArgs of [false, true]) {
         }
       });
 
-      fixtures.invalid.sign.forEach(f => {
-        it(
-          'throws ' +
-            f.exception +
-            (f.description ? ' (' + f.description + ')' : ''),
-          () => {
-            const txb = construct(f, true);
+      fixtures.invalid.sign.forEach((f) => {
+        it('throws ' + f.exception + (f.description ? ' (' + f.description + ')' : ''), () => {
+          const txb = construct(f, true);
 
-            let threw = false;
-            (f.inputs as any).forEach(
-              (input: any, index: number): void => {
-                input.signs.forEach((sign: any) => {
-                  const keyPairNetwork = (NETWORKS as any)[
-                    sign.network || f.network
-                  ];
-                  const keyPair2 = ECPair.fromWIF(sign.keyPair, keyPairNetwork);
-                  let redeemScript: Buffer | undefined;
-                  let witnessScript: Buffer | undefined;
+          let threw = false;
+          (f.inputs as any).forEach((input: any, index: number): void => {
+            input.signs.forEach((sign: any) => {
+              const keyPairNetwork = (NETWORKS as any)[sign.network || f.network];
+              const keyPair2 = ECPair.fromWIF(sign.keyPair, keyPairNetwork);
+              let redeemScript: Buffer | undefined;
+              let witnessScript: Buffer | undefined;
 
-                  if (sign.redeemScript) {
-                    redeemScript = bscript.fromASM(sign.redeemScript);
-                  }
+              if (sign.redeemScript) {
+                redeemScript = bscript.fromASM(sign.redeemScript);
+              }
 
-                  if (sign.witnessScript) {
-                    witnessScript = bscript.fromASM(sign.witnessScript);
-                  }
+              if (sign.witnessScript) {
+                witnessScript = bscript.fromASM(sign.witnessScript);
+              }
 
-                  if (sign.throws) {
-                    assert.throws(() => {
-                      txb.sign({
-                        prevOutScriptType: sign.prevOutScriptType,
-                        vin: index,
-                        keyPair: keyPair2,
-                        redeemScript,
-                        hashType: sign.hashType,
-                        witnessValue: sign.value,
-                        witnessScript,
-                      });
-                    }, new RegExp(f.exception));
-                    threw = true;
-                  } else {
-                    txb.sign({
-                      prevOutScriptType: sign.prevOutScriptType,
-                      vin: index,
-                      keyPair: keyPair2,
-                      redeemScript,
-                      hashType: sign.hashType,
-                      witnessValue: sign.value,
-                      witnessScript,
-                    });
-                  }
+              if (sign.throws) {
+                assert.throws(() => {
+                  txb.sign({
+                    prevOutScriptType: sign.prevOutScriptType,
+                    vin: index,
+                    keyPair: keyPair2,
+                    redeemScript,
+                    hashType: sign.hashType,
+                    witnessValue: sign.value,
+                    witnessScript,
+                  });
+                }, new RegExp(f.exception));
+                threw = true;
+              } else {
+                txb.sign({
+                  prevOutScriptType: sign.prevOutScriptType,
+                  vin: index,
+                  keyPair: keyPair2,
+                  redeemScript,
+                  hashType: sign.hashType,
+                  witnessValue: sign.value,
+                  witnessScript,
                 });
-              },
-            );
+              }
+            });
+          });
 
-            assert.strictEqual(threw, true);
-          },
-        );
+          assert.strictEqual(threw, true);
+        });
       });
     });
 
     describe('build', () => {
-      fixtures.valid.build.forEach(f => {
+      fixtures.valid.build.forEach((f) => {
         it('builds "' + f.description + '"', () => {
           const txb = construct(f, undefined, useOldSignArgs);
           const tx = f.incomplete ? txb.buildIncomplete() : txb.build();
@@ -637,15 +565,13 @@ for (const useOldSignArgs of [false, true]) {
       });
 
       // TODO: remove duplicate test code
-      fixtures.invalid.build.forEach(f => {
+      fixtures.invalid.build.forEach((f) => {
         describe('for ' + (f.description || f.exception), () => {
           it('throws ' + f.exception, () => {
             assert.throws(() => {
               let txb;
               if (f.txHex) {
-                txb = TransactionBuilder.fromTransaction(
-                  Transaction.fromHex(f.txHex),
-                );
+                txb = TransactionBuilder.fromTransaction(Transaction.fromHex(f.txHex));
               } else {
                 txb = construct(f, undefined, useOldSignArgs);
               }
@@ -660,9 +586,7 @@ for (const useOldSignArgs of [false, true]) {
               assert.throws(() => {
                 let txb;
                 if (f.txHex) {
-                  txb = TransactionBuilder.fromTransaction(
-                    Transaction.fromHex(f.txHex),
-                  );
+                  txb = TransactionBuilder.fromTransaction(Transaction.fromHex(f.txHex));
                 } else {
                   txb = construct(f, undefined, useOldSignArgs);
                 }
@@ -674,9 +598,7 @@ for (const useOldSignArgs of [false, true]) {
             it('does not throw if buildIncomplete', () => {
               let txb;
               if (f.txHex) {
-                txb = TransactionBuilder.fromTransaction(
-                  Transaction.fromHex(f.txHex),
-                );
+                txb = TransactionBuilder.fromTransaction(Transaction.fromHex(f.txHex));
               } else {
                 txb = construct(f, undefined, useOldSignArgs);
               }
@@ -710,7 +632,7 @@ for (const useOldSignArgs of [false, true]) {
           '010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80be9' +
             '59391c100000000000ffffffff0100c817a80400000017a91471a8ec07ff69c6c4' +
             'fee489184c462a9b1b9237488700000000',
-          'hex',
+          'hex'
         ); // arbitrary P2SH input
         const inpTx = Transaction.fromBuffer(inp);
 
@@ -726,7 +648,7 @@ for (const useOldSignArgs of [false, true]) {
           '010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80be9' +
             '59391c100000000000ffffffff0100c817a8040000001600141a15805e1f4040c9' +
             'f68ccc887fca2e63547d794b00000000',
-          'hex',
+          'hex'
         );
         const inpTx = Transaction.fromBuffer(inp);
 
@@ -743,8 +665,8 @@ for (const useOldSignArgs of [false, true]) {
             '010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80b' +
               'e959391c100000000000ffffffff0100c817a80400000022002072df76fcc0b2' +
               '31b94bdf7d8c25d7eef4716597818d211e19ade7813bff7a250200000000',
-            'hex',
-          ),
+            'hex'
+          )
         );
 
         const txb = new TransactionBuilder(NETWORKS.testnet);
@@ -756,7 +678,7 @@ for (const useOldSignArgs of [false, true]) {
     });
 
     describe('multisig', () => {
-      fixtures.valid.multisig.forEach(f => {
+      fixtures.valid.multisig.forEach((f) => {
         it(f.description, () => {
           const network = (NETWORKS as any)[f.network];
           let txb = construct(f, true);
@@ -765,7 +687,7 @@ for (const useOldSignArgs of [false, true]) {
           f.inputs.forEach((input, i) => {
             const redeemScript = bscript.fromASM(input.redeemScript);
 
-            input.signs.forEach(sign => {
+            input.signs.forEach((sign) => {
               // rebuild the transaction each-time after the first
               if (tx) {
                 // manually override the scriptSig?
@@ -790,10 +712,7 @@ for (const useOldSignArgs of [false, true]) {
               tx = txb.buildIncomplete();
 
               // now verify the serialized scriptSig is as expected
-              assert.strictEqual(
-                bscript.toASM(tx.ins[i].script),
-                sign.scriptSig,
-              );
+              assert.strictEqual(bscript.toASM(tx.ins[i].script), sign.scriptSig);
             });
           });
 
@@ -823,9 +742,7 @@ for (const useOldSignArgs of [false, true]) {
           'd561abaac86c37a353b52895a5e6c196d6f44802473044022007be81ffd4297441ab10e740fc9bab9545a2' +
           '194a565cd6aa4cc38b8eaffa343402201c5b4b61d73fa38e49c1ee68cc0e6dfd2f5dae453dd86eb142e87a' +
           '0bafb1bc8401210283409659355b6d1cc3c32decd5d561abaac86c37a353b52895a5e6c196d6f44800000000';
-        const txb = TransactionBuilder.fromTransaction(
-          Transaction.fromHex(rawtx),
-        );
+        const txb = TransactionBuilder.fromTransaction(Transaction.fromHex(rawtx));
         (txb as any).__INPUTS[0].value = 241530;
         (txb as any).__INPUTS[1].value = 241530;
         (txb as any).__INPUTS[2].value = 248920;
@@ -837,32 +754,18 @@ for (const useOldSignArgs of [false, true]) {
       });
 
       it('should classify witness inputs with witness = true during multisigning', () => {
-        const innerKeyPair = ECPair.fromWIF(
-          'cRAwuVuVSBZMPu7hdrYvMCZ8eevzmkExjFbaBLhqnDdrezxN3nTS',
-          network,
-        );
+        const innerKeyPair = ECPair.fromWIF('cRAwuVuVSBZMPu7hdrYvMCZ8eevzmkExjFbaBLhqnDdrezxN3nTS', network);
         const witnessScript = Buffer.from(
           '522102bbbd6eb01efcbe4bd9664b886f26f69de5afcb2e479d72596c8bf21929e3' +
             '52e22102d9c3f7180ef13ec5267723c9c2ffab56a4215241f837502ea8977c8532' +
             'b9ea1952ae',
-          'hex',
+          'hex'
         );
-        const redeemScript = Buffer.from(
-          '002024376a0a9abab599d0e028248d48ebe817bc899efcffa1cd2984d67289daf5af',
-          'hex',
-        );
-        const scriptPubKey = Buffer.from(
-          'a914b64f1a3eacc1c8515592a6f10457e8ff90e4db6a87',
-          'hex',
-        );
+        const redeemScript = Buffer.from('002024376a0a9abab599d0e028248d48ebe817bc899efcffa1cd2984d67289daf5af', 'hex');
+        const scriptPubKey = Buffer.from('a914b64f1a3eacc1c8515592a6f10457e8ff90e4db6a87', 'hex');
         const txb = new TransactionBuilder(network);
         txb.setVersion(1);
-        txb.addInput(
-          'a4696c4b0cd27ec2e173ab1fa7d1cc639a98ee237cec95a77ca7ff4145791529',
-          1,
-          0xffffffff,
-          scriptPubKey,
-        );
+        txb.addInput('a4696c4b0cd27ec2e173ab1fa7d1cc639a98ee237cec95a77ca7ff4145791529', 1, 0xffffffff, scriptPubKey);
         txb.addOutput(scriptPubKey, 99000);
         txb.sign({
           prevOutScriptType: 'p2sh-p2wsh-p2ms',
@@ -877,10 +780,7 @@ for (const useOldSignArgs of [false, true]) {
         const tx = txb.buildIncomplete();
 
         // Only input is segwit, so txid should be accurate with the final tx
-        assert.strictEqual(
-          tx.getId(),
-          'f15d0a65b21b4471405b21a099f8b18e1ae4d46d55efbd0f4766cf11ad6cb821',
-        );
+        assert.strictEqual(tx.getId(), 'f15d0a65b21b4471405b21a099f8b18e1ae4d46d55efbd0f4766cf11ad6cb821');
 
         const txHex = tx.toHex();
         TransactionBuilder.fromTransaction(Transaction.fromHex(txHex));
@@ -897,7 +797,7 @@ for (const useOldSignArgs of [false, true]) {
             'e4b8cef3ca7abac09b95c709ee51ae168fea63dc339a3c58419466ceaeef7f6326' +
             '53266d0e1236431a950cfe52a4104f9308a019258c31049344f85f89d5229b531c' +
             '845836f99b08601f113bce036f9388f7b0f632de8140fe337e62a37f3566500a99' +
-            '934c2231b6cb9fd7584b8e67253ae',
+            '934c2231b6cb9fd7584b8e67253ae'
         );
         const redeemScript = bscript.fromASM(
           'OP_2 0479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f' +
@@ -906,34 +806,22 @@ for (const useOldSignArgs of [false, true]) {
             '9ee51ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe5' +
             '2a 04f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce03' +
             '6f9388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e67' +
-            '2 OP_3 OP_CHECKMULTISIG',
+            '2 OP_3 OP_CHECKMULTISIG'
         );
 
         const tx = new Transaction();
         tx.addInput(
-          Buffer.from(
-            'cff58855426469d0ef16442ee9c644c4fb13832467bcbc3173168a7916f07149',
-            'hex',
-          ),
+          Buffer.from('cff58855426469d0ef16442ee9c644c4fb13832467bcbc3173168a7916f07149', 'hex'),
           0,
           undefined,
-          redeemScripSig,
+          redeemScripSig
         );
-        tx.addOutput(
-          Buffer.from(
-            '76a914aa4d7985c57e011a8b3dd8e0e5a73aaef41629c588ac',
-            'hex',
-          ),
-          1000,
-        );
+        tx.addOutput(Buffer.from('76a914aa4d7985c57e011a8b3dd8e0e5a73aaef41629c588ac', 'hex'), 1000);
 
         // now import the Transaction
         const txb = TransactionBuilder.fromTransaction(tx, NETWORKS.testnet);
 
-        const keyPair2 = ECPair.fromWIF(
-          '91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgx3cTMqe',
-          network,
-        );
+        const keyPair2 = ECPair.fromWIF('91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgx3cTMqe', network);
         txb.sign({
           prevOutScriptType: 'p2sh-p2ms',
           vin: 0,
@@ -942,10 +830,7 @@ for (const useOldSignArgs of [false, true]) {
         });
 
         const tx2 = txb.build();
-        assert.strictEqual(
-          tx2.getId(),
-          'eab59618a564e361adef6d918bd792903c3d41bcf1220137364fb847880467f9',
-        );
+        assert.strictEqual(tx2.getId(), 'eab59618a564e361adef6d918bd792903c3d41bcf1220137364fb847880467f9');
         assert.strictEqual(
           bscript.toASM(tx2.ins[0].script),
           'OP_0 3045022100daf0f4f3339d9fbab42b098045c1e4958ee3b308f4ae17be80b' +
@@ -958,22 +843,17 @@ for (const useOldSignArgs of [false, true]) {
             'cd85c778e4b8cef3ca7abac09b95c709ee51ae168fea63dc339a3c58419466ceae' +
             'ef7f632653266d0e1236431a950cfe52a4104f9308a019258c31049344f85f89d5' +
             '229b531c845836f99b08601f113bce036f9388f7b0f632de8140fe337e62a37f35' +
-            '66500a99934c2231b6cb9fd7584b8e67253ae',
+            '66500a99934c2231b6cb9fd7584b8e67253ae'
         );
       });
 
       it('should not classify blank scripts as nonstandard', () => {
         let txb = new TransactionBuilder();
         txb.setVersion(1);
-        txb.addInput(
-          'aa94ab02c182214f090e99a0d57021caffd0f195a81c24602b1028b130b63e31',
-          0,
-        );
+        txb.addInput('aa94ab02c182214f090e99a0d57021caffd0f195a81c24602b1028b130b63e31', 0);
 
         const incomplete = txb.buildIncomplete().toHex();
-        const innerKeyPair = ECPair.fromWIF(
-          'L1uyy5qTuGrVXrmrsvHWHgVzW9kKdrp27wBC7Vs6nZDTF2BRUVwy',
-        );
+        const innerKeyPair = ECPair.fromWIF('L1uyy5qTuGrVXrmrsvHWHgVzW9kKdrp27wBC7Vs6nZDTF2BRUVwy');
 
         // sign, as expected
         txb.addOutput('1Gokm82v6DmtwKEB8AiVhm82hyFSsEvBDK', 15000);
@@ -983,15 +863,10 @@ for (const useOldSignArgs of [false, true]) {
           keyPair: innerKeyPair,
         });
         const txId = txb.build().getId();
-        assert.strictEqual(
-          txId,
-          '54f097315acbaedb92a95455da3368eb45981cdae5ffbc387a9afc872c0f29b3',
-        );
+        assert.strictEqual(txId, '54f097315acbaedb92a95455da3368eb45981cdae5ffbc387a9afc872c0f29b3');
 
         // and, repeat
-        txb = TransactionBuilder.fromTransaction(
-          Transaction.fromHex(incomplete),
-        );
+        txb = TransactionBuilder.fromTransaction(Transaction.fromHex(incomplete));
         txb.addOutput('1Gokm82v6DmtwKEB8AiVhm82hyFSsEvBDK', 15000);
         txb.sign({
           prevOutScriptType: 'p2pkh',

@@ -1,6 +1,6 @@
 // <scriptSig> {serialized scriptPubKey script}
 
-import { script as bscript } from '../../'
+import { script as bscript } from '../../';
 const typeforce = require('typeforce');
 
 import * as p2ms from '../multisig';
@@ -22,23 +22,11 @@ export function check(chunks: Buffer[], allowIncomplete?: boolean): boolean {
   const witnessRawScriptSig = bscript.compile(chunks.slice(0, -1));
 
   // match types
-  if (
-    p2pkh.input.check(witnessRawScriptSig) &&
-    p2pkh.output.check(witnessScriptChunks)
-  )
-    return true;
+  if (p2pkh.input.check(witnessRawScriptSig) && p2pkh.output.check(witnessScriptChunks)) return true;
 
-  if (
-    p2ms.input.check(witnessRawScriptSig, allowIncomplete) &&
-    p2ms.output.check(witnessScriptChunks)
-  )
-    return true;
+  if (p2ms.input.check(witnessRawScriptSig, allowIncomplete) && p2ms.output.check(witnessScriptChunks)) return true;
 
-  if (
-    p2pk.input.check(witnessRawScriptSig) &&
-    p2pk.output.check(witnessScriptChunks)
-  )
-    return true;
+  if (p2pk.input.check(witnessRawScriptSig) && p2pk.output.check(witnessScriptChunks)) return true;
 
   return false;
 }

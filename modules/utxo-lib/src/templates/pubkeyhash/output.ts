@@ -1,7 +1,7 @@
 // OP_DUP OP_HASH160 {pubKeyHash} OP_EQUALVERIFY OP_CHECKSIG
 
-import { script as bscript } from '../../'
-import { opcodes } from '../../'
+import { script as bscript } from '../../';
+import { opcodes } from '../../';
 
 export function check(script: Buffer | Array<number | Buffer>): boolean {
   const buffer = bscript.compile(script);

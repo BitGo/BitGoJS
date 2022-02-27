@@ -1,15 +1,12 @@
 // m [pubKeys ...] n OP_CHECKMULTISIG
 
-import { Stack } from '../../'
-import { script as bscript } from '../../'
-import { opcodes } from '../../'
+import { Stack } from '../../';
+import { script as bscript } from '../../';
+import { opcodes } from '../../';
 const { Number } = require('typeforce');
 const OP_INT_BASE = opcodes.OP_RESERVED; // OP_1 - 1
 
-export function check(
-  script: Buffer | Stack,
-  allowIncomplete?: boolean,
-): boolean {
+export function check(script: Buffer | Stack, allowIncomplete?: boolean): boolean {
   const chunks = bscript.decompile(script) as Stack;
 
   if (chunks.length < 4) return false;

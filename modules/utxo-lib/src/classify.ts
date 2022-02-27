@@ -64,16 +64,10 @@ function classifyWitness(script: Buffer[], allowIncomplete?: boolean): string {
   if (!chunks) throw new TypeError('Invalid script');
 
   if (witnessPubKeyHash.input.check(chunks)) return types.P2WPKH;
-  if (witnessScriptHash.input.check(chunks as Buffer[], allowIncomplete))
-    return types.P2WSH;
+  if (witnessScriptHash.input.check(chunks as Buffer[], allowIncomplete)) return types.P2WSH;
   if (taproot.input.check(chunks as Buffer[])) return types.P2TR;
 
   return types.NONSTANDARD;
 }
 
-export {
-  classifyInput as input,
-  classifyOutput as output,
-  classifyWitness as witness,
-  types,
-};
+export { classifyInput as input, classifyOutput as output, classifyWitness as witness, types };

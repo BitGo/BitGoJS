@@ -1,7 +1,7 @@
 // {signature} {pubKey}
 
-import { Stack } from '../../'
-import { script as bscript } from '../../'
+import { Stack } from '../../';
+import { script as bscript } from '../../';
 
 function isCompressedCanonicalPubKey(pubKey: Buffer): boolean {
   return bscript.isCanonicalPubKey(pubKey) && pubKey.length === 33;

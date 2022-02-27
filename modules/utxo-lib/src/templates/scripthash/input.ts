@@ -1,25 +1,20 @@
 // <scriptSig> {serialized scriptPubKey script}
 
-import { script as bscript } from '../../'
+import { script as bscript } from '../../';
 import * as p2ms from '../multisig';
 import * as p2pk from '../pubkey';
 import * as p2pkh from '../pubkeyhash';
 import * as p2wpkho from '../witnesspubkeyhash/output';
 import * as p2wsho from '../witnessscripthash/output';
 
-export function check(
-  script: Buffer | Array<number | Buffer>,
-  allowIncomplete?: boolean,
-): boolean {
+export function check(script: Buffer | Array<number | Buffer>, allowIncomplete?: boolean): boolean {
   const chunks = bscript.decompile(script)!;
   if (chunks.length < 1) return false;
 
   const lastChunk = chunks[chunks.length - 1];
   if (!Buffer.isBuffer(lastChunk)) return false;
 
-  const scriptSigChunks = bscript.decompile(
-    bscript.compile(chunks.slice(0, -1)),
-  )!;
+  const scriptSigChunks = bscript.decompile(bscript.compile(chunks.slice(0, -1)))!;
   const redeemScriptChunks = bscript.decompile(lastChunk);
 
   // is redeemScript a valid script?
@@ -30,29 +25,15 @@ export function check(
 
   // is witness?
   if (chunks.length === 1) {
-    return (
-      p2wsho.check(redeemScriptChunks) || p2wpkho.check(redeemScriptChunks)
-    );
+    return p2wsho.check(redeemScriptChunks) || p2wpkho.check(redeemScriptChunks);
   }
 
   // match types
-  if (
-    p2pkh.input.check(scriptSigChunks) &&
-    p2pkh.output.check(redeemScriptChunks)
-  )
-    return true;
+  if (p2pkh.input.check(scriptSigChunks) && p2pkh.output.check(redeemScriptChunks)) return true;
 
-  if (
-    p2ms.input.check(scriptSigChunks, allowIncomplete) &&
-    p2ms.output.check(redeemScriptChunks)
-  )
-    return true;
+  if (p2ms.input.check(scriptSigChunks, allowIncomplete) && p2ms.output.check(redeemScriptChunks)) return true;
 
-  if (
-    p2pk.input.check(scriptSigChunks) &&
-    p2pk.output.check(redeemScriptChunks)
-  )
-    return true;
+  if (p2pk.input.check(scriptSigChunks) && p2pk.output.check(redeemScriptChunks)) return true;
 
   return false;
 }
