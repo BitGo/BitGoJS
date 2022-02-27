@@ -11,12 +11,7 @@ const HEADER: Buffer = Buffer.from('aa21a9ed', 'hex');
 export function check(script: Buffer | Array<number | Buffer>): boolean {
   const buffer = bscript.compile(script);
 
-  return (
-    buffer.length > 37 &&
-    buffer[0] === OPS.OP_RETURN &&
-    buffer[1] === 0x24 &&
-    buffer.slice(2, 6).equals(HEADER)
-  );
+  return buffer.length > 37 && buffer[0] === OPS.OP_RETURN && buffer[1] === 0x24 && buffer.slice(2, 6).equals(HEADER);
 }
 
 check.toJSON = (): string => {

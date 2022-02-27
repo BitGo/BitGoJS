@@ -6,10 +6,7 @@ import { OPS } from '../../script';
 import * as types from '../../types';
 const OP_INT_BASE = OPS.OP_RESERVED; // OP_1 - 1
 
-export function check(
-  script: Buffer | Stack,
-  allowIncomplete?: boolean,
-): boolean {
+export function check(script: Buffer | Stack, allowIncomplete?: boolean): boolean {
   const chunks = bscript.decompile(script) as Stack;
 
   if (chunks.length < 4) return false;
