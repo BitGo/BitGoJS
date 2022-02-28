@@ -58,7 +58,7 @@ export type Network = {
     pubKeyHash: number;
     scriptHash: number;
   };
-  bech32: string;
+  bech32?: string;
   forkId?: number;
   /**
    * @deprecated
@@ -111,7 +111,6 @@ export const networks: Record<NetworkName, Network> = {
   // https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x00,
     scriptHash: 0x05,
@@ -126,7 +125,6 @@ export const networks: Record<NetworkName, Network> = {
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
@@ -167,7 +165,6 @@ export const networks: Record<NetworkName, Network> = {
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
   bitcoinsv: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x00,
     scriptHash: 0x05,
@@ -177,7 +174,6 @@ export const networks: Record<NetworkName, Network> = {
   },
   bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
@@ -190,7 +186,6 @@ export const networks: Record<NetworkName, Network> = {
   // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
   dash: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x4c,
     scriptHash: 0x10,
@@ -199,7 +194,6 @@ export const networks: Record<NetworkName, Network> = {
   },
   dashTest: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x8c,
     scriptHash: 0x13,
@@ -232,7 +226,6 @@ export const networks: Record<NetworkName, Network> = {
   // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
@@ -241,7 +234,6 @@ export const networks: Record<NetworkName, Network> = {
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bech32: '',
     bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x1d25,
     scriptHash: 0x1cba,

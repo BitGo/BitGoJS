@@ -43,11 +43,7 @@ export class UtxoTransactionBuilder<T extends UtxoTransaction = UtxoTransaction>
     return new UtxoTransaction(network, tx);
   }
 
-  static fromTransaction(
-    tx: UtxoTransaction,
-    network?: bitcoinjs.Network,
-    prevOutputs?: TxOutput[]
-  ): UtxoTransactionBuilder {
+  static fromTransaction(tx: UtxoTransaction, network?: Network, prevOutputs?: TxOutput[]): UtxoTransactionBuilder {
     return new UtxoTransactionBuilder(tx.network, TransactionBuilder.fromTransaction(tx), prevOutputs);
   }
 

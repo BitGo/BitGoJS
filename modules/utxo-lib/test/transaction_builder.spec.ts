@@ -1,7 +1,8 @@
+import * as bitcoinjs from 'bitcoinjs-lib';
+import { address as baddress } from 'bitcoinjs-lib';
 import * as assert from 'assert';
 import { beforeEach, describe, it } from 'mocha';
 import { networks as NETWORKS, payments, script as bscript, Transaction, TransactionBuilder } from '..';
-import { address as baddress } from 'bitcoinjs-lib';
 import { ECPair } from '../src/noble_ecc';
 
 console.warn = (): void => {
@@ -758,7 +759,10 @@ for (const useOldSignArgs of [false, true]) {
       });
 
       it('should classify witness inputs with witness = true during multisigning', () => {
-        const innerKeyPair = ECPair.fromWIF('cRAwuVuVSBZMPu7hdrYvMCZ8eevzmkExjFbaBLhqnDdrezxN3nTS', network);
+        const innerKeyPair = ECPair.fromWIF(
+          'cRAwuVuVSBZMPu7hdrYvMCZ8eevzmkExjFbaBLhqnDdrezxN3nTS',
+          network as bitcoinjs.Network
+        );
         const witnessScript = Buffer.from(
           '522102bbbd6eb01efcbe4bd9664b886f26f69de5afcb2e479d72596c8bf21929e3' +
             '52e22102d9c3f7180ef13ec5267723c9c2ffab56a4215241f837502ea8977c8532' +
@@ -825,7 +829,10 @@ for (const useOldSignArgs of [false, true]) {
         // now import the Transaction
         const txb = TransactionBuilder.fromTransaction(tx, NETWORKS.testnet);
 
-        const keyPair2 = ECPair.fromWIF('91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgx3cTMqe', network);
+        const keyPair2 = ECPair.fromWIF(
+          '91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgx3cTMqe',
+          network as bitcoinjs.Network
+        );
         txb.sign({
           prevOutScriptType: 'p2sh-p2ms',
           vin: 0,

@@ -23,7 +23,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
 
   static fromTransaction(
     transaction: ZcashTransaction,
-    network?: bitcoinjs.Network,
+    network?: Network,
     prevOutput?: bitcoinjs.TxOutput[]
   ): ZcashTransactionBuilder {
     const txb = new ZcashTransactionBuilder(transaction.network);

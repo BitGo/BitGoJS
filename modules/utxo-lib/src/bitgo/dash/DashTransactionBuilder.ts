@@ -23,7 +23,7 @@ export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransacti
 
   static fromTransaction(
     tx: DashTransaction,
-    network?: bitcoinjs.Network,
+    network?: Network,
     prevOutput?: bitcoinjs.TxOutput[]
   ): DashTransactionBuilder {
     const txb = new DashTransactionBuilder(tx.network, UtxoTransactionBuilder.fromTransaction(tx, network, prevOutput));
