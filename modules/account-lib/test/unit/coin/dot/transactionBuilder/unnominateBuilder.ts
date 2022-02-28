@@ -1,13 +1,10 @@
 import should from 'should';
 import { UnnominateBuilder } from '../../../../../src/coin/dot';
-import { accounts, rawTx } from '../../../../resources/dot';
+import { accounts, rawTx, genesisHash, specVersion, txVersion } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot Unnominate Builder', () => {
   let builder: UnnominateBuilder;
-
-  const { genesisHash, specVersion, txVersion } = Networks.test.dot;
   const sender = accounts.account1;
   const refBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
 
@@ -22,8 +19,7 @@ describe('Dot Unnominate Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(refBlock)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       builder.sign({ key: sender.secretKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -45,8 +41,7 @@ describe('Dot Unnominate Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(refBlock)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' })
-        .version(8);
+        .fee({ amount: 0, type: 'tip' });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.sender, sender.address);
@@ -63,7 +58,7 @@ describe('Dot Unnominate Builder', () => {
 
     it('should build from raw signed tx', async () => {
       builder.from(rawTx.unnominate.signed);
-      builder.validity({ firstValid: 3933 }).referenceBlock(refBlock).version(8);
+      builder.validity({ firstValid: 3933 }).referenceBlock(refBlock);
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.sender, sender.address);
