@@ -13,6 +13,7 @@ import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import {
   BaseCoin,
   SignedTransaction,
+  SignedTransactionRequest,
   TransactionPrebuild,
   VerificationOptions,
   VerifyAddressOptions,
@@ -20,12 +21,11 @@ import {
 import { Eth } from './coins';
 import * as internal from './internal/internal';
 import { drawKeycard } from './internal/keycard';
-import { Keychain } from './keychains';
+import { Keychain, KeyIndices } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';
-import { KeyIndices } from '.';
 import { TssUtils } from './internal/tssUtils';
 
 const debug = debugLib('bitgo:v2:wallet');
@@ -134,6 +134,7 @@ export interface CustomSigningFunction {
 }
 
 export interface WalletSignTransactionOptions {
+  reqId?: RequestTracer;
   txPrebuild?: TransactionPrebuild;
   prv?: string;
   pubs?: string[];
@@ -381,6 +382,7 @@ export interface SubmitTransactionOptions {
     txBase64?: string;
   };
   comment?: string;
+  txRequestId?: string;
 }
 
 export interface SendOptions {
@@ -503,36 +505,25 @@ export interface DownloadKeycardOptions {
   backupKeyID?: string;
 }
 
-// #region TSS interfaces
-
-interface TSSSendManyOptions extends SendManyOptions {
-  reqId: RequestTracer;
-  intentType: string;
-  recipients: {
-    address: string;
-    amount: string | number;
-  }[];
-}
-
 // #endregion
 
 export class Wallet {
   public readonly bitgo: BitGo;
   public readonly baseCoin: BaseCoin;
   private _wallet: WalletData;
+  private readonly tssUtils: TssUtils;
   private readonly _permissions?: string[];
-  private tssUtils: TssUtils;
 
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this._wallet = walletData;
-    this.tssUtils = new TssUtils(this.bitgo, this.baseCoin, this);
     const userId = _.get(bitgo, '_user.id');
     if (_.isString(userId)) {
       const userDetails = _.find(walletData.users, { user: userId });
       this._permissions = _.get(userDetails, 'permissions');
     }
+    this.tssUtils = new TssUtils(bitgo, baseCoin, this);
   }
 
   /**
@@ -1878,6 +1869,10 @@ export class Wallet {
    * @returns {*}
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
+    if (this._wallet.multisigType === 'tss') {
+      return this.prebuildTransactionTss(params);
+    }
+
     // Whitelist params to build tx
     const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
     debug('prebuilding transaction: %O', whitelistedParams);
@@ -1932,7 +1927,13 @@ export class Wallet {
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       throw new Error('txPrebuild must be an object');
     }
+
     const presign = await this.baseCoin.presignTransaction(params);
+
+    if (txPrebuild.consolidateId === undefined && this._wallet.multisigType === 'tss') {
+      // consolidation will continue with single sig signing
+      return this.signTransactionTss({ ...params, prv: this.getUserPrv(presign) });
+    }
 
     let { pubs } = params;
     if (!pubs && this.baseCoin.keyIdsForSigning().length > 1) {
@@ -2061,6 +2062,7 @@ export class Wallet {
       },
       keychain: keychains[0],
       pubs: keychains.map((k) => k.pub),
+      reqId: params.reqId,
     };
 
     if (txPrebuild.consolidationDetails && this.baseCoin.supportsDerivationKeypair()) {
@@ -2173,13 +2175,16 @@ export class Wallet {
    * - halfSigned: object containing transaction (txHex or txBase64) to submit
    */
   async submitTransaction(params: SubmitTransactionOptions = {}): Promise<any> {
-    common.validateParams(params, [], ['otp', 'txHex']);
+    common.validateParams(params, [], ['otp', 'txHex', 'txRequestId']);
     const hasTxHex = !!params.txHex;
     const hasHalfSigned = !!params.halfSigned;
 
-    if ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned)) {
+    if (params.txRequestId && (hasTxHex || hasHalfSigned)) {
+      throw new Error('must supply exactly one of txRequestId, txHex, or halfSigned');
+    } else if (!params.txRequestId && ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned))) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
+
     return this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
       .send(params)
@@ -2287,42 +2292,42 @@ export class Wallet {
         }
       });
     }
-    if (this._wallet.multisigType !== 'tss') {
-      const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
-      const selectParams = _.pick(params, [
-        'recipients',
-        'numBlocks',
-        'feeRate',
-        'maxFeeRate',
-        'minConfirms',
-        'enforceMinConfirmsForChange',
-        'targetWalletUnspents',
-        'message',
-        'minValue',
-        'maxValue',
-        'sequenceId',
-        'lastLedgerSequence',
-        'ledgerSequenceDelta',
-        'gasPrice',
-        'noSplitChange',
-        'unspents',
-        'comment',
-        'otp',
-        'changeAddress',
-        'instant',
-        'memo',
-        'type',
-        'trustlines',
-        'transferId',
-        'stakingOptions',
-      ]);
-      const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
 
-      return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
-    } else {
-      const tssParams = _.assign(params, { intentType: 'payment' }) as TSSSendManyOptions;
-      return this.sendManyTSS(tssParams);
+    if (this._wallet.multisigType === 'tss') {
+      return this.sendManyTss(params);
     }
+
+    const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
+    const selectParams = _.pick(params, [
+      'recipients',
+      'numBlocks',
+      'feeRate',
+      'maxFeeRate',
+      'minConfirms',
+      'enforceMinConfirmsForChange',
+      'targetWalletUnspents',
+      'message',
+      'minValue',
+      'maxValue',
+      'sequenceId',
+      'lastLedgerSequence',
+      'ledgerSequenceDelta',
+      'gasPrice',
+      'noSplitChange',
+      'unspents',
+      'comment',
+      'otp',
+      'changeAddress',
+      'instant',
+      'memo',
+      'type',
+      'trustlines',
+      'transferId',
+      'stakingOptions',
+    ]);
+    const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
+
+    return this.bitgo.post(this.url('/tx/send')).send(finalTxParams).result();
   }
 
   /**
@@ -2692,23 +2697,92 @@ export class Wallet {
     }
   }
 
-  // #region TSS
+  /* MARK: TSS Helpers */
 
   /**
-   * Builds, sign and send a transaction using TSS keys
+   * Prebuilds a transaction for a TSS wallet.
    *
-   * @param {TSSSendManyOptions} params - parameters to build and sign the tx
-   * @returns {Promise<any>}
+   * @param params prebuild transaction options
    */
-  private async sendManyTSS(params: TSSSendManyOptions): Promise<any> {
-    // improve validations
-    if (_.isNil(params.walletPassphrase)) {
-      throw new Error('Missing wallet passphrase');
+  private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
+    if (params.type !== 'transfer') {
+      throw new Error(`transaction type not supported: ${params.type}`);
     }
 
-    const unsignedTx = await this.tssUtils.prebuildTxWithIntent(params);
+    const reqId = params.reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
 
-    return this.tssUtils.signAndSendTxRequest(unsignedTx, params.walletPassphrase, params.reqId);
+    const unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
+      reqId,
+      intentType: 'payment',
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      recipients: params.recipients || [],
+      memo: params.memo,
+    });
+
+    const unsignedTxs = unsignedTxRequest.unsignedTxs;
+    if (unsignedTxs.length !== 1) {
+      throw new Error(`Expected a single unsigned tx for tx request with id: ${unsignedTxRequest.txRequestId}`);
+    }
+
+    const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
+    return {
+      walletId: this.id(),
+      wallet: this,
+      txRequestId: unsignedTxRequest.txRequestId,
+      txHex: unsignedTxs[0].serializedTxHex,
+      buildParams: whitelistedParams,
+    };
   }
-  // #endregion
+
+  /**
+   * Signs a transaction from a TSS wallet.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTss(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction> {
+    if (!params.txPrebuild) {
+      throw new Error('txPrebuild required to sign transactions with TSS');
+    }
+
+    if (params.txPrebuild.consolidateId !== undefined) {
+      throw new Error('should not sign consolidation transactions with TSS');
+    }
+
+    if (!params.txPrebuild.txRequestId) {
+      throw new Error('txRequestId required to sign transactions with TSS');
+    }
+
+    if (!params.prv) {
+      throw new Error('prv required to sign transactions with TSS');
+    }
+
+    try {
+      const signedTxRequest = await this.tssUtils.signTxRequest(
+        params.txPrebuild.txRequestId,
+        params.prv,
+        params.reqId || new RequestTracer()
+      );
+      return {
+        txRequestId: signedTxRequest.txRequestId,
+      };
+    } catch (e) {
+      throw new Error('failed to sign transaction');
+    }
+  }
+
+  /**
+   * Builds, signs, and sends a transaction from a TSS wallet.
+   *
+   * @param params send options
+   */
+  private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
+    const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
+    if (!signedTransaction.txRequestId) {
+      throw new Error('txRequestId missing from signed transaction');
+    }
+
+    return this.tssUtils.sendTxRequest(signedTransaction.txRequestId);
+  }
 }

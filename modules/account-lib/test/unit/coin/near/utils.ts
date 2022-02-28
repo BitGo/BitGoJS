@@ -64,4 +64,12 @@ describe('utils', () => {
     should.equal(utils.isValidTransactionId(txIds.id1.slice(2)), false);
     should.equal(utils.isValidTransactionId(txIds.id1 + 'ff'), false);
   });
+
+  it('should not validate addresses correctly', () => {
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address1), false);
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address2), false);
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address3), false);
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address4), false);
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address5), false);
+  });
 });

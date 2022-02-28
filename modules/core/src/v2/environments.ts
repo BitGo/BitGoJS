@@ -102,7 +102,7 @@ const testnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
-  etherscanBaseUrl: 'https://api-kovan.etherscan.io',
+  etherscanBaseUrl: 'https://api-goerli.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
@@ -156,7 +156,7 @@ export const Environments: Environments = {
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
-    etherscanBaseUrl: 'https://api-kovan.etherscan.fakeurl',
+    etherscanBaseUrl: 'https://api-goerli.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   }),
@@ -191,7 +191,7 @@ export const Environments: Environments = {
         : 'https://blockstream.info/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
-        ? 'https://api-kovan.etherscan.io'
+        ? 'https://api-goerli.etherscan.io'
         : 'https://api.etherscan.io',
     stellarFederationServerUrl:
       process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar'

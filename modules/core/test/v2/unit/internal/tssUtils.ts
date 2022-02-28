@@ -7,7 +7,7 @@ import * as sinon from 'sinon';
 
 import Eddsa, { GShare, KeyShare, SignShare } from '../../../../../account-lib/dist/src/mpc/tss';
 import { Keychain, Wallet } from '../../../../src';
-import { SignatureShareRecord, SignatureShareType, TssUtils } from '../../../../src/v2/internal/tssUtils';
+import { SignatureShareRecord, SignatureShareType, TssUtils, TxRequest } from '../../../../src/v2/internal/tssUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 import { RequestTracer } from '../../../../src/v2/internal/util';
@@ -20,12 +20,11 @@ describe('TSS Utils:', async function () {
   let wallet: Wallet;
   let bitgoKeyShare;
   const reqId = new RequestTracer;
-  const walletPassphrase = 'MyTssWall3t!';
   const coinName = 'tsol';
   const validUserPShare = '{"i":"1","y":"c4f36234dbcb78ba7efee44771692a71f1d366c70b99656922168590a63c96c2","x":"5d462225ce32327c1ad0c9b1c2263bdbdb154236fb4b3445f199f05b135d010b","prefix":"77e5611f781363b4e303bbe20bed8c62028d88ba22b47af9e77e6b134c373009"}';
   const txRequest = {
     txRequestId: 'randomId',
-    unsignedTxs: [{ signableHex: 'randomhex', serializedTx: 'randomhex2' }],
+    unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2' }],
     signatureShares: [
       { from: 'bitgo',
         to: 'user',
@@ -208,10 +207,20 @@ describe('TSS Utils:', async function () {
     });
   });
 
-  describe('signAndSendTxRequest:', function() {
-    it('should succeed', async function () {
-      // each function used here is individually tested, so here we mock everything and verify inputs / outputs
-      const userPShare = 'userPShare';
+  describe('signTxRequest:', function() {
+    const txRequestId = 'txRequestId';
+    const userPShare = 'userPShare';
+    const txRequest: TxRequest = {
+      txRequestId,
+      unsignedTxs: [
+        {
+          serializedTxHex: 'ababfefe',
+          signableHex: 'deadbeef',
+        }
+      ]
+    };
+
+    beforeEach(function () {
       const userSignShare: SignShare = {
         xShare: {
           i: 'i',
@@ -234,10 +243,6 @@ describe('TSS Utils:', async function () {
         gamma: 'gamma',
       };
 
-      const getUserPShare = sandbox.stub(tssUtils, 'getUserPShare');
-      getUserPShare.calledOnceWithExactly(reqId, 'walletPassphrase');
-      getUserPShare.resolves(userPShare);
-
       const createUserSignShare = sandbox.stub(tssUtils, 'createUserSignShare');
       createUserSignShare.calledOnceWithExactly(Buffer.from('deadbeef', 'hex'), userPShare);
       createUserSignShare.resolves(userSignShare);
@@ -257,21 +262,30 @@ describe('TSS Utils:', async function () {
       const sendUserToBitgoGShare = sandbox.stub(tssUtils, 'sendUserToBitgoGShare');
       sendUserToBitgoGShare.calledOnceWithExactly('txRequestId', userToBitGoGShare);
       sendUserToBitgoGShare.resolves(undefined);
+    });
 
-      const sendTxRequest = sandbox.stub(tssUtils, 'sendTxRequest');
-      sendTxRequest.calledOnceWithExactly('txRequestId');
-      sendTxRequest.resolves('sendTxResponse');
+    it('signTxRequest should succeed with txRequest object as input', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith('txRequestId');
 
-      const result = await tssUtils.signAndSendTxRequest({
-        txRequestId: 'txRequestId',
-        unsignedTxs: [{
-          serializedTx: 'unsignedSerializedTx',
-          signableHex: 'deadbeef',
-        }],
-      }, 'walletPassphrase', reqId);
-      result.should.equal('sendTxResponse');
+      const signedTxRequest = await tssUtils.signTxRequest(txRequest, userPShare, reqId);
+      signedTxRequest.should.deepEqual(txRequest);
+      sinon.assert.calledOnce(getTxRequest);
 
-      sandbox.verify();
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should succeed with txRequest id as input', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith(txRequestId);
+
+      const signedTxRequest = await tssUtils.signTxRequest(txRequestId, userPShare, reqId);
+      signedTxRequest.should.deepEqual(txRequest);
+      sinon.assert.calledTwice(getTxRequest);
+
+      sandbox.verifyAndRestore();
     });
   });
 
@@ -356,22 +370,6 @@ describe('TSS Utils:', async function () {
       });
 
       nockedCreateTx.isDone().should.be.true();
-    });
-  });
-
-  describe('getUserPShare:', async function() {
-    it('should succeed to get the user P Share', async function() {
-      const nock = await nockUserKey({ coin: coinName });
-      const userPShare = await tssUtils.getUserPShare(reqId, walletPassphrase);
-      userPShare.should.equal(validUserPShare);
-      nock.isDone().should.equal(true);
-    });
-
-    it('should fail if the password is wrong', async function() {
-      const nock = await nockUserKey({ coin: coinName });
-      const wrongPassword = 'randompass';
-      await tssUtils.getUserPShare(reqId, wrongPassword ).should.be.rejectedWith('password error - ccm: tag doesn\'t match');
-      nock.isDone().should.equal(true);
     });
   });
 
@@ -468,21 +466,21 @@ describe('TSS Utils:', async function () {
       await tssUtils.getBitgoToUserRShare(txRequest.txRequestId).should.be.rejectedWith('No signatures shares found for id: ' + txRequest.txRequestId);
       nock.isDone().should.equal(true);
     });
-
-    it('should fail if there is no txRequest', async function() {
-      const response = { txRequests: [] };
-      const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
-      await tssUtils.getBitgoToUserRShare(txRequest.txRequestId).should.be.rejectedWith('No txRequest found for id: ' + txRequest.txRequestId);
-      nock.isDone().should.equal(true);
-    });
   });
 
   describe('getTxRequest:', async function() {
-    it('should succeed to get txRequest by id', async function() {
+    it('should succeed to get txRequest by id', async function () {
       const response = { txRequests: [txRequest] };
       const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
       const txReq = await tssUtils.getTxRequest(txRequest.txRequestId);
-      txReq.should.deepEqual(response);
+      txReq.should.deepEqual(txRequest);
+      nock.isDone().should.equal(true);
+    });
+
+    it('should fail if there are no txRequests', async function () {
+      const response = { txRequests: [] };
+      const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+      await tssUtils.getTxRequest(txRequest.txRequestId).should.be.rejectedWith('Unable to find TxRequest with id randomId');
       nock.isDone().should.equal(true);
     });
   });
@@ -624,27 +622,6 @@ describe('TSS Utils:', async function () {
       .reply(200, backupKeychain);
 
     return backupKeychain;
-  }
-
-  async function nockUserKey(params: {
-    coin: string,
-  }): Promise<nock.Scope> {
-    const userKeychain: Keychain = {
-      id: '1',
-      pub: '',
-      // source: 'user',
-      // type: 'tss',
-      addressDerivationKeypair: {
-        pub: '62d29SxqRcvQgt3se81mpCtaY7DmF7ikqYkxqX8MkZQ7',
-        encryptedPrv: '{"iv":"006X48Gm8u13yR7vg//gIA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"NmbmXejhE6s=","ct":"WCDi17IA1NEWCeMUQhajelWceueXdHMgpIbt8EftIQW44mi+Komxa33xDW8DJVTR7RPjp5MEC38NeSw5McLc+vit1FvrHg/VGyhFsoMZgILIORZK/LrC617Wvc16dyyE"}',
-      },
-      commonPub: 'EFpAC5x8eP3L9a4YSXSiuf8NZfXchU6yWJREWvvpNBhs',
-      encryptedPrv: '{"iv":"W6QRXzBSkeCD8dFyO0FnBg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"fsJ5Oz3vcr4=","ct":"99J8zy0i8berN7/qLFiyItD8esL1b4o741YlDwy4SWOo9oJ4SuBjjGV/NODgYNg+z/a9Er9QqH5h1KFsuakcWt+Hd3fcZd6h384CDwtHKGWLCJueHXffcyaTlMnMQOVdKZct/T3gm5zhy6+9uE27cBUz3C6wr9SxUf55I4xo8XXppWDlt307+Y7W1orf4/luL4MIoadlVaRE22znz6FUT5KgkNTaVcgVZ2wqUoAJZE6ElHeJ05akiOAziu0E4lzMIfueHTkFBVOdljSCVTuIUVgmoN6QEj44ZyxRhcwzDEcUgYoY0W1lwMsv4w=="}',
-    };
-
-    return nock('https://bitgo.fakeurl')
-      .get(`/api/v2/${params.coin}/key/5b3424f91bf349930e34017500000000`, )
-      .reply(200, userKeychain);
   }
 
   async function nockSendTxRequest(params: {coin:string, walletId: string, txRequestId: string}): Promise<nock.Scope> {

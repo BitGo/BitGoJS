@@ -13,10 +13,13 @@ import { CustomSigningFunction, Wallet } from '../../../src/';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
+import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';
+import { RequestTracer } from '../../../src/v2/internal/util';
 
 nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {
+  const reqId = new RequestTracer();
   const bitgo = new TestBitGo({ env: 'test' });
   bitgo.initializeTestVars();
   const basecoin = bitgo.coin('tbtc');
@@ -1427,6 +1430,244 @@ describe('V2 Wallet:', function () {
           .reply(200, {});
       await wallet.freeze(params);
       scope.isDone().should.be.True();
+    });
+  });
+
+  describe('TSS Wallets', function () {
+    const sandbox = sinon.createSandbox();
+    const tsol = bitgo.coin('tsol');
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000000',
+      coin: 'tsol',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {},
+      multisigType: 'tss',
+    };
+    const tssWallet = new Wallet(bitgo, tsol, walletData);
+
+    const txRequest: TxRequest = {
+      txRequestId: 'id',
+      unsignedTxs: [
+        {
+          serializedTxHex: 'ababcdcd',
+          signableHex: 'deadbeef',
+        },
+      ],
+    };
+
+    afterEach(function () {
+      sandbox.verifyAndRestore();
+    });
+
+    describe('Transaction prebuilds', function () {
+      it('should build a single recipient transfer transaction', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          }
+        });
+      });
+
+      it('should build a multiple recipient transfer transaction with memo', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }, {
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '2000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+          memo: {
+            type: 'type',
+            value: 'test memo'
+          },
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          memo: {
+            type: 'type',
+            value: 'test memo'
+          }
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'transfer',
+          }
+        });
+      });
+
+      it('should fail for non-transfer transaction types', async function () {
+        await tssWallet.prebuildTransaction({
+          reqId,
+          recipients: [{
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          }],
+          type: 'stake',
+        }).should.be.rejectedWith('transaction type not supported: stake');
+      });
+    });
+
+    describe('Transaction signing', function () {
+      it('should sign transaction', async function () {
+        const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
+        signTxRequest.resolves(txRequest);
+        signTxRequest.calledOnceWithExactly(txRequest, 'secretKey', reqId);
+
+        const txPrebuild = {
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+        };
+        const signedTransaction = await tssWallet.signTransaction({
+          reqId,
+          txPrebuild,
+          prv: 'sercretKey',
+        });
+        signedTransaction.should.deepEqual({
+          txRequestId: txRequest.txRequestId,
+        });
+      });
+
+      it('should fail to sign transaction without txRequestId', async function () {
+        const txPrebuild = {
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txHex: 'ababcdcd',
+        };
+        await tssWallet.signTransaction({
+          reqId,
+          txPrebuild,
+          prv: 'sercretKey',
+        }).should.be.rejectedWith('txRequestId required to sign transactions with TSS');
+      });
+    });
+
+    describe('Send Many', function () {
+      const sendManyInput = {
+        type: 'transfer',
+        recipients: [{
+          address: 'address',
+          amount: '1000'
+        }],
+      };
+
+      it('should send many', async function () {
+        const signedTransaction = {
+          txRequestId: 'txRequestId',
+        };
+
+        const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+        prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+        const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+        sendTxRequest.resolves('sendTxResponse');
+        sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+        const sendMany = await tssWallet.sendMany(sendManyInput);
+        sendMany.should.deepEqual('sendTxResponse');
+      });
+
+      it('should fail if txRequestId is missing from prebuild', async function () {
+        const signedTransaction = {
+          txHex: 'deadbeef',
+        };
+
+        const prebuildAndSignTransaction = sandbox.stub(tssWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+        prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+        await tssWallet.sendMany(sendManyInput).should.be.rejectedWith('txRequestId missing from signed transaction');
+      });
+    });
+
+    describe('Submit transaction', function () {
+      it('should submit transaction with txRequestId', async function () {
+        const nockSendTx = nock(bgUrl)
+          .persist(false)
+          .post(tssWallet.url('/tx/send').replace(bgUrl, ''))
+          .reply(200, { message: 'success' });
+
+        const submittedTx = await tssWallet.submitTransaction({
+          txRequestId: 'id',
+        });
+        submittedTx.should.deepEqual({ message: 'success' });
+        nockSendTx.isDone().should.be.true();
+      });
+
+      it('should fail when txRequestId and txHex are both provided', async function () {
+        await tssWallet.submitTransaction({
+          txRequestId: 'id',
+          txHex: 'beef',
+        }).should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
+      });
+
+      it('should fail when txRequestId and halfSigned are both provided', async function () {
+        await tssWallet.submitTransaction({
+          txRequestId: 'id',
+          halfSigned: {
+            txHex: 'beef',
+          },
+        }).should.be.rejectedWith('must supply exactly one of txRequestId, txHex, or halfSigned');
+      });
+
+      it('should fail when txHex and halfSigned are both provided', async function () {
+        await tssWallet.submitTransaction({
+          txHex: 'beef',
+          halfSigned: {
+            txHex: 'beef',
+          },
+        }).should.be.rejectedWith('must supply either txHex or halfSigned, but not both');
+      });
     });
   });
 });
