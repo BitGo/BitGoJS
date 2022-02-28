@@ -3,25 +3,25 @@
   "txInfo": {
     "unspents": [
       {
-        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
-        "chain": 31,
-        "index": 0,
         "id": "19cd39e8d5366f9ac9c34c4ba0548f632bd4354945f25bfac4460e38756eab2c:1",
-        "value": 100000000
+        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+        "value": 100000000,
+        "chain": 31,
+        "index": 0
       },
       {
-        "address": "tb1punyhjurx29e2577msed4mzlu5py2snp6s2zwf2uux2ek5xk2ps6s3vkh6a",
-        "chain": 31,
-        "index": 2,
         "id": "2c54d47f64f69f6707a86bdf7ba2a57d27fbc0e068b4e4250c38331fd30e97a3:1",
-        "value": 200000000
+        "address": "tb1punyhjurx29e2577msed4mzlu5py2snp6s2zwf2uux2ek5xk2ps6s3vkh6a",
+        "value": 200000000,
+        "chain": 31,
+        "index": 2
       },
       {
-        "address": "tb1pgrsntg8rd9qdjf06demu0423ysxftqddx9twyqy38fsg9qyj82xsxvny7v",
-        "chain": 31,
-        "index": 3,
         "id": "3f7d14d4a648206270a9a389b2c1422a78d98d1bf34313d358aa9a05a04a53bf:1",
-        "value": 300000000
+        "address": "tb1pgrsntg8rd9qdjf06demu0423ysxftqddx9twyqy38fsg9qyj82xsxvny7v",
+        "value": 300000000,
+        "chain": 31,
+        "index": 3
       }
     ]
   },
