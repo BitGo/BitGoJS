@@ -13,7 +13,7 @@ necc.utils.hmacSha256Sync = (key: Uint8Array, ...messages: Uint8Array[]): Uint8A
   return Uint8Array.from(hash.digest());
 };
 
-const defaultTrue = (param?: boolean): boolean => (param === false ? false : true);
+const defaultTrue = (param?: boolean): boolean => param !== false;
 
 function throwToNull<Type>(fn: () => Type): Type | null {
   try {

@@ -759,8 +759,9 @@ function prepareInput(
     if (!p2sh.hash!.equals(p2shAlt.hash!)) throw new Error('Redeem script inconsistent with prevOutScript');
 
     const expanded = expandOutput(p2wsh.redeem!.output!, ourPubKey);
-    if (!expanded.pubkeys)
+    if (!expanded.pubkeys) {
       throw new Error(expanded.type + ' not supported as witnessScript (' + bscript.toASM(witnessScript) + ')');
+    }
     if (input.signatures && input.signatures.some((x) => x !== undefined)) {
       expanded.signatures = input.signatures;
     }
@@ -802,8 +803,9 @@ function prepareInput(
     }
 
     const expanded = expandOutput(p2sh.redeem!.output!, ourPubKey);
-    if (!expanded.pubkeys)
+    if (!expanded.pubkeys) {
       throw new Error(expanded.type + ' not supported as redeemScript (' + bscript.toASM(redeemScript) + ')');
+    }
     if (input.signatures && input.signatures.some((x) => x !== undefined)) {
       expanded.signatures = input.signatures;
     }
@@ -847,8 +849,9 @@ function prepareInput(
     }
 
     const expanded = expandOutput(witnessScript, ourPubKey);
-    if (!expanded.pubkeys)
+    if (!expanded.pubkeys) {
       throw new Error(expanded.type + ' not supported as witnessScript (' + bscript.toASM(witnessScript) + ')');
+    }
     if (input.signatures && input.signatures.some((x) => x !== undefined)) {
       expanded.signatures = input.signatures;
     }
@@ -882,8 +885,9 @@ function prepareInput(
     }
 
     const expanded = expandOutput(p2wsh.redeem!.output!, ourPubKey);
-    if (!expanded.pubkeys)
+    if (!expanded.pubkeys) {
       throw new Error(expanded.type + ' not supported as witnessScript (' + bscript.toASM(witnessScript) + ')');
+    }
     if (input.signatures && input.signatures.some((x) => x !== undefined)) {
       expanded.signatures = input.signatures;
     }
@@ -910,14 +914,17 @@ function prepareInput(
 
   if (input.prevOutType && input.prevOutScript) {
     // embedded scripts are not possible without extra information
-    if (input.prevOutType === SCRIPT_TYPES.P2SH)
+    if (input.prevOutType === SCRIPT_TYPES.P2SH) {
       throw new Error('PrevOutScript is ' + input.prevOutType + ', requires redeemScript');
-    if (input.prevOutType === SCRIPT_TYPES.P2WSH)
+    }
+    if (input.prevOutType === SCRIPT_TYPES.P2WSH) {
       throw new Error('PrevOutScript is ' + input.prevOutType + ', requires witnessScript');
+    }
 
     const expanded = expandOutput(input.prevOutScript, ourPubKey);
-    if (!expanded.pubkeys)
+    if (!expanded.pubkeys) {
       throw new Error(expanded.type + ' not supported (' + bscript.toASM(input.prevOutScript) + ')');
+    }
     if (input.signatures && input.signatures.some((x) => x !== undefined)) {
       expanded.signatures = input.signatures;
     }
@@ -1273,8 +1280,9 @@ function getSigningData(
   const ourPubKey = keyPair.publicKey;
   if (!canSign(input)) {
     if (witnessValue !== undefined) {
-      if (input.value !== undefined && input.value !== witnessValue)
+      if (input.value !== undefined && input.value !== witnessValue) {
         throw new Error('Input did not match witnessValue');
+      }
       typeforce(types.Satoshi, witnessValue);
       input.value = witnessValue;
     }
