@@ -143,10 +143,7 @@ describe('networks', function () {
       it('has expected properties', function () {
         assert.strictEqual(typeof network, 'object');
         assert.strictEqual(typeof network.messagePrefix, 'string');
-        assert.strictEqual(typeof (network as any).bech32, 'string');
-        if (!bech32Coins(network)) {
-          assert.strictEqual((network as any).bech32.length, 0);
-        }
+        assert.strictEqual(typeof (network as any).bech32, bech32Coins(network) ? 'string' : 'undefined');
         assert.strictEqual(typeof network.bip32, 'object');
         assert.strictEqual(typeof network.pubKeyHash, 'number');
         assert.strictEqual(typeof network.scriptHash, 'number');

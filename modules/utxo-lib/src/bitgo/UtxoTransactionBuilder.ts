@@ -48,7 +48,7 @@ export class UtxoTransactionBuilder<
 
   static fromTransaction<TNumber extends number | bigint = number>(
     tx: UtxoTransaction<TNumber>,
-    network?: bitcoinjs.Network,
+    network?: Network,
     prevOutputs?: TxOutput<TNumber>[]
   ): UtxoTransactionBuilder<TNumber> {
     return new UtxoTransactionBuilder<TNumber>(

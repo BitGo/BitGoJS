@@ -26,7 +26,7 @@ export class ZcashTransactionBuilder<TNumber extends number | bigint = number> e
 
   static fromTransaction<TNumber extends number | bigint = number>(
     transaction: ZcashTransaction<TNumber>,
-    network?: bitcoinjs.Network,
+    network?: Network,
     prevOutput?: bitcoinjs.TxOutput<TNumber>[]
   ): ZcashTransactionBuilder<TNumber> {
     const txb = new ZcashTransactionBuilder<TNumber>(transaction.network);
