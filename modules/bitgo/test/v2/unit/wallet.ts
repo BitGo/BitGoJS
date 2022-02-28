@@ -13,7 +13,7 @@ import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wall
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import { fromSeed } from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
 nock.disableNetConnect();
@@ -1365,7 +1365,7 @@ describe('V2 Wallet:', function () {
       const userId = '123';
       const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
-      const toKeychain = fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+      const toKeychain = bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
       const path = 'm/999999/1/1';
       const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
       const walletPassphrase = 'bitgo1234';
@@ -1821,7 +1821,7 @@ describe('V2 Wallet:', function () {
         const userId = '123';
         const email = 'shareto@sdktest.com';
         const permissions = 'view,spend';
-        const toKeychain = fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const toKeychain = bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
         const path = 'm/999999/1/1';
         const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
         const walletPassphrase = 'bitgo1234';

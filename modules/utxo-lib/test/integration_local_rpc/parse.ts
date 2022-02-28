@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
 
@@ -229,7 +229,7 @@ function runTestParse<TNumber extends number | bigint>(
       });
     });
 
-    function getRebuiltTransaction(signKeys?: bip32.BIP32Interface[]) {
+    function getRebuiltTransaction(signKeys?: BIP32Interface[]) {
       assert.strict(parsedTx.outs.length === 1);
       assert.strict(isScriptType2Of3(scriptType));
       const recipientScript = parsedTx.outs[0].script;

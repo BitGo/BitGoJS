@@ -2,7 +2,7 @@
  * @prettier
  */
 import 'should';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as crypto from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 

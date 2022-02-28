@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
+import { ECPairInterface } from 'ecpair';
 import * as secp256k1 from 'secp256k1';
 import * as bs58 from 'bs58';
 import * as bitcoinMessage from 'bitcoinjs-message';
@@ -117,7 +118,7 @@ export class BitGoAPI implements BitGoBase {
   protected _hmacVerification = true;
   protected readonly _proxy?: string;
   protected _user?: User;
-  protected _extensionKey?: utxolib.ECPair.ECPairInterface;
+  protected _extensionKey?: ECPairInterface;
   protected _reqId?: IRequestTracer;
   protected _token?: string;
   protected _version = pjson.version;

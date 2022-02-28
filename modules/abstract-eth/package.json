@@ -40,7 +40,7 @@
     "@bitgo/sdk-coin-eth": "^1.1.0",
     "@bitgo/sdk-core": "^1.1.0",
     "@bitgo/statics": "^7.0.0",
-    "bignumber.js": "^8.0.1",
-    "bip32": "^2.0.6"
+    "@bitgo/utxo-lib": "^2.4.1",
+    "bignumber.js": "^8.0.1"
   }
 }

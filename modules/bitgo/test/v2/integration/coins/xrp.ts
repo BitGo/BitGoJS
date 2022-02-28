@@ -1,11 +1,11 @@
 import * as crypto from 'crypto';
-import * as bip32 from 'bip32';
 import 'should';
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { bip32 } from '../../../../src/bip32util';
 
 
 const nock = require('nock');

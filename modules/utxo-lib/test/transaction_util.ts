@@ -1,4 +1,4 @@
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import * as assert from 'assert';
 import { TxOutput } from 'bitcoinjs-lib';
 
@@ -23,7 +23,7 @@ import { createScriptPubKey } from './integration_local_rpc/generate/outputScrip
 import { fixtureKeys } from './integration_local_rpc/generate/fixtures';
 import { KeyTriple } from './testutil';
 
-export function getSignKeyCombinations(length: number): bip32.BIP32Interface[][] {
+export function getSignKeyCombinations(length: number): BIP32Interface[][] {
   if (length === 0) {
     return [];
   }
@@ -96,8 +96,8 @@ export function getPrevOutputs<TNumber extends number | bigint = number>(
 }
 
 export type HalfSigner = {
-  signer: bip32.BIP32Interface;
-  cosigner?: bip32.BIP32Interface;
+  signer: BIP32Interface;
+  cosigner?: BIP32Interface;
 };
 
 export function getTransactionBuilder<TNumber extends number | bigint = number>(
@@ -153,8 +153,8 @@ export function getUnsignedTransaction2Of3<TNumber extends number | bigint = num
 
 export function getHalfSignedTransaction2Of3<TNumber extends number | bigint = number>(
   keys: KeyTriple,
-  signer1: bip32.BIP32Interface,
-  signer2: bip32.BIP32Interface,
+  signer1: BIP32Interface,
+  signer2: BIP32Interface,
   scriptType: ScriptType2Of3,
   network: Network,
   amountType: 'number' | 'bigint' = 'number'
@@ -170,7 +170,7 @@ export function getHalfSignedTransaction2Of3<TNumber extends number | bigint = n
 
 export function getFullSignedTransactionP2shP2pk<TNumber extends number | bigint = number>(
   keys: KeyTriple,
-  signer1: bip32.BIP32Interface,
+  signer1: BIP32Interface,
   network: Network,
   amountType: 'number' | 'bigint' = 'number'
 ): UtxoTransaction<TNumber> {
@@ -179,8 +179,8 @@ export function getFullSignedTransactionP2shP2pk<TNumber extends number | bigint
 
 export function getFullSignedTransaction2Of3<TNumber extends number | bigint = number>(
   keys: KeyTriple,
-  signer1: bip32.BIP32Interface,
-  signer2: bip32.BIP32Interface,
+  signer1: BIP32Interface,
+  signer2: BIP32Interface,
   scriptType: ScriptType2Of3,
   network: Network,
   amountType: 'number' | 'bigint' = 'number'

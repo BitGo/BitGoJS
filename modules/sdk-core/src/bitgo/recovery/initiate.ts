@@ -2,7 +2,8 @@
  * @prettier
  */
 
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
 import { BaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { KrsProvider, krsProviders } from '../config';
@@ -75,7 +76,7 @@ export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; 
 export function validateKey(
   bitgo: BitGoBase,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
-): bip32.BIP32Interface {
+): BIP32Interface {
   if (!key.startsWith('xprv') && !isUnsignedSweep) {
     // Try to decrypt the key
     try {
@@ -97,7 +98,7 @@ export function getBip32Keys(
   bitgo: BitGoBase,
   params: InitiateRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
-): bip32.BIP32Interface[] {
+): BIP32Interface[] {
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
   const keys = [

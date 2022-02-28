@@ -11,7 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';

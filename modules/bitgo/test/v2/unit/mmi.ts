@@ -2,7 +2,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
 import * as nock from 'nock';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { common, TransactionType } from '@bitgo/sdk-core';
 import { AvaxC as AvaxCAccountLib, getBuilder } from '../../../../account-lib';
 

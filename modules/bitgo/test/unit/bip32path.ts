@@ -2,7 +2,8 @@
  * @prettier
  */
 import 'should';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
 import { sanitizeLegacyPath, bitcoin } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 const { HDNode, hdPath } = bitcoin;
@@ -26,7 +27,7 @@ describe('bip32util', function () {
    * @param refBIP32 - bip32 node
    * @param refHDPath - `hdPath()` helper node
    */
-  function runTest(inputs: string[], refBIP32: bip32.BIP32Interface, refHDPath: Derivable) {
+  function runTest(inputs: string[], refBIP32: BIP32Interface, refHDPath: Derivable) {
     if (!refHDPath) {
       throw new Error(`invalid state`);
     }

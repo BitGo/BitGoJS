@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { describe, it } from 'mocha';
 import * as classify from '../src/classify';
-import * as bscript from '../src/script';
+import { script as bscript } from '../src/';
 
 import * as fixtures from './fixtures/templates.json';
 

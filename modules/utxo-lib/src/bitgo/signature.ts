@@ -1,5 +1,5 @@
 import * as opcodes from 'bitcoin-ops';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import { payments, script, Transaction, TxInput, taproot, TxOutput, ScriptSignature } from 'bitcoinjs-lib';
 
@@ -16,7 +16,7 @@ import {
 import { isTriple, Triple } from './types';
 import { classify } from '../';
 import { getMainnet, Network, networks } from '../networks';
-import { ECPair, ecc as eccLib } from '../noble_ecc';
+import { ecc as eccLib } from '../noble_ecc';
 
 const inputTypes = [
   'multisig',
@@ -624,7 +624,7 @@ export function verifySignatureWithPublicKey<TNumber extends number | bigint>(
 export function signInputP2shP2pk<TNumber extends number | bigint>(
   txBuilder: UtxoTransactionBuilder<TNumber>,
   vin: number,
-  keyPair: bip32.BIP32Interface
+  keyPair: BIP32Interface
 ): void {
   const prevOutScriptType = 'p2sh-p2pk';
   const { redeemScript, witnessScript } = createOutputScriptP2shP2pk(keyPair.publicKey);
@@ -646,7 +646,7 @@ export function signInput2Of3<TNumber extends number | bigint>(
   vin: number,
   scriptType: ScriptType2Of3,
   pubkeys: Triple<Buffer>,
-  keyPair: bip32.BIP32Interface,
+  keyPair: BIP32Interface,
   cosigner: Buffer,
   amount: TNumber
 ): void {

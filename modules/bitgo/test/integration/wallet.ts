@@ -7,8 +7,10 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { strict as assert } from 'assert';
-import { VirtualSizes } from '@bitgo/unspents';
 import * as should from 'should';
+import { VirtualSizes } from '@bitgo/unspents';
+import * as utxolib from '@bitgo/utxo-lib';
+
 const Q = require('q');
 
 const BitGoJS = require('../../src/index');

@@ -18,7 +18,7 @@ import {
   makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';

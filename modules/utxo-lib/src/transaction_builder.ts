@@ -1,7 +1,7 @@
 import * as types from 'bitcoinjs-lib/src/types';
 import { address as baddress } from './';
 import * as bufferutils from 'bitcoinjs-lib/src/bufferutils';
-import { classify } from './';
+import * as classify from './classify';
 import { crypto as bcrypto } from './';
 import { networks } from './';
 import { Network } from './';

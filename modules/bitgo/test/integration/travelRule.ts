@@ -4,7 +4,7 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import { strict as assert } from 'assert';
 import 'should';
 import * as _ from 'lodash';
