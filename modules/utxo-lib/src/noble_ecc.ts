@@ -2,6 +2,7 @@ import * as createHash from 'create-hash';
 import * as createHmac from 'create-hmac';
 import { ECPairAPI, ECPairFactory } from 'ecpair';
 import * as necc from '@noble/secp256k1';
+import { BIP32API, BIP32Factory } from 'bip32';
 
 necc.utils.sha256Sync = (...messages: Uint8Array[]): Uint8Array => {
   const sha256 = createHash('sha256');
@@ -89,5 +90,6 @@ const ecc = {
 };
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);
+const bip32: BIP32API = BIP32Factory(ecc);
 
-export { ecc, ECPair };
+export { ecc, ECPair, bip32 };

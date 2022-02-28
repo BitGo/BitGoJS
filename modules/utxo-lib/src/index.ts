@@ -8,6 +8,8 @@ export * as addressFormat from './addressFormat';
 
 export * as classify from './classify';
 
+export * from './noble_ecc';
+
 export {
   networks,
   Network,
