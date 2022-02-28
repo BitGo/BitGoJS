@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 import _ from 'lodash';
 import 'lodash.combinations';
 import { Dimensions } from '../../src';
@@ -45,7 +46,7 @@ function createUnspent(pubkeys: Buffer[], inputType: string, value: number): IUn
  * @param unspentType {String} - one of UnspentTypeScript2of3 or UnspentTypePubKeyHash
  * @return {String} address
  */
-const createScriptPubKey = (keys: bip32.BIP32Interface[], unspentType: TestUnspentType): Buffer => {
+const createScriptPubKey = (keys: BIP32Interface[], unspentType: TestUnspentType): Buffer => {
   const pubkeys = keys.map((key) => key.publicKey);
   if (typeof unspentType === 'string' && unspentType in UnspentTypeScript2of3) {
     return createUnspent(pubkeys, unspentType, 0).scriptPubKey;
@@ -77,9 +78,9 @@ const createInputTx = (unspents: any[], inputValue: number) => {
 function signInput(
   txBuilder: utxolib.bitgo.UtxoTransactionBuilder,
   index: number,
-  walletKeys: bip32.BIP32Interface[],
+  walletKeys: BIP32Interface[],
   unspent: IUnspent,
-  signKeys: bip32.BIP32Interface[] = unspent.inputType === 'p2shP2pk' ? [walletKeys[0]] : [walletKeys[0], walletKeys[2]]
+  signKeys: BIP32Interface[] = unspent.inputType === 'p2shP2pk' ? [walletKeys[0]] : [walletKeys[0], walletKeys[2]]
 ) {
   signKeys.forEach((keyPair) => {
     if (unspent.inputType === 'p2shP2pk') {
@@ -107,11 +108,11 @@ class TxCombo {
   public inputTx: any;
 
   constructor(
-    public walletKeys: bip32.BIP32Interface[],
+    public walletKeys: BIP32Interface[],
     public inputTypes: string[],
     public outputTypes: TestUnspentType[],
     public expectedDims: Readonly<Dimensions> = Dimensions.ZERO,
-    public signKeys?: bip32.BIP32Interface[],
+    public signKeys?: BIP32Interface[],
     public inputValue: number = 10
   ) {
     this.unspents = inputTypes.map((inputType) =>

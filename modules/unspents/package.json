@@ -32,7 +32,9 @@
   "devDependencies": {
     "@types/lodash": "~4.14.123",
     "@types/node": "~14.17.5",
-    "lodash.combinations": "~18.9.19"
+    "bip32": "^3.0.1",
+    "lodash.combinations": "~18.9.19",
+    "should": "~13.2.3"
   },
   "dependencies": {
     "@bitgo/utxo-lib": "^2.4.1",

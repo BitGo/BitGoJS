@@ -1,7 +1,7 @@
 import should from 'should';
 
 import * as bitcoin from '@bitgo/utxo-lib';
-import * as bip32 from 'bip32';
+import { bip32 } from '@bitgo/utxo-lib';
 
 import { Dimensions } from '../../src';
 
