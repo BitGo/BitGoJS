@@ -2,11 +2,11 @@
  * @prettier
  */
 import 'should';
-import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { getSharedSecret } from '../src/ecdh';
+import { bip32 } from '../src/bip32util';
 
 describe('ECDH sharing secret', () => {
   function getKey(seed: string) {

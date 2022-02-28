@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import BigNumber from 'bignumber.js';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { getBuilder, Eth } from '@bitgo/account-lib';
-import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
 import {
@@ -23,7 +23,7 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-import BigNumber from 'bignumber.js';
+import { bip32 } from '../../bip32util';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;

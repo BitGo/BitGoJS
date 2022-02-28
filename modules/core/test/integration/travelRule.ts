@@ -4,11 +4,11 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
 import { strict as assert } from 'assert';
 import 'should';
 import * as _ from 'lodash';
 import { getSharedSecret } from '../../src/ecdh';
+import { bip32 } from '../../src/bip32util';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;

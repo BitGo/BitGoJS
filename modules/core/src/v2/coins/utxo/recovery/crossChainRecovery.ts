@@ -4,8 +4,8 @@
 import * as _ from 'lodash';
 import * as request from 'superagent';
 import * as Bluebird from 'bluebird';
+import { BIP32Interface } from 'bip32';
 
-import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   RootWalletKeys,
@@ -27,6 +27,7 @@ import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
 import { decrypt } from '../../../../encrypt';
 import { signAndVerifyWalletTransaction } from '../sign';
+import { bip32 } from '../../../../bip32util';
 
 export interface ExplorerTxInfo {
   input: { address: string }[];
@@ -125,7 +126,7 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: Wallet | Wa
     xpubs = wallet.keychains.map((k) => k.xpub) as Triple<string>;
   }
 
-  return new RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<bip32.BIP32Interface>);
+  return new RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<BIP32Interface>);
 }
 
 /**
@@ -229,7 +230,7 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
  * @param wallet
  * @return signing key
  */
-async function getPrv(xprv?: string, passphrase?: string, wallet?: Wallet | WalletV1): Promise<bip32.BIP32Interface> {
+async function getPrv(xprv?: string, passphrase?: string, wallet?: Wallet | WalletV1): Promise<BIP32Interface> {
   if (xprv) {
     const key = bip32.fromBase58(xprv);
     if (key.isNeutered()) {

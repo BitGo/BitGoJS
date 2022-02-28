@@ -2,7 +2,6 @@
  * @prettier
  */
 
-import * as bip32 from 'bip32';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
@@ -14,6 +13,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 import { getAddressP2PKH } from '../../../../src/bitcoin';
+import { bip32 } from '../../../../src/bip32util';
 
 describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;

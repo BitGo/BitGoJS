@@ -11,13 +11,13 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { makeRandomKey, getNetwork, getAddressP2PKH } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { sanitizeLegacyPath } from './bip32path';
+import { bip32 } from '@bitgo/utxo-lib';
 import { getSharedSecret } from './ecdh';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');

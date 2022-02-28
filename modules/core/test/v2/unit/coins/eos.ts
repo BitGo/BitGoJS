@@ -1,16 +1,16 @@
 /**
  * @prettier
  */
+import * as _ from 'lodash';
 import * as should from 'should';
 import * as ecc from 'eosjs-ecc';
-import * as bip32 from 'bip32';
 import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
 import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src';
-import * as _ from 'lodash';
+import { bip32 } from '../../../../src/bip32util';
 
 describe('EOS:', function () {
   let bitgo;

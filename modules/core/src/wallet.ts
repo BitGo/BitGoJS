@@ -13,9 +13,9 @@
 
 import { VirtualSizes } from '@bitgo/unspents';
 
-import * as bip32 from 'bip32';
 const TransactionBuilder = require('./transactionBuilder');
 import * as utxolib from '@bitgo/utxo-lib';
+import { bip32 } from './bip32util';
 const PendingApproval = require('./pendingapproval');
 
 import * as common from './common';

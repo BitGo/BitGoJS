@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
@@ -23,6 +22,7 @@ import {
 import { BitGo } from '../../bitgo';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
+import { bip32 } from '../../bip32util';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;

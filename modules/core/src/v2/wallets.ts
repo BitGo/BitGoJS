@@ -2,7 +2,6 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
 import { BitGo } from '../bitgo';
@@ -13,6 +12,7 @@ import { RequestTracer as IRequestTracer } from './types';
 import { PaginationOptions, Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { sanitizeLegacyPath } from '../bip32path';
+import { bip32 } from '../bip32util';
 import { getSharedSecret } from '../ecdh';
 import { promiseProps } from './promise-utils';
 

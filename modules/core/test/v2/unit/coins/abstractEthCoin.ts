@@ -4,12 +4,13 @@
 
 import * as _ from 'lodash';
 import * as should from 'should';
-import * as bip32 from 'bip32';
-import { TestBitGo } from '../../../lib/test_bitgo';
 import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
+
+import { TestBitGo } from '../../../lib/test_bitgo';
+import { bip32 } from '../../../../src/bip32util';
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {

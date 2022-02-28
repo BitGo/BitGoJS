@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   getExternalChainCode,
@@ -58,6 +58,7 @@ import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
 import { sanitizeLegacyPath } from '../../bip32path';
+import { bip32 } from '../../bip32util';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -1083,7 +1084,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
 
     const cosignerPub = params.cosignerPub ?? params.pubs[2];
-    const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<bip32.BIP32Interface>;
+    const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
     const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
     const signedTransaction = signAndVerifyWalletTransaction(
@@ -1203,7 +1204,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // if keys are provided, prepare the keys for input signature checking
     const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
-    const walletKeys = keys && keys.length === 3 ? new RootWalletKeys(keys as Triple<bip32.BIP32Interface>) : undefined;
+    const walletKeys = keys && keys.length === 3 ? new RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
 
     // get the number of signatures per input
     const inputSignatureCounts = transaction.ins.map((input, idx): number => {

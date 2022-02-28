@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 
@@ -9,6 +8,7 @@ import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } 
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../internal/util';
 import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
+import { bip32 } from '../../bip32util';
 
 export interface Erc20TokenConfig {
   name: string;

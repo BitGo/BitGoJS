@@ -2,7 +2,6 @@
  * @prettier
  */
 import { randomBytes } from 'crypto';
-import * as bip32 from 'bip32';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
@@ -15,6 +14,7 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
+import { bip32 } from '../../bip32util';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {

@@ -6,10 +6,10 @@
 
 import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
-import { getAddressP2PKH, makeRandomKey } from './bitcoin';
-import * as bip32 from 'bip32';
+import { ECPairInterface } from 'ecpair';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
+import { getAddressP2PKH, makeRandomKey } from './bitcoin';
 import { BaseCoin } from './v2/baseCoin';
 const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
@@ -44,6 +44,7 @@ import {
   verifyResponse,
 } from './api';
 import { sanitizeLegacyPath } from './bip32path';
+import { bip32 } from './bip32util';
 import { getSharedSecret } from './ecdh';
 import { decrypt, encrypt } from './encrypt';
 
@@ -141,7 +142,7 @@ export interface VerifyShardsOptions {
 
 export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
-  eckey: utxolib.ECPair.ECPairInterface;
+  eckey: ECPairInterface;
 }
 
 export interface AccessTokenOptions {
@@ -350,7 +351,7 @@ export class BitGo {
   private readonly _proxy?: string;
   private _reqId?: IRequestTracer;
   private _ecdhXprv?: string;
-  private _extensionKey?: utxolib.ECPair.ECPairInterface;
+  private _extensionKey?: ECPairInterface;
   private _markets?: any;
   private _blockchain?: any;
   private _travelRule?: any;

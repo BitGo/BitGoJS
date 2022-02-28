@@ -11,7 +11,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
 import * as Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
@@ -21,6 +20,7 @@ import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
 import { sanitizeLegacyPath } from './bip32path';
+import { bip32 } from './bip32util';
 
 interface BaseOutput {
   amount: number;

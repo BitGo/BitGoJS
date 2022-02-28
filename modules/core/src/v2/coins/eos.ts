@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -32,6 +32,7 @@ import { Environments } from '../environments';
 import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import { Wallet } from '../wallet';
 import { RequestTracer } from '../internal/util';
+import { bip32 } from '../../bip32util';
 
 interface AddressDetails {
   address: string;
@@ -861,7 +862,7 @@ export class Eos extends BaseCoin {
    * @param signableTx
    * @param signingKey
    */
-  signTx(signableTx: string, signingKey: bip32.BIP32Interface): string {
+  signTx(signableTx: string, signingKey: BIP32Interface): string {
     const signBuffer = Buffer.from(signableTx, 'hex');
     const privateKeyBuffer = signingKey.privateKey;
     return ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();

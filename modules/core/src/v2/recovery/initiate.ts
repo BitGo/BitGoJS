@@ -2,12 +2,13 @@
  * @prettier
  */
 
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import * as stellar from 'stellar-sdk';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import * as config from '../../config';
+import { bip32 } from '../../bip32util';
 
 interface ValidateKeyOptions {
   key: string;
@@ -77,7 +78,7 @@ export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; 
 export function validateKey(
   bitgo: BitGo,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
-): bip32.BIP32Interface {
+): BIP32Interface {
   if (!key.startsWith('xprv') && !isUnsignedSweep) {
     // Try to decrypt the key
     try {
@@ -99,7 +100,7 @@ export function getBip32Keys(
   bitgo: BitGo,
   params: InitiateRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
-): bip32.BIP32Interface[] {
+): BIP32Interface[] {
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
   const keys = [

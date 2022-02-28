@@ -1,5 +1,4 @@
 import * as should from 'should';
-import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
@@ -12,6 +11,7 @@ const fixtures = require('../fixtures/coins/eth');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 
 import { getBuilder, Eth } from '@bitgo/account-lib';
+import { bip32 } from '../../../src/bip32util';
 
 describe('Sign ETH Transaction', async function () {
 

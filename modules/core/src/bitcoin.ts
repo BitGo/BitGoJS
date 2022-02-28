@@ -2,7 +2,8 @@
  * @hidden
  */
 
-import * as bip32 from 'bip32';
+import { ECPairInterface } from 'ecpair';
+import { BIP32Interface } from 'bip32';
 import * as common from './common';
 import * as utxolib from '@bitgo/utxo-lib';
 import { V1Network } from './v2/types';
@@ -12,7 +13,7 @@ export function getNetwork(network?: V1Network): utxolib.Network {
   return utxolib.networks[network];
 }
 
-export function makeRandomKey(): utxolib.ECPair.ECPairInterface {
+export function makeRandomKey(): ECPairInterface {
   return utxolib.ECPair.makeRandom({ network: getNetwork() as utxolib.BitcoinJSNetwork });
 }
 
@@ -21,7 +22,7 @@ interface LegacyECPair {
   getPublicKeyBuffer(): Buffer;
 }
 
-export function getAddressP2PKH(key: utxolib.ECPair.ECPairInterface | bip32.BIP32Interface | LegacyECPair): string {
+export function getAddressP2PKH(key: ECPairInterface | BIP32Interface | LegacyECPair): string {
   let pubkey;
   if ('getPublicKeyBuffer' in key) {
     pubkey = key.getPublicKeyBuffer();

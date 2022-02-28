@@ -2,7 +2,6 @@
  * @prettier
  */
 import * as crypto from 'crypto';
-import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { BaseCoin as AccountLibBasecoin } from '@bitgo/account-lib';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -18,7 +17,7 @@ import { Keychain, Keychains, KeyIndices } from './keychains';
 import { Enterprises } from './enterprises';
 
 import { InitiateRecoveryOptions } from './recovery/initiate';
-import { signMessage } from '../bip32util';
+import { bip32, signMessage } from '../bip32util';
 
 // re-export account lib transaction types
 export type TransactionType = AccountLibBasecoin.TransactionType;

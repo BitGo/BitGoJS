@@ -11,8 +11,7 @@ import { TestBitGo } from '../lib/test_bitgo';
 import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
-import * as bip32 from 'bip32';
-import { ECPair } from '@bitgo/utxo-lib';
+import { ECPair, bip32 } from '@bitgo/utxo-lib';
 
 nock.disableNetConnect();
 

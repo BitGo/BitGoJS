@@ -1,14 +1,17 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { BIP32Interface } from 'bip32';
 import * as _ from 'lodash';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import * as bip32 from 'bip32';
+
+export const bip32 = utxolib.bip32;
+
 /**
  * bip32-aware wrapper around bitcoin-message package
  * @see {bitcoinMessage.sign}
  */
 export function signMessage(
   message: string,
-  privateKey: bip32.BIP32Interface | Buffer,
+  privateKey: BIP32Interface | Buffer,
   network: { messagePrefix: string },
 ): Buffer {
   if (!Buffer.isBuffer(privateKey)) {
@@ -30,7 +33,7 @@ export function signMessage(
  */
 export function verifyMessage(
   message: string,
-  publicKey: bip32.BIP32Interface | Buffer,
+  publicKey: BIP32Interface | Buffer,
   signature: Buffer,
   network: { messagePrefix: string },
 ): boolean {

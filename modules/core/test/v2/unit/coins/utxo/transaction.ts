@@ -3,7 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
@@ -50,8 +50,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     function getSignParams(
       prebuildHex: string,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): WalletSignTransactionOptions {
       const txInfo = {
         unspents: getUnspents(),
@@ -69,8 +69,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     function createHalfSignedTransaction(
       prebuild: utxolib.bitgo.UtxoTransaction,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): Promise<HalfSignedUtxoTransaction> {
       // half-sign with the user key
       return wallet.signTransaction(
@@ -80,8 +80,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     async function createFullSignedTransaction(
       halfSigned: HalfSignedUtxoTransaction,
-      signer: bip32.BIP32Interface,
-      cosigner: bip32.BIP32Interface
+      signer: BIP32Interface,
+      cosigner: BIP32Interface
     ): Promise<FullySignedTransaction> {
       return (await wallet.signTransaction({
         ...getSignParams(halfSigned.txHex, signer, cosigner),
@@ -142,10 +142,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
       );
     });
 
-    function testValidSignatures(
-      tx: HalfSignedUtxoTransaction | FullySignedTransaction,
-      signedBy: bip32.BIP32Interface[]
-    ) {
+    function testValidSignatures(tx: HalfSignedUtxoTransaction | FullySignedTransaction, signedBy: BIP32Interface[]) {
       const unspents = getUnspents();
       const prevOutputs = unspents.map(
         (u): utxolib.TxOutput => ({

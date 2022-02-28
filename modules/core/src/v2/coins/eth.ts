@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -43,6 +42,7 @@ import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recov
 import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import * as accountLib from '@bitgo/account-lib';
+import { bip32 } from '../../bip32util';
 
 const debug = debugLib('bitgo:v2:eth');
 

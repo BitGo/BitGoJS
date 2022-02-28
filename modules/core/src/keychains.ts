@@ -11,7 +11,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 import * as common from './common';
 import { Util } from './v2/internal/util';
@@ -19,6 +18,7 @@ const _ = require('lodash');
 let ethereumUtil;
 import * as Bluebird from 'bluebird';
 import { sanitizeLegacyPath } from './bip32path';
+import { bip32 } from './bip32util';
 const co = Bluebird.coroutine;
 
 try {

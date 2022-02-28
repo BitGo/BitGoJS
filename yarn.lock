@@ -6086,7 +6086,7 @@ ecdsa-sig-formatter@1.0.11:
   dependencies:
     safe-buffer "^5.0.1"
 
-ecpair@^2.0.1:
+ecpair@2, ecpair@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/ecpair/-/ecpair-2.0.1.tgz#e25ab416f1ecb6b05477ca601313df937b075d2e"
   integrity sha512-iT3wztQMeE/nDTlfnAg8dAFUfBS7Tq2BXzq3ae6L+pWgFU0fQ3l0woTzdTBrJV3OxBjxbzjq8EQhAbEmJNWFSw==

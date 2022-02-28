@@ -1,16 +1,16 @@
+import * as nock from 'nock';
+import * as secp256k1 from 'secp256k1';
+import * as assert from 'assert';
+
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
-
-import * as nock from 'nock';
-import * as bip32 from 'bip32';
-import * as secp256k1 from 'secp256k1';
 import * as common from '../../../../src/common';
-import * as assert from 'assert';
 import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
-  UnexpectedAddressError
+  UnexpectedAddressError,
 } from '../../../../src/errors';
+import { bip32 } from '../../../../src/bip32util';
 
 nock.enableNetConnect();
 
@@ -522,8 +522,8 @@ describe('ETH:', function () {
           pendingChainInitialization: true,
           creationFailure: [],
           pendingDeployment: false,
-          forwarderVersion: 0
-        }
+          forwarderVersion: 0,
+        },
       };
 
       const isAddressVerified = await coin.verifyAddress(params);

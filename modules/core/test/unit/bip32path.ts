@@ -2,8 +2,9 @@
  * @prettier
  */
 import 'should';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 import { sanitizeLegacyPath } from '../../src/bip32path';
+import { bip32 } from '../../src/bip32util';
 import { getSeed } from '../lib/keys';
 import { HDNode, Derivable, hdPath } from '../../src/legacyBitcoin';
 
@@ -25,7 +26,7 @@ describe('bip32util', function () {
    * @param refBIP32 - bip32 node
    * @param refHDPath - `hdPath()` helper node
    */
-  function runTest(inputs: string[], refBIP32: bip32.BIP32Interface, refHDPath: Derivable) {
+  function runTest(inputs: string[], refBIP32: BIP32Interface, refHDPath: Derivable) {
     if (!refHDPath) {
       throw new Error(`invalid state`);
     }

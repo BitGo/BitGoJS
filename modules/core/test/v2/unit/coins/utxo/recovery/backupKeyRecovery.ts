@@ -4,7 +4,7 @@
 import 'should';
 import * as sinon from 'sinon';
 import * as nock from 'nock';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
@@ -57,8 +57,8 @@ type NamedKeys = {
   bitgoKey: string;
 };
 
-function getNamedKeys([userKey, backupKey, bitgoKey]: Triple<bip32.BIP32Interface>, password: string): NamedKeys {
-  function encode(k: bip32.BIP32Interface): string {
+function getNamedKeys([userKey, backupKey, bitgoKey]: Triple<BIP32Interface>, password: string): NamedKeys {
+  function encode(k: BIP32Interface): string {
     return k.isNeutered() ? k.toBase58() : encryptKeychain(password, toKeychainBase58(k));
   }
   return {
@@ -68,22 +68,19 @@ function getNamedKeys([userKey, backupKey, bitgoKey]: Triple<bip32.BIP32Interfac
   };
 }
 
-function getKeysForUnsignedSweep(
-  [userKey, backupKey, bitgoKey]: Triple<bip32.BIP32Interface>,
-  password: string
-): NamedKeys {
+function getKeysForUnsignedSweep([userKey, backupKey, bitgoKey]: Triple<BIP32Interface>, password: string): NamedKeys {
   return getNamedKeys([userKey.neutered(), backupKey.neutered(), bitgoKey.neutered()], password);
 }
 
 function getKeysForKeyRecoveryService(
-  [userKey, backupKey, bitgoKey]: Triple<bip32.BIP32Interface>,
+  [userKey, backupKey, bitgoKey]: Triple<BIP32Interface>,
   password: string
 ): NamedKeys {
   return getNamedKeys([userKey, backupKey.neutered(), bitgoKey.neutered()], password);
 }
 
 function getKeysForFullSignedRecovery(
-  [userKey, backupKey, bitgoKey]: Triple<bip32.BIP32Interface>,
+  [userKey, backupKey, bitgoKey]: Triple<BIP32Interface>,
   password: string
 ): NamedKeys {
   return getNamedKeys([userKey, backupKey, bitgoKey.neutered()], password);
@@ -166,11 +163,7 @@ function run(
       recoveryTx.ins.length.should.eql(recoverUnspents.length);
     });
 
-    function checkInputsSignedBy(
-      tx: utxolib.bitgo.UtxoTransaction,
-      rootKey: bip32.BIP32Interface,
-      expectCount: number
-    ) {
+    function checkInputsSignedBy(tx: utxolib.bitgo.UtxoTransaction, rootKey: BIP32Interface, expectCount: number) {
       const prevOutputs = recoverUnspents.map((u) => toOutput(u, coin.network));
       tx.ins.forEach((input, inputIndex) => {
         const unspent = recoverUnspents[inputIndex] as WalletUnspent;

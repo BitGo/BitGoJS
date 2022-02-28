@@ -1,6 +1,6 @@
 import 'should';
 
-import * as bip32 from 'bip32';
+import { bip32 } from '../../../src/bip32util';
 import { Util } from '../../../src/v2/internal/util';
 
 describe('Internal:', () => {

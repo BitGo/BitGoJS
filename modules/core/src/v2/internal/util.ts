@@ -3,15 +3,13 @@
  * @hidden
  */
 
-/**
- */
-import * as bip32 from 'bip32';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { RequestTracer as IRequestTracer } from '../types';
+import { bip32 } from '../../bip32util';
 
 const debug = debugLib('bitgo:v2:util');
 

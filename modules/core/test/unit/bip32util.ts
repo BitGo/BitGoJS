@@ -2,7 +2,6 @@
  * @prettier
  */
 import * as crypto from 'crypto';
-import * as bip32 from 'bip32';
 import 'should';
 
 import * as utxolib from '@bitgo/utxo-lib';
@@ -13,7 +12,7 @@ describe('bip32util', function () {
     return Array.from({ length }).map((_, i) => crypto.createHash('sha256').update(`${i}`).digest());
   }
   it('signMessage/verifyMessage', function () {
-    const keys = getSeedBuffers(4).map((seed) => bip32.fromSeed(seed));
+    const keys = getSeedBuffers(4).map((seed) => bip32util.bip32.fromSeed(seed));
     const messages = ['hello', 'goodbye'];
     keys.forEach((key) => {
       messages.forEach((message) => {
