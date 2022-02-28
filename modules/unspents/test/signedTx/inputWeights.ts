@@ -1,6 +1,7 @@
-import * as bitcoin from '@bitgo/utxo-lib';
 import * as assert from 'assert';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
+import * as bitcoin from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/utxo-lib';
 import {
   getInputWeight,
   getInputComponentsWeight,
@@ -19,11 +20,7 @@ import { TxCombo } from './txGen';
 describe('Input Script Sizes (Worst-Case)', function () {
   const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/${v}`)));
 
-  function getLargestInputWithType(
-    inputType: string,
-    signKeys: bip32.BIP32Interface[],
-    inputCount = 100
-  ): bitcoin.TxInput {
+  function getLargestInputWithType(inputType: string, signKeys: BIP32Interface[], inputCount = 100): bitcoin.TxInput {
     return new TxCombo(
       keys,
       Array.from({ length: inputCount }).fill(inputType) as string[],
@@ -58,7 +55,7 @@ describe('Input Script Sizes (Worst-Case)', function () {
     };
   }
 
-  function runTestComponentSizes(inputType: string, signKeys: bip32.BIP32Interface[]) {
+  function runTestComponentSizes(inputType: string, signKeys: BIP32Interface[]) {
     const signKeysStr = signKeys.map((k) => ['user', 'backup', 'bitgo'][keys.indexOf(k)]).join(',');
 
     describe(`inputType=${inputType} signKeys=${signKeysStr}`, function () {
