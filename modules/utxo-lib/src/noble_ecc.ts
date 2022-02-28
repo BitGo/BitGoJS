@@ -2,6 +2,7 @@ import { crypto as bcrypto } from 'bitcoinjs-lib';
 import * as createHmac from 'create-hmac';
 import { ECPairAPI, ECPairFactory } from 'ecpair';
 import * as necc from '@noble/secp256k1';
+import { BIP32API, BIP32Factory } from 'bip32';
 
 necc.utils.taggedHashSync = (tag: necc.TaggedHashPrefix, ...messages: Uint8Array[]): Uint8Array => {
   return bcrypto.taggedHash(tag, Buffer.concat(messages));
@@ -87,5 +88,6 @@ const ecc = {
 };
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);
+const bip32: BIP32API = BIP32Factory(ecc);
 
-export { ecc, ECPair };
+export { ecc, ECPair, bip32 };
