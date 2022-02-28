@@ -1453,7 +1453,7 @@ describe('V2 Wallet:', function () {
       txRequestId: 'id',
       unsignedTxs: [
         {
-          serializedTx: 'ababcdcd',
+          serializedTxHex: 'ababcdcd',
           signableHex: 'deadbeef',
         },
       ],
@@ -1489,6 +1489,10 @@ describe('V2 Wallet:', function () {
           wallet: tssWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          }
         });
       });
 
@@ -1528,6 +1532,14 @@ describe('V2 Wallet:', function () {
           wallet: tssWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'transfer',
+          }
         });
       });
 
