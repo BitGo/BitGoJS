@@ -4,8 +4,8 @@ import { ECPairAPI, ECPairFactory } from 'ecpair';
 import * as necc from '@noble/secp256k1';
 import { BIP32API, BIP32Factory } from 'bip32';
 
-necc.utils.taggedHashSync = (tag: necc.TaggedHashPrefix, ...messages: Uint8Array[]): Uint8Array => {
-  return bcrypto.taggedHash(tag, Buffer.concat(messages));
+necc.utils.sha256Sync = (...messages: Uint8Array[]): Uint8Array => {
+  return bcrypto.sha256(Buffer.concat(messages));
 };
 
 necc.utils.hmacSha256Sync = (key: Uint8Array, ...messages: Uint8Array[]): Uint8Array => {

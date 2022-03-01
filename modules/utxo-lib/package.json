@@ -46,10 +46,10 @@
   ],
   "dependencies": {
     "@bitgo/blake2b": "^3.0.2",
-    "@noble/secp256k1": "git+https://github.com/brandonblack/noble-secp256k1#0d2ab958b68fbe915d406012e2bfa1e65d834191",
+    "@noble/secp256k1": "git+https://github.com/brandonblack/noble-secp256k1#601438008aa532334cf403948850d56966f34f36",
     "bip32": "^3.0.1",
     "bitcoin-ops": "^1.3.0",
-    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib#6df8d471634e2375a96b7d11585e6c54befa905e",
+    "bitcoinjs-lib": "git+https://github.com/BitGo/bitcoinjs-lib#0afe94d5718c034a5c33595500585ad52add2524",
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
     "create-hmac": "^1.1.7",
