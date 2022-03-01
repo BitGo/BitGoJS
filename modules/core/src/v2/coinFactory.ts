@@ -68,6 +68,9 @@ import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
 import { Tdot } from './coins/tdot';
+import { Near } from './coins/near';
+import { TNear } from './coins/tnear';
+
 import { AvaxcTokenConfigEnvDependent } from './coins/avaxcToken';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
@@ -179,6 +182,9 @@ GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tstx', Tstx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('sol', Sol.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsol', Tsol.createInstance);
+GlobalCoinFactory.registerCoinConstructor('near', Near.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tnear', TNear.createInstance);
+
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
