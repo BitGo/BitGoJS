@@ -1,3 +1,5 @@
+import { PublicKey } from '@solana/web3.js';
+
 export const prvKeys = {
   prvKey1: {
     base58: '5jtsd9SmUH5mFZL7ywNNmqmxxdXw4FQ5GJQprXmrdX4LCuUwMBivCfUX2ar8hGdnLHDGrVKkshW1Ke21vZhPiLyr',
@@ -220,6 +222,31 @@ export const ATA_INIT_SIGNED_TX =
   'ASfRe5DuEr3Dak9mDN77iNghCdzdaJwvpmelqoxAjaheKI2YQiLJHOiicBqCsDHLH4pPvtJtpY5lx5xZoKLSdgIBAAUHAGymKVqOJEQemBHH67uu8ISJV4rtwTejLrjw7VSeW6dNqdo+cuWQ+rQ8LcBm6GL6h1EGC0NXmyuOXCBESkJBmQwA0K/rhhTafxmroC1A8YxpJYX2UCDfztPV5fmpwMThAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8AqQan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAAjJclj04kifG7PRApFI4NgwtaE5na/xCEBI572Nvp+FnjMtr5L6vs6LY/96RABeX9/Zr6FYdWthxalfkEs7jQgQEGBwABAAIDBAUA';
 export const ATA_INIT_SIGNED_TX_WITH_MEMO =
   'AQB6vNNCKha4pL0Chx08W/7pqCRReR90+hA01EIgu5uycs+ZUeZgTrLcPSqaAcHDg4kPnjoAYZ/6+kCNGhFbywIBAAYIAGymKVqOJEQemBHH67uu8ISJV4rtwTejLrjw7VSeW6dNqdo+cuWQ+rQ8LcBm6GL6h1EGC0NXmyuOXCBESkJBmQwA0K/rhhTafxmroC1A8YxpJYX2UCDfztPV5fmpwMThAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8AqQan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAAjJclj04kifG7PRApFI4NgwtaE5na/xCEBI572Nvp+FkFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjeMy2vkvq+zotj/3pEAF5f39mvoVh1a2HFqV+QSzuNCBAgYHAAEAAgMEBQAHABd0ZXN0IG1lbW8gcGxlYXNlIGlnbm9yZQ==';
+
+export const tokenTransfers = {
+  mint: '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
+  source: 'FQ9UD9fnmbHbVU2QXFnLPCFL4ESDPyWVvjSztFyzF2p5',
+  decimals: 6,
+  amount: 10000,
+  multiSigners: [
+    {
+      publicKey: new PublicKey('7nLPX6gmwAKrgYtR84qgCLz1f57Y561BceLeqMyy5VmS'),
+      secretKey: new Uint8Array([
+        38, 90, 246, 51, 191, 183, 241, 253, 50, 222, 191, 210, 214, 96, 141, 220, 199, 218, 142, 120, 156, 86, 84, 82,
+        218, 50, 97, 217, 226, 132, 115, 241, 100, 195, 46, 42, 179, 131, 110, 18, 200, 106, 36, 251, 130, 156, 79, 105,
+        179, 132, 56, 160, 225, 100, 192, 243, 188, 34, 189, 62, 221, 24, 77, 33,
+      ]),
+    },
+    {
+      publicKey: new PublicKey('FFHGKjy4tNMDTujGSAdDzupMvn8FDvZWTfKTob8nGffa'),
+      secretKey: new Uint8Array([
+        177, 72, 136, 37, 12, 70, 205, 213, 136, 123, 160, 242, 210, 211, 143, 82, 73, 81, 244, 217, 181, 2, 213, 29,
+        111, 131, 90, 229, 74, 44, 4, 72, 211, 172, 35, 102, 16, 181, 37, 44, 59, 170, 96, 244, 193, 69, 63, 243, 50,
+        123, 104, 76, 94, 160, 152, 33, 8, 214, 195, 194, 80, 102, 165, 29,
+      ]),
+    },
+  ],
+};
 
 export const extraAccounts = {
   prv1: '3Ps7RFbm9ittLrqmoPL3dBiZ8B53AGazwwj1boPUzRx9e8pYjwmJKmmicVMy9HPg5hvp2kfSYVPBVDQdsyJEFobP',
