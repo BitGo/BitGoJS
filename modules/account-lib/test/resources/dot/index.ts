@@ -1,4 +1,5 @@
 export { testnetMetadataRpc } from './testnet';
+import { Networks } from '@bitgo/statics';
 
 export const accounts = {
   account1: {
@@ -128,3 +129,5 @@ export const txIds = {
   id1: '0x1cbf1722ad5c3dcb981d48fd97f0520c7e5683d02a03a8a696208d8fe950299f',
   id2: '0xd95bb6cef42b931e0ee45b87a57dac7d42108e3b6798fd3788758482bbd69ff1',
 };
+
+export const { txVersion, specVersion, genesisHash, chainName, specName } = Networks.test.dot;
