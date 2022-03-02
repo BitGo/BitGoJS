@@ -151,7 +151,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._recentBlockHash = value;
   }
 
-  public actions(value: nearAPI.transactions.Action[]) {
+  protected actions(value: nearAPI.transactions.Action[]) {
     this._actions = value;
   }
 

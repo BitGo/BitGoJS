@@ -3,8 +3,6 @@ import { register } from '../../../../src';
 import { TransactionBuilderFactory } from '../../../../src/coin/near';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import * as testData from '../../../resources/near';
-import BN from 'bn.js';
-import * as nearAPI from 'near-api-js';
 
 describe('NEAR Transaction Builder', async () => {
   let builders;
@@ -23,8 +21,7 @@ describe('NEAR Transaction Builder', async () => {
     txBuilder.publicKey(testData.accounts.account1.publicKey);
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
-    const actions = [nearAPI.transactions.transfer(new BN(1))];
-    txBuilder.actions(actions);
+    txBuilder.amount('1');
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
 
@@ -39,8 +36,7 @@ describe('NEAR Transaction Builder', async () => {
     txBuilder.publicKey(testData.accounts.account1.publicKey);
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
-    const actions = [nearAPI.transactions.transfer(new BN(1))];
-    txBuilder.actions(actions);
+    txBuilder.amount('1');
     txBuilder.sign({ key: testData.accounts.account1.secretKey });
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
@@ -55,6 +51,7 @@ describe('NEAR Transaction Builder', async () => {
       txBuilder.publicKey(testData.accounts.account1.publicKey);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
+      txBuilder.amount('1');
       await txBuilder.build().should.rejectedWith('sender is required before building');
     }
   });
@@ -67,13 +64,13 @@ describe('NEAR Transaction Builder', async () => {
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
-      value: '0.000000000000000000000001',
+      value: '1',
       coin: 'tnear',
     });
     builtTx.outputs.length.should.equal(1);
     builtTx.outputs[0].should.deepEqual({
       address: testData.accounts.account2.address,
-      value: '0.000000000000000000000001',
+      value: '1',
       coin: 'tnear',
     });
     const jsonTx = builtTx.toJson();
@@ -88,13 +85,13 @@ describe('NEAR Transaction Builder', async () => {
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
-      value: '0.000000000000000000000001',
+      value: '1',
       coin: 'tnear',
     });
     builtTx.outputs.length.should.equal(1);
     builtTx.outputs[0].should.deepEqual({
       address: testData.accounts.account2.address,
-      value: '0.000000000000000000000001',
+      value: '1',
       coin: 'tnear',
     });
     const jsonTx = builtTx.toJson();
