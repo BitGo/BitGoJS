@@ -14,5 +14,6 @@ export {
   AlgoCoin,
   AvaxERC20Token,
   SolCoin,
+  FiatCoin,
 } from './account';
 export { CoinMap } from './map';

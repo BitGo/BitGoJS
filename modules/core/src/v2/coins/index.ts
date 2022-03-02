@@ -36,6 +36,8 @@ export { Tltc } from './tltc';
 export { Trbtc } from './trbtc';
 export { Trx } from './trx';
 export { Tsusd } from './tsusd';
+export { Tfiat } from './tfiat';
+export { FiatToken } from './fiatToken'; 
 export { Ttrx } from './ttrx';
 export { Hbar } from './hbar';
 export { Thbar } from './thbar';

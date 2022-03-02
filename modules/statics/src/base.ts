@@ -30,6 +30,7 @@ export enum CoinFamily {
   ETH2 = 'eth2',
   ETC = 'etc',
   EOS = 'eos',
+  FIAT = 'fiat',
   HBAR = 'hbar',
   LTC = 'ltc',
   MATICL = 'maticl',
@@ -146,6 +147,7 @@ export enum UnderlyingAsset {
   CELO = 'celo', // Celo main coin
   CSPR = 'cspr',
   USD = 'usd',
+  FIAT = 'fiat',
   ETH = 'eth',
   ETH2 = 'eth2',
   GTETH = 'gteth',

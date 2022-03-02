@@ -426,6 +426,12 @@ class SUSDTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
+class FiatTestnet extends Testnet implements AccountNetwork {
+  name = 'FiatTestnet';
+  family = CoinFamily.FIAT;
+  explorerUrl = undefined;
+}
+
 class Trx extends Mainnet implements TronNetwork {
   name = 'Trx';
   family = CoinFamily.TRX;
@@ -555,6 +561,7 @@ export const Networks = {
     dash: Object.freeze(new DashTestnet()),
     dot: Object.freeze(new PolkadotTestnet()),
     eos: Object.freeze(new EosTestnet()),
+    fiat: Object.freeze(new FiatTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hedera: Object.freeze(new HederaTestnet()),

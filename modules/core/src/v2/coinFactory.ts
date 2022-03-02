@@ -45,6 +45,7 @@ import {
   Tsol,
   Tstx,
   Tsusd,
+  Tfiat,
   Ttrx,
   Xtz,
   Txtz,
@@ -61,6 +62,7 @@ import {
   Zec,
   EosToken,
   AvaxCToken,
+  FiatToken,
 } from './coins';
 import { tokens } from '../config';
 import * as errors from '../errors';
@@ -176,6 +178,7 @@ GlobalCoinFactory.registerCoinConstructor('thbar', Thbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tfiat', Tfiat.createInstance);
 GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcspr', Tcspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
@@ -244,4 +247,9 @@ for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) 
     const tokenConstructor = AvaxCToken.createTokenConstructor(tokenConfig.mainnet);
     GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
   }
+}
+
+for (const token of [...tokens.bitcoin.fiat.tokens, ...tokens.testnet.fiat.tokens]) {
+  const tokenConstructor = FiatToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
 }

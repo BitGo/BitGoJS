@@ -19,6 +19,7 @@ import {
   algoToken,
   solToken,
   tsolToken,
+  tfiatToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -108,6 +109,7 @@ export const coins = CoinMap.fromCoins([
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
+  account('tfiat', 'Testnet FIAT', Networks.test.fiat, 2, UnderlyingAsset.FIAT),
   account('stx', 'Stacks', Networks.main.stx, 6, UnderlyingAsset.STX),
   account('tstx', 'Testnet Stacks', Networks.test.stx, 6, UnderlyingAsset.STX),
   account('sol', 'Sol', Networks.main.sol, 9, UnderlyingAsset.SOL, SOL_FEATURES, KeyCurve.Ed25519),
@@ -1356,4 +1358,5 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
+  tfiatToken('tfiat:USD', 'FIAT US Dollar', UnderlyingAsset.USD, 2),
 ]);
