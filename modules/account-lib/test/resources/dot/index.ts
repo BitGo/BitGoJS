@@ -27,6 +27,10 @@ export const accounts = {
     publicKey: '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29',
     address: '5DQcDYQ3wwobcrJ5aE5CzGp34ZWYNeYfYZ1yLbPiU2RcSvwm',
   },
+  bs58Account: {
+    publicKey: '8Arrfe4vAh5fAEJgUBwL42EZa5P22zJJUnn569hxWfJU',
+    address: '5EUPTKwJeyJfmT7fcugz4ZcPyWdWMN5X7dcineZhiGfWzEPQ',
+  },
 };
 
 export const rawTx = {
