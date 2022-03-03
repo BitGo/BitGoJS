@@ -351,8 +351,8 @@ describe('Stx util library', function () {
     it('should return the base address', async function () {
       const addressWithMemo = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      await Stx.Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
-      await Stx.Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
+      Stx.Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
+      Stx.Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
     });
   });
 
@@ -360,19 +360,26 @@ describe('Stx util library', function () {
     it('should validate if base address match', async function () {
       const address = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      await Stx.Utils.isSameBaseAddress(address, baseAddress).should.true();
+      Stx.Utils.isSameBaseAddress(address, baseAddress).should.true();
 
       const address2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
       const baseAddress2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      await Stx.Utils.isSameBaseAddress(address2, baseAddress2).should.true();
+      Stx.Utils.isSameBaseAddress(address2, baseAddress2).should.true();
 
       const address3 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress3 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
-      await Stx.Utils.isSameBaseAddress(address3, baseAddress3).should.false();
+      Stx.Utils.isSameBaseAddress(address3, baseAddress3).should.false();
 
       const address4 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
       const baseAddress4 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
-      await Stx.Utils.isSameBaseAddress(address4, baseAddress4).should.false();
+      Stx.Utils.isSameBaseAddress(address4, baseAddress4).should.false();
+
+      const address5 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDF';
+      const baseAddress5 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
+      should.throws(
+        () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
+        `invalid address: ${address5}`,
+      );
     });
   });
 });

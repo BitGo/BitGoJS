@@ -11,7 +11,7 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
-  VerifyAddressOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionFee,
   TransactionRecipient as Recipient,
@@ -20,7 +20,7 @@ import {
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
-import { InvalidAddressError, InvalidMemoIdError, MethodNotImplementedError } from '../../errors';
+import { MethodNotImplementedError } from '../../errors';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from '../internal/seedValidator';
 
@@ -55,9 +55,8 @@ export interface ExplainTransactionOptions {
   };
 }
 
-interface AddressDetails {
-  address: string;
-  memoId?: string;
+interface VerifyAddressOptions extends BaseVerifyAddressOptions {
+  baseAddress: string;
 }
 
 export class Hbar extends BaseCoin {
@@ -107,15 +106,7 @@ export class Hbar extends BaseCoin {
    */
   isValidAddress(address: string): boolean {
     try {
-      const addressDetails = this.getAddressDetails(address);
-      if (typeof addressDetails.memoId === 'undefined' || addressDetails.memoId === '') {
-        // we want addresses to normalize without a memoId
-        address = address.replace('?memoId=', '');
-      }
-      return (
-        address === this.normalizeAddress(addressDetails) &&
-        bitgoAccountLib.Hbar.Utils.isValidAddress(addressDetails.address)
-      );
+      return bitgoAccountLib.Hbar.Utils.isValidAddressWithPaymentId(address);
     } catch (e) {
       return false;
     }
@@ -145,8 +136,16 @@ export class Hbar extends BaseCoin {
     return {};
   }
 
+  /**
+   * Check if address is valid, then make sure it matches the base address.
+   *
+   * @param {VerifyAddressOptions} params
+   * @param {String} params.address - the address to verify
+   * @param {String} params.baseAddress - the base address from the wallet
+   */
   isWalletAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError();
+    const { address, baseAddress } = params;
+    return bitgoAccountLib.Hbar.Utils.isSameBaseAddress(address, baseAddress);
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
@@ -265,62 +264,6 @@ export class Hbar extends BaseCoin {
       timestamp: txJson.startTime,
       expiration: txJson.validDuration,
     } as any;
-  }
-
-  /**
-   * Process address into address and memo id
-   *
-   * @param rawAddress the address
-   * @returns object containing address and memo id
-   */
-  getAddressDetails(rawAddress: string): AddressDetails {
-    let memoId: string | undefined = undefined;
-    let address = rawAddress;
-
-    if (rawAddress.includes('?memoId=')) {
-      address = rawAddress.substr(0, rawAddress.indexOf('?'));
-    }
-
-    // failed to parse OR bad address
-    if (!address || !bitgoAccountLib.Hbar.Utils.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${rawAddress}`);
-    }
-
-    // address doesn't have a memo id - this is ok
-    if (rawAddress === address) {
-      return { address, memoId };
-    }
-
-    memoId = rawAddress.substr(rawAddress.indexOf('?memoId=') + 8);
-    // undefined is valid as in has not been specified
-    if (typeof memoId !== 'undefined' && !this.isValidMemoId(memoId)) {
-      throw new InvalidMemoIdError(`invalid address: '${address}', memoId is not valid`);
-    }
-
-    return { address, memoId };
-  }
-
-  /**
-   * Validate and return address with appended memo id
-   *
-   * @param address
-   * @param memoId
-   */
-  normalizeAddress({ address, memoId }: AddressDetails): string {
-    if (memoId && this.isValidMemoId(memoId)) {
-      return `${address}?memoId=${memoId}`;
-    }
-    return address;
-  }
-
-  /**
-   * Validates whether a memo is potentially correct in hedera.
-   *
-   * @param memoId
-   */
-  isValidMemoId(memoId: string) {
-    // TODO: change this to account-lib helper once its published
-    return !(typeof memoId !== 'undefined' && Buffer.from(memoId).length > 100);
   }
 
   isStellarSeed(seed: string): boolean {
