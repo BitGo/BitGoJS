@@ -185,6 +185,7 @@ export const coins = CoinMap.fromCoins([
   tofc('ofctbsv', 'Test Bitcoin SV', 8, UnderlyingAsset.BSV, CoinKind.CRYPTO),
   tofc('ofcteos', 'Test Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
   tofc('ofctetc', 'Test Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
+  tofc('ofctgeth', 'Test Geth', 18, UnderlyingAsset.GTETH, CoinKind.CRYPTO),
   tofc('ofcthbar', 'Testnet Hedera HBAR', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   erc20('1inch', '1inch Token', 18, '0x111111111117dc0aa78b770fa6a738034120c302', UnderlyingAsset['1INCH']),
   erc20('1up', 'Uptrennd Token', 18, '0x07597255910a51509ca469568b048f2597e72504', UnderlyingAsset['1UP']),
