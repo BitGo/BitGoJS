@@ -384,28 +384,25 @@ async function getEncryptedPrivKey(path: string, walletId: string): Promise<stri
   return encryptedPrivKey[walletId];
 }
 
-function decryptPrivKey(encryptedPrivKey: string, walletPw: string): string {
-  const bg = new BitGo();
+function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): string {
   try {
-    const decrypted = bg.decrypt({ password: walletPw, input: encryptedPrivKey });
-    return decrypted;
+    return bg.decrypt({ password: walletPw, input: encryptedPrivKey });
   } catch (e) {
     throw new Error(`Error when trying to decrypt private key: ${e}`);
   }
 }
 
 export async function handleV2Sign(req: express.Request) {
-  express;
   const walletId = req.body.txPrebuild.walletId;
   const walletPw = getWalletPwFromEnv(walletId);
   const privKeyPath = req.config.signerFileSystemPath;
   assert(typeof privKeyPath === 'string');
   const encryptedPrivKey = await getEncryptedPrivKey(privKeyPath, walletId);
-  const privKey = decryptPrivKey(encryptedPrivKey, walletPw);
   const bitgo = req.bitgo;
+  const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.params.coin);
   try {
-    return await coin.signTransaction({ ...req.body, ...{ prv: privKey } });
+    return await coin.signTransaction({ ...req.body, prv: privKey });
   } catch (error) {
     console.log('error while signing wallet transaction ', error);
     throw error;
