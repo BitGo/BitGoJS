@@ -1,11 +1,13 @@
 import should from 'should';
 import { Dot } from '../../../../src';
 import { accounts } from '../../../resources/dot';
+import bs58 from 'bs58';
+import utils from '../../../../src/coin/dot/utils';
 
 describe('Dot KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
 
-  const { account1, account2, account3, default: defaultAccount } = accounts;
+  const { account1, account2, account3, default: defaultAccount, bs58Account } = accounts;
 
   describe('Keypair creation', () => {
     it('initial state', () => {
@@ -29,6 +31,14 @@ describe('Dot KeyPair', () => {
     it('initialization from public key', () => {
       const keyPair = new Dot.KeyPair({ pub: account3.publicKey });
       should.equal(keyPair.getKeys().pub, account3.publicKey);
+    });
+
+    it('initialization from base58 public key', () => {
+      const decodedbs58Buffer: Buffer = bs58.decode(bs58Account.publicKey);
+      const publicKeyHexString = decodedbs58Buffer.toString('hex');
+
+      const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
+      should.equal(keyPair.getKeys().pub, publicKeyHexString);
     });
 
     it('should be able to derive keypair with hardened derivation', () => {
@@ -84,6 +94,13 @@ describe('Dot KeyPair', () => {
       keyPair = new Dot.KeyPair({ prv: account2.secretKey });
       address = keyPair.getAddress();
       address.should.equal(account2.address);
+    });
+
+    it('should get an address with bs58 pub key', () => {
+      const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
+      const address = keyPair.getAddress();
+      address.should.equal(bs58Account.address);
+      utils.isValidAddress(address).should.equal(true);
     });
   });
 
