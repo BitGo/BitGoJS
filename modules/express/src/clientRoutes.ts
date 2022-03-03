@@ -366,19 +366,46 @@ function handleCanonicalAddress(req: express.Request) {
   return (coin as Coin.Bch | Coin.Bsv | Coin.Ltc).canonicalAddress(address, version || fallbackVersion);
 }
 
-export async function handleV2Sign(req: express.Request) {
-  const walletId = req.body.txPrebuild.walletId;
-  const path = req.config.signerFileSystemPath;
-  assert(typeof path === 'string');
-  const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
-  const privKey = JSON.parse(privKeyFile);
-  if (privKey[walletId] === undefined) {
-    throw new Error(`Could not find a field for walletId: ${walletId} in ${req.config.signerFileSystemPath}`);
+function getWalletPwFromEnv(walletId: string): string {
+  const name = `WALLET_${walletId}_PASSPHRASE`;
+  const walletPw = process.env[name];
+  if (walletPw === undefined) {
+    throw new Error(`Could not find wallet passphrase ${name} in environment`);
   }
+  return walletPw;
+}
+
+async function getEncryptedPrivKey(path: string, walletId: string): Promise<string> {
+  const privKeyFile = await fs.readFile(path, { encoding: 'utf8' });
+  const encryptedPrivKey = JSON.parse(privKeyFile);
+  if (encryptedPrivKey[walletId] === undefined) {
+    throw new Error(`Could not find a field for walletId: ${walletId} in ${path}`);
+  }
+  return encryptedPrivKey[walletId];
+}
+
+function decryptPrivKey(encryptedPrivKey: string, walletPw: string): string {
+  const bg = new BitGo();
+  try {
+    const decrypted = bg.decrypt({ password: walletPw, input: encryptedPrivKey });
+    return decrypted;
+  } catch (e) {
+    throw new Error(`Error when trying to decrypt private key: ${e}`);
+  }
+}
+
+export async function handleV2Sign(req: express.Request) {
+  express;
+  const walletId = req.body.txPrebuild.walletId;
+  const walletPw = getWalletPwFromEnv(walletId);
+  const privKeyPath = req.config.signerFileSystemPath;
+  assert(typeof privKeyPath === 'string');
+  const encryptedPrivKey = await getEncryptedPrivKey(privKeyPath, walletId);
+  const privKey = decryptPrivKey(encryptedPrivKey, walletPw);
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   try {
-    return await coin.signTransaction({ ...req.body, ...{ prv: privKey[walletId] } });
+    return await coin.signTransaction({ ...req.body, ...{ prv: privKey } });
   } catch (error) {
     console.log('error while signing wallet transaction ', error);
     throw error;
