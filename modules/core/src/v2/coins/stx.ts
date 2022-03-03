@@ -16,7 +16,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { MethodNotImplementedError } from '../../errors';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {
@@ -90,8 +89,22 @@ export class Stx extends BaseCoin {
     return true;
   }
 
+  /**
+   * Check if address is valid, then make sure it matches the base address.
+   *
+   * @param {VerifyAddressOptions} params
+   * @param {String} params.address - the address to verify
+   * @param {String} params.baseAddress - the base address from the wallet
+   */
   isWalletAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError();
+    const { address, keychains } = params;
+    if (!keychains || keychains.length !== 3) {
+      throw new Error('Invalid keychains');
+    }
+    const pubs = keychains.map((keychain) => accountLib.Stx.Utils.xpubToSTXPubkey(keychain.pub));
+    const addressVersion = accountLib.Stx.Utils.getAddressVersion(address);
+    const baseAddress = accountLib.Stx.Utils.getSTXAddressFromPubKeys(pubs, addressVersion).address;
+    return accountLib.Stx.Utils.isSameBaseAddress(address, baseAddress);
   }
 
   /**
