@@ -98,7 +98,8 @@ export class TssUtils extends MpcUtils {
     userKeyShare: KeyShare,
     backupKeyShare: KeyShare,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase: string,
+    originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
     const MPC = await Eddsa();
     const bitgoKeyShares = bitgoKeychain.keyShares;
@@ -154,6 +155,7 @@ export class TssUtils extends MpcUtils {
       userKeychainParams.addressDerivationKeypair = {
         pub: addressDerivationKeypair.pub,
         encryptedPrv: encryptedPrv,
+        originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
       };
     }
 
@@ -234,7 +236,8 @@ export class TssUtils extends MpcUtils {
   async createBitgoKeychain(
     userGpgKey: openpgp.SerializedKeyPair<string>,
     userKeyShare: KeyShare,
-    backupKeyShare: KeyShare
+    backupKeyShare: KeyShare,
+    enterprise?: string
   ): Promise<Keychain> {
     const constants = await this.bitgo.fetchConstants();
     if (!constants.tss || !constants.tss.bitgoPublicKey) {
@@ -294,6 +297,7 @@ export class TssUtils extends MpcUtils {
       ],
       userGPGPublicKey: userGpgKey.publicKey,
       backupGPGPublicKey: userGpgKey.publicKey,
+      enterprise: enterprise,
     };
 
     return await this.baseCoin.keychains().add(createBitGoTssParams);
@@ -304,7 +308,11 @@ export class TssUtils extends MpcUtils {
    *
    * @param params.passphrase - passphrase used to encrypt signing materials created for User and Backup
    */
-  async createKeychains(params: { passphrase: string }): Promise<KeychainsTriplet> {
+  async createKeychains(params: {
+    passphrase: string;
+    enterprise?: string;
+    originalPasscodeEncryptionCode?: string;
+  }): Promise<KeychainsTriplet> {
     const MPC = await Eddsa();
     const m = 2;
     const n = 3;
@@ -323,13 +331,14 @@ export class TssUtils extends MpcUtils {
       ],
     });
 
-    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare);
+    const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
     const userKeychainPromise = this.createUserKeychain(
       userGpgKey,
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      params.passphrase
+      params.passphrase,
+      params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.createBackupKeychain(
       userGpgKey,
