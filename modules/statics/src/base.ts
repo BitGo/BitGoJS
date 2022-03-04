@@ -625,6 +625,8 @@ export enum UnderlyingAsset {
   TERC6DP = 'terc6dp',
   TERC18DP = 'terc18DP',
   TERC20 = 'terc20',
+  TERC721 = 'terc721',
+  TERC1155 = 'terc1155',
   TGBP = 'tgbp',
   THKD = 'thkd',
   TIOX = 'tiox',

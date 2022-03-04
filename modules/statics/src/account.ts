@@ -133,6 +133,8 @@ export class Base58ContractAddressDefinedToken extends AccountCoinToken {
  */
 export class Erc20Coin extends ContractAddressDefinedToken {}
 
+export class NFTCoin extends ContractAddressDefinedToken {}
+
 /**
  * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
  */
@@ -375,6 +377,49 @@ export function terc20(
   network: EthereumNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+export function nft(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new NFTCoin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+export function tnft(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.test.goerli
+) {
+  return nft(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

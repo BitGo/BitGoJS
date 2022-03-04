@@ -19,6 +19,7 @@ import {
   algoToken,
   solToken,
   tsolToken,
+  tnft,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -1119,6 +1120,13 @@ export const coins = CoinMap.fromCoins([
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
+  tnft(
+    'tbitgoerc721',
+    'Test BITGO ERC 721 Token',
+    0,
+    '0x0066363f221748dd10494025b317a113381524a0',
+    UnderlyingAsset.TERC721
+  ),
   tofcerc20('ofcterc', 'Test ERC Token', 0, UnderlyingAsset.TERC),
   tofcerc20('ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
   tstellarToken(
