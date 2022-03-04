@@ -764,6 +764,9 @@ export enum UnderlyingAsset {
   'avaxc:usdt' = 'avaxc:usdt',
   'avaxc:usdc' = 'avaxc:usdc',
   'avaxc:link' = 'avaxc:link',
+
+  ERC721 = 'erc721',
+  ERC1155 = 'erc1155',
 }
 
 /**
