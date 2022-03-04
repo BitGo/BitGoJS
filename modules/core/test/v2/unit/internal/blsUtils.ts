@@ -63,11 +63,53 @@ describe('BLS Utils:', async function () {
 
   });
 
-  // TODO BG-43029: Enable this UT when HSM response includes the pub share from bitgo to user and backup 
+  it('should generate BLS-DKG key chains with optional params', async function () {
+    const enterprise = 'enterprise';
+    const originalPasscodeEncryptionCode = 'originalPasscodeEncryptionCode';
+
+    const userKeyShare = eth2.generateKeyPair();
+    const backupKeyShare = eth2.generateKeyPair();
+
+    const nockedBitGoKeychain = await nockBitgoKeychain({
+      coin: coinName,
+      userKeyShare,
+      backupKeyShare,
+    });
+    const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
+    await nockBackupKeychain({ coin: coinName });
+
+    const bitgoKeychain = await blsUtils.createBitgoKeychain(userKeyShare, backupKeyShare, enterprise);
+    const userKeychain = await blsUtils.createUserKeychain(
+      userKeyShare,
+      backupKeyShare,
+      bitgoKeychain,
+      'passphrase',
+      originalPasscodeEncryptionCode);
+    const backupKeychain = await blsUtils.createBackupKeychain(
+      userKeyShare,
+      backupKeyShare,
+      bitgoKeychain,
+      'passphrase');
+
+    const backupCombined = eth2.aggregateShares({
+      pubShares: [backupKeyShare.pub, userKeyShare.pub, bitgoKeyShare.pub],
+      prvShares: [userKeyShare.secretShares[1], backupKeyShare.secretShares[1], bitgoKeyShare.secretShares[1]],
+    });
+
+    bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
+    userKeychain.should.deepEqual(nockedUserKeychain);
+
+    // unencrypted `prv` property should exist on backup keychain
+    backupCombined.prv.should.equal(backupKeychain.prv);
+    should.exist(backupKeychain.encryptedPrv);
+
+  });
+
+  // TODO BG-43029: Enable this UT when HSM response includes the pub share from bitgo to user and backup
   xit('should fail to generate BLS-DKG key chains', async function () {
     const userKeyShare = eth2.generateKeyPair();
     const backupKeyShare = eth2.generateKeyPair();
-    
+
     const nockedBitGoKeychain = await nockBitgoKeychain({
       coin: coinName,
       userKeyShare,

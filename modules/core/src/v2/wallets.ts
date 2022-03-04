@@ -31,6 +31,8 @@ export interface GenerateMpcWalletOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
   label: string;
   passphrase: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
 }
 
 export interface GenerateWalletOptions {
@@ -293,6 +295,26 @@ export class Wallets {
     const passphrase = params.passphrase;
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
     const isCold = !canEncrypt || !!params.userKey;
+    const walletParams: SupplementGenerateWalletOptions = {
+      label: label,
+      m: 2,
+      n: 3,
+      keys: [],
+      isCold,
+    };
+
+    if (!_.isUndefined(params.passcodeEncryptionCode)) {
+      if (!_.isString(params.passcodeEncryptionCode)) {
+        throw new Error('passcodeEncryptionCode must be a string');
+      }
+    }
+
+    if (!_.isUndefined(params.enterprise)) {
+      if (!_.isString(params.enterprise)) {
+        throw new Error('invalid enterprise argument, expecting string');
+      }
+      walletParams.enterprise = params.enterprise;
+    }
 
     if (isTss) {
       if (!canEncrypt) {
@@ -307,7 +329,13 @@ export class Wallets {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
       }
 
-      return this.generateMpcWallet({ multisigType: 'tss', label, passphrase: passphrase! });
+      return this.generateMpcWallet({
+        multisigType: 'tss',
+        label,
+        passphrase: passphrase!,
+        originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
+        enterprise: params.enterprise,
+      });
     }
 
     const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
@@ -327,35 +355,14 @@ export class Wallets {
       return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase: passphrase! });
     }
 
-    const walletParams: SupplementGenerateWalletOptions = {
-      label: label,
-      m: 2,
-      n: 3,
-      keys: [],
-      isCold,
-    };
-
     const hasBackupXpub = !!params.backupXpub;
     const hasBackupXpubProvider = !!params.backupXpubProvider;
     if (hasBackupXpub && hasBackupXpubProvider) {
       throw new Error('Cannot provide more than one backupXpub or backupXpubProvider flag');
     }
 
-    if (!_.isUndefined(params.passcodeEncryptionCode)) {
-      if (!_.isString(params.passcodeEncryptionCode)) {
-        throw new Error('passcodeEncryptionCode must be a string');
-      }
-    }
-
     if (params.gasPrice && params.eip1559) {
       throw new Error('can not use both eip1559 and gasPrice values');
-    }
-
-    if (!_.isUndefined(params.enterprise)) {
-      if (!_.isString(params.enterprise)) {
-        throw new Error('invalid enterprise argument, expecting string');
-      }
-      walletParams.enterprise = params.enterprise;
     }
 
     if (!_.isUndefined(params.disableTransactionNotifications)) {
@@ -744,13 +751,17 @@ export class Wallets {
       keys: [],
       isCold: false,
       multisigType: params.multisigType,
+      enterprise: params.enterprise,
     };
 
     // Create MPC Keychains
 
-    const keychains = await this.baseCoin
-      .keychains()
-      .createMpc({ multisigType: params.multisigType, passphrase: params.passphrase });
+    const keychains = await this.baseCoin.keychains().createMpc({
+      multisigType: params.multisigType,
+      passphrase: params.passphrase,
+      enterprise: params.enterprise,
+      originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+    });
     const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
     walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
 

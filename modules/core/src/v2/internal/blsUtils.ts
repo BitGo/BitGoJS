@@ -1,3 +1,7 @@
+/**
+ * @prettier
+ */
+
 import { BaseCoin as BaseCoinAccountLib } from '@bitgo/account-lib';
 
 import { BaseCoin, KeychainsTriplet, BlsKeyPair } from '../baseCoin';
@@ -9,7 +13,6 @@ import { MpcUtils } from './mpcUtils';
  * Utility functions for BLS-DKG work flows.
  */
 export class BlsUtils extends MpcUtils {
-
   constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     super(bitgo, baseCoin);
   }
@@ -26,7 +29,8 @@ export class BlsUtils extends MpcUtils {
     userKeyShare: BlsKeyPair,
     backupKeyShare: BlsKeyPair,
     bitgoKeychain: Keychain,
-    passphrase: string
+    passphrase: string,
+    originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
@@ -44,15 +48,20 @@ export class BlsUtils extends MpcUtils {
     if (!backupKeyShare.secretShares || !backupKeyShare.pub) {
       throw new Error('Invalid backup key shares');
     }
-    
+
     // TODO BG-43029: Aggregate pub shares and validate it is the same as commonPub when HSM includes the pub share from bitgo to user and backup
-    const userPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([userKeyShare.secretShares[0], backupKeyShare.secretShares[0], bitGoToUserShare.privateShare]);
+    const userPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
+      userKeyShare.secretShares[0],
+      backupKeyShare.secretShares[0],
+      bitGoToUserShare.privateShare,
+    ]);
 
     const userKeychainParams: any = {
       source: 'user',
       type: 'blsdkg',
       commonPub: bitgoKeychain.commonPub,
       encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userPrivateKey), password: passphrase }),
+      originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
     };
 
     if (this.baseCoin.supportsDerivationKeypair()) {
@@ -101,9 +110,13 @@ export class BlsUtils extends MpcUtils {
     if (!backupKeyShare.secretShares || !backupKeyShare.pub) {
       throw new Error('Invalid backup key shares');
     }
-    
+
     // TODO BG-43029: Aggregate pub shares and validate it is the same as commonPub when HSM includes the pub share from bitgo to user and backup
-    const backupPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([userKeyShare.secretShares[1], backupKeyShare.secretShares[1], bitGoToBackupShare.privateShare]);
+    const backupPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
+      userKeyShare.secretShares[1],
+      backupKeyShare.secretShares[1],
+      bitGoToBackupShare.privateShare,
+    ]);
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
@@ -122,7 +135,8 @@ export class BlsUtils extends MpcUtils {
    */
   async createBitgoKeychain(
     userKeyShare: BlsKeyPair,
-    backupKeyShare: BlsKeyPair
+    backupKeyShare: BlsKeyPair,
+    enterprise?: string
   ): Promise<Keychain> {
     if (!userKeyShare.secretShares || !userKeyShare.pub) {
       throw new Error('Invalid user key shares');
@@ -148,6 +162,7 @@ export class BlsUtils extends MpcUtils {
           privateShare: backupKeyShare.secretShares[2],
         },
       ],
+      enterprise: enterprise,
     };
 
     return await this.baseCoin.keychains().add(createBitGoMPCParams);
@@ -158,16 +173,21 @@ export class BlsUtils extends MpcUtils {
    *
    * @param params.passphrase - passphrase used to encrypt signing materials created for User and Backup
    */
-  async createKeychains(params: { passphrase: string }): Promise<KeychainsTriplet> {
+  async createKeychains(params: {
+    passphrase: string;
+    enterprise?: string;
+    originalPasscodeEncryptionCode?: string;
+  }): Promise<KeychainsTriplet> {
     const userKeyShare = this.baseCoin.generateKeyPair();
     const backupKeyShare = this.baseCoin.generateKeyPair();
 
-    const bitgoKeychain = await this.createBitgoKeychain(userKeyShare, backupKeyShare);
+    const bitgoKeychain = await this.createBitgoKeychain(userKeyShare, backupKeyShare, params.enterprise);
     const userKeychainPromise = this.createUserKeychain(
       userKeyShare,
       backupKeyShare,
       bitgoKeychain,
-      params.passphrase
+      params.passphrase,
+      params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.createBackupKeychain(
       userKeyShare,

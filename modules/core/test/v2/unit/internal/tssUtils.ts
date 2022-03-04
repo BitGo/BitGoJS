@@ -154,6 +154,56 @@ describe('TSS Utils:', async function () {
 
     });
 
+    it('should generate TSS key chains with optional params', async function () {
+      const enterprise = 'enterprise';
+      const originalPasscodeEncryptionCode = 'originalPasscodeEncryptionCode';
+
+      const userKeyShare = MPC.keyShare(1, 2, 3);
+      const backupKeyShare = MPC.keyShare(2, 2, 3);
+      const userGpgKey = await openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'test',
+            email: 'test@test.com',
+          },
+        ],
+      });
+
+      const nockedBitGoKeychain = await nockBitgoKeychain({
+        coin: coinName,
+        userKeyShare,
+        backupKeyShare,
+        userGpgKey,
+      });
+      const nockedUserKeychain = await nockUserKeychain({ coin: coinName });
+      await nockBackupKeychain({ coin: coinName });
+
+      const bitgoKeychain = await tssUtils.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, enterprise);
+      const userKeychain = await tssUtils.createUserKeychain(
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeychain,
+        'passphrase',
+        originalPasscodeEncryptionCode);
+      const backupKeychain = await tssUtils.createBackupKeychain(
+        userGpgKey,
+        userKeyShare,
+        backupKeyShare,
+        bitgoKeychain,
+        'passphrase');
+
+      const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoKeyShare.yShares[2]]);
+
+      bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
+      userKeychain.should.deepEqual(nockedUserKeychain);
+
+      // unencrypted `prv` property should exist on backup keychain
+      JSON.stringify(backupCombined.pShare).should.equal(backupKeychain.prv);
+      should.exist(backupKeychain.encryptedPrv);
+
+    });
+
     it('should fail to generate TSS key chains', async function () {
       const userKeyShare = MPC.keyShare(1, 2, 3);
       const backupKeyShare = MPC.keyShare(2, 2, 3);
