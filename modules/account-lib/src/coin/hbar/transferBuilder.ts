@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';

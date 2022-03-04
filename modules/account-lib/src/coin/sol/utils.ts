@@ -27,8 +27,7 @@ import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { BaseCoin, BaseNetwork, coins } from '@bitgo/statics';
-import { SolCoin } from '@bitgo/statics/dist/src/account';
+import { BaseCoin, BaseNetwork, coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format

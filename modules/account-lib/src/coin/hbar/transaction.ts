@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';

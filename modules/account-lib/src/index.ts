@@ -1,5 +1,7 @@
 import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError } from './coin/baseCoin/errors';
+import Eddsa from './mpc/tss';
+export { Eddsa };
 
 import * as crypto from './utils/crypto';
 export { crypto };

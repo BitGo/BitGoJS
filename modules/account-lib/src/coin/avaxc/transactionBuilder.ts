@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import { Eth } from '../../index';
 import { BuildTransactionError } from '../baseCoin/errors';
