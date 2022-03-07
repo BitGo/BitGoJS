@@ -61,7 +61,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._signatures?.length > 0) {
       this.transaction.constructSignedPayload(this._signatures[0].signature);
     }
-    this.transaction.buildInputAndOutput();
+    this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
 
@@ -140,29 +140,76 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   // endregion
 
-  public sender(value: string) {
-    this._sender = value;
+  /**
+   * Sets the public key and the address of the sender of this transaction.
+   *
+   * @param {string} address the account that is sending this transaction
+   * @param {string} pubKey the public key that is sending this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public sender(address: string, pubKey: string): this {
+    if (!address || !utils.isValidAddress(address.toString())) {
+      throw new BuildTransactionError('Invalid or missing address, got: ' + address);
+    }
+    if (!pubKey || !utils.isValidPublicKey(pubKey)) {
+      throw new BuildTransactionError('Invalid or missing pubKey, got: ' + pubKey);
+    }
+    this._sender = address;
+    this._publicKey = pubKey;
+    return this;
   }
 
-  public receiverId(value: string) {
-    this._receiverId = value;
+  /**
+   * Sets the account Id of the receiver of this transaction.
+   *
+   * @param {string} accountId the account id of the account that is receiving this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public receiverId(accountId: string): this {
+    utils.isValidAddress(accountId);
+    this._receiverId = accountId;
+    return this;
   }
 
-  public nounce(value: number) {
-    this._nonce = value;
+  /**
+   * Set the nonce
+   *
+   * @param {number} nonce - number that can be only used once
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public nonce(nonce: number): this {
+    if (nonce < 0) {
+      throw new BuildTransactionError(`Invalid nonce: ${nonce}`);
+    }
+    this._nonce = nonce;
+    return this;
   }
 
-  public recentBlockHash(value: string) {
-    this._recentBlockHash = value;
+  /**
+   * Sets the blockHash of this transaction.
+   *
+   * @param {string} blockHash the blockHash of this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public recentBlockHash(blockHash: string): this {
+    if (!utils.isValidBlockId(blockHash)) {
+      throw new BuildTransactionError(`Invalid blockHash ${blockHash}`);
+    }
+    this._recentBlockHash = blockHash;
+    return this;
   }
 
-  protected actions(value: nearAPI.transactions.Action[]) {
+  /**
+   * Sets the list of actions of this transaction.
+   *
+   * @param {nearAPI.transactions.Action[]} value the the list of actions
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  protected actions(value: nearAPI.transactions.Action[]): this {
     this._actions = value;
+    return this;
   }
 
-  public publicKey(value: string) {
-    this._publicKey = value;
-  }
   /**
    * Builds the NEAR transaction.
    *

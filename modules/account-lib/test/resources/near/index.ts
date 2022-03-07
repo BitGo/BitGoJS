@@ -43,6 +43,11 @@ export const blockHash = {
   block2: 'CvjrdzHQB1KystXqa4bDWcLbNRaVUcrLZ3PVnMqHKyiW',
 };
 
+export const errorBlockHash = {
+  block1: 'CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9',
+  block2: 'CvjrdzHQB1KystXqa4bDWcLbNRaVUcrLZ3PVnMqHKyiW',
+};
+
 export const signatures = {
   signature1: 'NfcCZq7rrxx8SN23w31Wtd53Bhw5qm6E4GaXfw1sxBEnV3J9MRdHRzwgDEEjTC5WCurvW84bkyDcpCGgGjkhi9A',
   signature2: 'NfcCZq7rrxx8SN23w31Wtd53Bhw5qm6E4GaXfw1sxBEnV3J9MRdHRzwgDEEjTC5WCurvW84bkyDcpCGgGjkhi9A',

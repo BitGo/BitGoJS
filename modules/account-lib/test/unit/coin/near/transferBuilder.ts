@@ -13,9 +13,8 @@ describe('Near Transfer Builder', () => {
   describe('Succeed', () => {
     it('build a transfer tx unsigned', async () => {
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(testData.accounts.account1.address);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(testData.accounts.account1.publicKey);
+      txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -40,16 +39,13 @@ describe('Near Transfer Builder', () => {
 
     it('build a transfer tx signed', async () => {
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(testData.accounts.account1.address);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(testData.accounts.account1.publicKey);
+      txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
       txBuilder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await txBuilder.build();
-      should.equal(tx.type, TransactionType.Send);
-
       should.equal(tx.type, TransactionType.Send);
 
       tx.inputs.length.should.equal(1);
@@ -86,9 +82,8 @@ describe('Near Transfer Builder', () => {
       const sender = nearKeyPair.getAddress();
 
       let txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(testData.accounts.account1.address);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(testData.accounts.account1.publicKey);
+      txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -106,9 +101,8 @@ describe('Near Transfer Builder', () => {
       let rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
 
       txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(sender);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(commonPub);
+      txBuilder.sender(sender, commonPub);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -126,9 +120,8 @@ describe('Near Transfer Builder', () => {
       signature = MPC.signCombine([A_sign, B_sign]);
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(sender);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(commonPub);
+      txBuilder.sender(sender, commonPub);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -145,9 +138,8 @@ describe('Near Transfer Builder', () => {
       signature = MPC.signCombine([A_sign, C_sign]);
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(sender);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(commonPub);
+      txBuilder.sender(sender, commonPub);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -164,9 +156,8 @@ describe('Near Transfer Builder', () => {
       signature = MPC.signCombine([B_sign, C_sign]);
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(sender);
-      txBuilder.nounce(1);
-      txBuilder.publicKey(commonPub);
+      txBuilder.sender(sender, commonPub);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
