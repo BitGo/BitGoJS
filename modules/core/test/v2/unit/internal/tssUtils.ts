@@ -535,6 +535,17 @@ describe('TSS Utils:', async function () {
     });
   });
 
+  describe('delete SignatureShare:', async function() {
+    it('should succeed to delete Signature Share', async function() {
+      const signatureShare = { from: 'user', to: 'bitgo', share: '128bytestring' } as SignatureShareRecord;
+      const nock = await nockDeleteSignatureShare({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, signatureShare });
+      const response = await tssUtils.deleteSignatureShares(txRequest.txRequestId);
+      response.should.deepEqual([signatureShare]);
+      response.should.length(1);
+      nock.isDone().should.equal(true);
+    });
+  });
+
   describe('createUserToBitGoGShare:', async function() {
     it('should succeed to create a UserToBitGo GShare', async function() {
       const userToBitgoGShare = await tssUtils.createUserToBitGoGShare(validUserSignShare, txRequest.signatureShares[0] as SignatureShareRecord, signablePayload);
@@ -690,6 +701,12 @@ describe('TSS Utils:', async function () {
     return nock('https://bitgo.fakeurl')
       .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, params.signatureShare )
       .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
+  }
+
+  async function nockDeleteSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: SignatureShareRecord}, status = 200): Promise<nock.Scope> {
+    return nock('https://bitgo.fakeurl')
+      .delete(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`)
+      .reply(status, (status === 200 ? [params.signatureShare] : { error: 'some error' }));
   }
 
   async function nockCreateTxRequest(params: { walletId: string, requestBody: any, response: any }): Promise<nock.Scope> {
