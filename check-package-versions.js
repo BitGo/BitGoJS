@@ -61,7 +61,7 @@ function getExpectedVersions(modules) {
  * @param depName {string}
  * @returns {string | undefined}
  */
-function getDependencyVersion(modPath, depName) {
+function getDependencyVersions(modPath, depName) {
   const packageJsonPath = path.join(modPath, 'package.json');
   const {
     dependencies = {},
@@ -73,7 +73,7 @@ function getDependencyVersion(modPath, depName) {
   const deps = { ...dependencies, ...devDependencies, ...optionalDependencies, ...peerDependencies };
   if (deps[depName]) {
     const matches = deps[depName].match(/^([^~])?(.*)$/);
-    return matches[matches.length - 1];
+    return matches;
   }
 }
 
@@ -89,9 +89,9 @@ async function main() {
 
   for (const mod of modules) {
     for (const dep of mod.deps) {
-      const depVersion = getDependencyVersion(mod.path, dep);
-      if (depVersion && depVersion !== expectedVersions[dep]) {
-        console.log(`error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersion} instead`);
+      const depVersions = getDependencyVersions(mod.path, dep);
+      if (!!depVersions.length && !depVersions.find(x => x === expectedVersions[dep]) ) {
+        console.log(`error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersions[0]} instead`);
         exitCode = 1;
       }
     }
