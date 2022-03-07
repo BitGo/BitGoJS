@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CLValue, CLPublicKey as PublicKey, RuntimeArgs, CLValueBuilder, CLString } from 'casper-js-sdk';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';

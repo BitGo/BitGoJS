@@ -15,5 +15,6 @@ export {
   EosCoin,
   AlgoCoin,
   AvaxERC20Token,
+  SolCoin,
 } from './account';
 export { CoinMap } from './map';

@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { TransactionType } from '../baseCoin';
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { AtaInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
@@ -9,7 +9,6 @@ import { isValidAmount, isValidPublicKey } from './utils';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import assert from 'assert';
-import { SolCoin } from '@bitgo/statics/dist/src/account';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
 export class AtaInitializationBuilder extends TransactionBuilder {

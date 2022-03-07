@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, coins, DotNetwork, Networks } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import Eddsa from '../../../../../src/mpc/tss';
 import should from 'should';
@@ -8,7 +8,7 @@ import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 import { TransactionBuilder, Transaction, KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import { rawTx, accounts } from '../../../../resources/dot';
+import { rawTx, accounts, specName, specVersion, genesisHash, chainName } from '../../../../resources/dot';
 import { register } from '../../../../../src';
 
 export interface TestDotNetwork extends DotNetwork {
@@ -31,10 +31,6 @@ class StubTransactionBuilder extends TransactionBuilder {
 
   getSender(): string {
     return this._sender;
-  }
-
-  getBlockNumber(): number {
-    return this._blockNumber;
   }
 
   getReferenceBlock(): string {
@@ -78,17 +74,14 @@ class StubTransactionBuilder extends TransactionBuilder {
   }
 }
 
-// TODO: BG-43197
 describe('Dot Transfer Builder', () => {
   let builder: StubTransactionBuilder;
 
   const sender = accounts.account1;
-  const { specName, specVersion, genesisHash, chainName } = Networks.test.dot;
   const receiver = accounts.account2;
 
   beforeEach(() => {
-    const config = buildTestConfig();
-    builder = new StubTransactionBuilder(config).material(utils.getMaterial(config));
+    builder = new StubTransactionBuilder(buildTestConfig());
   });
 
   describe('setter validation', () => {
@@ -146,6 +139,7 @@ describe('Dot Transfer Builder', () => {
   describe('build base transaction', () => {
     it('should build validate base fields', async () => {
       builder
+        .material(utils.getMaterial(buildTestConfig()))
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -183,9 +177,8 @@ describe('Dot Transfer Builder', () => {
   });
 
   describe('add signature', () => {
-    const factory = register('tdot', TransactionBuilderFactory);
-
     it('should add a signature to transaction', async () => {
+      const factory = register('tdot', TransactionBuilderFactory);
       const transferBuilder = factory
         .getTransferBuilder()
         .amount('90034235235322')
@@ -231,8 +224,11 @@ describe('Dot Transfer Builder', () => {
         .build();
       rebuiltTransaction2.signature.should.deepEqual(signedTransaction2.signature);
     });
+  });
 
+  describe('add TSS signature', function () {
     it('should add TSS signature', async () => {
+      const factory = register('tdot', TransactionBuilderFactory);
       const MPC = await Eddsa();
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);

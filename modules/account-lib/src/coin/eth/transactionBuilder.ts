@@ -558,13 +558,42 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     } else if (!this._transfer) {
       if (this._type === TransactionType.Send){
         this._transfer = new TransferBuilder(data);
-      } 
+      }
       else if (this._type === TransactionType.SendERC721){
         this._transfer = new ERC721TransferBuilder(data);
-      } 
+      }
       else if (this._type === TransactionType.SendERC1155){
         this._transfer = new ERC1155TransferBuilder(data);
-      } 
+      }
+    }
+    return this._transfer;
+  }
+
+  /**
+   * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
+   *
+   * @param [data] transfer data to initialize the transfer builder with, empty if none given
+   * @returns {TransferBuilder} the transfer builder
+   */
+  transferERC721(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
+    if (
+        !(
+            this._type === TransactionType.Send ||
+            this._type === TransactionType.SendERC721 ||
+            this._type === TransactionType.SendERC1155
+        )
+    ) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
+    } else if (!this._transfer) {
+      if (this._type === TransactionType.Send){
+        this._transfer = new TransferBuilder(data);
+      }
+      else if (this._type === TransactionType.SendERC721){
+        this._transfer = new ERC721TransferBuilder(data);
+      }
+      else if (this._type === TransactionType.SendERC1155){
+        this._transfer = new ERC1155TransferBuilder(data);
+      }
     }
     return this._transfer;
   }

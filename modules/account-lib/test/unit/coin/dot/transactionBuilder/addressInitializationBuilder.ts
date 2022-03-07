@@ -1,18 +1,16 @@
 import should from 'should';
 import sinon from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
-import { rawTx, accounts } from '../../../../resources/dot';
+import { rawTx, accounts, txVersion, specVersion, genesisHash, chainName } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot Address Initialization Builder', () => {
   let builder: AddressInitializationBuilder;
 
   const sender = accounts.account1;
   const receiver = accounts.account3;
-  const { txVersion, specVersion, genesisHash, chainName } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();

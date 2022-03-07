@@ -7,7 +7,7 @@ import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { construct, createMetadata } from '@substrate/txwrapper-polkadot';
+import { construct } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
 import { BaseUtils } from '../baseCoin';
@@ -109,8 +109,7 @@ export class Utils implements BaseUtils {
     tx: string | UnsignedTransaction,
     options: { metadataRpc: string; registry: TypeRegistry },
   ): TransferArgs {
-    const { metadataRpc, registry } = options;
-    registry.setMetadata(createMetadata(registry, metadataRpc));
+    const { registry } = options;
     let methodCall: GenericCall | GenericExtrinsic;
     if (typeof tx === 'string') {
       try {
@@ -162,9 +161,6 @@ export class Utils implements BaseUtils {
     options: { metadataRpc: HexString; registry: TypeRegistry },
   ): string {
     const { registry, metadataRpc } = options;
-    // Important! The registry needs to be updated with latest metadata, so make
-    // sure to run `registry.setMetadata(metadata)` before signing.
-    registry.setMetadata(createMetadata(registry, metadataRpc));
     const { signature } = registry
       .createType('ExtrinsicPayload', signingPayload, {
         version: EXTRINSIC_VERSION,
@@ -235,12 +231,6 @@ export class Utils implements BaseUtils {
 
   isTransfer(arg: TxMethod['args']): arg is TransferArgs {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
-  }
-
-  checkValidHex(str: string): asserts str is HexString {
-    if (!str.startsWith(`0x`)) {
-      throw new Error(`This is not in correct format of hex string: ${str}`);
-    }
   }
 
   /**
