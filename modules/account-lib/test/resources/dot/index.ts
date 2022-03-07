@@ -1,4 +1,5 @@
 export { testnetMetadataRpc } from './testnet';
+import { Networks } from '@bitgo/statics';
 
 export const accounts = {
   account1: {
@@ -25,6 +26,10 @@ export const accounts = {
     secretKey: '0000000000000000000000000000000000000000000000000000000000000000',
     publicKey: '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29',
     address: '5DQcDYQ3wwobcrJ5aE5CzGp34ZWYNeYfYZ1yLbPiU2RcSvwm',
+  },
+  bs58Account: {
+    publicKey: '8Arrfe4vAh5fAEJgUBwL42EZa5P22zJJUnn569hxWfJU',
+    address: '5EUPTKwJeyJfmT7fcugz4ZcPyWdWMN5X7dcineZhiGfWzEPQ',
   },
 };
 
@@ -128,3 +133,5 @@ export const txIds = {
   id1: '0x1cbf1722ad5c3dcb981d48fd97f0520c7e5683d02a03a8a696208d8fe950299f',
   id2: '0xd95bb6cef42b931e0ee45b87a57dac7d42108e3b6798fd3788758482bbd69ff1',
 };
+
+export const { txVersion, specVersion, genesisHash, chainName, specName } = Networks.test.dot;

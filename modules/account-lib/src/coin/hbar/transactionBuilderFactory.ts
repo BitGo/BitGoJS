@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';

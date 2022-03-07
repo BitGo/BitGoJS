@@ -1,16 +1,14 @@
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import { spy, assert } from 'sinon';
 import { UnstakeBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
-import { rawTx, accounts } from '../../../../resources/dot';
+import { rawTx, accounts, specVersion, txVersion, chainName, genesisHash } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
-import { Networks } from '@bitgo/statics';
 
 describe('Dot Unstake Builder', () => {
   let builder: UnstakeBuilder;
 
   const sender = accounts.account1;
-  const { specVersion, txVersion, chainName, genesisHash } = Networks.test.dot;
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -19,13 +17,13 @@ describe('Dot Unstake Builder', () => {
 
   describe('setter validation', () => {
     it('should validate unstake amount', () => {
-      const spy = sinon.spy(builder, 'validateValue');
+      const spyValidateValue = spy(builder, 'validateValue');
       should.throws(
         () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.amount('1000'));
-      assert.calledTwice(spy);
+      assert.calledTwice(spyValidateValue);
     });
   });
 

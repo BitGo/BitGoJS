@@ -2043,19 +2043,14 @@ export class Wallet {
         reqId: params.reqId,
       });
     } catch (e) {
-      if (this._wallet.multisigType === 'tss') {
-        // TODO: STLX-13411 - implement verify tx for tss wallets
-        console.warn('transaction prebuild failed local validation:', e.message);
-      } else {
-        console.error('transaction prebuild failed local validation:', e.message);
-        console.error(
-          'transaction params:',
-          _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
-        );
-        console.error('transaction prebuild:', txPrebuild);
-        console.trace(e);
-        throw e;
-      }
+      console.error('transaction prebuild failed local validation:', e.message);
+      console.error(
+        'transaction params:',
+        _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
+      );
+      console.error('transaction prebuild:', txPrebuild);
+      console.trace(e);
+      throw e;
     }
     // pass our three keys
     const signingParams = {
@@ -2731,11 +2726,13 @@ export class Wallet {
       throw new Error(`Expected a single unsigned tx for tx request with id: ${unsignedTxRequest.txRequestId}`);
     }
 
+    const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
     return {
       walletId: this.id(),
       wallet: this,
       txRequestId: unsignedTxRequest.txRequestId,
-      txHex: unsignedTxs[0].serializedTx,
+      txHex: unsignedTxs[0].serializedTxHex,
+      buildParams: whitelistedParams,
     };
   }
 

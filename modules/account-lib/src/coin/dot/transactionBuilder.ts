@@ -1,8 +1,8 @@
 import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { decode, getRegistry } from '@substrate/txwrapper-polkadot';
-import _ from 'lodash';
+import { decode } from '@substrate/txwrapper-polkadot';
+import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { isValidEd25519Seed } from '../../utils/crypto';
 import { BaseTransactionBuilder, TransactionType, Interface } from '../baseCoin';
@@ -20,7 +20,8 @@ import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
-import { default as utils } from './utils';
+import { SingletonRegistry } from './singletonRegistry';
+import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -157,12 +158,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   material(material: Material): this {
     this.__material = material;
-    this._registry = getRegistry({
-      chainName: material.chainName,
-      specName: material.specName,
-      specVersion: material.specVersion,
-      metadataRpc: material.metadata,
-    });
+    this._registry = SingletonRegistry.getInstance(material);
     return this;
   }
 

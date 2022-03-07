@@ -10,6 +10,7 @@ import { MethodNames, ProxyArgs, ProxyType, TransferArgs } from './iface';
 import { ProxyTransactionSchema, TransferTransactionSchema } from './txnSchema';
 import utils from './utils';
 import { BaseAddress } from '../baseCoin/iface';
+import { SingletonRegistry } from './singletonRegistry';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _amount: string;
@@ -131,7 +132,7 @@ export class TransferBuilder extends TransactionBuilder {
       const real = txMethod.real;
       const forceProxyType = txMethod.forceProxyType;
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: this._registry,
+        registry: SingletonRegistry.getInstance(this._material),
         metadataRpc: this._material.metadata,
       });
       const amount = `${decodedCall.value}`;
@@ -155,7 +156,7 @@ export class TransferBuilder extends TransactionBuilder {
       this.owner({ address: utils.decodeDotAddress(txMethod.real) });
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: this._registry,
+        registry: SingletonRegistry.getInstance(this._material),
         metadataRpc: this._material.metadata,
       });
       if (!decodedCall.value || !decodedCall.dest) {
