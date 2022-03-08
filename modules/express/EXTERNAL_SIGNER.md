@@ -23,6 +23,13 @@ Here is an example json file containing two wallet IDs and their corresponding e
 }
 ```
 
+To help with the creation of this JSON file, we have created a file that will fetch the encrypted private keys from BitGo and produce a JSON file with the correct format (including the addition of escape characters). 
+The file is located at `src/fetchEncryptedPrivKeys.ts`.  Before using this tool, you'll need to fill in the `TODOs` by providing a valid `accessToken` as well as the list of `walletIds`, grouped by the cryptocurrency.
+An example is provided in the file. To run the file, use the command: 
+```
+yarn ts-node <path/to/fetchEncryptedPrivKeys.ts>
+```
+
 ### Wallet passphrase environment variable
 In order for the external signer instance of BitGo Express to decrypt the private key, the wallet passphrase must be set as an environment variable in the format `WALLET_<walletId>_PASSPHRASE`. Note that the wallet passphrase must be set for each wallet.
 The environment variable can be set using `export`. For example, the wallet passphrases for the private keys above can be set with the following:
