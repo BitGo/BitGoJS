@@ -63,7 +63,7 @@ describe('NEAR Transaction Builder', async () => {
     const txBuilder = factory.from(testData.rawTx.transfer.unsigned);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, undefined);
+    should.equal(builtTx.id, 'CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
@@ -77,14 +77,14 @@ describe('NEAR Transaction Builder', async () => {
       coin: 'tnear',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.signer_id.should.equal(testData.accounts.account1.address);
+    jsonTx.signerId.should.equal(testData.accounts.account1.address);
   });
 
   it('build a send from signed rawTx', async () => {
     const txBuilder = factory.from(testData.rawTx.transfer.signed);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, undefined);
+    should.equal(builtTx.id, 'CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
@@ -99,6 +99,6 @@ describe('NEAR Transaction Builder', async () => {
     });
     const jsonTx = builtTx.toJson();
 
-    jsonTx.signer_id.should.equal(testData.accounts.account1.address);
+    jsonTx.signerId.should.equal(testData.accounts.account1.address);
   });
 });

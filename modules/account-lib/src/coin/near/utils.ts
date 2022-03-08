@@ -60,6 +60,10 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
+
+  base58Encode(value: Uint8Array): string {
+    return bs58.encode(value);
+  }
 }
 
 const utils = new Utils();

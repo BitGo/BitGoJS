@@ -1,7 +1,9 @@
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, Entry } from '../baseCoin/iface';
+import { BaseKey, Entry, TransactionRecipient } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionExplanation, TxData } from './iface';
+import utils from './utils';
 import { KeyPair } from './keyPair';
 import * as nearAPI from 'near-api-js';
 import * as sha256 from 'js-sha256';
@@ -20,6 +22,7 @@ export class Transaction extends BaseTransaction {
 
   set nearTransaction(tx: nearAPI.transactions.Transaction) {
     this._nearTransaction = tx;
+    this._id = utils.base58Encode(this.getTransactionHash());
   }
 
   /** @inheritdoc */
@@ -44,18 +47,19 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): any {
+  toJson(): TxData {
     if (!this._nearTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
 
     return {
-      signer_id: this._nearTransaction.signerId,
-      public_key: this._nearTransaction.publicKey.toString(),
+      id: this._id,
+      signerId: this._nearTransaction.signerId,
+      publicKey: this._nearTransaction.publicKey.toString(),
       nonce: this._nearTransaction.nonce,
-      receiver_id: this._nearTransaction.receiverId,
+      receiverId: this._nearTransaction.receiverId,
       actions: this._nearTransaction.actions,
-      signature: typeof this._nearSignedTransaction === 'undefined' ? '' : this._nearSignedTransaction.signature,
+      signature: typeof this._nearSignedTransaction === 'undefined' ? undefined : this._nearSignedTransaction.signature,
     };
   }
 
@@ -82,6 +86,7 @@ export class Transaction extends BaseTransaction {
       );
       this._nearSignedTransaction = signedTx;
       this._nearTransaction = signedTx.transaction;
+      this._id = utils.base58Encode(this.getTransactionHash());
     } catch (e) {
       try {
         this._nearTransaction = nearAPI.utils.serialize.deserialize(
@@ -89,6 +94,7 @@ export class Transaction extends BaseTransaction {
           nearAPI.transactions.Transaction,
           nearAPI.utils.serialize.base_decode(rawTransaction),
         );
+        this._id = utils.base58Encode(this.getTransactionHash());
       } catch (e) {
         throw new InvalidTransactionError('unable to build transaction from raw');
       }
@@ -107,8 +113,7 @@ export class Transaction extends BaseTransaction {
     if (!this._nearTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-    const serializedTx = nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction);
-    const serializedTxHash = new Uint8Array(sha256.sha256.array(serializedTx));
+    const serializedTxHash = this.getTransactionHash();
     const signature = signer.signMessageinUint8Array(serializedTxHash);
     this._nearSignedTransaction = new nearAPI.transactions.SignedTransaction({
       transaction: this._nearTransaction,
@@ -158,5 +163,52 @@ export class Transaction extends BaseTransaction {
     }
     this._outputs = outputs;
     this._inputs = inputs;
+  }
+
+  /**
+   * Returns a complete explanation for a transfer transaction
+   * @param {TxData} json The transaction data in json format
+   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
+   * @returns {TransactionExplanation}
+   */
+  explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.receiverId,
+          amount: json.actions[0].transfer.deposit.toString(),
+        },
+      ],
+    };
+  }
+
+  /** @inheritdoc */
+  explainTransaction(): TransactionExplanation {
+    const result = this.toJson();
+    const displayOrder = ['outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    const outputs: TransactionRecipient[] = [];
+    const explanationResult: TransactionExplanation = {
+      // txhash used to identify the transactions
+      id: result.id || '',
+      displayOrder,
+      outputAmount: result.actions[0].transfer.deposit.toString(),
+      changeAmount: '0',
+      changeOutputs: [],
+      outputs,
+      fee: { fee: '' },
+      type: this.type,
+    };
+    switch (this.type) {
+      case TransactionType.Send:
+        return this.explainTransferTransaction(result, explanationResult);
+      default:
+        throw new InvalidTransactionError('Transaction type not supported');
+    }
+  }
+
+  private getTransactionHash(): Uint8Array {
+    const serializedTx = nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction);
+    return new Uint8Array(sha256.sha256.array(serializedTx));
   }
 }
