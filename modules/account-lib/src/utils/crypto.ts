@@ -6,6 +6,7 @@ import * as bls from 'noble-bls12-381';
 import { stripHexPrefix } from 'ethereumjs-utils-old';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 import { toUint8Array } from '../coin/hbar/utils';
+import bs58 from 'bs58';
 
 /**
  * @param {string} xpub - a base-58 encoded extended public key (BIP32)
@@ -207,4 +208,20 @@ export function toHex(buffer: Buffer | Uint8Array): string {
 export function bigIntToHex(bigint: bigint): string {
   const hex = bigint.toString(16);
   return '0x' + '0'.slice(0, hex.length % 2) + hex;
+}
+
+/**
+ * Check if base58 decoded string is equale to length
+ *
+ * @param {string} value - string to be checked
+ * @param {number} length - expected decoded length
+ * @return {boolean} if the string can decoded as base58 and match the expected length
+ */
+
+export function isBase58(value: string, length: number): boolean {
+  try {
+    return !!value && bs58.decode(value).length === length;
+  } catch (e) {
+    return false;
+  }
 }
