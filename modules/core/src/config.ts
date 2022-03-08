@@ -20,7 +20,7 @@ import {
   Networks,
   AlgoCoin,
   AvaxERC20Token,
-  FiatCoin 
+  FiatToken,
 } from '@bitgo/statics';
 
 export interface Tokens {
@@ -189,7 +189,7 @@ const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
 }, []);
 
 const formattedFiatTokens = coins.reduce((acc: FiatTokenConfig[], coin) => {
-  if (coin instanceof FiatCoin) {
+  if (coin instanceof FiatToken) {
     acc.push({
       name: coin.fullName,
       type: coin.name,

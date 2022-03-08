@@ -266,9 +266,9 @@ export class AvaxERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
- * FIAT based coins, such as USD, EUR, or YEN.
+ * FIAT based tokens, such as USD, EUR, or YEN.
  */
-export class FiatCoin extends BaseCoin {
+export class FiatToken extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.ACCOUNT_MODEL,
     CoinFeature.REQUIRES_BIG_NUMBER,
@@ -1037,12 +1037,12 @@ export function fiatToken(
   network: BaseNetwork,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  features: CoinFeature[] = FiatCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = FiatToken.DEFAULT_FEATURES,
   isToken = true,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
-    new FiatCoin({
+    new FiatToken({
       name,
       fullName,
       network,

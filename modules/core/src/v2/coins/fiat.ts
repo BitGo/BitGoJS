@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
   KeyPair,
@@ -14,11 +13,7 @@ import {
 } from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
 
-export class Fiat extends BaseCoin {
-  static createInstance(bitgo: BitGo): BaseCoin {
-    return new Fiat(bitgo);
-  }
-
+export abstract class Fiat extends BaseCoin {
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
@@ -59,7 +54,7 @@ export class Fiat extends BaseCoin {
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    return {};
+    throw new MethodNotImplementedError();
   }
 
   isWalletAddress(params: VerifyAddressOptions): boolean {
@@ -67,7 +62,7 @@ export class Fiat extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    return true;
+    throw new MethodNotImplementedError();
   }
 
   async signTransaction(params: SignTransactionOptions = {}): Promise<SignedTransaction> {
