@@ -1,5 +1,6 @@
 import { coins } from '@bitgo/statics';
 import should from 'should';
+import { TransactionType } from '../../../../src/coin/baseCoin';
 import { Transaction } from '../../../../src/coin/near';
 import * as NearResources from '../../../resources/near';
 
@@ -34,17 +35,43 @@ describe('Near Transaction', () => {
     it('build a transfer from raw', async () => {
       tx.fromRawTransaction(NearResources.rawTx.transfer.signed);
       const json = tx.toJson();
-      should.equal(json.signer_id, NearResources.accounts.account1.address);
+      should.equal(json.signerId, NearResources.accounts.account1.address);
     });
 
     it('build a unsigned transfer from raw', async () => {
       tx.fromRawTransaction(NearResources.rawTx.transfer.unsigned);
       const json = tx.toJson();
-      should.equal(json.signer_id, NearResources.accounts.account1.address);
+      should.equal(json.signerId, NearResources.accounts.account1.address);
     });
 
     it('build a transfer from incorrent raw data', async () => {
       should.throws(() => tx.fromRawTransaction('11' + NearResources.rawTx.transfer.signed), 'incorrect raw data');
+    });
+  });
+
+  describe('Explain', () => {
+    it('a signed transfer transaction', async () => {
+      tx.fromRawTransaction(NearResources.rawTx.transfer.signed);
+      const explain = tx.explainTransaction();
+      explain.id.should.equal('CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
+      explain.outputAmount.should.equal('1');
+      explain.outputs[0].amount.should.equal('1');
+      explain.outputs[0].address.should.equal(NearResources.accounts.account2.address);
+      explain.fee.fee.should.equal('');
+      explain.changeAmount.should.equal('0');
+      explain.type.should.equal(TransactionType.Send);
+    });
+
+    it('an unsigned transfer transaction', async () => {
+      tx.fromRawTransaction(NearResources.rawTx.transfer.unsigned);
+      const explain = tx.explainTransaction();
+      explain.id.should.equal('CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
+      explain.outputAmount.should.equal('1');
+      explain.outputs[0].amount.should.equal('1');
+      explain.outputs[0].address.should.equal(NearResources.accounts.account2.address);
+      explain.fee.fee.should.equal('');
+      explain.changeAmount.should.equal('0');
+      explain.type.should.equal(TransactionType.Send);
     });
   });
 });
