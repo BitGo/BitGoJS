@@ -106,6 +106,8 @@ interface CreateBitGoOptions {
 interface CreateMpcOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
   passphrase: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
 }
 
 interface GetKeysForSigningOptions {

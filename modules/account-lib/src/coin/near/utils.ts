@@ -1,5 +1,6 @@
 import { BaseUtils } from '../baseCoin';
 import { KeyPair } from './keyPair';
+import { isBase58 } from './../../utils/crypto';
 import bs58 from 'bs58';
 
 export class Utils implements BaseUtils {
@@ -10,7 +11,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    return this.isBase58(hash, 32);
+    return isBase58(hash, 32);
   }
 
   /** @inheritdoc */
@@ -37,28 +38,16 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    return this.isBase58(signature, 64);
+    return isBase58(signature, 64);
   }
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    return this.isBase58(txId, 32);
+    return isBase58(txId, 32);
   }
 
-  /**
-   * Check if base58 decoded string is equale to length
-   *
-   * @param {string} value - string to be checked
-   * @param {number} length - expected decoded length
-   * @return {boolean} if the string can decoded as base58 and match the expected length
-   */
-
-  isBase58(value: string, length: number): boolean {
-    try {
-      return !!value && bs58.decode(value).length === length;
-    } catch (e) {
-      return false;
-    }
+  base58Encode(value: Uint8Array): string {
+    return bs58.encode(value);
   }
 }
 

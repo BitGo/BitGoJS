@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CLPublicKey as PublicKey, DeployUtil, Keys, CLString, CLU512 } from 'casper-js-sdk';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';

@@ -11,17 +11,29 @@ Please email us at support@bitgo.com if you have questions or comments about thi
 
 The BitGo SDK repository is a monorepo composed of separate modules, each of which implement some subset of the features of the SDK.
 
-| Package Name | Module | Description | |
-| --- | --- | --- | --- |
-| bitgo | `core` | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/core) |
-| @bitgo/express | `express` | Local BitGo transaction signing server and proxy | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/express) |
-| @bitgo/statics | `statics` | Static configuration values used across the BitGo platform | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/statics) |
+| Package Name        | Module         | Description                                                                                                                       |                                                                           |
+|---------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| bitgo               | `core`         | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/core)         |
+| @bitgo/account-lib  | `account-lib`  | Build and sign transactions for account-based coins.                                                                              | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/account-lib)  |
+| @bitgo/blake2b      | `blake2b`      | Blake2b (64-bit version) in pure JavaScript.                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b)      |
+| @bitgo/blake2b-wasm | `blake2b-wasm` | Blake2b implemented in WASM.                                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b-wasm) |
+| @bitgo/blockapis    | `blockapis`    | Access public block explorer APIs for a variety of coins.                                                                         | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blockapis)    |
+| @bitgo/bls-dkg      | `bls-dkg`      | A simple implementation of BLS (Boneh-Lynn-Shacham signature scheme) + DKG (Distributed Key Generation)                           | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/bls-dkg)      |
+| @bitgo/express      | `express`      | Local BitGo transaction signing server and proxy.                                                                                 | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/express)      |
+| @bitgo/statics      | `statics`      | Static configuration values used across the BitGo platform.                                                                       | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/statics)      |
+| @bitgo/unspents     | `unspents`     | Defines the chain codes used for different unspent types and methods to calculate bitcoin transaction sizes.                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/unspents)     |
+| @bitgo/utxo-bin     | `utxo-bin`     | Command-line utility for BitGo UTXO transactions.                                                                                 | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/utxo-bin)     |
+| @bitgo/utxo-lib     | `utxo-lib`     | Build and sign transactions for utxo-based coins.                                                                                 | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/utxo-lib)     |
 
 # Release Notes
 
 Each module provides release notes in `modules/*/RELEASE_NOTES.md`.
 
 The release notes for the `core` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/core/RELEASE_NOTES.md).
+
+# Examples
+
+Examples can be found in each of the modules specific to the module use cases. Starter examples can be found [here](https://github.com/BitGo/BitGoJS/tree/master/modules/core/example).
 
 # NodeJS Version Support Policy
 

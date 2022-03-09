@@ -15,6 +15,7 @@ import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';
 import { RequestTracer } from '../../../src/v2/internal/util';
+import { fromSeed } from 'bip32';
 
 nock.disableNetConnect();
 
@@ -1419,6 +1420,47 @@ describe('V2 Wallet:', function () {
       getKeyNock.isDone().should.be.True();
       createShareNock.isDone().should.be.True();
     });
+
+    it('should use keychain pub to share hot wallet', async function () {
+      const userId = '123';
+      const email = 'shareto@sdktest.com';
+      const permissions = 'view,spend';
+      const toKeychain = fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+      const path = 'm/999999/1/1';
+      const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+      const walletPassphrase = 'bitgo1234';
+
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, pubkey, path });
+      
+      const getKeyNock = nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {
+          id: wallet.keyIds()[0],
+          pub: 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk',
+          source: 'user',
+          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+          coinSpecific: {},
+        });
+
+      const stub = sinon.stub(wallet, 'createShare').callsFake(
+        async (options) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          options!.keychain!.pub!.should.not.be.undefined();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          (options!.keychain!.commonPub === undefined).should.be.true();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          options!.keychain!.pub!.should.equal('Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk');
+          return undefined;
+        }
+      );
+      await wallet.shareWallet({ email, permissions, walletPassphrase });
+      
+      stub.calledOnce.should.be.true();
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+    });
   });
 
   describe('Wallet Freezing', function () {
@@ -1440,9 +1482,9 @@ describe('V2 Wallet:', function () {
       id: '5b34252f1bf349930e34020a00000000',
       coin: 'tsol',
       keys: [
-        '5b3424f91bf349930e34017500000000',
-        '5b3424f91bf349930e34017600000000',
-        '5b3424f91bf349930e34017700000000',
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
       ],
       coinSpecific: {},
       multisigType: 'tss',
@@ -1667,6 +1709,49 @@ describe('V2 Wallet:', function () {
             txHex: 'beef',
           },
         }).should.be.rejectedWith('must supply either txHex or halfSigned, but not both');
+      });
+    });
+
+    describe('Wallet Sharing', function () {
+      it('should use keychain commonPub to share tss wallet', async function () {
+        const userId = '123';
+        const email = 'shareto@sdktest.com';
+        const permissions = 'view,spend';
+        const toKeychain = fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+        const walletPassphrase = 'bitgo1234';
+
+        const getSharingKeyNock = nock(bgUrl)
+          .post('/api/v1/user/sharingkey', { email })
+          .reply(200, { userId, pubkey, path });
+        
+        const getKeyNock = nock(bgUrl)
+          .get(`/api/v2/tsol/key/${tssWallet.keyIds()[0]}`)
+          .reply(200, {
+            id: tssWallet.keyIds()[0],
+            commonPub: 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk',
+            source: 'user',
+            encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+            coinSpecific: {},
+          });
+
+        const stub = sinon.stub(tssWallet, 'createShare').callsFake(
+          async (options) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            options!.keychain!.commonPub!.should.not.be.undefined();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            (options!.keychain!.pub === undefined).should.be.true();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            options!.keychain!.commonPub!.should.equal('Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk');
+            return undefined;
+          }
+        );
+        await tssWallet.shareWallet({ email, permissions, walletPassphrase });
+        
+        stub.calledOnce.should.be.true();
+        getSharingKeyNock.isDone().should.be.True();
+        getKeyNock.isDone().should.be.True();
       });
     });
   });

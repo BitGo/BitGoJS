@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import _ from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
