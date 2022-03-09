@@ -30,6 +30,10 @@ describe('utils', () => {
     should.equal(utils.isValidPublicKey(accounts.account4.publicKey), true);
   });
 
+  it('should validate base58 key correctly', () => {
+    should.equal(utils.isValidPublicKey(accounts.bs58Account.publicKey), true);
+  });
+
   it('should validate private key correctly', () => {
     should.equal(utils.isValidPrivateKey(accounts.account1.secretKey), true);
     should.equal(utils.isValidPrivateKey(accounts.account2.secretKey), true);

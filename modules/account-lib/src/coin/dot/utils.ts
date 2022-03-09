@@ -16,6 +16,8 @@ import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod }
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
+import bs58 from 'bs58';
+import { isBase58 } from './../../utils/crypto';
 
 const PROXY_METHOD_ARG = 2;
 export class Utils implements BaseUtils {
@@ -46,7 +48,16 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    return isValidEd25519PublicKey(key);
+    let pubKey = key;
+
+    // convert base58 pub key to hex format
+    // tss common pub is in base58 format and decodes to length of 32
+    if (isBase58(pubKey, 32)) {
+      const base58Decode = bs58.decode(pubKey);
+      pubKey = base58Decode.toString('hex');
+    }
+
+    return isValidEd25519PublicKey(pubKey);
   }
 
   /** @inheritdoc */
