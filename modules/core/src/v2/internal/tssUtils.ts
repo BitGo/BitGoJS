@@ -506,7 +506,7 @@ export class TssUtils extends MpcUtils {
    * Gets the latest Tx Request by id
    *
    * @param {String} txRequestId - the txRequest Id
-   * @returns {Promise<{ txRequests: TxRequest[] }>}
+   * @returns {Promise<TxRequest>}
    */
   async getTxRequest(txRequestId: string): Promise<TxRequest> {
     const txRequestRes: { txRequests: TxRequest[] } = await this.bitgo
@@ -519,6 +519,19 @@ export class TssUtils extends MpcUtils {
     }
 
     return txRequestRes.txRequests[0];
+  }
+
+  /**
+   * Call delete signature shares for a txRequest, the endpoint delete the signatures and return them
+   *
+   * @param {string} txRequestId tx id reference to delete signature shares
+   * @returns {SignatureShareRecord[]}
+   */
+  async deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]> {
+    return this.bitgo
+      .del(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`, 2))
+      .send()
+      .result();
   }
 
   /**
@@ -583,5 +596,22 @@ export class TssUtils extends MpcUtils {
       .post(this.baseCoin.url('/wallet/' + this.wallet.id() + '/tx/send'))
       .send({ txRequestId })
       .result();
+  }
+
+  /**
+   * Delete signature shares, get the tx request without them from the db and sign it to finally send it.
+   *
+   * Note : This can be performed in order to reach latest network conditions required on pending approval flow.
+   *
+   * @param {String} txRequestId - the txRequest Id to make the requests.
+   * @param {String} decryptedPrv - decrypted prv to sign the tx request.
+   * @param {RequestTracer} reqId id tracer.
+   * @returns {Promise<any>}
+   */
+  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: RequestTracer): Promise<TxRequest> {
+    await this.deleteSignatureShares(txRequestId);
+    // after delete signatures shares get the tx without them
+    const txRequest = await this.getTxRequest(txRequestId);
+    return await this.signTxRequest(txRequest, decryptedPrv, reqId);
   }
 }

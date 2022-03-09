@@ -5,7 +5,7 @@ import { Ed25519KeyPair } from '../baseCoin';
 import { AddressFormat } from '../baseCoin/enum';
 import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
 import utils from './utils';
-import { toHex } from '../../utils/crypto';
+import { toHex, isBase58 } from '../../utils/crypto';
 import bs58 from 'bs58';
 
 const TYPE = 'ed25519';
@@ -58,19 +58,10 @@ export class KeyPair extends Ed25519KeyPair {
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
     const publicKey = keyring.addFromPair({
-      publicKey: this.isBase58(pub) ? new Uint8Array(bs58.decode(pub)) : new Uint8Array(Buffer.from(pub, 'hex')),
+      // tss common pub is in base58 format and decodes to length of 32
+      publicKey: isBase58(pub, 32) ? new Uint8Array(bs58.decode(pub)) : new Uint8Array(Buffer.from(pub, 'hex')),
       secretKey: new Uint8Array(),
     }).publicKey;
     return { pub: toHex(publicKey) };
-  }
-
-  private isBase58(pub: string): boolean {
-    try {
-      bs58.decode(pub);
-    } catch (e) {
-      return false;
-    }
-
-    return true;
   }
 }

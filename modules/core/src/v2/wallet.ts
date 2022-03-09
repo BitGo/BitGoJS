@@ -336,6 +336,7 @@ export interface CreateShareOptions {
   permissions?: string;
   keychain?: {
     pub?: string;
+    commonPub?: string;
     encryptedPrv?: string;
     fromPubKey?: string;
     toPubKey?: string;
@@ -1728,13 +1729,13 @@ export class Wallet {
 
     if (params.keychain && !_.isEmpty(params.keychain)) {
       if (
-        !params.keychain.pub ||
+        (!params.keychain.pub && !params.keychain.commonPub) ||
         !params.keychain.encryptedPrv ||
         !params.keychain.fromPubKey ||
         !params.keychain.toPubKey ||
         !params.keychain.path
       ) {
-        throw new Error('requires keychain parameters - pub, encryptedPrv, fromPubKey, toPubKey, path');
+        throw new Error('requires keychain parameters - pub/commonPub, encryptedPrv, fromPubKey, toPubKey, path');
       }
     }
 
@@ -1788,6 +1789,7 @@ export class Wallet {
 
           sharedKeychain = {
             pub: keychain.pub,
+            commonPub: keychain.commonPub,
             encryptedPrv: newEncryptedPrv,
             fromPubKey: eckey.publicKey.toString('hex'),
             toPubKey: sharing.pubkey,
