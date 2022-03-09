@@ -1,6 +1,7 @@
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
+import { ethers } from 'ethers';
 
 describe('Eth transaction builder sendNFT', () => {
   // dummy addresses
@@ -41,10 +42,22 @@ describe('Eth transaction builder sendNFT', () => {
       .contractSequenceId(sequenceId)
       .tokenId(1)
       .key(key);
+    // TODO: ensure signAndBuild callData is good
+    const sendMultisigCallData = erc721Transfer.signAndBuild();
+    const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData)
+    console.log(decodedSendMultisigCallData)
+
+    const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
+    const decodedSafeTransferFromCallData = decodeTransaction(JSON.stringify(erc721ABI), safeTransferFromCallData)
+    console.log(decodedSafeTransferFromCallData)
+
+    // TOOD: ensure data in the signAndBuild is good
     txBuilder.sign({ key: testData.PRIVATE_KEY });
     const signedTx = await txBuilder.build();
     console.log(signedTx.toBroadcastFormat());
   });
+
+
 
   it('should sign and build ERC1155 transfer', async () => {
     const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
@@ -76,3 +89,82 @@ describe('Eth transaction builder sendNFT', () => {
 
   // TODO: test decoding data
 });
+
+const walletSimpleABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expireTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sequenceId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "sendMultiSig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+const erc721ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
+      }
+    ],
+    "name": "safeTransferFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+]
+
+function decodeTransaction(
+    abi: string, calldata: string,
+) {
+  const contractInterface = new ethers.utils.Interface(abi);
+  return contractInterface.parseTransaction({ data: calldata });
+}

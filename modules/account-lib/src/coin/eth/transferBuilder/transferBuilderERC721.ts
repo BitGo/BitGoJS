@@ -1,8 +1,9 @@
 import { BuildTransactionError, InvalidParameterValueError } from '../../baseCoin/errors';
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
-import { ERC721SafeTransferTypeMethodId } from '../walletUtil';
+import {ERC721SafeTransferTypeMethodId, sendMultiSigTypes} from '../walletUtil';
 import { baseNFTTransferBuilder } from './baseNFTTransferBuilder';
+import EthereumAbi from 'ethereumjs-abi';
 
 export class ERC721TransferBuilder extends baseNFTTransferBuilder {
   private _tokenId: number;
@@ -31,7 +32,8 @@ export class ERC721TransferBuilder extends baseNFTTransferBuilder {
     if (this.hasMandatoryFields()) {
       const types = ['address', 'address', 'uint256', 'bytes'];
       const values = [this._fromAddress, this._toAddress, this._tokenId, ''];
-      const contractCall = new ContractCall(ERC721SafeTransferTypeMethodId, types, values);
+      const methodId = EthereumAbi.methodID('safeTransferFrom', types);
+      const contractCall = new ContractCall(methodId, types, values);
       this._data = contractCall.serialize();
 
       return sendMultiSigData(
