@@ -1585,6 +1585,50 @@ describe('V2 Wallet:', function () {
         });
       });
 
+      it('should build an enable token transaction', async function () {
+        const recipients = [];
+        const token = 'tokenName';
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'createAccount',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          token,
+        });
+
+        const txPrebuild = await tssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'enabletoken',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          token,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: tssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'enabletoken',
+            token,
+          },
+        });
+      });
+
       it('should fail for non-transfer transaction types', async function () {
         await tssWallet.prebuildTransaction({
           reqId,
