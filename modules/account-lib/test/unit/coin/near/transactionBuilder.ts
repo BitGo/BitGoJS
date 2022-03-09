@@ -60,7 +60,7 @@ describe('NEAR Transaction Builder', async () => {
     const txBuilder = factory.from(testData.rawTx.transfer.unsigned);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, 'CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
+    should.equal(builtTx.id, '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
@@ -81,7 +81,7 @@ describe('NEAR Transaction Builder', async () => {
     const txBuilder = factory.from(testData.rawTx.transfer.signed);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(builtTx.id, 'CEpsBC4fA64phQMfDnNzJqLFiDmgMhyAeu9vqN18EExH');
+    should.equal(builtTx.id, '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.accounts.account1.address,
