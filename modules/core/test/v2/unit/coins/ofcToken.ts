@@ -18,7 +18,7 @@ describe('OFC:', function () {
     otestusdCoin.getBaseFactor().should.equal('100');
   });
 
-  it('test crypto coins', function () {
+  it('test crypto coins for ofctbtc', function () {
     const tbtc = bitgo.coin('ofctbtc');
     tbtc.getChain().should.equal('ofctbtc');
     tbtc.getFullName().should.equal('Test Bitcoin');
@@ -27,7 +27,9 @@ describe('OFC:', function () {
     tbtc.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
+  });
 
+  it('test crypto coins for ofcteth', function () {
     const teth = bitgo.coin('ofcteth');
     teth.getChain().should.equal('ofcteth');
     teth.getFullName().should.equal('Test Ether');
@@ -37,6 +39,18 @@ describe('OFC:', function () {
     teth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
+  });
+
+  it('test crypto coins for ofcgteth', function () {
+    const gteth = bitgo.coin('ofcgteth');
+    gteth.getChain().should.equal('ofcgteth');
+    gteth.getFullName().should.equal('Test Goerli Ether');
+    gteth.getBaseFactor().should.equal('1000000000000000000');
+    gteth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
+    gteth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    gteth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    gteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
+    gteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
   it('can sign payloads', async function () {
