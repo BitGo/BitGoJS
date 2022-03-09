@@ -4,9 +4,11 @@ export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
 export const flushForwarderTokensMethodId = '0x2da03409';
 export const flushCoinsMethodId = '0x6b9f96ea';
-// TODO: method ids are wrong
-export const ERC721SafeTransferTypeMethodId = '0xa6595572';
+
+export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
+// TODO: I haven't fix this should fix by e.g. EthereumAbi.methodID('safeTransferFrom', types).toString('hex')
 export const ERC1155SafeTransferTypeMethodId = '0x242432a';
+// TODO: I haven't fix this should fix by e.g. EthereumAbi.methodID('safeTransferFrom', types).toString('hex')
 export const ERC1155BatchTransferTypeMethodId = '0x926f08f6';
 
 

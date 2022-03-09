@@ -9,11 +9,6 @@ import {
 } from '../walletUtil';
 import { baseNFTTransferBuilder } from './baseNFTTransferBuilder';
 
-export type ERC1155EntryType = {
-  id: number;
-  value: number;
-};
-
 export class ERC1155TransferBuilder extends baseNFTTransferBuilder {
   private _tokenIds: number[];
   private _values: number[];

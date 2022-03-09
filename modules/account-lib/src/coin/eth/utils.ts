@@ -286,17 +286,18 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
     sendMultiSigTypes,
     getBufferedByteCode(sendMultisigMethodId, data),
   );
- 
+
   // FIXME: Is this corrrect?
-  if (!bufferToHex(internalData).startsWith(ERC721SafeTransferTypeMethodId)) {
+  const internalDataHex = bufferToHex(internalData);
+  if (!internalDataHex.startsWith(ERC721SafeTransferTypeMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
 
   const [from, receiver, tokenId, userSentData] = getRawDecoded(
     ERC721SafeTransferTypes,
-    internalData
+    getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex),
   );
-  
+
   return {
     to: addHexPrefix(receiver),
     from: addHexPrefix(from),
@@ -323,7 +324,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     sendMultiSigTypes,
     getBufferedByteCode(sendMultisigMethodId, data),
   );
-  
+
   if (bufferToHex(internalData).startsWith(ERC1155SafeTransferTypeMethodId)) {
     let tokenId, value; // temp values
     [from, receiver, tokenId, value, userSentData] = getRawDecoded(
@@ -349,14 +350,14 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     from: addHexPrefix(from),
     expireTime: bufferToInt(expireTime),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    tokenIds, 
-    values, 
+    tokenIds,
+    values,
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
     tokenContractAddress: addHexPrefix(to),
     userData: userSentData
   };
-  
+
 }
 
 /**

@@ -1,7 +1,6 @@
 import { BuildTransactionError, InvalidParameterValueError } from '../../baseCoin/errors';
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
-import {ERC721SafeTransferTypeMethodId, sendMultiSigTypes} from '../walletUtil';
 import { baseNFTTransferBuilder } from './baseNFTTransferBuilder';
 import EthereumAbi from 'ethereumjs-abi';
 

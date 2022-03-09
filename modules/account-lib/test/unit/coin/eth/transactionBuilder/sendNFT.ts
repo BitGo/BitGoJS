@@ -2,6 +2,7 @@ import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
 import { ethers } from 'ethers';
+import {ERC721TransferBuilder} from "../../../../../src/coin/eth";
 
 describe('Eth transaction builder sendNFT', () => {
   // dummy addresses
@@ -50,6 +51,9 @@ describe('Eth transaction builder sendNFT', () => {
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
     const decodedSafeTransferFromCallData = decodeTransaction(JSON.stringify(erc721ABI), safeTransferFromCallData)
     console.log(decodedSafeTransferFromCallData)
+
+    // testing decoding
+    const erc721TransferDecoded = new ERC721TransferBuilder(sendMultisigCallData);
 
     // TOOD: ensure data in the signAndBuild is good
     txBuilder.sign({ key: testData.PRIVATE_KEY });
