@@ -304,6 +304,25 @@ describe('SOL:', function () {
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
       validTransaction.should.equal(true);
     });
+
+    it('should verify create associated token account transaction', async function () {
+      const tx = await factory
+        .getAtaInitializationBuilder()
+        .mint('tsol:ORCA')
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txBase64 = txToBroadcastFormat;
+      txPrebuild.txInfo.nonce = blockHash;
+      txParams.recipients = [];
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
+      validTransaction.should.equal(true);
+    });
   });
 
 
@@ -732,6 +751,60 @@ describe('SOL:', function () {
           {
             address: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
             amount: '10000',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: 'test memo',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain create ATA transaction', async function () {
+      const tokenName = 'tsol:ORCA';
+      const rentExemptAmount = '3000000';
+      const tx = await factory
+        .getAtaInitializationBuilder()
+        .sender(wallet.pub)
+        .nonce(blockHash)
+        .mint(tokenName)
+        .rentExemptAmount(rentExemptAmount)
+        .memo('test memo')
+        .fee({ amount: 5000 })
+        .build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: txToBroadcastFormat,
+        feeInfo: {
+          fee: '5000',
+        },
+        tokenAccountRentExemptAmount: rentExemptAmount,
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'AssociatedTokenAccountInitialization',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: rentExemptAmount,
+        outputs: [
+          {
+            address: '9nEfQqahxpyYP5RPExt9TGssPmV5MxjEw9YjGWmepMAt',
+            amount: rentExemptAmount,
           },
         ],
         fee: {
