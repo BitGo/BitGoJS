@@ -76,7 +76,7 @@ describe('TSS Utils:', async function () {
       ],
     });
     const constants = {
-      tss: {
+      mpc: {
         bitgoPublicKey: bitGoGPGKey.publicKey,
       },
     };
