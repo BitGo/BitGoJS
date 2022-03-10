@@ -14,7 +14,28 @@ Please email us at support@bitgo.com if you have questions or comments about thi
 Please make sure you are running at least Node version 8 (the latest LTS release is recommended) and NPM version 6.
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
 
-`npm install --save bitgo`
+``` bash
+# npm
+npm install --save bitgo
+
+# yarn
+yarn install --save bitgo
+```
+
+### Example
+
+``` jsx
+import '../node_modules/bitgo/dist/browser/BitGoJS.min.js'
+
+function App() {
+  return (
+
+  )
+}
+```
+
+## Using the SDK in the Browser
+Inherently, the BitGo packages are optimized for use in a Node environment. BitGo compiles these same package for use in a browser environment as well. In order to use, you will need to pull the package files straight from the node_modules folder.
 
 # Full Documentation
 
