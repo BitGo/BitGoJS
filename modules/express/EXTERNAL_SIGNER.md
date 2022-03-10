@@ -1,7 +1,4 @@
 # BitGo Express External Signing Mode
-
-**Note:** External signing mode is currently available only in testnet and is under active development. Breaking changes may be made to it without incrementing the major version until the feature is stabilized and made available in production.
-
 BitGo Express can be run in an external signing mode, where the signing of transactions is performed in a separate instance of BitGo Express that has access to the private keys. 
 This may be preferable for users who would like to apply their signature to their transactions using a more secure environment than BitGo SDK or BitGo Express, such as a signer with restricted access or network connectivity.
 
