@@ -12,7 +12,7 @@ export const testnetCommon = EthereumCommon.forCustomChain(
     networkId: 1,
     chainId: (coins.get('tavaxc').network as EthereumNetwork).chainId,
   },
-  'petersburg',
+  'london',
 );
 
 /**
@@ -26,5 +26,5 @@ export const mainnetCommon = EthereumCommon.forCustomChain(
     networkId: 1,
     chainId: (coins.get('avaxc').network as EthereumNetwork).chainId,
   },
-  'petersburg',
+  'london',
 );

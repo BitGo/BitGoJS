@@ -174,4 +174,34 @@ describe('Avax C-Chain Transfer Transaction', function () {
     should.equal(txJson.gasPrice, '280000000000');
     should.equal(txJson.v, '0x0150f5');
   });
+
+  it('Should build fee market transaction', async function () {
+    initTxBuilder();
+    txBuilder.fee({
+      fee: '280000000000',
+      eip1559: {
+        maxPriorityFeePerGas: '5',
+        maxFeePerGas: '30',
+      },
+      gasLimit: '7000000',
+    });
+    txBuilder
+      .transfer()
+      .amount('100000000000000000') // This represents 0.1 Avax = 0.1 Ether
+      .contractSequenceId(1)
+      .expirationTime(50000)
+      .to(testData.TEST_ACCOUNT_2.ethAddress)
+      .key(testData.OWNER_2.ethKey);
+    const tx = await txBuilder.build();
+    const txJson: TxData = tx.toJson();
+
+    txJson._type.should.equals(ETHTransactionType.EIP1559);
+    should.exists(txJson.chainId);
+    should.exists(txJson.to);
+    txJson.nonce.should.equals(1);
+    should.equal(txJson.chainId, '0xa869');
+    txJson.gasLimit.should.equals('7000000');
+    should.equal(txJson.maxPriorityFeePerGas, '5');
+    should.equal(txJson.maxFeePerGas, '30');
+  });
 });

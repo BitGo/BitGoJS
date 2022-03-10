@@ -46,6 +46,7 @@ export const KeyRegTxnSchema = joi
     voteFirst: joi.number().positive().required(),
     voteLast: joi.number().positive().required(),
     voteKeyDilution: joi.number().positive().required(),
+    stateProofKey: addressSchema.optional(),
   })
   .custom((obj) => {
     const voteFirst: number = obj.voteFirst;

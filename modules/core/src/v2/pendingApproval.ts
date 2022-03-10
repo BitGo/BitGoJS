@@ -336,8 +336,7 @@ export class PendingApproval {
       throw new Error('txRequestId not found');
     }
 
-    const { decryptedPrv } = await this.wallet.getPrv({ walletPassphrase });
-
+    const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
     const txRequest = await this.tssUtils.recreateTxRequest(txRequestId, decryptedPrv, reqId);
     return {
       txHex: txRequest.unsignedTxs[0].serializedTxHex,

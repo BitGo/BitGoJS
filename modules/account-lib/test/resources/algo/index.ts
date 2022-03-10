@@ -10,6 +10,7 @@ export const accounts = {
     prvKey: 'TVQ3DHPP7VNGBOUEJL2JF3BMYRCETRLJPMZGSGLQHOWAGHFOP5QEYTZH2Q',
     address: '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE',
     voteKey: 'O0lMKXAaqN4h7jVJr8LHY0hvEbK62OJLJkN1soxp9Bg=',
+    stateProofKey: 'mYR0GVEObMTSNdsKM6RwYywHYPqVDqg3E4JFzxZOreH9NU8B+tKzUanyY8AQ144hETgSMX7fXWwjBdHz6AWk9w==',
     selectionKey: 'wXjfzAoZhls/zrhgAn8zas/WTktvRuxeps6fkv2au+c=',
   },
   account2: {

@@ -15,32 +15,49 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
   protected _voteLast: number;
   protected _voteKeyDilution: number;
   protected _nonParticipation: boolean;
+  protected _stateProofKey: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
   }
+
   /**
    * Sets the vote key
    *
    * @returns {KeyRegistrationBuilder} This Key Registration builder.
    *
-   * @param {number} key The root participation public key. See Generate a Participation Key to learn more.
+   * @param {string} key The root participation public key. See Generate a Participation Key to learn more.
    * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
    */
   voteKey(key: string): KeyRegistrationBuilder {
     this._voteKey = key;
     return this;
   }
+
   /**
-   *Sets the selection key
+   * Sets the selection key
    *
    * @returns {KeyRegistrationBuilder} This Key Registration builder.
    *
-   * @param {number} key The VRF public key for the account.
+   * @param {string} key The VRF public key for the account.
    * https://developer.algorand.org/docs/reference/transactions/#key-registration-transaction
    */
   selectionKey(key: string): KeyRegistrationBuilder {
     this._selectionKey = key;
+    return this;
+  }
+
+  /**
+   * Sets the stateProof key
+   *
+   * @returns {KeyRegistrationBuilder} This Key Registration builder.
+   *
+   * @param {string} key The stateproof key. See consensus for more information.
+   * https://developer.algorand.org/docs/get-details/algorand_consensus/?from_query=state#state-proof-keys
+   */
+  stateProofKey(key: string): KeyRegistrationBuilder {
+    Utils.validateBase64(key);
+    this._stateProofKey = key;
     return this;
   }
 
@@ -122,11 +139,11 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
       this._sender,
       this._note,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      undefined, // voteKey param
+      undefined, // selectionKey param
+      undefined, // voteFirst param
+      undefined, // voteLast param
+      undefined, // voteKeyDilution param
       this.suggestedParams,
     );
   }
@@ -141,6 +158,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       this._voteLast,
       this._voteKeyDilution,
       this.suggestedParams,
+      undefined, // reKeyTo param
+      undefined, // nonParticipation param
+      this._stateProofKey,
     );
   }
 
@@ -148,14 +168,14 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     return algosdk.makeKeyRegistrationTxnWithSuggestedParams(
       this._sender,
       this._note,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      undefined, // voteKey param
+      undefined, // selectionKey param
+      undefined, // voteFirst param
+      undefined, // voteLast param
+      undefined, // voteKeyDilution param
       this.suggestedParams,
       this._reKeyTo,
-      true,
+      true, // nonParticipation param
     );
   }
 
@@ -177,6 +197,9 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this.voteFirst(algoTxn.voteFirst);
         this.voteLast(algoTxn.voteLast);
         this.voteKeyDilution(algoTxn.voteKeyDilution);
+        if (algoTxn.stateProofKey) {
+          this.stateProofKey(algoTxn.stateProofKey.toString('base64'));
+        }
       }
     }
     return tx;
@@ -199,6 +222,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         algoTxn.voteFirst,
         algoTxn.voteLast,
         algoTxn.voteKeyDilution,
+        algoTxn.stateProofKey && algoTxn.stateProofKey.toString('base64'),
       );
     }
   }
@@ -228,6 +252,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       !algoTxn.voteFirst &&
       !algoTxn.voteLast &&
       !algoTxn.voteKeyDilution &&
+      !algoTxn.stateProofKey &&
       !algoTxn.nonParticipation
     );
   }
@@ -239,6 +264,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       !this._voteFirst &&
       !this._voteLast &&
       !this._voteKeyDilution &&
+      !this._stateProofKey &&
       !this._nonParticipation
     );
   }
@@ -248,12 +274,26 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     super.validateTransaction(transaction);
     if (this.isOnlineKeyRegAccountLibTransaction()) {
       // invalid offline will reach here
-      this.validateFields(this._voteKey, this._selectionKey, this._voteFirst, this._voteLast, this._voteKeyDilution);
+      this.validateFields(
+        this._voteKey,
+        this._selectionKey,
+        this._voteFirst,
+        this._voteLast,
+        this._voteKeyDilution,
+        this._stateProofKey,
+      );
     } else {
       // offline or nonparticipation transaction
-      if (this._voteKey || this._selectionKey || this._voteFirst || this._voteLast || this._voteKeyDilution) {
+      if (
+        this._voteKey ||
+        this._selectionKey ||
+        this._voteFirst ||
+        this._voteLast ||
+        this._voteKeyDilution ||
+        this._stateProofKey
+      ) {
         throw new InvalidTransactionError(
-          'VoteKey, SelectionKey, VoteFirst, VoteLast, VoteKeyDilution fields cannot be set when offline or nonparticipation is set',
+          'VoteKey, SelectionKey, VoteFirst, VoteLast, VoteKeyDilution, StateProofKey fields cannot be set when offline or nonparticipation is set',
         );
       }
     }
@@ -265,6 +305,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     voteFirst: number,
     voteLast: number,
     voteKeyDilution: number,
+    stateProofKey?: string,
   ): void {
     const validationResult = KeyRegTxnSchema.validate({
       voteKey,
@@ -272,6 +313,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       voteFirst,
       voteLast,
       voteKeyDilution,
+      stateProofKey,
     });
 
     if (validationResult.error) {

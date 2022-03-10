@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder } from '../baseCoin';
+import { BaseTransactionBuilder, Interface } from '../baseCoin';
 import { BuildTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, PublicKey as BasePublicKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import * as nearAPI from 'near-api-js';
 import { AddressValidationError } from '../dot/errors';
@@ -21,6 +21,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _recentBlockHash: string;
   private _actions: nearAPI.transactions.Action[];
   private _signer: KeyPair;
+
+  private _signatures: Interface.Signature[] = []; // only support single sig for now
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -55,6 +57,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.nearTransaction = this.buildNearTransaction();
     if (this._signer) {
       this.transaction.sign(this._signer);
+    }
+    if (this._signatures?.length > 0) {
+      this.transaction.constructSignedPayload(this._signatures[0].signature);
     }
     this.transaction.buildInputAndOutput();
     return this.transaction;
@@ -151,7 +156,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._recentBlockHash = value;
   }
 
-  public actions(value: nearAPI.transactions.Action[]) {
+  protected actions(value: nearAPI.transactions.Action[]) {
     this._actions = value;
   }
 
@@ -177,5 +182,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     );
 
     return tx;
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
   }
 }

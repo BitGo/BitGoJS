@@ -12,6 +12,8 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
+import * as base58 from 'bs58';
+import { coins } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -21,12 +23,8 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 export interface TransactionPrebuild {
   txHex: string;
   key: string;
-  addressVersion: number;
-  validity: {
-    firstValid: number;
-  };
   blockHash: string;
-  version: number;
+  nonce: number;
 }
 
 export interface ExplainTransactionOptions {
@@ -39,7 +37,6 @@ export interface ExplainTransactionOptions {
 
 export interface VerifiedTransactionParameters {
   txHex: string;
-  addressVersion: number;
   prv: string;
   signer: string;
 }
@@ -133,6 +130,26 @@ export class Near extends BaseCoin {
     return nearUtils.isValidAddress(address);
   }
 
+  /** @inheritDoc */
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const nearKeypair = new accountLib.Near.KeyPair({ prv: key.prv });
+    if (Buffer.isBuffer(message)) {
+      message = base58.encode(message);
+    }
+
+    return Buffer.from(nearKeypair.signMessage(message));
+  }
+
+
+  /**
+   * Flag indicating if this coin supports TSS wallets.
+   * @returns {boolean} True if TSS Wallets can be created for this coin
+   */
+  supportsTss(): boolean {
+    return true;
+  }
+
+
   /**
    * Explain/parse transaction
    * @param params
@@ -145,7 +162,6 @@ export class Near extends BaseCoin {
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
     const prv = params.prv;
-    const addressVersion = params.txPrebuild.addressVersion;
 
     const txHex = params.txPrebuild.txHex;
 
@@ -169,15 +185,12 @@ export class Near extends BaseCoin {
       throw new Error('missing public key parameter to sign transaction');
     }
 
-    if (!_.isNumber(addressVersion)) {
-      throw new Error('missing addressVersion parameter to sign transaction');
-    }
 
     // if we are receiving addresses do not try to convert them
     const signer = !nearUtils.isValidAddress(params.txPrebuild.key)
       ? new accountLib.Near.KeyPair({ pub: params.txPrebuild.key }).getAddress()
       : params.txPrebuild.key;
-    return { txHex, addressVersion, prv, signer };
+    return { txHex, prv, signer };
   }
 
   /**
@@ -189,10 +202,23 @@ export class Near extends BaseCoin {
    * @param callback
    * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(
+  async signTransaction(
     params: SignTransactionOptions,
   ): Promise<SignedTransaction> {
-    throw new MethodNotImplementedError('Near recovery not implemented');
+    const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
+    const txBuilder = factory.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
+    const transaction: accountLib.BaseCoin.BaseTransaction = await txBuilder.build();
+
+    if (!transaction) {
+      throw new Error('Invalid transaction');
+    }
+
+    const serializedTx = (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat();
+
+    return {
+      txHex: serializedTx,
+    } as any;
   }
 
   /**
@@ -214,7 +240,19 @@ export class Near extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new MethodNotImplementedError('Near verify transaction not implemented');
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild: txPrebuild } = params;
+    const transaction = new accountLib.Near.Transaction(coinConfig);
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+
+    transaction.fromRawTransaction(rawTx);
+
+    // TO-DO: new explainTransaction to be implemented in account-lib
+
+    return true;
   }
 
   getAddressFromPublicKey(Pubkey: string): string {

@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as accountLib from '@bitgo/account-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { SeedValidator } from '../internal/seedValidator';
@@ -447,6 +448,23 @@ export class Algo extends BaseCoin {
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     return true;
+  }
+
+  /** @inheritDoc */
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
+    const derivationPathInput = utxolib.crypto.hash256(Buffer.from(seed, 'utf8')).toString('hex');
+    const derivationPathParts = [
+      999999,
+      parseInt(derivationPathInput.slice(0, 7), 16),
+      parseInt(derivationPathInput.slice(7, 14), 16),
+    ];
+    const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
+    const derivedKey = accountLib.Ed25519KeyDeriver.derivePath(derivationPath, key).key;
+    const keypair = new accountLib.Algo.KeyPair({ seed: derivedKey });
+    return {
+      key: keypair.getAddress(),
+      derivationPath,
+    };
   }
 
   decodeTx(txn: Buffer): unknown {

@@ -7,6 +7,7 @@ import utils from './utils';
 import { KeyPair } from './keyPair';
 import * as nearAPI from 'near-api-js';
 import * as sha256 from 'js-sha256';
+import base58 from 'bs58';
 
 export class Transaction extends BaseTransaction {
   private _nearTransaction: nearAPI.transactions.Transaction;
@@ -210,5 +211,41 @@ export class Transaction extends BaseTransaction {
   private getTransactionHash(): Uint8Array {
     const serializedTx = nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction);
     return new Uint8Array(sha256.sha256.array(serializedTx));
+  }
+
+  get signablePayload(): Buffer {
+    if (!this._nearTransaction) {
+      throw new InvalidTransactionError('empty transaction');
+    }
+    return Buffer.from(nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction));
+  }
+
+  /**
+   * Constructs a signed payload using construct.signTx
+   * This method will be called during the build step if a TSS signature
+   * is added and will set the signTransaction which is the txHex that will be broadcasted
+   * As well as add the signature used to sign to the signature array in hex format
+   *
+   * @param {Buffer} signature The signature to be added to a dot transaction
+   */
+  constructSignedPayload(signature: Buffer): void {
+    this._nearSignedTransaction = new nearAPI.transactions.SignedTransaction({
+      transaction: this._nearTransaction,
+      signature: new nearAPI.transactions.Signature({
+        keyType: this._nearTransaction.publicKey.keyType,
+        data: signature,
+      }),
+    });
+    this.buildInputAndOutput();
+  }
+  /** @inheritdoc **/
+  get signature(): string[] {
+    const signatures: string[] = [];
+
+    if (this._nearSignedTransaction) {
+      signatures.push(base58.encode(this._nearSignedTransaction.signature.data));
+    }
+
+    return signatures;
   }
 }
