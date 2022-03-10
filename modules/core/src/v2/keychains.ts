@@ -218,6 +218,9 @@ export class Keychains {
           if (updatedKeychain.encryptedPrv) {
             changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
           }
+          if (updatedKeychain.addressDerivationKeypair) {
+            changedKeys[updatedKeychain.addressDerivationKeypair.pub] = updatedKeychain.addressDerivationKeypair.encryptedPrv;
+          }
         } catch (e) {
           // if the password was incorrect, silence the error, throw otherwise
           if (!e.message.includes('private key is incorrect')) {
@@ -255,10 +258,31 @@ export class Keychains {
       throw new Error('expected keychain to be an object with an encryptedPrv property');
     }
 
+    if (_.isObject(params.keychain.addressDerivationKeypair)) {
+      if (!params.keychain.addressDerivationKeypair.pub) {
+        throw new Error('expected keychain to have addressDerivationKeypair.pub property');
+      }
+      if (!params.keychain.addressDerivationKeypair.encryptedPrv) {
+        throw new Error('expected keychain to have addressDerivationKeypair.encryptedPrv property');
+      }
+    }
     const oldEncryptedPrv = params.keychain.encryptedPrv;
     try {
       const decryptedPrv = this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
       const newEncryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
+      if (params.keychain.addressDerivationKeypair) {
+        const oldAddressDerivationKeypair = params.keychain.addressDerivationKeypair;
+        const derivedDecryptedPrv = this.bitgo.decrypt({ input: oldAddressDerivationKeypair.encryptedPrv, password: params.oldPassword });
+        const newDerivedEncryptedPrv = this.bitgo.encrypt({ password: params.newPassword, input: derivedDecryptedPrv });
+        const newAddressDerivationKeychainParams = {
+          pub: oldAddressDerivationKeypair.pub,
+          encryptedPrv: newDerivedEncryptedPrv,
+        };
+        return _.assign({}, params.keychain, {
+          encryptedPrv: newEncryptedPrv,
+          addressDerivationKeypair: newAddressDerivationKeychainParams,
+        });
+      }
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {
       // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted

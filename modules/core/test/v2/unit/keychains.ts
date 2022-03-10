@@ -134,6 +134,20 @@ describe('V2 Keychains', function () {
         const keychain = { encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: otherPassword }) };
         (() => keychains.updateSingleKeychainPassword({ oldPassword, newPassword, keychain }))
           .should.throw('password used to decrypt keychain private key is incorrect');
+        
+        (() => keychains.updateSingleKeychainPassword({
+          oldPassword: '1234',
+          newPassword: '5678',
+          keychain: { encryptedPrv: '123', addressDerivationKeypair: { encryptedPrv: '345' } },
+        }))
+          .should.throw('expected keychain to have addressDerivationKeypair.pub property');
+
+        (() => keychains.updateSingleKeychainPassword({
+          oldPassword: '1234',
+          newPassword: '5678',
+          keychain: { encryptedPrv: '123', addressDerivationKeypair: { pub: '345' } },
+        }))
+          .should.throw('expected keychain to have addressDerivationKeypair.encryptedPrv property');
       });
 
       it('on any other error', async function () {
@@ -227,6 +241,35 @@ describe('V2 Keychains', function () {
         validateKeys(keys, newPassword);
       });
 
+      it('receive only one page when listing keychains  with address derivation', async function () {
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              {
+                pub: 'xpub1',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                addressDerivationKeypair: {
+                  pub: 'xpub1.1',
+                  encryptedPrv: bitgo.encrypt({ input: 'xprv1.1', password: oldPassword }),
+                },
+              },
+              {
+                pub: 'xpub2',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                addressDerivationKeypair: {
+                  pub: 'xpub2.1',
+                  encryptedPrv: bitgo.encrypt({ input: 'xprv2.1', password: oldPassword }),
+                },
+              },
+            ],
+          });
+
+        const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+        validateKeys(keys, newPassword);
+      });
+
       it('single keychain password update', () => {
         const prv = 'xprvtest';
         const keychain = {
@@ -239,6 +282,28 @@ describe('V2 Keychains', function () {
         const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
         decryptedPrv.should.equal(prv);
       });
+
+      it('single keychain with addressDerivationKeypair password update', () => {
+        const prv = 'xprvtest';
+        const newAddressDerivationKeychain = basecoin.keychains().create();
+        const keychain = {
+          xpub: 'xpub123',
+          encryptedPrv: bitgo.encrypt({ input: prv, password: oldPassword }),
+          addressDerivationKeypair: {
+            pub: newAddressDerivationKeychain.pub,
+            encryptedPrv: bitgo.encrypt({ input: newAddressDerivationKeychain.prv, password: oldPassword }),
+          },
+        };
+
+        const newKeychain = keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });
+
+        const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
+        decryptedPrv.should.equal(prv);
+        newKeychain.addressDerivationKeypair.pub.should.equal(newAddressDerivationKeychain.pub);
+        const decryptedAddressDerivationEncryptedPrv = bitgo.decrypt({ input: newKeychain.addressDerivationKeypair.encryptedPrv, password: newPassword });
+        decryptedAddressDerivationEncryptedPrv.should.equal(newAddressDerivationKeychain.prv);
+      });
+
     });
 
     describe('Create TSS Keychains', function() {
