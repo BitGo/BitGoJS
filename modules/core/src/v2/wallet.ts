@@ -128,6 +128,10 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   consolidationDetails?: {
     senderAddressIndex: number;
   };
+  feeInfo?: {
+    fee?: number;
+    feeString?: string;
+  };
 }
 
 export interface CustomSigningFunction {
@@ -2749,6 +2753,7 @@ export class Wallet {
       txRequestId: unsignedTxRequest.txRequestId,
       txHex: unsignedTxs[0].serializedTxHex,
       buildParams: whitelistedParams,
+      feeInfo: unsignedTxs[0].feeInfo,
     };
   }
 

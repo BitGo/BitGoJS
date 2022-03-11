@@ -49,6 +49,10 @@ export interface TxRequest {
   unsignedTxs: {
     serializedTxHex: string;
     signableHex: string;
+    feeInfo?: {
+      fee: number;
+      feeString: string;
+    };
   }[];
   signatureShares?: SignatureShareRecord[];
 }
