@@ -20,6 +20,7 @@ interface EnvironmentTemplate {
   eth2ExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
+  nearNodeUrls: string[];
   tronNodes: {
     full: string;
     solidity: string;
@@ -86,6 +87,7 @@ const mainnetBase: EnvironmentTemplate = {
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
+  nearNodeUrls: ['https://rpc.mainnet.near.org'],
   tronNodes: {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
@@ -111,6 +113,7 @@ const testnetBase: EnvironmentTemplate = {
     'https://jungle3.eosdac.io:443',
     'https://jungleapi.nodeone.io:443',
   ],
+  nearNodeUrls: ['https://rpc.testnet.near.org'],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
     solidity: 'http://47.252.81.135:8091',
