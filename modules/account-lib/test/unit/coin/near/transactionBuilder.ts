@@ -16,9 +16,8 @@ describe('NEAR Transaction Builder', async () => {
 
   it('start and build an empty a transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
-    txBuilder.sender(testData.accounts.account1.address);
-    txBuilder.nounce(1);
-    txBuilder.publicKey(testData.accounts.account1.publicKey);
+    txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+    txBuilder.nonce(1);
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
     txBuilder.amount('1');
@@ -31,9 +30,8 @@ describe('NEAR Transaction Builder', async () => {
 
   it('build and sign a transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
-    txBuilder.sender(testData.accounts.account1.address);
-    txBuilder.nounce(1);
-    txBuilder.publicKey(testData.accounts.account1.publicKey);
+    txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+    txBuilder.nonce(1);
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
     txBuilder.amount('1');
@@ -47,8 +45,7 @@ describe('NEAR Transaction Builder', async () => {
 
   it('should fail to build if missing sender', async () => {
     for (const txBuilder of builders) {
-      txBuilder.nounce(1);
-      txBuilder.publicKey(testData.accounts.account1.publicKey);
+      txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount('1');
@@ -97,5 +94,33 @@ describe('NEAR Transaction Builder', async () => {
     const jsonTx = builtTx.toJson();
 
     jsonTx.signerId.should.equal(testData.accounts.account1.address);
+  });
+
+  it('should fail to build if have invalid blockHash', async () => {
+    for (const txBuilder of builders) {
+      txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+      txBuilder.nonce(1);
+      txBuilder.receiverId(testData.accounts.account2.address);
+      should.throws(
+        () => txBuilder.recentBlockHash(testData.errorBlockHash.block1),
+        'Invalid blockHash CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9',
+      );
+    }
+  });
+
+  it('should fail to build if have invalid nonce', async () => {
+    for (const txBuilder of builders) {
+      txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+      should.throws(() => txBuilder.nonce(-1), 'Invalid nonce: -1');
+    }
+  });
+
+  it('should fail to build if have undefined address', async () => {
+    for (const txBuilder of builders) {
+      should.throws(
+        () => txBuilder.sender(testData.accounts.account1.publicKey),
+        'Invalid or missing address, got: undefined',
+      );
+    }
   });
 });

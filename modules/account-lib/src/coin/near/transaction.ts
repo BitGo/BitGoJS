@@ -101,7 +101,7 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    this.buildInputAndOutput();
+    this.loadInputsAndOutputs();
   }
 
   /**
@@ -123,7 +123,7 @@ export class Transaction extends BaseTransaction {
         data: signature,
       }),
     });
-    this.buildInputAndOutput();
+    this.loadInputsAndOutputs();
   }
 
   /**
@@ -131,7 +131,7 @@ export class Transaction extends BaseTransaction {
    *
    */
 
-  buildInputAndOutput(): void {
+  loadInputsAndOutputs(): void {
     if (this._nearTransaction.actions.length != 1) {
       throw new InvalidTransactionError('too many actions in raw transaction');
     }
@@ -236,7 +236,7 @@ export class Transaction extends BaseTransaction {
         data: signature,
       }),
     });
-    this.buildInputAndOutput();
+    this.loadInputsAndOutputs();
   }
   /** @inheritdoc **/
   get signature(): string[] {

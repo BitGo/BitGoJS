@@ -7,6 +7,7 @@ import * as NearAPI from 'near-api-js';
 import assert from 'assert';
 import { BuildTransactionError } from '../baseCoin/errors';
 import BN from 'bn.js';
+import BigNumber from 'bignumber.js';
 
 export class TransferBuilder extends TransactionBuilder {
   private _amount: string;
@@ -41,7 +42,15 @@ export class TransferBuilder extends TransactionBuilder {
     return tx;
   }
 
-  public amount(value: string) {
+  /**
+   * Sets the amount of this transaction.
+   *
+   * @param {string} value the amount of this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public amount(value: string): this {
+    this.validateValue(new BigNumber(value));
     this._amount = value;
+    return this;
   }
 }
