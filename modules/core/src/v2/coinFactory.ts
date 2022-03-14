@@ -61,6 +61,7 @@ import {
   Zec,
   EosToken,
   AvaxCToken,
+  FiatToken,
 } from './coins';
 import { tokens } from '../config';
 import * as errors from '../errors';
@@ -244,4 +245,9 @@ for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) 
     const tokenConstructor = AvaxCToken.createTokenConstructor(tokenConfig.mainnet);
     GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
   }
+}
+
+for (const token of [...tokens.bitcoin.fiat.tokens, ...tokens.testnet.fiat.tokens]) {
+  const tokenConstructor = FiatToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
 }
