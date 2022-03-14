@@ -102,4 +102,8 @@ export class AvaxCToken extends AvaxC {
   transactionDataAllowed(): boolean {
     return false;
   }
+
+  isToken(): boolean {
+    return true;
+  }
 }
