@@ -1,6 +1,6 @@
 import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
-import { AccountNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
+import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
 export interface AccountConstructorOptions {
   fullName: string;
@@ -262,6 +262,38 @@ export class SolCoin extends AccountCoinToken {
 export class AvaxERC20Token extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {
     super(options);
+  }
+}
+
+/**
+ * FIAT based tokens, such as USD, EUR, or YEN.
+ */
+export class FiatToken extends BaseCoin {
+  public static readonly DEFAULT_FEATURES = [
+    CoinFeature.ACCOUNT_MODEL,
+    CoinFeature.REQUIRES_BIG_NUMBER,
+    CoinFeature.VALUELESS_TRANSFER,
+    CoinFeature.TRANSACTION_DATA,
+    CoinFeature.CUSTODY,
+  ];
+
+  public readonly network: BaseNetwork;
+
+  constructor(options: AccountConstructorOptions) {
+    super({
+      ...options,
+      kind: CoinKind.FIAT,
+    });
+
+    this.network = options.network;
+  }
+
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.ACCOUNT_MODEL]);
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.UNSPENT_MODEL]);
   }
 }
 
@@ -981,4 +1013,64 @@ export function tavaxErc20(
     network,
     primaryKeyCurve
   );
+}
+
+/**
+ * Factory function for FIAT currency instances.
+ *
+ * @param name unique identifier of the currency
+ * @param fullName Complete human-readable name of the currency
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param network Network object for this coin
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function fiatToken(
+  name: string,
+  fullName: string,
+  asset: UnderlyingAsset,
+  decimalPlaces: number,
+  network: BaseNetwork,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  features: CoinFeature[] = FiatToken.DEFAULT_FEATURES,
+  isToken = true,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new FiatToken({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet FIAT currency instances.
+ *
+ * @param name unique identifier of the currency
+ * @param fullName Complete human-readable name of the currency
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a currency.
+ * @param decimalPlaces Number of decimal places this currency supports (divisibility exponent)
+ */
+export function tfiatToken(
+  name: string,
+  fullName: string,
+  asset: UnderlyingAsset,
+  decimalPlaces: number,
+  network: BaseNetwork = Networks.test.fiat
+) {
+  return fiatToken(name, fullName, asset, decimalPlaces, network);
 }
