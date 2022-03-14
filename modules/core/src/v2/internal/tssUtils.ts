@@ -34,6 +34,7 @@ interface PrebuildTransactionWithIntentOptions {
   }[];
   comment?: string;
   memo?: Memo;
+  token?: string;
 }
 
 enum ShareKeyPosition {
@@ -48,6 +49,10 @@ export interface TxRequest {
   unsignedTxs: {
     serializedTxHex: string;
     signableHex: string;
+    feeInfo?: {
+      fee: number;
+      feeString: string;
+    };
   }[];
   signatureShares?: SignatureShareRecord[];
 }
@@ -112,18 +117,7 @@ export class TssUtils extends MpcUtils {
       throw new Error('Missing BitGo to User key share');
     }
 
-    const bitGoToUserPrivateShareMessage = await openpgp.readMessage({
-      armoredMessage: bitGoToUserShare.privateShare,
-    });
-    const userGpgPrivateKey = await openpgp.readPrivateKey({ armoredKey: userGpgKey.privateKey });
-
-    const bitGoToUserPrivateShare = (
-      await openpgp.decrypt({
-        message: bitGoToUserPrivateShareMessage,
-        decryptionKeys: [userGpgPrivateKey],
-        format: 'utf8',
-      })
-    ).data;
+    const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
 
     const bitgoToUser = {
       i: '1',
@@ -189,18 +183,7 @@ export class TssUtils extends MpcUtils {
       throw new Error('Missing BitGo to User key share');
     }
 
-    const bitGoToBackupPrivateShareMessage = await openpgp.readMessage({
-      armoredMessage: bitGoToBackupShare.privateShare,
-    });
-    const userGpgPrivateKey = await openpgp.readPrivateKey({ armoredKey: userGpgKey.privateKey });
-
-    const bitGoToBackupPrivateShare = (
-      await openpgp.decrypt({
-        message: bitGoToBackupPrivateShareMessage,
-        decryptionKeys: [userGpgPrivateKey],
-        format: 'utf8',
-      })
-    ).data;
+    const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
 
     const bitgoToBackup = {
       i: '2',
@@ -239,68 +222,33 @@ export class TssUtils extends MpcUtils {
     backupKeyShare: KeyShare,
     enterprise?: string
   ): Promise<Keychain> {
-    const constants = await this.bitgo.fetchConstants();
-    if (!constants.tss || !constants.tss.bitgoPublicKey) {
-      throw new Error('Unable to create TSS keys - bitgoPublicKey is missing from constants');
-    }
-
-    const bitgoPublicKeyStr = constants.tss.bitgoPublicKey as string;
-    const bitgoKey = await openpgp.readKey({ armoredKey: bitgoPublicKeyStr });
-
-    const userToBitGoMessage = await openpgp.createMessage({
-      text: Buffer.concat([Buffer.from(userKeyShare.yShares[3].u, 'hex'), Buffer.alloc(32)]).toString('hex'),
-    });
-    const encUserToBitGoMessage = await openpgp.encrypt({
-      message: userToBitGoMessage,
-      encryptionKeys: [bitgoKey],
-      format: 'armored',
-      config: {
-        rejectCurves: new Set(),
-        showVersion: false,
-        showComment: false,
-      },
-    });
-
-    const backupToBitGoMessage = await openpgp.createMessage({
-      text: Buffer.concat([Buffer.from(backupKeyShare.yShares[3].u, 'hex'), Buffer.alloc(32)]).toString('hex'),
-    });
-    const encBackupToBitGoMessage = await openpgp.encrypt({
-      message: backupToBitGoMessage,
-      encryptionKeys: [bitgoKey],
-      format: 'armored',
-      config: {
-        rejectCurves: new Set(),
-        showVersion: false,
-        showComment: false,
-      },
-    });
-
-    const userPublicShare = bs58.encode(Buffer.from(userKeyShare.yShares[3].y, 'hex'));
-    const backupPublicShare = bs58.encode(Buffer.from(backupKeyShare.yShares[3].y, 'hex'));
-
-    const createBitGoTssParams = {
-      type: 'tss',
-      source: 'bitgo',
-      keyShares: [
-        {
-          from: 'user',
-          to: 'bitgo',
-          publicShare: userPublicShare,
-          privateShare: encUserToBitGoMessage,
-        },
-        {
-          from: 'backup',
-          to: 'bitgo',
-          publicShare: backupPublicShare,
-          privateShare: encBackupToBitGoMessage,
-        },
-      ],
-      userGPGPublicKey: userGpgKey.publicKey,
-      backupGPGPublicKey: userGpgKey.publicKey,
-      enterprise: enterprise,
+    const userToBitgoPublicShare = bs58.encode(Buffer.from(userKeyShare.yShares[3].y, 'hex'));
+    const userToBitgoPrivateShare = Buffer.concat([
+      Buffer.from(userKeyShare.yShares[3].u, 'hex'),
+      Buffer.alloc(32),
+    ]).toString('hex');
+    const userToBitgoKeyShare = {
+      publicShare: userToBitgoPublicShare,
+      privateShare: userToBitgoPrivateShare,
     };
 
-    return await this.baseCoin.keychains().add(createBitGoTssParams);
+    const backupToBitgoPublicShare = bs58.encode(Buffer.from(backupKeyShare.yShares[3].y, 'hex'));
+    const backupToBitgoPrivateShare = Buffer.concat([
+      Buffer.from(backupKeyShare.yShares[3].u, 'hex'),
+      Buffer.alloc(32),
+    ]).toString('hex');
+    const backupToBitgoKeyShare = {
+      publicShare: backupToBitgoPublicShare,
+      privateShare: backupToBitgoPrivateShare,
+    };
+
+    return await this.createBitgoKeychainInWP(
+      userGpgKey,
+      userToBitgoKeyShare,
+      backupToBitgoKeyShare,
+      'tss',
+      enterprise
+    );
   }
 
   /**
@@ -414,6 +362,7 @@ export class TssUtils extends MpcUtils {
         comment: params.comment,
         recipients: intentRecipients,
         memo: params.memo?.value,
+        token: params.token,
       },
     };
 

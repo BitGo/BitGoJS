@@ -26,7 +26,7 @@ import { TradingAccount } from './trading/tradingAccount';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';
-import { TssUtils } from './internal/tssUtils';
+import { TssUtils, TxRequest } from './internal/tssUtils';
 
 const debug = debugLib('bitgo:v2:wallet');
 
@@ -112,6 +112,7 @@ export interface PrebuildTransactionOptions {
   idfVersion?: number;
   comment?: string;
   [index: string]: unknown;
+  token?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -126,6 +127,10 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   consolidateId?: string;
   consolidationDetails?: {
     senderAddressIndex: number;
+  };
+  feeInfo?: {
+    fee?: number;
+    feeString?: string;
   };
 }
 
@@ -599,6 +604,7 @@ export class Wallet {
       'eip1559',
       'keyregTxBase64',
       'closeRemainderTo',
+      'token',
     ];
   }
 
@@ -2707,21 +2713,33 @@ export class Wallet {
    * @param params prebuild transaction options
    */
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
-    if (params.type !== 'transfer') {
-      throw new Error(`transaction type not supported: ${params.type}`);
-    }
-
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
-      reqId,
-      intentType: 'payment',
-      sequenceId: params.sequenceId,
-      comment: params.comment,
-      recipients: params.recipients || [],
-      memo: params.memo,
-    });
+    let unsignedTxRequest: TxRequest;
+    switch (params.type) {
+      case 'transfer':
+        unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
+          reqId,
+          intentType: 'payment',
+          sequenceId: params.sequenceId,
+          comment: params.comment,
+          recipients: params.recipients || [],
+          memo: params.memo,
+        });
+        break;
+      case 'enabletoken':
+        unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
+          reqId,
+          intentType: 'createAccount',
+          recipients: params.recipients || [],
+          token: params.token,
+          memo: params.memo,
+        });
+        break;
+      default:
+        throw new Error(`transaction type not supported: ${params.type}`);
+    }
 
     const unsignedTxs = unsignedTxRequest.unsignedTxs;
     if (unsignedTxs.length !== 1) {
@@ -2735,6 +2753,7 @@ export class Wallet {
       txRequestId: unsignedTxRequest.txRequestId,
       txHex: unsignedTxs[0].serializedTxHex,
       buildParams: whitelistedParams,
+      feeInfo: unsignedTxs[0].feeInfo,
     };
   }
 
