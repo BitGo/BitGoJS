@@ -63,6 +63,15 @@ export class InvalidParameterValueError extends ExtendableError {
 }
 
 /**
+ * Error produced by not truthy signature values
+ */
+export class InvalidSignatureError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+/**
  * Error for an method that needs to be implemented
  */
 export class NotImplementedError extends ExtendableError {

@@ -27,6 +27,8 @@ import {
 import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 import * as ethUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
+import { ERC1155TransferBuilder } from './transferBuilder/transferBuilderERC1155';
+import { ERC721TransferBuilder } from './transferBuilder/transferBuilderERC721';
 
 const DEFAULT_M = 3;
 
@@ -35,6 +37,7 @@ const DEFAULT_M = 3;
  */
 export class TransactionBuilder extends BaseTransactionBuilder {
   protected _type: TransactionType;
+  // Specifies common chain and hardfork parameters.
   protected _common: EthereumCommon;
   private _transaction: Transaction;
   private _sourceKeyPair: KeyPair;
@@ -53,7 +56,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _tokenAddress: string;
 
   // Send and AddressInitialization transaction specific parameters
-  protected _transfer: TransferBuilder;
+  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
   private _contractAddress: string;
   private _contractCounter: number;
 
@@ -100,6 +103,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.WalletInitialization:
         return this.buildWalletInitializationTransaction();
       case TransactionType.Send:
+      case TransactionType.SendERC721:
+      case TransactionType.SendERC1155:
         return this.buildSendTransaction();
       case TransactionType.AddressInitialization:
         return this.buildAddressInitializationTransaction();
@@ -181,6 +186,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.setContract(transactionJson.to);
         break;
       case TransactionType.Send:
+      case TransactionType.SendERC1155:
+      case TransactionType.SendERC721:
         this.setContract(transactionJson.to);
         this._transfer = this.transfer(transactionJson.data);
         break;
@@ -261,7 +268,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     try {
       FeeMarketEIP1559Transaction.fromSerializedTx(txn);
       return true;
-    } catch (_: unknown) {
+    } catch (_) {
       return false;
     }
   }
@@ -270,7 +277,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     try {
       ethUtil.rlp.decode(bytes);
       return true;
-    } catch (_: unknown) {
+    } catch (_) {
       return false;
     }
   }
@@ -295,6 +302,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.validateWalletInitializationFields();
         break;
       case TransactionType.Send:
+      case TransactionType.SendERC721:
+      case TransactionType.SendERC1155:
         this.validateContractAddress();
         break;
       case TransactionType.AddressInitialization:
@@ -537,12 +546,23 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param [data] transfer data to initialize the transfer builder with, empty if none given
    * @returns {TransferBuilder} the transfer builder
    */
-  transfer(data?: string): TransferBuilder {
-    if (this._type !== TransactionType.Send) {
+  transfer(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
+    if (
+      !(
+        this._type === TransactionType.Send ||
+        this._type === TransactionType.SendERC721 ||
+        this._type === TransactionType.SendERC1155
+      )
+    ) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
-    }
-    if (!this._transfer) {
-      this._transfer = new TransferBuilder(data);
+    } else if (!this._transfer) {
+      if (this._type === TransactionType.Send) {
+        this._transfer = new TransferBuilder(data);
+      } else if (this._type === TransactionType.SendERC721) {
+        this._transfer = new ERC721TransferBuilder(data);
+      } else if (this._type === TransactionType.SendERC1155) {
+        this._transfer = new ERC1155TransferBuilder(data);
+      }
     }
     return this._transfer;
   }
@@ -565,6 +585,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     tx.to = this._contractAddress;
     return tx;
   }
+
   // endregion
 
   // region AddressInitialization builder methods

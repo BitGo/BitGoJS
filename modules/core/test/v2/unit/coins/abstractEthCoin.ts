@@ -122,8 +122,9 @@ describe('ETH-like coins', () => {
         });
         txBuilder.counter(nonce);
         txBuilder.contract(contractAddress);
-        txBuilder
-          .transfer()
+        const transferBuilder = txBuilder.transfer() as Eth.TransferBuilder;
+
+        transferBuilder
           .coin(coinName)
           .expirationTime(expireTime)
           .amount(amount)
