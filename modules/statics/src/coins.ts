@@ -32,7 +32,19 @@ const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const SOL_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE, CoinFeature.SUPPORTS_TOKENS];
 
-export const coins = CoinMap.fromCoins([
+// Alorand is migration the name for the tokens, this are the equivalences to support new names during transition
+// STLX-10016 will revert this to support old names when new names were released
+const algorandKeyEquivalences = new Map([
+  ['algo:USDc-31566704', 'algo:31566704'],
+  ['algo:USDt-312769', 'algo:312769'],
+  ['talgo:USDC-10458941', 'talgo:10458941'],
+  ['talgo:USDt-180447', 'talgo:180447'],
+  ['talgo:USON-16026728', 'talgo:16026728'],
+  ['talgo:SPRW-16026732', 'talgo:16026732'],
+  ['talgo:KAL-16026733', 'talgo:16026733'],
+]);
+
+const baseCoins = [
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
   utxo('tbch', 'Testnet Bitcoin Cash', Networks.test.bitcoinCash, UnderlyingAsset.BCH),
   utxo('bcha', 'Bitcoin ABC', Networks.main.bitcoinABC, UnderlyingAsset.BCHA),
@@ -1121,4 +1133,6 @@ export const coins = CoinMap.fromCoins([
   teosToken('teos:IQ', 'Everipedia', 3, 'testtoken112', UnderlyingAsset.IQ, AccountCoin.DEFAULT_FEATURES, '', 'IQ'),
   teosToken('teos:BOX', 'Box', 6, 'kvszn1xyz1bu', UnderlyingAsset.EOS_BOX, AccountCoin.DEFAULT_FEATURES, '', 'BOX'),
   teosToken('teos:USDT', 'Tether', 4, 'lionteste212', UnderlyingAsset.USDT, AccountCoin.DEFAULT_FEATURES, '', 'USDT'),
-]);
+];
+
+export const coins = CoinMap.fromCoins(baseCoins, algorandKeyEquivalences);

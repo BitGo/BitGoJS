@@ -3,31 +3,47 @@ import { DuplicateCoinDefinitionError, CoinNotDefinedError } from './errors';
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
+  // Holds key equivalences used during an asset name migration
+  private readonly _keyEquivalences: Map<string, string>;
 
-  private constructor() {}
+  constructor(keyEquivalences: Map<string, string>) {
+    this._keyEquivalences = keyEquivalences;
+  }
 
-  static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
+  static fromCoins(coins: Readonly<BaseCoin>[], keyEquivalences: Map<string, string> = new Map()): CoinMap {
     return coins.reduce((coinMap, coin) => {
       if (coinMap._map.has(coin.name)) {
         throw new DuplicateCoinDefinitionError(coin.name);
       }
       coinMap._map.set(coin.name, coin);
       return coinMap;
-    }, new CoinMap());
+    }, new CoinMap(keyEquivalences));
   }
 
   /**
    * Override `get` to throw if a coin is missing, instead of returning undefined.
+   * It will honor key equivalences in case given key is missing.
    * @param {string} key
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    if (this._map.has(key)) {
+    if (this.has(key)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this._map.get(key)!;
     }
 
+    const key2 = this._keyEquivalences.get(key);
+
+    if (key2 && this.has(key2)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return this._map.get(key2)!;
+    }
+
     throw new CoinNotDefinedError(key);
+  }
+
+  public has(key: string): boolean {
+    return this._map.has(key);
   }
 
   public map<T>(mapper: (coin: Readonly<BaseCoin>, coinName: string) => T): T[] {
@@ -53,7 +69,7 @@ export class CoinMap {
         filterResult.push(value);
       }
     });
-    return CoinMap.fromCoins(filterResult);
+    return CoinMap.fromCoins(filterResult, this._keyEquivalences);
   }
 
   public forEach(callback: (coin: Readonly<BaseCoin>, coinName: string) => void): void {

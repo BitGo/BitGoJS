@@ -6,6 +6,18 @@ interface DuplicateCoinObject {
   network: BaseNetwork;
 }
 
+describe('CoinMap', function () {
+  it('should report if it contains coin', () => {
+    coins.forEach((coin) => {
+      coins.has(coin.name).should.be.true();
+    });
+  });
+
+  it('should report if it does not contain coin', () => {
+    coins.has('zzzz:TBD:232332').should.be.false();
+  });
+});
+
 coins.forEach((coin, coinName) => {
   describe(`Coin ${coinName}`, function () {
     it('has expected name', function () {
