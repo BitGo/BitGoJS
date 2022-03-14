@@ -75,7 +75,7 @@ export const coins = CoinMap.fromCoins([
   account('tdot', 'Testnet Polkadot', Networks.test.dot, 12, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
-  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.GTETH, ETH_FEATURES),
+  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
   account(
     'teth2',
