@@ -785,6 +785,7 @@ export enum KeyCurve {
 export interface BaseCoinConstructorOptions {
   fullName: string; // full, human readable name of this coin. Eg, "Bitcoin Cash" for bch
   name: string; // unique identifier for this coin, usually the lowercase ticker or symbol. Eg, "btc" for bitcoin
+  alias?: string; // alternative name usually used during name migrations
   prefix?: string;
   suffix?: string;
   kind: CoinKind;
@@ -804,6 +805,11 @@ export abstract class BaseCoin {
   public readonly name: string;
   public readonly prefix?: string;
   public readonly suffix?: string;
+  /*
+    Property to help during migration of token names.
+    Helps to find a coin/token with a different name than the current one
+   */
+  public readonly alias?: string;
   /*
     Classification properties
    */
@@ -882,6 +888,7 @@ export abstract class BaseCoin {
 
     this.fullName = options.fullName;
     this.name = options.name;
+    this.alias = options.alias;
     this.prefix = options.prefix;
     this.suffix = options.suffix;
     this.kind = options.kind;

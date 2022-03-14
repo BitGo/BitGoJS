@@ -8,8 +8,8 @@ import { EosTokenConfig } from './v2/coins/eosToken';
 import { AlgoTokenConfig } from './v2/coins/algoToken';
 import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
 import { FiatTokenConfig } from './v2/coins/fiatToken';
-import { 
-  coins, 
+import {
+  coins,
   Erc20Coin,
   StellarCoin,
   OfcCoin,
@@ -137,6 +137,7 @@ const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+      alias: coin.alias,
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       decimalPlaces: coin.decimalPlaces,
