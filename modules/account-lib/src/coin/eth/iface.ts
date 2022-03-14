@@ -121,15 +121,15 @@ export interface TokenTransferData extends TransferData {
 }
 
 export interface ERC721TransferData extends TokenTransferData {
-  from: string,
-  tokenId: number;
+  from: string;
+  tokenId: string;
   userData: string;
 }
 
 export interface ERC1155TransferData extends TokenTransferData {
-  from: string,
-  tokenIds: number[];
-  values: number[];
+  from: string;
+  tokenIds: string[];
+  values: string[];
   userData: string;
 }
 

@@ -4,10 +4,10 @@ export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
 export const flushForwarderTokensMethodId = '0x2da03409';
 export const flushCoinsMethodId = '0x6b9f96ea';
-export const ERC721SafeTransferTypeMethodId = '0xa6595572';
-export const ERC1155SafeTransferTypeMethodId = '0x242432a';
-export const ERC1155BatchTransferTypeMethodId = '0x926f08f6';
 
+export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
+export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
+export const ERC1155BatchTransferTypeMethodId = '0x2eb2c2d6';
 
 /*
   Steps to reproduce:
@@ -29,5 +29,5 @@ export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'ui
 
 export const ERC721SafeTransferTypes = ['address', 'address', 'uint256', 'bytes'];
 
-export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint', 'bytes'];
-export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes']; 
+export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint256', 'bytes'];
+export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'];

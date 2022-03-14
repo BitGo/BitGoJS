@@ -1,11 +1,11 @@
 import { BuildTransactionError, InvalidParameterValueError } from '../../baseCoin/errors';
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
-import { ERC721SafeTransferTypeMethodId } from '../walletUtil';
 import { baseNFTTransferBuilder } from './baseNFTTransferBuilder';
+import { ERC721SafeTransferTypeMethodId } from '../walletUtil';
 
 export class ERC721TransferBuilder extends baseNFTTransferBuilder {
-  private _tokenId: number;
+  private _tokenId: string;
 
   constructor(serializedData?: string) {
     super(serializedData);
@@ -22,7 +22,7 @@ export class ERC721TransferBuilder extends baseNFTTransferBuilder {
     throw new InvalidParameterValueError('Invalid address');
   }
 
-  tokenId(token: number): ERC721TransferBuilder {
+  tokenId(token: string): ERC721TransferBuilder {
     this._tokenId = token;
     return this;
   }
@@ -46,7 +46,7 @@ export class ERC721TransferBuilder extends baseNFTTransferBuilder {
 
     throw new BuildTransactionError(
       `Missing transfer mandatory fields. 
-      Amount, destination (to) address, source (from) address, sequenceID, the token contract address and tokenID are mandatory`,
+       Destination (to) address, Source (from) address, sequenceID, the token contract address and tokenID are mandatory`,
     );
   }
 
@@ -56,7 +56,6 @@ export class ERC721TransferBuilder extends baseNFTTransferBuilder {
       this._toAddress !== undefined &&
       this._fromAddress !== undefined &&
       this._tokenContractAddress !== undefined &&
-      this._toAddress !== undefined &&
       this._sequenceId !== undefined
     );
   }
@@ -64,6 +63,7 @@ export class ERC721TransferBuilder extends baseNFTTransferBuilder {
   private decodeTransferData(data: string): void {
     const transferData = decodeERC721TransferData(data);
     this._toAddress = transferData.to;
+    this._fromAddress = transferData.from;
     this._expirationTime = transferData.expireTime;
     this._sequenceId = transferData.sequenceId;
     this._signature = transferData.signature;

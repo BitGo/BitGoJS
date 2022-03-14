@@ -556,13 +556,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     ) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     } else if (!this._transfer) {
-      if (this._type === TransactionType.Send){
+      if (this._type === TransactionType.Send) {
         this._transfer = new TransferBuilder(data);
-      }
-      else if (this._type === TransactionType.SendERC721){
+      } else if (this._type === TransactionType.SendERC721) {
         this._transfer = new ERC721TransferBuilder(data);
-      }
-      else if (this._type === TransactionType.SendERC1155){
+      } else if (this._type === TransactionType.SendERC1155) {
         this._transfer = new ERC1155TransferBuilder(data);
       }
     }
@@ -577,27 +575,25 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   transferERC721(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
     if (
-        !(
-            this._type === TransactionType.Send ||
-            this._type === TransactionType.SendERC721 ||
-            this._type === TransactionType.SendERC1155
-        )
+      !(
+        this._type === TransactionType.Send ||
+        this._type === TransactionType.SendERC721 ||
+        this._type === TransactionType.SendERC1155
+      )
     ) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     } else if (!this._transfer) {
-      if (this._type === TransactionType.Send){
+      if (this._type === TransactionType.Send) {
         this._transfer = new TransferBuilder(data);
-      }
-      else if (this._type === TransactionType.SendERC721){
+      } else if (this._type === TransactionType.SendERC721) {
         this._transfer = new ERC721TransferBuilder(data);
-      }
-      else if (this._type === TransactionType.SendERC1155){
+      } else if (this._type === TransactionType.SendERC1155) {
         this._transfer = new ERC1155TransferBuilder(data);
       }
     }
     return this._transfer;
   }
-  
+
   /**
    * Returns the serialized sendMultiSig contract method data
    *

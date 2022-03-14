@@ -9,14 +9,9 @@ import {
 } from '../walletUtil';
 import { baseNFTTransferBuilder } from './baseNFTTransferBuilder';
 
-export type ERC1155EntryType = {
-  id: number;
-  value: number;
-};
-
 export class ERC1155TransferBuilder extends baseNFTTransferBuilder {
-  private _tokenIds: number[];
-  private _values: number[];
+  private _tokenIds: string[];
+  private _values: string[];
 
   constructor(serializedData?: string) {
     super(serializedData);
@@ -37,8 +32,8 @@ export class ERC1155TransferBuilder extends baseNFTTransferBuilder {
   }
 
   entry(tokenId: number, value: number): ERC1155TransferBuilder {
-    this._tokenIds.push(tokenId);
-    this._values.push(value);
+    this._tokenIds.push(tokenId.toString());
+    this._values.push(value.toString());
     return this;
   }
 
@@ -76,16 +71,16 @@ export class ERC1155TransferBuilder extends baseNFTTransferBuilder {
       this._tokenIds.length !== 0 &&
       this._values.length !== 0 &&
       this._tokenIds.length === this._values.length &&
-      this._toAddress != undefined &&
-      this._fromAddress != undefined &&
-      this._tokenContractAddress != undefined &&
-      this._toAddress != undefined &&
-      this._sequenceId != undefined
+      this._toAddress !== undefined &&
+      this._fromAddress !== undefined &&
+      this._tokenContractAddress !== undefined &&
+      this._sequenceId !== undefined
     );
   }
   private decodeTransferData(data: string): void {
     const transferData = decodeERC1155TransferData(data);
     this._toAddress = transferData.to;
+    this._fromAddress = transferData.from;
     this._expirationTime = transferData.expireTime;
     this._sequenceId = transferData.sequenceId;
     this._signature = transferData.signature;

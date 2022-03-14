@@ -26,10 +26,20 @@ import {
   VoteMethodId,
   WithdrawMethodId,
 } from '../celo/stakingUtils';
-import { ERC1155TransferData, ERC721TransferData, FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
+import {
+  ERC1155TransferData,
+  ERC721TransferData,
+  FlushTokensData,
+  NativeTransferData,
+  SignatureParts,
+  TokenTransferData,
+  TransferData,
+  TxData,
+} from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
+  ERC1155BatchTransferTypeMethodId,
   ERC1155BatchTransferTypes,
   ERC1155SafeTransferTypeMethodId,
   ERC1155SafeTransferTypes,
@@ -47,7 +57,6 @@ import {
   walletSimpleConstructor,
 } from './walletUtil';
 import { EthTransactionData } from './types';
-import { TLSSocket } from 'tls';
 
 /**
  * @param network
@@ -286,34 +295,35 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
     sendMultiSigTypes,
     getBufferedByteCode(sendMultisigMethodId, data),
   );
- 
+
   // FIXME: Is this corrrect?
-  if (!bufferToHex(internalData).startsWith(ERC721SafeTransferTypeMethodId)) {
+  const internalDataHex = bufferToHex(internalData);
+  if (!internalDataHex.startsWith(ERC721SafeTransferTypeMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
 
   const [from, receiver, tokenId, userSentData] = getRawDecoded(
     ERC721SafeTransferTypes,
-    internalData
+    getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex),
   );
-  
+
   return {
     to: addHexPrefix(receiver),
     from: addHexPrefix(from),
     expireTime: bufferToInt(expireTime),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    tokenId: bufferToInt(tokenId),
+    tokenId: new BigNumber(bufferToHex(tokenId)).toFixed(),
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
     tokenContractAddress: addHexPrefix(to),
-    userData: bufferToHex(userSentData)
+    userData: bufferToHex(userSentData),
   };
 }
 
 export function decodeERC1155TransferData(data: string): ERC1155TransferData {
   let from, receiver, userSentData;
-  let tokenIds: number[];
-  let values: number[];
+  let tokenIds: string[];
+  let values: string[];
 
   if (!data.startsWith(sendMultisigMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
@@ -323,23 +333,27 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     sendMultiSigTypes,
     getBufferedByteCode(sendMultisigMethodId, data),
   );
-  
-  if (bufferToHex(internalData).startsWith(ERC1155SafeTransferTypeMethodId)) {
-    let tokenId, value; // temp values
+
+  const internalDataHex = bufferToHex(internalData);
+  if (internalDataHex.startsWith(ERC1155SafeTransferTypeMethodId)) {
+    let tokenId;
+    let value;
+
     [from, receiver, tokenId, value, userSentData] = getRawDecoded(
       ERC1155SafeTransferTypes,
-      internalData
+      getBufferedByteCode(ERC1155SafeTransferTypeMethodId, internalDataHex),
     );
-    tokenIds = [bufferToInt(tokenId)];
-    values = [bufferToInt(value)];
-  } else if (bufferToHex(internalData).startsWith(ERC1155BatchTransferTypes)) {
+
+    tokenIds = [new BigNumber(bufferToHex(tokenId)).toFixed()];
+    values = [new BigNumber(bufferToHex(value)).toFixed()];
+  } else if (bufferToHex(internalData).startsWith(ERC1155BatchTransferTypeMethodId)) {
     let tempTokenIds, tempValues;
     [from, receiver, tempTokenIds, tempValues, userSentData] = getRawDecoded(
-      ERC1155SafeTransferTypes,
-      internalData
+      ERC1155BatchTransferTypes,
+      getBufferedByteCode(ERC1155BatchTransferTypeMethodId, internalDataHex),
     );
-    tokenIds = tempTokenIds.map( x => bufferToInt(x));
-    values = tempValues.map(x => bufferToInt(x));
+    tokenIds = tempTokenIds.map((x) => new BigNumber(bufferToHex(x)).toFixed());
+    values = tempValues.map((x) => new BigNumber(bufferToHex(x)).toFixed());
   } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
@@ -349,14 +363,13 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     from: addHexPrefix(from),
     expireTime: bufferToInt(expireTime),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
-    tokenIds, 
-    values, 
+    tokenIds,
+    values,
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
     tokenContractAddress: addHexPrefix(to),
-    userData: userSentData
+    userData: userSentData,
   };
-  
 }
 
 /**
