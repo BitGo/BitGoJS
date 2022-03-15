@@ -11,6 +11,7 @@ import { validateRawTransaction } from './utils';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -28,7 +29,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     try {
       switch (tx.type) {
         case TransactionType.Send:
-          return this.getTransferBuilder(tx);
+          if (tx.inputs[0].coin === 'sol' || tx.inputs[0].coin === 'tsol') {
+            return this.getTransferBuilder(tx);
+          } else {
+            return this.getTokenTransferBuilder(tx);
+          }
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
         case TransactionType.StakingActivate:
@@ -57,6 +62,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
   }
 
   /**

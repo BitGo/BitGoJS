@@ -16,6 +16,7 @@ export enum ValidInstructionTypesEnum {
   StakingDeactivate = 'Deactivate',
   StakingWithdraw = 'Withdraw',
   Transfer = 'Transfer',
+  TokenTransfer = 'TokenTransfer',
   Memo = 'Memo',
   InitializeAssociatedTokenAccount = 'InitializeAssociatedTokenAccount',
 }
@@ -30,6 +31,7 @@ export enum InstructionBuilderTypes {
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
+  TokenTransfer = 'TokenTransfer',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -43,6 +45,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
   ValidInstructionTypesEnum.InitializeAssociatedTokenAccount,
+  ValidInstructionTypesEnum.TokenTransfer,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */

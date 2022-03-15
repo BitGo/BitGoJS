@@ -21,8 +21,11 @@ import {
   StakingActivate,
   StakingDeactivate,
   StakingWithdraw,
+  TokenTransfer,
 } from './iface';
 import { getInstructionType } from './utils';
+import { decodeTransferCheckedInstruction } from './tokenEncodeDecode';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 /**
  * Construct instructions params from Solana instructions
@@ -92,8 +95,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseSendInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | Transfer> {
-  const instructionData: Array<Nonce | Memo | Transfer> = [];
+function parseSendInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | Transfer | TokenTransfer> {
+  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -123,6 +126,20 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
           },
         };
         instructionData.push(transfer);
+        break;
+      case ValidInstructionTypesEnum.TokenTransfer:
+        const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_PROGRAM_ID);
+        const tokenTransfer: TokenTransfer = {
+          type: InstructionBuilderTypes.TokenTransfer,
+          params: {
+            fromAddress: tokenTransferInstruction.keys.owner.pubkey.toString(),
+            toAddress: tokenTransferInstruction.keys.destination.pubkey.toString(),
+            amount: tokenTransferInstruction.data.amount.toString(),
+            mintAddress: tokenTransferInstruction.keys.mint.pubkey.toString(),
+            sourceAddress: tokenTransferInstruction.keys.source.pubkey.toString(),
+          },
+        };
+        instructionData.push(tokenTransfer);
         break;
       default:
         throw new NotSupported(

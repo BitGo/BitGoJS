@@ -6,7 +6,7 @@ import { InstructionParams } from '../../../../src/coin/sol/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 describe('Instruction Parser Tests: ', function () {
   describe('Succeed ', function () {
@@ -57,6 +57,66 @@ describe('Instruction Parser Tests: ', function () {
         toPubkey: new PublicKey(nonceAccount),
         lamports: new BigNumber(amount).toNumber(),
       });
+
+      // memo
+      const memoParams: InstructionParams = {
+        type: InstructionBuilderTypes.Memo,
+        params: { memo },
+      };
+
+      const memoInstruction = new TransactionInstruction({
+        keys: [],
+        programId: new PublicKey(MEMO_PROGRAM_PK),
+        data: Buffer.from(memo),
+      });
+
+      const instructions = [nonceAdvanceInstruction, transferInstruction, memoInstruction];
+      const instructionsData = [nonceAdvanceParams, transferParams, memoParams];
+      const result = instructionParamsFactory(TransactionType.Send, instructions);
+      should.deepEqual(result, instructionsData);
+    });
+
+    it('Send token tx instructions', () => {
+      const authAccount = testData.authAccount.pub;
+      const nonceAccount = testData.nonceAccount.pub;
+      const amount = testData.tokenTransfers.amount;
+      const memo = testData.tokenTransfers.memo;
+      const decimals = testData.tokenTransfers.decimals;
+      const mintORCA = testData.tokenTransfers.mintORCA;
+      const ownerORCA = testData.tokenTransfers.ownerORCA;
+      const sourceORCA = testData.tokenTransfers.sourceORCA;
+
+      // nonce
+      const nonceAdvanceParams: InstructionParams = {
+        type: InstructionBuilderTypes.NonceAdvance,
+        params: { walletNonceAddress: nonceAccount, authWalletAddress: authAccount },
+      };
+      const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+        noncePubkey: new PublicKey(nonceAccount),
+        authorizedPubkey: new PublicKey(authAccount),
+      });
+
+      // token transfer
+      const transferParams = {
+        type: InstructionBuilderTypes.TokenTransfer,
+        params: {
+          fromAddress: ownerORCA,
+          toAddress: nonceAccount,
+          amount: amount.toString(),
+          mintAddress: mintORCA,
+          sourceAddress: sourceORCA,
+        },
+      };
+      const transferInstruction = Token.createTransferCheckedInstruction(
+        TOKEN_PROGRAM_ID,
+        new PublicKey(sourceORCA),
+        new PublicKey(mintORCA),
+        new PublicKey(nonceAccount),
+        new PublicKey(ownerORCA),
+        [],
+        amount,
+        decimals,
+      );
 
       // memo
       const memoParams: InstructionParams = {
