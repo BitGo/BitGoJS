@@ -69,6 +69,9 @@ modules/account-lib/test/coin/eth/* @BitGo/eth-team
 modules/account-lib/test/coin/eth2/* @BitGo/eth-team
 modules/account-lib/test/coin/rbtc/* @BitGo/eth-team
 
+# Tss
+modules/core/src/v2/internal/tssUtils.ts @BitGo/blockchain-integration
+
 # Lock files
 yarn.lock tyler@bitgo.com
 modules/express/package-lock.json tyler@bitgo.com

@@ -234,6 +234,32 @@ describe('V2 Wallets:', function () {
     });
   });
 
+  describe('Generate TSS Wallets', function () {
+    async function testWalletCreation(coinName: string): Promise<void> {
+      const wallet = await bitgo.coin(coinName).wallets().generateWallet({
+        label: `sdk test create ${coinName} wallet`,
+        passphrase: 'yoplait',
+      });
+
+      should.exist(wallet);
+
+      const walletJSON = JSON.parse(JSON.stringify(wallet));
+
+      walletJSON.wallet.multisigType.should.equal('tss');
+      walletJSON.userKeychain.type.should.equal('tss');
+      walletJSON.backupKeychain.type.should.equal('tss');
+      walletJSON.bitgoKeychain.type.should.equal('tss');
+    }
+
+    it('should generate solana wallet', async function () {
+      await testWalletCreation('tsol');
+    });
+
+    it('should generate polkadot wallet', async function () {
+      await testWalletCreation('tdot');
+    });
+  });
+
   describe('Add Wallet', function () {
 
     let userKeychainId;
