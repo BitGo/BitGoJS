@@ -12,6 +12,7 @@ import {
   BufferReader,
   ClarityType,
   ClarityValue,
+  createAddress,
   createMemoString,
   createMessageSignature,
   createStacksPrivateKey,
@@ -469,4 +470,50 @@ export function functionArgsToSendParams(args: ClarityValue[]): SendParams[] {
       memo: tuple.data.memo.buffer.toString('ascii'),
     };
   });
+}
+
+/**
+ * Gets the version of an address
+ *
+ * @param {String} address the address with or without the memoId
+ * @returns {AddressVersion} A number that represent the Address Version
+ */
+export function getAddressVersion(address: string): AddressVersion {
+  const baseAddress = getAddressDetails(address).address;
+  return createAddress(baseAddress).version;
+}
+
+/**
+ * Returns a STX pub key from an xpub
+ *
+ * @param {String} xpub an xpub
+ * @returns {String} a compressed STX pub key
+ */
+export function xpubToSTXPubkey(xpub: string, compressed = true): string {
+  return new KeyPair({ pub: xpub }).getKeys(compressed).pub;
+}
+
+/**
+ * Returns the base address portion of an address
+ *
+ * @param {String} address - an address
+ * @returns {String} - the base address
+ */
+export function getBaseAddress(address: string): string {
+  const addressDetails = getAddressDetails(address);
+  return addressDetails.address;
+}
+
+/**
+ * Compares an address to the base address to check if matchs.
+ *
+ * @param {String} address - an address
+ * @param {String} baseAddress - a base address
+ * @returns {boolean}
+ */
+export function isSameBaseAddress(address: string, baseAddress: string): boolean {
+  if (!isValidAddressWithPaymentId(address)) {
+    throw new UtilsError(`invalid address: ${address}`);
+  }
+  return this.getBaseAddress(address) === this.getBaseAddress(baseAddress);
 }

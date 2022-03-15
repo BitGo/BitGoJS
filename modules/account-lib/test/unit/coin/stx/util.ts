@@ -316,4 +316,63 @@ describe('Stx util library', function () {
       Stx.Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
     });
   });
+
+  describe('getAddressVersion', function () {
+    it('should succeed to for valid addresses', function () {
+      // Mainnet single sig
+      Stx.Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ').should.equal(22);
+      // Mainnet multi sig
+      Stx.Utils.getAddressVersion('SM468VETKA5DB15HWG2QM7Y04EFQKV44R9D6D0QC').should.equal(20);
+      // Testnet single sig
+      Stx.Utils.getAddressVersion('ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0').should.equal(26);
+      // Testnet multi sig
+      Stx.Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX').should.equal(21);
+      // With Memo Id
+      Stx.Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ?memoId=0').should.equal(22);
+      Stx.Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255').should.equal(21);
+    });
+  });
+
+  describe('xpubToSTXPubkey', function () {
+    it('should succeed to convert for valid xpubs', function () {
+      Stx.Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS',
+      ).should.equal('03f0f3581a4256797fa8478cb6b1da6588f4c4bedc80ab2601e3a1572cf57b6156');
+      Stx.Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj',
+      ).should.equal('0262b7e86c1e36e45d451263b54a1c3d740abeab61d221d1175fc3fdad752853ab');
+      Stx.Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf',
+      ).should.equal('036529a0e41cfd1a9d265b74f8d0002c92c5aec10d4239000260a25cfd54e4726c');
+    });
+  });
+
+  describe('getBaseAddress', function () {
+    it('should return the base address', async function () {
+      const addressWithMemo = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
+      const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
+      await Stx.Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
+      await Stx.Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
+    });
+  });
+
+  describe('isSameBaseAddress', function () {
+    it('should validate if base address match', async function () {
+      const address = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
+      const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
+      await Stx.Utils.isSameBaseAddress(address, baseAddress).should.true();
+
+      const address2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
+      const baseAddress2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
+      await Stx.Utils.isSameBaseAddress(address2, baseAddress2).should.true();
+
+      const address3 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
+      const baseAddress3 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
+      await Stx.Utils.isSameBaseAddress(address3, baseAddress3).should.false();
+
+      const address4 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
+      const baseAddress4 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
+      await Stx.Utils.isSameBaseAddress(address4, baseAddress4).should.false();
+    });
+  });
 });

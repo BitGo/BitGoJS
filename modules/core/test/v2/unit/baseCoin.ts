@@ -219,5 +219,4 @@ describe('V2 Base Coin:', function () {
 
     });
   });
-
 });

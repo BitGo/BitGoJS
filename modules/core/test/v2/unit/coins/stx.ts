@@ -1,7 +1,8 @@
-import { Stx, Tstx } from '../../../../src/v2/coins/';
-import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/stx';
+import * as accountLib from '@bitgo/account-lib';
+import * as should from 'should';
+import { Stx, Tstx } from '../../../../src/v2/coins/';
 
 describe('STX:', function () {
   let bitgo;
@@ -94,9 +95,19 @@ describe('STX:', function () {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
-  it('should verify addresses', function () {
-    // FIXME(BG-43225): not implemented
-    this.skip();
+  it('should verify isWalletAddress', function () {
+    const userKey = { pub: 'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS' };
+    const backupKey = { pub: 'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj' };
+    const bitgoKey = { pub: 'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf' };
+    const keychains = [userKey, backupKey, bitgoKey];
+    const validAddress1 = 'SNAYQFZ6EF54D5XWJP3GAE1Y8DPYXKFC7TTMYXFV';
+    const validAddress2 = 'SNAYQFZ6EF54D5XWJP3GAE1Y8DPYXKFC7TTMYXFV?memoId=2';
+    const unrelatedValidAddress = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y?memoId=1';
+    const invalidAddress = 'ST1T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY';
+    basecoin.isWalletAddress({ address: validAddress1, keychains }).should.true();
+    basecoin.isWalletAddress({ address: validAddress2, keychains }).should.true();
+    basecoin.isWalletAddress({ address: unrelatedValidAddress, keychains }).should.false();
+    should.throws(() => basecoin.isWalletAddress({ address: invalidAddress, keychains }), `invalid address: ${invalidAddress}`);
   });
 
   it('should explain a transfer transaction', async function () {
