@@ -360,7 +360,7 @@ export function erc20(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the Kovan test network.
+ * @param network? Optional token network. Defaults to the Goerli test network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
 export function terc20(
@@ -372,7 +372,7 @@ export function terc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.test.kovan
+  network: EthereumNetwork = Networks.test.goerli
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
