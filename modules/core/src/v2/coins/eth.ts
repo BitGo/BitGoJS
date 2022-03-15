@@ -123,13 +123,20 @@ interface Recipient {
   data?: string;
 }
 
+interface EIP1559 {
+  maxPriorityFeePerGas: number;
+  maxFeePerGas: number;
+}
+
+interface ReplayProtectionOptions {
+  chain: string | number;
+  hardfork: string;
+}
+
 interface SignFinalOptions {
   txPrebuild: {
-    eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
-    replayProtectionOptions?: {
-      chain: string | number;
-      hardfork: string;
-    };
+    eip1559?: EIP1559;
+    replayProtectionOptions?: ReplayProtectionOptions;
     gasPrice?: string;
     gasLimit: string;
     recipients: Recipient[];
@@ -192,6 +199,9 @@ interface OfflineVaultTxInfo {
   walletContractAddress: string;
   amount: string;
   backupKeyNonce: number;
+  // For Eth Specific Coins
+  eip1559?: EIP1559;
+  replayProtectionOptions?: ReplayProtectionOptions;
 }
 
 interface UnformattedTxInfo {
@@ -207,11 +217,8 @@ export interface RecoverOptions {
   krsProvider?: string;
   gasPrice?: number;
   gasLimit?: number;
-  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
-  replayProtectionOptions?: {
-    chain: string | number;
-    hardfork: string;
-  };
+  eip1559?: EIP1559;
+  replayProtectionOptions?: ReplayProtectionOptions;
 }
 
 interface BuildTransactionParams {
@@ -221,11 +228,8 @@ interface BuildTransactionParams {
   data?: Buffer;
   gasPrice?: number;
   gasLimit?: number;
-  eip1559?: { maxPriorityFeePerGas: number; maxFeePerGas: number };
-  replayProtectionOptions?: {
-    chain: string | number;
-    hardfork: string;
-  };
+  eip1559?: EIP1559;
+  replayProtectionOptions?: ReplayProtectionOptions;
 }
 
 export interface RecoveryInfo {
@@ -822,8 +826,9 @@ export class Eth extends BaseCoin {
    * @param backupKey
    * @param gasPrice
    * @param gasLimit
-   * @param callback
-   * @returns {{tx: *, userKey: *, backupKey: *, coin: string, amount: string, gasPrice: string, gasLimit: string, recipients: ({address, amount}|{address: ({address, amount}|string), amount: string}|string)[]}}
+   * @param eip1559
+   * @param replayProtectionOptions
+   * @returns {Promise<OfflineVaultTxInfo>}
    */
   async formatForOfflineVault(
     txInfo: UnformattedTxInfo,
@@ -831,7 +836,9 @@ export class Eth extends BaseCoin {
     userKey: string,
     backupKey: string,
     gasPrice: Buffer,
-    gasLimit: number
+    gasLimit: number,
+    eip1559?: EIP1559,
+    replayProtectionOptions?: ReplayProtectionOptions
   ): Promise<OfflineVaultTxInfo> {
     if (!ethTx.to) {
       throw new Error('Eth tx must have a `to` address');
@@ -851,6 +858,8 @@ export class Eth extends BaseCoin {
       backupKeyNonce: await this.getAddressNonce(
         `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
       ),
+      eip1559,
+      replayProtectionOptions,
     };
     _.extend(response, txInfo);
     response.nextContractSequenceId = response.contractSequenceId;
@@ -1054,7 +1063,16 @@ export class Eth extends BaseCoin {
     let tx = Eth.buildTransaction(txParams);
 
     if (isUnsignedSweep) {
-      return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
+      return this.formatForOfflineVault(
+        txInfo,
+        tx,
+        userKey,
+        backupKey,
+        gasPrice,
+        gasLimit,
+        params.eip1559,
+        params.replayProtectionOptions
+      );
     }
 
     if (!isKrsRecovery) {
