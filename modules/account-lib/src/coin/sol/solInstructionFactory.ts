@@ -18,10 +18,13 @@ import {
   StakingActivate,
   StakingDeactivate,
   StakingWithdraw,
+  TokenTransfer,
   Transfer,
   WalletInit,
 } from './iface';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { coins, SolCoin } from '@bitgo/statics';
+import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { UnsupportedTokenError } from '../baseCoin/errors';
 
 /**
  * Construct Solana instructions from instructions params
@@ -37,6 +40,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return memoInstruction(instructionToBuild);
     case InstructionBuilderTypes.Transfer:
       return transferInstruction(instructionToBuild);
+    case InstructionBuilderTypes.TokenTransfer:
+      return tokenTransferInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateNonceAccount:
       return createNonceAccountInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingActivate:
@@ -108,6 +113,45 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
     toPubkey: new PublicKey(toAddress),
     lamports: new BigNumber(amount).toNumber(),
   });
+  return [transferInstruction];
+}
+
+/**
+ * Construct Transfer Solana instructions
+ *
+ * @param {Transfer} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Transfer Solana instruction
+ */
+function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[] {
+  const {
+    params: { fromAddress, toAddress, amount, mintAddress, sourceAddress },
+  } = data;
+  assert(fromAddress, 'Missing fromAddress (owner) param');
+  assert(toAddress, 'Missing toAddress param');
+  assert(amount, 'Missing amount param');
+  assert(mintAddress, 'Missing mint');
+  assert(sourceAddress, 'Missing ata address');
+  let decimalPlaces;
+  coins.forEach((value, key) => {
+    if (value instanceof SolCoin && value.tokenAddress === mintAddress) {
+      if (value.decimalPlaces) {
+        decimalPlaces = value.decimalPlaces;
+      } else {
+        throw new UnsupportedTokenError('Could not find attributes of token for given mint: ' + mintAddress);
+      }
+      decimalPlaces = value.decimalPlaces;
+    }
+  });
+  const transferInstruction = Token.createTransferCheckedInstruction(
+    TOKEN_PROGRAM_ID,
+    new PublicKey(sourceAddress),
+    new PublicKey(mintAddress),
+    new PublicKey(toAddress),
+    new PublicKey(fromAddress),
+    [],
+    new BigNumber(amount).toNumber(),
+    decimalPlaces,
+  );
   return [transferInstruction];
 }
 

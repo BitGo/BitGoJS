@@ -53,6 +53,32 @@ describe('OFC:', function () {
     gteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
+  it('test crypto coins for ofcavaxc', function () {
+    const validAddress = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
+    const notValidAddress01 = 'x1374a2046661f914d1687d85dbbceb9ac7910a29';
+    const notValidAddress02 = '0x1374a2046661f914d1687d85dbbceb9ac7910a291234';
+    const ofcavaxc = bitgo.coin('ofcavaxc');
+    ofcavaxc.getChain().should.equal('ofcavaxc');
+    ofcavaxc.getFullName().should.equal('Avalanche C-Chain');
+    ofcavaxc.getBaseFactor().should.equal('1000000000000000000');
+    ofcavaxc.isValidAddress(validAddress).should.be.true;
+    ofcavaxc.isValidAddress(notValidAddress01).should.be.false;
+    ofcavaxc.isValidAddress(notValidAddress02).should.be.false;
+  });
+
+  it('test crypto coins for ofctavaxc', function () {
+    const validAddress = '0x1374a2046661f914d1687d85dbbceb9ac7910a29';
+    const notValidAddress01 = 'x1374a2046661f914d1687d85dbbceb9ac7910a29';
+    const notValidAddress02 = '0x1374a2046661f914d1687d85dbbceb9ac7910a291234';
+    const ofctavaxc = bitgo.coin('ofctavaxc');
+    ofctavaxc.getChain().should.equal('ofctavaxc');
+    ofctavaxc.getFullName().should.equal('Test Avalanche C-Chain');
+    ofctavaxc.getBaseFactor().should.equal('1000000000000000000');
+    ofctavaxc.isValidAddress(validAddress).should.be.true;
+    ofctavaxc.isValidAddress(notValidAddress01).should.be.false;
+    ofctavaxc.isValidAddress(notValidAddress02).should.be.false;
+  });
+
   it('can sign payloads', async function () {
     const inputParams = {
       txPrebuild: {

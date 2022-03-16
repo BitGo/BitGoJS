@@ -2,7 +2,7 @@
  * @prettier
  */
 import { AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js';
-const splToken = require('@solana/spl-token');
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 const BigNumber = require('bignumber.js');
 
 /*
@@ -86,7 +86,7 @@ export interface DecodedTransferCheckedInstruction {
  */
 export function decodeTransferCheckedInstruction(
   instruction: TransactionInstruction,
-  programId = splToken.TOKEN_PROGRAM_ID,
+  programId = TOKEN_PROGRAM_ID,
 ): DecodedTransferCheckedInstruction {
   if (!instruction.programId.equals(programId)) throw new TokenInvalidInstructionProgramError();
 

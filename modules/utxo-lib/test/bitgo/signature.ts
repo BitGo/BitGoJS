@@ -27,6 +27,7 @@ import {
   getSignKeyCombinations,
   getUnsignedTransaction2Of3,
 } from '../transaction_util';
+import { getTransactionWithHighS } from './signatureModify';
 
 async function readFixture<T>(
   network: Network,
@@ -243,15 +244,23 @@ function checkSignTransaction(tx: UtxoTransaction, scriptType: ScriptType2Of3, s
   });
 
   tx.ins.forEach((input, i) => {
+    const signatureCount = (res: boolean[]) => res.reduce((sum, b) => sum + (b ? 1 : 0), 0);
+    const pubkeys = fixtureKeys.map((k) => k.publicKey);
+    const verifyResult = verifySignatureWithPublicKeys(tx, i, prevOutputs, pubkeys);
     assert.deepStrictEqual(
-      verifySignatureWithPublicKeys(
-        tx,
-        i,
-        prevOutputs,
-        fixtureKeys.map((k) => k.publicKey)
-      ),
+      verifyResult,
       fixtureKeys.map((k) => signKeys.includes(k))
     );
+    assert.strictEqual(signatureCount(verifyResult), signKeys.length);
+
+    if (signKeys.length > 0) {
+      getTransactionWithHighS(tx, i).forEach((txWithHighS) => {
+        assert.strictEqual(
+          signatureCount(verifySignatureWithPublicKeys(txWithHighS, i, prevOutputs, pubkeys)),
+          signKeys.length - 1
+        );
+      });
+    }
   });
 }
 

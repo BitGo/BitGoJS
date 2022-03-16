@@ -154,6 +154,7 @@ export const coins = CoinMap.fromCoins([
     '0.0.3',
     AccountCoin.DEFAULT_FEATURES
   ),
+  ofc('ofcavaxc', 'Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   ofc('ofceth', 'Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
@@ -175,6 +176,7 @@ export const coins = CoinMap.fromCoins([
   tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
   tofc('ofcgteth', 'Test Goerli Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
+  tofc('ofctavaxc', 'Test Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
   tofc('ofctltc', 'Test Litecoin', 8, UnderlyingAsset.LTC, CoinKind.CRYPTO),
   tofc('ofctdash', 'Test Dash', 8, UnderlyingAsset.DASH, CoinKind.CRYPTO),
   tofc('ofctzec', 'Test ZCash', 8, UnderlyingAsset.ZEC, CoinKind.CRYPTO),

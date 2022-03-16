@@ -1,8 +1,9 @@
 import * as opcodes from 'bitcoin-ops';
 import * as bip32 from 'bip32';
 
+const ecc = require('tiny-secp256k1');
+
 import {
-  ECPair,
   payments,
   script,
   Transaction,
@@ -512,7 +513,18 @@ export function getSignatureVerifications(
         ? transaction.hashForWitnessV0(inputIndex, parsedScript.pubScript, amount, hashType)
         : transaction.hashForSignatureByNetwork(inputIndex, parsedScript.pubScript, amount, hashType);
       const signedBy = publicKeys.filter((publicKey) =>
-        ECPair.fromPublicKey(publicKey).verify(transactionHash, signature)
+        ecc.verify(
+          transactionHash,
+          publicKey,
+          signature,
+          /*
+            Strict verification (require lower-S value), as required by BIP-0146
+            https://github.com/bitcoin/bips/blob/master/bip-0146.mediawiki
+            https://github.com/bitcoin-core/secp256k1/blob/ac83be33/include/secp256k1.h#L478-L508
+            https://github.com/bitcoinjs/tiny-secp256k1/blob/v1.1.6/js.js#L231-L233
+          */
+          true
+        )
       );
 
       if (signedBy.length === 0) {

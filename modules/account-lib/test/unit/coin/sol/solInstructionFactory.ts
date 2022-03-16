@@ -4,8 +4,8 @@ import { solInstructionFactory } from '../../../../src/coin/sol/solInstructionFa
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
 import { InstructionParams } from '../../../../src/coin/sol/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 describe('Instruction Builder Tests: ', function () {
   describe('Succeed ', function () {
@@ -103,6 +103,39 @@ describe('Instruction Builder Tests: ', function () {
           new PublicKey(ataAddress),
           new PublicKey(ownerAddress),
           new PublicKey(payerAddress),
+        ),
+      ]);
+    });
+
+    it('Token Transfer', () => {
+      const fromAddress = testData.authAccount.pub;
+      const toAddress = testData.nonceAccount.pub;
+      const amount = '100000';
+      const mintAddress = testData.associatedTokenAccounts.mintId;
+      const sourceAddress = testData.associatedTokenAccounts.accounts[0].pub;
+
+      const transferParams: InstructionParams = {
+        type: InstructionBuilderTypes.TokenTransfer,
+        params: {
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          amount: amount,
+          mintAddress: mintAddress,
+          sourceAddress: sourceAddress,
+        },
+      };
+
+      const result = solInstructionFactory(transferParams);
+      should.deepEqual(result, [
+        Token.createTransferCheckedInstruction(
+          TOKEN_PROGRAM_ID,
+          new PublicKey(sourceAddress),
+          new PublicKey(mintAddress),
+          new PublicKey(toAddress),
+          new PublicKey(fromAddress),
+          [],
+          new BigNumber(amount).toNumber(),
+          6,
         ),
       ]);
     });

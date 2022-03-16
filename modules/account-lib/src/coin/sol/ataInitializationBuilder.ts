@@ -7,7 +7,7 @@ import { InstructionBuilderTypes } from './constants';
 import { PublicKey } from '@solana/web3.js';
 import { isValidAmount, isValidPublicKey } from './utils';
 import { BuildTransactionError } from '../baseCoin/errors';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import assert from 'assert';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 

@@ -88,3 +88,12 @@ export class InvalidKey extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for invalid mint/token
+ */
+export class UnsupportedTokenError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}

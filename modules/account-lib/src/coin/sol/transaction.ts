@@ -15,11 +15,12 @@ import {
   WalletInit,
 } from './iface';
 import base58 from 'bs58';
-import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import { getSolTokenFromAddress, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
 import { Entry, TransactionRecipient } from '../baseCoin/iface';
+import assert from 'assert';
 
 const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export class Transaction extends BaseTransaction {
@@ -148,7 +149,6 @@ export class Transaction extends BaseTransaction {
     try {
       isValidRawTransaction(rawTransaction);
       this._solTransaction = SolTransaction.from(Buffer.from(rawTransaction, 'base64'));
-
       if (this._solTransaction.signature && this._solTransaction.signature !== null) {
         this._id = base58.encode(this._solTransaction.signature);
       }
@@ -250,6 +250,20 @@ export class Transaction extends BaseTransaction {
             address: instruction.params.toAddress,
             value: instruction.params.amount,
             coin: this._coinConfig.name,
+          });
+          break;
+        case InstructionBuilderTypes.TokenTransfer:
+          const coin = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
+          assert(coin);
+          inputs.push({
+            address: instruction.params.fromAddress,
+            value: instruction.params.amount,
+            coin: coin.name,
+          });
+          outputs.push({
+            address: instruction.params.toAddress,
+            value: instruction.params.amount,
+            coin: coin.name,
           });
           break;
         case InstructionBuilderTypes.StakingActivate:
