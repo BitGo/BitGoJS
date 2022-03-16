@@ -1599,7 +1599,7 @@ describe('V2 Wallet:', function () {
 
       it('should build an enable token transaction', async function () {
         const recipients = [];
-        const token = 'tokenName';
+        const tokenName = 'tcoin:tokenName';
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
         prebuildTxWithIntent.calledOnceWithExactly({
@@ -1610,7 +1610,7 @@ describe('V2 Wallet:', function () {
             type: 'type',
             value: 'test memo',
           },
-          token,
+          tokenName,
         });
 
         const txPrebuild = await tssWallet.prebuildTransaction({
@@ -1621,7 +1621,7 @@ describe('V2 Wallet:', function () {
             type: 'type',
             value: 'test memo',
           },
-          token,
+          tokenName,
         });
 
         txPrebuild.should.deepEqual({
@@ -1636,7 +1636,7 @@ describe('V2 Wallet:', function () {
               value: 'test memo',
             },
             type: 'enabletoken',
-            token,
+            tokenName,
           },
           feeInfo: {
             fee: 5000,
