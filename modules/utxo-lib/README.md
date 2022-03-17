@@ -12,7 +12,12 @@ This library is a wrapper around [bitcoinjs-lib](https://github.com/bitcoinjs/bi
 # using npm
 npm install @bitgo/utxo-lib
 
+<<<<<<< HEAD
 # using yarn
+=======
+# or 
+
+>>>>>>> 64f95cf92 (docs: Add examples to documentation)
 yarn add @bitgo/utxo-lib
 ```
 
