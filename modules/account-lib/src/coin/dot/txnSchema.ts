@@ -107,3 +107,8 @@ export const UnstakeTransactionSchema = joi.object({
 export const WithdrawUnstakedTransactionSchema = joi.object({
   value: joi.number().required(),
 });
+
+export const ClaimTransactionSchema = joi.object({
+  claimEra: joi.string().required(),
+  validatorStash: addressSchema.required(),
+});
