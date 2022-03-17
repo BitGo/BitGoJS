@@ -134,6 +134,20 @@ export class Base58ContractAddressDefinedToken extends AccountCoinToken {
 export class Erc20Coin extends ContractAddressDefinedToken {}
 
 /**
+ * ERC 721 is the non fungible token standard for the Ethereum blockchain.
+ *
+ * {@link https://eips.ethereum.org/EIPS/eip-721 EIP721}
+ */
+export class Erc721Coin extends ContractAddressDefinedToken {}
+
+/**
+ * ERC 1155 is the multi token standard for the Ethereum blockchain.
+ *
+ * {@link https://eips.ethereum.org/EIPS/eip-1155 EIP1155}
+ */
+export class Erc1155Coin extends ContractAddressDefinedToken {}
+
+/**
  * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
  */
 export class TronErc20Coin extends Base58ContractAddressDefinedToken {}
@@ -407,6 +421,136 @@ export function terc20(
   network: EthereumNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for erc721 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Ethereum main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc721(
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Erc721Coin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: 0,
+      asset: UnderlyingAsset.ERC721,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet erc721 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Goerli test network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function terc721(
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.test.goerli,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return erc721(name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
+}
+
+/**
+ * Factory function for erc1155 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Ethereum main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc1155(
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Erc1155Coin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: 0,
+      asset: UnderlyingAsset.ERC1155,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet erc1155 token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Goerli test network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function terc1155(
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: EthereumNetwork = Networks.test.goerli,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return erc1155(name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
 }
 
 /**
