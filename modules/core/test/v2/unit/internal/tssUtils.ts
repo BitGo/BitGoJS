@@ -699,7 +699,7 @@ describe('TSS Utils:', async function () {
 
   async function nockSendSignatureShare(params: { walletId: string, txRequestId: string, signatureShare: any}, status = 200): Promise<nock.Scope> {
     return nock('https://bitgo.fakeurl')
-      .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, params.signatureShare )
+      .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId}/signatureshares`, { signatureShare: params.signatureShare } )
       .reply(status, (status === 200 ? params.signatureShare : { error: 'some error' }));
   }
 

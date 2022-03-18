@@ -34,7 +34,7 @@ interface PrebuildTransactionWithIntentOptions {
   }[];
   comment?: string;
   memo?: Memo;
-  token?: string;
+  tokenName?: string;
 }
 
 enum ShareKeyPosition {
@@ -362,7 +362,7 @@ export class TssUtils extends MpcUtils {
         comment: params.comment,
         recipients: intentRecipients,
         memo: params.memo?.value,
-        token: params.token,
+        token: params.tokenName,
       },
     };
 
@@ -396,12 +396,21 @@ export class TssUtils extends MpcUtils {
    *
    * @param {String} txRequestId - the txRequest Id
    * @param {SignatureShareRecord} signatureShare - a Signature Share
+   * @returns {string} path - a bip32 path, required when signing for a derived address.
+   * When the path is not provided, signing will happen with the root wallet address.
    * @returns {Promise<SignatureShareRecord>} - a Signature Share
    */
-  async sendSignatureShare(txRequestId: string, signatureShare: SignatureShareRecord): Promise<SignatureShareRecord> {
+  async sendSignatureShare(
+    txRequestId: string,
+    signatureShare: SignatureShareRecord,
+    path?: string
+  ): Promise<SignatureShareRecord> {
     return this.bitgo
       .post(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests/' + txRequestId + '/signatureshares', 2))
-      .send(signatureShare)
+      .send({
+        signatureShare,
+        path,
+      })
       .result();
   }
 
