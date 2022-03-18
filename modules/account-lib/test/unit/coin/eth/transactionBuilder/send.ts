@@ -101,8 +101,8 @@ describe('Eth transaction builder send', () => {
       txBuilder.counter(2);
       txBuilder.type(TransactionType.Send);
       txBuilder.contract(contractAddress);
-      txBuilder
-        .transfer()
+      const transferBuilder = txBuilder.transfer() as Eth.TransferBuilder;
+      transferBuilder
         .amount('0')
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
         .expirationTime(1590066728)

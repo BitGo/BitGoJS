@@ -88,7 +88,11 @@ export class Transaction extends BaseTransaction {
     }
 
     // only send transactions have inputs / outputs / signatures to parse
-    if (this._type === TransactionType.Send) {
+    if (
+      this._type === TransactionType.Send ||
+      this._type === TransactionType.SendERC721 ||
+      this._type === TransactionType.SendERC1155
+    ) {
       const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data);
       let coinName: string;
       if (tokenContractAddress) {

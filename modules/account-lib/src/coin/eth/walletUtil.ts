@@ -5,6 +5,10 @@ export const walletInitializationFirstBytes = '0x60606040';
 export const flushForwarderTokensMethodId = '0x2da03409';
 export const flushCoinsMethodId = '0x6b9f96ea';
 
+export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
+export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
+export const ERC1155BatchTransferTypeMethodId = '0x2eb2c2d6';
+
 /*
   Steps to reproduce:
   Checkout https://github.com/bitgo/eth-multisig-v2
@@ -19,143 +23,11 @@ export const walletSimpleConstructor = ['address[]'];
 export const flushTokensTypes = ['address', 'address'];
 export const flushCoinsTypes = [];
 
-export const walletSimpleAbi = [
-  {
-    constant: false,
-    inputs: [
-      { name: 'toAddress', type: 'address' },
-      { name: 'value', type: 'uint256' },
-      { name: 'tokenContractAddress', type: 'address' },
-      { name: 'expireTime', type: 'uint256' },
-      { name: 'sequenceId', type: 'uint256' },
-      { name: 'signature', type: 'bytes' },
-    ],
-    name: 'sendMultiSigToken',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [{ name: '', type: 'uint256' }],
-    name: 'signers',
-    outputs: [{ name: '', type: 'address' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      { name: 'forwarderAddress', type: 'address' },
-      { name: 'tokenContractAddress', type: 'address' },
-    ],
-    name: 'flushForwarderTokens',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      { name: 'toAddress', type: 'address' },
-      { name: 'value', type: 'uint256' },
-      { name: 'data', type: 'bytes' },
-      { name: 'expireTime', type: 'uint256' },
-      { name: 'sequenceId', type: 'uint256' },
-      { name: 'signature', type: 'bytes' },
-    ],
-    name: 'sendMultiSig',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [{ name: 'signer', type: 'address' }],
-    name: 'isSigner',
-    outputs: [{ name: '', type: 'bool' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getNextSequenceId',
-    outputs: [{ name: '', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [],
-    name: 'createForwarder',
-    outputs: [{ name: '', type: 'address' }],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'safeMode',
-    outputs: [{ name: '', type: 'bool' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [],
-    name: 'activateSafeMode',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'allowedSigners', type: 'address[]' }],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
-  { payable: true, stateMutability: 'payable', type: 'fallback' },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: false, name: 'from', type: 'address' },
-      { indexed: false, name: 'value', type: 'uint256' },
-      { indexed: false, name: 'data', type: 'bytes' },
-    ],
-    name: 'Deposited',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [{ indexed: false, name: 'msgSender', type: 'address' }],
-    name: 'SafeModeActivated',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: false, name: 'msgSender', type: 'address' },
-      { indexed: false, name: 'otherSigner', type: 'address' },
-      { indexed: false, name: 'operation', type: 'bytes32' },
-      { indexed: false, name: 'toAddress', type: 'address' },
-      { indexed: false, name: 'value', type: 'uint256' },
-      { indexed: false, name: 'data', type: 'bytes' },
-    ],
-    name: 'Transacted',
-    type: 'event',
-  },
-];
-
 export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
 
 export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];
+
+export const ERC721SafeTransferTypes = ['address', 'address', 'uint256', 'bytes'];
+
+export const ERC1155SafeTransferTypes = ['address', 'address', 'uint256', 'uint256', 'bytes'];
+export const ERC1155BatchTransferTypes = ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'];
