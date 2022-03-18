@@ -35,6 +35,8 @@ export enum TransactionType {
   StakingDeactivate,
   // Batch of multiple transactions broadcast as a single transaction
   Batch,
+  // Claim the staking rewards
+  StakingClaim,
 }
 
 /**

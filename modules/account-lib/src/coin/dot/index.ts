@@ -11,6 +11,7 @@ export { BatchTransactionBuilder } from './batchTransactionBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
 export { UnnominateBuilder } from './unnominateBuilder';
 export { WithdrawUnstakedBuilder } from './withdrawUnstakedBuilder';
+export { ClaimBuilder } from './claimBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { SingletonRegistry } from './singletonRegistry';
 export { Interface, Utils };
