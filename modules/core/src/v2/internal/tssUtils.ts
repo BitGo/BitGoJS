@@ -34,7 +34,7 @@ interface PrebuildTransactionWithIntentOptions {
   }[];
   comment?: string;
   memo?: Memo;
-  token?: string;
+  tokenName?: string;
 }
 
 enum ShareKeyPosition {
@@ -362,7 +362,7 @@ export class TssUtils extends MpcUtils {
         comment: params.comment,
         recipients: intentRecipients,
         memo: params.memo?.value,
-        token: params.token,
+        token: params.tokenName,
       },
     };
 

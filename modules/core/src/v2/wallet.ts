@@ -112,7 +112,7 @@ export interface PrebuildTransactionOptions {
   idfVersion?: number;
   comment?: string;
   [index: string]: unknown;
-  token?: string;
+  tokenName?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -604,7 +604,7 @@ export class Wallet {
       'eip1559',
       'keyregTxBase64',
       'closeRemainderTo',
-      'token',
+      'tokenName',
     ];
   }
 
@@ -2733,7 +2733,7 @@ export class Wallet {
           reqId,
           intentType: 'createAccount',
           recipients: params.recipients || [],
-          token: params.token,
+          tokenName: params.tokenName,
           memo: params.memo,
         });
         break;
