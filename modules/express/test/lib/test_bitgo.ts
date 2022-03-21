@@ -7,7 +7,7 @@
 /// <reference types="node" />
 
 /**
- * Copied from the test_bitgo.ts in the core module.
+ * Copied from the test_bitgo.ts in the bitgo module.
  *
  * TODO: extract into shared test-common module and remove duplication
  */

@@ -6,10 +6,10 @@ You will need node and npm installed locally. You can find information on how to
 
 ## Running the examples
 
-First, run `npm install` in the `modules/core` directory.
+First, run `npm install` in the `modules/bitgo` directory.
 
 ```
-$ cd modules/core && npm install 
+$ cd modules/bitgo && npm install 
 ```
 
 Then change into the `example/ts` directory and use `npx ts-node` to run the  desired example:
