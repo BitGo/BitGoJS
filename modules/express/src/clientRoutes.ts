@@ -860,7 +860,7 @@ function promiseWrapper(promiseRequestHandler: RequestHandler) {
     try {
       const result = await promiseRequestHandler(req, res, next);
       res.status(200).send(result);
-    } catch (e: unknown) {
+    } catch (e) {
       handleRequestHandlerError(res, e);
     }
   };
