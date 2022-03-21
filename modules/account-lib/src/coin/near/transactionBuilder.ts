@@ -10,7 +10,6 @@ import utils from './utils';
 import assert from 'assert';
 import { KeyPair } from './keyPair';
 import * as hex from '@stablelib/hex';
-
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
 
@@ -19,10 +18,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _receiverId: string;
   private _nonce: number;
   private _recentBlockHash: string;
-  private _actions: nearAPI.transactions.Action[];
   private _signer: KeyPair;
-
   private _signatures: Interface.Signature[] = []; // only support single sig for now
+  protected _actions: nearAPI.transactions.Action[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -209,7 +207,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._actions = value;
     return this;
   }
-
   /**
    * Builds the NEAR transaction.
    *

@@ -19,9 +19,21 @@ export interface Transfer {
   deposit: BN;
 }
 
+/** Interface with parameters needed to perform  FunctionCall to a contract */
+export interface FunctionCall {
+  methodName: string;
+  args: Record<string, unknown>;
+  gas: string;
+  deposit: string;
+}
+
+/**
+ * Actions implemented on Near account-lib
+ * add here as more are implemented.
+ */
 export interface Action {
-  // TODO: add actions when they are implemented
-  transfer: Transfer;
+  transfer?: Transfer;
+  functionCall?: FunctionCall;
 }
 
 export interface TxData {
