@@ -1,5 +1,5 @@
 /**
- * Add a new webhook for a coin type for a user defined notification url
+ * Add a new block webhook when a new block is seen on the network or when a wallet is initialized of a given user defined coin.
  * 
  * Copyright 2019, BitGo, Inc.  All Rights Reserved.
  */
