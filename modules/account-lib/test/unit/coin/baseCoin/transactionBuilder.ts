@@ -137,9 +137,10 @@ describe('Transaction builder', () => {
     params = {
       unit: 'timestamp',
     };
+    const dateNow = Date.now();
     validityWindow = txBuilder.getValidityWindow(params);
     validityWindow.should.have.properties(['firstValid', 'lastValid', 'minDuration', 'maxDuration', 'unit']);
-    validityWindow.firstValid.should.be.greaterThanOrEqual(Date.now());
+    validityWindow.firstValid.should.be.greaterThanOrEqual(dateNow);
     validityWindow.lastValid.should.be.equal(validityWindow.firstValid + 31536000000);
     validityWindow.minDuration.should.be.equal(0);
     validityWindow.maxDuration.should.be.equal(31536000000);
