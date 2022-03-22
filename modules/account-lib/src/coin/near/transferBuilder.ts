@@ -23,13 +23,13 @@ export class TransferBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    this._amount = NearAPI.utils.format.formatNearAmount(tx.nearTransaction.actions[0].transfer.deposit.toString());
+    this._amount = tx.nearTransaction.actions[0].transfer.deposit.toString();
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._amount, new BuildTransactionError('amount is required before building transfer'));
-    super.actions([NearAPI.transactions.transfer(new BN(NearAPI.utils.format.parseNearAmount(this._amount!)!, 10))]);
+    super.actions([NearAPI.transactions.transfer(new BN(this._amount))]);
     const tx = await super.buildImplementation();
     tx.setTransactionType(TransactionType.Send);
     return tx;
@@ -45,7 +45,7 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Sets the amount of this transaction.
    *
-   * @param {string} value the amount of this transaction
+   * @param {string} value the amount to be sent in yocto (1 Near = 1e24 yoctos)
    * @returns {TransactionBuilder} This transaction builder
    */
   public amount(value: string): this {

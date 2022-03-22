@@ -146,9 +146,7 @@ export class Transaction extends BaseTransaction {
     const inputs: Entry[] = [];
     switch (this.type) {
       case TransactionType.Send:
-        const amount = nearAPI.utils.format.formatNearAmount(
-          this._nearTransaction.actions[0].transfer.deposit.toString(),
-        );
+        const amount = this._nearTransaction.actions[0].transfer.deposit.toString();
 
         inputs.push({
           address: this._nearTransaction.signerId,
@@ -226,7 +224,7 @@ export class Transaction extends BaseTransaction {
    * is added and will set the signTransaction which is the txHex that will be broadcasted
    * As well as add the signature used to sign to the signature array in hex format
    *
-   * @param {Buffer} signature The signature to be added to a dot transaction
+   * @param {Buffer} signature The signature to be added to a near transaction
    */
   constructSignedPayload(signature: Buffer): void {
     this._nearSignedTransaction = new nearAPI.transactions.SignedTransaction({

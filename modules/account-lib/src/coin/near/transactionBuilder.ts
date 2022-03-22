@@ -5,7 +5,7 @@ import { BuildTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey, PublicKey as BasePublicKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import * as nearAPI from 'near-api-js';
-import { AddressValidationError } from '../dot/errors';
+import { AddressValidationError } from './errors';
 import utils from './utils';
 import assert from 'assert';
 import { KeyPair } from './keyPair';
