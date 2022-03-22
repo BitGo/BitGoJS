@@ -190,10 +190,10 @@ class Polkadot extends Mainnet implements DotNetwork {
   explorerUrl = 'https://polkadot.subscan.io/extrinsic/';
   specName = 'polkadot' as PolkadotSpecNameType;
   genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  specVersion = 9140;
+  specVersion = 9180;
   chainName = 'Polkadot';
   metadataRpc = mainnetMetadataRpc as `0x${string}`;
-  txVersion = 9;
+  txVersion = 11;
 }
 
 class PolkadotTestnet extends Testnet implements DotNetwork {
