@@ -1,10 +1,11 @@
 import { EnvironmentName, V1Network } from 'bitgo';
 import { isNil, isNumber } from 'lodash';
+import 'dotenv/config';
 
 import { args } from './args';
 
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
-  if (process.env[name] !== undefined) {
+  if (process.env[name] !== undefined && process.env[name] !== '') {
     return process.env[name];
   }
 
@@ -96,6 +97,19 @@ export const DefaultConfig: Config = {
 };
 
 /**
+ * Force https:// prefix unless ssl is disabled
+ * @param url
+ * @return {string}
+ */
+function forceSecureUrl(url: string): string {
+  const regex = new RegExp(/(^\w+:|^)\/\//);
+  if (regex.test(url)) {
+    return url.replace(/(^\w+:|^)\/\//, 'https://');
+  }
+  return `https://${url}`;
+}
+
+/**
  * Helper function to merge config sources into a single config object.
  *
  * Later configs have higher precedence over earlier configs.
@@ -104,7 +118,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
   function isNilOrNaN(val: unknown): val is null | undefined | number {
     return isNil(val) || (isNumber(val) && isNaN(val));
   }
-
+  
   // helper to get the last defined value for a given config key
   // from each of the config sources in a type safe manner.
   function get<T extends keyof Config>(k: T): Config[T] {
@@ -112,6 +126,19 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
       (entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry,
       DefaultConfig[k],
     );
+  }
+
+  const disableSSL = get('disableSSL');
+  let customRootUri = get('customRootUri');
+  let externalSignerUrl = get('externalSignerUrl');
+
+  if (disableSSL) {
+    if (customRootUri) {
+      customRootUri = forceSecureUrl(customRootUri);
+    }
+    if (externalSignerUrl) {
+      externalSignerUrl = forceSecureUrl(externalSignerUrl);
+    }
   }
 
   return {
@@ -123,14 +150,14 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     keyPath: get('keyPath'),
     crtPath: get('crtPath'),
     logFile: get('logFile'),
-    disableSSL: get('disableSSL'),
+    disableSSL,
     disableProxy: get('disableProxy'),
     disableEnvCheck: get('disableEnvCheck'),
     timeout: get('timeout'),
-    customRootUri: get('customRootUri'),
+    customRootUri,
     customBitcoinNetwork: get('customBitcoinNetwork'),
     authVersion: get('authVersion'),
-    externalSignerUrl: get('externalSignerUrl'),
+    externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
   };
