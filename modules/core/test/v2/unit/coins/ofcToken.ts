@@ -79,6 +79,46 @@ describe('OFC:', function () {
     ofctavaxc.isValidAddress(notValidAddress02).should.be.false;
   });
 
+  describe('check ofc tokens for Casper network', function () {
+    describe('for main network', function () {
+      const coin = 'ofccspr';
+      it(`should have the correct values for ${coin}`, function () {
+        const ofcCoin = bitgo.coin(coin);
+        ofcCoin.getChain().should.equal(coin);
+        ofcCoin.getFullName().should.equal('Casper');
+        ofcCoin.getBaseFactor().should.equal('1000000000');
+      });
+    });
+    describe('for test network', function () {
+      const coin = 'ofctcspr';
+      it(`should have the correct values for ${coin}`, function () {
+        const ofcCoin = bitgo.coin(coin);
+        ofcCoin.getChain().should.equal(coin);
+        ofcCoin.getFullName().should.equal('Test Casper');
+        ofcCoin.getBaseFactor().should.equal('1000000000');
+      });
+    });
+    describe('- validate addresses - ', () => {
+      const validAddressRootAccount = 'd632e4ed12fd838e361bcd1982da9a43b903631be38b3ed698559603c2e9faf6';
+      const validAddressAccount1 = 'b256507dd71d76c69c0f889190dc4a4b7513c273eb80e4b8bf08ee79f8358149';
+      const validAddressAccount2 = '5950aa8f6f73122be17770a1b7c6f10f047c892ab980ed55c9c7eda8d928633d';
+      const validAddressAccount3 = '1dffe6461886c677428855b80e47ae8fa6c9efce8f6a74529eb3ded680cdd9ec';
+      const validAddressAccount4 = '468f5e33c352efaaa0329a1972a632e1c3e430d4e4a8ab73c2d67c4bacb3fb65';
+      const notValidAddress01 = 'b256507dd71d76c69c0f889190dc4a4b7513c273eb80e4b8bf08ee79f8358149111';
+      for (const coin of ['ofccspr', 'ofctcspr']) {
+        it(`should ${coin} be configured with right addresses`, function () {
+          const ofcCoin = bitgo.coin(coin);
+          ofcCoin.isValidAddress(validAddressRootAccount).should.be.true;
+          ofcCoin.isValidAddress(validAddressAccount1).should.be.true;
+          ofcCoin.isValidAddress(validAddressAccount2).should.be.true;
+          ofcCoin.isValidAddress(validAddressAccount3).should.be.true;
+          ofcCoin.isValidAddress(validAddressAccount4).should.be.true;
+          ofcCoin.isValidAddress(notValidAddress01).should.be.false;
+        });
+      }
+    });
+  });
+
   it('can sign payloads', async function () {
     const inputParams = {
       txPrebuild: {
