@@ -201,7 +201,7 @@ describe('Sol Transaction Builder', async () => {
           fromAddress: testData.associatedTokenAccounts.accounts[0].pub,
           toAddress: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
           amount: testData.tokenTransfers.amount.toString(),
-          mintAddress: testData.tokenTransfers.mintORCA.toString(),
+          tokenName: testData.tokenTransfers.nameORCA.toString(),
           sourceAddress: '2SN4FRheJhoFKae16QQEvh4RnbraUa5Wm5i2fEQ5A84o',
         },
       },

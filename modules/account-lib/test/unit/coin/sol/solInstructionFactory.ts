@@ -111,8 +111,9 @@ describe('Instruction Builder Tests: ', function () {
       const fromAddress = testData.authAccount.pub;
       const toAddress = testData.nonceAccount.pub;
       const amount = '100000';
-      const mintAddress = testData.associatedTokenAccounts.mintId;
+      const mintAddress = testData.tokenTransfers.mintORCA;
       const sourceAddress = testData.associatedTokenAccounts.accounts[0].pub;
+      const coinName = testData.tokenTransfers.nameORCA;
 
       const transferParams: InstructionParams = {
         type: InstructionBuilderTypes.TokenTransfer,
@@ -120,7 +121,7 @@ describe('Instruction Builder Tests: ', function () {
           fromAddress: fromAddress,
           toAddress: toAddress,
           amount: amount,
-          mintAddress: mintAddress,
+          tokenName: coinName,
           sourceAddress: sourceAddress,
         },
       };
