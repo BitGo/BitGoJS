@@ -157,6 +157,7 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   ofc('ofcavaxc', 'Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
+  ofc('ofccspr', 'Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   ofc('ofceth', 'Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
@@ -174,6 +175,7 @@ export const coins = CoinMap.fromCoins([
   ofc('ofcetc', 'Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
   ofc('ofchbar', 'Mainnet Hedera HBAR', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
+  tofc('ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   tofc('ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
