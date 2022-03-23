@@ -13,7 +13,7 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 
 | Package Name        | Module         | Description                                                                                                                       |                                                                           |
 |---------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| bitgo               | `core`         | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/core)         |
+| bitgo               | `bitgo`         | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo)         |
 | @bitgo/account-lib  | `account-lib`  | Build and sign transactions for account-based coins.                                                                              | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/account-lib)  |
 | @bitgo/blake2b      | `blake2b`      | Blake2b (64-bit version) in pure JavaScript.                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b)      |
 | @bitgo/blake2b-wasm | `blake2b-wasm` | Blake2b implemented in WASM.                                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b-wasm) |
@@ -29,16 +29,16 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 
 Each module provides release notes in `modules/*/RELEASE_NOTES.md`.
 
-The release notes for the `core` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/core/RELEASE_NOTES.md).
+The release notes for the `bitgo` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/RELEASE_NOTES.md).
 
 # Examples
 
-Examples can be found in each of the modules specific to the module use cases. Starter examples can be found [here](https://github.com/BitGo/BitGoJS/tree/master/modules/core/example).
+Examples can be found in each of the modules specific to the module use cases. Starter examples can be found [here](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo/example).
 
 # NodeJS Version Support Policy
 
 We only support [Long-Term Support](https://github.com/nodejs/Release) versions of Node, with the current set of
-supported versions described in the [`engines` property of the `core` module package.json](https://github.com/BitGo/BitGoJS/blob/master/modules/core/package.json#L18).
+supported versions described in the [`engines` property of the `bitgo` module package.json](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/package.json#L18).
 
 We specifically limit our support to LTS versions of Node, not because this package won't work on other versions, but
 because LTS versions tend to be the most widely used in practice. It's possible the packages in this repository will

@@ -333,8 +333,8 @@ __No changes__
 * Allow `gasLimit` param to be sent when prebuilding Ethereum transactions
 
 ### Bug Fixes
-* Fix type custom type inclusion in core module
-* Move superagent type augmentation into `core/types`
+* Fix type custom type inclusion in bitgo module
+* Move superagent type augmentation into `bitgo/types`
 
 ## 8.1.1 (09-11-2019)
 
@@ -530,11 +530,11 @@ This breaking change was required since some of the coins we are considering add
 * Extract example keycard rendering logic out of `Wallet`
 
 ## 6.0.0
-The BitGoJS SDK is being modularized! The code base has been split into two modules: `core` and `express`.
+The BitGoJS SDK is being modularized! The code base has been split into two modules: `bitgo` and `express`.
 
-`core` contains the Javascript library that you get when you `require('bitgo')`.
+`bitgo` contains the Javascript library that you get when you `require('bitgo')`.
 
-`express` contains the source for the BitGo Express local signing server, and it uses the `core` module to provide access to BitGoJS functionality over a REST interface.
+`express` contains the source for the BitGo Express local signing server, and it uses the `bitgo` module to provide access to BitGoJS functionality over a REST interface.
 
 The long term plan is to modularize based on each underlying coin library, so users of `bitgo` won't need to bring in many large dependencies for coins they aren't using. This may require additional major versions if breaking changes are required, but we will do as much as possible to maintain the current API of the BitGoJS SDK.
 

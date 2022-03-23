@@ -8,7 +8,7 @@ comment:
 flags:
   bitgo:
     paths:
-      - modules/core
+      - modules/bitgo
   account-lib:
     paths:
       - modules/account-lib
