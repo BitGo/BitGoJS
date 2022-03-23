@@ -119,6 +119,42 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for Stacks network', function () {
+    const coinMain = 'ofcstx';
+    const coinTest = 'ofctstx';
+    describe('for main network', function () {
+      it(`should have the correct values for ${coinMain}`, function () {
+        const ofcCoin = bitgo.coin(coinMain);
+        ofcCoin.getChain().should.equal(coinMain);
+        ofcCoin.getFullName().should.equal('Stacks');
+        ofcCoin.getBaseFactor().should.equal('1000000');
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${coinTest}`, function () {
+        const ofcCoin = bitgo.coin(coinTest);
+        ofcCoin.getChain().should.equal(coinTest);
+        ofcCoin.getFullName().should.equal('Test Stacks');
+        ofcCoin.getBaseFactor().should.equal('1000000');
+      });
+    });
+    describe('- validate addresses - ', () => {
+      const validAddressAccount1 = 'SP10FDHQQ4F2F0KHMN6Z24RMAMGX5933SQJCWKAAR';
+      const validAddressAccount2 = 'SPS4HSXAD1WSD3943WZ52MPSY9WPK56SDG54HTAR';
+      const notValidAddress01 = 'SPS4HSXAD1WSD3943WZ52MPSY9WPK56SDG54HTARXXX';
+      const notValidAddress02 = 'SPS4HSXAD1WSD3943WZ52MPSY9WPK56SDG54H';
+      for (const coin of [coinMain, coinTest]) {
+        it(`should ${coin} be configured with right addresses`, function () {
+          const ofcCoin = bitgo.coin(coin);
+          ofcCoin.isValidAddress(validAddressAccount1).should.be.true;
+          ofcCoin.isValidAddress(validAddressAccount2).should.be.true;
+          ofcCoin.isValidAddress(notValidAddress01).should.be.false;
+          ofcCoin.isValidAddress(notValidAddress02).should.be.false;
+        });
+      }
+    });
+  });
+
   it('can sign payloads', async function () {
     const inputParams = {
       txPrebuild: {
