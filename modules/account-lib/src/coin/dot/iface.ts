@@ -18,6 +18,7 @@ export enum MethodNames {
   Batch = 'batch',
   Chill = 'chill',
   WithdrawUnbonded = 'withdrawUnbonded',
+  PayoutStakers = 'payoutStakers',
 }
 
 /**
@@ -48,6 +49,8 @@ export interface TxData {
   index?: string;
   batchCalls?: BatchCallObject[];
   numSlashingSpans?: number;
+  validatorStash?: string;
+  claimEra?: string;
 }
 
 /**
@@ -89,6 +92,11 @@ export interface UnstakeArgs {
 
 export interface WithdrawUnstakedArgs {
   numSlashingSpans: number;
+}
+
+export interface ClaimArgs {
+  validatorStash: string;
+  era: string;
 }
 
 /**
@@ -160,7 +168,8 @@ export interface TxMethod {
     | UnstakeArgs
     | AddAnonymousProxyArgs
     | BatchArgs
-    | WithdrawUnstakedArgs;
+    | WithdrawUnstakedArgs
+    | ClaimArgs;
   name: MethodNames;
   pallet: string;
 }

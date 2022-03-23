@@ -20,7 +20,7 @@ describe('Sol Token Transfer Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const amount = testData.tokenTransfers.amount.toString();
   const memo = testData.tokenTransfers.memo;
-  const mintORCA = testData.tokenTransfers.mintORCA;
+  const nameORCA = testData.tokenTransfers.nameORCA;
   const ownerORCA = testData.tokenTransfers.ownerORCA;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
@@ -30,7 +30,7 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
@@ -54,7 +54,7 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -82,7 +82,7 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
@@ -106,7 +106,7 @@ describe('Sol Token Transfer Builder', () => {
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -132,7 +132,7 @@ describe('Sol Token Transfer Builder', () => {
         authWalletAddress: walletPK,
       });
       txBuilder.sender(walletPK);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
       txBuilder.memo(memo);
       txBuilder.sign({ key: walletSK });
       const tx = await txBuilder.build();
@@ -160,16 +160,16 @@ describe('Sol Token Transfer Builder', () => {
       const account3 = new KeyPair({ prv: testData.extraAccounts.prv3 }).getKeys();
       const account4 = new KeyPair({ prv: testData.extraAccounts.prv4 }).getKeys();
       const account5 = new KeyPair({ prv: testData.extraAccounts.prv5 }).getKeys();
-
       const txBuilder = factory.getTokenTransferBuilder();
+
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
       txBuilder.sender(ownerORCA);
-      txBuilder.send({ address: otherAccount.pub, amount, mintAddress: mintORCA });
-      txBuilder.send({ address: account1.pub, amount, mintAddress: mintORCA });
-      txBuilder.send({ address: account2.pub, amount, mintAddress: mintORCA });
-      txBuilder.send({ address: account3.pub, amount, mintAddress: mintORCA });
-      txBuilder.send({ address: account4.pub, amount, mintAddress: mintORCA });
-      txBuilder.send({ address: account5.pub, amount, mintAddress: mintORCA });
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account1.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account2.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account3.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account4.pub, amount, tokenName: nameORCA });
+      txBuilder.send({ address: account5.pub, amount, tokenName: nameORCA });
       txBuilder.memo(memo);
       txBuilder.sign({ key: authAccount.prv });
       const tx = await txBuilder.build();
@@ -248,7 +248,7 @@ describe('Sol Token Transfer Builder', () => {
 
     it('for invalid toAddress', () => {
       const txBuilder = tokenTransferBuilder();
-      should(() => txBuilder.send({ address: invalidPubKey, amount, mintAddress: mintORCA })).throwError(
+      should(() => txBuilder.send({ address: invalidPubKey, amount, tokenName: nameORCA })).throwError(
         'Invalid or missing address, got: ' + invalidPubKey,
       );
     });
@@ -260,7 +260,7 @@ describe('Sol Token Transfer Builder', () => {
         txBuilder.send({
           address: nonceAccount.pub,
           amount: invalidAmount,
-          mintAddress: mintORCA,
+          tokenName: nameORCA,
         }),
       ).throwError('Invalid or missing amount, got: ' + invalidAmount);
     });

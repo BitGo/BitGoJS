@@ -3,6 +3,10 @@
  */
 export enum TransactionType {
   Send,
+  // Send ERC721 compliant tokens
+  SendERC721,
+  // Send ERC1155 compliant tokens
+  SendERC1155,
   // Initialize a wallet on-chain (e.g. Multi-sig contract deployment)
   WalletInitialization,
   // Initialize an address on-chain(e.g. Forwarder contract deployment)
@@ -35,6 +39,8 @@ export enum TransactionType {
   StakingDeactivate,
   // Batch of multiple transactions broadcast as a single transaction
   Batch,
+  // Claim the staking rewards
+  StakingClaim,
 }
 
 /**

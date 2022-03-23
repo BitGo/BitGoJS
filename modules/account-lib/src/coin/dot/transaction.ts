@@ -19,6 +19,7 @@ import {
   TxData,
   UnstakeArgs,
   WithdrawUnstakedArgs,
+  ClaimArgs,
 } from './iface';
 import utils from './utils';
 import { u8aToBuffer } from '@polkadot/util';
@@ -213,6 +214,12 @@ export class Transaction extends BaseTransaction {
     if (this.type === TransactionType.StakingWithdraw) {
       const txMethod = decodedTx.method.args as WithdrawUnstakedArgs;
       result.numSlashingSpans = txMethod.numSlashingSpans;
+    }
+
+    if (this.type === TransactionType.StakingClaim) {
+      const txMethod = decodedTx.method.args as ClaimArgs;
+      result.validatorStash = txMethod.validatorStash;
+      result.claimEra = txMethod.era;
     }
 
     if (this.type === TransactionType.Batch) {

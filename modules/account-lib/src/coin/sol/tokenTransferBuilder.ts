@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { isValidAmount, validateAddress } from './utils';
@@ -14,7 +14,7 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/sp
 export interface SendParams {
   address: string;
   amount: string;
-  mintAddress: string;
+  tokenName: string;
 }
 
 export class TokenTransferBuilder extends TransactionBuilder {
@@ -38,7 +38,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
         this.send({
           address: transferInstruction.params.toAddress,
           amount: transferInstruction.params.amount,
-          mintAddress: transferInstruction.params.mintAddress,
+          tokenName: transferInstruction.params.tokenName,
         });
       }
     }
@@ -52,13 +52,13 @@ export class TokenTransferBuilder extends TransactionBuilder {
    * @param {string} mintAddress - the token's mint address
    * @returns {TransactionBuilder} This transaction builder
    */
-  send({ address, amount, mintAddress }: SendParams): this {
+  send({ address, amount, tokenName }: SendParams): this {
     validateAddress(address, 'address');
     if (!amount || !isValidAmount(amount)) {
       throw new BuildTransactionError('Invalid or missing amount, got: ' + amount);
     }
 
-    this._sendParams.push({ address, amount, mintAddress: mintAddress });
+    this._sendParams.push({ address, amount, tokenName: tokenName });
 
     return this;
   }
@@ -66,10 +66,12 @@ export class TokenTransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+    const coin = coins.get(this._sendParams[0].tokenName);
+    assert(coin instanceof SolCoin);
     const sourceAddress = await Token.getAssociatedTokenAddress(
       ASSOCIATED_TOKEN_PROGRAM_ID,
       TOKEN_PROGRAM_ID,
-      new PublicKey(this._sendParams[0].mintAddress),
+      new PublicKey(coin.tokenAddress),
       new PublicKey(this._sender),
     );
     const transferData = this._sendParams.map((sendParams: SendParams): TokenTransfer => {
@@ -79,7 +81,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
           fromAddress: this._sender,
           toAddress: sendParams.address,
           amount: sendParams.amount,
-          mintAddress: sendParams.mintAddress,
+          tokenName: sendParams.tokenName,
           sourceAddress: sourceAddress.toString(),
         },
       };

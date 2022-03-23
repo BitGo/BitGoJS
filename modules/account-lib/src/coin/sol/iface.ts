@@ -65,7 +65,7 @@ export interface TokenTransfer {
     fromAddress: string;
     toAddress: string;
     amount: string;
-    mintAddress: string;
+    tokenName: string;
     sourceAddress: string;
   };
 }

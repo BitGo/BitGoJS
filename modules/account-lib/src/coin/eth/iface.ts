@@ -93,13 +93,6 @@ export interface EthLikeTransactionData {
   toSerialized(): string;
 }
 
-export interface FieldStruct {
-  components?: any;
-  name: string;
-  inputs?: any;
-  type: string;
-}
-
 export interface SignatureParts {
   v: string;
   r: string;
@@ -124,6 +117,20 @@ export interface TransferData {
 
 export interface TokenTransferData extends TransferData {
   tokenContractAddress: string;
+  amount: string;
+}
+
+export interface ERC721TransferData extends TokenTransferData {
+  from: string;
+  tokenId: string;
+  userData: string;
+}
+
+export interface ERC1155TransferData extends TokenTransferData {
+  from: string;
+  tokenIds: string[];
+  values: string[];
+  userData: string;
 }
 
 export interface FlushTokensData {

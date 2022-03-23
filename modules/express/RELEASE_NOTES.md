@@ -241,7 +241,7 @@ There are no breaking changes in this version, and the major version is being bu
 * Clarify documentation for running BitGo Express in README
 * Add missing dependencies to package.json
 * Update to `bitgo@7.1.0`
-* Copy some test utilities out of core module, so we don't have to do a cross-module include from core for these.
+* Copy some test utilities out of bitgo module, so we don't have to do a cross-module include from bitgo for these.
 
 ## 7.0.0
 

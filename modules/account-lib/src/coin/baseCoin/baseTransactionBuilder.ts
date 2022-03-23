@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseAddress, BaseKey, PublicKey } from './iface';
+import { BaseAddress, BaseKey, PublicKey, ValidityWindow } from './iface';
 import { BaseTransaction } from './baseTransaction';
 import { SigningError } from './errors';
 
@@ -138,6 +138,75 @@ export abstract class BaseTransactionBuilder {
    */
   coinName(): string {
     return this._coinConfig.name;
+  }
+
+  /**
+   * Verified validity windows params if them exist and return a valid validity windows.
+   * Unit param must be specified
+   * If params are not consistent, default params will be return based on firstValid and minDuration
+   * @param {ValidityWindow} params validity windows parameters to validate.
+   * @param {String} params.unit Parameter that could be 'blockheight' or 'timestamp'
+   * @param {Number} [params.minDuration] Optional - Minimum duration of the window
+   * @param {Number} [params.maxDuration] Optional - Maximum duration of the window
+   * @param {Number} [params.firstValid] Optional - First valid value
+   * @param {Number} [params.lastValid] Optional - Last valid value
+   * @returns {ValidityWindow} verified validity windows or default values
+   */
+  getValidityWindow(params: ValidityWindow): ValidityWindow {
+    if (!params.unit || (params.unit !== 'timestamp' && params.unit !== 'blockheight')) {
+      throw new Error('Unit parameter must be specified as blockheight or timestamp');
+    }
+    const unit = params.unit;
+    let defaultMinDuration: number;
+    let defaultMaxDuration: number;
+    let defaultFirstValid: number;
+    let defaultLastValid: number;
+
+    /* Set Default Params
+      minimum duration is set as 1 hr (3600000 msec) if unit is timestamp or 20 blocks if it is blockheight
+      maximum duration is set as 1 year (31536000000 msec) if unit is timestamp or 1000000 blocks if it is blockheight.
+     */
+    if (unit === 'timestamp') {
+      defaultMinDuration = 0;
+      defaultMaxDuration = 31536000000;
+      defaultFirstValid = Date.now();
+      defaultLastValid = defaultFirstValid + defaultMaxDuration;
+    } else {
+      defaultMinDuration = 0;
+      defaultMaxDuration = 1000000;
+      defaultFirstValid = 0;
+      defaultLastValid = defaultFirstValid + defaultMaxDuration;
+    }
+
+    // If any params exist, they will be used, otherwise it will be used default params.
+    let firstValid: number = params.firstValid || defaultFirstValid;
+    let lastValid: number = params.lastValid || defaultLastValid;
+    let minDuration: number = params.minDuration || defaultMinDuration;
+    let maxDuration: number = params.maxDuration || defaultMaxDuration;
+
+    /* Validate Params:
+      minDuration < maxDuration
+      firstValid < lastValid
+      firstValid + minDuration <= lastValid <= firstValid + maxDuration
+     */
+    if (minDuration >= maxDuration) {
+      throw new Error(`Expected maxDuration (${maxDuration}) to be grather than minDuration (${minDuration})`);
+    }
+    firstValid = firstValid >= 0 ? firstValid : defaultFirstValid;
+    minDuration = minDuration >= 0 ? minDuration : defaultMinDuration;
+    maxDuration = maxDuration > minDuration ? maxDuration : defaultMaxDuration;
+    lastValid =
+      lastValid >= firstValid + minDuration && lastValid <= firstValid + maxDuration
+        ? lastValid
+        : firstValid + maxDuration;
+
+    return {
+      firstValid,
+      lastValid,
+      minDuration,
+      maxDuration,
+      unit,
+    };
   }
 
   /**

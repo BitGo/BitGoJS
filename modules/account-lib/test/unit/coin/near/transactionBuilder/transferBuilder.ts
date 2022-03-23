@@ -1,10 +1,9 @@
-import { register } from '../../../../src';
-import { TransactionBuilderFactory } from '../../../../src/coin/near';
+import { register } from '../../../../../src';
+import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/near';
 import should from 'should';
-import * as testData from '../../../resources/near';
-import { TransactionType } from '../../../../src/coin/baseCoin';
-import Eddsa from '../../../../src/mpc/tss';
-import { KeyPair } from '../../../../src/coin/dot';
+import * as testData from '../../../../resources/near';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
+import Eddsa from '../../../../../src/mpc/tss';
 import * as base58 from 'bs58';
 
 describe('Near Transfer Builder', () => {
@@ -17,20 +16,20 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
 
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: testData.accounts.account1.address,
-        value: '1',
+        value: testData.AMOUNT,
         coin: 'tnear',
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: testData.accounts.account2.address,
-        value: '1',
+        value: testData.AMOUNT,
         coin: 'tnear',
       });
       const rawTx = tx.toBroadcastFormat();
@@ -43,7 +42,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       txBuilder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await txBuilder.build();
       should.equal(tx.type, TransactionType.Send);
@@ -51,13 +50,13 @@ describe('Near Transfer Builder', () => {
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: testData.accounts.account1.address,
-        value: '1',
+        value: testData.AMOUNT,
         coin: 'tnear',
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: testData.accounts.account2.address,
-        value: '1',
+        value: testData.AMOUNT,
         coin: 'tnear',
       });
       const txBroadcast = tx.toBroadcastFormat();
@@ -86,7 +85,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       const unsignedTransaction = await txBuilder.build();
       const signablePayload = unsignedTransaction.signablePayload;
 
@@ -105,7 +104,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       txBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, rawSignature);
       let signedTransaction = await txBuilder.build();
       signedTransaction.signature.length.should.equal(1);
@@ -124,7 +123,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       txBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, rawSignature);
       signedTransaction = await txBuilder.build();
       signedTransaction.signature.length.should.equal(1);
@@ -142,7 +141,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       txBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, rawSignature);
       signedTransaction = await txBuilder.build();
       signedTransaction.signature.length.should.equal(1);
@@ -160,7 +159,7 @@ describe('Near Transfer Builder', () => {
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
-      txBuilder.amount('1');
+      txBuilder.amount(testData.AMOUNT);
       txBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, rawSignature);
       signedTransaction = await txBuilder.build();
       signedTransaction.signature.length.should.equal(1);

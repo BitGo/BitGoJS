@@ -15,12 +15,11 @@ import {
   WalletInit,
 } from './iface';
 import base58 from 'bs58';
-import { getSolTokenFromAddress, getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
+import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
 import { Entry, TransactionRecipient } from '../baseCoin/iface';
-import assert from 'assert';
 
 const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export class Transaction extends BaseTransaction {
@@ -253,17 +252,15 @@ export class Transaction extends BaseTransaction {
           });
           break;
         case InstructionBuilderTypes.TokenTransfer:
-          const coin = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
-          assert(coin);
           inputs.push({
             address: instruction.params.fromAddress,
             value: instruction.params.amount,
-            coin: coin.name,
+            coin: instruction.params.tokenName,
           });
           outputs.push({
             address: instruction.params.toAddress,
             value: instruction.params.amount,
-            coin: coin.name,
+            coin: instruction.params.tokenName,
           });
           break;
         case InstructionBuilderTypes.StakingActivate:

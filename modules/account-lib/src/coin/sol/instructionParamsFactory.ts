@@ -26,6 +26,8 @@ import {
 import { getInstructionType } from './utils';
 import { decodeTransferCheckedInstruction } from './tokenEncodeDecode';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import assert from 'assert';
+import { coins, SolCoin } from '@bitgo/statics';
 
 /**
  * Construct instructions params from Solana instructions
@@ -129,13 +131,20 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
         break;
       case ValidInstructionTypesEnum.TokenTransfer:
         const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_PROGRAM_ID);
+        let token;
+        coins.forEach((value, key) => {
+          if (value instanceof SolCoin && value.tokenAddress === tokenTransferInstruction.keys.mint.pubkey.toString()) {
+            token = value;
+          }
+        });
+        assert(token);
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
             fromAddress: tokenTransferInstruction.keys.owner.pubkey.toString(),
             toAddress: tokenTransferInstruction.keys.destination.pubkey.toString(),
             amount: tokenTransferInstruction.data.amount.toString(),
-            mintAddress: tokenTransferInstruction.keys.mint.pubkey.toString(),
+            tokenName: token.name,
             sourceAddress: tokenTransferInstruction.keys.source.pubkey.toString(),
           },
         };

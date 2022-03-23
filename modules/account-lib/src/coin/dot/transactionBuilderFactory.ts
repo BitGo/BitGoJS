@@ -8,7 +8,7 @@ import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { StakingBuilder } from './stakingBuilder';
 import { Material, MethodNames } from './iface';
 import utils from './utils';
-import { BatchTransactionBuilder, UnstakeBuilder, WithdrawUnstakedBuilder } from '.';
+import { BatchTransactionBuilder, ClaimBuilder, UnstakeBuilder, WithdrawUnstakedBuilder } from '.';
 import { UnnominateBuilder } from './unnominateBuilder';
 import { SingletonRegistry } from './singletonRegistry';
 
@@ -48,6 +48,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new WithdrawUnstakedBuilder(this._coinConfig).material(this._material);
   }
 
+  getClaimBuilder(): ClaimBuilder {
+    return new ClaimBuilder(this._coinConfig).material(this._material);
+  }
+
   getUnnominateBuilder(): UnnominateBuilder {
     return new UnnominateBuilder(this._coinConfig);
   }
@@ -81,6 +85,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getUnstakeBuilder();
     } else if (methodName === MethodNames.Chill) {
       return this.getUnnominateBuilder();
+    } else if (methodName === MethodNames.WithdrawUnbonded) {
+      return this.getWithdrawUnstakedBuilder();
+    } else if (methodName === MethodNames.PayoutStakers) {
+      return this.getClaimBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
