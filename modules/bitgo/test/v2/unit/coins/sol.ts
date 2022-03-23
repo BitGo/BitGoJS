@@ -308,7 +308,7 @@ describe('SOL:', function () {
     it('should verify create associated token account transaction', async function () {
       const tx = await factory
         .getAtaInitializationBuilder()
-        .mint('tsol:ORCA')
+        .mint('tsol:orca')
         .sender(wallet.pub)
         .nonce(blockHash)
         .memo('test memo')
@@ -764,7 +764,7 @@ describe('SOL:', function () {
     });
 
     it('should explain create ATA transaction', async function () {
-      const tokenName = 'tsol:ORCA';
+      const tokenName = 'tsol:orca';
       const rentExemptAmount = '3000000';
       const tx = await factory
         .getAtaInitializationBuilder()
