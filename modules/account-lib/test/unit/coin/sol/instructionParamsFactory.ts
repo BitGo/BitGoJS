@@ -82,6 +82,7 @@ describe('Instruction Parser Tests: ', function () {
       const amount = testData.tokenTransfers.amount;
       const memo = testData.tokenTransfers.memo;
       const decimals = testData.tokenTransfers.decimals;
+      const nameORCA = testData.tokenTransfers.nameORCA;
       const mintORCA = testData.tokenTransfers.mintORCA;
       const ownerORCA = testData.tokenTransfers.ownerORCA;
       const sourceORCA = testData.tokenTransfers.sourceORCA;
@@ -103,7 +104,7 @@ describe('Instruction Parser Tests: ', function () {
           fromAddress: ownerORCA,
           toAddress: nonceAccount,
           amount: amount.toString(),
-          mintAddress: mintORCA,
+          tokenName: nameORCA,
           sourceAddress: sourceORCA,
         },
       };

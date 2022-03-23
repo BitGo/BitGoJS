@@ -24,7 +24,6 @@ import {
 } from './iface';
 import { coins, SolCoin } from '@bitgo/statics';
 import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { UnsupportedTokenError } from '../baseCoin/errors';
 
 /**
  * Construct Solana instructions from instructions params
@@ -124,33 +123,24 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
  */
 function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[] {
   const {
-    params: { fromAddress, toAddress, amount, mintAddress, sourceAddress },
+    params: { fromAddress, toAddress, amount, tokenName, sourceAddress },
   } = data;
   assert(fromAddress, 'Missing fromAddress (owner) param');
   assert(toAddress, 'Missing toAddress param');
   assert(amount, 'Missing amount param');
-  assert(mintAddress, 'Missing mint');
+  assert(tokenName, 'Missing token name');
   assert(sourceAddress, 'Missing ata address');
-  let decimalPlaces;
-  coins.forEach((value, key) => {
-    if (value instanceof SolCoin && value.tokenAddress === mintAddress) {
-      if (value.decimalPlaces) {
-        decimalPlaces = value.decimalPlaces;
-      } else {
-        throw new UnsupportedTokenError('Could not find attributes of token for given mint: ' + mintAddress);
-      }
-      decimalPlaces = value.decimalPlaces;
-    }
-  });
+  const token = coins.get(data.params.tokenName);
+  assert(token instanceof SolCoin);
   const transferInstruction = Token.createTransferCheckedInstruction(
     TOKEN_PROGRAM_ID,
     new PublicKey(sourceAddress),
-    new PublicKey(mintAddress),
+    new PublicKey(token.tokenAddress),
     new PublicKey(toAddress),
     new PublicKey(fromAddress),
     [],
     new BigNumber(amount).toNumber(),
-    decimalPlaces,
+    token.decimalPlaces,
   );
   return [transferInstruction];
 }
