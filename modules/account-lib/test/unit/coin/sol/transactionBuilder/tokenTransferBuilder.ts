@@ -160,7 +160,6 @@ describe('Sol Token Transfer Builder', () => {
       const account3 = new KeyPair({ prv: testData.extraAccounts.prv3 }).getKeys();
       const account4 = new KeyPair({ prv: testData.extraAccounts.prv4 }).getKeys();
       const account5 = new KeyPair({ prv: testData.extraAccounts.prv5 }).getKeys();
-
       const txBuilder = factory.getTokenTransferBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
       txBuilder.sender(ownerORCA);
