@@ -1,10 +1,10 @@
 /**
  * Simulate a webhook trigger for a wallet's coin type
  * 
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
- const BitGo = require('bitgo');
+const BitGo = require('bitgo');
 
 // change this to env: 'production' when you are ready for production
 const bitgo = new BitGo({ env: 'test' });

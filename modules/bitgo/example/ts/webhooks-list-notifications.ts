@@ -1,7 +1,7 @@
 /**
- * Fetch a list of notifications triggers for a wallet's coin type
+ * Fetch a list of block notifications triggered by a webhook for a given coin type
  * 
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
 import { BitGo } from 'bitgo';

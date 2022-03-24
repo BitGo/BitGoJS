@@ -8,7 +8,7 @@
  * Note that this value may be different than balance, confirmedBalance, and spendableBalance,
  * which can be obtained using the example in the file: get-wallet-balance.js
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
 const BitGoJS = require('bitgo');

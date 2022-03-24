@@ -12,12 +12,7 @@ This library is a wrapper around [bitcoinjs-lib](https://github.com/bitcoinjs/bi
 # using npm
 npm install @bitgo/utxo-lib
 
-<<<<<<< HEAD
 # using yarn
-=======
-# or 
-
->>>>>>> 64f95cf92 (docs: Add examples to documentation)
 yarn add @bitgo/utxo-lib
 ```
 
@@ -30,7 +25,7 @@ import * as utxolib from '@bitgo/utxo-lib'
 
 NodeJS (CJS)
 ``` javascript
-const utxolib = require('@bitgo/utxo-lib)'
+const utxolib = require('@bitgo/utxo-lib')
 ```
 
 ## Usage
@@ -60,4 +55,4 @@ The `UtxoTransaction(Builder)` classes have the same interface as the `Transacti
 |Litecoin|`utxolib.networks.litecoin`|`utxolib.networks.litecoinTest`|
 |Zcash|`utxolib.networks.zcash`|`utxolib.networks.zcashTest`|
 
-> BitGo no longer supports sending funds to [Bitcoin SV](https://blog.bitgo.com/bsv-deprecation-6b3fff4df34c) wallets. Existing customers with said funds will still be able to access and send funds from Bitcoin SV wallets.
+> [Bitcoin SV](https://blog.bitgo.com/bsv-deprecation-6b3fff4df34c) no longer supports sending funds to BitGo wallets. Existing customers with Bitcoin SV in BitGo wallets will still be able to access and sweep funds to an external Bitcoin SV wallet.

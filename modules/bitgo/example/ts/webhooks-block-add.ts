@@ -1,7 +1,7 @@
 /**
  * Add a new block webhook when a new block is seen on the network or when a wallet is initialized of a given user defined coin.
  * 
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
 import { BitGo } from 'bitgo';
