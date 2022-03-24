@@ -1,15 +1,13 @@
 import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
-import { isValidAmount, validateAddress } from './utils';
+import { getAssociatedTokenAccountAddress, isValidAmount, validateAddress } from './utils';
 import { TransactionType } from '../baseCoin';
 import { InstructionBuilderTypes } from './constants';
 import { TokenTransfer } from './iface';
 
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
-import { PublicKey } from '@solana/web3.js';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 export interface SendParams {
   address: string;
@@ -49,7 +47,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
    *
    * @param {string} fromAddress - the sender address
    * @param {string} amount - the amount sent
-   * @param {string} mintAddress - the token's mint address
+   * @param {string} tokenName - name of token that is intended to send
    * @returns {TransactionBuilder} This transaction builder
    */
   send({ address, amount, tokenName }: SendParams): this {
@@ -68,13 +66,8 @@ export class TokenTransferBuilder extends TransactionBuilder {
     assert(this._sender, 'Sender must be set before building the transaction');
     const coin = coins.get(this._sendParams[0].tokenName);
     assert(coin instanceof SolCoin);
-    const sourceAddress = await Token.getAssociatedTokenAddress(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      new PublicKey(coin.tokenAddress),
-      new PublicKey(this._sender),
-    );
-    const transferData = this._sendParams.map((sendParams: SendParams): TokenTransfer => {
+    const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
+    this._instructionsData = this._sendParams.map((sendParams: SendParams): TokenTransfer => {
       return {
         type: InstructionBuilderTypes.TokenTransfer,
         params: {
@@ -82,11 +75,10 @@ export class TokenTransferBuilder extends TransactionBuilder {
           toAddress: sendParams.address,
           amount: sendParams.amount,
           tokenName: sendParams.tokenName,
-          sourceAddress: sourceAddress.toString(),
+          sourceAddress: sourceAddress,
         },
       };
     });
-    this._instructionsData = transferData;
 
     return await super.buildImplementation();
   }

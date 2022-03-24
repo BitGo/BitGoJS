@@ -1,13 +1,11 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { TransactionType } from '../baseCoin';
-import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { AtaInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
-import { PublicKey } from '@solana/web3.js';
-import { isValidAmount, isValidPublicKey } from './utils';
+import { getAssociatedTokenAccountAddress, getSolTokenFromTokenName, isValidAmount, isValidPublicKey } from './utils';
 import { BuildTransactionError } from '../baseCoin/errors';
-import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import assert from 'assert';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
@@ -46,9 +44,9 @@ export class AtaInitializationBuilder extends TransactionBuilder {
    * @param mint mint name of associated token account
    */
   mint(mint: string): this {
-    const token = coins.get(mint);
-    if (!(token.isToken && token instanceof SolCoin)) {
-      throw new BuildTransactionError('Invalid transaction: invalid mint, got: ' + this._mint);
+    const token = getSolTokenFromTokenName(mint);
+    if (!token) {
+      throw new BuildTransactionError('Invalid transaction: invalid mint, got: ' + mint);
     }
     this._mint = token.tokenAddress;
     return this;
@@ -90,17 +88,12 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     assert(this._sender, 'Sender must be set before building the transaction');
     assert(this._mint, 'Mint must be set before building the transaction');
 
-    const ataPk = await Token.getAssociatedTokenAddress(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      new PublicKey(this._mint),
-      new PublicKey(this._sender),
-    );
+    const ataPk = await getAssociatedTokenAccountAddress(this._mint, this._sender);
     const ataInitData: AtaInit = {
       type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
       params: {
         mintAddress: this._mint,
-        ataAddress: ataPk.toString(),
+        ataAddress: ataPk,
         ownerAddress: this._sender,
         payerAddress: this._sender,
       },

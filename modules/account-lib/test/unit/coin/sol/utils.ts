@@ -280,4 +280,16 @@ describe('SOL util library', function () {
       should(() => Utils.validateRawTransaction()).throwError('Invalid raw transaction: Undefined');
     });
   });
+
+  describe('getSolTokenFromTokenName', function () {
+    it('should succeed for sol token', function () {
+      should.notEqual(Utils.getSolTokenFromTokenName('tsol:usdc'), undefined);
+    });
+    it('should fail for non tokens', function () {
+      should.equal(Utils.getSolTokenFromTokenName('tsol'), undefined);
+    });
+    it('should fail if tokenName is not in coins', function () {
+      should.equal(Utils.getSolTokenFromTokenName('something random'), undefined);
+    });
+  });
 });
