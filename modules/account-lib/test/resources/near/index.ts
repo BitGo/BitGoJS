@@ -2,6 +2,7 @@ export const accounts = {
   account1: {
     secretKey: '874578010603af8e93b44bfc1d13b32830d0dbca6c89f28ccdc662afd3cdc824',
     publicKey: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+    publicKeyBase58: 'ed25519:7aMa9bTKziRzGACadUGwSLi6BRjtQQzHJPyzQrpZvj4G',
     address: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
   },
   account2: {
@@ -38,6 +39,8 @@ export const accounts = {
   },
 };
 
+export const validatorContractAddress = 'lavenderfive.pool.f863973.m0';
+
 export const blockHash = {
   block1: 'CDEwwp7TjjahriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9',
   block2: 'CvjrdzHQB1KystXqa4bDWcLbNRaVUcrLZ3PVnMqHKyiW',
@@ -65,6 +68,12 @@ export const rawTx = {
       '9XRumdRxBY6xFxWJHDUJphSLaAB3sCDiprEmRWKS6kE3BeZC283HnFhqDibpNFsD9cqjUXtAAptYtiiCPDqh6RfzDwAst2iRZsWToFmZtQT8eNoHudNtCNoZ3XQTrDFqWKC5Uq4r3cnssQ9VpYxCfLxtr877JwjNvorhGkEedGcPEgEZkpqpaH4HkLpeb4CwPxrcni71zJ45u9mkbX4eQeY7g2RVX8B6w9f3ZV5dtQx2KwCtmbzPb4w1C67KTQGGkCx2eKRXwN7NuUa47duB7AFQykHQ6TsERnTBJuPn5BvWjVVg5gfBWBdB3Q7HrueKq7bqKwXERA2LBpmCLUUWC7CqM7Gj5dnLV2AStD5RQ9FMrL1BDphmx3eFzkzHAYWVtvRkSrbnuqiT5AMAq5S',
     unsigned:
       'NtQ88F2dE6w5kiZt8733mS9jUSKDe6P2ich2qDDe3M926Nc7EmSamHa35YL1Y6MDfvgth1MCjNyAutpn3SL4Wg7jDxFY8MuLiRY51zYJoQ3ycZGf1EjJP4tAAYJffucw4kS7pm9Xfdob8HSoh4SPGyhNkrbURZraWUuC66ykFVuUQ2qgWEgSC8jDdjQvnu7uzwHuAcSH95wnSNtUtrj2kvJn3Hhttu2g3J6oW8sqExo2TvWu5CnTApuTtPHeeXFR5pUNQrF1YbF8mq14qFu2cGdtVmEr6BXrQv5uTFCeZ78iKgrGtSqUQNLZqy',
+  },
+  stakingActivate: {
+    signed:
+      '2w27X3pLkd3i4qpsb2vK5v7eWiW1eetNFvJAcTadVweqynfZQN5bcdQkYt7XfoR4fCkDLqEQNiD8gMn8ZgADi73VNWVX78BkBAdaiHwWCeV8ApzAGYoeRnGXphRM8XRCtxKpgqVxyKz4pfmyNebiA7CrktzH9x9afphPzrvYDZchhmdZbHGRbJEmgP27RSfgwk6EbV9FJdj2QwXT63Jn2mmFu9mps8MTAE3nPhAqwFsCDYr2eVENYLLjfy5j9BKembyxEA7px4Eh7M1zXncyh2rfPwiB4PJ1kNQEdfd2E6VSrAqkhYeZWWzZrZq8uUpFd1YAtCo8T1d1CLt43iDkyytqmarqxk69LwfQr2Ydk9acwdfpTerjytNP3YWDbkQth3mg5yrQDUYKUj9NUt',
+    unsigned:
+      '5xbh8XpVbgrs1qqggDhLfAKk9wDjjqoE5SkxhNoN5cNkkMkkZ7u1rTQoEiY3PT8kepWRrPje6XMRuK5wAAN5sgDrSbGXcepCiZJ1TWMEYounTBV1ucjfNmP1iapxS8PeAutTU8jiPM7vx7u4nKuRXiqhacyYGEgymtN6AgdJRjkMdXsUc5ni17ArvLaJkQyBRRy5dEqVpqKrgG5qMsqnz5A9ABxmoApiETSB8eFWeKS2wHQUZLSNH5FiQcvZdHM4xWYRyQkBMD1DL5DBdz6AZ1qawdbnxXDETJCS6jotAwAHq3Q182CApaNAB',
   },
 };
 

@@ -2,7 +2,8 @@ import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey, Entry, TransactionRecipient } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionExplanation, TxData } from './iface';
+import { TransactionExplanation, TxData, Action } from './iface';
+import { StakingContractMethodNames } from './constants';
 import utils from './utils';
 import { KeyPair } from './keyPair';
 import * as nearAPI from 'near-api-js';
@@ -53,13 +54,28 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction data');
     }
 
+    let parsedAction: Action = {};
+    if (this._nearTransaction.actions[0].enum === 'transfer') {
+      parsedAction = { transfer: this._nearTransaction.actions[0].transfer };
+    } else if (this._nearTransaction.actions[0].enum === 'functionCall') {
+      const functionCallObject = this._nearTransaction.actions[0].functionCall;
+      parsedAction = {
+        functionCall: {
+          methodName: functionCallObject.methodName,
+          args: JSON.parse(functionCallObject.args.toString()),
+          gas: functionCallObject.gas.toString(),
+          deposit: functionCallObject.deposit.toString(),
+        },
+      };
+    }
+
     return {
       id: this._id,
       signerId: this._nearTransaction.signerId,
       publicKey: this._nearTransaction.publicKey.toString(),
       nonce: this._nearTransaction.nonce,
       receiverId: this._nearTransaction.receiverId,
-      actions: this._nearTransaction.actions,
+      actions: [parsedAction],
       signature: typeof this._nearSignedTransaction === 'undefined' ? undefined : this._nearSignedTransaction.signature,
     };
   }
@@ -127,27 +143,56 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * set transaction type by staking contract method names.
+   * @param methodName method name to match and set the transaction type
+   */
+  private setTypeByStakingMethod(methodName: string): void {
+    const stakingContractTypes = {
+      [StakingContractMethodNames.DepositAndStake]: this.setTransactionType(TransactionType.StakingActivate),
+    };
+    stakingContractTypes[methodName];
+  }
+
+  /**
+   * Check if method is allowed on Near account-lib implementation.
+   * This method should check on all contracts added to Near.
+   * @param methodName contract call method name to check if its allowed.
+   */
+  private validateMethodAllowed(methodName: string): void {
+    if (!Object.values(StakingContractMethodNames).some((item) => item === methodName)) {
+      throw new InvalidTransactionError('unsupported function call in raw transaction');
+    }
+  }
+
+  /**
    * Build input and output field for this transaction
    *
    */
-
   loadInputsAndOutputs(): void {
-    if (this._nearTransaction.actions.length != 1) {
+    if (this._nearTransaction.actions.length !== 1) {
       throw new InvalidTransactionError('too many actions in raw transaction');
     }
 
-    if (this._nearTransaction.actions[0].enum === 'transfer') {
-      this.setTransactionType(TransactionType.Send);
-    } else {
-      throw new InvalidTransactionError('unsupported action in raw transaction');
+    const action = this._nearTransaction.actions[0];
+
+    switch (action.enum) {
+      case 'transfer':
+        this.setTransactionType(TransactionType.Send);
+        break;
+      case 'functionCall':
+        const methodName = action.functionCall.methodName;
+        this.validateMethodAllowed(methodName);
+        this.setTypeByStakingMethod(methodName);
+        break;
+      default:
+        throw new InvalidTransactionError('unsupported action in raw transaction');
     }
 
     const outputs: Entry[] = [];
     const inputs: Entry[] = [];
     switch (this.type) {
       case TransactionType.Send:
-        const amount = this._nearTransaction.actions[0].transfer.deposit.toString();
-
+        const amount = action.transfer.deposit.toString();
         inputs.push({
           address: this._nearTransaction.signerId,
           value: amount,
@@ -156,6 +201,19 @@ export class Transaction extends BaseTransaction {
         outputs.push({
           address: this._nearTransaction.receiverId,
           value: amount,
+          coin: this._coinConfig.name,
+        });
+        break;
+      case TransactionType.StakingActivate:
+        const stakingAmount = action.functionCall.deposit.toString();
+        inputs.push({
+          address: this._nearTransaction.signerId,
+          value: stakingAmount,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: this._nearTransaction.receiverId,
+          value: stakingAmount,
           coin: this._coinConfig.name,
         });
         break;
@@ -173,10 +231,30 @@ export class Transaction extends BaseTransaction {
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     return {
       ...explanationResult,
+      outputAmount: json.actions[0].transfer?.deposit.toString() || '',
       outputs: [
         {
           address: json.receiverId,
-          amount: json.actions[0].transfer.deposit.toString(),
+          amount: json.actions[0].transfer?.deposit.toString() || '',
+        },
+      ],
+    };
+  }
+
+  /**
+   * Returns a complete explanation for a staking activate transaction
+   * @param {TxData} json The transaction data in json format
+   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
+   * @returns {TransactionExplanation}
+   */
+  explainStakingActivateTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    return {
+      ...explanationResult,
+      outputAmount: json.actions[0].functionCall?.deposit.toString() || '',
+      outputs: [
+        {
+          address: json.receiverId,
+          amount: json.actions[0].functionCall?.deposit.toString() || '',
         },
       ],
     };
@@ -191,7 +269,7 @@ export class Transaction extends BaseTransaction {
       // txhash used to identify the transactions
       id: result.id || '',
       displayOrder,
-      outputAmount: result.actions[0].transfer.deposit.toString(),
+      outputAmount: '0',
       changeAmount: '0',
       changeOutputs: [],
       outputs,
@@ -201,6 +279,8 @@ export class Transaction extends BaseTransaction {
     switch (this.type) {
       case TransactionType.Send:
         return this.explainTransferTransaction(result, explanationResult);
+      case TransactionType.StakingActivate:
+        return this.explainStakingActivateTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
