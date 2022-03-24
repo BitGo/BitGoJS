@@ -22,3 +22,8 @@ export interface SignatureData {
   signature: string;
   keyPair: KeyPair;
 }
+
+export interface AddressDetails {
+  address: string;
+  memoId?: string;
+}

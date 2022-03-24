@@ -330,7 +330,7 @@ export function signMessage(keyPair: KeyPair, data: string): string {
  * @returns {boolean} - verification result
  */
 export function verifySignature(message: string, signature: string, publicKey: string): boolean {
-  if (!this.isValidPublicKey(publicKey)) return false;
+  if (!isValidPublicKey(publicKey)) return false;
   if (signature.length !== 130) return false;
   if (!allHexChars(signature)) throw new UtilsError('Invalid signature input to verifySignature');
   if (_.isEmpty(message)) throw new UtilsError('Cannot verify empty messages');
@@ -515,5 +515,5 @@ export function isSameBaseAddress(address: string, baseAddress: string): boolean
   if (!isValidAddressWithPaymentId(address)) {
     throw new UtilsError(`invalid address: ${address}`);
   }
-  return this.getBaseAddress(address) === this.getBaseAddress(baseAddress);
+  return getBaseAddress(address) === getBaseAddress(baseAddress);
 }

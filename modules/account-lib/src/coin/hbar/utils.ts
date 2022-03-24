@@ -4,6 +4,10 @@ import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
+import { UtilsError } from '../baseCoin/errors';
+import { AddressDetails } from './ifaces';
+import url from 'url';
+import querystring from 'querystring';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -192,10 +196,7 @@ export function removePrefix(prefix: string, key: string): string {
  * @param memo
  */
 export function isValidMemo(memo: string): boolean {
-  if (Buffer.from(memo).length > 100) {
-    return false;
-  }
-  return true;
+  return !(_.isEmpty(memo) || Buffer.from(memo).length > 100);
 }
 
 /**
@@ -220,4 +221,88 @@ export function convertFromStellarPub(stellarPub: string): string {
 
   const rawKey: Buffer = stellar.StrKey.decodeEd25519PublicKey(stellarPub);
   return rawKey.toString('hex');
+}
+
+/**
+ * Compares an address to the base address to check if matchs.
+ *
+ * @param {String} address - an address
+ * @param {String} baseAddress - a base address
+ * @returns {boolean}
+ */
+export function isSameBaseAddress(address: string, baseAddress: string): boolean {
+  if (!isValidAddressWithPaymentId(address)) {
+    throw new UtilsError(`invalid address: ${address}`);
+  }
+  return getBaseAddress(address) === getBaseAddress(baseAddress);
+}
+
+/**
+ * Returns the base address portion of an address
+ *
+ * @param {String} address - an address
+ * @returns {String} - the base address
+ */
+export function getBaseAddress(address: string): string {
+  const addressDetails = getAddressDetails(address);
+  return addressDetails.address;
+}
+
+/**
+ * Process address into address and memo id
+ *
+ * @param rawAddress the address
+ * @returns object containing address and memo id
+ */
+export function getAddressDetails(rawAddress: string): AddressDetails {
+  const addressDetails = url.parse(rawAddress);
+  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
+  const baseAddress = <string>addressDetails.pathname;
+  if (!isValidAddress(baseAddress)) {
+    throw new UtilsError(`invalid address: ${rawAddress}`);
+  }
+
+  // address doesn't have a memo id or memoId is empty
+  if (baseAddress === rawAddress) {
+    return {
+      address: rawAddress,
+      memoId: undefined,
+    };
+  }
+  const memoId = <string>queryDetails.memoId;
+  if (!isValidMemo(memoId)) {
+    throw new UtilsError(`invalid address: '${rawAddress}', memoId is not valid`);
+  }
+
+  return {
+    address: baseAddress,
+    memoId,
+  };
+}
+
+/**
+ * Validate and return address with appended memo id
+ *
+ * @param {AddressDetails} addressDetails
+ */
+export function normalizeAddress({ address, memoId }: AddressDetails): string {
+  if (memoId && isValidMemo(memoId)) {
+    return `${address}?memoId=${memoId}`;
+  }
+  return address;
+}
+
+/**
+ * Return boolean indicating whether input is a valid address with memo id
+ *
+ * @param {string} address address in the form <address>?memoId=<memoId>
+ * @returns {boolean} true is input is a valid address
+ */
+export function isValidAddressWithPaymentId(address: string): boolean {
+  try {
+    const addressDetails = getAddressDetails(address);
+    return address === normalizeAddress(addressDetails);
+  } catch (e) {
+    return false;
+  }
 }
