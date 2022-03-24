@@ -37,13 +37,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -60,13 +60,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -89,13 +89,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -112,13 +112,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -141,13 +141,13 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: walletPK,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -177,63 +177,63 @@ describe('Sol Token Transfer Builder', () => {
       tx.inputs[0].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.inputs[1].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.inputs[2].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.inputs[3].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.inputs[4].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.inputs[5].should.deepEqual({
         address: ownerORCA,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs.length.should.equal(6);
       tx.outputs[0].should.deepEqual({
         address: otherAccount.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs[1].should.deepEqual({
         address: account1.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs[2].should.deepEqual({
         address: account2.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs[3].should.deepEqual({
         address: account3.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs[4].should.deepEqual({
         address: account4.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       tx.outputs[5].should.deepEqual({
         address: account5.pub,
         value: amount,
-        coin: 'tsol:ORCA',
+        coin: nameORCA,
       });
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
