@@ -128,11 +128,11 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     );
   }
 
-  const disableSSL = get('disableSSL');
+  const disableSSL = get('disableSSL') || false;
   let customRootUri = get('customRootUri');
   let externalSignerUrl = get('externalSignerUrl');
 
-  if (disableSSL) {
+  if (disableSSL !== true) {
     if (customRootUri) {
       customRootUri = forceSecureUrl(customRootUri);
     }
@@ -154,7 +154,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     disableProxy: get('disableProxy'),
     disableEnvCheck: get('disableEnvCheck'),
     timeout: get('timeout'),
-    customRootUri,
+    customRootUri: customRootUri || undefined,
     customBitcoinNetwork: get('customBitcoinNetwork'),
     authVersion: get('authVersion'),
     externalSignerUrl,
