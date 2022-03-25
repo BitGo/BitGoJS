@@ -8,7 +8,7 @@ This ensures your keys never leave your network, and are not seen by BitGo. BitG
 
 # Documentation
 
-Comprehensive documentation on the APIs provided by BitGo Express can be found at our [Platform API Reference](https://www.bitgo.com/api/v2/#tag/Express).
+Comprehensive documentation on the APIs provided by BitGo Express can be found at our [Platform API Reference](https://app.bitgo.com/docs/#tag/Express).
 
 # Running BitGo Express
 
