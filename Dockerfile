@@ -1,6 +1,6 @@
-FROM node:14-alpine@sha256:5c33bc6f021453ae2e393e6e20650a4df0a4737b1882d389f17069dc1933fdc5 AS builder
+FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93 AS builder
 MAINTAINER Tyler Levine <tyler@bitgo.com>
-RUN apk add --no-cache git python make g++ libtool autoconf automake
+RUN apk add --no-cache git python3 make g++ libtool autoconf automake
 COPY --chown=node:node . /tmp/bitgo/
 WORKDIR /tmp/bitgo/modules/express
 USER node
@@ -9,7 +9,7 @@ RUN \
     yarn install --frozen-lockfile && \
     # install again to prune dev deps
     yarn install --production --frozen-lockfile
-FROM node:14-alpine@sha256:5c33bc6f021453ae2e393e6e20650a4df0a4737b1882d389f17069dc1933fdc5
+FROM node:16-alpine@sha256:72a490e7ed8aed68e16b8dc8f37b5bcc35c5b5c56ee3256effcdee63e2546f93
 RUN apk add --no-cache tini
 COPY --from=builder \
     /tmp/bitgo/modules/express/LICENSE \

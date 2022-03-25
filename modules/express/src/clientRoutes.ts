@@ -52,12 +52,11 @@ function handlePingExpress(req: express.Request) {
   };
 }
 
-async function handleLogin(req: express.Request) {
+function handleLogin(req: express.Request) {
   const username = req.body.username || req.body.email;
   const body = req.body;
   body.username = username;
-  const results = await req.bitgo.authenticate(body);
-  return results;
+  return req.bitgo.authenticate(body);
 }
 
 function handleDecrypt(req: express.Request) {
