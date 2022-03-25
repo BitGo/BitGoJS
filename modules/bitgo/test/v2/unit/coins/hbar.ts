@@ -1,9 +1,9 @@
-import { Hbar } from '../../../../src/v2/coins/';
 import * as accountLib from '@bitgo/account-lib';
-
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
+import { Hbar } from '../../../../src/v2/coins/';
+import * as should from 'should';
 
 describe('Hedera Hashgraph:', function () {
   let bitgo;
@@ -21,9 +21,9 @@ describe('Hedera Hashgraph:', function () {
   });
 
   it('should check valid addresses', async function () {
-    const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd'];
+    const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd', '0.0.41098?memoId='];
     const goodAddresses = ['0', '0.0.0', '0.0.41098', '0.0.0?memoId=84', '0.0.41098',
-      '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1', '0.0.41098?memoId=',
+      '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1',
     ];
 
     badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
@@ -31,32 +31,6 @@ describe('Hedera Hashgraph:', function () {
 
     const hexAddress = '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84';
     basecoin.isValidAddress(hexAddress).should.equal(false);
-  });
-
-  it('should get memoId and address', async function () {
-    const addr = '0.0.41098?memoId=23233';
-    const details = basecoin.getAddressDetails(addr);
-
-    details.address.should.equal('0.0.41098');
-    details.memoId.should.equal('23233');
-  });
-
-  it('should get memoId and address when memoId=null', async function () {
-    const addr = '0.0.41098?memoId=';
-    const details = basecoin.getAddressDetails(addr);
-
-    details.address.should.equal('0.0.41098');
-    details.memoId.should.equal('');
-  });
-
-  it('should build without a memoId if its missing for an address', async function () {
-    const address = '0.0.41098';
-    let memoId: string | undefined = undefined;
-    let norm = basecoin.normalizeAddress({ address, memoId });
-    norm.should.equal('0.0.41098');
-    memoId = '';
-    norm = basecoin.normalizeAddress({ address, memoId });
-    norm.should.equal('0.0.41098');
   });
 
   it('should explain a transaction', async function () {
@@ -72,6 +46,19 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].memo.should.equal('1');
     explain.fee.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
+  });
+
+  it('should verify isWalletAddress', function () {
+    const baseAddress = '0.0.41098';
+    const validAddress1 = '0.0.41098?memoId=1';
+    const validAddress2 = '0.0.41098?memoId=2';
+    const unrelatedValidAddress = '0.1.41098?memoId=1';
+    const invalidAddress = '0.0.0.a';
+    basecoin.isWalletAddress({ address: validAddress1, baseAddress }).should.true();
+    basecoin.isWalletAddress({ address: validAddress2, baseAddress }).should.true();
+    basecoin.isWalletAddress({ address: validAddress2, baseAddress: validAddress1 }).should.true();
+    basecoin.isWalletAddress({ address: unrelatedValidAddress, baseAddress }).should.false();
+    should.throws(() => basecoin.isWalletAddress({ address: invalidAddress, baseAddress }), `invalid address: ${invalidAddress}`);
   });
 
   describe('Keypairs:', () => {

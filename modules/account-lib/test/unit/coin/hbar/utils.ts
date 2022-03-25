@@ -120,4 +120,117 @@ describe('HBAR util library', function () {
       should.deepEqual(rawPrivateKey, privateKey);
     });
   });
+
+  describe('getAddressDetails', function () {
+    it('should get memoId and address', async function () {
+      const addr = '0.0.41098?memoId=23233';
+      const details = Utils.getAddressDetails(addr);
+
+      details.address.should.equal('0.0.41098');
+      details.memoId?.should.equal('23233');
+    });
+
+    it('should throw when memoId=null', async function () {
+      const addr = '0.0.41098?memoId=';
+      should.throws(() => Utils.getAddressDetails(addr), `invalid address: '${addr}', memoId is not valid`);
+    });
+
+    it('should get memoId and address when no memoId', async function () {
+      const addr = '0.0.41098';
+      const details = Utils.getAddressDetails(addr);
+
+      details.address.should.equal('0.0.41098');
+      details.memoId?.should.equal(undefined);
+    });
+  });
+
+  describe('normalizeAddress', function () {
+    it('should build without a memoId if its missing for an address', async function () {
+      const address = '0.0.41098';
+      let memoId: string | undefined = undefined;
+      let norm = Utils.normalizeAddress({ address, memoId });
+      norm.should.equal('0.0.41098');
+      memoId = '';
+      norm = Utils.normalizeAddress({ address, memoId });
+      norm.should.equal('0.0.41098');
+    });
+  });
+
+  describe('getBaseAddress', function () {
+    it('should return the base address', async function () {
+      const addressWithMemo = '0.0.41098?memoId=1';
+      const baseAddress = '0.0.41098';
+      Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
+      Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
+    });
+  });
+
+  describe('isSameBaseAddress', function () {
+    it('should validate if base address match', async function () {
+      const address = '0.0.41098?memoId=1';
+      const baseAddress = '0.0.41098';
+      Utils.isSameBaseAddress(address, baseAddress).should.true();
+
+      const address2 = '0.0.41098';
+      const baseAddress2 = '0.0.41098';
+      Utils.isSameBaseAddress(address2, baseAddress2).should.true();
+
+      const address3 = '0.0.41099?memoId=1';
+      const baseAddress3 = '0.0.41098';
+      Utils.isSameBaseAddress(address3, baseAddress3).should.false();
+
+      const address4 = '0.0.41099';
+      const baseAddress4 = '0.0.41098';
+      Utils.isSameBaseAddress(address4, baseAddress4).should.false();
+
+      const address5 = '0.0.0.0';
+      const baseAddress5 = '0.0.41098';
+      should.throws(
+        () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
+        `invalid address: ${address5}`,
+      );
+    });
+  });
+
+  describe('isValidMemoId', function () {
+    it('should validate memoId', async function () {
+      const memo1 = 'testmemo';
+      Utils.isValidMemo(memo1).should.true();
+      const memo2 = '';
+      Utils.isValidMemo(memo2).should.false();
+      const memo3 = undefined;
+      // @ts-expect-error testing for error
+      Utils.isValidMemo(memo3).should.false();
+      const memo4 =
+        'memoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo';
+      Utils.isValidMemo(memo4).should.false();
+    });
+  });
+
+  describe('isValidAddressWithPaymentId', function () {
+    it('should validate addresses with and without payment id', function () {
+      const validAddresses = ['0', '0.0.0', '99.99.99', '0.0.41098', '0.0.41098?memoId=4'];
+
+      for (const address of validAddresses) {
+        Utils.isValidAddressWithPaymentId(address).should.be.true();
+      }
+    });
+
+    it('should fail to validate invalid addresses', function () {
+      const invalidAddresses = [
+        '0.0.41098?memoId=memooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+        '0.0.41098?memoId=',
+        '0.0',
+        '0.0.0.0',
+        'abc',
+        'a.b.c',
+        '',
+        '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84',
+      ];
+
+      for (const address of invalidAddresses) {
+        Utils.isValidAddressWithPaymentId(address).should.be.false();
+      }
+    });
+  });
 });

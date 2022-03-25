@@ -551,7 +551,7 @@ describe('Sol Transaction', () => {
         .fee({ amount: 5000 })
         .sender(sender)
         .nonce(blockHash)
-        .mint('tsol:ORCA')
+        .mint('tsol:orca')
         .rentExemptAmount(amount)
         .build();
 

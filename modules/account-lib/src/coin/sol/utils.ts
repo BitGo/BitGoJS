@@ -26,8 +26,8 @@ import { BuildTransactionError, NotSupported, ParseTransactionError, UtilsError 
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
 import * as Crypto from './../../utils/crypto';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { BaseCoin, BaseNetwork, coins, SolCoin } from '@bitgo/statics';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
@@ -344,4 +344,38 @@ export function getSolTokenFromAddress(tokenAddress: string, network: BaseNetwor
     return tokensArray[0];
   }
   return undefined;
+}
+
+/**
+ * Get the solana token object from token name
+ * @param tokenName The token name to match against
+ * */
+export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> | undefined {
+  try {
+    const token = coins.get(tokenName);
+    if (!(token.isToken && token instanceof SolCoin)) {
+      return undefined;
+    }
+    return token;
+  } catch (e) {
+    if (!(e instanceof CoinNotDefinedError)) {
+      throw e;
+    }
+    return undefined;
+  }
+}
+
+/**
+ * Get the solana associated token account address
+ * @param tokenAddress The token address
+ * @param ownerAddress The owner of the associated token account
+ * */
+export async function getAssociatedTokenAccountAddress(tokenAddress: string, ownerAddress: string): Promise<string> {
+  const ataAddress = await Token.getAssociatedTokenAddress(
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    new PublicKey(tokenAddress),
+    new PublicKey(ownerAddress),
+  );
+  return ataAddress.toString();
 }

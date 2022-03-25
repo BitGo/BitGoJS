@@ -352,7 +352,7 @@ describe('TSS Utils:', async function () {
               },
               amount: {
                 value: '10000',
-                asset: 'tsol',
+                symbol: 'tsol',
               },
             }],
           },
@@ -385,7 +385,7 @@ describe('TSS Utils:', async function () {
               },
               amount: {
                 value: '10000',
-                asset: 'tsol',
+                symbol: 'tsol',
               },
             }, {
               address: {
@@ -393,7 +393,7 @@ describe('TSS Utils:', async function () {
               },
               amount: {
                 value: '20000',
-                asset: 'tsol',
+                symbol: 'tsol',
               },
             }],
             memo: 'memo',

@@ -88,7 +88,7 @@ describe('Sol Associated Token Account Builder', () => {
     describe('Fail', () => {
       it('build an associated token account init tx when mint is invalid', () => {
         const txBuilder = ataInitBuilder();
-        should(() => txBuilder.mint('invalidToken')).throwError("coin 'invalidToken' is not defined");
+        should(() => txBuilder.mint('invalidToken')).throwError('Invalid transaction: invalid mint, got: invalidToken');
       });
 
       it('build a wallet init tx and sign with an incorrect account', async () => {
@@ -124,7 +124,9 @@ describe('Sol Associated Token Account Builder', () => {
 
       it('build when mint is invalid', async () => {
         const txBuilder = factory.getAtaInitializationBuilder();
-        should(() => txBuilder.mint('sol:invalid mint')).throwError("coin 'sol:invalid mint' is not defined");
+        should(() => txBuilder.mint('sol:invalid mint')).throwError(
+          'Invalid transaction: invalid mint, got: sol:invalid mint',
+        );
       });
 
       it('build when rentExemptAmount is invalid', async () => {

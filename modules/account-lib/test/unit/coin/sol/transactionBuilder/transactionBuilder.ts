@@ -177,13 +177,13 @@ describe('Sol Transaction Builder', async () => {
     builtTx.inputs[0].should.deepEqual({
       address: testData.associatedTokenAccounts.accounts[0].pub,
       value: testData.tokenTransfers.amount.toString(),
-      coin: 'tsol:ORCA',
+      coin: 'tsol:orca',
     });
     builtTx.outputs.length.should.equal(1);
     builtTx.outputs[0].should.deepEqual({
       address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
       value: testData.tokenTransfers.amount.toString(),
-      coin: 'tsol:ORCA',
+      coin: 'tsol:orca',
     });
     const jsonTx = builtTx.toJson();
     jsonTx.id.should.equal('61y3eZC1L9AXhw5jvMaeVUe3cz7WZ5vGyH3PHgb3k18Lcwa3A97qbj2zco6SWw2Hxo3m4F2MLs1gzNrqvB8VNjfV');
