@@ -13,7 +13,7 @@
 
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 import { Util } from './v2/internal/util';
 const _ = require('lodash');
 let ethereumUtil;

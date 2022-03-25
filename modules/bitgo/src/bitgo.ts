@@ -6,7 +6,6 @@
 
 import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
-import { getAddressP2PKH, makeRandomKey } from './bitcoin';
 import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
@@ -15,15 +14,11 @@ const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
 import sjcl = require('@bitgo/sjcl');
 import bs58 = require('bs58');
-import * as common from './common';
-// import { AliasEnvironments } from './v2/environments';
-import { RequestTracer as IRequestTracer, V1Network } from './v2/types';
 import pjson = require('../package.json');
-import moment = require('moment');
+
 import * as _ from 'lodash';
-import * as urlLib from 'url';
 import * as config from './config';
-import { createHmac } from 'crypto';
+
 import * as debugLib from 'debug';
 
 const TransactionBuilder = require('./transactionBuilder');
@@ -34,48 +29,32 @@ import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
-import {
-  BitGoRequest,
-  handleResponseError,
-  handleResponseResult,
-  serializeRequestData,
-  setRequestQueryString,
-  toBitgoRequest,
-  verifyResponse,
-} from './api';
 import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
 import { decrypt, encrypt } from './encrypt';
-import { EnvironmentName } from '@bitgo/sdk-core';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { common } from '@bitgo/sdk-core';
+import {
+  AuthenticateOptions,
+  BitGoAPI,
+  BitGoAPIOptions,
+  handleResponseError,
+  handleResponseResult,  
+  verifyResponse,
+} from '@bitgo/sdk-api';
 
 const debug = debugLib('bitgo:index');
-
-const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
 if (!(process as any).browser) {
   debug('enabling superagent-proxy wrapper');
   require('superagent-proxy')(superagent);
 }
 
-export interface BitGoOptions {
-  env?: EnvironmentName;
+export interface BitGoOptions extends BitGoAPIOptions {
   clientId?: string;
   clientSecret?: string;
   accessToken?: string;
-  userAgent?: string;
-  customRootURI?: string;
-  customBitcoinNetwork?: V1Network;
-  customSigningAddress?: string;
-  serverXpub?: string;
-  stellarFederationServerUrl?: string;
-  useProduction?: boolean;
   refreshToken?: string;
   validate?: boolean;
-  proxy?: string;
-  etherscanApiToken?: string;
-  hmacVerification?: boolean;
-  authVersion?: 2 | 3;
 }
 
 export interface User {
@@ -146,10 +125,6 @@ export interface GetEcdhSecretOptions {
   eckey: utxolib.ECPair.ECPairInterface;
 }
 
-export interface AccessTokenOptions {
-  accessToken: string;
-}
-
 export interface TokenIssuanceResponse {
   derivationPath: string;
   encryptedToken: string;
@@ -159,73 +134,6 @@ export interface TokenIssuanceResponse {
 export interface TokenIssuance {
   token: string;
   ecdhXprv?: string;
-}
-
-export interface CalculateHmacSubjectOptions {
-  urlPath: string;
-  text: string;
-  timestamp: number;
-  method: typeof supportedRequestMethods[number];
-  statusCode?: number;
-}
-
-export interface CalculateRequestHmacOptions {
-  url: string;
-  text: string;
-  timestamp: number;
-  token: string;
-  method: typeof supportedRequestMethods[number];
-}
-
-export interface CalculateRequestHeadersOptions {
-  url: string;
-  text: string;
-  token: string;
-  method: typeof supportedRequestMethods[number];
-}
-
-export interface RequestHeaders {
-  hmac: string;
-  timestamp: number;
-  tokenHash: string;
-}
-
-export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
-  hmac: string;
-  url: string;
-  text: string;
-  timestamp: number;
-  method: typeof supportedRequestMethods[number];
-  statusCode?: number;
-}
-
-export interface VerifyResponseInfo {
-  isValid: boolean;
-  expectedHmac: string;
-  signatureSubject: string;
-  isInResponseValidityWindow: boolean;
-  verificationTime: number;
-}
-
-export interface AuthenticateOptions {
-  username: string;
-  password: string;
-  otp?: string;
-  trust?: number;
-  forceSMS?: boolean;
-  extensible?: boolean;
-  forceV1Auth?: boolean;
-}
-
-export interface ProcessedAuthenticationOptions {
-  email: string;
-  password: string;
-  forceSMS: boolean;
-  otp?: string;
-  trust?: number;
-  extensible?: boolean;
-  extensionAddress?: string;
-  forceV1Auth?: boolean;
 }
 
 export interface AddAccessTokenOptions {
@@ -253,7 +161,7 @@ export interface ChangePasswordOptions {
 
 export interface UnlockOptions {
   otp?: string;
-  duration?: number
+  duration?: number;
 }
 
 export interface ExtendTokenOptions {
@@ -262,10 +170,6 @@ export interface ExtendTokenOptions {
 
 export interface GetSharingKeyOptions {
   email: string;
-}
-
-export interface PingOptions {
-  reqId?: IRequestTracer;
 }
 
 /**
@@ -316,55 +220,26 @@ export interface RegisterPushTokenOptions {
   operatingSystem: unknown;
 }
 
-const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
-
-// export interface BitGo {
-//   get(url: string): BitGoRequest;
-//   post(url: string): BitGoRequest;
-//   put(url: string): BitGoRequest;
-//   del(url: string): BitGoRequest;
-//   patch(url: string): BitGoRequest;
-// }
-
-// eslint-disable-next-line no-redeclare
-export class BitGo extends BitGoAPI {  
-  private static _testnetWarningMessage = false;
-  private static _constants: any;
-  private static _constantsExpire: any;
-  // private readonly _env: EnvironmentName;
-  
-  /**
-   * Expose env property for backwards compatibility
-   * @deprecated
-   */
-  // public readonly env: EnvironmentName;
-  // private readonly _baseUrl: string;
-  // private readonly _baseApiUrl: string;
-  // private readonly _baseApiUrlV2: string;
+export class BitGo extends BitGoAPI {
   private _user?: User;
   private _keychains: any;
   private _wallets: any;
   private readonly _clientId?: string;
   private readonly _clientSecret?: string;
-  private _token?: string;
   private _refreshToken?: string;
-  private readonly _userAgent: string;
   private _validate: boolean;
-  private readonly _proxy?: string;
-  private _reqId?: IRequestTracer;
+  
   private _ecdhXprv?: string;
-  private _extensionKey?: utxolib.ECPair.ECPairInterface;
   private _markets?: any;
   private _blockchain?: any;
   private _travelRule?: any;
   private _pendingApprovals?: any;
-  private _hmacVerification = true;
-  private readonly _authVersion: Exclude<BitGoOptions['authVersion'], undefined> = 2;
+
   /**
    * Constructor for BitGo Object
    */
   constructor(params: BitGoOptions = {}) {
-    super(params.env);
+    super(params);
     if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub', 'stellarFederationServerUrl']) ||
       (params.useProduction && !_.isBoolean(params.useProduction))) {
       throw new Error('invalid argument');
@@ -374,240 +249,18 @@ export class BitGo extends BitGoAPI {
       throw new Error('invalid argument - must provide both client id and secret');
     }
 
-    // By default, we operate on the test server.
-    // Deprecate useProduction in the future
-    const env: EnvironmentName = this.env;
-    /*
-    if (params.useProduction) {
-      if (params.env && params.env !== 'prod') {
-        throw new Error('cannot use useProduction when env=' + params.env);
-      }
-      env = 'prod';
-    } else if (params.customRootURI ||
-      params.customBitcoinNetwork ||
-      params.customSigningAddress ||
-      params.serverXpub ||
-      process.env.BITGO_CUSTOM_ROOT_URI ||
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
-      // for branch deploys, we want to be able to specify custom endpoints while still
-      // maintaining the name of specified the environment
-      env = params.env === 'branch' ? 'branch' : 'custom';
-      if (params.customRootURI) {
-        common.Environments[env].uri = params.customRootURI;
-      }
-      if (params.customBitcoinNetwork) {
-        common.Environments[env].network = params.customBitcoinNetwork;
-      }
-      if (params.customSigningAddress) {
-        (common.Environments[env] as any).customSigningAddress = params.customSigningAddress;
-      }
-      if (params.serverXpub) {
-        common.Environments[env].serverXpub = params.serverXpub;
-      }
-      if (params.stellarFederationServerUrl) {
-        common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
-      }
-    } else {
-      env = params.env || process.env.BITGO_ENV as EnvironmentName;
-    }
-
-    if (params.authVersion !== undefined) {
-      this._authVersion = params.authVersion;
-    }
-
-    // if this env is an alias, swap it out with the equivalent supported environment
-    if (env in AliasEnvironments) {
-      env = AliasEnvironments[env];
-    }
-
-    if (env === 'custom' && _.isUndefined(common.Environments[env].uri)) {
-      throw new Error('must use --customrooturi or set the BITGO_CUSTOM_ROOT_URI environment variable when using the custom environment');
-    }
-
-    if (env) {
-      if (common.Environments[env]) {
-        this._baseUrl = common.Environments[env].uri;
-      } else {
-        throw new Error('invalid environment ' + env + '. Supported environments: prod, test, dev, latest');
-      }
-    } else {
-      env = 'test';
-      if (!BitGo._testnetWarningMessage) {
-        BitGo._testnetWarningMessage = true;
-        console.log('BitGo SDK env not set - defaulting to test at test.bitgo.com.');
-      }
-      this._baseUrl = common.Environments[env].uri;
-    }
-    this._env = this.env = env;
-
-    if (params.etherscanApiToken) {
-      common.Environments[env].etherscanApiToken = params.etherscanApiToken;
-    }
-
-    common.setNetwork(common.Environments[env].network);
-
-    this._baseApiUrl = this._baseUrl + '/api/v1';
-    this._baseApiUrlV2 = this._baseUrl + '/api/v2';
-   */
+    this._version = pjson.version;
     this._keychains = null;
     this._wallets = null;
     this._clientId = params.clientId;
     this._clientSecret = params.clientSecret;
-    this._token = params.accessToken;
     this._refreshToken = params.refreshToken;
-    this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
-    this._reqId = undefined;
-
-    if (!params.hmacVerification && params.hmacVerification !== undefined) {
-      if (common.Environments[env].hmacVerificationEnforced) {
-        throw new Error(`Cannot disable request HMAC verification in environment ${this.getEnv()}`);
-      }
-      debug('HMAC verification explicitly disabled by constructor option');
-      this._hmacVerification = params.hmacVerification;
-    }
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
     // turned off by setting to false. can also be overridden individually in the
     // functions that use it.
     this._validate = params.validate === undefined ? true : params.validate;
-
-    if (!params.proxy && process.env.BITGO_USE_PROXY) {
-      params.proxy = process.env.BITGO_USE_PROXY;
-    }
-
-    if ((process as any).browser && params.proxy) {
-      throw new Error('cannot use https proxy params while in browser');
-    }
-
-    this._proxy = params.proxy;
-
-    // Create superagent methods specific to this BitGo instance.
-    for (const method of supportedRequestMethods) {
-      this[method] = this.createPatch(method);
-    }
-
-    // capture outer stack so we have useful debug information if fetch constants fails
-    const e = new Error();
-
-    // Kick off first load of constants
-    this.fetchConstants().catch((err) => {
-      if (err) {
-        // make sure an error does not terminate the entire script
-        console.error('failed to fetch initial client constants from BitGo');
-        debug(e.stack);
-      }
-    });
-  }
-
-  /**
-   * This is a patching function which can apply our authorization
-   * headers to any outbound request.
-   * @param method
-   */
-  private createPatch(method: typeof patchedRequestMethods[number]): (url: string) => BitGoRequest {
-    const self = this;
-    return function<ResponseType = any> (url: string): BitGoRequest<ResponseType> {
-      let req: superagent.SuperAgentRequest = superagent[method](url);
-      if (self._proxy) {
-        debug('proxying request through %s', self._proxy);
-        req = req.proxy(self._proxy);
-      }
-
-      const originalThen = req.then.bind(req);
-      req.then = (onfulfilled, onrejected) => {
-        // intercept a request before it's submitted to the server for v2 authentication (based on token)
-        req.set('BitGo-SDK-Version', self.version());
-
-        if (!_.isUndefined(self._reqId)) {
-          req.set('Request-ID', self._reqId.toString());
-
-          // increment after setting the header so the sequence numbers start at 0
-          self._reqId.inc();
-
-          // request ids must be set before each request instead of being kept
-          // inside the bitgo object. This is to prevent reentrancy issues where
-          // multiple simultaneous requests could cause incorrect reqIds to be used
-          delete self._reqId;
-        }
-
-        // prevent IE from caching requests
-        req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
-
-        if (!(process as any).browser) {
-          // If not in the browser, set the User-Agent. Browsers don't allow
-          // setting of User-Agent, so we must disable this when run in the
-          // browser (browserify sets process.browser).
-          req.set('User-Agent', self._userAgent);
-        }
-
-        // Set the request timeout to just above 5 minutes by default
-        req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
-
-        // if there is no token, and we're not logged in, the request cannot be v2 authenticated
-        req.isV2Authenticated = true;
-        req.authenticationToken = self._token;
-        // some of the older tokens appear to be only 40 characters long
-        if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0) || req.forceV1Auth) {
-          // use the old method
-          req.isV2Authenticated = false;
-
-          req.set('Authorization', 'Bearer ' + self._token);
-          debug('sending v1 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
-          return originalThen(onfulfilled).catch(onrejected);
-        }
-
-        req.set('BitGo-Auth-Version', self._authVersion === 3 ? '3.0' : '2.0');
-
-        if (self._token) {
-          const data = serializeRequestData(req);
-          setRequestQueryString(req);
-
-          const requestProperties = self.calculateRequestHeaders({
-            url: req.url,
-            token: self._token,
-            method,
-            text: data || '',
-          });
-          req.set('Auth-Timestamp', requestProperties.timestamp.toString());
-
-          // we're not sending the actual token, but only its hash
-          req.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
-          debug('sending v2 %s request to %s with token %s', method, url, self._token?.substr(0, 8));
-
-          // set the HMAC
-          req.set('HMAC', requestProperties.hmac);
-        }
-
-        /**
-         * Verify the response before calling the original onfulfilled handler,
-         * and make sure onrejected is called if a verification error is encountered
-         */
-        const newOnFulfilled = onfulfilled ? (response: superagent.Response) => {
-          // HMAC verification is only allowed to be skipped in certain environments.
-          // This is checked in the constructor, but checking it again at request time
-          // will help prevent against tampering of this property after the object is created
-          if (!self._hmacVerification && !common.Environments[self.getEnv()].hmacVerificationEnforced) {
-            return onfulfilled(response);
-          }
-
-          const verifiedResponse = verifyResponse(self, self._token, method, req, response);
-          return onfulfilled(verifiedResponse);
-        } : null;
-        return originalThen(newOnFulfilled).catch(onrejected);
-      };
-      return toBitgoRequest(req);
-    };
-  }
-
-  /**
-   * Calculate the HMAC for the given key and message
-   * @param key {String} - the key to use for the HMAC
-   * @param message {String} - the actual message to HMAC
-   * @returns {*} - the result of the HMAC operation
-   */
-  calculateHMAC(key: string, message: string): string {
-    return createHmac('sha256', key).update(message).digest('hex');
   }
 
   /**
@@ -645,20 +298,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Return the current BitGo environment
-   */
-  getEnv(): EnvironmentName {
-    return this._env;
-  }
-
-  /**
-   * Return the current auth version used for requests to the BitGo server
-   */
-  getAuthVersion(): number {
-    return this._authVersion;
-  }
-
-  /**
    * Clear out all state from this BitGo object, effectively logging out the current user.
    */
   clear(): void {
@@ -667,13 +306,6 @@ export class BitGo extends BitGoAPI {
     this._token = undefined;
     this._refreshToken = undefined;
     this._ecdhXprv = undefined;
-  }
-
-  /**
-   * Gets the version of the BitGoJS package
-   */
-  version(): string {
-    return pjson.version;
   }
 
   /**
@@ -754,9 +386,7 @@ export class BitGo extends BitGoAPI {
     }
     const hmacPassword = this.calculateHMAC(this._user.username, params.password);
 
-    return this.post(this.url('/user/verifypassword'))
-      .send({ password: hmacPassword })
-      .result('valid');
+    return this.post(this.url('/user/verifypassword')).send({ password: hmacPassword }).result('valid');
   }
 
   /**
@@ -782,7 +412,7 @@ export class BitGo extends BitGoAPI {
     try {
       return decrypt(params.password, params.input);
     } catch (error) {
-      if (error.message.includes('ccm: tag doesn\'t match')) {
+      if (error.message.includes("ccm: tag doesn't match")) {
         error.message = 'password error - ' + error.message;
       }
       throw error;
@@ -914,7 +544,7 @@ export class BitGo extends BitGoAPI {
       return this.decrypt({ input: shard, password });
     });
     const secretCombinations = generateCombinations(secrets, m);
-    const seeds = secretCombinations.map(currentCombination => {
+    const seeds = secretCombinations.map((currentCombination) => {
       return shamir.combine(currentCombination);
     });
     const uniqueSeeds = _.uniq(seeds);
@@ -994,14 +624,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Synchronous method for activating an access token.
-   */
-  authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
-    debug('now authenticating with access token %s', accessToken.substring(0, 8));
-    this._token = accessToken;
-  }
-
-  /**
    *
    * @param responseBody Response body object
    * @param password Password for the symmetric decryption
@@ -1068,125 +690,6 @@ export class BitGo extends BitGoAPI {
       response.ecdhXprv = ecdhXprv;
     }
     return response;
-  }
-
-  /**
-   * Calculate the subject string that is to be HMAC'ed for a HTTP request or response
-   * @param urlPath request url, including query params
-   * @param text request body text
-   * @param timestamp request timestamp from `Date.now()`
-   * @param statusCode Only set for HTTP responses, leave blank for requests
-   * @param method request method
-   * @returns {string}
-   */
-  calculateHMACSubject({ urlPath, text, timestamp, statusCode, method }: CalculateHmacSubjectOptions): string {
-    const urlDetails = urlLib.parse(urlPath);
-    const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
-    if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
-      if (this._authVersion === 3) {
-        return [method.toUpperCase(), timestamp, queryPath, statusCode, text].join('|');
-      }
-      return [timestamp, queryPath, statusCode, text].join('|');
-    }
-    if (this._authVersion === 3) {
-      return [method.toUpperCase(), timestamp, '3.0', queryPath, text].join('|');
-    }
-    return [timestamp, queryPath, text].join('|');
-  }
-
-  /**
-   * Calculate the HMAC for an HTTP request
-   */
-  calculateRequestHMAC({ url: urlPath, text, timestamp, token, method }: CalculateRequestHmacOptions): string {
-    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp, method });
-
-    // calculate the HMAC
-    return this.calculateHMAC(token, signatureSubject);
-  }
-
-  /**
-   * Calculate request headers with HMAC
-   */
-  calculateRequestHeaders({ url, text, token, method }: CalculateRequestHeadersOptions): RequestHeaders {
-    const timestamp = Date.now();
-    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token, method });
-
-    // calculate the SHA256 hash of the token
-    const hashDigest = sjcl.hash.sha256.hash(token);
-    const tokenHash = sjcl.codec.hex.fromBits(hashDigest);
-    return {
-      hmac,
-      timestamp,
-      tokenHash,
-    };
-  }
-
-  /**
-   * Verify the HMAC for an HTTP response
-   */
-  verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac, method }: VerifyResponseOptions): VerifyResponseInfo {
-    const signatureSubject = this.calculateHMACSubject({
-      urlPath,
-      text,
-      timestamp,
-      statusCode,
-      method,
-    });
-
-    // calculate the HMAC
-    const expectedHmac = this.calculateHMAC(token, signatureSubject);
-
-    // determine if the response is still within the validity window (5 minute window)
-    const now = Date.now();
-    const isInResponseValidityWindow = timestamp >= (now - 1000 * 60 * 5) && timestamp <= now;
-
-    // verify the HMAC and timestamp
-    return {
-      isValid: expectedHmac === hmac,
-      expectedHmac,
-      signatureSubject,
-      isInResponseValidityWindow,
-      verificationTime: now,
-    };
-  }
-
-  /**
-   * Process the username, password and otp into an object containing the username and hashed password, ready to
-   * send to bitgo for authentication.
-   */
-  preprocessAuthenticationParams({ username, password, otp, forceSMS, extensible, trust }: AuthenticateOptions): ProcessedAuthenticationOptions {
-    if (!_.isString(username)) {
-      throw new Error('expected string username');
-    }
-
-    if (!_.isString(password)) {
-      throw new Error('expected string password');
-    }
-
-    const lowerName = username.toLowerCase();
-    // Calculate the password HMAC so we don't send clear-text passwords
-    const hmacPassword = this.calculateHMAC(lowerName, password);
-
-    const authParams: ProcessedAuthenticationOptions = {
-      email: lowerName,
-      password: hmacPassword,
-      forceSMS: !!forceSMS,
-    };
-
-    if (otp) {
-      authParams.otp = otp;
-      if (trust) {
-        authParams.trust = 1;
-      }
-    }
-
-    if (extensible) {
-      this._extensionKey = makeRandomKey();
-      authParams.extensible = true;
-      authParams.extensionAddress = getAddressP2PKH(this._extensionKey);
-    }
-
-    return authParams;
   }
 
   /**
@@ -1270,9 +773,7 @@ export class BitGo extends BitGoAPI {
 
     const postParams = _.pick(params, ['pushToken', 'operatingSystem']);
 
-    return this.post(this.url('/devices'))
-      .send(postParams)
-      .result();
+    return this.post(this.url('/devices')).send(postParams).result();
   }
 
   /**
@@ -1296,9 +797,7 @@ export class BitGo extends BitGoAPI {
 
     const postParams = _.pick(params, 'pushVerificationToken');
 
-    return this.post(this.url('/devices/verify'))
-      .send(postParams)
-      .result();
+    return this.post(this.url('/devices/verify')).send(postParams).result();
   }
 
   /**
@@ -1390,9 +889,7 @@ export class BitGo extends BitGoAPI {
    * }
    */
   async listAccessTokens(): Promise<any> {
-    return this.get(this.url('/user/accesstoken'))
-      .send()
-      .result('accessTokens');
+    return this.get(this.url('/user/accesstoken')).send().result('accessTokens');
   }
 
   /**
@@ -1602,9 +1099,7 @@ export class BitGo extends BitGoAPI {
       password: this.calculateHMAC(user.username, newPassword),
     };
 
-    return this.post(this.url('/user/changepassword'))
-      .send(updatePasswordParams)
-      .result();
+    return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
   }
 
   /**
@@ -1623,9 +1118,7 @@ export class BitGo extends BitGoAPI {
     if (otp && !_.isString(otp)) {
       throw new Error('expected string or undefined otp');
     }
-    return this.post(this.url('/user/unlock'))
-      .send({ otp, duration })
-      .result();
+    return this.post(this.url('/user/unlock')).send({ otp, duration }).result();
   }
 
   /**
@@ -1648,9 +1141,7 @@ export class BitGo extends BitGoAPI {
    * @deprecated
    */
   async sendOTP(params: { forceSMS?: boolean } = {}): Promise<any> {
-    return this.post(this.url('/user/sendotp'))
-      .send(params)
-      .result();
+    return this.post(this.url('/user/sendotp')).send(params).result();
   }
 
   /**
@@ -1690,21 +1181,7 @@ export class BitGo extends BitGoAPI {
       throw new Error('required string email');
     }
 
-    return this.post(this.url('/user/sharingkey'))
-      .send({ email })
-      .result();
-  }
-
-  /**
-   * Test connectivity to the server
-   * @param params
-   */
-  ping({ reqId }: PingOptions = {}): Promise<any> {
-    if (reqId) {
-      this._reqId = reqId;
-    }
-
-    return this.get(this.url('/ping')).result();
+    return this.post(this.url('/user/sharingkey')).send({ email }).result();
   }
 
   /**
@@ -1773,23 +1250,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Create a url for calling BitGo platform APIs
-   * @param path
-   * @param version
-   */
-  url(path: string, version = 1): string {
-    const baseUrl = version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
-    return baseUrl + path;
-  }
-
-  /**
-   * Create a url for calling BitGo microservice APIs
-   */
-  microservicesUrl(path: string): string {
-    return this._baseUrl + path;
-  }
-
-  /**
    * Get all the address labels on all of the user's wallets
    *
    * @deprecated
@@ -1840,9 +1300,7 @@ export class BitGo extends BitGoAPI {
       queryParams.cpfpAware = params.cpfpAware;
     }
 
-    return this.get(this.url('/tx/fee'))
-      .query(queryParams)
-      .result();
+    return this.get(this.url('/tx/fee')).query(queryParams).result();
   }
 
   /**
@@ -1877,9 +1335,7 @@ export class BitGo extends BitGoAPI {
    * @deprecated
    */
   async getBitGoFeeAddress(): Promise<any> {
-    return this.post(this.url('/billing/address'))
-      .send({})
-      .result();
+    return this.post(this.url('/billing/address')).send({}).result();
   }
 
   /**
@@ -1917,9 +1373,7 @@ export class BitGo extends BitGoAPI {
       throw new Error('required string type');
     }
 
-    return this.post(this.url('/webhooks'))
-      .send(params)
-      .result();
+    return this.post(this.url('/webhooks')).send(params).result();
   }
 
   /**
@@ -1938,9 +1392,7 @@ export class BitGo extends BitGoAPI {
       throw new Error('required string type');
     }
 
-    return this.del(this.url('/webhooks'))
-      .send(params)
-      .result();
+    return this.del(this.url('/webhooks')).send(params).result();
   }
 
   /**
@@ -1964,9 +1416,7 @@ export class BitGo extends BitGoAPI {
       query.limit = params.limit;
     }
 
-    return this.get(this.url('/webhooks/notifications'))
-      .query(query)
-      .result();
+    return this.get(this.url('/webhooks/notifications')).query(query).result();
   }
 
   /**
@@ -1991,37 +1441,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Fetch useful constant values from the BitGo server.
-   * These values do change infrequently, so they need to be fetched,
-   * but are unlikely to change during the lifetime of a BitGo object,
-   * so they can safely cached.
-   */
-  async fetchConstants(): Promise<any> {
-    const env = this.getEnv();
-
-    if (!BitGo._constants) {
-      BitGo._constants = {};
-    }
-    if (!BitGo._constantsExpire) {
-      BitGo._constantsExpire = {};
-    }
-
-    if (BitGo._constants[env] && BitGo._constantsExpire[env] && new Date() < BitGo._constantsExpire[env]) {
-      return BitGo._constants[env];
-    }
-
-    // client constants call cannot be authenticated using the normal HMAC validation
-    // scheme, so we need to use a raw superagent instance to do this request.
-    // Proxy settings must still be respected however
-    const resultPromise = superagent.get(this.url('/client/constants'));
-    const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
-    BitGo._constants[env] = result.body.constants;
-
-    BitGo._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
-    return BitGo._constants[env];
-  }
-
-  /**
    * Synchronously get constants which are relevant to the client.
    *
    * Note: This function has a known race condition. It may return different values over time,
@@ -2034,17 +1453,16 @@ export class BitGo extends BitGoAPI {
    */
   getConstants(): any {
     // kick off a fresh request for the client constants
-    this.fetchConstants()
-      .catch(function (err) {
-        if (err) {
-          // make sure an error does not terminate the entire script
-          console.error('failed to fetch client constants from BitGo');
-          console.trace(err);
-        }
-      });
-
+    this.fetchConstants().catch(function (err) {
+      if (err) {
+        // make sure an error does not terminate the entire script
+        console.error('failed to fetch client constants from BitGo');
+        console.trace(err);
+      }
+    });
+  
     // use defaultConstants as the backup for keys that are not set in this._constants
-    return _.merge({}, config.defaultConstants(this.getEnv()), BitGo._constants[this.getEnv()]);
+    return _.merge({}, config.defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
   }
 
   /**
@@ -2061,12 +1479,4 @@ export class BitGo extends BitGoAPI {
     return TransactionBuilder.calculateMinerFeeInfo(params);
   }
 
-  /**
-   * Set a request tracer to provide request IDs during multi-request workflows
-   */
-  setRequestTracer(reqTracer: IRequestTracer): void {
-    if (reqTracer) {
-      this._reqId = reqTracer;
-    }
-  }
 }

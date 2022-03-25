@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGo } from '../bitgo';
-import { validateParams } from '../common';
+import { common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 
@@ -10,6 +10,7 @@ import { Wallet } from './wallet';
 import { BaseCoin } from './baseCoin';
 import { TssUtils } from './internal/tssUtils';
 
+const { validateParams } = common;
 export interface PendingApprovalInfo {
   type: Type;
   transactionRequest?: {

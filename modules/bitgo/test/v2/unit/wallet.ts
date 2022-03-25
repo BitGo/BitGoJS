@@ -10,7 +10,7 @@ import * as nock from 'nock';
 import * as _ from 'lodash';
 
 import { CustomSigningFunction, Wallet } from '../../../src/';
-import * as common from '../../../src/common';
+import { common } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';

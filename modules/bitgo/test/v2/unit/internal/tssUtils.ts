@@ -9,7 +9,7 @@ import Eddsa, { GShare, KeyShare, SignShare } from '../../../../../account-lib/d
 import { Keychain, Wallet } from '../../../../src';
 import { SignatureShareRecord, SignatureShareType, TssUtils, TxRequest } from '../../../../src/v2/internal/tssUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import { RequestTracer } from '../../../../src/v2/internal/util';
 
 describe('TSS Utils:', async function () {

@@ -5,7 +5,7 @@ import { BitGo } from '../../bitgo';
 
 import { AvaxC, TransactionPrebuild } from './avaxc';
 import { CoinConstructor } from '../coinFactory';
-import { Environments } from '../environments';
+import { Environments } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
 export interface AvaxcTokenConfig {

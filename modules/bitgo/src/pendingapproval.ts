@@ -9,7 +9,7 @@
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import * as Bluebird from 'bluebird';

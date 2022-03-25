@@ -6,7 +6,7 @@ import * as openpgp from 'openpgp';
 import { BlsKeyPair, Keychain } from '../../../../src';
 import { BlsUtils } from '../../../../src/v2/internal/blsUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {

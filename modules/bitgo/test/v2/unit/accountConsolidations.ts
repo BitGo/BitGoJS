@@ -9,7 +9,7 @@ import '../lib/asserts';
 import * as nock from 'nock';
 
 import { Wallet } from '../../../src/v2/wallet';
-import * as common from '../../../src/common';
+import { common } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 const algoFixtures = require('../fixtures/coins/algo');

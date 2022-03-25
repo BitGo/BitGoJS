@@ -1,10 +1,5 @@
-/**
- * @hidden
- */
-
-import * as bip32 from 'bip32';
-import { common, V1Network } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
+import { common, V1Network } from '@bitgo/sdk-core';
 
 export function getNetwork(network?: V1Network): utxolib.Network {
   network = network || common.getNetwork();
@@ -20,7 +15,7 @@ interface LegacyECPair {
   getPublicKeyBuffer(): Buffer;
 }
 
-export function getAddressP2PKH(key: utxolib.ECPair.ECPairInterface | bip32.BIP32Interface | LegacyECPair): string {
+export function getAddressP2PKH(key: utxolib.ECPair.ECPairInterface | LegacyECPair): string {
   let pubkey;
   if ('getPublicKeyBuffer' in key) {
     pubkey = key.getPublicKeyBuffer();

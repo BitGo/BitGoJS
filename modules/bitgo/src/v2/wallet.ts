@@ -8,7 +8,7 @@ import * as debugLib from 'debug';
 
 import { makeRandomKey } from '../bitcoin';
 import { BitGo } from '../bitgo';
-import * as common from '../common';
+import { common } from '@bitgo/sdk-core';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import {
   BaseCoin,

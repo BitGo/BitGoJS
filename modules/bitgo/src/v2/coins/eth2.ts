@@ -18,7 +18,7 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import * as common from '../../common';
+import { common } from '@bitgo/sdk-core';
 import { MethodNotImplementedError } from '../../errors';
 
 interface Recipient {

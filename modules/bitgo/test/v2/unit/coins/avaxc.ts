@@ -5,7 +5,7 @@ import * as secp256k1 from 'secp256k1';
 import * as bip32 from 'bip32';
 import { Wallet } from '../../../../src';
 import * as nock from 'nock';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 
 nock.enableNetConnect();
 
