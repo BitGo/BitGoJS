@@ -1,6 +1,15 @@
 const assert = require('assert');
+const crypto = require('crypto');
+import Curve from './curves';
+import { bigIntFromBufferLE, bigIntToBufferLE, clamp } from './util';
 
-const Shamir = (curve: any) => {
+export default class Shamir {
+  curve: Curve;
+
+  constructor(curve: Curve) {
+    this.curve = curve;
+  }
+
   /**
    * Perform Shamir sharing on the secret `secret` to the degree `threshold - 1` split `numShares`
    * ways. The split secret requires `threshold` shares to be reconstructed.
@@ -12,41 +21,38 @@ const Shamir = (curve: any) => {
    * @returns Dictionary of shares. Each key is an int in the range 1<=x<=numShares
    * representing that share's free term.
    */
-  const split = (
-    secret: Buffer,
-    threshold: number,
-    numShares: number,
-    indices?: Array<number>,
-  ): Record<number, Buffer> => {
-    if (indices === undefined) {
+  split(secret: bigint, threshold: number, numShares: number, indices?: Array<number>): Record<number, bigint> {
+    let bigIndices: Array<bigint>;
+    if (indices) {
+      bigIndices = indices.map((i) => BigInt(i));
+    } else {
       // make range(1, n + 1)
-      indices = Array.from({ length: numShares }, (_, i) => i + 1);
+      bigIndices = Array(numShares)
+        .fill(null)
+        .map((_, i) => BigInt(i + 1));
     }
     assert(threshold > 1);
     assert(threshold <= numShares);
-    const coefs: Buffer[] = [];
+    const coefs: bigint[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
-      const random_value = curve.scalarRandom();
-      coefs.push(random_value);
+      const coeff = clamp(
+        bigIntFromBufferLE(crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest()),
+      );
+      coefs.push(coeff);
     }
     coefs.push(secret);
 
-    const shares: Record<number, Buffer> = {};
-    for (let ind = 0; ind < indices.length; ind++) {
-      const x = indices[ind];
-      const x_buffer = Buffer.alloc(32);
-      // TODO BG-40908 : converting internal representation to buffers
-      x_buffer.writeUInt32LE(x, 0);
+    const shares: Record<number, bigint> = {};
+    for (let ind = 0; ind < bigIndices.length; ind++) {
+      const x = bigIndices[ind];
       let partial = coefs[0];
       for (let other = 1; other < coefs.length; other++) {
-        const scalarMult = curve.scalarMult(partial, x_buffer);
-        const newAdd = curve.scalarAdd(coefs[other], scalarMult);
-        partial = newAdd;
+        partial = this.curve.scalarAdd(coefs[other], this.curve.scalarMult(partial, x));
       }
-      shares[x] = Buffer.from(partial);
+      shares[parseInt(x.toString(), 10)] = partial;
     }
     return shares;
-  };
+  }
 
   /**
    * Reconstitute a secret from a dictionary of shares. The number of shares must
@@ -55,45 +61,31 @@ const Shamir = (curve: any) => {
    * @param shares dictionary of shares. each key is the free term of the share
    * @returns secret
    */
-  const combine = (shares: Record<number, Buffer>): Buffer => {
-    let s = Buffer.alloc(32);
-    for (const xi in shares) {
-      const yi = shares[xi];
-      const xi_buffer = Buffer.alloc(32);
-      let num_buffer = Buffer.alloc(32);
-      let denum_buffer = Buffer.alloc(32);
-      xi_buffer.writeUInt32LE(parseInt(xi, 10), 0);
-      num_buffer.writeUInt32LE(1, 0);
-      denum_buffer.writeUInt32LE(1, 0);
+  combine(shares: Record<number, bigint>): bigint {
+    let s = BigInt(0);
+    for (const i in shares) {
+      const yi = shares[i];
+      const xi = BigInt(i);
+      let num = BigInt(1);
+      let denum = BigInt(1);
 
-      for (const xj in shares) {
-        const xj_buffer = Buffer.alloc(32);
-        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
+      for (const j in shares) {
+        const xj = BigInt(j);
         if (xi !== xj) {
-          num_buffer = curve.scalarMult(num_buffer, xj_buffer);
+          num = this.curve.scalarMult(num, xj);
         }
       }
-      num_buffer = Buffer.from(num_buffer);
-      for (const xj in shares) {
-        const xj_buffer = Buffer.alloc(32);
-        xj_buffer.writeUInt32LE(parseInt(xj, 10), 0);
+      for (const j in shares) {
+        const xj = BigInt(j);
         if (xi !== xj) {
-          denum_buffer = curve.scalarMult(denum_buffer, curve.scalarSub(xj_buffer, xi_buffer));
+          denum = this.curve.scalarMult(denum, this.curve.scalarSub(xj, xi));
         }
       }
-      denum_buffer = Buffer.from(denum_buffer);
-      const inverted = curve.scalarInvert(denum_buffer);
-      const innerMultiplied = curve.scalarMult(num_buffer, inverted);
-      const multiplied = curve.scalarMult(innerMultiplied, yi);
-      s = curve.scalarAdd(multiplied, s);
+      const inverted = this.curve.scalarInvert(denum);
+      const innerMultiplied = this.curve.scalarMult(num, inverted);
+      const multiplied = this.curve.scalarMult(innerMultiplied, yi);
+      s = this.curve.scalarAdd(multiplied, s);
     }
     return s;
-  };
-
-  return {
-    split,
-    combine,
-  };
-};
-
-export default Shamir;
+  }
+}
