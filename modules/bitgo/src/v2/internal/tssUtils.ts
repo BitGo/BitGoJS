@@ -352,7 +352,7 @@ export class TssUtils extends MpcUtils {
     const chain = this.baseCoin.getChain();
     const intentRecipients = params.recipients.map((recipient) => ({
       address: { address: recipient.address },
-      amount: { value: `${recipient.amount}`, asset: chain },
+      amount: { value: `${recipient.amount}`, symbol: chain },
     }));
 
     const whitelistedParams = {
