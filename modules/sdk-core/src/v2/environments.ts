@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import { EnvironmentName } from '@bitgo/sdk-core';
 import { V1Network } from './types';
 
 interface EnvironmentTemplate {
@@ -40,6 +39,22 @@ export const hardcodedPublicKeys = Object.freeze({
     dev: 'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
   },
 });
+
+export type EnvironmentName =
+  | 'prod'
+  | 'staging'
+  | 'test'
+  | 'dev'
+  | 'latest'
+  | 'local'
+  | 'localNonSecure'
+  | 'mock'
+  | 'adminProd'
+  | 'adminTest'
+  | 'adminDev'
+  | 'adminLatest'
+  | 'custom'
+  | 'branch';
 
 export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
 

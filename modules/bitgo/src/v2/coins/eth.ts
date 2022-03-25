@@ -29,7 +29,7 @@ import {
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
 import { Wallet } from '../wallet';
-import * as common from '../../common';
+import { common } from '@bitgo/sdk-core';
 import * as config from '../../config';
 import { Util } from '../internal/util';
 import {

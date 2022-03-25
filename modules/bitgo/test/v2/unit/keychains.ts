@@ -8,7 +8,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import * as common from '../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils } from '../../../src/v2/internal/tssUtils';
 import { BlsUtils } from '../../../src/v2/internal/blsUtils';

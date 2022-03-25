@@ -4,10 +4,11 @@ import { BitGo } from '../bitgo';
 import { BaseCoin, KeychainsTriplet, KeyPair } from './baseCoin';
 import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
-import { validateParams } from '../common';
+import { common } from '@bitgo/sdk-core';
 import { TssUtils } from './internal/tssUtils';
 import { BlsUtils } from './internal/blsUtils';
 
+const { validateParams } = common;
 export interface Keychain {
   id: string;
   pub: string;

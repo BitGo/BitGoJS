@@ -5,10 +5,11 @@ import * as _ from 'lodash';
 import * as debugLib from 'debug';
 import { BitGo } from '../bitgo';
 
-import { validateParams } from '../common';
+import { common } from '@bitgo/sdk-core';
 import { PendingApproval } from './pendingApproval';
 import { BaseCoin } from './baseCoin';
 
+const { validateParams } = common;
 const debug = debugLib('bitgo:v2:pendingApprovals');
 
 export interface ListPendingApprovalsOptions {

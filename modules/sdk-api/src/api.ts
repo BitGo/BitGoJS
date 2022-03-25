@@ -9,8 +9,8 @@ import * as superagent from 'superagent';
 import * as urlLib from 'url';
 import * as querystring from 'querystring';
 
-import { ApiResponseError } from './errors';
-import { BitGo, VerifyResponseOptions } from './bitgo';
+import { ApiResponseError, VerifyResponseOptions } from './types';
+import { BitGoAPI } from './bitgoAPI';
 
 const debug = Debug('bitgo:api');
 
@@ -176,7 +176,7 @@ export function setRequestQueryString(req: superagent.SuperAgentRequest): void {
  * Right now, it is very permissive with the timestamp variance.
  */
 export function verifyResponse(
-  bitgo: BitGo,
+  bitgo: BitGoAPI,
   token: string | undefined,
   method: VerifyResponseOptions['method'],
   req: superagent.SuperAgentRequest,

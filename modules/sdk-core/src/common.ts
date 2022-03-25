@@ -2,10 +2,10 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { V1Network } from './v2/types';
+import { Environments, V1Network } from './v2';
 
 // re-export from here for backwards compatibility reasons
-export { Environments } from './v2/environments';
+export { Environments };
 
 let bitcoinNetwork: V1Network;
 

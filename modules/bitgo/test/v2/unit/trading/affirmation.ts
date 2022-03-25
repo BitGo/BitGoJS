@@ -7,7 +7,7 @@ import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
 import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import { Environments } from '../../../../src';
 
 describe('Affirmations', function () {

@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { Xlm } from './xlm';
 import { CoinConstructor } from '../coinFactory';
-import { BitGoJsError } from '../../errors';
+import { BitGoJsError } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
 
 export interface StellarTokenConfig {
