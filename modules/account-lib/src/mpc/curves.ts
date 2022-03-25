@@ -1,64 +1,79 @@
 const sodium = require('libsodium-wrappers-sumo');
-import { randomBytes as cryptoRandomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
+import { bigIntFromBufferLE, bigIntToBufferLE } from './util';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const Ed25519Curve = async () => {
-  // sodium requires await for ready within block scope
-  await sodium.ready;
+interface Curve {
+  scalarRandom(): bigint;
+  scalarReduce(s: bigint): bigint;
+  scalarNegate(s: bigint): bigint;
+  scalarInvert(s: bigint): bigint;
+  scalarAdd(x: bigint, y: bigint): bigint;
+  scalarSub(x: bigint, y: bigint): bigint;
+  scalarMult(x: bigint, y: bigint): bigint;
+  basePointMult(n: bigint): bigint;
+  pointAdd(p: bigint, q: bigint): bigint;
+  verify(y: bigint, signedMessage: Buffer): Buffer;
+}
 
-  const scalarRandom = (): Uint8Array => {
-    const random_buffer = cryptoRandomBytes(64);
-    return sodium.crypto_core_ed25519_scalar_reduce(random_buffer);
-  };
+export default Curve;
 
-  const scalarReduce = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_reduce(s);
-  };
+export class Ed25519Curve {
+  static initialized = false;
 
-  const scalarNegate = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_negate(s);
-  };
+  static async initialize(): Promise<void> {
+    if (!Ed25519Curve.initialized) {
+      await sodium.ready;
+      Ed25519Curve.initialized = true;
+    }
+  }
 
-  const scalarInvert = (s: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_invert(s);
-  };
+  scalarRandom(): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(bigIntFromBufferLE(randomBytes(64)))),
+    );
+  }
 
-  const scalarAdd = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_add(x, y);
-  };
+  scalarReduce(s: bigint): bigint {
+    return bigIntFromBufferLE(Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(bigIntToBufferLE(s, 64))));
+  }
 
-  const scalarSub = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_sub(x, y);
-  };
+  scalarNegate(s: bigint): bigint {
+    return bigIntFromBufferLE(Buffer.from(sodium.crypto_core_ed25519_scalar_negate(bigIntToBufferLE(s, 32))));
+  }
 
-  const scalarMult = (x: Uint8Array, y: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_scalar_mul(x, y);
-  };
+  scalarInvert(s: bigint): bigint {
+    return bigIntFromBufferLE(Buffer.from(sodium.crypto_core_ed25519_scalar_invert(bigIntToBufferLE(s, 32))));
+  }
 
-  const basePointMult = (n: Uint8Array): Uint8Array => {
-    return sodium.crypto_scalarmult_ed25519_base_noclamp(n);
-  };
+  scalarAdd(x: bigint, y: bigint): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_core_ed25519_scalar_add(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+    );
+  }
 
-  const pointAdd = (p: Uint8Array, q: Uint8Array): Uint8Array => {
-    return sodium.crypto_core_ed25519_add(p, q);
-  };
+  scalarSub(x: bigint, y: bigint): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_core_ed25519_scalar_sub(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+    );
+  }
 
-  const verify = (y: Uint8Array, signedMessage: Uint8Array): Uint8Array => {
-    return sodium.crypto_sign_open(signedMessage, y);
-  };
+  scalarMult(x: bigint, y: bigint): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_core_ed25519_scalar_mul(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+    );
+  }
 
-  return {
-    scalarRandom,
-    scalarReduce,
-    scalarNegate,
-    scalarInvert,
-    scalarAdd,
-    scalarSub,
-    scalarMult,
-    basePointMult,
-    pointAdd,
-    verify,
-  };
-};
+  basePointMult(n: bigint): bigint {
+    return bigIntFromBufferLE(Buffer.from(sodium.crypto_scalarmult_ed25519_base_noclamp(bigIntToBufferLE(n, 32))));
+  }
 
-export default Ed25519Curve;
+  pointAdd(p: bigint, q: bigint): bigint {
+    return bigIntFromBufferLE(
+      Buffer.from(sodium.crypto_core_ed25519_add(bigIntToBufferLE(p, 32), bigIntToBufferLE(q, 32))),
+    );
+  }
+
+  verify(y: bigint, signedMessage: Buffer): Buffer {
+    return Buffer.from(sodium.crypto_sign_open(signedMessage, bigIntToBufferLE(y, 32)));
+  }
+}
