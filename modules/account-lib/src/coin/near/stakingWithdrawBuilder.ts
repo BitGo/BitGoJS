@@ -11,18 +11,18 @@ import { TransactionBuilder } from './transactionBuilder';
 import { StakingContractMethodNames } from './constants';
 import { BuildTransactionError } from '../baseCoin/errors';
 
-export class StakingDeactivateBuilder extends TransactionBuilder {
+export class StakingWithdrawBuilder extends TransactionBuilder {
   private contractCallWrapper: ContractCallWrapper;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.contractCallWrapper = new ContractCallWrapper();
-    this.contractCallWrapper.methodName = StakingContractMethodNames.Unstake;
-    this.contractCallWrapper.deposit = '0'; //
+    this.contractCallWrapper.methodName = StakingContractMethodNames.Withdraw;
+    this.contractCallWrapper.deposit = '0';
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.StakingDeactivate;
+    return TransactionType.StakingWithdraw;
   }
 
   /**
@@ -64,12 +64,12 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const { methodName, args, gas, deposit } = this.contractCallWrapper.getParams();
-    assert(gas, new BuildTransactionError('gas is required before building staking deactivate'));
-    assert(args?.amount, new BuildTransactionError('amount is required before building staking deactivate'));
+    assert(gas, new BuildTransactionError('gas is required before building staking withdraw'));
+    assert(args?.amount, new BuildTransactionError('amount is required before building staking withdraw'));
 
     super.actions([NearAPI.transactions.functionCall(methodName, args, new BN(gas), new BN(deposit))]);
     const tx = await super.buildImplementation();
-    tx.setTransactionType(TransactionType.StakingDeactivate);
+    tx.setTransactionType(TransactionType.StakingWithdraw);
     return tx;
   }
 }

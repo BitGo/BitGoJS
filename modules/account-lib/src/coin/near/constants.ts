@@ -6,4 +6,5 @@
 export const StakingContractMethodNames = {
   DepositAndStake: 'deposit_and_stake',
   Unstake: 'unstake',
+  Withdraw: 'withdraw',
 } as const;

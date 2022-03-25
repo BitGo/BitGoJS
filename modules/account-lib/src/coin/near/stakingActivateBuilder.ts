@@ -12,7 +12,7 @@ import { StakingContractMethodNames } from './constants';
 import { BuildTransactionError } from '../baseCoin/errors';
 
 export class StakingActivateBuilder extends TransactionBuilder {
-  private contractCallWrapper;
+  private contractCallWrapper: ContractCallWrapper;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -52,7 +52,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
   /**
    * Sets the amount of this transaction.
    *
-   * @param {string} value the amount in the minimum unit (yocto) of this transaction
+   * @param {string} value the amount in the minimum unit (1 Near = 1e24 yoctos) of this transaction
    * @returns {TransactionBuilder} This transaction builder
    */
   public amount(amount: string): this {

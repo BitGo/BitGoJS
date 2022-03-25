@@ -157,6 +157,9 @@ export class Transaction extends BaseTransaction {
       case StakingContractMethodNames.Unstake:
         this.setTransactionType(TransactionType.StakingDeactivate);
         break;
+      case StakingContractMethodNames.Withdraw:
+        this.setTransactionType(TransactionType.StakingWithdraw);
+        break;
     }
   }
 
@@ -224,6 +227,19 @@ export class Transaction extends BaseTransaction {
           coin: this._coinConfig.name,
         });
         break;
+      case TransactionType.StakingWithdraw:
+        const stakingWithdrawAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
+        inputs.push({
+          address: this._nearTransaction.receiverId,
+          value: stakingWithdrawAmount,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: this._nearTransaction.signerId,
+          value: stakingWithdrawAmount,
+          coin: this._coinConfig.name,
+        });
+        break;
     }
     this._outputs = outputs;
     this._inputs = inputs;
@@ -267,6 +283,26 @@ export class Transaction extends BaseTransaction {
     };
   }
 
+  /**
+   * Returns a complete explanation for a staking withdraw transaction
+   * @param {TxData} json The transaction data in json format
+   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
+   * @returns {TransactionExplanation}
+   */
+  explainStakingWithdrawTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    const amount = json.actions[0].functionCall?.args.amount as string;
+    return {
+      ...explanationResult,
+      outputAmount: amount,
+      outputs: [
+        {
+          address: json.signerId,
+          amount: amount,
+        },
+      ],
+    };
+  }
+
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const result = this.toJson();
@@ -290,6 +326,8 @@ export class Transaction extends BaseTransaction {
         return this.explainStakingActivateTransaction(result, explanationResult);
       case TransactionType.StakingDeactivate:
         return explanationResult;
+      case TransactionType.StakingWithdraw:
+        return this.explainStakingWithdrawTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
