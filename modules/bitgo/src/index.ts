@@ -7,7 +7,7 @@
 // Copyright 2022, BitGo, Inc.  All Rights Reserved.
 //
 import * as _ from 'lodash';
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export * from './bitgo';
@@ -24,8 +24,7 @@ export { Buffer } from 'buffer';
 
 export const Environments = _.cloneDeep(common.Environments);
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
-export { V1Network } from './v2/types';
-export { EnvironmentName } from '@bitgo/sdk-core';
+export { EnvironmentName, V1Network } from '@bitgo/sdk-core';
 export * from './v2';
 
 /**

@@ -57,7 +57,7 @@ import { Keychain, KeyIndices } from '../keychains';
 import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
-import { sanitizeLegacyPath } from '../../bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 const debug = debugLib('bitgo:v2:utxo');
 

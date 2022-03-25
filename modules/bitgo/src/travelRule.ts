@@ -16,9 +16,9 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 import { getNetwork, makeRandomKey } from './bitcoin';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { getSharedSecret } from './ecdh';
 
 interface DecryptReceivedTravelRuleOptions {

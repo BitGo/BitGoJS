@@ -14,10 +14,10 @@
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { makeRandomKey, getNetwork, getAddressP2PKH } from './bitcoin';
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { getSharedSecret } from './ecdh';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
