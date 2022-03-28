@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { Algo } from './algo';
 import { CoinConstructor } from '../coinFactory';
@@ -9,6 +8,7 @@ import { BitGoJsError } from '../../errors';
 
 export interface AlgoTokenConfig {
   name: string;
+  alias?: string;
   type: string;
   coin: string;
   network: string;
@@ -16,66 +16,70 @@ export interface AlgoTokenConfig {
 }
 
 export class AlgoToken extends Algo {
+  static readonly tokenNamePattern = /^([^:]+):(?:([^.]+)-)?([0-9]+)$/;
   static readonly tokenPattern: RegExp = /[0-9]/;
   public readonly tokenConfig: AlgoTokenConfig;
   private readonly _code: string;
-  private readonly _issuer: string;
 
   constructor(bitgo: BitGo, tokenConfig: AlgoTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
 
-    const [tokenCoin, token] = _.split(this.tokenConfig.type, Algo.coinTokenPatternSeparator);
+    const match = this.tokenConfig.type.match(AlgoToken.tokenNamePattern) || [];
+
+    const tokenCoin = match[1];
+    this._code = match[2];
+    const token = match[3];
+
     if (tokenCoin !== tokenConfig.coin) {
       throw new BitGoJsError(`invalid coin found in token: ${this.tokenConfig.type}`);
     }
-    if (!token || !token.match(AlgoToken.tokenPattern)) {
+    if (!token) {
       throw new BitGoJsError(`invalid token: ${this.tokenConfig.type}`);
     }
-    [this._code, this._issuer] = _.split(token, '-');
   }
 
   static createTokenConstructor(config: AlgoTokenConfig): CoinConstructor {
     return (bitgo: BitGo) => new AlgoToken(bitgo, config);
   }
 
-  get type() {
+  get type(): string {
     return this.tokenConfig.type;
   }
 
-  get name() {
+  get name(): string {
     return this.tokenConfig.name;
   }
 
-  get coin() {
+  get coin(): string {
     return this.tokenConfig.coin;
   }
 
-  get network() {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
-  get code() {
+  get code(): string {
     return this._code;
   }
 
-  get issuer() {
-    return this._issuer;
+  get issuer(): string | undefined {
+    return undefined; // Not defined for Algorand
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
-  getChain() {
+  getChain(): string {
     return this.tokenConfig.type;
   }
 
-  getBaseChain() {
+  getBaseChain(): string {
     return this.coin;
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Algo Token';
   }
 
@@ -83,7 +87,7 @@ export class AlgoToken extends Algo {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return true;
   }
 }

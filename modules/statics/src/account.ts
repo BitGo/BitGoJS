@@ -5,6 +5,7 @@ import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } f
 export interface AccountConstructorOptions {
   fullName: string;
   name: string;
+  alias?: string;
   network: AccountNetwork;
   asset: UnderlyingAsset;
   features: CoinFeature[];
@@ -868,6 +869,7 @@ export function hederaCoin(
  * Factory function for ALGO token instances.
  *
  * @param name unique identifier of the token
+ * @param alias (optional) alternative identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
@@ -881,6 +883,7 @@ export function hederaCoin(
  */
 export function algoToken(
   name: string,
+  alias: string | undefined,
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
@@ -890,10 +893,11 @@ export function algoToken(
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.algorand,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
-) {
+): Readonly<AlgoCoin> {
   return Object.freeze(
     new AlgoCoin({
       name,
+      alias,
       fullName,
       decimalPlaces,
       asset,
@@ -912,6 +916,7 @@ export function algoToken(
  * Factory function for testnet ALGO token instances.
  *
  * @param name unique identifier of the token
+ * @param alias (optional) alternative identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
@@ -924,6 +929,7 @@ export function algoToken(
  */
 export function talgoToken(
   name: string,
+  alias: string | undefined,
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
@@ -932,8 +938,8 @@ export function talgoToken(
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.algorand
-) {
-  return algoToken(name, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
+): Readonly<AlgoCoin> {
+  return algoToken(name, alias, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
 }
 
 /**

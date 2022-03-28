@@ -3,31 +3,48 @@ import { DuplicateCoinDefinitionError, CoinNotDefinedError } from './errors';
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
+  // Holds key equivalences used during an asset name migration
+  private readonly _coinByAliases = new Map<string, Readonly<BaseCoin>>();
 
-  private constructor() {}
+  private constructor() {
+    // Do not instantiate
+  }
 
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
     return coins.reduce((coinMap, coin) => {
-      if (coinMap._map.has(coin.name)) {
+      if (coinMap.has(coin.name)) {
         throw new DuplicateCoinDefinitionError(coin.name);
       }
       coinMap._map.set(coin.name, coin);
+      const alias = coin.alias;
+      if (alias) {
+        if (coinMap.has(alias)) {
+          throw new DuplicateCoinDefinitionError(alias);
+        }
+        coinMap._coinByAliases.set(alias, coin);
+      }
       return coinMap;
     }, new CoinMap());
   }
 
   /**
    * Override `get` to throw if a coin is missing, instead of returning undefined.
+   * It will honor key equivalences in case given key is missing.
    * @param {string} key
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    if (this._map.has(key)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this._map.get(key)!;
+    const coin = this._map.get(key) || this._coinByAliases.get(key);
+
+    if (coin) {
+      return coin;
     }
 
     throw new CoinNotDefinedError(key);
+  }
+
+  public has(key: string): boolean {
+    return this._map.has(key) || this._coinByAliases.has(key);
   }
 
   public map<T>(mapper: (coin: Readonly<BaseCoin>, coinName: string) => T): T[] {

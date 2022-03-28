@@ -888,6 +888,7 @@ export const coins = CoinMap.fromCoins([
   tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
   algoToken(
     'algo:31566704',
+    'algo:USDC-31566704',
     'USDC',
     6,
     UnderlyingAsset['algo:31566704'],
@@ -898,6 +899,7 @@ export const coins = CoinMap.fromCoins([
   ),
   algoToken(
     'algo:312769',
+    'algo:USDt-312769',
     'Tether USDt',
     6,
     UnderlyingAsset['algo:312769'],
@@ -1164,6 +1166,7 @@ export const coins = CoinMap.fromCoins([
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
   talgoToken(
     'talgo:10458941',
+    'talgo:USDC-10458941',
     'USDC',
     6,
     UnderlyingAsset['talgo:10458941'],
@@ -1174,6 +1177,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:180447',
+    'talgo:USDt-180447',
     'USDt',
     6,
     UnderlyingAsset['talgo:180447'],
@@ -1184,6 +1188,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:16026728',
+    'talgo:USON-16026728',
     'Unison',
     2,
     UnderlyingAsset['talgo:16026728'],
@@ -1194,6 +1199,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:16026732',
+    'talgo:SPRW-16026732',
     'Sparrow',
     4,
     UnderlyingAsset['talgo:16026732'],
@@ -1204,6 +1210,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:16026733',
+    'talgo:KAL-16026733',
     'Kalki',
     8,
     UnderlyingAsset['talgo:16026733'],
