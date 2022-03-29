@@ -101,16 +101,19 @@ export class Transaction extends BaseTransaction {
         nearAPI.transactions.SignedTransaction,
         nearAPI.utils.serialize.base_decode(rawTransaction),
       );
+      signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
       this._nearSignedTransaction = signedTx;
       this._nearTransaction = signedTx.transaction;
       this._id = utils.base58Encode(this.getTransactionHash());
     } catch (e) {
       try {
-        this._nearTransaction = nearAPI.utils.serialize.deserialize(
+        const unsignedTx = nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
           nearAPI.utils.serialize.base_decode(rawTransaction),
         );
+        unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
+        this._nearTransaction = unsignedTx;
         this._id = utils.base58Encode(this.getTransactionHash());
       } catch (e) {
         throw new InvalidTransactionError('unable to build transaction from raw');
@@ -147,10 +150,14 @@ export class Transaction extends BaseTransaction {
    * @param methodName method name to match and set the transaction type
    */
   private setTypeByStakingMethod(methodName: string): void {
-    const stakingContractTypes = {
-      [StakingContractMethodNames.DepositAndStake]: this.setTransactionType(TransactionType.StakingActivate),
-    };
-    stakingContractTypes[methodName];
+    switch (methodName) {
+      case StakingContractMethodNames.DepositAndStake:
+        this.setTransactionType(TransactionType.StakingActivate);
+        break;
+      case StakingContractMethodNames.Unstake:
+        this.setTransactionType(TransactionType.StakingDeactivate);
+        break;
+    }
   }
 
   /**
@@ -281,6 +288,8 @@ export class Transaction extends BaseTransaction {
         return this.explainTransferTransaction(result, explanationResult);
       case TransactionType.StakingActivate:
         return this.explainStakingActivateTransaction(result, explanationResult);
+      case TransactionType.StakingDeactivate:
+        return explanationResult;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }

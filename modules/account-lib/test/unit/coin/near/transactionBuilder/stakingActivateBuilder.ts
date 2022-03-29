@@ -141,6 +141,23 @@ describe('Near Staking Activate Builder', () => {
         coin: 'tnear',
       });
       tx.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
+      const txJson = tx.toJson();
+      txJson.should.have.properties(['id', 'signerId', 'publicKey', 'nonce', 'actions', 'signature']);
+      txJson.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
+      txJson.signerId.should.equal(testData.accounts.account1.address);
+      txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
+      txJson.nonce.should.equal(1);
+      txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
+      txJson.actions.should.deepEqual([
+        {
+          functionCall: {
+            methodName: 'deposit_and_stake',
+            args: {},
+            gas: '125000000000000',
+            deposit: '1000000',
+          },
+        },
+      ]);
     });
   });
 });
