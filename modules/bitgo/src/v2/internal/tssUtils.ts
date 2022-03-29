@@ -11,6 +11,7 @@ import Eddsa, {
   SignShare,
   PShare,
   XShare,
+  YShare,
   RShare,
   GShare,
 } from '@bitgo/account-lib/dist/src/mpc/tss';
@@ -38,9 +39,9 @@ interface PrebuildTransactionWithIntentOptions {
 }
 
 enum ShareKeyPosition {
-  USER = '1',
-  BACKUP = '2',
-  BITGO = '3',
+  USER = 1,
+  BACKUP = 2,
+  BITGO = 3,
 }
 
 // complete with more props if neccesary
@@ -106,7 +107,8 @@ export class TssUtils extends MpcUtils {
     passphrase: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
-    const MPC = await Eddsa();
+    await Eddsa.initialize();
+    const MPC = new Eddsa();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Missing BitGo key shares');
@@ -120,10 +122,11 @@ export class TssUtils extends MpcUtils {
     const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
 
     const bitgoToUser = {
-      i: '1',
-      j: '3',
+      i: 1,
+      j: 3,
       y: Buffer.from(bs58.decode(bitGoToUserShare.publicShare)).toString('hex'),
-      u: bitGoToUserPrivateShare,
+      u: bitGoToUserPrivateShare.slice(0, 64),
+      chaincode: bitGoToUserPrivateShare.slice(64),
     };
 
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
@@ -172,7 +175,8 @@ export class TssUtils extends MpcUtils {
     bitgoKeychain: Keychain,
     passphrase: string
   ): Promise<Keychain> {
-    const MPC = await Eddsa();
+    await Eddsa.initialize();
+    const MPC = new Eddsa();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Invalid bitgo keyshares');
@@ -186,10 +190,11 @@ export class TssUtils extends MpcUtils {
     const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
 
     const bitgoToBackup = {
-      i: '2',
-      j: '3',
+      i: 2,
+      j: 3,
       y: Buffer.from(bs58.decode(bitGoToBackupShare.publicShare)).toString('hex'),
-      u: bitGoToBackupPrivateShare,
+      u: bitGoToBackupPrivateShare.slice(0, 64),
+      chaincode: bitGoToBackupPrivateShare.slice(64),
     };
 
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);
@@ -261,7 +266,8 @@ export class TssUtils extends MpcUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    const MPC = await Eddsa();
+    await Eddsa.initialize();
+    const MPC = new Eddsa();
     const m = 2;
     const n = 3;
 
@@ -335,7 +341,15 @@ export class TssUtils extends MpcUtils {
 
     const bitgoToUserRShare = await this.getBitgoToUserRShare(txRequestId);
 
-    const userToBitGoGShare = await this.createUserToBitGoGShare(userSignShare, bitgoToUserRShare, signablePayload);
+    const backupToUserYShare = null;
+
+    const userToBitGoGShare = await this.createUserToBitGoGShare(
+      userSignShare,
+      bitgoToUserRShare,
+      // @ts-expect-error: TODO: Get the backup provider Y Share received during wallet creation as `backupToUserYShare`.
+      backupToUserYShare,
+      signablePayload
+    );
 
     await this.sendUserToBitgoGShare(txRequestId, userToBitGoGShare);
 
@@ -387,7 +401,8 @@ export class TssUtils extends MpcUtils {
       throw new Error('Invalid PShare, PShare doesnt belong to the User');
     }
     const jShare: JShare = { i: ShareKeyPosition.BITGO, j: ShareKeyPosition.USER };
-    const MPC = await Eddsa();
+    await Eddsa.initialize();
+    const MPC = new Eddsa();
     return MPC.signShare(signablePayload, pShare, [jShare]);
   }
 
@@ -497,12 +512,14 @@ export class TssUtils extends MpcUtils {
    *
    * @param {SignShare} userSignShare - the User Sign Share
    * @param {SignatureShareRecord} bitgoToUserRShare - the Bitgo to User RShare
+   * @param {YShare} backupToUserYShare - the backup key Y share received during wallet creation
    * @param {Buffer} signablePayload - the signable payload from a tx
    * @returns {Promise<GShare>} - the User to Bitgo GShare
    */
   async createUserToBitGoGShare(
     userSignShare: SignShare,
     bitgoToUserRShare: SignatureShareRecord,
+    backupToUserYShare: YShare,
     signablePayload: Buffer
   ): Promise<GShare> {
     if (userSignShare.xShare.i !== ShareKeyPosition.USER) {
@@ -511,16 +528,24 @@ export class TssUtils extends MpcUtils {
     if (bitgoToUserRShare.from !== SignatureShareType.BITGO || bitgoToUserRShare.to !== SignatureShareType.USER) {
       throw new Error('Invalid RShare, is not from Bitgo to User');
     }
+    if (backupToUserYShare.i !== ShareKeyPosition.USER) {
+      throw new Error('Invalid YShare, doesnt belong to the User');
+    }
+    if (backupToUserYShare.j !== ShareKeyPosition.BACKUP) {
+      throw new Error('Invalid YShare, is not backup key');
+    }
 
     const userXShare: XShare = userSignShare.xShare;
     const RShare: RShare = {
       i: ShareKeyPosition.USER,
       j: ShareKeyPosition.BITGO,
+      u: userXShare.u,
       r: bitgoToUserRShare.share.substring(0, 64),
       R: bitgoToUserRShare.share.substring(64, 128),
     };
-    const MPC = await Eddsa();
-    return MPC.sign(signablePayload, userXShare, [RShare]);
+    await Eddsa.initialize();
+    const MPC = new Eddsa();
+    return MPC.sign(signablePayload, userXShare, [RShare], [backupToUserYShare]);
   }
 
   /**

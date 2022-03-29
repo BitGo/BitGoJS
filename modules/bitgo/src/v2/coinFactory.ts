@@ -217,6 +217,9 @@ for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]
 for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.tokens]) {
   const tokenConstructor = AlgoToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+  if (token.alias) {
+    GlobalCoinFactory.registerCoinConstructor(token.alias, tokenConstructor);
+  }
 }
 
 const zipAvaxToken: Record<string, AvaxcTokenConfigEnvDependent> = {};
