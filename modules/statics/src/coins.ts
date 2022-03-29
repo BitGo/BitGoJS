@@ -658,6 +658,7 @@ export const coins = CoinMap.fromCoins([
   erc20('tlab', 'TLAB', 18, '0x36222730e78a8656230c54f9e402a062d168d2d9', UnderlyingAsset.TLAB),
   erc20('tnt', 'Tierion', 8, '0x08f5a9235b08173b7569f83645d2c7fb55e8ccd8', UnderlyingAsset.TNT),
   erc20('tok', 'Tokenplace', 8, '0x4fb721ef3bf99e0f2c193847afa296b9257d3c30', UnderlyingAsset.TOK),
+  erc20('traxx', 'TokenTrax', 18, '0xd43be54c1aedf7ee4099104f2dae4ea88b18a249', UnderlyingAsset.TRAXX),
   erc20('tribe', 'Tribe', 18, '0xc7283b66eb1eb5fb86327f08e1b5816b0720212b', UnderlyingAsset.TRIBE),
   erc20('trl', 'Triall Token', 18, '0x58f9102bf53cf186682bd9a281d3cd3c616eec41', UnderlyingAsset.TRL),
   erc20('trst', 'WeTrust', 6, '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', UnderlyingAsset.TRST),

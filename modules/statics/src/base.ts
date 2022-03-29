@@ -640,6 +640,7 @@ export enum UnderlyingAsset {
   TLAB = 'tlab',
   TNT = 'tnt',
   TOK = 'tok',
+  TRAXX = 'traxx',
   TRIBE = 'tribe',
   TRL = 'trl',
   TRST = 'trst',
