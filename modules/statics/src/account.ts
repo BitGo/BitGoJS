@@ -1184,7 +1184,7 @@ export function fiatToken(
   fullName: string,
   asset: UnderlyingAsset,
   decimalPlaces: number,
-  network: BaseNetwork,
+  network: BaseNetwork = Networks.main.fiat,
   prefix = '',
   suffix: string = name.toUpperCase(),
   features: CoinFeature[] = FiatToken.DEFAULT_FEATURES,

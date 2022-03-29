@@ -432,6 +432,12 @@ class FiatTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
+class Fiat extends Mainnet implements AccountNetwork {
+  name = 'Fiat';
+  family = CoinFamily.FIAT;
+  explorerUrl = undefined;
+}
+
 class Trx extends Mainnet implements TronNetwork {
   name = 'Trx';
   family = CoinFamily.TRX;
@@ -533,6 +539,7 @@ export const Networks = {
     ethereum: Object.freeze(new Ethereum()),
     ethereum2: Object.freeze(new Ethereum2()),
     ethereumClassic: Object.freeze(new EthereumClassic()),
+    fiat: Object.freeze(new Fiat()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
     maticl: Object.freeze(new MaticL()),
