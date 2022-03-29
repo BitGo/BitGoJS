@@ -605,6 +605,9 @@ export class Wallet {
       'keyregTxBase64',
       'closeRemainderTo',
       'tokenName',
+      // param to set emergency flag on a custodial transaction.
+      // This transaction should be performed in less than 1 hour or it will fail.
+      'emergency',
     ];
   }
 
