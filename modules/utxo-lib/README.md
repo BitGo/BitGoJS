@@ -7,24 +7,39 @@ This library is a wrapper around [bitcoinjs-lib](https://github.com/bitcoinjs/bi
 - Backed by [BitGo](https://www.bitgo.com/info/)
 
 ## Installation
+
 ``` bash
+# using npm
 npm install @bitgo/utxo-lib
+
+# using yarn
+yarn add @bitgo/utxo-lib
 ```
 
 ## Setup
-### Node.js
-```typescript
+
+JavaScript (ESM)
+``` javascript
 import * as utxolib from '@bitgo/utxo-lib'
 ```
 
+NodeJS (CJS)
+``` javascript
+const utxolib = require('@bitgo/utxo-lib')
+```
 
 ## Usage
 
 Support for parsing and building altcoin transactions is provided by the following methods
 
-* `utxolib.bitgo.createTransactionFromBuffer(buffer, network): UtxoTransaction` (similarly `createTransactionFromHex(string, network)`)
-* `utxolib.bitgo.createTransactionBuilderForNetwork(network): UtxoTransactionBuilder`
-* `utxolib.bitgo.createTransactionBuilderFromTransaction(tx): UtxoTransactionBuilder`
+``` typescript
+utxolib.bitgo.createTransactionFromBuffer(buffer, network): UtxoTransaction
+// (similarly `createTransactionFromHex(string, network)`)
+
+utxolib.bitgo.createTransactionBuilderForNetwork(network): UtxoTransactionBuilder
+
+utxolib.bitgo.createTransactionBuilderFromTransaction(tx): UtxoTransactionBuilder
+```
 
 The `UtxoTransaction(Builder)` classes have the same interface as the `Transaction` type in `bitcoinjs-lib` .
 
@@ -40,3 +55,4 @@ The `UtxoTransaction(Builder)` classes have the same interface as the `Transacti
 |Litecoin|`utxolib.networks.litecoin`|`utxolib.networks.litecoinTest`|
 |Zcash|`utxolib.networks.zcash`|`utxolib.networks.zcashTest`|
 
+> [Bitcoin SV](https://blog.bitgo.com/bsv-deprecation-6b3fff4df34c) no longer supports sending funds to BitGo wallets. Existing customers with Bitcoin SV in BitGo wallets will still be able to access and sweep funds to an external Bitcoin SV wallet.

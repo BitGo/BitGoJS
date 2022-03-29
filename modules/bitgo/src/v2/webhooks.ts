@@ -12,12 +12,14 @@ import { BaseCoin } from './baseCoin';
 
 export interface AddOptions {
   url: string;
-  type: string;
+  type: 'block' | 'wallet_confirmation';
+  label?: string;
+  numConfirmations?: number;
 }
 
 export interface RemoveOptions {
   url: string;
-  type: string;
+  type: 'block' | 'wallet_confirmation';
 }
 
 export interface ListNotificationsOptions {
@@ -53,9 +55,9 @@ export class Webhooks {
    * @param params
    * @returns {*}
    */
-  async add(params: AddOptions): Promise<any> {
-    validateParams(params, ['url', 'type'], []);
-    return await this.bitgo.post(this.baseCoin.url('/webhooks')).send(params).result();
+  async add({ url, type, label, numConfirmations = 0 }: AddOptions): Promise<any> {
+    validateParams({ url, type, label, numConfirmations }, ['url', 'type'], ['string', 'numConfirmations']);
+    return await this.bitgo.post(this.baseCoin.url('/webhooks')).send({ url, type, label, numConfirmations }).result();
   }
 
   /**

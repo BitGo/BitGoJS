@@ -26,8 +26,7 @@ In this directory, you can find examples on how to use the BitGoJS SDK with Type
 
 ### Webhooks
 
-* [Webhooks - Add (Block)](./ts/webhooks-block-add.ts)
-* Webhooks - Add (Wallet) - Coming Soon
+* [Webhooks - Add](./ts/webhooks-add.ts)
 * [Webhooks - List](./ts/webhooks-list.ts)
 * [Webhooks - Remove](./ts/webhooks-remove.ts)
 * [Webhooks - List Notifications](./ts/webhooks-list-notifications.ts)

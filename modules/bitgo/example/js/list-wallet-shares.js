@@ -5,7 +5,7 @@
  * This tool will help you see how to use the BitGo API to easily list your
  * BitGo wallets.
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
 const BitGoJS = require('bitgo');

@@ -1,7 +1,7 @@
 /**
  * Recover XRP from a multi-sig wallet at BitGo.
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 const Promise = require('bluebird');
 const BitGoJS = require('bitgo');
