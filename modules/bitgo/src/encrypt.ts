@@ -1,4 +1,4 @@
-import * as sjcl from './vendor/sjcl.min.js';
+import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
 /**
