@@ -16,7 +16,7 @@ import shamir = require('secrets.js-grempe');
 import sjcl = require('@bitgo/sjcl');
 import bs58 = require('bs58');
 import * as common from './common';
-import { EnvironmentName, AliasEnvironments } from './v2/environments';
+// import { AliasEnvironments } from './v2/environments';
 import { RequestTracer as IRequestTracer, V1Network } from './v2/types';
 import pjson = require('../package.json');
 import moment = require('moment');
@@ -46,6 +46,8 @@ import {
 import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
 import { decrypt, encrypt } from './encrypt';
+import { EnvironmentName } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 const debug = debugLib('bitgo:index');
 
@@ -316,28 +318,29 @@ export interface RegisterPushTokenOptions {
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
-export interface BitGo {
-  get(url: string): BitGoRequest;
-  post(url: string): BitGoRequest;
-  put(url: string): BitGoRequest;
-  del(url: string): BitGoRequest;
-  patch(url: string): BitGoRequest;
-}
+// export interface BitGo {
+//   get(url: string): BitGoRequest;
+//   post(url: string): BitGoRequest;
+//   put(url: string): BitGoRequest;
+//   del(url: string): BitGoRequest;
+//   patch(url: string): BitGoRequest;
+// }
 
 // eslint-disable-next-line no-redeclare
-export class BitGo {
+export class BitGo extends BitGoAPI {  
   private static _testnetWarningMessage = false;
   private static _constants: any;
   private static _constantsExpire: any;
-  private readonly _env: EnvironmentName;
+  // private readonly _env: EnvironmentName;
+  
   /**
    * Expose env property for backwards compatibility
    * @deprecated
    */
-  public readonly env: EnvironmentName;
-  private readonly _baseUrl: string;
-  private readonly _baseApiUrl: string;
-  private readonly _baseApiUrlV2: string;
+  // public readonly env: EnvironmentName;
+  // private readonly _baseUrl: string;
+  // private readonly _baseApiUrl: string;
+  // private readonly _baseApiUrlV2: string;
   private _user?: User;
   private _keychains: any;
   private _wallets: any;
@@ -361,6 +364,7 @@ export class BitGo {
    * Constructor for BitGo Object
    */
   constructor(params: BitGoOptions = {}) {
+    super(params.env);
     if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub', 'stellarFederationServerUrl']) ||
       (params.useProduction && !_.isBoolean(params.useProduction))) {
       throw new Error('invalid argument');
@@ -372,8 +376,8 @@ export class BitGo {
 
     // By default, we operate on the test server.
     // Deprecate useProduction in the future
-    let env: EnvironmentName;
-
+    const env: EnvironmentName = this.env;
+    /*
     if (params.useProduction) {
       if (params.env && params.env !== 'prod') {
         throw new Error('cannot use useProduction when env=' + params.env);
@@ -444,6 +448,7 @@ export class BitGo {
 
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
+   */
     this._keychains = null;
     this._wallets = null;
     this._clientId = params.clientId;

@@ -1,6 +1,7 @@
 import { BitGoRequest } from './types';
 import debugLib from 'debug';
-import superagent from 'superagent';
+import * as superagent from 'superagent';
+import { EnvironmentName } from '@bitgo/sdk-core';
 
 const debug = debugLib('bitgo:api');
 
@@ -10,7 +11,18 @@ if (!(process as any).browser) {
 }
 
 export abstract class BitGoAPI {
-  constructor() {}
+  public readonly env: EnvironmentName;
+  protected readonly _baseUrl: string;
+  protected readonly _baseApiUrl: string;
+  protected readonly _baseApiUrlV2: string;
+  protected readonly _env: EnvironmentName;
+
+  constructor(env: EnvironmentName | undefined) {
+    this._env = this.env = env || 'test';
+    this._baseUrl = '';
+    this._baseApiUrl = '';
+    this._baseApiUrlV2 = '';
+  }
 
   get(url: string): BitGoRequest {
     return {} as any;
