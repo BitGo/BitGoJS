@@ -2,20 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": ".",
-    "typeRoots": [
-      "./types",
-      "../../types",
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
+    "rootDir": "./",
+    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"],
     "declarationDir": "./dist/types",
     "esModuleInterop": false
   },
-  "include": [
-    "src/**/*",
-    "package.json"
-  ],
+  "include": ["src/**/*", "package.json"],
   "typedocOptions": {
     "mode": "modules",
     "out": "docs",
@@ -24,5 +16,16 @@
     "excludePrivate": true,
     "excludeProtected": true,
     "ignoreCompilerErrors": true
-  }
+  },
+  "references": [
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../statics"
+    }
+  ]
 }

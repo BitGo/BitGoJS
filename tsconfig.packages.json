@@ -1,0 +1,32 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./modules/account-lib"
+    },
+    {
+      "path": "./modules/bitgo"
+    },
+    {
+      "path": "./modules/blockapis"
+    },
+    {
+      "path": "./modules/express"
+    },
+    {
+      "path": "./modules/sdk-api"
+    },
+    {
+      "path": "./modules/sdk-core"
+    },
+    {
+      "path": "./modules/statics"
+    },
+    {
+      "path": "./modules/utxo-bin"
+    },
+    {
+      "path": "./modules/utxo-lib"
+    }
+  ]
+}
