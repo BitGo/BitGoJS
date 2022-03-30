@@ -20,7 +20,8 @@
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
+    "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"

@@ -8,4 +8,6 @@ test/
 scripts/
 .nyc_output
 CODEOWNERS
-
+node_modules/
+.prettierignore
+.mocharc.js
