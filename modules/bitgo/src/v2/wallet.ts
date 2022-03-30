@@ -2072,6 +2072,8 @@ export class Wallet {
         addressVersion: this._wallet.coinSpecific.addressVersion,
       },
       keychain: keychains[0],
+      backupKeychain: keychains.length > 1 ? keychains[1] : null,
+      bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
       pubs: keychains.map((k) => k.pub),
       reqId: params.reqId,
     };
