@@ -25,7 +25,7 @@ export { Buffer } from 'buffer';
 export const Environments = _.cloneDeep(common.Environments);
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
 export { V1Network } from './v2/types';
-export { EnvironmentName } from './v2/environments';
+export { EnvironmentName } from '@bitgo/sdk-core';
 export * from './v2';
 
 /**

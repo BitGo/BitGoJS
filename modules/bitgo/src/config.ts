@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Environments, EnvironmentName } from './v2/environments';
+import { Environments } from './v2/environments';
 import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
@@ -22,6 +22,7 @@ import {
   AvaxERC20Token,
   FiatToken,
 } from '@bitgo/statics';
+import { EnvironmentName } from '@bitgo/sdk-core';
 
 export interface Tokens {
   bitcoin: {
