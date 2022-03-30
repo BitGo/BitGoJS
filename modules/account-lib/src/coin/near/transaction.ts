@@ -304,7 +304,7 @@ export class Transaction extends BaseTransaction {
     if (!this._nearTransaction) {
       throw new InvalidTransactionError('empty transaction');
     }
-    return Buffer.from(nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction));
+    return Buffer.from(this.getTransactionHash());
   }
 
   /**
