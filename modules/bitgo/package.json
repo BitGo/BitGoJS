@@ -48,6 +48,7 @@
     "@bitgo/account-lib": "^2.18.0",
     "@bitgo/blockapis": "^1.0.0",
     "@bitgo/sjcl": "^1.0.0",
+    "@bitgo/sdk-core": "^1.0.0",
     "@bitgo/statics": "^6.16.0",
     "@bitgo/unspents": "^0.7.2",
     "@bitgo/utxo-lib": "^2.2.1",
