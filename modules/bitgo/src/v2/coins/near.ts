@@ -194,6 +194,15 @@ export class Near extends BaseCoin {
   }
 
   /**
+   * Flag indicating if this coin supports TSS wallets.
+   * @returns {boolean} True if TSS Wallets can be created for this coin
+   */
+  supportsTss(): boolean {
+    return true;
+  }
+
+
+  /**
    * Explain/parse transaction
    * @param params
    */

@@ -9,13 +9,17 @@
  */
 
 const BitGoJS = require('bitgo');
-const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
+const bitgo = new BitGoJS.BitGo({
+  env: 'custom',
+  customRootURI: 'https://testnet-07-app.bitgo-dev.com',
+});
 
 // TODO: set your access token here
-const accessToken = null;
+// You can get this from User Settings > Developer Options > Add Access Token
+const accessToken = 'ece2a52887ee21d16765551b0a18b15e081b0fb3eb2c51bada2a87c8ef60bbc4';
 
-const coin = 'tltc';
+const coin = 'tnear';
 
 Promise.coroutine(function *() {
   bitgo.authenticateWithAccessToken({ accessToken });

@@ -8,14 +8,21 @@
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 const BitGoJS = require('bitgo');
-const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
+const bitgo = new BitGoJS.BitGo({
+  env: 'custom',
+  customRootURI: 'https://testnet-07-app.bitgo-dev.com',
+});
 
-const coin = 'tltc';
-const basecoin = bitgo.coin(coin);
 // TODO: set your access token here
-const accessToken = null;
-const walletId = '5941ce2db42fcbc70717e5a898fd1595';
+// You can get this from User Settings > Developer Options > Add Access Token
+const accessToken = 'ece2a52887ee21d16765551b0a18b15e081b0fb3eb2c51bada2a87c8ef60bbc4';
+
+// TODO: get the wallet with this id
+const walletId = '623dcda01e25ba00071bcdefe7de4604';
+
+const coin = 'tnear';
+const basecoin = bitgo.coin(coin);
 
 Promise.coroutine(function *() {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });

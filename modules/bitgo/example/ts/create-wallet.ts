@@ -12,9 +12,12 @@
  */
 import { BitGo } from 'bitgo';
 const bitgo = new BitGo({ env: 'test' });
-
+const bitgo = new BitGo({
+  env: 'custom',
+  customRootURI: 'https://testnet-07-app.bitgo-dev.com',
+});
 // TODO: set your access token here
-const accessToken = '';
+const accessToken = '76f84ca2989a5858e599a0b465422954d504b033693e05dc62a0da223747d6b5';
 
 // TODO: set a label for your new wallet here
 const label = 'Example Test Wallet';
