@@ -1,0 +1,49 @@
+{
+  "name": "@bitgo/sdk-api",
+  "version": "1.0.0",
+  "description": "REST wrapper for BitGoJS",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "lint-staged",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo Inc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/statics"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@types/superagent": "4.1.15",
+    "@bitgo/sdk-core": "^1.0.0",
+    "debug": "3.1.0",
+    "superagent": "3.8.3",
+    "superagent-proxy": "3.0.0"
+  }
+}

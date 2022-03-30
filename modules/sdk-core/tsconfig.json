@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "target": "es5",
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src/**/*", "package.json"],
+  "exclude": ["node_modules"]
+}
