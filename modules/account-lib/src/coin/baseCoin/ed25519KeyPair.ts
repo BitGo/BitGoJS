@@ -37,7 +37,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   private getKeyPair(naclKeyPair: nacl.SignKeyPair): DefaultKeys {
     return {
-      prv: toHex(naclKeyPair.secretKey.slice(0, 32)),
+      prv: toHex(naclKeyPair.secretKey.slice(0, 64)),
       pub: toHex(naclKeyPair.publicKey),
     };
   }
