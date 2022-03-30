@@ -1,0 +1,15 @@
+export type EnvironmentName =
+  | 'prod'
+  | 'staging'
+  | 'test'
+  | 'dev'
+  | 'latest'
+  | 'local'
+  | 'localNonSecure'
+  | 'mock'
+  | 'adminProd'
+  | 'adminTest'
+  | 'adminDev'
+  | 'adminLatest'
+  | 'custom'
+  | 'branch';
