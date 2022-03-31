@@ -1,10 +1,13 @@
 import 'should';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { Wallet } from '../../../../src';
 
 describe('Avaxc Token:', function () {
   let bitgo;
   let avaxcTokenCoin;
+
+  const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
 
   describe('In env test:', function () {
     const tokenName = 'tavaxc:link';
@@ -27,10 +30,63 @@ describe('Avaxc Token:', function () {
       avaxcTokenCoin.decimalPlaces.should.equal(18);
     });
 
-
     it('should return same token by contract address', function () {
       const tokencoinBycontractAddress = bitgo.coin(avaxcTokenCoin.tokenContractAddress);
       avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
+    });
+
+    it('should reject a txPrebuild from the bitgo server with the wrong coin', async function () {
+      const wallet = new Wallet(bitgo, avaxcTokenCoin, {});
+
+      const txParams = {
+        recipients: [{ amount: '1000000000000', address: address1 }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '1000000000000', address: address1 }],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: false,
+        coin: 'btc',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+        token: 'avaxc:link',
+      };
+
+      const verification = {};
+
+      await avaxcTokenCoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
+    });
+
+    it('must return true when sending correct txPrebuild parameters', async function () {
+      const wallet = new Wallet(bitgo, avaxcTokenCoin, {});
+
+      const txParams = {
+        recipients: [{ amount: '1000000000000', address: address1 }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '1000000000000', address: address1 }],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: false,
+        coin: 'avaxc',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+        token: 'avaxc:link',
+      };
+
+      const verification = {};
+
+      await avaxcTokenCoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.true;
     });
   });
 
