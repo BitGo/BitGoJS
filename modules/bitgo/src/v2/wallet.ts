@@ -588,6 +588,7 @@ export class Wallet {
       'minValue',
       'noSplitChange',
       'numBlocks',
+      'nonce',
       'recipients',
       'reservation',
       'sequenceId',
