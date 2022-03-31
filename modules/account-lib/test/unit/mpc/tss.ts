@@ -4,6 +4,7 @@
 import 'should';
 import * as bs58 from 'bs58';
 import * as sol from '@solana/web3.js';
+import { Dot } from '../../../src';
 
 import Eddsa from '../../../src/mpc/tss';
 import { Ed25519BIP32 } from '../../../src/mpc/hdTree';
@@ -146,6 +147,35 @@ describe('TSS EDDSA key generation and signing', function () {
     const rootPublicKey = MPC.deriveUnhardened(commonKeychain, rootPath);
     const solPk = new sol.PublicKey(bs58.encode(Buffer.from(rootPublicKey, 'hex')));
     solPk.toBuffer().toString('hex').should.equal(rootPublicKey);
+  });
+
+  it('should derive unhardened valid dot child keys', function () {
+    const hdTree = new Ed25519BIP32();
+    const MPC = new Eddsa(hdTree);
+
+    const A = MPC.keyShare(1, 2, 3);
+    const B = MPC.keyShare(2, 2, 3);
+    const C = MPC.keyShare(3, 2, 3);
+
+    const A_combine = MPC.keyCombine(A.uShare, [B.yShares[1], C.yShares[1]]);
+
+    const commonKeychain = A_combine.pShare.y + A_combine.pShare.chaincode;
+
+    for (let index = 0; index < 10; index++) {
+      const path = `m/0/0/${index}`;
+      const derive1 = MPC.deriveUnhardened(commonKeychain, path);
+      const derive2 = MPC.deriveUnhardened(commonKeychain, path);
+
+      derive1.should.equal(derive2, 'derivation should be deterministic');
+
+      const pubKeyPair = new Dot.KeyPair({ pub: derive1 });
+      pubKeyPair.getKeys().pub.should.equal(derive1);
+    }
+
+    const rootPath = 'm/';
+    const rootPublicKey = MPC.deriveUnhardened(commonKeychain, rootPath);
+    const pubKeyPair = new Dot.KeyPair({ pub: rootPublicKey });
+    pubKeyPair.getKeys().pub.should.equal(rootPublicKey);
   });
 
   it('should fail signing without meeting threshold', function () {
