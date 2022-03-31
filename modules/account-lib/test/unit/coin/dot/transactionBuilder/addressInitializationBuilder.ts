@@ -1,7 +1,15 @@
 import should from 'should';
 import sinon from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
-import { rawTx, accounts, txVersion, specVersion, genesisHash, chainName } from '../../../../resources/dot';
+import {
+  rawTx,
+  accounts,
+  txVersion,
+  specVersion,
+  genesisHash,
+  chainName,
+  mockTssSignature,
+} from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -60,7 +68,7 @@ describe('Dot Address Initialization Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
@@ -133,7 +141,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: sender.address })
-        .sign({ key: sender.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.owner, receiver.address);
@@ -163,7 +171,7 @@ describe('Dot Address Initialization Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.proxyType, ProxyType.ANY);
@@ -217,7 +225,7 @@ describe('Dot Address Initialization Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.proxyType, ProxyType.ANY);
@@ -262,7 +270,7 @@ describe('Dot Address Initialization Builder', () => {
         .validity({ firstValid: 8975007, maxDuration: 64 })
         .referenceBlock('0x9ed0c8ee5fdc375ee57f79591d7d0db4d7cd2aa0e5403a2ed84edf0f859e3f05')
         .sender({ address: sender.address })
-        .sign({ key: sender.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.proxyType, ProxyType.ANY);

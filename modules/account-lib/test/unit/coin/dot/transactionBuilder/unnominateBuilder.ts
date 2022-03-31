@@ -1,6 +1,6 @@
 import should from 'should';
 import { UnnominateBuilder } from '../../../../../src/coin/dot';
-import { accounts, rawTx, genesisHash, specVersion, txVersion } from '../../../../resources/dot';
+import { accounts, rawTx, genesisHash, specVersion, txVersion, mockTssSignature } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 
 describe('Dot Unnominate Builder', () => {
@@ -20,7 +20,7 @@ describe('Dot Unnominate Builder', () => {
         .referenceBlock(refBlock)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.sender, sender.address);
@@ -79,7 +79,7 @@ describe('Dot Unnominate Builder', () => {
         .validity({ firstValid: 3933 })
         .referenceBlock(refBlock)
         .sender({ address: sender.address })
-        .sign({ key: sender.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.sender, sender.address);

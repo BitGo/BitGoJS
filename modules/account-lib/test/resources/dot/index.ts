@@ -1,6 +1,9 @@
 export { testnetMetadataRpc } from './testnet';
 import { Networks } from '@bitgo/statics';
 
+export const mockTssSignature =
+  'aadae7fa1f53e7a5c900b330ff71bee6782cf3c29a2c6f9599162381cd021ad581c74ded89f49ec79adefed64af8ff16649553523dda9cb4f017cbf15681e50e';
+
 export const accounts = {
   account1: {
     secretKey: '874578010603af8e93b44bfc1d13b32830d0dbca6c89f28ccdc662afd3cdc824',

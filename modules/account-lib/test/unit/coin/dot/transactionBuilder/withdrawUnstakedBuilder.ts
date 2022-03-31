@@ -2,7 +2,15 @@ import should from 'should';
 import { assert, spy } from 'sinon';
 import { WithdrawUnstakedBuilder } from '../../../../../src/coin/dot';
 import { buildTestConfig } from './base';
-import { accounts, rawTx, specVersion, txVersion, chainName, genesisHash } from '../../../../resources/dot';
+import {
+  accounts,
+  rawTx,
+  specVersion,
+  txVersion,
+  chainName,
+  genesisHash,
+  mockTssSignature,
+} from '../../../../resources/dot';
 import utils from '../../../../../src/coin/dot/utils';
 
 describe('Dot WithdrawUnstaked Builder', () => {
@@ -37,7 +45,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
         .referenceBlock(refBlock)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
         .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+      builder.addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.numSlashingSpans, '0');
@@ -100,7 +108,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
         .validity({ firstValid: 3933 })
         .referenceBlock(refBlock)
         .sender({ address: sender.address })
-        .sign({ key: sender.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.numSlashingSpans, '0');

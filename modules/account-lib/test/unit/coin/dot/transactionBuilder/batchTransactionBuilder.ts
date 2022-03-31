@@ -1,7 +1,7 @@
 import should from 'should';
 import { spy, assert } from 'sinon';
 import { BatchTransactionBuilder } from '../../../../../src/coin/dot';
-import { accounts, rawTx, specVersion, txVersion } from '../../../../resources/dot';
+import { accounts, mockTssSignature, rawTx, specVersion, txVersion } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
 import { ProxyType } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
@@ -42,8 +42,9 @@ describe('Dot Batch Transaction Builder', () => {
         .validity({ firstValid: 9279281, maxDuration: 64 })
         .referenceBlock(referenceBlock)
         .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 0 })
-        .fee({ amount: 0, type: 'tip' });
-      builder.sign({ key: sender.secretKey });
+        .fee({ amount: 0, type: 'tip' })
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
+
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.batchCalls.length, rawTx.anonymous.batch.length);
@@ -129,7 +130,7 @@ describe('Dot Batch Transaction Builder', () => {
         .validity({ firstValid: 9266787, maxDuration: 64 })
         .referenceBlock(referenceBlock)
         .sender({ address: sender.address })
-        .sign({ key: sender.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.sender, sender.address);
