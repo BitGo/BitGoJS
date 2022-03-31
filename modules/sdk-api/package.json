@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "REST wrapper for BitGoJS",
   "main": "./dist/src/index.js",
+  "web": "./dist/web/main.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build": "tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "precommit": "lint-staged",
     "prepare": "npm run build",
     "build-web": "webpack",
-    "build-web-prod": "webpack --mode=production --node-env=production"
+    "build-web-prod": "webpack --mode=production --node-env=production",
+    "prepublishOnly": "npm run build-web-prod"
   },
   "author": "BitGo Inc.",
   "license": "MIT",

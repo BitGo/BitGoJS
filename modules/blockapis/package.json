@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose .",
     "lint": "eslint --quiet .",
     "unit-test": "mocha",
     "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'"
