@@ -33,7 +33,7 @@
     "lint": "eslint --quiet .",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "clean": "rm -r dist/*",
-    "build": "tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose .",
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
