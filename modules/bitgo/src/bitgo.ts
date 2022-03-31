@@ -13,7 +13,7 @@ import bitcoinMessage = require('bitcoinjs-message');
 import { BaseCoin } from './v2/baseCoin';
 const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
-import sjcl = require('./vendor/sjcl.min.js');
+import sjcl = require('@bitgo/sjcl');
 import bs58 = require('bs58');
 import * as common from './common';
 import { EnvironmentName, AliasEnvironments } from './v2/environments';

@@ -18,7 +18,7 @@ export * as Errors from './errors';
 /** @deprecated */
 export * as bitcoin from './legacyBitcoin';
 /** @deprecated */
-export const sjcl = require('./vendor/sjcl.min.js');
+export const sjcl = require('@bitgo/sjcl');
 
 export { Buffer } from 'buffer';
 

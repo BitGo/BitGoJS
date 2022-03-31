@@ -33,7 +33,7 @@
     "lint": "eslint --quiet .",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "clean": "rm -r dist/*",
-    "build": "tsc && node scripts/copySjcl.js",
+    "build": "tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
@@ -47,6 +47,7 @@
   "dependencies": {
     "@bitgo/account-lib": "^2.18.0",
     "@bitgo/blockapis": "^1.0.0",
+    "@bitgo/sjcl": "^1.0.0",
     "@bitgo/statics": "^6.16.0",
     "@bitgo/unspents": "^0.7.2",
     "@bitgo/utxo-lib": "^2.2.1",

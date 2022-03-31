@@ -740,7 +740,7 @@ To fix this, You can compile the typescript source manually by running `npm expl
 
 When this happens, you will see this message when running `npm install`:
 ```
-npm WARN lifecycle bitgo@5.0.0~prepublish: cannot run in wd %s %s (wd=%s) bitgo@5.0.0 tsc && node scripts/copySjcl.js /bitgojs
+npm WARN lifecycle bitgo@5.0.0~prepublish: cannot run in wd %s %s (wd=%s) bitgo@5.0.0 tsc /bitgojs
 ```
 
 If you really need to install BitGoJS as root, you'll have to install it using `npm install --unsafe-perm`.
