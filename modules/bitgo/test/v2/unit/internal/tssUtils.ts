@@ -1,4 +1,3 @@
-import * as bs58 from 'bs58';
 import * as _ from 'lodash';
 import * as nock from 'nock';
 import * as openpgp from 'openpgp';
@@ -12,8 +11,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 import { RequestTracer } from '../../../../src/v2/internal/util';
 
-// TODO: John doesn't have the bandwidth to update these tests, please help him.
-xdescribe('TSS Utils:', async function () {
+describe('TSS Utils:', async function () {
   let sandbox: sinon.SinonSandbox;
   let MPC;
   let bgUrl: string;
@@ -156,7 +154,12 @@ xdescribe('TSS Utils:', async function () {
       userKeychain.should.deepEqual(nockedUserKeychain);
 
       // unencrypted `prv` property should exist on backup keychain
-      JSON.stringify(backupCombined.pShare).should.equal(backupKeychain.prv);
+      JSON.stringify({
+        uShare: backupKeyShare.uShare,
+        commonChaincode: backupCombined.pShare.chaincode,
+        bitgoYShare: bitgoKeyShare.yShares[2],
+        userYShare: userKeyShare.yShares[2],
+      }).should.equal(backupKeychain.prv);
       should.exist(backupKeychain.encryptedPrv);
 
     });
@@ -206,9 +209,13 @@ xdescribe('TSS Utils:', async function () {
       userKeychain.should.deepEqual(nockedUserKeychain);
 
       // unencrypted `prv` property should exist on backup keychain
-      JSON.stringify(backupCombined.pShare).should.equal(backupKeychain.prv);
+      JSON.stringify({
+        uShare: backupKeyShare.uShare,
+        commonChaincode: backupCombined.pShare.chaincode,
+        bitgoYShare: bitgoKeyShare.yShares[2],
+        userYShare: userKeyShare.yShares[2],
+      }).should.equal(backupKeychain.prv);
       should.exist(backupKeychain.encryptedPrv);
-
     });
 
     it('should fail to generate TSS key chains', async function () {
@@ -238,14 +245,14 @@ xdescribe('TSS Utils:', async function () {
         MPC.keyShare(2, 2, 3),
         bitgoKeychain,
         'passphrase')
-        .should.be.rejectedWith('Failed to create user keychain - commonPubs do not match.');
+        .should.be.rejectedWith('Failed to create user keychain - commonChaincodes do not match.');
       await tssUtils.createUserKeychain(
         userGpgKey,
         MPC.keyShare(1, 2, 3),
         backupKeyShare,
         bitgoKeychain,
         'passphrase')
-        .should.be.rejectedWith('Failed to create user keychain - commonPubs do not match.');
+        .should.be.rejectedWith('Failed to create user keychain - commonChaincodes do not match.');
 
       await tssUtils.createBackupKeychain(
         userGpgKey,
@@ -253,14 +260,14 @@ xdescribe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeychain,
         'passphrase')
-        .should.be.rejectedWith('Failed to create backup keychain - commonPubs do not match.');
+        .should.be.rejectedWith('Failed to create backup keychain - commonChaincodes do not match.');
       await tssUtils.createBackupKeychain(
         userGpgKey,
         userKeyShare,
         MPC.keyShare(2, 2, 3),
         bitgoKeychain,
         'passphrase')
-        .should.be.rejectedWith('Failed to create backup keychain - commonPubs do not match.');
+        .should.be.rejectedWith('Failed to create backup keychain - commonChaincodes do not match.');
     });
   });
 
@@ -438,7 +445,8 @@ xdescribe('TSS Utils:', async function () {
     });
   });
 
-  describe('createUserSignShare:', async function() {
+  // TODO: Fix when updating TSS HD signing
+  xdescribe('createUserSignShare:', async function() {
     it('should succeed to create User SignShare', async function() {
       const userSignShare = await tssUtils.createUserSignShare(signablePayload, validUserPShare );
       userSignShare.should.have.properties(['xShare', 'rShares']);
@@ -561,7 +569,8 @@ xdescribe('TSS Utils:', async function () {
     });
   });
 
-  describe('createUserToBitGoGShare:', async function() {
+  // TODO: Fix when updating TSS HD signing
+  xdescribe('createUserToBitGoGShare:', async function() {
     it('should succeed to create a UserToBitGo GShare', async function() {
       const userToBitgoGShare = await tssUtils.createUserToBitGoGShare(
         validUserSignShare,
@@ -650,7 +659,11 @@ xdescribe('TSS Utils:', async function () {
     const bitgoCombined = MPC.keyCombine(bitgoKeyShare.uShare, [params.userKeyShare.yShares[3], params.backupKeyShare.yShares[3]]);
     const userGpgKeyActual = await openpgp.readKey({ armoredKey: params.userGpgKey.publicKey });
 
-    const bitgoToUserMessage = await openpgp.createMessage({ text: bitgoKeyShare.yShares[1].u });
+    const bitgoToUserMessage = await openpgp.createMessage({ text: Buffer.concat([
+        Buffer.from(bitgoKeyShare.yShares[1].u, 'hex'),
+        Buffer.from(bitgoKeyShare.yShares[1].chaincode, 'hex')
+      ]).toString('hex'),
+    });
     const encryptedBitgoToUserMessage = await openpgp.encrypt({
       message: bitgoToUserMessage,
       encryptionKeys: [userGpgKeyActual.toPublic()],
@@ -658,7 +671,10 @@ xdescribe('TSS Utils:', async function () {
     });
 
     const bitgoToBackupMessage = await openpgp.createMessage({
-      text: Buffer.from(bitgoKeyShare.yShares[2].u, 'hex').toString('hex'),
+      text: Buffer.concat([
+        Buffer.from(bitgoKeyShare.yShares[2].u, 'hex'),
+        Buffer.from(bitgoKeyShare.yShares[2].chaincode, 'hex')
+      ]).toString('hex'),
     });
     const encryptedBitgoToBackupMessage = await openpgp.encrypt({
       message: bitgoToBackupMessage,
@@ -666,22 +682,21 @@ xdescribe('TSS Utils:', async function () {
       format: 'armored',
     });
 
-
     const bitgoKeychain: Keychain = {
       id: '3',
-      pub: bitgoCombined.pShare.y,
-      commonPub: bs58.encode(Buffer.from(bitgoCombined.pShare.y, 'hex')),
+      pub: '',
+      commonKeychain: bitgoCombined.pShare.u + bitgoCombined.pShare.chaincode,
       keyShares: [
         {
           from: 'bitgo',
           to: 'user',
-          publicShare: bs58.encode(Buffer.from(bitgoKeyShare.yShares[1].y, 'hex')),
+          publicShare: bitgoKeyShare.yShares[1].y + bitgoKeyShare.yShares[1].chaincode,
           privateShare: encryptedBitgoToUserMessage.toString(),
         },
         {
           from: 'bitgo',
           to: 'backup',
-          publicShare: bs58.encode(Buffer.from(bitgoKeyShare.yShares[2].y, 'hex')),
+          publicShare: bitgoKeyShare.yShares[2].y + bitgoKeyShare.yShares[2].chaincode,
           privateShare: encryptedBitgoToBackupMessage.toString(),
         },
       ],
