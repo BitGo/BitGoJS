@@ -64,5 +64,14 @@ describe('Avaxc Token:', function () {
       avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
     });
 
+    it('should successfully verify coin', function() {
+      const txPrebuild = { coin: 'avaxc', token: 'avaxc:png' };
+      avaxcTokenCoin.verifyCoin(txPrebuild).should.equal(true);
+    });
+
+    it('should fail verify coin', function() {
+      const txPrebuild = { coin: 'eth', token: 'eth:png' };
+      avaxcTokenCoin.verifyCoin(txPrebuild).should.equal(false);
+    });
   });
 });
