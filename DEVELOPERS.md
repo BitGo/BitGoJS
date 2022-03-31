@@ -28,6 +28,16 @@ You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconf
 If this happens, navigate to the BitGoJs directory and run `git clean -f -d` to remove
 any errant files. Avoid using npm commands and stick with yarn.
 
+ Instead, you should just run 
+```
+yarn dev
+```
+from the root of the repo while developing. This will compile all of the linked TypeScript packages & begin watching for changes. If you want to just do a one time build, then simply running
+```
+yarn
+```
+from the root of the repo is what you'll want to do.
+
 # Commit Messages
 
 BitGoJS checks all commits against the [Conventional Commit Standard](https://www.conventionalcommits.org/en/v1.0.0/), and this is checked by CI when creating new pull requests using commitlint.
@@ -172,8 +182,10 @@ There are a few things each module's `tsconfig.json` must do:
 * Extend the root tsconfig.json
 * Set the `outDir` and `rootDir` compiler options
 * Set the `include` property to the correct module source directories (`package.json` should also be included if it is read at runtime)
+* Include references to other packages within the repo already added to the `package.json`
 
-Here is a template to help get started:
+Here is a template to help get started:</br>
+<b>Note: you only need to add references to other modules in the repo you actually use. </b>
 ```json
 {
   "extends": "../../tsconfig.json",
@@ -184,6 +196,17 @@ Here is a template to help get started:
   "include": [
     "src/**/*",
     "package.json"
+  ],
+  "references": [
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
+    }
   ]
 }
 ```
+
+## `tsconfig.packages.json`
+Each package should also be listed in the root level `tsconfig.packages.json` as well. 
