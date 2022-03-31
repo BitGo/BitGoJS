@@ -39,7 +39,7 @@ import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBuffe
 // 2^256
 const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');
 
-interface UShare {
+export interface UShare {
   i: number;
   t: number;
   n: number;
