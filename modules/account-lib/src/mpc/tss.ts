@@ -209,6 +209,31 @@ export default class Eddsa {
     return players;
   }
 
+  /**
+   * Derives a child public key from common keychain
+   *
+   * @param commonKeychain - common keychain as a hex string
+   * @param path - bip32 path
+   * @return {string} public key as a hex string
+   */
+  deriveUnhardened(commonKeychain: string, path: string): string {
+    if (this.hdTree === undefined) {
+      throw new Error("Can't derive key without HDTree implementation");
+    }
+
+    const keychain = Buffer.from(commonKeychain, 'hex');
+
+    const derivedPublicKeychain = this.hdTree.publicDerive(
+      {
+        pk: bigIntFromBufferLE(keychain.slice(0, 32)),
+        chaincode: bigIntFromBufferBE(keychain.slice(32)),
+      },
+      path,
+    );
+
+    return bigIntToBufferLE(derivedPublicKeychain.pk, 32).toString('hex');
+  }
+
   keyDerive(uShare: UShare, yShares: YShare[], path: string): SubkeyShare {
     if (this.hdTree === undefined) {
       throw new Error("Can't derive key without HDTree implementation");
