@@ -7,7 +7,7 @@ import {
   StakingBuilder,
   UnstakeBuilder,
 } from '../../../../../src/coin/dot';
-import { rawTx, accounts } from '../../../../resources/dot';
+import { rawTx, accounts, mockTssSignature } from '../../../../resources/dot';
 import * as materialData from '../../../../resources/dot/materialData.json';
 import { Material } from '../../../../../src/coin/dot/iface';
 
@@ -78,7 +78,7 @@ describe('dot Transaction Builder Factory', function () {
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
         .sender({ address: sender2.address })
-        .sign({ key: sender2.secretKey });
+        .addSignature({ pub: sender.publicKey }, Buffer.from(mockTssSignature, 'hex'));
       const tx = await builder.build();
       should.equal(tx.toBroadcastFormat(), rawTx.proxy.signed);
     });
