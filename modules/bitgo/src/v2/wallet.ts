@@ -1946,8 +1946,8 @@ export class Wallet {
 
     const presign = await this.baseCoin.presignTransaction(params);
 
-    if (txPrebuild.consolidateId === undefined && this._wallet.multisigType === 'tss') {
-      // consolidation will continue with single sig signing
+    if (this._wallet.multisigType === 'tss') {
+      // TODO (STLX-14667): TSS HD - Sign Consolidation transactions
       return this.signTransactionTss({ ...params, prv: this.getUserPrv(presign) });
     }
 
@@ -2676,8 +2676,11 @@ export class Wallet {
     signedPrebuild.consolidateId = params.prebuildTx.consolidateId;
 
     delete signedPrebuild.wallet;
-
-    return await this.submitTransaction(signedPrebuild);
+    if (this._wallet.multisigType === 'tss') {
+      return await this.submitTssTransaction(signedPrebuild);
+    } else {
+      return await this.submitTransaction(signedPrebuild);
+    }
   }
 
   /**
@@ -2810,6 +2813,15 @@ export class Wallet {
    */
   private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
+    return this.submitTssTransaction(signedTransaction);
+  }
+
+  /**
+   * Submit a transaction from a TSS wallet.
+   *
+   * @param {SignedTransactionRequest} signedTransaction - signed transaction request
+   */
+  private async submitTssTransaction(signedTransaction: SignedTransactionRequest): Promise<any> {
     if (!signedTransaction.txRequestId) {
       throw new Error('txRequestId missing from signed transaction');
     }

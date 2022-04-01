@@ -636,7 +636,7 @@ describe('V2 Wallet:', function () {
       solWallet = new Wallet(bitgo, bitgo.coin('tsol'), walletData);
       nock(bgUrl)
         .get(`/api/v2/${solWallet.coin()}/key/${solWallet.keyIds()[0]}`)
-        .times(3)
+        .times(4)
         .reply(200, {
           id: '598f606cd8fc24710d2ebad89dce86c2',
           pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
@@ -727,6 +727,35 @@ describe('V2 Wallet:', function () {
         // Build and sign the transaction
         const preBuiltSignedTx = await solWallet.prebuildAndSignTransaction(txParams);
         preBuiltSignedTx.should.have.property('txHex');
+      });
+
+      it('should be rejected when consolidation have a recipient address different from the root address', async function () {
+        const txParams = {
+          prebuildTx: {
+            walletId: walletData.id,
+            txHex: 'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE9MWWV2ct01mg5Gm4EqcJ9SAn2XuD+FuAHcHFTkc1Tgut3DgTsiSgTQ0dmzj5JJg6qYTpn8FxOYPFCFTMoZi46gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0Qc+q0Zg6OOpV8eCDVLfYziox7YBA7+QPLX4IRhDCSKwICAgABDAIAAACghgEAAAAAAAMAFVRlc3QgaW50ZWdyYXRpb24gbWVtbw==',
+            buildParams: {
+              memo: {
+                type: 'Memo',
+                value: 'Test integration memo',
+              },
+              recipients: [
+                {
+                  address: 'ChgJ5tgDwBUsk9RNMm2iLiwP8RodwgZ6uqrC5paJsXVQ',
+                  amount: '100000',
+                },
+              ],
+              type: 'transfer',
+            },
+            consolidateId: '1234',
+            consolidationDetails: {
+              senderAddressIndex: 1,
+            },
+          },
+          walletPassphrase: passphrase,
+        };
+
+        await solWallet.prebuildAndSignTransaction(txParams).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
       });
     });
 
