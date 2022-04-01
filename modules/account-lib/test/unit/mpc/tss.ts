@@ -143,7 +143,7 @@ describe('TSS EDDSA key generation and signing', function () {
       solPk.toBuffer().toString('hex').should.equal(derive1);
     }
 
-    const rootPath = 'm/';
+    const rootPath = 'm/0';
     const rootPublicKey = MPC.deriveUnhardened(commonKeychain, rootPath);
     const solPk = new sol.PublicKey(bs58.encode(Buffer.from(rootPublicKey, 'hex')));
     solPk.toBuffer().toString('hex').should.equal(rootPublicKey);

@@ -20,6 +20,7 @@ import {
 import { BitGo } from '../../bitgo';
 import * as common from '../../common';
 import { MethodNotImplementedError } from '../../errors';
+import { KeyIndices } from '../keychains';
 
 interface Recipient {
   address: string;
@@ -186,6 +187,13 @@ export class Eth2 extends BaseCoin {
    */
   getRecoveryGasLimit(): any {
     throw new Error('Method not yet implemented');
+  }
+
+  /**
+   * Specifies what key we will need for signing - ETH2 needs the backup, bitgo pubs.
+   */
+  keyIdsForSigning(): number[] {
+    return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
   }
 
   /**

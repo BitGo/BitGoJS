@@ -337,7 +337,8 @@ export class PendingApproval {
     }
 
     const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
-    const txRequest = await this.tssUtils.recreateTxRequest(txRequestId, decryptedPrv, reqId);
+    // TODO (STLX-14667): avoid hard coding derivation path to support consolidation
+    const txRequest = await this.tssUtils.recreateTxRequest(txRequestId, decryptedPrv, 'm/0', reqId);
     return {
       txHex: txRequest.unsignedTxs[0].serializedTxHex,
     };
