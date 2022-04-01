@@ -340,8 +340,9 @@ export interface CreateShareOptions {
   user?: string;
   permissions?: string;
   keychain?: {
+    // In the context of wallet sharing, pub can represent one of:
+    // pub (independant multi sig), commonPub (bls), or commonPub portion of commonKeychain (TSS)
     pub?: string;
-    commonPub?: string;
     encryptedPrv?: string;
     fromPubKey?: string;
     toPubKey?: string;
@@ -1739,13 +1740,13 @@ export class Wallet {
 
     if (params.keychain && !_.isEmpty(params.keychain)) {
       if (
-        (!params.keychain.pub && !params.keychain.commonPub) ||
+        !params.keychain.pub ||
         !params.keychain.encryptedPrv ||
         !params.keychain.fromPubKey ||
         !params.keychain.toPubKey ||
         !params.keychain.path
       ) {
-        throw new Error('requires keychain parameters - pub/commonPub, encryptedPrv, fromPubKey, toPubKey, path');
+        throw new Error('requires keychain parameters - pub, encryptedPrv, fromPubKey, toPubKey, path');
       }
     }
 
@@ -1798,8 +1799,7 @@ export class Wallet {
           const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: keychain.prv });
 
           sharedKeychain = {
-            pub: keychain.pub,
-            commonPub: keychain.commonPub,
+            pub: keychain.pub ?? TssUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain) ?? keychain.commonPub,
             encryptedPrv: newEncryptedPrv,
             fromPubKey: eckey.publicKey.toString('hex'),
             toPubKey: sharing.pubkey,

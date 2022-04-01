@@ -16,6 +16,7 @@ import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';
 import { RequestTracer } from '../../../src/v2/internal/util';
 import { fromSeed } from 'bip32';
+import { randomBytes } from 'crypto';
 
 nock.disableNetConnect();
 
@@ -1434,11 +1435,12 @@ describe('V2 Wallet:', function () {
         .post('/api/v1/user/sharingkey', { email })
         .reply(200, { userId, pubkey, path });
 
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
       const getKeyNock = nock(bgUrl)
         .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
         .reply(200, {
           id: wallet.keyIds()[0],
-          pub: 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk',
+          pub,
           source: 'user',
           encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
           coinSpecific: {},
@@ -1449,9 +1451,7 @@ describe('V2 Wallet:', function () {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           options!.keychain!.pub!.should.not.be.undefined();
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          (options!.keychain!.commonPub === undefined).should.be.true();
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          options!.keychain!.pub!.should.equal('Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk');
+          options!.keychain!.pub!.should.equal(pub);
           return undefined;
         }
       );
@@ -1773,7 +1773,7 @@ describe('V2 Wallet:', function () {
     });
 
     describe('Wallet Sharing', function () {
-      it('should use keychain commonPub to share tss wallet', async function () {
+      it('should use keychain pub to share tss wallet', async function () {
         const userId = '123';
         const email = 'shareto@sdktest.com';
         const permissions = 'view,spend';
@@ -1781,16 +1781,18 @@ describe('V2 Wallet:', function () {
         const path = 'm/999999/1/1';
         const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
         const walletPassphrase = 'bitgo1234';
-
+        
         const getSharingKeyNock = nock(bgUrl)
           .post('/api/v1/user/sharingkey', { email })
           .reply(200, { userId, pubkey, path });
-
+        
+        // commonPub + commonChaincode
+        const commonKeychain = randomBytes(32).toString('hex') + randomBytes(32).toString('hex');
         const getKeyNock = nock(bgUrl)
           .get(`/api/v2/tsol/key/${tssWallet.keyIds()[0]}`)
           .reply(200, {
             id: tssWallet.keyIds()[0],
-            commonPub: 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk',
+            commonKeychain: commonKeychain,
             source: 'user',
             encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
             coinSpecific: {},
@@ -1799,11 +1801,9 @@ describe('V2 Wallet:', function () {
         const stub = sinon.stub(tssWallet, 'createShare').callsFake(
           async (options) => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options!.keychain!.commonPub!.should.not.be.undefined();
+            options!.keychain!.pub!.should.not.be.undefined();
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            (options!.keychain!.pub === undefined).should.be.true();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options!.keychain!.commonPub!.should.equal('Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk');
+            options!.keychain!.pub!.should.equal(TssUtils.getPublicKeyFromCommonKeychain(commonKeychain));
             return undefined;
           }
         );
