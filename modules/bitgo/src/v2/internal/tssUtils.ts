@@ -25,6 +25,7 @@ import { BitGo } from '../../bitgo';
 import { MpcUtils } from './mpcUtils';
 import { Memo, Wallet } from '..';
 import { RequestTracer } from '../internal/util';
+import * as bs58 from 'bs58';
 
 // #region Interfaces
 interface PrebuildTransactionWithIntentOptions {
@@ -660,5 +661,19 @@ export class TssUtils extends MpcUtils {
     // after delete signatures shares get the tx without them
     const txRequest = await this.getTxRequest(txRequestId);
     return await this.signTxRequest({ txRequest, prv: decryptedPrv, path, reqId });
+  }
+
+  /**
+   * Get the commonPub portion of the commonKeychain.
+   *
+   * @param {String} commonKeychain
+   * @returns {string}
+   */
+  static getPublicKeyFromCommonKeychain(commonKeychain: string): string {
+    if (commonKeychain.length !== 128) {
+      throw new Error(`Invalid commonKeychain length, expected 128, got ${commonKeychain.length}`);
+    }
+    const commonPubHexStr = commonKeychain.slice(0, 64);
+    return bs58.encode(Buffer.from(commonPubHexStr, 'hex'));
   }
 }
