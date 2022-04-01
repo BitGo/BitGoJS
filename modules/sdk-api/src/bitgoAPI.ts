@@ -21,9 +21,12 @@ import {
   VerifyResponseInfo,
   VerifyResponseOptions,
   BitGoAPIOptions,
+  DecryptOptions,
+  EncryptOptions,
 } from './types';
 import moment = require('moment');
 import pjson = require('../package.json');
+import { decrypt, encrypt } from './encrypt';
 
 const debug = debugLib('bitgo:api');
 
@@ -540,6 +543,36 @@ export abstract class BitGoAPI {
   setRequestTracer(reqTracer: IRequestTracer): void {
     if (reqTracer) {
       this._reqId = reqTracer;
+    }
+  }
+
+  /**
+   * Utility function to encrypt locally.
+   */
+  encrypt(params: EncryptOptions): string {
+    common.validateParams(params, ['input', 'password'], []);
+    if (!params.password) {
+      throw new Error(`cannot encrypt without password`);
+    }
+    return encrypt(params.password, params.input);
+  }
+
+  /**
+   * Decrypt an encrypted string locally.
+   */
+  decrypt(params: DecryptOptions): string {
+    params = params || {};
+    common.validateParams(params, ['input', 'password'], []);
+    if (!params.password) {
+      throw new Error(`cannot decrypt without password`);
+    }
+    try {
+      return decrypt(params.password, params.input);
+    } catch (error) {
+      if (error.message.includes("ccm: tag doesn't match")) {
+        error.message = 'password error - ' + error.message;
+      }
+      throw error;
     }
   }
 }

@@ -120,3 +120,13 @@ export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
     this.needsOTP = needsOTP;
   }
 }
+
+export interface EncryptOptions {
+  input: string;
+  password?: string;
+}
+
+export interface DecryptOptions {
+  input: string;
+  password?: string;
+}

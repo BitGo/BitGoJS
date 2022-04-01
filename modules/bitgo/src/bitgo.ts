@@ -31,7 +31,6 @@ const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
 import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
-import { decrypt, encrypt } from './encrypt';
 import { common } from '@bitgo/sdk-core';
 import {
   AuthenticateOptions,
@@ -76,16 +75,6 @@ export interface DeprecatedVerifyAddressOptions {
 }
 
 export interface VerifyPasswordOptions {
-  password?: string;
-}
-
-export interface EncryptOptions {
-  input: string;
-  password?: string;
-}
-
-export interface DecryptOptions {
-  input: string;
   password?: string;
 }
 
@@ -387,36 +376,6 @@ export class BitGo extends BitGoAPI {
     const hmacPassword = this.calculateHMAC(this._user.username, params.password);
 
     return this.post(this.url('/user/verifypassword')).send({ password: hmacPassword }).result('valid');
-  }
-
-  /**
-   * Utility function to encrypt locally.
-   */
-  encrypt(params: EncryptOptions): string {
-    common.validateParams(params, ['input', 'password'], []);
-    if (!params.password) {
-      throw new Error(`cannot encrypt without password`);
-    }
-    return encrypt(params.password, params.input);
-  }
-
-  /**
-   * Decrypt an encrypted string locally.
-   */
-  decrypt(params: DecryptOptions): string {
-    params = params || {};
-    common.validateParams(params, ['input', 'password'], []);
-    if (!params.password) {
-      throw new Error(`cannot decrypt without password`);
-    }
-    try {
-      return decrypt(params.password, params.input);
-    } catch (error) {
-      if (error.message.includes("ccm: tag doesn't match")) {
-        error.message = 'password error - ' + error.message;
-      }
-      throw error;
-    }
   }
 
   /**
