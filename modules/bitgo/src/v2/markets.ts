@@ -2,7 +2,7 @@
  * Markets Object
  * BitGo accessor to Bitcoin market data.
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  *
  * @prettier
  */

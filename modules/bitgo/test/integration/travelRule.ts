@@ -12,7 +12,7 @@ import { getSharedSecret } from '../../src/ecdh';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;
-const sjcl = require('../../src/vendor/sjcl.min.js');
+const sjcl = require('@bitgo/sjcl');
 const TestBitGo = require('../lib/test_bitgo');
 
 const txid = TestBitGo.TRAVEL_RULE_TXID;

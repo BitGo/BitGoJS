@@ -101,16 +101,19 @@ export class Transaction extends BaseTransaction {
         nearAPI.transactions.SignedTransaction,
         nearAPI.utils.serialize.base_decode(rawTransaction),
       );
+      signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
       this._nearSignedTransaction = signedTx;
       this._nearTransaction = signedTx.transaction;
       this._id = utils.base58Encode(this.getTransactionHash());
     } catch (e) {
       try {
-        this._nearTransaction = nearAPI.utils.serialize.deserialize(
+        const unsignedTx = nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
           nearAPI.utils.serialize.base_decode(rawTransaction),
         );
+        unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
+        this._nearTransaction = unsignedTx;
         this._id = utils.base58Encode(this.getTransactionHash());
       } catch (e) {
         throw new InvalidTransactionError('unable to build transaction from raw');
@@ -147,10 +150,17 @@ export class Transaction extends BaseTransaction {
    * @param methodName method name to match and set the transaction type
    */
   private setTypeByStakingMethod(methodName: string): void {
-    const stakingContractTypes = {
-      [StakingContractMethodNames.DepositAndStake]: this.setTransactionType(TransactionType.StakingActivate),
-    };
-    stakingContractTypes[methodName];
+    switch (methodName) {
+      case StakingContractMethodNames.DepositAndStake:
+        this.setTransactionType(TransactionType.StakingActivate);
+        break;
+      case StakingContractMethodNames.Unstake:
+        this.setTransactionType(TransactionType.StakingDeactivate);
+        break;
+      case StakingContractMethodNames.Withdraw:
+        this.setTransactionType(TransactionType.StakingWithdraw);
+        break;
+    }
   }
 
   /**
@@ -217,6 +227,19 @@ export class Transaction extends BaseTransaction {
           coin: this._coinConfig.name,
         });
         break;
+      case TransactionType.StakingWithdraw:
+        const stakingWithdrawAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
+        inputs.push({
+          address: this._nearTransaction.receiverId,
+          value: stakingWithdrawAmount,
+          coin: this._coinConfig.name,
+        });
+        outputs.push({
+          address: this._nearTransaction.signerId,
+          value: stakingWithdrawAmount,
+          coin: this._coinConfig.name,
+        });
+        break;
     }
     this._outputs = outputs;
     this._inputs = inputs;
@@ -260,6 +283,26 @@ export class Transaction extends BaseTransaction {
     };
   }
 
+  /**
+   * Returns a complete explanation for a staking withdraw transaction
+   * @param {TxData} json The transaction data in json format
+   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
+   * @returns {TransactionExplanation}
+   */
+  explainStakingWithdrawTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    const amount = json.actions[0].functionCall?.args.amount as string;
+    return {
+      ...explanationResult,
+      outputAmount: amount,
+      outputs: [
+        {
+          address: json.signerId,
+          amount: amount,
+        },
+      ],
+    };
+  }
+
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const result = this.toJson();
@@ -281,6 +324,10 @@ export class Transaction extends BaseTransaction {
         return this.explainTransferTransaction(result, explanationResult);
       case TransactionType.StakingActivate:
         return this.explainStakingActivateTransaction(result, explanationResult);
+      case TransactionType.StakingDeactivate:
+        return explanationResult;
+      case TransactionType.StakingWithdraw:
+        return this.explainStakingWithdrawTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }

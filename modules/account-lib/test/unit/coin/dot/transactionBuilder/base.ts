@@ -176,56 +176,6 @@ describe('Dot Transfer Builder', () => {
     });
   });
 
-  describe('add signature', () => {
-    it('should add a signature to transaction', async () => {
-      const factory = register('tdot', TransactionBuilderFactory);
-      const transferBuilder = factory
-        .getTransferBuilder()
-        .amount('90034235235322')
-        .sender({ address: sender.address })
-        .to({ address: receiver.address })
-        .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' });
-
-      transferBuilder.sign({ key: accounts.account1.secretKey });
-      const signedTx = await transferBuilder.build();
-      const signature = signedTx.signature[0];
-
-      // verify rebuilt transaction contains signature
-      const rawTransaction = signedTx.toBroadcastFormat() as string;
-      const rebuiltSignedTransaction = await factory
-        .from(rawTransaction)
-        .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .build();
-      rebuiltSignedTransaction.signature.should.deepEqual(signedTx.signature);
-
-      const transferBuilder2 = factory
-        .getTransferBuilder()
-        .amount('90034235235322')
-        .sender({ address: sender.address })
-        .to({ address: receiver.address })
-        .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
-        .fee({ amount: 0, type: 'tip' });
-      transferBuilder2.addSignature({ pub: accounts.account1.publicKey }, Buffer.from(signature, 'hex'));
-      const signedTransaction2 = await transferBuilder2.build();
-
-      // verify signatures are correct
-      signedTx.signature.should.deepEqual(signedTransaction2.signature);
-      const rawTransaction2 = signedTransaction2.toBroadcastFormat() as string;
-      const rebuiltTransaction2 = await factory
-        .from(rawTransaction2)
-        .validity({ firstValid: 3933, maxDuration: 64 })
-        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
-        .build();
-      rebuiltTransaction2.signature.should.deepEqual(signedTransaction2.signature);
-    });
-  });
-
   describe('add TSS signature', function () {
     before('initialize mpc module', async () => {
       await Eddsa.initialize();

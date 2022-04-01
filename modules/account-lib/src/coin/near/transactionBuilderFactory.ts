@@ -6,6 +6,8 @@ import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
+import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
+import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -24,6 +26,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getWalletInitializationBuilder(tx);
         case TransactionType.StakingActivate:
           return this.getStakingActivateBuilder(tx);
+        case TransactionType.StakingDeactivate:
+          return this.getStakingDeactivateBuilder(tx);
+        case TransactionType.StakingWithdraw:
+          return this.getStakingWithdrawBuilder(tx);
         default:
           throw new InvalidTransactionError('unsupported transaction');
       }
@@ -44,6 +50,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingActivateBuilder(tx?: Transaction): StakingActivateBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
+  }
+
+  getStakingDeactivateBuilder(tx?: Transaction): StakingDeactivateBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  }
+
+  getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
   }
 
   /**

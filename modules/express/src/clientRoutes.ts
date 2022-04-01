@@ -27,7 +27,6 @@ import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
-import * as assert from 'assert';
 import { retryPromise } from './retryPromise';
 
 const { version } = require('bitgo/package.json');
@@ -393,11 +392,20 @@ function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): 
 }
 
 export async function handleV2Sign(req: express.Request) {
-  const walletId = req.body.txPrebuild.walletId;
+  const walletId = req.body.txPrebuild?.walletId;
+
+  if (!walletId) {
+    throw new Error('Missing required field: walletId');
+  }
+
   const walletPw = getWalletPwFromEnv(walletId);
-  const privKeyPath = req.config.signerFileSystemPath;
-  assert(typeof privKeyPath === 'string');
-  const encryptedPrivKey = await getEncryptedPrivKey(privKeyPath, walletId);
+  const { signerFileSystemPath } = req.config;
+
+  if (!signerFileSystemPath) {
+    throw new Error('Missing required configuration: signerFileSystemPath');
+  }
+
+  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
   const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.params.coin);
@@ -851,9 +859,29 @@ function promiseWrapper(promiseRequestHandler: RequestHandler) {
     try {
       const result = await promiseRequestHandler(req, res, next);
       res.status(200).send(result);
-    } catch (e: unknown) {
+    } catch (e) {
       handleRequestHandlerError(res, e);
     }
+  };
+}
+
+export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
+  return async function (params: {
+    coin: BaseCoin;
+    txPrebuild: TransactionPrebuild;
+    pubs?: string[];
+  }): Promise<SignedTransaction> {
+    const { body: signedTx } = await retryPromise(
+      () =>
+        superagent
+          .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
+          .type('json')
+          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs }),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return signedTx;
   };
 }
 
@@ -964,6 +992,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleV2AcceptWalletShare)
   );
+
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
   app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
@@ -1032,24 +1061,4 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
   app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
-}
-
-export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
-  return async function (params: {
-    coin: BaseCoin;
-    txPrebuild: TransactionPrebuild;
-    pubs?: string[];
-  }): Promise<SignedTransaction> {
-    const { body: signedTx } = await retryPromise(
-      () =>
-        superagent
-          .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
-          .type('json')
-          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs }),
-      (err, tryCount) => {
-        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
-      }
-    );
-    return signedTx;
-  };
 }

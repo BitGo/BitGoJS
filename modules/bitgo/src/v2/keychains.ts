@@ -17,6 +17,7 @@ export interface Keychain {
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
   commonPub?: string;
+  commonKeychain?: string;
   keyShares?: KeyShare[];
   addressDerivationKeypair?: {
     pub: string;
@@ -59,6 +60,7 @@ interface UpdateSingleKeychainPasswordOptions {
 interface AddKeychainOptions {
   pub?: string;
   commonPub?: string;
+  commonKeychain?: string;
   encryptedPrv?: string;
   type?: string;
   source?: string;
@@ -93,6 +95,7 @@ export interface CreateBackupOptions {
   type?: string;
   reqId?: RequestTracer;
   commonPub?: string;
+  commonKeychain?: string;
   prv?: string;
   encryptedPrv?: string;
 }
@@ -297,6 +300,7 @@ export class Keychains {
       .send({
         pub: params.pub,
         commonPub: params.commonPub,
+        commonKeychain: params.commonKeychain,
         encryptedPrv: params.encryptedPrv,
         type: params.type,
         source: params.source,
@@ -333,7 +337,8 @@ export class Keychains {
   async createBackup(params: CreateBackupOptions = {}): Promise<Keychain> {
     params.source = 'backup';
 
-    const isTssBackupKey = params.prv && params.encryptedPrv && params.commonPub;
+    const isTssBackupKey = params.prv && params.encryptedPrv &&
+      (params.commonKeychain || params.commonPub);
 
     if (_.isUndefined(params.provider) && !isTssBackupKey) {
       // if the provider is undefined, we generate a local key and add the source details

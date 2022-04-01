@@ -8,7 +8,7 @@
  *
  * To perform more advanced features, such as encrypting keys yourself, please look at createWalletAdvanced.js
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGo } from 'bitgo';
 const bitgo = new BitGo({ env: 'test' });

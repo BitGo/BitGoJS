@@ -4,7 +4,7 @@
 //
 // index.js - Module definition for BitGoJS
 //
-// Copyright 2019, BitGo, Inc.  All Rights Reserved.
+// Copyright 2022, BitGo, Inc.  All Rights Reserved.
 //
 import * as _ from 'lodash';
 import * as common from './common';
@@ -18,7 +18,7 @@ export * as Errors from './errors';
 /** @deprecated */
 export * as bitcoin from './legacyBitcoin';
 /** @deprecated */
-export const sjcl = require('./vendor/sjcl.min.js');
+export const sjcl = require('@bitgo/sjcl');
 
 export { Buffer } from 'buffer';
 

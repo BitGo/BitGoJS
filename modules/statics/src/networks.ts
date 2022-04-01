@@ -285,7 +285,7 @@ class Goerli extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://goerli.etherscan.io/address/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 5;
-  batcherContractAddress = '0xc0aaf2649e7b0f3950164681eca2b1a8f654a478';
+  batcherContractAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
   forwarderFactoryAddress = '0xf5caa5e3e93afbc21bd19ef4f2691a37121f7917';
   forwarderImplementationAddress = '0x80d5c91e8cc21df69fc4d64f21dc2d83121c3999';
 }
@@ -432,6 +432,12 @@ class FiatTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
+class Fiat extends Mainnet implements AccountNetwork {
+  name = 'Fiat';
+  family = CoinFamily.FIAT;
+  explorerUrl = undefined;
+}
+
 class Trx extends Mainnet implements TronNetwork {
   name = 'Trx';
   family = CoinFamily.TRX;
@@ -533,6 +539,7 @@ export const Networks = {
     ethereum: Object.freeze(new Ethereum()),
     ethereum2: Object.freeze(new Ethereum2()),
     ethereumClassic: Object.freeze(new EthereumClassic()),
+    fiat: Object.freeze(new Fiat()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
     maticl: Object.freeze(new MaticL()),

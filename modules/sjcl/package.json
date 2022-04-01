@@ -1,0 +1,13 @@
+{
+  "name": "@bitgo/sjcl",
+  "version": "1.0.0",
+  "description": "fork of Stanford Javascript Crypto Library",
+  "main": "sjcl.min.js",
+  "author": "BitGo Inc.",
+  "license": "(BSD-2-Clause OR GPL-2.0-only)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sjcl"
+  }
+}

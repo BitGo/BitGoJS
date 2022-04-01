@@ -3,7 +3,7 @@
  */
 import { BitGo } from '../../bitgo';
 
-import { AvaxC } from './avaxc';
+import { AvaxC, TransactionPrebuild } from './avaxc';
 import { CoinConstructor } from '../coinFactory';
 import { Environments } from '../environments';
 import { coins } from '@bitgo/statics';
@@ -105,5 +105,9 @@ export class AvaxCToken extends AvaxC {
 
   isToken(): boolean {
     return true;
+  }
+
+  verifyCoin(txPrebuild: TransactionPrebuild): boolean {
+    return txPrebuild.coin === this.tokenConfig.coin && txPrebuild.token === this.tokenConfig.type;
   }
 }

@@ -2,7 +2,6 @@
  * @prettier
  */
 
-import * as bs58 from 'bs58';
 import * as crypto from 'crypto';
 import * as openpgp from 'openpgp';
 import Eddsa, {
@@ -14,6 +13,7 @@ import Eddsa, {
   YShare,
   RShare,
   GShare,
+  UShare,
 } from '@bitgo/account-lib/dist/src/mpc/tss';
 
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
@@ -69,6 +69,21 @@ export interface SignatureShareRecord {
   to: SignatureShareType;
   share: string;
 }
+
+interface SigningMaterial {
+  uShare: UShare;
+  commonChaincode: string;
+  bitgoYShare: YShare;
+}
+
+interface UserSigningMaterial extends SigningMaterial {
+  backupYShare: YShare;
+}
+
+interface BackupSigningMaterial extends SigningMaterial {
+  userYShare: YShare;
+}
+
 // #endregion
 
 /**
@@ -121,25 +136,32 @@ export class TssUtils extends MpcUtils {
 
     const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
 
-    const bitgoToUser = {
+    const bitgoToUser: YShare = {
       i: 1,
       j: 3,
-      y: Buffer.from(bs58.decode(bitGoToUserShare.publicShare)).toString('hex'),
+      y: bitGoToUserShare.publicShare.slice(0, 64),
       u: bitGoToUserPrivateShare.slice(0, 64),
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
 
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
-    const commonPub = bs58.encode(Buffer.from(userCombined.pShare.y, 'hex'));
-    if (commonPub !== bitgoKeychain.commonPub) {
-      throw new Error('Failed to create user keychain - commonPubs do not match.');
+    const commonChaincode = userCombined.pShare.chaincode;
+    if (commonChaincode !== bitgoKeychain.commonKeychain?.slice(64)) {
+      throw new Error('Failed to create user keychain - commonChaincodes do not match.');
     }
+
+    const userSigningMaterial: UserSigningMaterial = {
+      uShare: userKeyShare.uShare,
+      commonChaincode: commonChaincode,
+      bitgoYShare: bitgoToUser,
+      backupYShare: backupKeyShare.yShares[1],
+    };
 
     const userKeychainParams: any = {
       source: 'user',
       type: 'tss',
-      commonPub: bs58.encode(Buffer.from(userCombined.pShare.y, 'hex')),
-      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userCombined.pShare), password: passphrase }),
+      commonKeychain: bitgoKeychain.commonKeychain,
+      encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
     };
 
     if (this.baseCoin.supportsDerivationKeypair()) {
@@ -189,26 +211,32 @@ export class TssUtils extends MpcUtils {
 
     const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
 
-    const bitgoToBackup = {
+    const bitgoToBackup: YShare = {
       i: 2,
       j: 3,
-      y: Buffer.from(bs58.decode(bitGoToBackupShare.publicShare)).toString('hex'),
+      y: bitGoToBackupShare.publicShare.slice(0, 64),
       u: bitGoToBackupPrivateShare.slice(0, 64),
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
 
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);
-    const commonPub = bs58.encode(Buffer.from(backupCombined.pShare.y, 'hex'));
-    if (commonPub !== bitgoKeychain.commonPub) {
-      throw new Error('Failed to create backup keychain - commonPubs do not match.');
+    const commonChaincode = backupCombined.pShare.chaincode;
+    if (commonChaincode !== bitgoKeychain.commonKeychain?.slice(64)) {
+      throw new Error('Failed to create backup keychain - commonChaincodes do not match.');
     }
 
-    const prv = JSON.stringify(backupCombined.pShare);
+    const backupSigningMaterial: BackupSigningMaterial = {
+      uShare: backupKeyShare.uShare,
+      commonChaincode,
+      bitgoYShare: bitgoToBackup,
+      userYShare: userKeyShare.yShares[2],
+    };
+    const prv = JSON.stringify(backupSigningMaterial);
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
       type: 'tss',
-      commonPub,
+      commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
       encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
     });
@@ -227,20 +255,26 @@ export class TssUtils extends MpcUtils {
     backupKeyShare: KeyShare,
     enterprise?: string
   ): Promise<Keychain> {
-    const userToBitgoPublicShare = bs58.encode(Buffer.from(userKeyShare.yShares[3].y, 'hex'));
+    const userToBitgoPublicShare = Buffer.concat([
+      Buffer.from(userKeyShare.uShare.y, 'hex'),
+      Buffer.from(userKeyShare.uShare.chaincode, 'hex'),
+    ]).toString('hex');
     const userToBitgoPrivateShare = Buffer.concat([
       Buffer.from(userKeyShare.yShares[3].u, 'hex'),
-      Buffer.alloc(32),
+      Buffer.from(userKeyShare.yShares[3].chaincode, 'hex'),
     ]).toString('hex');
     const userToBitgoKeyShare = {
       publicShare: userToBitgoPublicShare,
       privateShare: userToBitgoPrivateShare,
     };
 
-    const backupToBitgoPublicShare = bs58.encode(Buffer.from(backupKeyShare.yShares[3].y, 'hex'));
+    const backupToBitgoPublicShare = Buffer.concat([
+      Buffer.from(backupKeyShare.uShare.y, 'hex'),
+      Buffer.from(backupKeyShare.uShare.chaincode, 'hex'),
+    ]).toString('hex');
     const backupToBitgoPrivateShare = Buffer.concat([
       Buffer.from(backupKeyShare.yShares[3].u, 'hex'),
-      Buffer.alloc(32),
+      Buffer.from(backupKeyShare.yShares[3].chaincode, 'hex'),
     ]).toString('hex');
     const backupToBitgoKeyShare = {
       publicShare: backupToBitgoPublicShare,

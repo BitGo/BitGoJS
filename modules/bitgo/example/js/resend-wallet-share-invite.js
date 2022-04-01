@@ -1,7 +1,7 @@
 /**
  * Resend the invitation email for sharing a BitGo wallet
  *
- * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 
 const Promise = require('bluebird');

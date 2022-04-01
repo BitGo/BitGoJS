@@ -273,6 +273,7 @@ describe('Avalanche C-Chain', function () {
   });
 
   describe('Transaction Verification', () => {
+
     it('should verify a hop txPrebuild from the bitgo server that matches the client txParams', async function () {
       const wallet = new Wallet(bitgo, tavaxCoin, {});
 
