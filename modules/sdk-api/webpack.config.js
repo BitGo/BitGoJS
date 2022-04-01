@@ -1,10 +1,12 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const isProduction = process.env.NODE_ENV === 'production';
+const mode = process.env.NODE_ENV ?? 'production';
 
-const config = {
-  entry: './dist/src/index.js',
+module.exports = {
+  mode,
+  target: 'web',
+  entry: path.join(__dirname, '/dist/src/index.js'),
   output: {
     path: path.resolve(__dirname, 'dist/web'),
     library: 'BitGoJS',
@@ -15,7 +17,7 @@ const config = {
       Buffer: ['buffer', 'Buffer'],
       process: 'process/browser',
     }),
-    new HtmlWebpackPlugin({}),
+    new HTMLWebpackPlugin({ filename: 'browser.html', title: 'BitGo SDK Sandbox' }),
   ],
   externals: ['morgan', 'superagent-proxy'],
   resolve: {
@@ -38,13 +40,4 @@ const config = {
       zlib: false,
     },
   },
-};
-
-module.exports = () => {
-  if (isProduction) {
-    config.mode = 'production';
-  } else {
-    config.mode = 'development';
-  }
-  return config;
 };

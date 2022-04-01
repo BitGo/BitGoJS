@@ -23,7 +23,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { makeRandomKey, getNetwork } from './bitcoin';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { getSharedSecret } from './ecdh';
 import {
   getExternalChainCode,

@@ -12,9 +12,9 @@
     "clean": "rm -r ./dist",
     "precommit": "lint-staged",
     "prepare": "npm run build",
-    "build-web": "webpack",
-    "build-web-prod": "webpack --mode=production --node-env=production",
-    "prepublishOnly": "npm run build-web-prod"
+    "webpack-dev": "webpack",
+    "webpack-prod": "webpack --mode=production --node-env=production",
+    "prepublishOnly": "npm run webpack-prod"
   },
   "author": "BitGo Inc.",
   "license": "MIT",
@@ -47,8 +47,10 @@
     "@bitgo/sjcl": "^1.0.0",
     "@bitgo/utxo-lib": "^2.2.1",
     "@types/superagent": "4.1.15",
+    "bip32": "^2.0.6",
     "debug": "3.1.0",
     "sanitize-html": "^1.27.5",
+    "secp256k1": "^4.0.2",
     "superagent": "3.8.3",
     "superagent-proxy": "3.0.0"
   },
@@ -58,8 +60,8 @@
     "@webpack-cli/generators": "^2.4.2",
     "babel-loader": "^8.2.4",
     "html-webpack-plugin": "^5.5.0",
-    "webpack": "^5.70.0",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.4"
+    "process": "^0.11.10",
+    "webpack": "5.66.0",
+    "webpack-cli": "4.9.1"
   }
 }

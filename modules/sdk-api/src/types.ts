@@ -10,6 +10,7 @@ export interface BitGoAPIOptions {
   etherscanApiToken?: string;
   hmacVerification?: boolean;
   proxy?: string;
+  refreshToken?: string;
   serverXpub?: string;
   stellarFederationServerUrl?: string;
   useProduction?: boolean;
@@ -144,4 +145,15 @@ export interface BitGoJson {
 
 export interface VerifyPasswordOptions {
   password?: string;
+}
+
+export interface TokenIssuanceResponse {
+  derivationPath: string;
+  encryptedToken: string;
+  encryptedECDHXprv?: string;
+}
+
+export interface TokenIssuance {
+  token: string;
+  ecdhXprv?: string;
 }

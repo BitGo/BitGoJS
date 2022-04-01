@@ -18,7 +18,7 @@ import { Util } from './v2/internal/util';
 const _ = require('lodash');
 let ethereumUtil;
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 const co = Bluebird.coroutine;
 
 try {

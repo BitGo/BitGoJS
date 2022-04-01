@@ -7,7 +7,6 @@
 import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
-import * as secp256k1 from 'secp256k1';
 import bitcoinMessage = require('bitcoinjs-message');
 import { BaseCoin } from './v2/baseCoin';
 const PendingApprovals = require('./pendingapprovals');
@@ -29,15 +28,13 @@ import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
-import { sanitizeLegacyPath } from './bip32path';
 import { getSharedSecret } from './ecdh';
 import { common } from '@bitgo/sdk-core';
 import {
-  AuthenticateOptions,
   BitGoAPI,
   BitGoAPIOptions,
   handleResponseError,
-  handleResponseResult,  
+  handleResponseResult,
   verifyResponse,
 } from '@bitgo/sdk-api';
 
@@ -51,8 +48,6 @@ if (!(process as any).browser) {
 export interface BitGoOptions extends BitGoAPIOptions {
   clientId?: string;
   clientSecret?: string;
-  accessToken?: string;
-  refreshToken?: string;
   validate?: boolean;
 }
 
@@ -97,17 +92,6 @@ export interface VerifyShardsOptions {
 export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
   eckey: utxolib.ECPair.ECPairInterface;
-}
-
-export interface TokenIssuanceResponse {
-  derivationPath: string;
-  encryptedToken: string;
-  encryptedECDHXprv?: string;
-}
-
-export interface TokenIssuance {
-  token: string;
-  ecdhXprv?: string;
 }
 
 export interface AddAccessTokenOptions {
@@ -199,7 +183,6 @@ export class BitGo extends BitGoAPI {
   private _wallets: any;
   private readonly _clientId?: string;
   private readonly _clientSecret?: string;
-  private _refreshToken?: string;
   private _validate: boolean;
   private _markets?: any;
   private _blockchain?: any;
@@ -225,7 +208,6 @@ export class BitGo extends BitGoAPI {
     this._wallets = null;
     this._clientId = params.clientId;
     this._clientSecret = params.clientSecret;
-    this._refreshToken = params.refreshToken;
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -266,17 +248,6 @@ export class BitGo extends BitGoAPI {
       throw new Error('invalid argument');
     }
     this._validate = validate;
-  }
-
-  /**
-   * Clear out all state from this BitGo object, effectively logging out the current user.
-   */
-  clear(): void {
-    // TODO: are there any other fields which should be cleared?
-    this._user = undefined;
-    this._token = undefined;
-    this._refreshToken = undefined;
-    this._ecdhXprv = undefined;
   }
 
   /**
@@ -505,138 +476,6 @@ export class BitGo extends BitGoAPI {
    */
   async yesterday(): Promise<any> {
     return this.get(this.url('/market/yesterday')).result();
-  }
-
-  /**
-   *
-   * @param responseBody Response body object
-   * @param password Password for the symmetric decryption
-   */
-  handleTokenIssuance(responseBody: TokenIssuanceResponse, password?: string): TokenIssuance {
-    // make sure the response body contains the necessary properties
-    common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
-
-    const environment = this._env;
-    const environmentConfig = common.Environments[environment];
-    const serverXpub = environmentConfig.serverXpub;
-    let ecdhXprv = this._ecdhXprv;
-    if (!ecdhXprv) {
-      if (!password || !responseBody.encryptedECDHXprv) {
-        throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
-      }
-      try {
-        ecdhXprv = this.decrypt({
-          input: responseBody.encryptedECDHXprv,
-          password: password,
-        });
-      } catch (e) {
-        e.errorCode = 'ecdh_xprv_decryption_failure';
-        console.error('Failed to decrypt encryptedECDHXprv.');
-        throw e;
-      }
-    }
-
-    // construct HDNode objects for client's xprv and server's xpub
-    const clientHDNode = bip32.fromBase58(ecdhXprv);
-    const serverHDNode = bip32.fromBase58(serverXpub);
-
-    // BIP32 derivation path is applied to both client and server master keys
-    const derivationPath = sanitizeLegacyPath(responseBody.derivationPath);
-    const clientDerivedNode = clientHDNode.derivePath(derivationPath);
-    const serverDerivedNode = serverHDNode.derivePath(derivationPath);
-
-    const publicKey = serverDerivedNode.publicKey;
-    const secretKey = clientDerivedNode.privateKey;
-    if (!secretKey) {
-      throw new Error('no client private Key');
-    }
-    const secret = Buffer.from(
-      // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
-      //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
-      secp256k1.publicKeyTweakMul(publicKey, secretKey)
-    ).toString('hex');
-
-    // decrypt token with symmetric ECDH key
-    let response: TokenIssuance;
-    try {
-      response = {
-        token: this.decrypt({
-          input: responseBody.encryptedToken,
-          password: secret,
-        }),
-      };
-    } catch (e) {
-      e.errorCode = 'token_decryption_failure';
-      console.error('Failed to decrypt token.');
-      throw e;
-    }
-    if (!this._ecdhXprv) {
-      response.ecdhXprv = ecdhXprv;
-    }
-    return response;
-  }
-
-  /**
-   * Login to the bitgo platform.
-   */
-  async authenticate(params: AuthenticateOptions): Promise<any> {
-    try {
-      if (!_.isObject(params)) {
-        throw new Error('required object params');
-      }
-
-      if (!_.isString(params.password)) {
-        throw new Error('expected string password');
-      }
-
-      const forceV1Auth = !!params.forceV1Auth;
-      const authParams = this.preprocessAuthenticationParams(params);
-      const password = params.password;
-
-      if (this._token) {
-        return new Error('already logged in');
-      }
-
-      const authUrl = this.microservicesUrl('/api/auth/v1/session');
-      const request = this.post(authUrl);
-
-      if (forceV1Auth) {
-        request.forceV1Auth = true;
-        // tell the server that the client was forced to downgrade the authentication protocol
-        authParams.forceV1Auth = true;
-        debug('forcing v1 auth for call to authenticate');
-      }
-      const response: superagent.Response = await request.send(authParams);
-      // extract body and user information
-      const body = response.body;
-      this._user = body.user;
-
-      if (body.access_token) {
-        this._token = body.access_token;
-        // if the downgrade was forced, adding a warning message might be prudent
-      } else {
-        // check the presence of an encrypted ECDH xprv
-        // if not present, legacy account
-        const encryptedXprv = body.encryptedECDHXprv;
-        if (!encryptedXprv) {
-          throw new Error('Keychain needs encryptedXprv property');
-        }
-
-        const responseDetails = this.handleTokenIssuance(response.body, password);
-        this._token = responseDetails.token;
-        this._ecdhXprv = responseDetails.ecdhXprv;
-
-        // verify the response's authenticity
-        verifyResponse(this, responseDetails.token, 'post', request, response);
-
-        // add the remaining component for easier access
-        response.body.access_token = this._token;
-      }
-
-      return handleResponseResult<any>()(response);
-    } catch (e) {
-      handleResponseError(e);
-    }
   }
 
   /**

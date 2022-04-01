@@ -9,10 +9,9 @@ import { BitGo } from '../bitgo';
 import { common } from '@bitgo/sdk-core';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
 import { Keychain } from './keychains';
-import { IRequestTracer } from '@bitgo/sdk-api';
+import { IRequestTracer, sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { PaginationOptions, Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
-import { sanitizeLegacyPath } from '../bip32path';
 import { getSharedSecret } from '../ecdh';
 import { promiseProps } from './promise-utils';
 

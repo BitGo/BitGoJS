@@ -17,7 +17,7 @@ import { makeRandomKey, getNetwork, getAddressP2PKH } from './bitcoin';
 import { common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { getSharedSecret } from './ecdh';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
