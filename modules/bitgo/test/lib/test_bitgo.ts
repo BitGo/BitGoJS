@@ -164,6 +164,9 @@ BitGo.prototype.initializeTestVars = function () {
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
     BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
 
+    BitGo.V2.TEST_ETH2_WALLET_ID = '6245df06b0c50d0008e0b2acea0b1f0e';
+    BitGo.V2.TEST_ETH2_WALLET_PASSPHRASE = 'Eth2OnMoon!';
+
     BitGo.V2.TEST_BCH_WALLET_ID = '6148987267660d00069dd844af297a2b';
     BitGo.V2.TEST_BCH_WALLET_PASSPHRASE = 'BchOnMoon4';
     BitGo.V2.TEST_BCH_WALLET_CASH_ADDRESS = 'bchtest:pr3zp43qxu8ztudephsvyafxj2zfznw5v5wh85sg54';
