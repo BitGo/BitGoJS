@@ -1661,7 +1661,7 @@ describe('V2 Wallet:', function () {
       it('should sign transaction', async function () {
         const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
         signTxRequest.resolves(txRequest);
-        signTxRequest.calledOnceWithExactly(txRequest, 'secretKey', reqId);
+        signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', path: 'm/0', reqId });
 
         const txPrebuild = {
           walletId: tssWallet.id(),

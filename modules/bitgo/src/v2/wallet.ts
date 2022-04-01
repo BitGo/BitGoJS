@@ -2786,11 +2786,13 @@ export class Wallet {
     }
 
     try {
-      const signedTxRequest = await this.tssUtils.signTxRequest(
-        params.txPrebuild.txRequestId,
-        params.prv,
-        params.reqId || new RequestTracer()
-      );
+      const signedTxRequest = await this.tssUtils.signTxRequest({
+        txRequest: params.txPrebuild.txRequestId,
+        prv: params.prv,
+        // TODO (STLX-14667): avoid hard coding derivation path to support consolidation
+        path: 'm/0',
+        reqId: params.reqId || new RequestTracer(),
+      });
       return {
         txRequestId: signedTxRequest.txRequestId,
       };

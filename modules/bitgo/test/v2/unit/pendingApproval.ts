@@ -129,7 +129,7 @@ describe('Pending Approvals:', () => {
     decryptedPrv.resolves(decryptedPrvResponse);
 
     const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
-    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
+    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, 'm/0', reqId);
     recreateTxRequest.resolves(txRequest);
 
     const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
