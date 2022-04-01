@@ -23,6 +23,9 @@ import {
   BitGoAPIOptions,
   DecryptOptions,
   EncryptOptions,
+  User,
+  BitGoJson,
+  VerifyPasswordOptions,
 } from './types';
 import moment = require('moment');
 import pjson = require('../package.json');
@@ -49,11 +52,13 @@ export abstract class BitGoAPI {
   protected readonly _authVersion: Exclude<BitGoAPIOptions['authVersion'], undefined> = 2;
   protected _hmacVerification = true;
   protected readonly _proxy?: string;
+  protected _user?: User;
   protected _extensionKey?: utxolib.ECPair.ECPairInterface;
   protected _reqId?: IRequestTracer;
   protected _token?: string;
   protected _version = pjson.version;
   protected _userAgent?: string;
+  protected _ecdhXprv?: string;
 
   constructor(params: BitGoAPIOptions = {}) {
     if (
@@ -574,5 +579,62 @@ export abstract class BitGoAPI {
       }
       throw error;
     }
+  }
+
+  /**
+   * Serialize this BitGo object to a JSON object.
+   *
+   * Caution: contains sensitive data
+   */
+  toJSON(): BitGoJson {
+    return {
+      user: this._user,
+      token: this._token,
+      extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
+      ecdhXprv: this._ecdhXprv,
+    };
+  }
+
+  /**
+   * Get the current user
+   */
+  user(): User | undefined {
+    return this._user;
+  }
+
+  /**
+   * Deserialize a JSON serialized BitGo object.
+   *
+   * Overwrites the properties on the current BitGo object with
+   * those of the deserialzed object.
+   *
+   * @param json
+   */
+  fromJSON(json: BitGoJson): void {
+    this._user = json.user;
+    this._token = json.token;
+    this._ecdhXprv = json.ecdhXprv;
+    if (json.extensionKey) {
+      const network = common.Environments[this.getEnv()].network;
+      this._extensionKey = utxolib.ECPair.fromWIF(
+        json.extensionKey,
+        utxolib.networks[network] as utxolib.BitcoinJSNetwork
+      );
+    }
+  }
+
+  /**
+   */
+  verifyPassword(params: VerifyPasswordOptions = {}): Promise<any> {
+    if (!_.isString(params.password)) {
+      throw new Error('missing required string password');
+    }
+
+    if (!this._user || !this._user.username) {
+      throw new Error('no current user');
+    }
+    const hmacPassword = this.calculateHMAC(this._user.username, params.password);
+
+    return this.post(this.url('/user/verifypassword')).send({ password: hmacPassword }).result('valid');
   }
 }

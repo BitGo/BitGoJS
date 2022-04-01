@@ -56,26 +56,11 @@ export interface BitGoOptions extends BitGoAPIOptions {
   validate?: boolean;
 }
 
-export interface User {
-  username: string;
-}
-
-export interface BitGoJson {
-  user?: User;
-  token?: string;
-  extensionKey?: string;
-  ecdhXprv?: string;
-}
-
 /**
  * @deprecated
  */
 export interface DeprecatedVerifyAddressOptions {
   address?: string;
-}
-
-export interface VerifyPasswordOptions {
-  password?: string;
 }
 
 export interface SplitSecretOptions {
@@ -210,15 +195,12 @@ export interface RegisterPushTokenOptions {
 }
 
 export class BitGo extends BitGoAPI {
-  private _user?: User;
   private _keychains: any;
   private _wallets: any;
   private readonly _clientId?: string;
   private readonly _clientSecret?: string;
   private _refreshToken?: string;
   private _validate: boolean;
-  
-  private _ecdhXprv?: string;
   private _markets?: any;
   private _blockchain?: any;
   private _travelRule?: any;
@@ -298,48 +280,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Serialize this BitGo object to a JSON object.
-   *
-   * Caution: contains sensitive data
-   */
-  toJSON(): BitGoJson {
-    return {
-      user: this._user,
-      token: this._token,
-      extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
-      ecdhXprv: this._ecdhXprv,
-    };
-  }
-
-  /**
-   * Deserialize a JSON serialized BitGo object.
-   *
-   * Overwrites the properties on the current BitGo object with
-   * those of the deserialzed object.
-   *
-   * @param json
-   */
-  fromJSON(json: BitGoJson): void {
-    this._user = json.user;
-    this._token = json.token;
-    this._ecdhXprv = json.ecdhXprv;
-    if (json.extensionKey) {
-      const network = common.Environments[this.getEnv()].network;
-      this._extensionKey = utxolib.ECPair.fromWIF(
-        json.extensionKey,
-        utxolib.networks[network] as utxolib.BitcoinJSNetwork
-      );
-    }
-  }
-
-  /**
-   * Get the current user
-   */
-  user(): User | undefined {
-    return this._user;
-  }
-
-  /**
    * Verify a Bitcoin address is a valid base58 address
    * @deprecated
    */
@@ -361,21 +301,6 @@ export class BitGo extends BitGoAPI {
     }
 
     return address.version === network.pubKeyHash || address.version === network.scriptHash;
-  }
-
-  /**
-   */
-  verifyPassword(params: VerifyPasswordOptions = {}): Promise<any> {
-    if (!_.isString(params.password)) {
-      throw new Error('missing required string password');
-    }
-
-    if (!this._user || !this._user.username) {
-      throw new Error('no current user');
-    }
-    const hmacPassword = this.calculateHMAC(this._user.username, params.password);
-
-    return this.post(this.url('/user/verifypassword')).send({ password: hmacPassword }).result('valid');
   }
 
   /**

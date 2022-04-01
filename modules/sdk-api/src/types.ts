@@ -130,3 +130,18 @@ export interface DecryptOptions {
   input: string;
   password?: string;
 }
+
+export interface User {
+  username: string;
+}
+
+export interface BitGoJson {
+  user?: User;
+  token?: string;
+  extensionKey?: string;
+  ecdhXprv?: string;
+}
+
+export interface VerifyPasswordOptions {
+  password?: string;
+}
