@@ -1487,29 +1487,9 @@ export class Wallet {
     // get keychains for address verification
     const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
-    const addressDerivationKeypair = _.get(keychains[KeyIndices.USER], 'addressDerivationKeypair');
-    const lastChainIndex = _.get(this.coinSpecific(), `lastChainIndex.${chain || 0}`, 0);
 
-    const newAddresses: Record<string, any>[] = [];
-    for (let index = 0; index < count; index++) {
+    const newAddresses = _.times(count, async (index) => {
       // synchronously make requests to keep order of derivation index when POSTing derived addresses
-      if (addressDerivationKeypair && passphrase) {
-        const addressDerivationPrv = this.bitgo.decrypt({
-          password: passphrase,
-          input: addressDerivationKeypair.encryptedPrv,
-        });
-        const newChainIndex = index + lastChainIndex + 1;
-        const derivedKeypair = this.baseCoin.deriveKeypair({
-          index: newChainIndex,
-          addressDerivationPrv,
-          addressDerivationPub: addressDerivationKeypair.pub,
-        });
-
-        if (derivedKeypair) {
-          addressParams.derivedAddress = derivedKeypair.address;
-          addressParams.index = newChainIndex;
-        }
-      }
 
       this.bitgo.setRequestTracer(reqId);
       const newAddress = (await this.bitgo
@@ -1558,8 +1538,8 @@ export class Wallet {
         throw new Error(`address verification skipped for count = ${count}`);
       }
 
-      newAddresses.push(newAddress);
-    }
+      return newAddress;
+    });
 
     if (newAddresses.length === 1) {
       return newAddresses[0];
@@ -2789,15 +2769,13 @@ export class Wallet {
       const signedTxRequest = await this.tssUtils.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
-        // TODO (STLX-14667): avoid hard coding derivation path to support consolidation
-        path: 'm/0',
         reqId: params.reqId || new RequestTracer(),
       });
       return {
         txRequestId: signedTxRequest.txRequestId,
       };
     } catch (e) {
-      throw new Error('failed to sign transaction');
+      throw new Error('failed to sign transaction: ' + e.stack);
     }
   }
 

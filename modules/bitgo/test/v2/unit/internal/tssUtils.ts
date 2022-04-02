@@ -304,10 +304,10 @@ describe('TSS Utils:', async function () {
         {
           serializedTxHex: 'ababfefe',
           signableHex: 'deadbeef',
+          derivationPath: 'm/0/1/2',
         },
       ],
     };
-    const path = 'm/0/1/2';
 
     beforeEach(function () {
       const userSignShare: SignShare = {
@@ -335,7 +335,7 @@ describe('TSS Utils:', async function () {
       const signingKey = MPC.keyDerive(
         validUserSigningMaterial.uShare,
         [validUserSigningMaterial.bitgoYShare, validUserSigningMaterial.backupYShare],
-        path
+        txRequest.unsignedTxs[0].derivationPath
       );
       const signerShare =
         signingKey.yShares[3].u + signingKey.yShares[3].chaincode;
@@ -378,7 +378,6 @@ describe('TSS Utils:', async function () {
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest,
         prv: JSON.stringify(validUserSigningMaterial),
-        path,
         reqId,
       });
       signedTxRequest.should.deepEqual(txRequest);
@@ -395,7 +394,6 @@ describe('TSS Utils:', async function () {
       const signedTxRequest = await tssUtils.signTxRequest({
         txRequest: txRequestId,
         prv: JSON.stringify(validUserSigningMaterial),
-        path,
         reqId,
       });
       signedTxRequest.should.deepEqual(txRequest);

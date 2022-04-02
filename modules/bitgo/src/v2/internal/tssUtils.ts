@@ -11,7 +11,6 @@ import Eddsa, {
   KeyShare,
   JShare,
   SignShare,
-  XShare,
   YShare,
   RShare,
   GShare,
@@ -22,6 +21,7 @@ import Eddsa, {
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychains';
 import { BitGo } from '../../bitgo';
+import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
 import { Memo, Wallet } from '..';
 import { RequestTracer } from '../internal/util';
@@ -56,6 +56,7 @@ export interface TxRequest {
       fee: number;
       feeString: string;
     };
+    derivationPath: string;
   }[];
   signatureShares?: SignatureShareRecord[];
 }
@@ -74,7 +75,6 @@ export interface SignatureShareRecord {
 
 interface SigningMaterial {
   uShare: UShare;
-  commonChaincode: string;
   bitgoYShare: YShare;
 }
 
@@ -147,38 +147,24 @@ export class TssUtils extends MpcUtils {
     };
 
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
-    const commonChaincode = userCombined.pShare.chaincode;
-    if (commonChaincode !== bitgoKeychain.commonKeychain?.slice(64)) {
-      throw new Error('Failed to create user keychain - commonChaincodes do not match.');
+    const commonKeychain = userCombined.pShare.y + userCombined.pShare.chaincode;
+    if (commonKeychain !== bitgoKeychain.commonKeychain) {
+      throw new Error('Failed to create user keychain - commonKeychains do not match.');
     }
 
     const userSigningMaterial: UserSigningMaterial = {
       uShare: userKeyShare.uShare,
-      commonChaincode: commonChaincode,
       bitgoYShare: bitgoToUser,
       backupYShare: backupKeyShare.yShares[1],
     };
 
-    const userKeychainParams: any = {
+    const userKeychainParams = {
       source: 'user',
       type: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
+      originalPasscodeEncryptionCode,
     };
-
-    if (this.baseCoin.supportsDerivationKeypair()) {
-      const addressDerivationKeypair = this.baseCoin.keychains().create();
-      if (!addressDerivationKeypair.pub) {
-        throw new Error('Expected address derivation keypair to contain a public key.');
-      }
-
-      const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: addressDerivationKeypair.prv });
-      userKeychainParams.addressDerivationKeypair = {
-        pub: addressDerivationKeypair.pub,
-        encryptedPrv: encryptedPrv,
-        originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
-      };
-    }
 
     return await this.baseCoin.keychains().add(userKeychainParams);
   }
@@ -222,14 +208,13 @@ export class TssUtils extends MpcUtils {
     };
 
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);
-    const commonChaincode = backupCombined.pShare.chaincode;
-    if (commonChaincode !== bitgoKeychain.commonKeychain?.slice(64)) {
-      throw new Error('Failed to create backup keychain - commonChaincodes do not match.');
+    const commonKeychain = backupCombined.pShare.y + backupCombined.pShare.chaincode;
+    if (commonKeychain !== bitgoKeychain.commonKeychain) {
+      throw new Error('Failed to create backup keychain - commonKeychains do not match.');
     }
 
     const backupSigningMaterial: BackupSigningMaterial = {
       uShare: backupKeyShare.uShare,
-      commonChaincode,
       bitgoYShare: bitgoToBackup,
       userYShare: userKeyShare.yShares[2],
     };
@@ -360,13 +345,12 @@ export class TssUtils extends MpcUtils {
   async signTxRequest(params: {
     txRequest: string | TxRequest;
     prv: string;
-    path: string;
     reqId: RequestTracer;
   }): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 
-    const { txRequest, prv, path } = params;
+    const { txRequest, prv } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await this.getTxRequest(txRequest);
@@ -384,16 +368,18 @@ export class TssUtils extends MpcUtils {
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      path
+      txRequestResolved.unsignedTxs[0].derivationPath
     );
-    const signerShare =
-      signingKey.yShares[ShareKeyPosition.BITGO].u + signingKey.yShares[ShareKeyPosition.BITGO].chaincode;
 
     const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
 
     const userSignShare = await this.createUserSignShare({ signablePayload, pShare: signingKey.pShare });
 
-    await this.offerUserToBitgoRShare({ txRequestId, userSignShare, signerShare });
+    await this.offerUserToBitgoRShare({
+      txRequestId,
+      userSignShare,
+      signerShare: signingKey.yShares[3].u + signingKey.yShares[3].chaincode,
+    });
 
     const bitgoToUserRShare = await this.getBitgoToUserRShare(txRequestId);
 
@@ -401,6 +387,7 @@ export class TssUtils extends MpcUtils {
       userSignShare,
       bitgoToUserRShare,
       userSigningMaterial.backupYShare,
+      userSigningMaterial.bitgoYShare,
       signablePayload
     );
 
@@ -508,7 +495,11 @@ export class TssUtils extends MpcUtils {
       to: SignatureShareType.BITGO,
       share: rShare.r + rShare.R,
     };
-    await this.sendSignatureShare({ txRequestId, signatureShare, signerShare });
+
+    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+
+    await this.sendSignatureShare({ txRequestId, signatureShare, signerShare: encryptedSignerShare });
   }
 
   /**
@@ -579,6 +570,7 @@ export class TssUtils extends MpcUtils {
     userSignShare: SignShare,
     bitgoToUserRShare: SignatureShareRecord,
     backupToUserYShare: YShare,
+    bitgoToUserYShare: YShare,
     signablePayload: Buffer
   ): Promise<GShare> {
     if (userSignShare.xShare.i !== ShareKeyPosition.USER) {
@@ -594,17 +586,16 @@ export class TssUtils extends MpcUtils {
       throw new Error('Invalid YShare, is not backup key');
     }
 
-    const userXShare: XShare = userSignShare.xShare;
     const RShare: RShare = {
       i: ShareKeyPosition.USER,
       j: ShareKeyPosition.BITGO,
-      u: userXShare.u,
+      u: bitgoToUserYShare.u,
       r: bitgoToUserRShare.share.substring(0, 64),
       R: bitgoToUserRShare.share.substring(64, 128),
     };
     await Eddsa.initialize();
     const MPC = new Eddsa();
-    return MPC.sign(signablePayload, userXShare, [RShare], [backupToUserYShare]);
+    return MPC.sign(signablePayload, userSignShare.xShare, [RShare], [backupToUserYShare]);
   }
 
   /**
@@ -650,15 +641,10 @@ export class TssUtils extends MpcUtils {
    * @param {RequestTracer} reqId id tracer.
    * @returns {Promise<any>}
    */
-  async recreateTxRequest(
-    txRequestId: string,
-    decryptedPrv: string,
-    path: string,
-    reqId: RequestTracer
-  ): Promise<TxRequest> {
+  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: RequestTracer): Promise<TxRequest> {
     await this.deleteSignatureShares(txRequestId);
     // after delete signatures shares get the tx without them
     const txRequest = await this.getTxRequest(txRequestId);
-    return await this.signTxRequest({ txRequest, prv: decryptedPrv, path, reqId });
+    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
   }
 }
