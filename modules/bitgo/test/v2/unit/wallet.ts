@@ -1500,7 +1500,8 @@ describe('V2 Wallet:', function () {
           feeInfo: {
             fee: 5000,
             feeString: '5000',
-          }
+          },
+          derivationPath: 'm/0',
         },
       ],
     };
@@ -1661,7 +1662,7 @@ describe('V2 Wallet:', function () {
       it('should sign transaction', async function () {
         const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
         signTxRequest.resolves(txRequest);
-        signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', path: 'm/0', reqId });
+        signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
 
         const txPrebuild = {
           walletId: tssWallet.id(),
