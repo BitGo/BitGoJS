@@ -1797,9 +1797,13 @@ export class Wallet {
           const eckey = makeRandomKey();
           const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
           const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: keychain.prv });
-
+          // Only one of pub/commonPub/commonKeychain should be present in the keychain
+          let pub = keychain.pub ?? keychain.commonPub;
+          if (keychain.commonKeychain) {
+            pub = TssUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
+          }
           sharedKeychain = {
-            pub: keychain.pub ?? TssUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain) ?? keychain.commonPub,
+            pub,
             encryptedPrv: newEncryptedPrv,
             fromPubKey: eckey.publicKey.toString('hex'),
             toPubKey: sharing.pubkey,
