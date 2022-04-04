@@ -19,10 +19,6 @@ export interface Keychain {
   commonPub?: string;
   commonKeychain?: string;
   keyShares?: KeyShare[];
-  addressDerivationKeypair?: {
-    pub: string;
-    encryptedPrv: string;
-  };
 }
 
 export interface ChangedKeychains {
@@ -74,10 +70,6 @@ interface AddKeychainOptions {
   keyShares?: KeyShare[];
   userGPGPublicKey?: string;
   backupGPGPublicKey?: string;
-  addressDerivationKeypair?: {
-    pub: string;
-    encryptedPrv: string;
-  };
 }
 
 interface KeyShare {
@@ -284,9 +276,7 @@ export class Keychains {
   async add(params: AddKeychainOptions = {}): Promise<Keychain> {
     params = params || {};
     validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed']);
-    if (params.addressDerivationKeypair) {
-      validateParams(params.addressDerivationKeypair, ['pub', 'encryptedPrv'], []);
-    }
+
     if (!_.isUndefined(params.disableKRSEmail)) {
       if (!_.isBoolean(params.disableKRSEmail)) {
         throw new Error('invalid disableKRSEmail argument, expecting boolean');
@@ -313,7 +303,6 @@ export class Keychains {
         keyShares: params.keyShares,
         userGPGPublicKey: params.userGPGPublicKey,
         backupGPGPublicKey: params.backupGPGPublicKey,
-        addressDerivationKeypair: params.addressDerivationKeypair,
       })
       .result();
   }

@@ -79,11 +79,6 @@ export class Dot extends BaseCoin {
   }
 
   /** @inheritDoc */
-  supportsDerivationKeypair(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
   supportsTss(): boolean {
     return true;
   }
