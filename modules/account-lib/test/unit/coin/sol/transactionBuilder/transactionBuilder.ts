@@ -2,6 +2,7 @@ import should from 'should';
 import * as bs58 from 'bs58';
 
 import Eddsa from '../../../../../src/mpc/tss';
+import { Ed25519BIP32 } from '../../../../../src/mpc/hdTree';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/sol';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -372,6 +373,7 @@ describe('Sol Transaction Builder', async () => {
 
     before('initialize mpc module', async () => {
       await Eddsa.initialize();
+      await Ed25519BIP32.initialize();
     });
 
     it('should add TSS signature', async () => {
@@ -484,6 +486,55 @@ describe('Sol Transaction Builder', async () => {
       const rebuiltTransaction = await factory.from(rawTransaction).build();
       rebuiltTransaction.id.should.equal(signedTransaction.id);
       rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
+    });
+
+    it('should add TSS HD signature', async () => {
+      const MPC = new Eddsa(new Ed25519BIP32());
+      const A = MPC.keyShare(1, 2, 3);
+      const B = MPC.keyShare(2, 2, 3);
+      const C = MPC.keyShare(3, 2, 3);
+
+      const A_combine = MPC.keyCombine(A.uShare, [B.yShares[1], C.yShares[1]]);
+      const B_combine = MPC.keyCombine(B.uShare, [A.yShares[2], C.yShares[2]]);
+
+      for (let index = 0; index < 10; index++) {
+        const path = `m/${index}`;
+
+        const A_subkey = MPC.keyDerive(A.uShare, [B.yShares[1], C.yShares[1]], path);
+        const B_subkey = MPC.keyCombine(B.uShare, [A_subkey.yShares[2], C.yShares[2]]);
+
+        const solPublicKey = new KeyPair({ pub: A_subkey.pShare.y });
+        const sender = solPublicKey.getAddress();
+
+        const transferBuilder = factory
+          .getTransferBuilder()
+          .sender(sender)
+          .nonce(validBlockhash)
+          .fee({ amount: 5000 })
+          .send({ address: nonceAccount.pub, amount: '1000' });
+        const unsignedTransaction = await transferBuilder.build();
+        const signablePayload = unsignedTransaction.signablePayload;
+
+        const A_sign_share = MPC.signShare(signablePayload, A_subkey.pShare, [A_combine.jShares[2]]);
+        const B_sign_share = MPC.signShare(signablePayload, B_subkey.pShare, [B_combine.jShares[1]]);
+        const A_sign = MPC.sign(signablePayload, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
+        const B_sign = MPC.sign(signablePayload, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
+
+        const signature = MPC.signCombine([A_sign, B_sign]);
+        const rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+        transferBuilder.addSignature({ pub: sender }, rawSignature);
+
+        const signedTransaction = await transferBuilder.build();
+        signedTransaction.signature.length.should.equal(1);
+        signedTransaction.signature[0].should.equal(bs58.encode(rawSignature));
+        signedTransaction.id.should.equal(bs58.encode(rawSignature));
+
+        const rawTransaction = signedTransaction.toBroadcastFormat() as string;
+        const rebuiltTransaction = await factory.from(rawTransaction).build();
+        rebuiltTransaction.id.should.equal(signedTransaction.id);
+        rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
+      }
     });
   });
 });

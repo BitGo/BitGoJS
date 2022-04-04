@@ -114,7 +114,7 @@ describe('Pending Approvals:', () => {
     const params = { txRequestId, walletPassphrase };
     const txRequest = {
       txRequestId: txRequestId,
-      unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2' }],
+      unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
       signatureShares: [
         {
           from: SignatureShareType.BITGO,
@@ -129,7 +129,7 @@ describe('Pending Approvals:', () => {
     decryptedPrv.resolves(decryptedPrvResponse);
 
     const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
-    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, 'm/0', reqId);
+    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
     recreateTxRequest.resolves(txRequest);
 
     const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
