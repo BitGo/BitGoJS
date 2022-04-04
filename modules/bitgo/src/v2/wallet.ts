@@ -1913,8 +1913,7 @@ export class Wallet {
 
     const presign = await this.baseCoin.presignTransaction(params);
 
-    if (txPrebuild.consolidateId === undefined && this._wallet.multisigType === 'tss') {
-      // consolidation will continue with single sig signing
+    if (this._wallet.multisigType === 'tss') {
       return this.signTransactionTss({ ...params, prv: this.getUserPrv(presign) });
     }
 
@@ -2713,10 +2712,6 @@ export class Wallet {
   private async signTransactionTss(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction> {
     if (!params.txPrebuild) {
       throw new Error('txPrebuild required to sign transactions with TSS');
-    }
-
-    if (params.txPrebuild.consolidateId !== undefined) {
-      throw new Error('should not sign consolidation transactions with TSS');
     }
 
     if (!params.txPrebuild.txRequestId) {
