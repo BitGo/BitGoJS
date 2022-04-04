@@ -21,7 +21,7 @@ import {
 import { Eth } from './coins';
 import * as internal from './internal/internal';
 import { drawKeycard } from './internal/keycard';
-import { Keychain, KeyIndices } from './keychains';
+import { Keychain } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
@@ -297,7 +297,7 @@ export interface FlushForwarderTokenOptions {
   };
 }
 
-export interface CreateAddressApiParams {
+export interface CreateAddressOptions {
   chain?: number;
   gasPrice?: number | string;
   count?: number;
@@ -309,10 +309,6 @@ export interface CreateAddressApiParams {
   allowSkipVerifyAddress?: boolean;
   derivedAddress?: string;
   index?: number;
-}
-
-export interface CreateAddressOptions extends CreateAddressApiParams {
-  passphrase?: string;
 }
 
 export interface UpdateAddressOptions {
@@ -1405,7 +1401,7 @@ export class Wallet {
    * if 'coinSpecific' is not part of the response from api call to create address
    */
   async createAddress(params: CreateAddressOptions = {}): Promise<any> {
-    const addressParams: CreateAddressApiParams = {};
+    const addressParams: CreateAddressOptions = {};
     const reqId = new RequestTracer();
 
     const {
@@ -1418,7 +1414,6 @@ export class Wallet {
       count = 1,
       baseAddress,
       allowSkipVerifyAddress = true,
-      passphrase,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1479,39 +1474,11 @@ export class Wallet {
       addressParams.format = format;
     }
 
-    if (!_.isUndefined(passphrase)) {
-      if (!_.isString(passphrase)) {
-        throw new Error('passphrase has to be a string');
-      }
-    }
-
     // get keychains for address verification
     const keychains = await Promise.all(this._wallet.keys.map((k) => this.baseCoin.keychains().get({ id: k, reqId })));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
-    const addressDerivationKeypair = _.get(keychains[KeyIndices.USER], 'addressDerivationKeypair');
-    const lastChainIndex = _.get(this.coinSpecific(), `lastChainIndex.${chain || 0}`, 0);
 
-    const newAddresses: Record<string, any>[] = [];
-    for (let index = 0; index < count; index++) {
-      // synchronously make requests to keep order of derivation index when POSTing derived addresses
-      if (addressDerivationKeypair && passphrase) {
-        const addressDerivationPrv = this.bitgo.decrypt({
-          password: passphrase,
-          input: addressDerivationKeypair.encryptedPrv,
-        });
-        const newChainIndex = index + lastChainIndex + 1;
-        const derivedKeypair = this.baseCoin.deriveKeypair({
-          index: newChainIndex,
-          addressDerivationPrv,
-          addressDerivationPub: addressDerivationKeypair.pub,
-        });
-
-        if (derivedKeypair) {
-          addressParams.derivedAddress = derivedKeypair.address;
-          addressParams.index = newChainIndex;
-        }
-      }
-
+    const newAddresses = _.times(count, async () => {
       this.bitgo.setRequestTracer(reqId);
       const newAddress = (await this.bitgo
         .post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
@@ -1559,8 +1526,8 @@ export class Wallet {
         throw new Error(`address verification skipped for count = ${count}`);
       }
 
-      newAddresses.push(newAddress);
-    }
+      return newAddress;
+    });
 
     if (newAddresses.length === 1) {
       return newAddresses[0];
@@ -2082,35 +2049,6 @@ export class Wallet {
       pubs: keychains.map((k) => k.pub),
       reqId: params.reqId,
     };
-
-    if (txPrebuild.consolidationDetails && this.baseCoin.supportsDerivationKeypair()) {
-      const encryptedDerivationPrv = keychains[0].addressDerivationKeypair?.encryptedPrv;
-      const derivationPub = keychains[0].addressDerivationKeypair?.pub || ''; // required but no used
-      if (_.isNil(encryptedDerivationPrv)) {
-        throw new Error('Derivation Private Key not found');
-      }
-
-      if (_.isNil(params.walletPassphrase)) {
-        throw new Error('Missing is passphrase');
-      }
-
-      const decryptedDerivationPrv = this.bitgo.decrypt({
-        password: params.walletPassphrase,
-        input: encryptedDerivationPrv,
-      });
-
-      const derivedKeypair = this.baseCoin.deriveKeypair({
-        index: txPrebuild.consolidationDetails.senderAddressIndex,
-        addressDerivationPrv: decryptedDerivationPrv,
-        addressDerivationPub: derivationPub,
-      });
-
-      if (_.isNil(derivedKeypair)) {
-        throw new Error('Derivation failed');
-      }
-
-      signingParams.prv = derivedKeypair.prv;
-    }
 
     try {
       return await this.signTransaction(signingParams);

@@ -316,11 +316,6 @@ export class Sol extends BaseCoin {
   }
 
   /** @inheritDoc */
-  supportsDerivationKeypair(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
   deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
     if (_.isNil(params.addressDerivationPrv)) {
       throw new Error('addressDerivationPrv is missing');

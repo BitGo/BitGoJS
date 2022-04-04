@@ -573,16 +573,6 @@ export abstract class BaseCoin {
   abstract signTransaction(params: SignTransactionOptions): Promise<SignedTransaction>;
 
   /**
-   * Determines if this coin supports address derivation from a single sig key pair.
-   * If true, a separate key pair will be generated and encrypted in the User's key chain during wallet creation.
-   * This key pair will later be used to create new addresses.
-   * @returns {boolean}
-   */
-  supportsDerivationKeypair(): boolean {
-    return false;
-  }
-
-  /**
    * Derives a new KeyPair from the user's derivation key pair
    *
    * @param {DeriveKeypairOptions} params
