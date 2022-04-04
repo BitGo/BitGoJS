@@ -4,7 +4,7 @@
 import 'should';
 import * as bs58 from 'bs58';
 import * as sol from '@solana/web3.js';
-import { Dot } from '../../../src';
+import { Dot, Sol } from '../../../src';
 
 import Eddsa from '../../../src/mpc/tss';
 import { Ed25519BIP32 } from '../../../src/mpc/hdTree';
@@ -135,9 +135,14 @@ describe('TSS EDDSA key generation and signing', function () {
     for (let index = 0; index < 10; index++) {
       const path = `m/0/0/${index}`;
       const derive1 = MPC.deriveUnhardened(commonKeychain, path);
+      const subkey = MPC.keyDerive(A.uShare, [B.yShares[1], C.yShares[1]], path);
       const derive2 = MPC.deriveUnhardened(commonKeychain, path);
 
+      subkey.pShare.y.should.equal(derive1);
       derive1.should.equal(derive2, 'derivation should be deterministic');
+
+      const solAddress = bs58.encode(Buffer.from(derive1, 'hex'));
+      Sol.Utils.isValidPublicKey(solAddress).should.be.true();
 
       const solPk = new sol.PublicKey(bs58.encode(Buffer.from(derive1, 'hex')));
       solPk.toBuffer().toString('hex').should.equal(derive1);

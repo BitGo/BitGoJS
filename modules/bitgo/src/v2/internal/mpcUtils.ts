@@ -2,10 +2,11 @@
  * @prettier
  */
 
-import { Key, SerializedKeyPair, readKey, createMessage, readPrivateKey, encrypt, decrypt, readMessage } from 'openpgp';
+import { SerializedKeyPair, readPrivateKey, decrypt, readMessage } from 'openpgp';
 import { BitGo } from '../../bitgo';
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychains';
+import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 
 export interface MpcKeyShare {
   publicShare: string;
@@ -19,32 +20,6 @@ export abstract class MpcUtils {
   constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
-  }
-
-  protected async getBitgoGpgPubKey(): Promise<Key> {
-    const constants = await this.bitgo.fetchConstants();
-    if (!constants.mpc || !constants.mpc.bitgoPublicKey) {
-      throw new Error('Unable to create MPC keys - bitgoPublicKey is missing from constants');
-    }
-
-    const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
-    return await readKey({ armoredKey: bitgoPublicKeyStr });
-  }
-
-  protected async encryptPrivateShare(privateShare: string, bitgoKey: Key): Promise<string> {
-    const messageToEncrypt = await createMessage({
-      text: privateShare,
-    });
-    return await encrypt({
-      message: messageToEncrypt,
-      encryptionKeys: [bitgoKey],
-      format: 'armored',
-      config: {
-        rejectCurves: new Set(),
-        showVersion: false,
-        showComment: false,
-      },
-    });
   }
 
   protected async decryptPrivateShare(privateShare: string, userGpgKey: SerializedKeyPair<string>): Promise<string> {
@@ -71,9 +46,9 @@ export abstract class MpcUtils {
     keyType: string,
     enterprise?: string
   ): Promise<Keychain> {
-    const bitgoKey = await this.getBitgoGpgPubKey();
-    const encUserToBitGoMessage = await this.encryptPrivateShare(userKeyShare.privateShare, bitgoKey);
-    const encBackupToBitGoMessage = await this.encryptPrivateShare(backupKeyShare.privateShare, bitgoKey);
+    const bitgoKey = await getBitgoGpgPubKey(this.bitgo);
+    const encUserToBitGoMessage = await encryptText(userKeyShare.privateShare, bitgoKey);
+    const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 
     const createBitGoMPCParams = {
       type: keyType,
