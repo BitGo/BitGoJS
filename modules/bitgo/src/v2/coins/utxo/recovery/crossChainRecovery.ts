@@ -95,7 +95,7 @@ async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string)
   try {
     return await coin.wallets().get({ id: walletId });
   } catch (e) {
-    if (e.status !== 404) {
+    if (e.status >= 400 && e.status < 500) {
       throw e;
     }
   }
