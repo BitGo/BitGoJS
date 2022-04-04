@@ -65,6 +65,11 @@ interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTran
   wallet: Wallet;
 }
 
+interface EIP1559 {
+  maxPriorityFeePerGas: number;
+  maxFeePerGas: number;
+}
+
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   hopTransaction?: HopPrebuild;
   buildParams: {
@@ -157,6 +162,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   nextContractSequenceId?: string;
   expireTime?: number;
   hopTransaction?: string;
+  eip1559?: EIP1559;
 }
 
 // For signTransaction
@@ -170,6 +176,7 @@ export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
     txHex?: never;
     recipients: Recipient[];
     expiration?: number;
+    eip1559?: EIP1559;
   };
 }
 
@@ -502,6 +509,7 @@ export class AvaxC extends BaseCoin {
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
 
     const txParams = {
+      eip1559: params.txPrebuild.eip1559,
       txHex: transaction.toBroadcastFormat(),
       recipients: recipients,
       expiration: params.txPrebuild.expireTime,

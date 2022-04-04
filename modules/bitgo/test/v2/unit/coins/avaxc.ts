@@ -234,6 +234,53 @@ describe('Avalanche C-Chain', function () {
       halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
     });
 
+    it('should sign an unsigned test tx with eip1559', async function () {
+
+      const builder = getBuilder('tavaxc') as AvaxCAccountLib.TransactionBuilder;
+      builder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+        eip1559: {
+          maxFeePerGas: '7593123',
+          maxPriorityFeePerGas: '150',
+        }
+      });
+      builder.counter(1);
+      builder.type(BaseCoin.TransactionType.Send);
+      builder.contract(account_1.address);
+      builder
+        .transfer()
+        .amount('1')
+        .to(account_2.address)
+        .expirationTime(10000)
+        .contractSequenceId(1);
+
+      const unsignedTx = await builder.build();
+      const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
+
+      const halfSignedRawTx = await tavaxCoin.signTransaction({
+        txPrebuild: {
+          txHex: unsignedTxForBroadcasting,
+          eip1559: {
+            maxFeePerGas: '7593123',
+            maxPriorityFeePerGas: '150',
+          }
+        },
+        prv: account_1.owner_2,
+      });
+
+      builder.transfer().key(account_1.owner_2);
+      const halfSignedTx = await builder.build();
+      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
+
+      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
+      halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
+      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
+      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      halfSignedRawTx.halfSigned.eip1559.maxFeePerGas.should.equal('7593123');
+      halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
+    });
+
     it('should sign an unsigned mainnet tx', async function () {
 
       const builder = getBuilder('avaxc') as AvaxCAccountLib.TransactionBuilder;
