@@ -47,7 +47,6 @@ import {
   ExtendTokenOptions,
   GetSharingKeyOptions,
 } from './types';
-import moment = require('moment');
 import pjson = require('../package.json');
 import { decrypt, encrypt } from './encrypt';
 import { sanitizeLegacyPath } from './bip32path';
@@ -482,7 +481,10 @@ export abstract class BitGoAPI {
     const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
     BitGoAPI._constants[env] = result.body.constants;
 
-    BitGoAPI._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
+    if (result.body?.ttl && typeof result.body?.ttl === 'number') {
+      BitGoAPI._constantsExpire[env] = new Date(new Date().getTime() + (result.body.ttl as number) * 1000);
+    }
+
     return BitGoAPI._constants[env];
   }
 
