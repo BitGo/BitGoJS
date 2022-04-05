@@ -9,6 +9,7 @@ import {
   Nonce,
   StakingActivate,
   StakingWithdraw,
+  TokenTransfer,
   TransactionExplanation,
   Transfer,
   TxData,
@@ -321,6 +322,14 @@ export class Transaction extends BaseTransaction {
             amount: transferInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(transferInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.TokenTransfer:
+          const tokenTransferInstruction = instruction as TokenTransfer;
+          outputs.push({
+            address: tokenTransferInstruction.params.toAddress,
+            amount: tokenTransferInstruction.params.amount,
+            tokenName: tokenTransferInstruction.params.tokenName,
+          });
           break;
         case InstructionBuilderTypes.CreateNonceAccount:
           const createInstruction = instruction as WalletInit;
