@@ -78,19 +78,6 @@ export class BlsUtils extends MpcUtils {
       originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
     };
 
-    if (this.baseCoin.supportsDerivationKeypair()) {
-      const addressDerivationKeypair = this.baseCoin.keychains().create();
-      if (!addressDerivationKeypair.pub) {
-        throw new Error('Expected address derivation keypair to contain a public key.');
-      }
-
-      const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: addressDerivationKeypair.prv });
-      userKeychainParams.addressDerivationKeypair = {
-        pub: addressDerivationKeypair.pub,
-        encryptedPrv: encryptedPrv,
-      };
-    }
-
     return await this.baseCoin.keychains().add(userKeychainParams);
   }
 

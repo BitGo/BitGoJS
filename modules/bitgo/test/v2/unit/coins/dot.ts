@@ -108,35 +108,4 @@ describe('DOT:', function () {
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
   });
-
-  describe('Derive Keypair', () => {
-    const params = {
-      addressDerivationPrv: accounts.account1.secretKey,
-      addressDerivationPub: accounts.account1.publicKey,
-      index: 0,
-    };
-    it('should derive valid key pairs', async () => {
-      Array.from({ length: 10 }).forEach((val, idx) => {
-        params.index = idx + 1;
-        const derivedKeypair = basecoin.deriveKeypair(params);
-        basecoin.isValidPrv(derivedKeypair.prv).should.be.true();
-        basecoin.isValidPub(derivedKeypair.pub).should.be.true();
-        basecoin.isValidAddress(derivedKeypair.address).should.be.true();
-      });
-    });
-    it('should throw if prv is missing from deriveKeypair params', async () => {
-      // @ts-expect-error allow invalid type for testing
-      params.addressDerivationPrv = undefined;
-      should(() => basecoin.deriveKeypair(params)).throw();
-    });
-    it('should throw if prv is invalid in deriveKeypair params', async () => {
-      params.addressDerivationPrv = 'fakeprvkey';
-      should(() => basecoin.deriveKeypair(params)).throw();
-    });
-    it('should throw if index is invalid', async () => {
-      params.addressDerivationPrv = accounts.account1.secretKey;
-      params.index = -1;
-      should(() => basecoin.deriveKeypair(params)).throw();
-    });
-  });
 });

@@ -52,10 +52,6 @@ export interface KeyPair {
   prv: string;
 }
 
-export interface DerivedKeyPair extends KeyPair {
-  address?: string;
-}
-
 export interface BlsKeyPair extends KeyPair {
   secretShares?: string[];
 }
@@ -124,12 +120,6 @@ export interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
-}
-
-export interface DeriveKeypairOptions {
-  addressDerivationPrv?: string;
-  addressDerivationPub: string;
-  index: number;
 }
 
 export interface FeeEstimateOptions {
@@ -571,28 +561,6 @@ export abstract class BaseCoin {
    * Sign a transaction
    */
   abstract signTransaction(params: SignTransactionOptions): Promise<SignedTransaction>;
-
-  /**
-   * Determines if this coin supports address derivation from a single sig key pair.
-   * If true, a separate key pair will be generated and encrypted in the User's key chain during wallet creation.
-   * This key pair will later be used to create new addresses.
-   * @returns {boolean}
-   */
-  supportsDerivationKeypair(): boolean {
-    return false;
-  }
-
-  /**
-   * Derives a new KeyPair from the user's derivation key pair
-   *
-   * @param {DeriveKeypairOptions} params
-   * @param {String} params.addressDerivationPrv - private key
-   * @param {Number} params.index - index
-   * @returns {DerivedKeyPair|undefined} - a derived Keypair or undefined
-   */
-  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
-    return undefined;
-  }
 
   /**
    * Returns the portion of the transaction that needs to be signed in Buffer format.

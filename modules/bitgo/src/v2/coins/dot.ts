@@ -4,8 +4,6 @@ import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
-  DerivedKeyPair,
-  DeriveKeypairOptions,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -79,11 +77,6 @@ export class Dot extends BaseCoin {
   }
 
   /** @inheritDoc */
-  supportsDerivationKeypair(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
   supportsTss(): boolean {
     return true;
   }
@@ -110,40 +103,6 @@ export class Dot extends BaseCoin {
       pub: keys.pub,
       prv: keys.prv,
     };
-  }
-
-  /** @inheritDoc */
-  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
-    try {
-      if (_.isNil(params.addressDerivationPrv)) {
-        throw new Error('addressDerivationPrv is missing');
-      }
-      const rootKeyPair = new accountLib.Dot.KeyPair({ prv: params.addressDerivationPrv });
-      const derivationPath = `m/0'/0'/0'/${params.index}'`;
-      const derivedKeys = rootKeyPair.deriveHardened(derivationPath);
-      if (_.isNil(derivedKeys?.prv)) {
-        throw new Error('Key derivation failed - missing derived prv key');
-      }
-      const derivedBase58KeyPair = new accountLib.Dot.KeyPair({ prv: derivedKeys.prv });
-      const { prv, pub } = derivedBase58KeyPair.getKeys();
-      const derivedAddress = derivedBase58KeyPair.getAddress();
-      if (!_.isString(prv) || !accountLib.Dot.Utils.default.isValidPrivateKey(prv)) {
-        throw new Error('failed to create valid derived base58 prv key');
-      }
-      if (!_.isString(pub) || !accountLib.Dot.Utils.default.isValidPublicKey(pub)) {
-        throw new Error('failed to create valid derived base58 pub key');
-      }
-      if (!accountLib.Dot.Utils.default.isValidAddress(derivedAddress)) {
-        throw new Error('failed to create valid DOT address from derived base58 keys');
-      }
-      return {
-        prv,
-        pub,
-        address: derivedAddress,
-      };
-    } catch (e) {
-      throw new Error(`failed to derive key pair with: ${e}`);
-    }
   }
 
   /**
