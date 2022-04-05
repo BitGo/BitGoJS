@@ -259,7 +259,7 @@ export default class Eddsa {
         i: P_j.j,
         j: P_i.i,
         y: bigIntToBufferLE(contribY, 32).toString('hex'),
-        u: bigIntToBufferLE(split_u[P_j.i], 32).toString('hex'),
+        u: bigIntToBufferLE(split_u[P_j.j], 32).toString('hex'),
         chaincode: bigIntToBufferBE(contribChaincode, 32).toString('hex'),
       };
     }
