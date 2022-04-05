@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="cee8c1e8-6403-4f6b-9145-59ab1aabb7c6" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="ProjectId" id="1yb3GJ3rLwZewnWONvCy990cc9g" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/node_modules/bitgo/node_modules/@bitgo/account-lib" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/node_modules/bitgo/node_modules/@bitgo/account-lib" />
+      <recent name="$PROJECT_DIR$/node_modules/@bitgo/account-lib" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/node_modules/@bitgo/statics" />
+      <recent name="$PROJECT_DIR$/resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Node.js.wallet.js[custom]">
+    <configuration name="baseUnit.js" type="NodeJSConfigurationType" temporary="true" path-to-node="$PROJECT_DIR$/../.nvm/versions/node/v14.17.5/bin/node" nameIsGenerated="true" path-to-js-file="baseUnit.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration name="wallet.js" type="NodeJSConfigurationType" temporary="true" path-to-node="$PROJECT_DIR$/../.nvm/versions/node/v14.17.3/bin/node" nameIsGenerated="true" path-to-js-file="wallet.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration name="wallet.js[custom]" type="NodeJSConfigurationType" path-to-node="$PROJECT_DIR$/../.nvm/versions/node/v14.17.3/bin/node" path-to-js-file="wallet.js" working-dir="$PROJECT_DIR$">
+      <envs>
+        <env name="BITGO_CUSTOM_ROOT_URI" value="https://testnet-05-app.bitgo-dev.com" />
+      </envs>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Node.js.wallet.js[custom]" />
+      <item itemvalue="Node.js.wallet.js" />
+      <item itemvalue="Node.js.baseUnit.js" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Node.js.wallet.js" />
+        <item itemvalue="Node.js.baseUnit.js" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cee8c1e8-6403-4f6b-9145-59ab1aabb7c6" name="Changes" comment="" />
+      <created>1632506363095</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1632506363095</updated>
+      <workItem from="1632506365991" duration="35637000" />
+      <workItem from="1633375937922" duration="4373000" />
+      <workItem from="1633406260379" duration="80431000" />
+      <workItem from="1634230880240" duration="2910000" />
+      <workItem from="1634665222423" duration="1592000" />
+      <workItem from="1634760731224" duration="1550000" />
+      <workItem from="1635184408646" duration="10029000" />
+      <workItem from="1635215109027" duration="34000" />
+      <workItem from="1637627820468" duration="3188000" />
+      <workItem from="1639092359429" duration="1607000" />
+      <workItem from="1639354356136" duration="2042000" />
+      <workItem from="1639416888404" duration="5764000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/wallet.js</url>
+          <line>56</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/wallet.js</url>
+          <line>161</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/wallet.js</url>
+          <line>96</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="NodeJSConfigurationType">
+        <watch expression="result[0]" language="JavaScript" />
+        <watch expression="self.baseCoin.url" />
+        <watch expression="self.baseCoin.url('/wallet/' + params.id)" />
+        <watch expression="self.prebuildTransaction(params)" />
+      </configuration>
+    </watches-manager>
+  </component>
+</project>
