@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/unspents",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Defines the chain codes used for different unspent types and methods to calculate bitcoin transaction sizes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

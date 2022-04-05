@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "9.12.0-rc.27",
+  "version": "9.12.0-rc.28",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -26,7 +26,7 @@
     "prepare": "yarn build",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "lint": "yarn eslint --quiet .",
-    "build": "yarn tsc",
+    "build": "tsc",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^14.1.0-rc.27",
+    "bitgo": "^14.1.0-rc.28",
     "bluebird": "^3.5.3",
     "body-parser": "^1.19.0",
     "connect-timeout": "^1.9.0",
