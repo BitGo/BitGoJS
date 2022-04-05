@@ -132,6 +132,7 @@ export interface TransactionRecipient {
   address: string;
   amount: string | number;
   memo?: string;
+  tokenName?: string;
 }
 
 export interface TransactionFee {
