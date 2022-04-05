@@ -29,8 +29,8 @@ interface HDTree {
 export default HDTree;
 
 function deriveEd25519Helper(index: number | undefined = 0, chaincode: bigint, pk: bigint, sk?: bigint): Buffer[] {
-  const zmac = createHmac('sha512', bigIntToBufferBE(chaincode, 32).toString('latin1'));
-  const imac = createHmac('sha512', bigIntToBufferBE(chaincode, 32).toString('latin1'));
+  const zmac = createHmac('sha512', bigIntToBufferBE(chaincode, 32));
+  const imac = createHmac('sha512', bigIntToBufferBE(chaincode, 32));
   const seri = Buffer.alloc(4);
   seri.writeUInt32LE(index, 0);
   if (((index >>> 0) & 0x80000000) === 0) {
