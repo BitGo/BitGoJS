@@ -877,33 +877,6 @@ describe('SOL:', function () {
     });
   });
 
-  describe('Derive Keypair', () => {
-    const params = {
-      addressDerivationPrv: resources.accountWithSeed.privateKey.base58,
-      addressDerivationPub: resources.accountWithSeed.publicKey,
-      index: 1,
-    };
-    it('should derive valid key pairs', async function () {
-      while (params.index < 11) {
-        const derivedKeypair = basecoin.deriveKeypair(params);
-        basecoin.isValidPrv(derivedKeypair.prv).should.true();
-        basecoin.isValidPub(derivedKeypair.pub).should.true();
-        basecoin.isValidAddress(derivedKeypair.address).should.true();
-        params.index++;
-      }
-    });
-    it('should throw if prv is missing', async function () {
-      // @ts-expect-error Test for throw
-      params.addressDerivationPrv = undefined;
-      should(() => basecoin.deriveKeypair(params)).throw('addressDerivationPrv is missing');
-    });
-
-    it('should throw if prv is invalid', async function () {
-      params.addressDerivationPrv = 'randomstring';
-      should(() => basecoin.deriveKeypair(params)).throw();
-    });
-  });
-
   describe('Get Signing Payload', () => {
 
     it('should return a valid signing payload', async function () {

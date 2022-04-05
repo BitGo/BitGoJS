@@ -23,7 +23,6 @@ import {
 import { BitGo } from '../../bitgo';
 import { Memo } from '../wallet';
 import * as _ from 'lodash';
-import { DerivedKeyPair, DeriveKeypairOptions } from '..';
 import { MethodNotImplementedError } from '../../errors';
 import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
 
@@ -313,30 +312,6 @@ export class Sol extends BaseCoin {
     const explainedTransaction = (rebuiltTransaction as accountLib.BaseCoin.BaseTransaction).explainTransaction();
 
     return explainedTransaction as SolTransactionExplanation;
-  }
-
-  /** @inheritDoc */
-  deriveKeypair(params: DeriveKeypairOptions): DerivedKeyPair | undefined {
-    if (_.isNil(params.addressDerivationPrv)) {
-      throw new Error('addressDerivationPrv is missing');
-    }
-    const rootKeypair = new accountLib.Sol.KeyPair({ prv: params.addressDerivationPrv });
-    const derivedKeys = rootKeypair.deriveHardened(`m/0'/0'/0'/${params.index}'`);
-    if (_.isNil(derivedKeys.prv)) {
-      throw new Error('Key derivation failed - missing derived prv key');
-    }
-    // Necesary step because the derivedKeys pub is not a base58 key
-    const derivedBase58KeyPair = new accountLib.Sol.KeyPair({ prv: derivedKeys.prv });
-    const address = derivedBase58KeyPair.getAddress();
-    const derivedBase58Keys = derivedBase58KeyPair.getKeys();
-    if (!_.isString(derivedBase58Keys.prv)) {
-      throw new Error('Key derivation failed - missing derived base58 prv key');
-    }
-    return {
-      address,
-      prv: derivedBase58Keys.prv,
-      pub: derivedBase58Keys.pub,
-    };
   }
 
   /** @inheritDoc */
