@@ -376,7 +376,8 @@ export class TssUtils extends MpcUtils {
 
     const userSignShare = await this.createUserSignShare({ signablePayload, pShare: signingKey.pShare });
 
-    const signerShare = signingKey.yShares[3].u + signingKey.yShares[3].chaincode;
+    const signerShare =
+      userSignShare.rShares[ShareKeyPosition.BITGO].u + signingKey.yShares[ShareKeyPosition.BITGO].chaincode;
     const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
     const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 

@@ -2607,6 +2607,10 @@ export class Wallet {
       throw new Error('Failed to find consolidation id on consolidation transaction.');
     }
 
+    if (this._wallet.multisigType === 'tss') {
+      return await this.sendManyTss(params);
+    }
+
     const signedPrebuild = (await this.prebuildAndSignTransaction(params)) as any;
 
     // decorate with our consolidation id
