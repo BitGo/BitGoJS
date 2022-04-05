@@ -519,7 +519,7 @@ export const coins = CoinMap.fromCoins([
   erc20('niax', 'IONIAX Token', 18, '0x8cd18aface2bddd788b4e130ae374f54e43f2960', UnderlyingAsset.NIAX),
   erc20('nmr', 'Numeraire', 18, '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671', UnderlyingAsset.NMR),
   erc20('nu', 'NuCypher', 18, '0x4fe83213d56308330ec302a8bd641f1d0113a4cc', UnderlyingAsset.NU),
-  erc20('nym', 'NYM', 6, '0x736e16998a3fe6914f9f66faebd447809965e976', UnderlyingAsset.NYM),
+  erc20('nym', 'NYM', 6, '0x525a8f6f3ba4752868cde25164382bfbae3990e1', UnderlyingAsset.NYM),
   erc20('nzdx', 'eToro New Zealand Dollar', 18, '0x6871799a4866bb9068b36b7a9bb93475ac77ac5d', UnderlyingAsset.NZDX),
   erc20('ocean', 'Ocean Token', 18, '0x7afebbb46fdb47ed17b22ed075cde2447694fb9e', UnderlyingAsset.OCEAN),
   erc20('oceanv2', 'Ocean Token V2', 18, '0x967da4048cd07ab37855c090aaf366e4ce1b9f48', UnderlyingAsset.OCEANV2),
