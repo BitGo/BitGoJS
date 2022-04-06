@@ -722,5 +722,107 @@ describe('Sol Transaction', () => {
         durableNonce: undefined,
       });
     });
+
+    it('should explain single token transfer transaction', async function () {
+      const tx = await factory
+        .getTokenTransferBuilder()
+        .nonce(blockHash)
+        .sender(sender)
+        .send({ address, amount, tokenName: 'tsol:orca' })
+        .fee({ amount: 5000 })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+            tokenName: 'tsol:orca',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain multi token transfer with durable nonce and memo transaction', async function () {
+      const tx = await factory
+        .getTokenTransferBuilder()
+        .nonce(blockHash, { walletNonceAddress: testData.nonceAccount.pub, authWalletAddress: sender })
+        .sender(sender)
+        .memo('memo text')
+        .send({ address, amount, tokenName: 'tsol:orca' })
+        .send({ address: testData.addresses.validAddresses[1], amount, tokenName: 'tsol:orca' })
+        .send({ address: testData.addresses.validAddresses[2], amount, tokenName: 'tsol:orca' })
+        .build();
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [
+          {
+            address: 'DesU7XscZjng8yj5VX6AZsk3hWSW4sQ3rTG2LuyQ2P4H',
+            amount: '10000',
+            tokenName: 'tsol:orca',
+          },
+          {
+            address: 'Azz9EmNuhtjoYrhWvidWx1Hfd14SNBsYyzXhA9Tnoca8',
+            amount: '10000',
+            tokenName: 'tsol:orca',
+          },
+          {
+            address: '2n2xqWM9Z18LqxfJzkNrMMFWiDUFYA2k6WSgSnf6EnJs',
+            amount: '10000',
+            tokenName: 'tsol:orca',
+          },
+        ],
+        fee: {
+          fee: 'UNAVAILABLE',
+          feeRate: undefined,
+        },
+        memo: 'memo text',
+        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+        durableNonce: undefined,
+      });
+    });
   });
 });

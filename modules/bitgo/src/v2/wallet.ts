@@ -400,6 +400,7 @@ export interface SendOptions {
   enforceMinConfirmsForChange?: boolean;
   custodianTransactionId?: string;
   [index: string]: unknown;
+  tokenName?: string;
 }
 
 export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
@@ -409,6 +410,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     amount: string | number;
     feeLimit?: string;
     data?: string;
+    tokenName?: string;
   }[];
   numBlocks?: number;
   feeRate?: number;
@@ -2181,11 +2183,11 @@ export class Wallet {
     if (!coin.valuelessTransferAllowed() && amount.isZero()) {
       throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
     }
-
     const recipients: SendManyOptions['recipients'] = [
       {
         address: params.address,
         amount: params.amount,
+        tokenName: params.tokenName,
       },
     ];
 
