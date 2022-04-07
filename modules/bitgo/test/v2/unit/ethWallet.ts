@@ -168,7 +168,7 @@ describe('Ethereum Hop Transactions', function () {
       common.Environments[env].hsmXpub = 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL';
 
       await ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams)
-        .should.be.rejectedWith('Hop txid signature invalid');
+        .should.be.rejectedWith(/Hop txid signature invalid/);
       common.Environments[env].hsmXpub = goodXpub;
     });
 
@@ -184,7 +184,7 @@ describe('Ethereum Hop Transactions', function () {
       badPrebuild.signature = badSignature;
 
       await ethWallet.baseCoin.validateHopPrebuild(ethWallet, badPrebuild, buildParams)
-        .should.be.rejectedWith('Hop txid signature invalid');
+        .should.be.rejectedWith(/Hop txid signature invalid/);
     });
   });
 
