@@ -15,12 +15,13 @@ import {
   TransactionExplanation,
   ParseTransactionOptions,
   ParsedTransaction,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyAddressOptions,
 } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
+import { KeyIndices } from '..';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -59,10 +60,6 @@ interface TransactionOperation {
   amount: string;
   coin: string;
   validator: string;
-}
-
-interface VerifyAddressOptions extends BaseVerifyAddressOptions {
-  rootAddress: string;
 }
 
 export class Cspr extends BaseCoin {
@@ -106,17 +103,20 @@ export class Cspr extends BaseCoin {
    * @param {VerifyAddressOptions} params address and rootAddress to verify
    */
   isWalletAddress(params: VerifyAddressOptions): boolean {
-    const { address, rootAddress } = params;
+    const { address, keychains } = params;
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
+    if (!keychains || keychains.length !== 3) {
+      throw new Error('Invalid keychains');
+    }
+
+    const userPubKey = keychains[KeyIndices.USER].pub;
+    const rootAddress = new accountLib.Cspr.KeyPair({ pub: userPubKey }).getAddress();
 
     const addressDetails = accountLib.Cspr.Utils.getAddressDetails(address);
-    const rootAddressDetails = accountLib.Cspr.Utils.getAddressDetails(rootAddress);
-    if (addressDetails.address !== rootAddressDetails.address) {
-      throw new UnexpectedAddressError(
-        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
-      );
+    if (addressDetails.address.toLowerCase() !== rootAddress.toLowerCase()) {
+      throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddress}`);
     }
     return true;
   }
