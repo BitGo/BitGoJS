@@ -373,6 +373,8 @@ describe('V2 Wallets:', function () {
         label: 'tss wallet',
         passphrase: 'tss password',
         multisigType: 'tss',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
       });
 
       walletNock.isDone().should.be.true();
