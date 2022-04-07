@@ -188,7 +188,6 @@ describe('TSS Utils:', async function () {
 
     it('should generate TSS key chains with optional params', async function () {
       const enterprise = 'enterprise';
-      const originalPasscodeEncryptionCode = 'originalPasscodeEncryptionCode';
 
       const userKeyShare = MPC.keyShare(1, 2, 3);
       const backupKeyShare = MPC.keyShare(2, 2, 3);
@@ -217,7 +216,7 @@ describe('TSS Utils:', async function () {
         backupKeyShare,
         bitgoKeychain,
         'passphrase',
-        originalPasscodeEncryptionCode);
+        'originalPasscodeEncryptionCode');
       const backupKeychain = await tssUtils.createBackupKeychain(
         userGpgKey,
         userKeyShare,

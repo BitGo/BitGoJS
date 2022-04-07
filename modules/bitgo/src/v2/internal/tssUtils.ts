@@ -116,6 +116,7 @@ export class TssUtils extends MpcUtils {
    * @param backupKeyShare - backup's TSS key share
    * @param bitgoKeychain - previously created BitGo keychain; must be compatible with user and backup key shares
    * @param passphrase - wallet passphrase used to encrypt user's signing materials
+   * @param [originalPasscodeEncryptionCode] - optional encryption code needed for wallet password reset for hot wallets
    */
   async createUserKeychain(
     userGpgKey: openpgp.SerializedKeyPair<string>,
