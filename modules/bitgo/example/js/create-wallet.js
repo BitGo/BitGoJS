@@ -18,7 +18,7 @@ const bitgo = new BitGoJS.BitGo({
 });
 const Promise = require('bluebird');
 // TODO: set your access token here
-const accessToken = 'ece2a52887ee21d16765551b0a18b15e081b0fb3eb2c51bada2a87c8ef60bbc4';
+const accessToken = '2356c50abf1c410a360040bf9f86740d259b9317e808164d2ed3ce47935278b4';
 
 // TODO: set a label for your new wallet here
 const label = 'Example Test Wallet';
