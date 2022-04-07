@@ -1387,7 +1387,9 @@ export class Eth extends BaseCoin {
     const sig = new Uint8Array(signatureBuffer.slice(1));
     const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
     if (!isValidSignature) {
-      throw new Error(`Hop txid signature invalid`);
+      throw new Error(
+        `Hop txid signature invalid - pub: ${serverXpub}, msg: ${messageBuffer?.toString()}, sig: ${signatureBuffer?.toString()}`
+      );
     }
 
     const builtHopTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(optionalDeps.ethUtil.toBuffer(tx));
