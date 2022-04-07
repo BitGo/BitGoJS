@@ -43,8 +43,8 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction data');
     }
     const txSeralized = this._nearSignedTransaction
-      ? nearAPI.utils.serialize.base_encode(this._nearSignedTransaction.encode())
-      : nearAPI.utils.serialize.base_encode(this._nearTransaction.encode());
+      ? Buffer.from(this._nearSignedTransaction.encode()).toString('base64')
+      : Buffer.from(this._nearTransaction.encode()).toString('base64');
     return txSeralized;
   }
 
@@ -94,12 +94,13 @@ export class Transaction extends BaseTransaction {
    *
    * @param rawTransaction
    */
-  fromRawTransaction(rawTransaction: string): void {
+  fromRawTransaction(rawTx: string): void {
+    const rawTransaction = Buffer.from(rawTx, 'base64');
     try {
       const signedTx = nearAPI.utils.serialize.deserialize(
         nearAPI.transactions.SCHEMA,
         nearAPI.transactions.SignedTransaction,
-        nearAPI.utils.serialize.base_decode(rawTransaction),
+        rawTransaction,
       );
       signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
       this._nearSignedTransaction = signedTx;
@@ -110,7 +111,7 @@ export class Transaction extends BaseTransaction {
         const unsignedTx = nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
-          nearAPI.utils.serialize.base_decode(rawTransaction),
+          rawTransaction,
         );
         unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
         this._nearTransaction = unsignedTx;
