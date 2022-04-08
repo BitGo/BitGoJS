@@ -36,6 +36,8 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(format?: AddressFormat): string {
+    // can we differentiate westend and polkadot here?
+    keyring.setSS58Format(0);
     return this.createPolkadotPair().address;
   }
 
