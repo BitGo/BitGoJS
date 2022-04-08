@@ -229,15 +229,6 @@
   dependencies:
     buffer "^5.4.3"
 
-"@bitgo/unspents@^0.8.0-rc.1":
-  version "0.8.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.8.0-rc.1.tgz#37006d169744eb653c893fbd2883d612ebf96e65"
-  integrity sha512-f/IshymRPadzKRnpCBBkgGn/YOMhA8TP31qGY4NB/cZckZFG/9+HF0LAPCyw8iSQEBOv8q58qxz16GGb0hxkug==
-  dependencies:
-    "@bitgo/utxo-lib" "^2.2.2-rc.2"
-    lodash "~4.17.21"
-    tcomb "~3.2.29"
-
 "@celo/base@1.5.2":
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@celo/base/-/base-1.5.2.tgz#168ab5e4e30b374079d8d139fafc52ca6bfd4100"

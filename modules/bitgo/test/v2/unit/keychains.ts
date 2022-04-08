@@ -258,7 +258,12 @@ describe('V2 Keychains', function () {
           },
         };
         sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-        const keychains = await bitgo.coin('tsol').keychains().createMpc({ multisigType: 'tss', passphrase: 'password' });
+        const keychains = await bitgo.coin('tsol').keychains().createMpc({
+          multisigType: 'tss',
+          passphrase: 'password',
+          enterprise: 'enterprise',
+          originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode'
+        });
         keychains.should.deepEqual(stubbedKeychainsTriplet);
       });
     });
