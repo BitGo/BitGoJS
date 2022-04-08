@@ -9,6 +9,7 @@ import { toHex, isBase58 } from '../../utils/crypto';
 import bs58 from 'bs58';
 
 const TYPE = 'ed25519';
+const MAINNET_FORMAT = 0;
 const keyring = new Keyring({ type: TYPE });
 
 export class KeyPair extends Ed25519KeyPair {
@@ -34,8 +35,16 @@ export class KeyPair extends Ed25519KeyPair {
     return createPair({ toSS58: keyring.encodeAddress, type: TYPE }, { secretKey, publicKey });
   }
 
-  /** @inheritdoc */
+  /**
+   // https://wiki.polkadot.network/docs/learn-accounts#address-format
+   * Returns the address in either mainnet polkadot format (starts with 1)
+   * or substrate format used for westend (starts with 5)
+   */
   getAddress(format?: AddressFormat): string {
+    if (format && format === AddressFormat.polkadot) {
+      keyring.setSS58Format(MAINNET_FORMAT);
+    }
+    // default to substrate format
     return this.createPolkadotPair().address;
   }
 
