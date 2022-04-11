@@ -244,6 +244,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       options: {
         metadataRpc: this._material.metadata,
         registry: this._registry,
+        isImmortalEra: this._eraPeriod === 0,
       },
     };
   }
