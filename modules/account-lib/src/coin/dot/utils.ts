@@ -6,7 +6,7 @@ import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { isValidEd25519PublicKey } from '../../utils/crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core/lib/types';
 import { construct } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
@@ -15,7 +15,13 @@ import { Seed } from '../baseCoin/iface';
 import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
-import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
+import {
+  createTypeUnsafe,
+  GenericCall,
+  GenericExtrinsic,
+  GenericExtrinsicPayload,
+  TypeRegistry,
+} from '@polkadot/types';
 import bs58 from 'bs58';
 import { isBase58 } from './../../utils/crypto';
 

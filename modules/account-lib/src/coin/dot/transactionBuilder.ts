@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core/lib/types';
+import { TypeRegistry } from '@polkadot/types';
 import { decode } from '@substrate/txwrapper-polkadot';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';

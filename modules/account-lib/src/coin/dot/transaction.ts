@@ -4,7 +4,7 @@ import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { TypeRegistry } from '@polkadot/types';
 import Keyring, { decodeAddress } from '@polkadot/keyring';
 import { KeyPair } from './keyPair';
 import {
