@@ -10,6 +10,7 @@ export interface UtxoConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  decimalPlaces: number;
 }
 
 export class UtxoCoin extends BaseCoin {
@@ -29,7 +30,6 @@ export class UtxoCoin extends BaseCoin {
       ...options,
       kind: CoinKind.CRYPTO,
       isToken: false,
-      decimalPlaces: 8,
     });
 
     this.network = options.network;
@@ -61,6 +61,7 @@ export function utxo(
   fullName: string,
   network: UtxoNetwork,
   asset: UnderlyingAsset,
+  decimalPlaces: number = 8,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -77,6 +78,7 @@ export function utxo(
       features,
       asset,
       primaryKeyCurve,
+      decimalPlaces,
     })
   );
 }

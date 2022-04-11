@@ -100,6 +100,23 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   chainId = 43113;
 }
 
+class AvalancheP extends Mainnet implements UtxoNetwork {
+  name = 'AvalancheP';
+  family = CoinFamily.AVAXP;
+  utxolibName = 'avax';
+  explorerUrl = 'https://avascan.info/blockchain/p/tx/';
+  // accountExplorerUrl = 'https://avascan.info/blockchain/p/address/';
+}
+
+class AvalanchePTestnet extends Testnet implements UtxoNetwork {
+  // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
+  name = 'AvalanchePTestnet';
+  family = CoinFamily.AVAXP;
+  utxolibName = 'testnet';
+  explorerUrl = 'https://testnet.avascan.info/blockchain/p/tx/';
+  // accountExplorerUrl = 'https://testnet.avascan.info/blockchain/p/address/';
+}
+
 class Bitcoin extends Mainnet implements UtxoNetwork {
   name = 'Bitcoin';
   family = CoinFamily.BTC;
@@ -526,6 +543,7 @@ export const Networks = {
   main: {
     algorand: Object.freeze(new Algorand()),
     avalancheC: Object.freeze(new AvalancheC()),
+    avalancheP: Object.freeze(new AvalancheP()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinABC: Object.freeze(new BitcoinABC()),
@@ -558,6 +576,7 @@ export const Networks = {
   test: {
     algorand: Object.freeze(new AlgorandTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
+    avalancheP: Object.freeze(new AvalanchePTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
