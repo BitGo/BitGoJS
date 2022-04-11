@@ -124,6 +124,7 @@ export class Transaction extends BaseTransaction {
     const decodedTx = decode(this._dotTransaction, {
       metadataRpc: this._dotTransaction.metadataRpc,
       registry: this._registry,
+      isImmortalEra: utils.isZeroHex(this._dotTransaction.era),
     }) as unknown as DecodedTx;
 
     const result: TxData = {
@@ -328,6 +329,7 @@ export class Transaction extends BaseTransaction {
     const decodedTx = decode(this._dotTransaction, {
       metadataRpc: this._dotTransaction.metadataRpc,
       registry: this._registry,
+      isImmortalEra: utils.isZeroHex(this._dotTransaction.era),
     }) as unknown as DecodedTx;
 
     if (this.type === TransactionType.Send) {

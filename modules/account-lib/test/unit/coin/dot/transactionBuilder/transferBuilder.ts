@@ -114,7 +114,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
       should.deepEqual(txJson.chainName, chainName);
-      should.deepEqual(txJson.eraPeriod, 4);
+      should.deepEqual(txJson.eraPeriod, 0);
 
       const inputs = tx.inputs[0];
       should.deepEqual(inputs.address, sender.address);
