@@ -287,6 +287,15 @@ export class Utils implements BaseUtils {
   decodeDotAddressToKeyPair(address: string, ss58Format?: number): KeyPair {
     return new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
   }
+
+  /**
+   * Checks whether the given input is a hex string with with 0 value
+   * used to check whether a given transaction is immortal or mortal
+   * @param hexValue
+   */
+  isZeroHex(hexValue: string): boolean {
+    return hexValue === '0x00';
+  }
 }
 
 const utils = new Utils();

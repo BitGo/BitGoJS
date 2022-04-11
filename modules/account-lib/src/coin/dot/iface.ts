@@ -189,6 +189,7 @@ export interface CreateBaseTxInfo {
   options: {
     metadataRpc: `0x${string}`;
     registry: TypeRegistry;
+    isImmortalEra?: boolean;
   };
 }
 
