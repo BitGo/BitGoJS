@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.19.0-rc.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.19.0-rc.26...@bitgo/account-lib@2.19.0-rc.27) (2022-04-11)
+
+
+### Bug Fixes
+
+* force secure urls unless disabled ([3b9edd5](https://github.com/BitGo/BitGoJS/commit/3b9edd593016f82fa69a4fe740ea706fe1daeee7))
+* update dot to address breaking changes in 7.15.1 ([a949618](https://github.com/BitGo/BitGoJS/commit/a949618de00b944b2d9729485f6b9ac4e6fced3f))
+
+
+
+
+
 # [2.19.0-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.19.0-rc.21...@bitgo/account-lib@2.19.0-rc.26) (2022-04-08)
 
 
