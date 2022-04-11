@@ -1,5 +1,54 @@
 # BitGoJS Release Notes
 
+## 15.0.0 ()
+
+### New Features
+* Move core to bitgo folder to reflect proper packge naming coorelation
+* Upate CODEOWNERS for proper tagging and ownership identification
+* Update Dockerfiles to reflect usage of Node 16
+* Update usage examples throughout packages
+
+### New Packages
+* `@bitgo/sjcl` - Fork of `sjcl`
+
+## 11.5.0 (10-15-2020)
+
+* Packge install and publishing updates
+
+### `@bitgo/account-lib`
+* Add integration Hedera
+* Update error extensions
+* Add transaction interfaces
+* Update Celo staking builder methods
+* Remove unused imports
+* Update Ethereum util method usage
+* Enforce linting and strict equality
+* Update documented return vales
+* Add crypto utility functions
+* Updated tests
+
+### `bitgo`
+* Add integration for Celo
+* Add integration for Hedera
+* Add address verifiction interface
+* Consolidate and refactor btc coin function logic
+* Add additional validation errors for Tron
+* Update environments with additional urls
+* Add address validation and migration for BCH wallets
+* Add promise utilities
+* Add blockchair api recovery class
+* Add blockstream api recovery class
+* Add recovery types
+* Update v2 wallet required and optional types
+* Update prebuild whitelisted params return values and order
+* Update v2 wallet types and validation errors
+* Refactor wallet function logic
+* General update of tests
+
+### `@bitgo/statics`
+* Add integrations for Balancer, CryptoBRL, CoinLoan, Dark Energy Crystals, MONNOS, RSK, SKALE Network, Unicorn AIR, yearn.finance, RIF
+* Update Hedera explorer urls
+
 ## 11.4.0 (07-21-2020)
 
 ### New Features
