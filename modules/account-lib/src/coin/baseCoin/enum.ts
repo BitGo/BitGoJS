@@ -49,6 +49,10 @@ export enum TransactionType {
 export enum AddressFormat {
   hex = 'hex',
   base58 = 'base58',
+  // format for westend addresses
+  substrate = 'substrate',
+  // format for polkadot mainnet addresses
+  polkadot = 'polkadot',
 }
 
 export enum StakingOperationTypes {

@@ -33,6 +33,7 @@ export const accounts = {
   bs58Account: {
     publicKey: '8Arrfe4vAh5fAEJgUBwL42EZa5P22zJJUnn569hxWfJU',
     address: '5EUPTKwJeyJfmT7fcugz4ZcPyWdWMN5X7dcineZhiGfWzEPQ',
+    polkadotAddress: '13QgbfCNWka9Cz8BaYjzCiSYq8dA3fdfC8MCwwZ4GMh3AeYY',
   },
 };
 

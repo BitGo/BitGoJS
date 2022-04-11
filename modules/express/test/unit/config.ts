@@ -37,6 +37,33 @@ describe('Config:', () => {
     envStub.restore();
   });
 
+  it('should transform urls to secure urls when disableSSL is undefined', () => {
+    const argStub = sinon.stub(args, 'args').returns({ disableSSL: undefined, customrooturi: 'test.com' });
+    const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: undefined, BITGO_CUSTOM_ROOT_URI: 'test.com' });
+    config().disableSSL.should.equal(false);
+    config().should.have.property('customRootUri', 'https://test.com');
+    argStub.restore();
+    envStub.restore();
+  });
+
+  it('should transform urls to secure urls when disableSSL is false', () => {
+    const argStub = sinon.stub(args, 'args').returns({ disableSSL: false, customrooturi: 'test.com' });
+    const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: false, BITGO_CUSTOM_ROOT_URI: 'test.com' });
+    config().disableSSL.should.equal(false);
+    config().should.have.property('customRootUri', 'https://test.com');
+    argStub.restore();
+    envStub.restore();
+  });
+
+  it('should not transform urls to secure urls when disableSSL is true', () => {
+    const argStub = sinon.stub(args, 'args').returns({ disableSSL: true, customrooturi: 'test.com' });
+    const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: true, BITGO_CUSTOM_ROOT_URI: 'test.com' });
+    config().disableSSL.should.equal(true);
+    config().should.have.property('customRootUri', 'test.com');
+    argStub.restore();
+    envStub.restore();
+  });
+
   it('should correctly handle config precedence for a complete config', () => {
     const argStub = sinon.stub(args, 'args').returns({
       port: 23456,
@@ -89,10 +116,10 @@ describe('Config:', () => {
       disableProxy: 'argdisableProxy',
       disableEnvCheck: 'argdisableEnvCheck',
       timeout: 'argtimeout',
-      customRootUri: 'argcustomRootUri',
+      customRootUri: 'https://argcustomRootUri',
       customBitcoinNetwork: 'argcustomBitcoinNetwork',
       authVersion: 2,
-      externalSignerUrl: 'argexternalSignerUrl',
+      externalSignerUrl: 'https://argexternalSignerUrl',
       signerMode: 'argsignerMode',
       signerFileSystemPath: 'argsignerFileSystemPath',
     });

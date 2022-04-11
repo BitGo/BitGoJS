@@ -3,6 +3,7 @@ import { Dot } from '../../../../src';
 import { accounts } from '../../../resources/dot';
 import bs58 from 'bs58';
 import utils from '../../../../src/coin/dot/utils';
+import { AddressFormat } from '../../../../src/coin/baseCoin/enum';
 
 describe('Dot KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
@@ -100,6 +101,13 @@ describe('Dot KeyPair', () => {
       const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
       const address = keyPair.getAddress();
       address.should.equal(bs58Account.address);
+      utils.isValidAddress(address).should.equal(true);
+    });
+
+    it('should get a polkadot network address', () => {
+      const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
+      const address = keyPair.getAddress(AddressFormat.polkadot);
+      address.should.equal(bs58Account.polkadotAddress);
       utils.isValidAddress(address).should.equal(true);
     });
   });
