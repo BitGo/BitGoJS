@@ -1,10 +1,11 @@
 import { EnvironmentName, V1Network } from 'bitgo';
 import { isNil, isNumber } from 'lodash';
+import 'dotenv/config';
 
 import { args } from './args';
 
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
-  if (process.env[name] !== undefined) {
+  if (process.env[name] !== undefined && process.env[name] !== '') {
     return process.env[name];
   }
 
@@ -96,6 +97,19 @@ export const DefaultConfig: Config = {
 };
 
 /**
+ * Force https:// prefix unless ssl is disabled
+ * @param url
+ * @return {string}
+ */
+ function _forceSecureUrl(url: string): string {
+  const regex = new RegExp(/(^\w+:|^)\/\//);
+  if (regex.test(url)) {
+    return url.replace(/(^\w+:|^)\/\//, 'https://');
+  }
+  return `https://${url}`;
+}
+
+/**
  * Helper function to merge config sources into a single config object.
  *
  * Later configs have higher precedence over earlier configs.
@@ -114,6 +128,19 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     );
   }
 
+  const disableSSL = get('disableSSL') || false;
+  let customRootUri = get('customRootUri');
+  let externalSignerUrl = get('externalSignerUrl');
+
+  if (disableSSL !== true) {
+    if (customRootUri) {
+      customRootUri = _forceSecureUrl(customRootUri);
+    }
+    if (externalSignerUrl) {
+      externalSignerUrl = _forceSecureUrl(externalSignerUrl);
+    }
+  }
+
   return {
     port: get('port'),
     bind: get('bind'),
@@ -123,14 +150,14 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     keyPath: get('keyPath'),
     crtPath: get('crtPath'),
     logFile: get('logFile'),
-    disableSSL: get('disableSSL'),
+    disableSSL,
     disableProxy: get('disableProxy'),
     disableEnvCheck: get('disableEnvCheck'),
     timeout: get('timeout'),
-    customRootUri: get('customRootUri'),
+    customRootUri: customRootUri || undefined,
     customBitcoinNetwork: get('customBitcoinNetwork'),
     authVersion: get('authVersion'),
-    externalSignerUrl: get('externalSignerUrl'),
+    externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
   };
