@@ -1237,55 +1237,12 @@ export const coins = CoinMap.fromCoins([
   avaxErc20('avaxc:link', 'Chainlink', 18, '0x5947bb275c521040051d82396192181b413227a3', UnderlyingAsset['avaxc:link']),
   avaxErc20('avaxc:usdt', 'Tether USD', 6, '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', UnderlyingAsset['avaxc:usdt']),
   avaxErc20('avaxc:usdc', 'USD Coin', 6, '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', UnderlyingAsset['avaxc:usdc']),
-  tavaxErc20('tavaxc:qi', 'Test BenQi', 18, '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5', UnderlyingAsset['avaxc:qi']),
-  tavaxErc20(
-    'tavaxc:xava',
-    'Test Avalaunch',
-    18,
-    '0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4',
-    UnderlyingAsset['avaxc:xava']
-  ),
-  tavaxErc20(
-    'tavaxc:klo',
-    'Test Kalao',
-    18,
-    '0xb27c8941a7df8958a1778c0259f76d1f8b711c35',
-    UnderlyingAsset['avaxc:klo']
-  ),
-  tavaxErc20(
-    'tavaxc:joe',
-    'Test Trader Joe',
-    18,
-    '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
-    UnderlyingAsset['avaxc:joe']
-  ),
-  tavaxErc20(
-    'tavaxc:png',
-    'Test Pangolin',
-    18,
-    '0x60781c2586d68229fde47564546784ab3faca982',
-    UnderlyingAsset['avaxc:png']
-  ),
   tavaxErc20(
     'tavaxc:link',
     'Test Chainlink',
     18,
     '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
     UnderlyingAsset['avaxc:link']
-  ),
-  tavaxErc20(
-    'tavaxc:usdt',
-    'Test Tether USD',
-    6,
-    '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
-    UnderlyingAsset['avaxc:usdt']
-  ),
-  tavaxErc20(
-    'tavaxc:usdc',
-    'Test USD Coin',
-    6,
-    '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-    UnderlyingAsset['avaxc:usdc']
   ),
   solToken(
     'sol:srm',
