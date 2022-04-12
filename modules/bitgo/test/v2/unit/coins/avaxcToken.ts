@@ -35,11 +35,11 @@ describe('Avaxc Token:', function () {
   });
 
   describe('In env prod:', function () {
-    const tokenName = 'avaxc:png';
+    const prodTokenName = 'avaxc:png';
     before(function () {
       bitgo = new TestBitGo({ env: 'prod' });
       bitgo.initializeTestVars();
-      avaxcTokenCoin = bitgo.coin(tokenName);
+      avaxcTokenCoin = bitgo.coin(prodTokenName);
     });
 
     it('should return constants', function () {
@@ -47,7 +47,7 @@ describe('Avaxc Token:', function () {
       avaxcTokenCoin.getBaseChain().should.equal('avaxc');
       avaxcTokenCoin.getFullName().should.equal('Avaxc Token');
       avaxcTokenCoin.getBaseFactor().should.equal(1e18);
-      avaxcTokenCoin.type.should.equal(tokenName);
+      avaxcTokenCoin.type.should.equal(prodTokenName);
       avaxcTokenCoin.name.should.equal('Pangolin');
       avaxcTokenCoin.coin.should.equal('avaxc');
       avaxcTokenCoin.network.should.equal('Mainnet');
@@ -56,11 +56,6 @@ describe('Avaxc Token:', function () {
 
     it('should return same token by contract address', function () {
       const tokencoinBycontractAddress = bitgo.coin(avaxcTokenCoin.tokenContractAddress);
-      avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
-    });
-
-    it('should return mainnet token, however it uses a testnet contract address', function () {
-      const tokencoinBycontractAddress = bitgo.coin(bitgo.coin('t' + tokenName).tokenContractAddress);
       avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
     });
 
