@@ -18,13 +18,6 @@ const tokensNames = [
   'avaxc:usdt',
   'avaxc:usdc',
   'avaxc:link',
-  'tavaxc:png',
-  'tavaxc:xava',
-  'tavaxc:klo',
-  'tavaxc:joe',
-  'tavaxc:qi',
-  'tavaxc:usdt',
-  'tavaxc:usdc',
   'tavaxc:link',
 ];
 
@@ -62,11 +55,12 @@ describe('AVAXERC20 Tokens', () => {
 
   it('a send token transaction', async () => {
     const amount = '100';
+
     initTxBuilder();
     txBuilder.contract(contractAddress);
     txBuilder
       .transfer()
-      .coin('tavaxc:png')
+      .coin('tavaxc:link')
       .amount(amount)
       .to(testData.TEST_ACCOUNT_2.ethAddress)
       .expirationTime(1590066728)
@@ -80,11 +74,11 @@ describe('AVAXERC20 Tokens', () => {
     should.equal(tx.inputs.length, 1);
     should.equal(tx.inputs[0].address.toLowerCase(), contractAddress.toLowerCase());
     should.equal(tx.inputs[0].value, amount);
-    should.equal(tx.inputs[0].coin, 'tavaxc:png');
+    should.equal(tx.inputs[0].coin, 'tavaxc:link');
 
     should.equal(tx.outputs.length, 1);
     should.equal(tx.outputs[0].address.toLowerCase(), testData.TEST_ACCOUNT_2.ethAddress.toLowerCase());
     should.equal(tx.outputs[0].value, amount);
-    should.equal(tx.outputs[0].coin, 'tavaxc:png');
+    should.equal(tx.outputs[0].coin, 'tavaxc:link');
   });
 });

@@ -72,8 +72,6 @@ import { Tdot } from './coins/tdot';
 import { Near } from './coins/near';
 import { TNear } from './coins/tnear';
 
-import { AvaxcTokenConfigEnvDependent } from './coins/avaxcToken';
-
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
 
 export class CoinFactory {
@@ -222,32 +220,10 @@ for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.token
   }
 }
 
-const zipAvaxToken: Record<string, AvaxcTokenConfigEnvDependent> = {};
-
-for (const token of [...tokens.bitcoin.avaxc.tokens]) {
+for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
   const tokenConstructor = AvaxCToken.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
-  zipAvaxToken[token.tokenContractAddress] = { mainnet: token };
-}
-
-for (const token of [...tokens.testnet.avaxc.tokens]) {
-  const tokenConstructor = AvaxCToken.createTokenConstructor(token);
-  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
-  if (!!zipAvaxToken[token.tokenContractAddress]) {
-    zipAvaxToken[token.tokenContractAddress].testnet = token;
-  } else {
-    GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
-  }
-}
-
-for (const [tokenContractAddress, tokenConfig] of Object.entries(zipAvaxToken)) {
-  if (!!tokenConfig.testnet) {
-    const tokenConstructor = AvaxCToken.createTokenConstructorEnvDependent(tokenConfig);
-    GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
-  } else {
-    const tokenConstructor = AvaxCToken.createTokenConstructor(tokenConfig.mainnet);
-    GlobalCoinFactory.registerCoinConstructor(tokenContractAddress, tokenConstructor);
-  }
+  GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
 }
 
 for (const token of [...tokens.bitcoin.fiat.tokens, ...tokens.testnet.fiat.tokens]) {
