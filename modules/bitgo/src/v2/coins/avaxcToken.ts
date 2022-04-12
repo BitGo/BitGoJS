@@ -5,7 +5,6 @@ import { BitGo } from '../../bitgo';
 
 import { AvaxC, TransactionPrebuild } from './avaxc';
 import { CoinConstructor } from '../coinFactory';
-import { Environments } from '../environments';
 import { coins } from '@bitgo/statics';
 
 export interface AvaxcTokenConfig {
@@ -15,11 +14,6 @@ export interface AvaxcTokenConfig {
   network: string;
   tokenContractAddress: string;
   decimalPlaces: number;
-}
-
-export interface AvaxcTokenConfigEnvDependent {
-  mainnet: AvaxcTokenConfig;
-  testnet?: AvaxcTokenConfig;
 }
 
 export class AvaxCToken extends AvaxC {
@@ -33,18 +27,6 @@ export class AvaxCToken extends AvaxC {
 
   static createTokenConstructor(config: AvaxcTokenConfig): CoinConstructor {
     return (bitgo: BitGo) => new AvaxCToken(bitgo, config);
-  }
-
-  /**
-   * It creates a constructor according to the network env.
-   * Avalanche network has the same contract address for both Mainnet and Testnet.
-   * The goal is to select the right one when a particular network is used.
-   */
-  static createTokenConstructorEnvDependent(config: AvaxcTokenConfigEnvDependent): CoinConstructor {
-    return (bitgo: BitGo) =>
-      Environments[bitgo.getEnv()].network !== 'testnet'
-        ? new AvaxCToken(bitgo, config.mainnet)
-        : new AvaxCToken(bitgo, config.testnet!);
   }
 
   get type(): string {
