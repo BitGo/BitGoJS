@@ -7,11 +7,14 @@ import { randomBytes } from 'crypto';
 describe('DOT:', function () {
   let bitgo;
   let basecoin;
+  let prodCoin;
+
 
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
+    prodCoin = bitgo.coin('dot');
   });
 
   describe('Sign Message', () => {
@@ -106,6 +109,40 @@ describe('DOT:', function () {
       const kp = basecoin.generateKeyPair(seed);
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+  });
+
+  describe('Balance Conversion', () => {
+    it('should return 10000000000 as tdot base factor', () => {
+      // mainnet uses 10 decimal places
+      const baseFactor = prodCoin.getBaseFactor();
+      baseFactor.should.equal(10000000000);
+    });
+
+    it('should return 1000000000000 as dot base factor', () => {
+      // westend (test polkadot) uses 12 decimal places
+      const baseFactor = basecoin.getBaseFactor();
+      baseFactor.should.equal(1000000000000);
+    });
+
+    it('should return 4 Dot when base unit is 40000000000 for dot', () => {
+      const bigUnit = prodCoin.baseUnitsToBigUnits('40000000000');
+      bigUnit.should.equal('4');
+    });
+
+    it('should return 0.04 Dot when base unit is 400000000 for dot', () => {
+      const bigUnit = prodCoin.baseUnitsToBigUnits('400000000');
+      bigUnit.should.equal('0.04');
+    });
+
+    it('should return 4 test Dot when base unit is 4000000000000 for tdot', () => {
+      const bigUnit = basecoin.baseUnitsToBigUnits('4000000000000');
+      bigUnit.should.equal('4');
+    });
+
+    it('should return 0.04 test Dot when base unit is 400000000 for tdot', () => {
+      const bigUnit = basecoin.baseUnitsToBigUnits('40000000000');
+      bigUnit.should.equal('0.04');
     });
   });
 });

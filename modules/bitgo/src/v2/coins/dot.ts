@@ -12,6 +12,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -39,13 +40,21 @@ export interface VerifiedTransactionParameters {
 const dotUtils = accountLib.Dot.Utils.default;
 
 export class Dot extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   readonly MAX_VALIDITY_DURATION = 2400;
-  constructor(bitgo: BitGo) {
+
+  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
-    return new Dot(bitgo);
+  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Dot(bitgo, staticsCoin);
   }
 
   getChain(): string {
@@ -65,7 +74,7 @@ export class Dot extends BaseCoin {
   }
 
   getBaseFactor(): number {
-    return 1e12;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   /**
