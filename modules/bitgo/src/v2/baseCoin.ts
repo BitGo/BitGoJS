@@ -9,7 +9,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { BitGo } from '../bitgo';
 import { RequestTracer } from './internal/util';
-import { Wallet } from './wallet';
+import { Wallet, WalletData } from './wallet';
 import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
@@ -19,6 +19,7 @@ import { Enterprises } from './enterprises';
 
 import { InitiateRecoveryOptions } from './recovery/initiate';
 import { signMessage } from '../bip32util';
+import { TssUtils } from './internal/tssUtils';
 
 // re-export account lib transaction types
 export type TransactionType = AccountLibBasecoin.TransactionType;
@@ -137,6 +138,9 @@ export interface ExtraPrebuildParamsOptions {
 
 // TODO (SDKT-9): reverse engineer and add options
 export interface PresignTransactionOptions {
+  txPrebuild?: TransactionPrebuild;
+  walletData: WalletData;
+  tssUtils: TssUtils;
   [index: string]: unknown;
 }
 

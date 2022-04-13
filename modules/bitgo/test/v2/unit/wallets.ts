@@ -347,6 +347,7 @@ describe('V2 Wallets:', function () {
     const tsol = bitgo.coin('tsol');
 
     it('should create a new TSS wallet', async function () {
+      const sandbox = sinon.createSandbox();
       const stubbedKeychainsTriplet = {
         userKeychain: {
           id: '1',
@@ -361,7 +362,7 @@ describe('V2 Wallets:', function () {
           pub: 'userPub',
         },
       };
-      sinon.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+      sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
       const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet')
@@ -378,7 +379,7 @@ describe('V2 Wallets:', function () {
       });
 
       walletNock.isDone().should.be.true();
-      sinon.verify();
+      sandbox.verifyAndRestore();
     });
 
     it('should fail to create TSS wallet with invalid inputs', async function () {
