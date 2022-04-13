@@ -113,6 +113,7 @@ export interface PrebuildTransactionOptions {
   comment?: string;
   [index: string]: unknown;
   tokenName?: string;
+  nonce?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
@@ -2683,6 +2684,7 @@ export class Wallet {
           comment: params.comment,
           recipients: params.recipients || [],
           memo: params.memo,
+          nonce: params.nonce,
         });
         break;
       case 'enabletoken':
