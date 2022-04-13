@@ -10,7 +10,7 @@
   "author": "John Driscoll <john@bitgo.com>",
   "license": "ISC",
   "dependencies": {
-    "noble-bls12-381": "^0.7.2"
+    "noble-bls12-381": "^0.15.0"
   },
   "publishConfig": {
     "access": "public"
