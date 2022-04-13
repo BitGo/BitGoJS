@@ -11,7 +11,7 @@
   "keywords": [
     "bitgo"
   ],
-  "author": "Tyler Levine <tyler@bitgo.com>",
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

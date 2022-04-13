@@ -2,12 +2,12 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   tyler@bitgo.com
+*   @BitGo/sdk-team
 
 # Order is important. The last matching pattern has the most precedence.
 
 # Recovery
-modules/bitgo/src/v2/recovery.ts tyler@bitgo.com
+modules/bitgo/src/v2/recovery.ts @BitGo/sdk-team
 
 # Coin Support
 modules/bitgo/src/v2/coins/*btc.ts @BitGo/btc-team
@@ -37,20 +37,20 @@ modules/bitgo/test/v2/unit/coins/*eth2.ts @BitGo/eth-team
 modules/bitgo/test/v2/unit/coins/*rbtc.ts @BitGo/eth-team
 modules/bitgo/test/v2/unit/coins/token.ts @BitGo/eth-team
 
-modules/bitgo/src/v2/coins/*xlm.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
-modules/bitgo/src/v2/coins/*xrp.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
+modules/bitgo/src/v2/coins/*xlm.ts @lcovar @argjv @BitGo/sdk-team
+modules/bitgo/src/v2/coins/*xrp.ts @lcovar @argjv @BitGo/sdk-team
 
 # Trading accounts
-modules/bitgo/src/v2/trading/*.ts tyler@bitgo.com
+modules/bitgo/src/v2/trading/*.ts @BitGo/sdk-team
 
 # Express
-modules/express/* tyler@bitgo.com
+modules/express/* @BitGo/sdk-team
 
 # Statics
-modules/statics/* tyler@bitgo.com
+modules/statics/* @BitGo/sdk-team
 
 # Package Configuration Files
-modules/*/package*.json tyler@bitgo.com
+modules/*/package*.json @BitGo/sdk-team
 
 # ACCOUNT LIB
 modules/account-lib/* @argjv @CapnMigraine
@@ -70,9 +70,9 @@ modules/account-lib/test/coin/eth2/* @BitGo/eth-team
 modules/account-lib/test/coin/rbtc/* @BitGo/eth-team
 
 # Lock files
-yarn.lock tyler@bitgo.com
-modules/express/package-lock.json tyler@bitgo.com
+yarn.lock @BitGo/sdk-team
+modules/express/package-lock.json @BitGo/sdk-team
 
 # NOTHING BELOW THIS LINE
-CODEOWNERS @BitGo/git-admins @argjv @CapnMigraine @tylerlevine
+CODEOWNERS @BitGo/git-admins @argjv @CapnMigraine @BitGo/sdk-team
 

@@ -30,7 +30,7 @@
     "url": "https://github.com/BitGo/BitGoJS.git",
     "directory": "modules/account-lib"
   },
-  "author": "",
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "ISC",
   "engines": {
     "node": ">=14 <17"
