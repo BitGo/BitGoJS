@@ -1,3 +1,4 @@
+import * as sinon from 'sinon';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
@@ -6,6 +7,7 @@ import * as _ from 'lodash';
 import * as accountLib from '@bitgo/account-lib';
 import { Sol, Tsol } from '../../../../src/v2/coins/';
 import { Wallet } from '../../../../src';
+import { TssUtils } from '../../../../src/v2/internal/tssUtils';
 
 describe('SOL:', function () {
   let bitgo;
@@ -884,6 +886,72 @@ describe('SOL:', function () {
       const rebuiltSignablePayload = (await factory.from(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO).build()).signablePayload;
       const signingPayload = await basecoin.getSignablePayload(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO);
       signingPayload.should.be.deepEqual(rebuiltSignablePayload);
+    });
+  });
+
+  describe('Presign transaction', () => {
+    const txRequestId = 'txRequestId';
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+      sandbox.verifyAndRestore();
+    });
+
+    it('should rebuild tx request for hot wallets', async () => {
+      const rebuiltTx = {
+        txRequestId,
+        unsignedTxs: [{
+          serializedTxHex: 'deadbeef',
+          signableHex: 'serializedTxHex',
+          derivationPath: 'm/0',
+        }],
+      };
+
+      const stubTssUtils = sandbox.createStubInstance(TssUtils);
+      stubTssUtils.deleteSignatureShares.resolves([]);
+      stubTssUtils.getTxRequest.resolves(rebuiltTx);
+
+      const hotWallet = {
+        type: 'hot',
+      };
+      const presignedTransaction = await basecoin.presignTransaction({
+        walletData: hotWallet,
+        tssUtils: stubTssUtils,
+        txPrebuild: {
+          txRequestId,
+        },
+      });
+
+      presignedTransaction.walletData.should.deepEqual(hotWallet);
+      presignedTransaction.txPrebuild.should.deepEqual(rebuiltTx);
+      presignedTransaction.txHex.should.equal(rebuiltTx.unsignedTxs[0].serializedTxHex);
+    });
+
+    it('should do nothing for non-hot wallets', async () => {
+      const coldWallet = {
+        type: 'cold',
+      };
+
+      const presignedTransaction = await basecoin.presignTransaction({
+        walletData: coldWallet,
+      });
+      presignedTransaction.should.deepEqual({
+        walletData: coldWallet,
+      });
+    });
+
+    it('should error if txRequestId is missing', async () => {
+      const hotWallet = {
+        type: 'hot',
+      };
+      await basecoin.presignTransaction({
+        walletData: hotWallet,
+        txPrebuild: {}
+      }).should.rejectedWith('Missing txRequestId');
     });
   });
 });
