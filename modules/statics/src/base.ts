@@ -136,7 +136,9 @@ export enum CoinFeature {
  */
 export enum UnderlyingAsset {
   ALGO = 'algo',
+  APE = 'ape',
   AVAXC = 'avaxc',
+  AXL = 'AXL',
   BCH = 'bch',
   BCHA = 'bcha',
   BSV = 'bsv',
@@ -457,6 +459,7 @@ export enum UnderlyingAsset {
   MANA = 'mana',
   MAPS = 'maps',
   MATIC = 'matic',
+  MCAU = 'mcau',
   MCDAI = 'mcdai',
   MCO = 'mco',
   MCS = 'mcs',
@@ -577,6 +580,7 @@ export enum UnderlyingAsset {
   RLC = 'rlc',
   RLY = 'rly',
   RNDR = 'rndr',
+  ROOK = 'rook',
   RONC = 'ronc',
   ROOBEE = 'roobee',
   RUBX = 'rubx',
@@ -738,6 +742,7 @@ export enum UnderlyingAsset {
   // Algorand mainnet tokens
   'algo:31566704' = 'algo:31566704',
   'algo:312769' = 'algo:312769',
+  'algo:6547014' = 'algo:6547014',
 
   // Kovan-only ERC20 tokens
   TEST = 'test',
