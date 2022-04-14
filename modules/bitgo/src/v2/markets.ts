@@ -8,8 +8,10 @@
  */
 import { BitGo } from '../bitgo';
 
-import { validateParams } from '../common';
+import { common } from '@bitgo/sdk-core';
 import { BaseCoin } from './baseCoin';
+
+const { validateParams } = common;
 
 // TODO (SDKT-9): reverse engineer and add options
 // export interface LatestOptions {}

@@ -7,7 +7,7 @@
   "scripts": {
     "test": "yarn unit-test",
     "unit-test": "nyc -- mocha",
-    "build": "tsc",
+    "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",

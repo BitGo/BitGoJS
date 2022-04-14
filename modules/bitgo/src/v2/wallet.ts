@@ -8,7 +8,7 @@ import * as debugLib from 'debug';
 
 import { makeRandomKey } from '../bitcoin';
 import { BitGo } from '../bitgo';
-import * as common from '../common';
+import { common } from '@bitgo/sdk-core';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import {
   BaseCoin,
@@ -437,6 +437,8 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   [index: string]: unknown;
 }
 
+type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
+
 export interface WalletData {
   id: string;
   approvalsRequired: number;
@@ -462,6 +464,7 @@ export interface WalletData {
     bitgo?: string;
   };
   multisigType: 'onchain' | 'tss';
+  type?: WalletType;
 }
 
 export interface RecoverTokenOptions {
@@ -1914,10 +1917,14 @@ export class Wallet {
       throw new Error('txPrebuild must be an object');
     }
 
-    const presign = await this.baseCoin.presignTransaction(params);
+    const presign = await this.baseCoin.presignTransaction({
+      ...params,
+      walletData: this._wallet,
+      tssUtils: this.tssUtils,
+    });
 
     if (this._wallet.multisigType === 'tss') {
-      return this.signTransactionTss({ ...params, prv: this.getUserPrv(presign) });
+      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions) });
     }
 
     let { pubs } = params;
@@ -1936,7 +1943,10 @@ export class Wallet {
     if (_.isFunction(params.customSigningFunction)) {
       return params.customSigningFunction(signTransactionParams);
     }
-    return this.baseCoin.signTransaction({ ...signTransactionParams, prv: this.getUserPrv(presign) });
+    return this.baseCoin.signTransaction({
+      ...signTransactionParams,
+      prv: this.getUserPrv(presign as GetUserPrvOptions),
+    });
   }
 
   /**
@@ -2744,7 +2754,7 @@ export class Wallet {
         txRequestId: signedTxRequest.txRequestId,
       };
     } catch (e) {
-      throw new Error('failed to sign transaction');
+      throw new Error('failed to sign transaction ' + e);
     }
   }
 

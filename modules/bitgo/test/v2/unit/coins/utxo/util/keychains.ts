@@ -3,7 +3,7 @@
  */
 import * as bip32 from 'bip32';
 import { Triple } from '../../../../../../src';
-import { encrypt } from '../../../../../../src/encrypt';
+import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '../../../../../lib/keys';
 import { RootWalletKeys, WalletUnspentSigner } from '@bitgo/utxo-lib/dist/src/bitgo';
 

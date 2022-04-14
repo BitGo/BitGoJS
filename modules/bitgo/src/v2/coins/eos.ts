@@ -28,7 +28,7 @@ import {
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from '../../stringTextDecoder';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { Environments } from '../environments';
+import { Environments } from '@bitgo/sdk-core';
 import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import { Wallet } from '../wallet';
 import { RequestTracer } from '../internal/util';

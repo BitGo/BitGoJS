@@ -4,7 +4,7 @@
 import * as should from 'should';
 
 import { randomBytes } from 'crypto';
-import { decrypt, encrypt, bytesToWord } from '../src/encrypt';
+import { decrypt, encrypt, bytesToWord } from '@bitgo/sdk-api';
 import { getSeed } from './lib/keys';
 
 describe('bytesToWord', () => {

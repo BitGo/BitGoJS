@@ -8,7 +8,7 @@ import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
-import * as common from '../../common';
+import { common } from '@bitgo/sdk-core';
 
 import {
   BaseCoin,

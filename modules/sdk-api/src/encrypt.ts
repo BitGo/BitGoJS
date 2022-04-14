@@ -15,10 +15,11 @@ export function bytesToWord(bytes?: Uint8Array | number[]): number {
   return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
 }
 
-export function encrypt(password: string, plaintext: string, {
-  salt = randomBytes(8),
-  iv = randomBytes(16),
-} = {}): string {
+export function encrypt(
+  password: string,
+  plaintext: string,
+  { salt = randomBytes(8), iv = randomBytes(16) } = {}
+): string {
   if (salt.length !== 8) {
     throw new Error(`salt must be 8 bytes`);
   }
@@ -28,10 +29,7 @@ export function encrypt(password: string, plaintext: string, {
   const encryptOptions = {
     iter: 10000,
     ks: 256,
-    salt: [
-      bytesToWord(salt.slice(0, 4)),
-      bytesToWord(salt.slice(4)),
-    ],
+    salt: [bytesToWord(salt.slice(0, 4)), bytesToWord(salt.slice(4))],
     iv: [
       bytesToWord(iv.slice(0, 4)),
       bytesToWord(iv.slice(4, 8)),

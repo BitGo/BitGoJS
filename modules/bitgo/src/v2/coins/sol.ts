@@ -19,6 +19,7 @@ import {
   VerifyTransactionOptions,
   SignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
+  PresignTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { Memo } from '../wallet';
@@ -321,5 +322,30 @@ export class Sol extends BaseCoin {
     const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
     const rebuiltTransaction = await factory.from(serializedTx).build();
     return rebuiltTransaction.signablePayload;
+  }
+
+  /** @inheritDoc */
+  async presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions> {
+    // Hot wallet txns are only valid for 1-2 minutes.
+    // To buy more time, we rebuild the transaction with a new blockhash right before we sign.
+    if (params.walletData.type !== 'hot') {
+      return Promise.resolve(params);
+    }
+
+    const txRequestId = params.txPrebuild?.txRequestId;
+    if (txRequestId === undefined) {
+      throw new Error('Missing txRequestId');
+    }
+
+    const { tssUtils } = params;
+
+    await tssUtils.deleteSignatureShares(txRequestId);
+    const recreated = await tssUtils.getTxRequest(txRequestId);
+
+    return Promise.resolve({
+      ...params,
+      txPrebuild: recreated,
+      txHex: recreated.unsignedTxs[0].serializedTxHex,
+    });
   }
 }

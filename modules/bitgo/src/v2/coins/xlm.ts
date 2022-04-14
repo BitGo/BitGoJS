@@ -12,7 +12,7 @@ import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 import { KeyIndices } from '../keychains';
 
-import * as common from '../../common';
+import { common } from '@bitgo/sdk-core';
 import {
   InvalidAddressError,
   InvalidMemoIdError,
@@ -35,7 +35,7 @@ import {
 } from '../baseCoin';
 import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
-import { toBitgoRequest } from '../../api';
+import { toBitgoRequest } from '@bitgo/sdk-api';
 import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 
 /**
