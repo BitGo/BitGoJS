@@ -1,10 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2016"],
     "outDir": "./dist",
     "rootDir": ".",
-    "strict": true
+    "strict": true,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "resources/**/*"]
 }

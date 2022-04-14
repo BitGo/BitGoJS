@@ -3,7 +3,7 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { BitGo as BG } from '../../src/bitgo';
 import { KeyIndices, Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
@@ -12,7 +12,7 @@ import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import * as common from '../../src/common';
+import { common } from '@bitgo/sdk-core';
 import { promiseProps } from '../../src/v2/promise-utils';
 nock.enableNetConnect();
 
@@ -430,16 +430,16 @@ BitGo.prototype.nockEthWallet = function () {
   return wallet;
 };
 
-const oldFetchConstants = BitGo.prototype.fetchConstants;
-BitGo.prototype.fetchConstants = function () {
+const oldFetchConstants = BitGoAPI.prototype.fetchConstants;
+BitGoAPI.prototype.fetchConstants = function () {
   nock(this._baseUrl)
     .get('/api/v1/client/constants')
     .reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
-  BitGo._constants = undefined;
+  BitGoAPI['_constants'] = undefined;
 
-  return oldFetchConstants.apply(this, arguments);
+  return oldFetchConstants.apply(this, arguments as any);
 };
 
 export const TestBitGo = BitGo;

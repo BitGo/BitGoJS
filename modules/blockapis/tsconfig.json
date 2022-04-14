@@ -3,16 +3,15 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "typeRoots": [
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
+    "esModuleInterop": false,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
     "allowJs": false,
     "strict": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "package.json"
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../utxo-lib"
+    }
   ]
 }

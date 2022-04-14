@@ -8,7 +8,7 @@ import * as nock from 'nock';
 
 import * as BitGoJS from '../../src/index';
 import { TestBitGo } from '../lib/test_bitgo';
-import * as common from '../../src/common';
+import { common } from '@bitgo/sdk-core';
 const rp = require('request-promise');
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';

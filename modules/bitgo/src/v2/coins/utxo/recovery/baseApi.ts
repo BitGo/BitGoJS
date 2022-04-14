@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as superagent from 'superagent';
-import { BitGoJsError } from '../../../../errors';
+import { BitGoJsError } from '@bitgo/sdk-core';
 
 export class ApiNotImplementedError extends BitGoJsError {
   constructor(coinName: string) {

@@ -12,7 +12,7 @@ import fixtures from '../../fixtures/trading/payload';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import { getAddressP2PKH } from '../../../../src/bitcoin';
 
 describe('Trade Payloads', function () {

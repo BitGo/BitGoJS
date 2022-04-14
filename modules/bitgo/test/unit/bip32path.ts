@@ -3,7 +3,7 @@
  */
 import 'should';
 import * as bip32 from 'bip32';
-import { sanitizeLegacyPath } from '../../src/bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { getSeed } from '../lib/keys';
 import { HDNode, Derivable, hdPath } from '../../src/legacyBitcoin';
 

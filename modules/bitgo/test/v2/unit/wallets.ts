@@ -4,7 +4,7 @@
 
 import 'should';
 import * as nock from 'nock';
-import * as common from '../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
 import * as sinon from 'sinon';

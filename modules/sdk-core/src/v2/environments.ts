@@ -1,15 +1,10 @@
 /**
  * @prettier
  */
-import * as utxolib from '@bitgo/utxo-lib';
 import { V1Network } from './types';
 
 interface EnvironmentTemplate {
   uri?: string;
-  networks: {
-    btc?: utxolib.Network;
-    tbtc?: utxolib.Network;
-  };
   network: V1Network;
   signingAddress: string;
   serverXpub: string;
@@ -75,9 +70,6 @@ export const AliasEnvironments: { [k in AliasEnvironmentName]: EnvironmentName }
 };
 
 const mainnetBase: EnvironmentTemplate = {
-  networks: {
-    btc: utxolib.networks.bitcoin,
-  },
   network: 'bitcoin' as V1Network,
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
@@ -96,9 +88,6 @@ const mainnetBase: EnvironmentTemplate = {
 };
 
 const testnetBase: EnvironmentTemplate = {
-  networks: {
-    tbtc: utxolib.networks.testnet,
-  },
   network: 'testnet' as V1Network,
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
@@ -182,10 +171,6 @@ export const Environments: Environments = {
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     uri: process.env.BITGO_CUSTOM_ROOT_URI!,
-    networks: {
-      btc: utxolib.networks.bitcoin,
-      tbtc: utxolib.networks.testnet,
-    },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
     btcExplorerBaseUrl:

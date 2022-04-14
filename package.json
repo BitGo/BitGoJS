@@ -53,7 +53,8 @@
     "check-fmt-changed": "lerna run check-fmt --since origin/${DRONE_REPO_BRANCH:-master}..${DRONE_COMMIT:-HEAD} --stream --parallel",
     "check-fmt": "lerna run check-fmt --stream --parallel",
     "check-commits": "yarn commitlint --from=origin/${DRONE_REPO_BRANCH:-master} -V",
-    "check-versions": "node ./check-package-versions.js"
+    "check-versions": "node ./check-package-versions.js",
+    "dev": "tsc -b ./tsconfig.packages.json -w"
   },
   "husky": {
     "hooks": {
