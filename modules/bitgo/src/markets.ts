@@ -13,7 +13,7 @@
 
 import * as Bluebird from 'bluebird';
 
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 
 //
 // Constructor

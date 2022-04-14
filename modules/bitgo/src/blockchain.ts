@@ -15,7 +15,7 @@
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
-import * as common from './common';
+import { common } from '@bitgo/sdk-core';
 
 //
 // Constructor

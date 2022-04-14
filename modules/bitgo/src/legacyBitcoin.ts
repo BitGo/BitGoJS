@@ -5,7 +5,7 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
-import { sanitizeLegacyPath } from './bip32path';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 import * as bitcoinUtil from './bitcoin';
 

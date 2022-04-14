@@ -2,6 +2,11 @@
   "name": "@bitgo/bls-dkg",
   "version": "1.0.1",
   "description": "A simple implementation of BLS + DKG",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/bls-dkg"
+  },
   "main": "index.js",
   "scripts": {
     "unit-test": "mocha",

@@ -1,12 +1,9 @@
 // Descriptive error types for common issues which may arise
 // during the operation of BitGoJS or BitGoExpress
+import { BitGoJsError } from '@bitgo/sdk-core';
 
-export class BitGoJsError extends Error {
-  public constructor(message?: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
+// re-export for backwards compat
+export { BitGoJsError };
 
 export class TlsConfigurationError extends BitGoJsError {
   public constructor(message?: string) {

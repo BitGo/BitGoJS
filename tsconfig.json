@@ -1,28 +1,28 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2019",
-    "lib": [
-      "dom",
-      "es2019"
-    ],
+    "baseUrl": ".",
+    "composite": true,
     "declaration": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
+    "declarationMap": true,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "declarationMap": true,
+    "lib": ["dom", "es2019"],
+    "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
-    "strictPropertyInitialization": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "target": "es2019",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "@bitgo/sdk-api": ["modules/sdk-api/src/index"],
+      "@bitgo/sdk-core": ["modules/sdk-core/src/index"],
+      "@bitgo/utxo-lib": ["modules/utxo-lib/src/index"],
+      "@bitgo/statics": ["modules/statics/src/index"]
+    }
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -28,7 +28,7 @@ import { BitGo } from '../../bitgo';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
-import * as common from '../../common';
+import { common } from '@bitgo/sdk-core';
 
 import { optionalDeps } from './eth';
 import { Wallet } from '../wallet';

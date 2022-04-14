@@ -1,0 +1,70 @@
+{
+  "name": "@bitgo/sdk-api",
+  "version": "1.0.0",
+  "description": "REST wrapper for BitGoJS",
+  "main": "./dist/src/index.js",
+  "web": "./dist/web/main.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "lint-staged",
+    "prepare": "npm run build",
+    "webpack-dev": "webpack",
+    "webpack-prod": "webpack --mode=production --node-env=production",
+    "prepublishOnly": "npm run webpack-prod"
+  },
+  "author": "BitGo Inc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-api"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^1.0.0",
+    "@bitgo/sjcl": "^1.0.0",
+    "@bitgo/utxo-lib": "^2.2.1",
+    "@types/superagent": "4.1.15",
+    "bip32": "^2.0.6",
+    "bitcoinjs-message": "^2.0.0",
+    "bs58": "^2.0.1",
+    "debug": "3.1.0",
+    "sanitize-html": "^1.27.5",
+    "secp256k1": "^4.0.2",
+    "superagent": "3.8.3",
+    "superagent-proxy": "3.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.8",
+    "@babel/preset-env": "^7.16.11",
+    "@webpack-cli/generators": "^2.4.2",
+    "babel-loader": "^8.2.4",
+    "html-webpack-plugin": "^5.5.0",
+    "process": "^0.11.10",
+    "webpack": "5.66.0",
+    "webpack-cli": "4.9.1"
+  }
+}

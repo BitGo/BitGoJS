@@ -3,8 +3,18 @@
   "npmClient": "yarn",
   "useWorkspaces": true,
   "command": {
+    "publish": {
+      "verifyAccess": false,
+      "includeMergedTags": true,
+      "signGitTag": true,
+      "signGitCommit": true,
+      "message": "chore(release): publish",
+      "registry": "https://npm.pkg.github.com",
+      "conventionalCommits": true
+    },
     "version": {
       "message": "chore(release): publish modules"
     }
-  }
+  },
+  "packages": ["modules/*"]
 }

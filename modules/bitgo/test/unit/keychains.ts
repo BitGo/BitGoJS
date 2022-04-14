@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import * as nock from 'nock';
 import 'should';
 
-import * as common from '../../src/common';
+import { common } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../lib/test_bitgo';
 

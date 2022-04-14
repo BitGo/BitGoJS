@@ -7,9 +7,10 @@
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
 
-import { validateParams } from '../common';
+import { common } from '@bitgo/sdk-core';
 import { BaseCoin } from './baseCoin';
 
+const { validateParams } = common;
 export interface AddOptions {
   url: string;
   type: 'block' | 'wallet_confirmation';

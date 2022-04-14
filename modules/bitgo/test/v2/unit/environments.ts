@@ -1,5 +1,5 @@
 import { TestBitGo } from '../../lib/test_bitgo';
-import { AliasEnvironments } from '../../../src/v2/environments';
+import { AliasEnvironments } from '@bitgo/sdk-core';
 
 describe('Environments', () => {
   it('should swap alias environments for supported environments', () => {

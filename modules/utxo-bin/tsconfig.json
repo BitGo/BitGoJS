@@ -3,16 +3,21 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "typeRoots": [
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
     "allowJs": false,
     "strict": true
   },
-  "include": [
-    "src/**/*",
-    "bin/**/*",
-    "package.json"
+  "include": ["src/**/*", "bin/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../blockapis"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../utxo-lib"
+    }
   ]
 }

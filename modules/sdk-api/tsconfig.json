@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "esModuleInterop": false,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src/**/*", "package.json"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../utxo-lib"
+    }
+  ]
+}

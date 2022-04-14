@@ -19,8 +19,8 @@ import { VirtualSizes } from '@bitgo/unspents';
 import { getAddressP2PKH, getNetwork } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
-import * as common from './common';
-import { sanitizeLegacyPath } from './bip32path';
+import { common } from '@bitgo/sdk-core';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 interface BaseOutput {
   amount: number;

@@ -1,5 +1,5 @@
 import * as nock from 'nock';
-import { Environment, Environments } from '../../../../../../src/v2/environments';
+import { Environment, Environments } from '@bitgo/sdk-core';
 import { defaultBitGo } from './utxoCoins';
 
 export function nockBitGo(bitgo = defaultBitGo): nock.Scope {
