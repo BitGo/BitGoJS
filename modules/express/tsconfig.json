@@ -6,10 +6,5 @@
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
-  "references": [
-    {
-      "path": "../bitgo"
-    }
-  ]
+  "exclude": ["node_modules"]
 }
