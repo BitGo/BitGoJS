@@ -3,9 +3,8 @@
  */
 
 import * as bip32 from 'bip32';
-import * as common from './common';
+import { common, V1Network } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { V1Network } from './v2/types';
 
 export function getNetwork(network?: V1Network): utxolib.Network {
   network = network || common.getNetwork();

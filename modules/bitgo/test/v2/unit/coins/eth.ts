@@ -4,7 +4,7 @@ import { Wallet } from '../../../../src/v2/wallet';
 import * as nock from 'nock';
 import * as bip32 from 'bip32';
 import * as secp256k1 from 'secp256k1';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 import * as assert from 'assert';
 import {
   InvalidAddressError,

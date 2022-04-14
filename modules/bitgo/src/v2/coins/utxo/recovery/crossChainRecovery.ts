@@ -25,7 +25,7 @@ import { Wallet } from '../../../wallet';
 
 import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
-import { decrypt } from '../../../../encrypt';
+import { decrypt } from '@bitgo/sdk-api';
 import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface ExplorerTxInfo {

@@ -8,7 +8,7 @@ import { TradingReferralRequesterSide } from '../../../../src/v2/trading/trading
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Environments } from '../../../../src/common';
+import { Environments } from '@bitgo/sdk-core';
 
 describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;

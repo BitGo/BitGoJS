@@ -4,7 +4,7 @@
 import { BitGo } from '../../bitgo';
 import { Algo } from './algo';
 import { CoinConstructor } from '../coinFactory';
-import { BitGoJsError } from '../../errors';
+import { BitGoJsError } from '@bitgo/sdk-core';
 
 export interface AlgoTokenConfig {
   name: string;

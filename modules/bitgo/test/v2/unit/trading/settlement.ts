@@ -9,7 +9,7 @@ import { Settlement, SettlementStatus, SettlementType } from '../../../../src/v2
 import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as common from '../../../../src/common';
+import { common } from '@bitgo/sdk-core';
 
 describe('Settlements', function () {
   const microservicesUri = common.Environments['mock'].uri;
