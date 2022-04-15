@@ -47,7 +47,7 @@
     "@hashgraph/sdk": "~2.3.0",
     "@polkadot/api": "7.15.1",
     "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.31.0",
+    "@solana/web3.js": "1.36.0",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@stacks/transactions": "2.0.1",
