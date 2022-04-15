@@ -59,8 +59,8 @@
     "check-commits": "yarn commitlint --from=origin/${DRONE_REPO_BRANCH:-master} -V",
     "check-versions": "node ./check-package-versions.js",
     "dev": "tsc -b ./tsconfig.packages.json -w",
-    "publish:rc": "yarn install && yarn lerna publish -- --preid rc --dist-tag rc",
-    "publish:stable": "yarn install && yarn lerna publish -- --force-publish=\"$(yarn -s lerna list --loglevel=silent --since rel/latest --json | jq -r '[.[].name] | join(\",\")')\""
+    "publish:rc": "yarn install && yarn lerna publish --preid rc --dist-tag rc",
+    "publish:stable": "yarn install && yarn lerna publish --force-publish=\"$(yarn -s lerna list --loglevel=silent --since rel/latest --json | jq -r '[.[].name] | join(\",\")')\""
   },
   "husky": {
     "hooks": {
