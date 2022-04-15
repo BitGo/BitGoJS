@@ -95,7 +95,9 @@ async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string)
   try {
     return await coin.wallets().get({ id: walletId });
   } catch (e) {
-    if (e.status >= 400 && e.status < 500) {
+    // TODO: BG-46364 handle errors more gracefully
+    // The v2 endpoint coin.wallets().get() may throw 404 or 400 errors, but this should not prevent us from searching for the walletId in v1 wallets.
+    if (e.status >= 500) {
       throw e;
     }
   }
