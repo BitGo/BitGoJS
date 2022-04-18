@@ -91,7 +91,7 @@ type WalletV1 = {
   getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
 };
 
-async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string): Promise<Wallet | WalletV1> {
+export async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string): Promise<Wallet | WalletV1> {
   try {
     return await coin.wallets().get({ id: walletId });
   } catch (e) {
