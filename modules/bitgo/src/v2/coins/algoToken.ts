@@ -83,6 +83,10 @@ export class AlgoToken extends Algo {
     return 'Algo Token';
   }
 
+  getBaseFactor(): number {
+    return Math.pow(10, this.tokenConfig.decimalPlaces);
+  }
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
