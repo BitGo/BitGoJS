@@ -13,6 +13,7 @@ import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import {
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
+  getWallet,
 } from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
 
 import {
@@ -24,6 +25,8 @@ import {
   utxoCoins,
   transactionHexToObj,
   getDefaultWalletKeys,
+  defaultBitGo,
+  getUtxoCoin,
 } from '../util';
 import { getSeed } from '../../../../../lib/keys';
 import { nockBitGo } from '../util/nockBitGo';
@@ -246,4 +249,42 @@ utxoCoins.forEach((coin) => {
     .forEach((otherCoin) => {
       run(coin, otherCoin);
     });
+});
+
+describe(`Cross-Chain Recovery getWallet`, async function () {
+  const bitgo = defaultBitGo;
+  const recoveryCoin = getUtxoCoin('btc');
+  const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
+
+  it('should search v1 wallets if the v2 endpoint responds with a 4xx error', async function () {
+    const errorResponses = [400, 404];
+
+    for (const error of errorResponses) {
+      const nockV2Wallet = nockBitGo(bitgo)
+        .get(`/api/v2/${recoveryCoin.getChain()}/wallet/${recoveryWalletId}`)
+        .reply(error);
+      await assert.rejects(
+        () => getWallet(bitgo, recoveryCoin, recoveryWalletId),
+        Error(`could not get wallet ${recoveryWalletId} from v1 or v2`)
+      );
+      nockV2Wallet.done();
+    }
+  });
+
+  it('should throw an error if the v2 endpoint responds with a 5xx error', async function () {
+    const errorResponses = [500];
+    for (const error of errorResponses) {
+      const nockV2Wallet = nockBitGo(bitgo)
+        .get(`/api/v2/${recoveryCoin.getChain()}/wallet/${recoveryWalletId}`)
+        .reply(error);
+      await assert.rejects(() => getWallet(bitgo, recoveryCoin, recoveryWalletId), {
+        name: 'ApiResponseError',
+        status: 500,
+        result: {},
+        invalidToken: false,
+        needsOTP: false,
+      });
+      nockV2Wallet.done();
+    }
+  });
 });
