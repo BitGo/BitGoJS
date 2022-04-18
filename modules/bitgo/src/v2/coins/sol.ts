@@ -64,6 +64,7 @@ export interface SolVerifyTransactionOptions extends VerifyTransactionOptions {
 interface TransactionOutput {
   address: string;
   amount: number | string;
+  tokenName?: string;
 }
 type TransactionInput = TransactionOutput;
 
@@ -148,7 +149,6 @@ export class Sol extends BaseCoin {
         _.pick(recipient, ['address', 'amount', 'tokenName'])
       );
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
-
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
@@ -285,6 +285,7 @@ export class Sol extends BaseCoin {
       return {
         address: output.address,
         amount: output.amount,
+        tokenName: output.tokenName,
       };
     });
 

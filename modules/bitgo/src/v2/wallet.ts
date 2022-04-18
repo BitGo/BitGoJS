@@ -76,6 +76,7 @@ export interface PrebuildTransactionOptions {
   recipients?: {
     address: string;
     amount: string | number;
+    tokenName?: string;
   }[];
   numBlocks?: number;
   maxFeeRate?: number;

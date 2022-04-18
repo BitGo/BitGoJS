@@ -35,6 +35,7 @@ interface PrebuildTransactionWithIntentOptions {
   recipients: {
     address: string;
     amount: string | number;
+    tokenName?: string;
   }[];
   comment?: string;
   memo?: Memo;
@@ -414,6 +415,7 @@ export class TssUtils extends MpcUtils {
     const intentRecipients = params.recipients.map((recipient) => ({
       address: { address: recipient.address },
       amount: { value: `${recipient.amount}`, symbol: chain },
+      tokenName: recipient.tokenName,
     }));
 
     const whitelistedParams = {
