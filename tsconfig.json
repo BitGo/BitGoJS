@@ -17,12 +17,6 @@
     "strictPropertyInitialization": true,
     "target": "es2019",
     "typeRoots": ["./node_modules/@types", "./types"],
-    "paths": {
-      "@bitgo/sdk-api": ["modules/sdk-api/src/index"],
-      "@bitgo/sdk-core": ["modules/sdk-core/src/index"],
-      "@bitgo/utxo-lib": ["modules/utxo-lib/src/index"],
-      "@bitgo/statics": ["modules/statics/src/index"]
-    }
   },
   "exclude": ["node_modules"]
 }

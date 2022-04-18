@@ -26,7 +26,7 @@
     "prepare": "yarn build",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "lint": "yarn eslint --quiet .",
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "yarn tsc",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
