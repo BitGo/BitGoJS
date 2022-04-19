@@ -138,12 +138,16 @@ export default class Eddsa {
     this.hdTree = hdTree;
   }
 
-  keyShare(index: number, threshold: number, numShares: number): KeyShare {
+  keyShare(index: number, threshold: number, numShares: number, seed?: Buffer): KeyShare {
     assert(index > 0 && index <= numShares);
-    const seedchain = randomBytes(64);
-    const seed = seedchain.slice(0, 32);
+    if (seed && seed.length != 64) {
+      throw new Error('Seed must have length 64');
+    }
+
+    const seedchain = seed ?? randomBytes(64);
+    const actualSeed = seedchain.slice(0, 32);
     const chaincode = seedchain.slice(32);
-    const h = createHash('sha512').update(seed).digest();
+    const h = createHash('sha512').update(actualSeed).digest();
     const u = clamp(bigIntFromBufferLE(h.slice(0, 32)));
     const y = Eddsa.curve.basePointMult(u);
     const split_u = Eddsa.shamir.split(u, threshold, numShares);
@@ -153,7 +157,7 @@ export default class Eddsa {
       t: threshold,
       n: numShares,
       y: bigIntToBufferLE(y, 32).toString('hex'),
-      seed: seed.toString('hex'),
+      seed: actualSeed.toString('hex'),
       chaincode: chaincode.toString('hex'),
     };
     const shares: KeyShare = {
