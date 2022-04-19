@@ -216,6 +216,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ALI
   ),
   erc20('alpha', 'Alpha Finance', 18, '0xa1faa113cbe53436df28ff0aee54275c13b40975', UnderlyingAsset.ALPHA),
+  erc20('ape', 'ApeCoin', 18, '0x4d224452801aced8b2f0aebe155379bb5d594381', UnderlyingAsset.APE),
   erc20('amn', 'Amon', 18, '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', UnderlyingAsset.AMN),
   erc20('amo', 'AMO Token', 18, '0x38c87aa89b2b8cd9b95b736e1fa7b612ea972169', UnderlyingAsset.AMO),
   erc20('amp', 'AMP Token', 18, '0xff20817765cb7f73d4bde2e66e067e58d11095c2', UnderlyingAsset.AMP),
@@ -234,6 +235,7 @@ export const coins = CoinMap.fromCoins([
   erc20('audio', 'Audio', 18, '0x18aaa7115705e8be94bffebde57af9bfc265b998', UnderlyingAsset.AUDIO),
   erc20('audx', 'eToro Australian Dollar', 18, '0xdf1e9e1a218cff9888faef311d6fbb472e4175ce', UnderlyingAsset.AUDX),
   erc20('aust', 'Wrapped Anchor UST Token', 18, '0xa8de3e3c934e2a1bb08b010104ccabbd4d6293ab', UnderlyingAsset.AUST),
+  erc20('axl', 'Axelar', 6, '0x3eacbdc6c382ea22b78acc158581a55aaf4ef3cc', UnderlyingAsset.AXL),
   erc20('axpr', 'aXpire', 18, '0xc39e626a04c5971d770e319760d7926502975e47', UnderlyingAsset.AXPR),
   erc20('axs', 'Axie Infinity Shards', 18, '0xf5d669627376ebd411e34b98f19c868c8aba5ada', UnderlyingAsset.AXS),
   erc20('axsv2', 'Axie Infinity Shards V2', 18, '0xbb0e17ef65f82ab018d8edd776e8dd940327b28b', UnderlyingAsset.AXSV2),
@@ -588,6 +590,7 @@ export const coins = CoinMap.fromCoins([
   erc20('rcoin', 'ArCoin', 8, '0x252739487c1fa66eaeae7ced41d6358ab2a6bca9', UnderlyingAsset.RCOIN),
   erc20('rare', 'SuperRare', 18, '0xba5bde662c17e2adff1075610382b9b691296350', UnderlyingAsset.RARE),
   erc20('rari', 'Rarible', 18, '0xfca59cd816ab1ead66534d82bc21e7515ce441cf', UnderlyingAsset.RARI),
+  erc20('ray', 'Raydium', 6, '0x5245c0249e5eeb2a0838266800471fd32adb1089', UnderlyingAsset.RAY),
   erc20('rby', 'Ruby X', 18, '0xf7705dee19a63e0bc1a240f723c5c0f570c78572', UnderlyingAsset.RBY),
   erc20('rdn', 'Raiden Network', 18, '0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6', UnderlyingAsset.RDN),
   erc20('reb', 'Regblo', 18, '0x61383ac89988b498df5363050ff07fe5c52ecdda', UnderlyingAsset.REB),
@@ -603,6 +606,7 @@ export const coins = CoinMap.fromCoins([
   erc20('rlc', 'Iexec Rlc', 9, '0x607f4c5bb672230e8672085532f7e901544a7375', UnderlyingAsset.RLC),
   erc20('rly', 'Rally', 18, '0xf1f955016ecbcd7321c7266bccfb96c68ea5e49b', UnderlyingAsset.RLY),
   erc20('rndr', 'Render Token', 18, '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24', UnderlyingAsset.RNDR),
+  erc20('rook', 'KeeperDAO', 18, '0xfa5047c9c78b8877af97bdcb85db743fd7313d4a', UnderlyingAsset.ROOK),
   erc20('ronc', 'RONCoin', 18, '0xf1b819fdb689f43afc161db789800ed799f18388', UnderlyingAsset.RONC),
   erc20('roobee', 'ROOBEE', 18, '0xa31b1767e09f842ecfd4bc471fe44f830e3891aa', UnderlyingAsset.ROOBEE),
   erc20('rubx', 'eToro Russian Ruble', 18, '0xd6d69a3d5e51dbc2636dc332338765fcca71d5d5', UnderlyingAsset.RUBX),
@@ -909,6 +913,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDt'
+  ),
+  algoToken(
+    'algo:6547014',
+    'algo:MCAU-6547014',
+    'MCAU',
+    5,
+    UnderlyingAsset['algo:6547014'],
+    'https://algoexplorer.io/asset/6547014',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'MCAU'
   ),
   terc20(
     'fixed',
