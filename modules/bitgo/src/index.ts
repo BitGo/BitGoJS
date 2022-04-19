@@ -8,6 +8,7 @@
 //
 import * as _ from 'lodash';
 import { common } from '@bitgo/sdk-core';
+export * from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export * from './bitgo';
