@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.12.0-rc.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.0-rc.35...@bitgo/express@9.12.0-rc.36) (2022-04-19)
+
+
+### Bug Fixes
+
+* **express:** build express outside TS Build systm ([4c59ff8](https://github.com/BitGo/BitGoJS/commit/4c59ff87a4a03f4a324d0a126e00dd19c5acf44d))
+
+
+
+
+
 # [9.12.0-rc.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.12.0-rc.33...@bitgo/express@9.12.0-rc.34) (2022-04-13)
 
 **Note:** Version bump only for package @bitgo/express
