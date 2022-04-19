@@ -17,6 +17,7 @@ describe('Algo Unison Token:', function () {
     algoTokenCoin.getChain().should.equal('talgo:16026728');
     algoTokenCoin.getBaseChain().should.equal('talgo');
     algoTokenCoin.getFullName().should.equal('Algo Token');
+    algoTokenCoin.getBaseFactor().should.equal(1e2);
     algoTokenCoin.type.should.equal(tokenName);
     algoTokenCoin.name.should.equal('Unison');
     algoTokenCoin.coin.should.equal('talgo');
@@ -40,6 +41,7 @@ describe('Algo USDC Token:', function () {
     algoTokenCoin.getChain().should.equal(USDCtokenName);
     algoTokenCoin.getBaseChain().should.equal('talgo');
     algoTokenCoin.getFullName().should.equal('Algo Token');
+    algoTokenCoin.getBaseFactor().should.equal(1e6);
     algoTokenCoin.type.should.equal(USDCtokenName);
     algoTokenCoin.name.should.equal('USDC');
     algoTokenCoin.coin.should.equal('talgo');
@@ -63,6 +65,7 @@ describe('Algo USDt Token:', function () {
     algoTokenCoin.getChain().should.equal(USDTtokenName);
     algoTokenCoin.getBaseChain().should.equal('talgo');
     algoTokenCoin.getFullName().should.equal('Algo Token');
+    algoTokenCoin.getBaseFactor().should.equal(1e6);
     algoTokenCoin.type.should.equal(USDTtokenName);
     algoTokenCoin.name.should.equal('USDt');
     algoTokenCoin.coin.should.equal('talgo');

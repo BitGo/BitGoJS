@@ -11,9 +11,6 @@
       "path": "./modules/blockapis"
     },
     {
-      "path": "./modules/express"
-    },
-    {
       "path": "./modules/sdk-api"
     },
     {
