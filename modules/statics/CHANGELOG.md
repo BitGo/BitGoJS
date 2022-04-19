@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.17.0-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.17.0-rc.21...@bitgo/statics@6.17.0-rc.22) (2022-04-19)
+
+
+### Features
+
+* **statics:** add april tokens ERC20 and algo token ([a0cb164](https://github.com/BitGo/BitGoJS/commit/a0cb164d01872abc47925df97ddf43c35b58c7f1))
+
+
+
+
+
 # [6.17.0-rc.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.17.0-rc.20...@bitgo/statics@6.17.0-rc.21) (2022-04-19)
 
 **Note:** Version bump only for package @bitgo/statics

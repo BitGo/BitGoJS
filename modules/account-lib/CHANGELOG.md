@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.19.0-rc.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.19.0-rc.30...@bitgo/account-lib@2.19.0-rc.31) (2022-04-19)
+
+
+### Features
+
+* **account-lib:** support creating TSS keyshares with seed ([6716720](https://github.com/BitGo/BitGoJS/commit/6716720705087d31bddc978b4c89ad0bf1a494bd))
+
+
+
+
+
 # [2.19.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.19.0-rc.29...@bitgo/account-lib@2.19.0-rc.30) (2022-04-19)
 
 **Note:** Version bump only for package @bitgo/account-lib
