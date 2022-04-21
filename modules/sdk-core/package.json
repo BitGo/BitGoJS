@@ -40,6 +40,9 @@
     ]
   },
   "dependencies": {
+    "@bitgo/sdk-api": "1.0.0",
+    "@bitgo/utxo-lib": "2.2.1",
+    "bitgo": "14.0.0",
     "debug": "3.1.0"
   }
 }
