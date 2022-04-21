@@ -1,6 +1,8 @@
 import should from 'should';
 import { Near } from '../../../../src';
 import * as NearResources from '../../../resources/near';
+import { Transaction } from '../../../../src/coin/near';
+import { coins } from '@bitgo/statics';
 
 describe('NEAR KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
@@ -89,6 +91,35 @@ describe('NEAR KeyPair', () => {
       const { prv, pub } = keyPair.getKeys();
       should.exist(prv);
       should.exist(pub);
+    });
+  });
+
+  describe('verifySignature', () => {
+    let tx: Transaction;
+    const config = coins.get('tnear');
+
+    beforeEach(() => {
+      tx = new Transaction(config);
+    });
+    it('should verify a tss signed raw tx', () => {
+      const rawTx =
+        'QAAAAGFmYzNlY2Y2MDkxMGFlYzk0NDNlOWY1ZTYwZTY4NzNiNGE3NDM1MGM1NGJiZDBlODI2ZjczNTc1NDRhNjljMDUAr8Ps9gkQrslEPp9eYOaHO0p0NQxUu9DoJvc1dUSmnAWBYCrPG1AAAEAAAAA0ZmU4MDRmNGZjN2ZiNDgwMzJhY2FjMDg1ZGVhMWU0MzAxMWI4MmUzYjk2MGJiYmM4OWUyYmVhMDRkNzJlMGEwjbfBpwR2OsTjfxa+GgQTNycQYoxRCIVevYaE2xQZhVsBAAAAAwDkC1QCAAAAAAAAAAAAAAAA8yT2sWVrTyzI0u4bbeKh1Kag05M9pjqvRXKIm5XptNnG6kpwhWf9U2kEZO4oV4agXAKJ/P50ForPcI80K+b2CQ==';
+      tx.fromRawTransaction(rawTx);
+      const payload = tx.signablePayload;
+      const signature = Near.Utils.default.base58Decode(tx.signature[0]);
+      const pk = new Near.KeyPair({ pub: tx.inputs[0].address });
+      const result = pk.verifySignature(payload, signature);
+      result.should.be.true();
+    });
+
+    it('should verify a singlesig signed raw tx', async () => {
+      tx.fromRawTransaction(NearResources.rawTx.transfer.signed);
+      const payload = tx.signablePayload;
+      const signature = Near.Utils.default.base58Decode(tx.signature[0]);
+      const pk = new Near.KeyPair({ pub: tx.inputs[0].address });
+      const result = pk.verifySignature(payload, signature);
+      console.log(result);
+      result.should.be.true();
     });
   });
 });

@@ -73,6 +73,10 @@ export class Utils implements BaseUtils {
     return bs58.encode(value);
   }
 
+  base58Decode(value: string): Uint8Array {
+    return bs58.decode(value);
+  }
+
   /**
    * Check if base58 decoded string is equal to length
    *

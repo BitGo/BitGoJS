@@ -10,6 +10,7 @@ import * as nearAPI from 'near-api-js';
 import * as sha256 from 'js-sha256';
 import base58 from 'bs58';
 
+const HEX_REGEX = /^[0-9a-fA-F]+$/;
 export class Transaction extends BaseTransaction {
   private _nearTransaction: nearAPI.transactions.Transaction;
   private _nearSignedTransaction: nearAPI.transactions.SignedTransaction;
@@ -95,7 +96,11 @@ export class Transaction extends BaseTransaction {
    * @param rawTransaction
    */
   fromRawTransaction(rawTx: string): void {
-    const rawTransaction = Buffer.from(rawTx, 'base64');
+    let rawTxBase64 = rawTx;
+    if (HEX_REGEX.test(rawTx)) {
+      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    }
+    const rawTransaction = Buffer.from(rawTxBase64, 'base64');
     try {
       const signedTx = nearAPI.utils.serialize.deserialize(
         nearAPI.transactions.SCHEMA,
