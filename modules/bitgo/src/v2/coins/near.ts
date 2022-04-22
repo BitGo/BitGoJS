@@ -42,6 +42,7 @@ export interface VerifiedTransactionParameters {
 }
 
 const nearUtils = accountLib.Near.Utils.default;
+const HEX_REGEX = /^[0-9a-fA-F]+$/;
 
 export class Near extends BaseCoin {
   constructor(bitgo: BitGo) {
@@ -248,7 +249,11 @@ export class Near extends BaseCoin {
       throw new Error('missing required tx prebuild property txHex');
     }
 
-    transaction.fromRawTransaction(rawTx);
+    let rawTxBase64 = rawTx;
+    if (HEX_REGEX.test(rawTx)) {
+      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    }
+    transaction.fromRawTransaction(rawTxBase64);
 
     // TO-DO: new explainTransaction to be implemented in account-lib
 
