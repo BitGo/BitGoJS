@@ -1157,7 +1157,7 @@ export const coins = CoinMap.fromCoins([
   erc721('erc721:witch', 'Crypto Coven', '0x5180db8f5c931aae63c74266b211f580155ecac8'),
   terc721('terc721:bitgoerc721', 'Test BITGO ERC 721 Token', '0x8397b091514c1f7bebb9dea6ac267ea23b570605'),
   terc721('terc1155:bitgoerc1155', 'Test BITGO ERC 1155 Token', '0x87cd6a40640befdd96e563b788a6b1fb3e07a186'),
-  tofcerc20('ofcterc', 'Test ERC Token', 0, UnderlyingAsset.TERC),
+  tofcerc20('ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
   tofcerc20('ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
