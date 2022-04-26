@@ -23,7 +23,7 @@
     "bitcoin",
     "utxo"
   ],
-  "author": "BitGo Inc.",
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/BitGo/BitGoJS/issues"

@@ -3,13 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
+    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
-  "references": [
-    {
-      "path": "../bitgo"
-    }
-  ]
+  "include": ["src/**/*", "package.json"],
+  "exclude": ["node_modules"]
 }
