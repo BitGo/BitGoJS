@@ -90,7 +90,7 @@ describe('NEAR:', function () {
   });
 
   describe('Verify transaction: ', () => {
-    it('should succeed to verify transaction', async () => {
+    it('should succeed to verify transaction in base64 encoding', async () => {
       const txParams = {
       };
 
@@ -99,7 +99,24 @@ describe('NEAR:', function () {
         txHex: rawTx.transfer.unsigned,
         txInfo: {
 
-        }
+        },
+      };
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify transaction in hex encoding', async () => {
+      const txParams = {
+      };
+
+      // TO-DO wait for verifyTransaction using explainTranasaction
+      const txPrebuild = {
+        txHex: rawTx.transfer.hexUnsigned,
+        txInfo: {
+
+        },
       };
 
       const verification = {};
@@ -108,5 +125,4 @@ describe('NEAR:', function () {
       isTransactionVerified.should.equal(true);
     });
   });
-
 });

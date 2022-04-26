@@ -1,6 +1,11 @@
 import 'should';
-
 import { TestBitGo } from '../../../lib/test_bitgo';
+
+const PRECISION_2 = '100';
+const PRECISION_6 = '1000000';
+const PRECISION_8 = '100000000';
+const PRECISION_9 = '1000000000';
+const PRECISION_18 = '1000000000000000000';
 
 describe('OFC:', function () {
   let bitgo;
@@ -15,25 +20,26 @@ describe('OFC:', function () {
   it('functions that return constants', function () {
     otestusdCoin.getChain().should.equal('ofctusd');
     otestusdCoin.getFullName().should.equal('Test USD');
-    otestusdCoin.getBaseFactor().should.equal('100');
+    otestusdCoin.getBaseFactor().should.equal(PRECISION_2);
   });
 
   it('test crypto coins for ofctbtc', function () {
     const tbtc = bitgo.coin('ofctbtc');
     tbtc.getChain().should.equal('ofctbtc');
     tbtc.getFullName().should.equal('Test Bitcoin');
-    tbtc.getBaseFactor().should.equal('100000000');
+    tbtc.getBaseFactor().should.equal(PRECISION_8);
     tbtc.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.true;
     tbtc.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
     tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
+
   it('test crypto coins for ofcteth', function () {
     const teth = bitgo.coin('ofcteth');
     teth.getChain().should.equal('ofcteth');
     teth.getFullName().should.equal('Test Ether');
-    teth.getBaseFactor().should.equal('1000000000000000000');
+    teth.getBaseFactor().should.equal(PRECISION_18);
     teth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
     teth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     teth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
@@ -45,7 +51,7 @@ describe('OFC:', function () {
     const gteth = bitgo.coin('ofcgteth');
     gteth.getChain().should.equal('ofcgteth');
     gteth.getFullName().should.equal('Test Goerli Ether');
-    gteth.getBaseFactor().should.equal('1000000000000000000');
+    gteth.getBaseFactor().should.equal(PRECISION_18);
     gteth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
     gteth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
     gteth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
@@ -60,7 +66,7 @@ describe('OFC:', function () {
     const ofcavaxc = bitgo.coin('ofcavaxc');
     ofcavaxc.getChain().should.equal('ofcavaxc');
     ofcavaxc.getFullName().should.equal('Avalanche C-Chain');
-    ofcavaxc.getBaseFactor().should.equal('1000000000000000000');
+    ofcavaxc.getBaseFactor().should.equal(PRECISION_18);
     ofcavaxc.isValidAddress(validAddress).should.be.true;
     ofcavaxc.isValidAddress(notValidAddress01).should.be.false;
     ofcavaxc.isValidAddress(notValidAddress02).should.be.false;
@@ -73,10 +79,25 @@ describe('OFC:', function () {
     const ofctavaxc = bitgo.coin('ofctavaxc');
     ofctavaxc.getChain().should.equal('ofctavaxc');
     ofctavaxc.getFullName().should.equal('Test Avalanche C-Chain');
-    ofctavaxc.getBaseFactor().should.equal('1000000000000000000');
+    ofctavaxc.getBaseFactor().should.equal(PRECISION_18);
     ofctavaxc.isValidAddress(validAddress).should.be.true;
     ofctavaxc.isValidAddress(notValidAddress01).should.be.false;
     ofctavaxc.isValidAddress(notValidAddress02).should.be.false;
+  });
+
+  it('test crypto coins for ofcterc', function () {
+    const validAddress = '0x1A88Ee4Bc80BE080fC91AC472Af2F59260695060';
+    const notValidAddress01 = '0x1A88Ee4Bc80BE080fC91AC472Af2F592606950601';
+    const notValidAddress02 = 'x1374a2046661f914d1687d85dbbceb9ac7910a29';
+    const notValidAddress03 = '0x1374a2046661f914d1687d85dbbceb9ac7910a291234';
+    const ofcterc = bitgo.coin('ofcterc');
+    ofcterc.getChain().should.equal('ofcterc');
+    ofcterc.getFullName().should.equal('Test ERC Token');
+    ofcterc.getBaseFactor().should.equal(PRECISION_18);
+    ofcterc.isValidAddress(validAddress).should.be.true;
+    ofcterc.isValidAddress(notValidAddress01).should.be.false;
+    ofcterc.isValidAddress(notValidAddress02).should.be.false;
+    ofcterc.isValidAddress(notValidAddress03).should.be.false;
   });
 
   describe('check ofc tokens for Casper network', function () {
@@ -86,7 +107,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(coin);
         ofcCoin.getChain().should.equal(coin);
         ofcCoin.getFullName().should.equal('Casper');
-        ofcCoin.getBaseFactor().should.equal('1000000000');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_9);
       });
     });
     describe('for test network', function () {
@@ -95,7 +116,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(coin);
         ofcCoin.getChain().should.equal(coin);
         ofcCoin.getFullName().should.equal('Test Casper');
-        ofcCoin.getBaseFactor().should.equal('1000000000');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_9);
       });
     });
     describe('- validate addresses - ', () => {
@@ -127,7 +148,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(coinMain);
         ofcCoin.getChain().should.equal(coinMain);
         ofcCoin.getFullName().should.equal('Stacks');
-        ofcCoin.getBaseFactor().should.equal('1000000');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
       });
     });
     describe('for test network', function () {
@@ -135,7 +156,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(coinTest);
         ofcCoin.getChain().should.equal(coinTest);
         ofcCoin.getFullName().should.equal('Test Stacks');
-        ofcCoin.getBaseFactor().should.equal('1000000');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
       });
     });
     describe('- validate addresses - ', () => {
