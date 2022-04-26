@@ -61,6 +61,7 @@ export interface TxRequest {
     derivationPath: string;
   }[];
   signatureShares?: SignatureShareRecord[];
+  apiVersion?: string;
 }
 
 export enum SignatureShareType {
@@ -407,9 +408,10 @@ export class TssUtils extends MpcUtils {
    * Builds a tx request from params and verify it
    *
    * @param {PrebuildTransactionWithIntentOptions} params - parameters to build the tx
+   * @param apiVersion
    * @returns {Promise<TxRequest>} - a built tx request
    */
-  async prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions): Promise<TxRequest> {
+  async prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion = 'lite'): Promise<TxRequest> {
     const chain = this.baseCoin.getChain();
     const intentRecipients = params.recipients.map((recipient) => ({
       address: { address: recipient.address },
@@ -426,6 +428,7 @@ export class TssUtils extends MpcUtils {
         token: params.tokenName,
         nonce: params.nonce,
       },
+      apiVersion: apiVersion,
     };
 
     const unsignedTx = (await this.bitgo
@@ -461,6 +464,7 @@ export class TssUtils extends MpcUtils {
    *
    * @param {String} txRequestId - the txRequest Id
    * @param {SignatureShareRecord} signatureShare - a Signature Share
+   * @param apiVersion
    * @returns {Promise<SignatureShareRecord>} - a Signature Share
    */
   async sendSignatureShare(params: {

@@ -402,6 +402,7 @@ describe('TSS Utils:', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
         requestBody: {
+          apiVersion: 'lite',
           intent: {
             intentType: 'payment',
             recipients: [{
@@ -435,6 +436,7 @@ describe('TSS Utils:', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
         requestBody: {
+          apiVersion: 'lite',
           intent: {
             intentType: 'payment',
             recipients: [{
