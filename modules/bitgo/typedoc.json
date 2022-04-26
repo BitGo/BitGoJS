@@ -1,0 +1,12 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "exclude": ["**/node_modules/**/*", "**/*.types.ts"],
+  "out": "./docs/",
+  "json": "./docs/output.json",
+  "pretty": true,
+  "includeVersion": true,
+  "sort": "alphabetical",
+  "githubPages": true,
+  "tsconfig": "./tsconfig.json",
+  "emit": "both"
+}
