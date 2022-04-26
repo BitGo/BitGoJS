@@ -18,6 +18,7 @@ import {
   Etc,
   Eth,
   Eth2,
+  Fiat,
   Hbar,
   Ltc,
   Ofc,
@@ -37,6 +38,7 @@ import {
   Tetc,
   Teth,
   Teth2,
+  Tfiat,
   Gteth,
   Thbar,
   Tltc,
@@ -175,6 +177,8 @@ GlobalCoinFactory.registerCoinConstructor('thbar', Thbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
+GlobalCoinFactory.registerCoinConstructor('fiat', Fiat.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tfiat', Tfiat.createInstance);
 GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tcspr', Tcspr.createInstance);
 GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);

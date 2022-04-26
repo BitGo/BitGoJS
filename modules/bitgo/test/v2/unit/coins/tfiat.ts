@@ -1,6 +1,25 @@
 import 'should';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
+describe('FIAT', function () {
+  let bitgo;
+  let fiat;
+
+  before(function () {
+    bitgo = new TestBitGo({ env: 'test' });
+    bitgo.initializeTestVars();
+    fiat = bitgo.coin('tfiat');
+  });
+
+  it('functions that return constants', function () {
+    fiat.getChain().should.equal('tfiat');
+    fiat.type.should.equal('tfiat');
+    fiat.getFullName().should.equal('Test Fiat');
+    fiat.getFamily().should.equal('fiat');
+    fiat.getBaseFactor().should.equal(100);
+  });
+});
+
 describe('FIAT:USD', function () {
   let bitgo;
   let fiatUSD;

@@ -22,6 +22,7 @@ import {
   tfiatToken,
   terc721,
   erc721,
+  fiat,
   fiatToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
@@ -1361,6 +1362,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
+  fiat('fiat', 'Fiat', UnderlyingAsset.FIAT, 2, Networks.main.fiat),
+  fiat('tfiat', 'Testnet Fiat', UnderlyingAsset.FIAT, 2, Networks.test.fiat),
   tfiatToken('tfiat:USD', 'FIAT US Dollar', UnderlyingAsset.USD, 2),
   fiatToken('fiat:USD', 'FIAT US Dollar', UnderlyingAsset.USD, 2),
 ]);

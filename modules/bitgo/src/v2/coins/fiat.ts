@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
   KeyPair,
@@ -13,7 +14,14 @@ import {
 } from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
 
-export abstract class Fiat extends BaseCoin {
+export class Fiat extends BaseCoin {
+  constructor(bitgo: BitGo) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: BitGo): BaseCoin {
+    return new Fiat(bitgo);
+  }
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}

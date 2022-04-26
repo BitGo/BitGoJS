@@ -15,6 +15,7 @@ export { Erc20Token } from './erc20Token';
 export { Etc } from './etc';
 export { Eth } from './eth';
 export { Eth2 } from './eth2';
+export { Fiat } from './fiat';
 export { Ltc } from './ltc';
 export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
 export { OfcToken } from './ofcToken';
@@ -36,6 +37,7 @@ export { Tltc } from './tltc';
 export { Trbtc } from './trbtc';
 export { Trx } from './trx';
 export { Tsusd } from './tsusd';
+export { Tfiat } from './tfiat';
 export { FiatToken } from './fiatToken'; 
 export { Ttrx } from './ttrx';
 export { Hbar } from './hbar';
