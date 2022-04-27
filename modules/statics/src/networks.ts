@@ -1,5 +1,6 @@
 import { CoinFamily } from './base';
 import { mainnetMetadataRpc, westendMetadataRpc } from '../resources/dot';
+import * as BN from 'bn.js';
 
 export enum NetworkType {
   MAINNET = 'mainnet',
@@ -16,6 +17,27 @@ export abstract class BaseNetwork {
 export interface UtxoNetwork extends BaseNetwork {
   // Network name as defined in @bitgo/utxo-lib networks.ts
   utxolibName: string;
+}
+
+export interface AvalancheNetwork extends BaseNetwork {
+  readonly alias: string;
+  readonly blockchainID: string;
+  readonly vm: string;
+  readonly creationTxFee: BN;
+  readonly createSubnetTx: BN;
+  readonly createChainTx: BN;
+  readonly minConsumption: number;
+  readonly maxConsumption: number;
+  readonly maxStakingDuration: BN;
+  readonly maxSupply: BN;
+  readonly minStake: BN;
+  readonly minStakeDuration: number;
+  readonly maxStakeDuration: number;
+  readonly minDelegationStake: BN;
+  readonly minDelegationFee: BN;
+  // current valid asset id is AVAX
+  readonly avaxAssetID: string;
+  readonly txFee: BN;
 }
 
 export interface AccountNetwork extends BaseNetwork {
@@ -98,6 +120,54 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://cchain.explorer.avax-test.network/tx/';
   accountExplorerUrl = 'https://cchain.explorer.avax-test.network/address/';
   chainId = 43113;
+}
+
+class AvalancheP extends Mainnet implements AvalancheNetwork {
+  name = 'AvalancheP';
+  family = CoinFamily.AVAXP;
+  explorerUrl = 'https://explorer-xp.avax.network/tx/';
+  accountExplorerUrl = 'https://explorer-xp.avax.network/address/';
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = new BN(1000000); // 1 MILLIAVAX
+  createSubnetTx = new BN(1000000000); // 1 AVAX
+  createChainTx = new BN(1000000000); // 1 AVAX
+  creationTxFee = new BN(10000000); // 1 CENTIAVAX
+  minConsumption = 0.1;
+  maxConsumption = 0.12;
+  maxStakingDuration = new BN(31536000); // 1 year
+  maxSupply = new BN(720000000).mul(new BN(1000000000)); // 720 mil tokens
+  minStake = new BN(1000000000).mul(new BN(2000));
+  minStakeDuration = 2 * 7 * 24 * 60 * 60; // 2 weeks
+  maxStakeDuration = 365 * 24 * 60 * 60; // 1 year
+  minDelegationStake = new BN(1000000000).mul(new BN(25));
+  minDelegationFee = new BN(2);
+}
+
+class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
+  name = 'AvalanchePTestnet';
+  family = CoinFamily.AVAXP;
+  explorerUrl = 'https://explorer-xp.avax-test.network/tx/';
+  accountExplorerUrl = 'https://explorer-xp.avax-test.network/address/';
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = new BN(1000000); // 1 MILLIAVAX
+  createSubnetTx = new BN(1000000000); // 1 AVAX
+  createChainTx = new BN(1000000000); // 1 AVAX
+  creationTxFee = new BN(10000000); // 1 CENTIAVAX
+  minConsumption = 0.1;
+  maxConsumption = 0.12;
+  maxStakingDuration = new BN(31536000); // 1 year
+  maxSupply = new BN(720000000).mul(new BN(1000000000)); // 720 mil tokens
+  minStake = new BN(1000000000); // 1 AVAX
+  minStakeDuration = 24 * 60 * 60; // 1 day
+  maxStakeDuration = 365 * 24 * 60 * 60; // 1 year
+  minDelegationStake = new BN(1000000000); // 1 AVAX
+  minDelegationFee = new BN(2);
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {
@@ -526,6 +596,7 @@ export const Networks = {
   main: {
     algorand: Object.freeze(new Algorand()),
     avalancheC: Object.freeze(new AvalancheC()),
+    avalancheP: Object.freeze(new AvalancheP()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinABC: Object.freeze(new BitcoinABC()),
@@ -558,6 +629,7 @@ export const Networks = {
   test: {
     algorand: Object.freeze(new AlgorandTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
+    avalancheP: Object.freeze(new AvalanchePTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
