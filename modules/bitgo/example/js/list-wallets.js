@@ -17,7 +17,7 @@ const bitgo = new BitGoJS.BitGo({
 
 // TODO: set your access token here
 // You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = 'ece2a52887ee21d16765551b0a18b15e081b0fb3eb2c51bada2a87c8ef60bbc4';
+const accessToken = 'v2x9010d135117a5809bef5606064b77b17d11f6fad890c987887c4caf826a2df7a';
 
 const coin = 'tnear';
 
