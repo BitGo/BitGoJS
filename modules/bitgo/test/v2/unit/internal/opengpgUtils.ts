@@ -61,4 +61,30 @@ describe('OpenGPG Utils Tests', function () {
         .should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
   });
+
+  describe('signatures and verification', function() {
+    it('should verify signature', async function () {
+      const text = 'some payload';
+      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
+      const isValidSignature = await openpgpUtils.verifySignature(text, signature, senderKey.publicKey);
+
+      isValidSignature.should.be.true();
+    });
+
+    it('should fail verification if public key is incorrect', async function () {
+      const text = 'some payload';
+      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
+      const isValidSignature = await openpgpUtils.verifySignature(text, signature, recipientKey.publicKey);
+
+      isValidSignature.should.be.false();
+    });
+
+    it('should fail verification if message is incorrect', async function () {
+      const text = 'some payload';
+      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
+      const isValidSignature = await openpgpUtils.verifySignature('something else', signature, senderKey.publicKey);
+
+      isValidSignature.should.be.false();
+    });
+  });
 });
