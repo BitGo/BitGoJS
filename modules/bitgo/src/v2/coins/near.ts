@@ -13,7 +13,7 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import * as base58 from 'bs58';
-import { coins } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -45,32 +45,51 @@ const nearUtils = accountLib.Near.Utils.default;
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 
 export class Near extends BaseCoin {
-  constructor(bitgo: BitGo) {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
-    return new Near(bitgo);
+  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Near(bitgo, staticsCoin);
   }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+    /**
+   * Flag indicating if this coin supports TSS wallets.
+   * @returns {boolean} True if TSS Wallets can be created for this coin
+   */
+     supportsTss(): boolean {
+      return true;
+    }
 
   getChain(): string {
-    return 'near';
+    return this._staticsCoin.name;
   }
 
   getBaseChain(): string {
-    return 'near';
+    return this.getChain();
   }
 
-  getFamily(): string {
-    return 'near';
+  getFamily(): CoinFamily {
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
-    return 'Near';
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor(): any {
-    return 1e24;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   /**
@@ -97,7 +116,7 @@ export class Near extends BaseCoin {
     }
     return {
       pub: keys.pub,
-      prv: keys.prv + keys.pub,
+      prv: keys.prv,
     };
   }
 
@@ -140,16 +159,6 @@ export class Near extends BaseCoin {
 
     return Buffer.from(nearKeypair.signMessage(message));
   }
-
-
-  /**
-   * Flag indicating if this coin supports TSS wallets.
-   * @returns {boolean} True if TSS Wallets can be created for this coin
-   */
-  supportsTss(): boolean {
-    return true;
-  }
-
 
   /**
    * Explain/parse transaction

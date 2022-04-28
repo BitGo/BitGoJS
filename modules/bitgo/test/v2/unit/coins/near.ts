@@ -14,6 +14,21 @@ describe('NEAR:', function () {
     basecoin = bitgo.coin('tnear');
   });
 
+  it('should retun the right info', function () {
+    const near = bitgo.coin('near');
+    const tnear = bitgo.coin('tnear');
+
+    near.getChain().should.equal('near');
+    near.getFamily().should.equal('near');
+    near.getFullName().should.equal('Near');
+    near.getBaseFactor().should.equal(1e+24);
+
+    tnear.getChain().should.equal('tnear');
+    tnear.getFamily().should.equal('near');
+    tnear.getFullName().should.equal('Testnet Near');
+    tnear.getBaseFactor().should.equal(1e+24);
+  });
+
   describe('Sign Message', () => {
     it('should be performed', async () => {
       const keyPair = new accountLib.Near.KeyPair();
