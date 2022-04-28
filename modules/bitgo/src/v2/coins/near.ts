@@ -9,11 +9,12 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
 import * as base58 from 'bs58';
-import { coins, BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -41,6 +42,8 @@ export interface VerifiedTransactionParameters {
   signer: string;
 }
 
+export type NearTransactionExplanation = TransactionExplanation;
+
 const nearUtils = accountLib.Near.Utils.default;
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 
@@ -64,13 +67,13 @@ export class Near extends BaseCoin {
     return true;
   }
 
-    /**
+  /**
    * Flag indicating if this coin supports TSS wallets.
    * @returns {boolean} True if TSS Wallets can be created for this coin
    */
-     supportsTss(): boolean {
-      return true;
-    }
+  supportsTss(): boolean {
+    return true;
+  }
 
   getChain(): string {
     return this._staticsCoin.name;
@@ -164,10 +167,22 @@ export class Near extends BaseCoin {
    * Explain/parse transaction
    * @param params
    */
-  explainTransaction(
+  async explainTransaction(
     params: ExplainTransactionOptions,
-  ): Promise<any> {
-    throw new MethodNotImplementedError('Near recovery not implemented');
+  ): Promise<NearTransactionExplanation> {
+    const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
+    let rebuiltTransaction: accountLib.BaseCoin.BaseTransaction;
+    const txHex = params.txPrebuild.txHex;
+    const rawTxBase64 = HEX_REGEX.test(txHex) ? Buffer.from(txHex, 'hex').toString('base64') : txHex;
+
+    try {
+      const transactionBuilder = factory.from(rawTxBase64);
+      rebuiltTransaction = await transactionBuilder.build();
+    } catch {
+      throw new Error('Invalid transaction');
+    }
+
+    return rebuiltTransaction.explainTransaction();
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
