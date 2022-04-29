@@ -254,7 +254,6 @@ export enum UnderlyingAsset {
   CDT = 'cdt',
   CEL = 'cel',
   CELR = 'celr',
-  CFX = 'cfx',
   CETH = 'ceth',
   CHFX = 'chfx',
   CHSB = 'chsb',

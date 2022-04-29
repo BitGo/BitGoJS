@@ -288,7 +288,6 @@ export const coins = CoinMap.fromCoins([
   erc20('cdt', 'Blox', 18, '0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af', UnderlyingAsset.CDT),
   erc20('cel', 'Celsius', 4, '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d', UnderlyingAsset.CEL),
   erc20('celr', 'Celer Network', 18, '0x4f9254c83eb525f9fcf346490bbb3ed28a81c667', UnderlyingAsset.CELR),
-  erc20('cfx', 'Changer Token', 18, '0x969faf8ca66b0d53a5196b5d3a0952cd3a88e074', UnderlyingAsset.CFX),
   erc20('ceth', 'Compound Ether', 8, '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', UnderlyingAsset.CETH),
   erc20('chfx', 'eToro Swiss Frank', 18, '0xe435502c85a4e7e79cfab4167af566c27a7a0784', UnderlyingAsset.CHFX),
   erc20('chsb', 'SwissBorg', 8, '0xba9d4199fab4f26efe3551d490e3821486f135ba', UnderlyingAsset.CHSB),
