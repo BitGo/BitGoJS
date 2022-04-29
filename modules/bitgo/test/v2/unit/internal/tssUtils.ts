@@ -14,7 +14,7 @@ import { RequestTracer } from '../../../../src/v2/internal/util';
 
 describe('TSS Utils:', async function () {
   let sandbox: sinon.SinonSandbox;
-  let MPC;
+  let MPC: Eddsa;
   let bgUrl: string;
   let tssUtils: TssUtils;
   let wallet: Wallet;
@@ -89,12 +89,12 @@ describe('TSS Utils:', async function () {
   });
 
   before('initializes mpc', async function() {
-    await Eddsa.initialize();
-    await Ed25519BIP32.initialize();
+    const hdTree = await Ed25519BIP32.initialize();
+    MPC = await Eddsa.initialize(hdTree);
+
   });
 
   before(async function () {
-    MPC = new Eddsa(new Ed25519BIP32());
     bitgoKeyShare = await MPC.keyShare(3, 2, 3);
 
     const bitGoGPGKey = await openpgp.generateKey({

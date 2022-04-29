@@ -64,11 +64,13 @@ export class Ed25519BIP32 {
   static curve: Ed25519Curve = new Ed25519Curve();
   static initialized = false;
 
-  static async initialize(): Promise<void> {
+  static async initialize(): Promise<Ed25519BIP32> {
     if (!Ed25519BIP32.initialized) {
       await Ed25519Curve.initialize();
       Ed25519BIP32.initialized = true;
     }
+
+    return new Ed25519BIP32();
   }
 
   publicDerive(keychain: PublicKeychain, path: string): PublicKeychain {
