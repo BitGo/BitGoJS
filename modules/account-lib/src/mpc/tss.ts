@@ -125,11 +125,13 @@ export default class Eddsa {
   static shamir: Shamir = new Shamir(Eddsa.curve);
   static initialized = false;
 
-  static async initialize(): Promise<void> {
+  static async initialize(hdTree?: HDTree): Promise<Eddsa> {
     if (!Eddsa.initialized) {
       await Ed25519Curve.initialize();
       Eddsa.initialized = true;
     }
+
+    return new Eddsa(hdTree);
   }
 
   hdTree?: HDTree;
@@ -214,11 +216,11 @@ export default class Eddsa {
   }
 
   /**
-   * Derives a child public key from common keychain
+   * Derives a child common keychain from common keychain
    *
    * @param commonKeychain - common keychain as a hex string
    * @param path - bip32 path
-   * @return {string} public key as a hex string
+   * @return {string} derived common keychain as a hex string
    */
   deriveUnhardened(commonKeychain: string, path: string): string {
     if (this.hdTree === undefined) {
@@ -235,7 +237,10 @@ export default class Eddsa {
       path,
     );
 
-    return bigIntToBufferLE(derivedPublicKeychain.pk, 32).toString('hex');
+    const derivedPk = bigIntToBufferLE(derivedPublicKeychain.pk, 32).toString('hex');
+    const derivedChaincode = bigIntToBufferBE(derivedPublicKeychain.chaincode, 32).toString('hex');
+
+    return derivedPk + derivedChaincode;
   }
 
   keyDerive(uShare: UShare, yShares: YShare[], path: string): SubkeyShare {
