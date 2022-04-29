@@ -3,16 +3,40 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { randomBytes } from 'crypto';
 import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
+import * as _ from 'lodash';
+import * as sinon from 'sinon';
 
 describe('NEAR:', function () {
   let bitgo;
   let basecoin;
+  let newTxPrebuild;
+  let newTxParams;
   const factory = accountLib.register('tnear', accountLib.Near.TransactionBuilderFactory);
+
+  const txPrebuild = {
+    txHex: rawTx.transfer.unsigned,
+    txInfo: {},
+  };
+
+  const txParams = {
+    recipients: [
+      {
+        address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+        amount: '1000000000000000000000000',
+      },
+    ],
+  };
 
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tnear');
+    newTxPrebuild = () => {
+      return _.cloneDeep(txPrebuild);
+    };
+    newTxParams = () => {
+      return _.cloneDeep(txParams);
+    };
   });
 
   it('should retun the right info', function () {
@@ -106,39 +130,211 @@ describe('NEAR:', function () {
   });
 
   describe('Verify transaction: ', () => {
-    it('should succeed to verify transaction in base64 encoding', async () => {
-      const txParams = {
-      };
+    const amount = '1000000';
+    const gas = '125000000000000';
 
-      // TO-DO wait for verifyTransaction using explainTranasaction
+    it('should succeed to verify unsigned transaction in base64 encoding', async () => {
+
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify signed transaction in base64 encoding', async () => {
+
       const txPrebuild = {
-        txHex: rawTx.transfer.unsigned,
-        txInfo: {
-
-        },
+        txHex: rawTx.transfer.signed,
+        txInfo: {},
       };
+
+      const txParams = newTxParams();
       const verification = {};
 
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
 
-    it('should succeed to verify transaction in hex encoding', async () => {
+    it('should fail verify transactions when have different recipients', async () => {
+
+      const txPrebuild = newTxPrebuild();
+
       const txParams = {
-      };
-
-      // TO-DO wait for verifyTransaction using explainTranasaction
-      const txPrebuild = {
-        txHex: rawTx.transfer.hexUnsigned,
-        txInfo: {
-
-        },
+        recipients: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '1000000000000000000000000',
+          },
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '2000000000000000000000000',
+          },
+        ],
       };
 
       const verification = {};
 
+      await basecoin.verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail verify transactions when total amount does not match with expected total amount field', async () => {
+
+      const explainedTx = {
+        id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        outputAmount: '90000',
+        changeAmount: '0',
+        changeOutputs: [],
+        outputs: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '1000000000000000000000000',
+          },
+        ],
+        fee: {
+          fee: '',
+        },
+        type: 0,
+      };
+
+      const stub = sinon.stub(accountLib.Near.Transaction.prototype, 'explainTransaction');
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const verification = {};
+      stub.returns(explainedTx);
+
+      await basecoin.verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx total amount does not match with expected total amount field');
+      stub.restore();
+    });
+
+    it('should succeed to verify transaction in hex encoding', async () => {
+
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const verification = {};
+
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
+    });
+
+    it('should convert serialized hex string to base64', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const verification = {};
+      txPrebuild.txHex = Buffer.from(txPrebuild.txHex, 'base64').toString('hex');
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify when input `recipients` is absent', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = newTxPrebuild();
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify when txHex is invalid', async function () {
+      const txParams = newTxParams();
+      txParams.recipients = undefined;
+      const txPrebuild = {};
+      await basecoin.verifyTransaction({ txParams, txPrebuild })
+        .should.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should succeed to verify transactions when recipients has extra data', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.data = 'data';
+
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify activate staking transaction', async function () {
+      const txBuilder = factory.getStakingActivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txPrebuild = {
+        txHex: txToBroadcastFormat,
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: 'lavenderfive.pool.f863973.m0',
+            amount: '1000000',
+          },
+        ],
+      };
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify deactivate staking transaction', async function () {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txPrebuild = {
+        txHex: txToBroadcastFormat,
+      };
+      const txParams = {
+        recipients: [],
+      };
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify withdraw staking transaction', async function () {
+      const txBuilder = factory.getStakingWithdrawBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const txPrebuild = {
+        txHex: txToBroadcastFormat,
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+            amount: '1000000',
+          },
+        ],
+      };
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      validTransaction.should.equal(true);
     });
   });
 
