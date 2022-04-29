@@ -20,11 +20,13 @@ export default Curve;
 export class Ed25519Curve {
   static initialized = false;
 
-  static async initialize(): Promise<void> {
+  static async initialize(): Promise<Ed25519Curve> {
     if (!Ed25519Curve.initialized) {
       await sodium.ready;
       Ed25519Curve.initialized = true;
     }
+
+    return new Ed25519Curve();
   }
 
   scalarRandom(): bigint {

@@ -128,8 +128,7 @@ export class TssUtils extends MpcUtils {
     passphrase: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Missing BitGo key shares');
@@ -189,8 +188,7 @@ export class TssUtils extends MpcUtils {
     bitgoKeychain: Keychain,
     passphrase: string
   ): Promise<Keychain> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Invalid bitgo keyshares');
@@ -291,8 +289,7 @@ export class TssUtils extends MpcUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const m = 2;
     const n = 3;
 
@@ -364,9 +361,8 @@ export class TssUtils extends MpcUtils {
       txRequestId = txRequest.txRequestId;
     }
 
-    await Eddsa.initialize();
-    await Ed25519BIP32.initialize();
-    const MPC = new Eddsa(new Ed25519BIP32());
+    const hdTree = await Ed25519BIP32.initialize();
+    const MPC = await Eddsa.initialize(hdTree);
 
     const userSigningMaterial: UserSigningMaterial = JSON.parse(prv);
     const signingKey = MPC.keyDerive(
@@ -449,8 +445,7 @@ export class TssUtils extends MpcUtils {
   async createUserSignShare(params: { signablePayload: Buffer; pShare: PShare }): Promise<SignShare> {
     const { signablePayload, pShare } = params;
 
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
 
     if (pShare.i !== ShareKeyPosition.USER) {
       throw new Error('Invalid PShare, PShare doesnt belong to the User');
@@ -603,8 +598,8 @@ export class TssUtils extends MpcUtils {
       r: bitgoToUserRShare.share.substring(0, 64),
       R: bitgoToUserRShare.share.substring(64, 128),
     };
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+
+    const MPC = await Eddsa.initialize();
     return MPC.sign(signablePayload, userSignShare.xShare, [RShare], [backupToUserYShare]);
   }
 

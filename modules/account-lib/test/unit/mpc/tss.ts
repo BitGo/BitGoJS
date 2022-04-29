@@ -9,18 +9,20 @@ import * as sol from '@solana/web3.js';
 import { Dot, Sol } from '../../../src';
 
 import Eddsa from '../../../src/mpc/tss';
-import { Ed25519BIP32 } from '../../../src/mpc/hdTree';
+import HDTree, { Ed25519BIP32 } from '../../../src/mpc/hdTree';
 
 import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE } from '../../../src/mpc/util';
 
 describe('TSS EDDSA key generation and signing', function () {
+  let MPC: Eddsa;
+  let hdTree: HDTree;
+
   before('initialize modules', async function () {
-    await Eddsa.initialize();
-    await Ed25519BIP32.initialize();
+    hdTree = await Ed25519BIP32.initialize();
+    MPC = await Eddsa.initialize(hdTree);
   });
 
   it('should generate keys and sign message', function () {
-    const MPC = new Eddsa();
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
     const C = MPC.keyShare(3, 2, 3);
@@ -73,8 +75,6 @@ describe('TSS EDDSA key generation and signing', function () {
 
   it('should verify BIP32 subkey signature', function () {
     const path = 'm/0/1/2';
-    const hdTree = new Ed25519BIP32();
-    const MPC = new Eddsa(hdTree);
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
     const C = MPC.keyShare(3, 2, 3);
@@ -123,9 +123,6 @@ describe('TSS EDDSA key generation and signing', function () {
   });
 
   it('should derive unhardened child keys', function () {
-    const hdTree = new Ed25519BIP32();
-    const MPC = new Eddsa(hdTree);
-
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
     const C = MPC.keyShare(3, 2, 3);
@@ -139,27 +136,26 @@ describe('TSS EDDSA key generation and signing', function () {
       const derive1 = MPC.deriveUnhardened(commonKeychain, path);
       const subkey = MPC.keyDerive(A.uShare, [B.yShares[1], C.yShares[1]], path);
       const derive2 = MPC.deriveUnhardened(commonKeychain, path);
+      const derivedPk = derive1.slice(0, 64);
 
-      subkey.pShare.y.should.equal(derive1);
+      (subkey.pShare.y + subkey.pShare.chaincode).should.equal(derive1);
       derive1.should.equal(derive2, 'derivation should be deterministic');
 
-      const solAddress = bs58.encode(Buffer.from(derive1, 'hex'));
+      const solAddress = bs58.encode(Buffer.from(derivedPk, 'hex'));
       Sol.Utils.isValidPublicKey(solAddress).should.be.true();
 
-      const solPk = new sol.PublicKey(bs58.encode(Buffer.from(derive1, 'hex')));
-      solPk.toBuffer().toString('hex').should.equal(derive1);
+      const solPk = new sol.PublicKey(solAddress);
+      solPk.toBuffer().toString('hex').should.equal(derivedPk);
     }
 
     const rootPath = 'm/0';
-    const rootPublicKey = MPC.deriveUnhardened(commonKeychain, rootPath);
+    const rootKeychain = MPC.deriveUnhardened(commonKeychain, rootPath);
+    const rootPublicKey = Buffer.from(rootKeychain, 'hex').slice(0, 32).toString('hex');
     const solPk = new sol.PublicKey(bs58.encode(Buffer.from(rootPublicKey, 'hex')));
     solPk.toBuffer().toString('hex').should.equal(rootPublicKey);
   });
 
   it('should derive unhardened valid dot child keys', function () {
-    const hdTree = new Ed25519BIP32();
-    const MPC = new Eddsa(hdTree);
-
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
     const C = MPC.keyShare(3, 2, 3);
@@ -172,21 +168,22 @@ describe('TSS EDDSA key generation and signing', function () {
       const path = `m/0/0/${index}`;
       const derive1 = MPC.deriveUnhardened(commonKeychain, path);
       const derive2 = MPC.deriveUnhardened(commonKeychain, path);
+      const derivedPk = Buffer.from(derive1, 'hex').slice(0, 32).toString('hex');
 
       derive1.should.equal(derive2, 'derivation should be deterministic');
 
-      const pubKeyPair = new Dot.KeyPair({ pub: derive1 });
-      pubKeyPair.getKeys().pub.should.equal(derive1);
+      const pubKeyPair = new Dot.KeyPair({ pub: derivedPk });
+      pubKeyPair.getKeys().pub.should.equal(derivedPk);
     }
 
     const rootPath = 'm/';
-    const rootPublicKey = MPC.deriveUnhardened(commonKeychain, rootPath);
+    const rootKeychain = MPC.deriveUnhardened(commonKeychain, rootPath);
+    const rootPublicKey = Buffer.from(rootKeychain, 'hex').slice(0, 32).toString('hex');
     const pubKeyPair = new Dot.KeyPair({ pub: rootPublicKey });
     pubKeyPair.getKeys().pub.should.equal(rootPublicKey);
   });
 
   it('should fail signing without meeting threshold', function () {
-    const MPC = new Eddsa();
     const A = MPC.keyShare(1, 2, 3);
     const B = MPC.keyShare(2, 2, 3);
     const C = MPC.keyShare(3, 2, 3);
@@ -208,7 +205,6 @@ describe('TSS EDDSA key generation and signing', function () {
     it('should generate keys and sign message', function () {
       const seed = randomBytes(64);
 
-      const MPC = new Eddsa();
       const A = MPC.keyShare(1, 2, 3, seed);
       const B = MPC.keyShare(2, 2, 3, seed);
       const C = MPC.keyShare(3, 2, 3, seed);
@@ -267,8 +263,7 @@ describe('TSS EDDSA key generation and signing', function () {
     it('should verify BIP32 subkey signature', function () {
       const seed = randomBytes(64);
       const path = 'm/0/1/2';
-      const hdTree = new Ed25519BIP32();
-      const MPC = new Eddsa(hdTree);
+
       const A = MPC.keyShare(1, 2, 3, seed);
       const B = MPC.keyShare(2, 2, 3, seed);
       const C = MPC.keyShare(3, 2, 3, seed);
@@ -322,8 +317,6 @@ describe('TSS EDDSA key generation and signing', function () {
     });
 
     it('should fail if seed is not length 64', function () {
-      const MPC = new Eddsa();
-
       should.throws(() => MPC.keyShare(1, 2, 3, randomBytes(33)), 'Seed must have length 64');
       should.throws(() => MPC.keyShare(1, 2, 3, randomBytes(66)), 'Seed must have length 64');
     });
