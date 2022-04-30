@@ -268,8 +268,6 @@ describe('TSS EDDSA key generation and signing', function () {
       const B = MPC.keyShare(2, 2, 3, seed);
       const C = MPC.keyShare(3, 2, 3, seed);
 
-      console.log(A);
-
       // Keys should be deterministic when using seed
       MPC.keyShare(1, 2, 3, seed).should.deepEqual(A);
       MPC.keyShare(2, 2, 3, seed).should.deepEqual(B);

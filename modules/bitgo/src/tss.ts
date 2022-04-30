@@ -1,6 +1,7 @@
 import Eddsa, { KeyShare, UShare, YShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 import { readSignedMessage, encryptAndSignText } from './v2/internal/opengpgUtils';
 
+// YShare that has been encrypted and signed via GPG
 export type EncryptedYShare = {
   i: number
   j: number
@@ -9,17 +10,20 @@ export type EncryptedYShare = {
   encryptedPrivateShare: string
 };
 
+// YShare with information needed to decrypt and verify a GPG mesasge
 export type DecryptableYShare = {
   yShare: EncryptedYShare
   recipientPrivateArmor: string
   senderPublicArmor: string
 };
 
+// Final TSS "Keypair"
 export type CombinedKey = {
   commonKeychain: string
   signingMaterial: SigningMaterial
 }
 
+// Private portion of a TSS key, this must be handled like any other private key
 export type SigningMaterial = {
   uShare: UShare;
   bitgoYShare: YShare;
