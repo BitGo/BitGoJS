@@ -72,7 +72,7 @@ export class BlsUtils extends MpcUtils {
 
     const userKeychainParams: any = {
       source: 'user',
-      type: 'blsdkg',
+      keyType: 'blsdkg',
       commonPub: commonPub,
       encryptedPrv: this.bitgo.encrypt({ input: userPrivateKey, password: passphrase }),
       originalPasscodeEncryptionCode: originalPasscodeEncryptionCode,
@@ -132,7 +132,7 @@ export class BlsUtils extends MpcUtils {
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
-      type: 'blsdkg',
+      keyType: 'blsdkg',
       commonPub: commonPub,
       prv: backupPrivateKey,
       encryptedPrv: this.bitgo.encrypt({ input: backupPrivateKey, password: passphrase }),

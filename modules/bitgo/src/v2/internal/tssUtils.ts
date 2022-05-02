@@ -18,7 +18,7 @@ import Eddsa, {
 } from '@bitgo/account-lib/dist/src/mpc/tss';
 
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
-import { Keychain } from '../keychains';
+import { Keychain, KeyType } from '../keychains';
 import { BitGo } from '../../bitgo';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
@@ -151,7 +151,7 @@ export class TssUtils extends MpcUtils {
 
     const userKeychainParams = {
       source: 'user',
-      type: 'tss',
+      keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
       encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
       originalPasscodeEncryptionCode,
@@ -213,7 +213,7 @@ export class TssUtils extends MpcUtils {
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
-      type: 'tss',
+      keyType: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
       encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
