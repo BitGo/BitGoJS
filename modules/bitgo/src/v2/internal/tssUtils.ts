@@ -14,7 +14,6 @@ import Eddsa, {
   YShare,
   RShare,
   GShare,
-  UShare,
   PShare,
 } from '@bitgo/account-lib/dist/src/mpc/tss';
 
@@ -24,6 +23,7 @@ import { BitGo } from '../../bitgo';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
 import { Memo, Wallet } from '..';
+import { SigningMaterial } from '../../tss';
 import { RequestTracer } from '../internal/util';
 import * as bs58 from 'bs58';
 
@@ -74,19 +74,6 @@ export interface SignatureShareRecord {
   from: SignatureShareType;
   to: SignatureShareType;
   share: string;
-}
-
-interface SigningMaterial {
-  uShare: UShare;
-  bitgoYShare: YShare;
-}
-
-interface UserSigningMaterial extends SigningMaterial {
-  backupYShare: YShare;
-}
-
-interface BackupSigningMaterial extends SigningMaterial {
-  userYShare: YShare;
 }
 
 // #endregion
@@ -149,13 +136,14 @@ export class TssUtils extends MpcUtils {
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
 
+    // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
     const commonKeychain = userCombined.pShare.y + userCombined.pShare.chaincode;
     if (commonKeychain !== bitgoKeychain.commonKeychain) {
       throw new Error('Failed to create user keychain - commonKeychains do not match.');
     }
 
-    const userSigningMaterial: UserSigningMaterial = {
+    const userSigningMaterial: SigningMaterial = {
       uShare: userKeyShare.uShare,
       bitgoYShare: bitgoToUser,
       backupYShare: backupKeyShare.yShares[1],
@@ -209,13 +197,14 @@ export class TssUtils extends MpcUtils {
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
 
+    // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);
     const commonKeychain = backupCombined.pShare.y + backupCombined.pShare.chaincode;
     if (commonKeychain !== bitgoKeychain.commonKeychain) {
       throw new Error('Failed to create backup keychain - commonKeychains do not match.');
     }
 
-    const backupSigningMaterial: BackupSigningMaterial = {
+    const backupSigningMaterial: SigningMaterial = {
       uShare: backupKeyShare.uShare,
       bitgoYShare: bitgoToBackup,
       userYShare: userKeyShare.yShares[2],
@@ -244,6 +233,7 @@ export class TssUtils extends MpcUtils {
     backupKeyShare: KeyShare,
     enterprise?: string
   ): Promise<Keychain> {
+    // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),
       Buffer.from(userKeyShare.uShare.chaincode, 'hex'),
@@ -364,7 +354,11 @@ export class TssUtils extends MpcUtils {
     const hdTree = await Ed25519BIP32.initialize();
     const MPC = await Eddsa.initialize(hdTree);
 
-    const userSigningMaterial: UserSigningMaterial = JSON.parse(prv);
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
