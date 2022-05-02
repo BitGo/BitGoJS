@@ -1,0 +1,64 @@
+import { BitGo } from 'bitgo';
+
+// authentication & config
+const env = 'test'; // test or prod
+const accessToken = ''; // your API access token
+const walletPassphrase = ''; // wallet passphrase
+const otp = ''; // create an OTP, 000000 for test environment
+const tokenName = ''; //some avaxc token, like 'tavaxc:link'
+
+// transaction
+const walletId = ''; // sender wallet ID
+const baseUnitQuantity = ''; // base unit amount, for example 1000000000000000000 if sending 1 WETH
+const recipientAddress = ''; // recipient address
+
+// Types
+type eip1559Type = {
+  maxPriorityFeePerGas: string;
+  maxFeePerGas: string;
+};
+
+// Params
+
+// Fees: You can use eip1559. If you dont send any, use default type.
+const eip1559 = {
+  maxPriorityFeePerGas: '', // string.
+  maxFeePerGas: '', // string.
+};
+
+async function sendTokenTx(walletId: string, tokenName: string, baseUnitQuantity: string, recipientAddress: string, eip1559?: eip1559Type) {
+  try{
+    const bitgo = new BitGo({
+      env,
+    });
+    await bitgo.authenticateWithAccessToken({ accessToken });
+    const unlock = await bitgo.unlock({ otp, duration: 3600 });
+    if (!unlock) {
+      console.log('We did not unlock.');
+      throw new Error();
+    }
+    const walletInstance = await bitgo.coin(tokenName).wallets().get({ id: walletId, allTokens: true });
+
+    const res = await walletInstance.prebuildAndSignTransaction({
+      recipients: [
+        {
+          amount: baseUnitQuantity,
+          address: recipientAddress,
+        },
+      ],
+      eip1559,
+      walletPassphrase,
+    });
+
+    const walletInstance2 = await bitgo.coin('tavaxc').wallets().get({ id: walletId, allTokens: true });
+    let submitResponse;
+    if ("halfSigned" in res) {
+      submitResponse = await walletInstance2.submitTransaction(res.halfSigned);
+    }
+    console.dir(submitResponse, { depth: 6 });
+  }catch (e) {
+    console.log(e);
+  }
+}
+
+sendTokenTx(walletId,tokenName,baseUnitQuantity,recipientAddress, eip1559).catch((e) => console.error(e));
