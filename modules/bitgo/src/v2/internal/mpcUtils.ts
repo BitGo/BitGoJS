@@ -5,7 +5,7 @@
 import { SerializedKeyPair, readPrivateKey, decrypt, readMessage } from 'openpgp';
 import { BitGo } from '../../bitgo';
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
-import { Keychain } from '../keychains';
+import { Keychain, KeyType } from '../keychains';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 
 export interface MpcKeyShare {
@@ -43,7 +43,7 @@ export abstract class MpcUtils {
     userGpgKey: SerializedKeyPair<string>,
     userKeyShare: MpcKeyShare,
     backupKeyShare: MpcKeyShare,
-    keyType: string,
+    keyType: KeyType,
     enterprise?: string
   ): Promise<Keychain> {
     const bitgoKey = await getBitgoGpgPubKey(this.bitgo);
@@ -51,7 +51,7 @@ export abstract class MpcUtils {
     const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 
     const createBitGoMPCParams = {
-      type: keyType,
+      keyType,
       source: 'bitgo',
       keyShares: [
         {

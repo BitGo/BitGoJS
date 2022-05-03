@@ -252,7 +252,7 @@ describe('BLS Utils:', async function () {
     };
 
     nock(bgUrl)
-      .post(`/api/v2/${params.coin}/key`, _.matches({ type: 'blsdkg', source: 'bitgo' }))
+      .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'blsdkg', source: 'bitgo' }))
       .reply(200, bitgoKeychain);
 
     return bitgoKeychain;
@@ -267,7 +267,7 @@ describe('BLS Utils:', async function () {
     };
 
     nock('https://bitgo.fakeurl')
-      .post(`/api/v2/${params.coin}/key`, _.matches({ type: 'blsdkg', source: 'user' }))
+      .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'blsdkg', source: 'user' }))
       .reply(200, userKeychain);
 
     return userKeychain;
@@ -282,7 +282,7 @@ describe('BLS Utils:', async function () {
     };
 
     nock('https://bitgo.fakeurl')
-      .post(`/api/v2/${params.coin}/key`, _.matches({ type: 'blsdkg', source: 'backup' }))
+      .post(`/api/v2/${params.coin}/key`, _.matches({ keyType: 'blsdkg', source: 'backup' }))
       .reply(200, backupKeychain);
 
     return backupKeychain;

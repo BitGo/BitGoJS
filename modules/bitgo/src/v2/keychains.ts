@@ -9,6 +9,9 @@ import { TssUtils } from './internal/tssUtils';
 import { BlsUtils } from './internal/blsUtils';
 
 const { validateParams } = common;
+
+export type KeyType = 'tss' | 'independent' | 'blsdkg';
+
 export interface Keychain {
   id: string;
   pub: string;
@@ -60,6 +63,7 @@ interface AddKeychainOptions {
   commonKeychain?: string;
   encryptedPrv?: string;
   type?: string;
+  keyType?: KeyType;
   source?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
@@ -86,6 +90,7 @@ export interface CreateBackupOptions {
   disableKRSEmail?: boolean;
   krsSpecific?: any;
   type?: string;
+  keyType?: KeyType;
   reqId?: RequestTracer;
   commonPub?: string;
   commonKeychain?: string;
@@ -97,6 +102,7 @@ interface CreateBitGoOptions {
   source?: 'bitgo';
   enterprise?: string;
   reqId?: RequestTracer;
+  keyType?: KeyType;
 }
 
 interface CreateMpcOptions {
@@ -276,7 +282,7 @@ export class Keychains {
    */
   async add(params: AddKeychainOptions = {}): Promise<Keychain> {
     params = params || {};
-    validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed']);
+    validateParams(params, [], ['pub', 'encryptedPrv', 'keyType', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed']);
 
     if (!_.isUndefined(params.disableKRSEmail)) {
       if (!_.isBoolean(params.disableKRSEmail)) {
@@ -294,6 +300,7 @@ export class Keychains {
         commonKeychain: params.commonKeychain,
         encryptedPrv: params.encryptedPrv,
         type: params.type,
+        keyType: params.keyType,
         source: params.source,
         provider: params.provider,
         originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
