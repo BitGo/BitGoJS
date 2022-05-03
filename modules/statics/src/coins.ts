@@ -260,6 +260,7 @@ export const coins = CoinMap.fromCoins([
   erc20('bnl', 'BitNational', 18, '0xa717d0f45652fb430fd84d3d1b6b02e4510102ea', UnderlyingAsset.BNL),
   erc20('bnt', 'Bancor', 18, '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c', UnderlyingAsset.BNT),
   erc20('bnty', 'Bounty0x', 18, '0xd2d6158683aee4cc838067727209a0aaf4359de3', UnderlyingAsset.BNTY),
+  erc20('boba', 'Boba Token', 18, '0x42bbfa2e77757c645eeaad1655e0911a7553efbc', UnderlyingAsset.BOBA),
   erc20('box', 'ContentBox', 18, '0x63f584fa56e60e4d0fe8802b27c7e6e3b33e007f', UnderlyingAsset.BOX),
   erc20('bond', 'BarnBridge', 18, '0x0391d2021f89dc339f60fff84546ea23e337750f', UnderlyingAsset.BOND),
   erc20('blocks', 'BLOCKS ', 18, '0x8a6d4c8735371ebaf8874fbd518b56edd66024eb', UnderlyingAsset.BLOCKS),
@@ -525,6 +526,7 @@ export const coins = CoinMap.fromCoins([
   erc20('nzdx', 'eToro New Zealand Dollar', 18, '0x6871799a4866bb9068b36b7a9bb93475ac77ac5d', UnderlyingAsset.NZDX),
   erc20('ocean', 'Ocean Token', 18, '0x7afebbb46fdb47ed17b22ed075cde2447694fb9e', UnderlyingAsset.OCEAN),
   erc20('oceanv2', 'Ocean Token V2', 18, '0x967da4048cd07ab37855c090aaf366e4ce1b9f48', UnderlyingAsset.OCEANV2),
+  erc20('okb', 'OKB', 18, '0x75231f58b43240c9718dd58b4967c5114342a86c', UnderlyingAsset.OKB),
   erc20('ogn', 'Origin Token', 18, '0x8207c1ffc5b6804f6024322ccf34f29c3541ae26', UnderlyingAsset.OGN),
   erc20('om', 'Om Token', 18, '0x2baecdf43734f22fd5c152db08e3c27233f0c7d2', UnderlyingAsset.OM),
   erc20('omg', 'OmiseGO Token', 18, '0xd26114cd6ee289accf82350c8d8487fedb8a0c07', UnderlyingAsset.OMG),
@@ -577,6 +579,7 @@ export const coins = CoinMap.fromCoins([
     '0x95aa5d2dbd3c16ee3fdea82d5c6ec3e38ce3314f',
     UnderlyingAsset.PXP
   ),
+  erc20('pyr', 'Pyr Token', 18, '0x9534ad65fb398e27ac8f4251dae1780b989d136e', UnderlyingAsset.PYR),
   erc20('qash', 'QASH', 6, '0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6', UnderlyingAsset.QASH),
   erc20('qcad', 'QCAD', 2, '0x4a16baf414b8e637ed12019fad5dd705735db2e0', UnderlyingAsset.QCAD),
   erc20('quick', 'QuickSwap', 18, '0x6c28aef8977c9b773996d0e8376d2ee379446f2f', UnderlyingAsset.QUICK),
