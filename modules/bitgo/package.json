@@ -104,7 +104,6 @@
     "karma-jasmine": "^4.0.0",
     "karma-mocha": "^2.0.1",
     "karma-typescript": "^5.0.3",
-    "lint-staged": "^8.1.4",
     "minimist": "^1.2.5",
     "nock": "=9.0.28",
     "nyc": "^15.0.0",
