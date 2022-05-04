@@ -1,0 +1,23 @@
+name: Create rel/rc pull request
+on:
+  push:
+    branches:
+      - master
+jobs:
+  relRcPromotion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: rel/rc
+      - name: Merge master to rel/rc
+        run: |
+          git fetch origin master:master
+          git reset --hard master
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: Merge master to rel/rc
+          body: |
+            chore: merge master to rel/rc
+          branch: master-to-rel/rc
