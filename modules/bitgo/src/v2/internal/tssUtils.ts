@@ -14,16 +14,16 @@ import Eddsa, {
   YShare,
   RShare,
   GShare,
-  UShare,
   PShare,
 } from '@bitgo/account-lib/dist/src/mpc/tss';
 
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
-import { Keychain } from '../keychains';
+import { Keychain, KeyType } from '../keychains';
 import { BitGo } from '../../bitgo';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
 import { Memo, Wallet } from '..';
+import { SigningMaterial } from '../../tss';
 import { RequestTracer } from '../internal/util';
 import * as bs58 from 'bs58';
 
@@ -61,6 +61,7 @@ export interface TxRequest {
     derivationPath: string;
   }[];
   signatureShares?: SignatureShareRecord[];
+  apiVersion?: string;
 }
 
 export enum SignatureShareType {
@@ -73,19 +74,6 @@ export interface SignatureShareRecord {
   from: SignatureShareType;
   to: SignatureShareType;
   share: string;
-}
-
-interface SigningMaterial {
-  uShare: UShare;
-  bitgoYShare: YShare;
-}
-
-interface UserSigningMaterial extends SigningMaterial {
-  backupYShare: YShare;
-}
-
-interface BackupSigningMaterial extends SigningMaterial {
-  userYShare: YShare;
 }
 
 // #endregion
@@ -127,8 +115,7 @@ export class TssUtils extends MpcUtils {
     passphrase: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Missing BitGo key shares');
@@ -149,13 +136,14 @@ export class TssUtils extends MpcUtils {
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
 
+    // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
     const commonKeychain = userCombined.pShare.y + userCombined.pShare.chaincode;
     if (commonKeychain !== bitgoKeychain.commonKeychain) {
       throw new Error('Failed to create user keychain - commonKeychains do not match.');
     }
 
-    const userSigningMaterial: UserSigningMaterial = {
+    const userSigningMaterial: SigningMaterial = {
       uShare: userKeyShare.uShare,
       bitgoYShare: bitgoToUser,
       backupYShare: backupKeyShare.yShares[1],
@@ -163,7 +151,7 @@ export class TssUtils extends MpcUtils {
 
     const userKeychainParams = {
       source: 'user',
-      type: 'tss',
+      keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
       encryptedPrv: this.bitgo.encrypt({ input: JSON.stringify(userSigningMaterial), password: passphrase }),
       originalPasscodeEncryptionCode,
@@ -188,8 +176,7 @@ export class TssUtils extends MpcUtils {
     bitgoKeychain: Keychain,
     passphrase: string
   ): Promise<Keychain> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const bitgoKeyShares = bitgoKeychain.keyShares;
     if (!bitgoKeyShares) {
       throw new Error('Invalid bitgo keyshares');
@@ -210,13 +197,14 @@ export class TssUtils extends MpcUtils {
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
 
+    // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);
     const commonKeychain = backupCombined.pShare.y + backupCombined.pShare.chaincode;
     if (commonKeychain !== bitgoKeychain.commonKeychain) {
       throw new Error('Failed to create backup keychain - commonKeychains do not match.');
     }
 
-    const backupSigningMaterial: BackupSigningMaterial = {
+    const backupSigningMaterial: SigningMaterial = {
       uShare: backupKeyShare.uShare,
       bitgoYShare: bitgoToBackup,
       userYShare: userKeyShare.yShares[2],
@@ -225,7 +213,7 @@ export class TssUtils extends MpcUtils {
 
     return await this.baseCoin.keychains().createBackup({
       source: 'backup',
-      type: 'tss',
+      keyType: 'tss',
       commonKeychain: bitgoKeychain.commonKeychain,
       prv: prv,
       encryptedPrv: this.bitgo.encrypt({ input: prv, password: passphrase }),
@@ -245,6 +233,7 @@ export class TssUtils extends MpcUtils {
     backupKeyShare: KeyShare,
     enterprise?: string
   ): Promise<Keychain> {
+    // TODO(BG-47170): use tss.encryptYShare helper when signatures are supported
     const userToBitgoPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.uShare.y, 'hex'),
       Buffer.from(userKeyShare.uShare.chaincode, 'hex'),
@@ -290,8 +279,7 @@ export class TssUtils extends MpcUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
     const m = 2;
     const n = 3;
 
@@ -363,11 +351,14 @@ export class TssUtils extends MpcUtils {
       txRequestId = txRequest.txRequestId;
     }
 
-    await Eddsa.initialize();
-    await Ed25519BIP32.initialize();
-    const MPC = new Eddsa(new Ed25519BIP32());
+    const hdTree = await Ed25519BIP32.initialize();
+    const MPC = await Eddsa.initialize(hdTree);
 
-    const userSigningMaterial: UserSigningMaterial = JSON.parse(prv);
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
@@ -407,9 +398,10 @@ export class TssUtils extends MpcUtils {
    * Builds a tx request from params and verify it
    *
    * @param {PrebuildTransactionWithIntentOptions} params - parameters to build the tx
+   * @param apiVersion
    * @returns {Promise<TxRequest>} - a built tx request
    */
-  async prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions): Promise<TxRequest> {
+  async prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion = 'lite'): Promise<TxRequest> {
     const chain = this.baseCoin.getChain();
     const intentRecipients = params.recipients.map((recipient) => ({
       address: { address: recipient.address },
@@ -426,6 +418,7 @@ export class TssUtils extends MpcUtils {
         token: params.tokenName,
         nonce: params.nonce,
       },
+      apiVersion: apiVersion,
     };
 
     const unsignedTx = (await this.bitgo
@@ -446,8 +439,7 @@ export class TssUtils extends MpcUtils {
   async createUserSignShare(params: { signablePayload: Buffer; pShare: PShare }): Promise<SignShare> {
     const { signablePayload, pShare } = params;
 
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+    const MPC = await Eddsa.initialize();
 
     if (pShare.i !== ShareKeyPosition.USER) {
       throw new Error('Invalid PShare, PShare doesnt belong to the User');
@@ -461,6 +453,7 @@ export class TssUtils extends MpcUtils {
    *
    * @param {String} txRequestId - the txRequest Id
    * @param {SignatureShareRecord} signatureShare - a Signature Share
+   * @param apiVersion
    * @returns {Promise<SignatureShareRecord>} - a Signature Share
    */
   async sendSignatureShare(params: {
@@ -599,8 +592,8 @@ export class TssUtils extends MpcUtils {
       r: bitgoToUserRShare.share.substring(0, 64),
       R: bitgoToUserRShare.share.substring(64, 128),
     };
-    await Eddsa.initialize();
-    const MPC = new Eddsa();
+
+    const MPC = await Eddsa.initialize();
     return MPC.sign(signablePayload, userSignShare.xShare, [RShare], [backupToUserYShare]);
   }
 

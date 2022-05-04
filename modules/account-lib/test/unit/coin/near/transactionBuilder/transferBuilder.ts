@@ -65,12 +65,13 @@ describe('Near Transfer Builder', () => {
   });
 
   describe('add TSS signature', function () {
+    let MPC: Eddsa;
+
     before('initialize mpc module', async () => {
-      await Eddsa.initialize();
+      MPC = await Eddsa.initialize();
     });
     it('should add TSS signature', async () => {
       const factory = register('tnear', TransactionBuilderFactory);
-      const MPC = new Eddsa();
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);
       const C = MPC.keyShare(3, 2, 3);

@@ -456,16 +456,6 @@ describe('EOS:', function () {
         .should.be.rejectedWith('unpacked packed_trx and unpacked txHex are not equal');
     });
 
-    it('should throw if the transaction headers are inconsistent', async function () {
-      const txPrebuild = newTxPrebuild();
-      const txParams = newTxParams();
-      txParams.txPrebuild = txPrebuild;
-      txParams.txPrebuild.headers.ref_block_prefix = 5;
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
-        .should.be.rejectedWith('the transaction headers are inconsistent');
-    });
-
     it('should throw if the expected amount is different than actual amount', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();

@@ -2,16 +2,32 @@ import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { randomBytes } from 'crypto';
-import { rawTx, accounts } from '../../fixtures/coins/near';
+import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
 
 describe('NEAR:', function () {
   let bitgo;
   let basecoin;
+  const factory = accountLib.register('tnear', accountLib.Near.TransactionBuilderFactory);
 
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tnear');
+  });
+
+  it('should retun the right info', function () {
+    const near = bitgo.coin('near');
+    const tnear = bitgo.coin('tnear');
+
+    near.getChain().should.equal('near');
+    near.getFamily().should.equal('near');
+    near.getFullName().should.equal('Near');
+    near.getBaseFactor().should.equal(1e+24);
+
+    tnear.getChain().should.equal('tnear');
+    tnear.getFamily().should.equal('near');
+    tnear.getFullName().should.equal('Testnet Near');
+    tnear.getBaseFactor().should.equal(1e+24);
   });
 
   describe('Sign Message', () => {
@@ -123,6 +139,223 @@ describe('NEAR:', function () {
 
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
+    });
+  });
+
+  describe('Explain Transactions:', () => {
+    const amount = '1000000';
+    const gas = '125000000000000';
+
+    it('should explain an unsigned transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: rawTx.transfer.signed,
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
+        type: 0,
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '1000000000000000000000000',
+        outputs: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '1000000000000000000000000',
+          },
+        ],
+        fee: {
+          fee: '',
+        },
+      });
+    });
+
+    it('should explain a signed transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: rawTx.transfer.signed,
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
+        type: 0,
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '1000000000000000000000000',
+        outputs: [
+          {
+            address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+            amount: '1000000000000000000000000',
+          },
+        ],
+        fee: {
+          fee: '',
+        },
+      });
+    });
+
+    it('should explain activate staking transaction', async function () {
+      const amount = '1000000';
+      const gas = '125000000000000';
+      const txBuilder = factory.getStakingActivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        id: 'GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je',
+        type: 13,
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '1000000',
+        outputs: [
+          {
+            address: 'lavenderfive.pool.f863973.m0',
+            amount: '1000000',
+          },
+        ],
+        fee: {
+          fee: '',
+        },
+      });
+    });
+
+    it('should explain deactivate staking transaction', async function () {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        id: 'CDxPRP3DgHN8gYmRDagk5TRuX7fsCRYHcuqoNULyQPUW',
+        type: 17,
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [],
+        fee: {
+          fee: '',
+        },
+      });
+    });
+
+    it('should explain withdraw staking transaction', async function () {
+      const txBuilder = factory.getStakingWithdrawBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const explainedTransaction = await basecoin.explainTransaction({
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+        ],
+        id: '52ZX8MUwmYc6WQ67riUBpmntkcSxxT5aKkJYt5CtCZub',
+        type: 15,
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '1000000',
+        outputs: [
+          {
+            address: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+            amount: '1000000',
+          },
+        ],
+        fee: {
+          fee: '',
+        },
+      });
+    });
+
+    it('should fail to explain transaction with missing params', async function () {
+      try {
+        await basecoin.explainTransaction({
+          txPrebuild: {},
+        });
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
+    });
+
+    it('should fail to explain transaction with wrong params', async function () {
+      try {
+        await basecoin.explainTransaction({
+          txPrebuild: {
+            txHex: 'invalidTxHex',
+          },
+        });
+      } catch (error) {
+        should.equal(error.message, 'Invalid transaction');
+      }
     });
   });
 });

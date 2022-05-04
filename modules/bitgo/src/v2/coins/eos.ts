@@ -1075,29 +1075,6 @@ export class Eos extends BaseCoin {
       throw new Error('unpacked packed_trx and unpacked txHex are not equal');
     }
 
-    // check the headers
-    const eosTransactionHeaderFields = ['expiration', 'ref_block_num', 'ref_block_prefix'];
-    const txJsonFromHexHeaders = _.pick(txJsonFromHex, eosTransactionHeaderFields);
-    const txJsonFromPackedTrxHeaders = _.pick(txJsonFromPackedTrx, eosTransactionHeaderFields);
-
-    // dates are rounded to the nearest second in packed_trx and txHex
-    _.map([txJsonFromPackedTrxHeaders, txJsonFromHexHeaders, txPrebuild.headers], (headers) => {
-      const date = moment(headers.expiration as string);
-
-      headers.expiration = date
-        .seconds(date.seconds() + Math.round(date.milliseconds() / 1000))
-        .milliseconds(0)
-        .toISOString();
-      return headers;
-    });
-
-    if (
-      !_.isEqual(txJsonFromPackedTrxHeaders, txJsonFromHexHeaders) ||
-      !_.isEqual(txJsonFromHexHeaders, txPrebuild.headers)
-    ) {
-      throw new Error('the transaction headers are inconsistent');
-    }
-
     if (txParams.recipients.length > 1) {
       throw new Error('only 0 or 1 recipients are supported');
     }

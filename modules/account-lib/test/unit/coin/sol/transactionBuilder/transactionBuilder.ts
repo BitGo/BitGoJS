@@ -335,6 +335,8 @@ describe('Sol Transaction Builder', async () => {
   });
 
   describe('add signature', () => {
+    let MPC: Eddsa;
+
     it('should add signature to transaction', async () => {
       const transferBuilder = factory
         .getTransferBuilder()
@@ -372,12 +374,11 @@ describe('Sol Transaction Builder', async () => {
     });
 
     before('initialize mpc module', async () => {
-      await Eddsa.initialize();
-      await Ed25519BIP32.initialize();
+      const hdTree = await Ed25519BIP32.initialize();
+      MPC = await Eddsa.initialize(hdTree);
     });
 
     it('should add TSS signature', async () => {
-      const MPC = new Eddsa();
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);
       const C = MPC.keyShare(3, 2, 3);
@@ -489,7 +490,6 @@ describe('Sol Transaction Builder', async () => {
     });
 
     it('should add TSS HD signature', async () => {
-      const MPC = new Eddsa(new Ed25519BIP32());
       const A = MPC.keyShare(1, 2, 3);
       const B = MPC.keyShare(2, 2, 3);
       const C = MPC.keyShare(3, 2, 3);

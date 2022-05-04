@@ -27,6 +27,7 @@ export const Environments = _.cloneDeep(common.Environments);
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
 export { EnvironmentName, V1Network } from '@bitgo/sdk-core';
 export * from './v2';
+export * as tss from './tss';
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or

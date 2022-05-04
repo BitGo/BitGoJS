@@ -1,30 +1,18 @@
 const sodium = require('libsodium-wrappers-sumo');
 import { randomBytes } from 'crypto';
-import { bigIntFromBufferLE, bigIntToBufferLE } from './util';
+import { bigIntFromBufferLE, bigIntToBufferLE } from '../util';
+import BaseCurve from './baseCurve';
 
-interface Curve {
-  scalarRandom(): bigint;
-  scalarReduce(s: bigint): bigint;
-  scalarNegate(s: bigint): bigint;
-  scalarInvert(s: bigint): bigint;
-  scalarAdd(x: bigint, y: bigint): bigint;
-  scalarSub(x: bigint, y: bigint): bigint;
-  scalarMult(x: bigint, y: bigint): bigint;
-  basePointMult(n: bigint): bigint;
-  pointAdd(p: bigint, q: bigint): bigint;
-  verify(y: bigint, signedMessage: Buffer): Buffer;
-}
-
-export default Curve;
-
-export class Ed25519Curve {
+export class Ed25519Curve implements BaseCurve {
   static initialized = false;
 
-  static async initialize(): Promise<void> {
+  static async initialize(): Promise<Ed25519Curve> {
     if (!Ed25519Curve.initialized) {
       await sodium.ready;
       Ed25519Curve.initialized = true;
     }
+
+    return new Ed25519Curve();
   }
 
   scalarRandom(): bigint {
