@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.19.0-rc.33",
+  "version": "2.20.0-rc.0",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -21,7 +21,7 @@
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
-    "build-ts": "tsc --build --incremental --verbose .",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
@@ -40,7 +40,7 @@
     "@bitgo/blake2b": "^3.0.2",
     "@bitgo/bls": "^0.1.0",
     "@bitgo/bls-dkg": "^1.0.2-rc.1",
-    "@bitgo/statics": "^6.17.0-rc.24",
+    "@bitgo/statics": "^6.18.0-rc.0",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
