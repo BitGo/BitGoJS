@@ -54,6 +54,7 @@ describe('V2 Keychains', function () {
     const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === KeyCurve.Secp256k1
       && n.kind === CoinKind.CRYPTO
       && n.asset !== UnderlyingAsset.USD
+      && n.asset !== UnderlyingAsset.AVAXP
       && coinFamilyValues.includes(n.name));
 
     const expectedXpub = 'xpub661MyMwAqRbcGpZf8mxNWhSPdWaLGvQzzage6vq2oQFzq8toVzmkjygYZ3HcZw6eCzAfn9ZdyGjKoKkcpKwackdgznVbiunpq7rkxDu7quS';
