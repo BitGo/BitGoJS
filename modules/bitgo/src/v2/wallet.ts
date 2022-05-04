@@ -445,9 +445,11 @@ export interface WalletData {
   balance: number;
   confirmedBalance: number;
   spendableBalance: number;
+  trsBalance: number;
   balanceString: string;
   confirmedBalanceString: string;
   spendableBalanceString: string;
+  trsBalanceString: string;
   coin: string;
   label: string;
   keys: string[];
@@ -661,6 +663,15 @@ export class Wallet {
    */
   spendableBalanceString(): string {
     return this._wallet.spendableBalanceString;
+  }
+
+  /**
+   * Get a string representation of the TRS balance of this wallet
+   *
+   * This is useful when balances have the potential to overflow standard javascript numbers
+   */
+  trsBalanceString(): string {
+    return this._wallet.trsBalanceString;
   }
 
   /**
