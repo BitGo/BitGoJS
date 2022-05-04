@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.17.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.17.0...@bitgo/statics@6.17.0-rc.24) (2022-05-04)
+
+
+### Features
+
+* **statics:** add new tokens for may BOBA, OKB and PYR ([07d9ed2](https://github.com/BitGo/BitGoJS/commit/07d9ed2bbc82cd946cd5dd7c28d7713d16f01d05))
+
+
+
+
+
 # [6.17.0-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.17.0-rc.21...@bitgo/statics@6.17.0-rc.22) (2022-04-19)
 
 
