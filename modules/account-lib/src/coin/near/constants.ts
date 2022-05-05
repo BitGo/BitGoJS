@@ -8,3 +8,5 @@ export const StakingContractMethodNames = {
   Unstake: 'unstake',
   Withdraw: 'withdraw',
 } as const;
+
+export const HEX_REGEX = /^[0-9a-fA-F]+$/;
