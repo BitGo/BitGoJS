@@ -332,7 +332,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DAI,
     undefined,
     undefined,
-    'SAI'),
+    'SAI'
+  ),
   erc20('dao', 'DAO Maker', 18, '0x0f51bb10119727a7e5ea3538074fb341f56b09ad', UnderlyingAsset.DAO),
   erc20('data', 'Streamr DATAcoin', 18, '0x0cf0ee63788a0849fe5297f3407f701e122cc023', UnderlyingAsset.DATA),
   erc20('datav2', 'Streamr Data', 18, '0x8f693ca8d21b157107184d29d398a8d082b38b76', UnderlyingAsset.DATAV2),
@@ -780,7 +781,8 @@ export const coins = CoinMap.fromCoins([
       undefined,
       undefined,
       undefined,
-      'SAI'),
+      'SAI'
+  ),
   ofcerc20('ofcdydx', 'dYdX', 18, UnderlyingAsset.DYDX),
   ofcerc20('ofcgrt', 'The Graph', 18, UnderlyingAsset.GRT),
   ofcerc20('ofclink', 'ChainLink', 18, UnderlyingAsset.LINK),
