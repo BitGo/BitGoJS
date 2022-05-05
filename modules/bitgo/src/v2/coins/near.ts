@@ -45,7 +45,6 @@ export interface VerifiedTransactionParameters {
 export type NearTransactionExplanation = TransactionExplanation;
 
 const nearUtils = accountLib.Near.Utils.default;
-const HEX_REGEX = /^[0-9a-fA-F]+$/;
 
 export class Near extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -172,11 +171,10 @@ export class Near extends BaseCoin {
   ): Promise<NearTransactionExplanation> {
     const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
     let rebuiltTransaction: accountLib.BaseCoin.BaseTransaction;
-    const txHex = params.txPrebuild.txHex;
-    const rawTxBase64 = HEX_REGEX.test(txHex) ? Buffer.from(txHex, 'hex').toString('base64') : txHex;
+    const txRaw = params.txPrebuild.txHex;
 
     try {
-      const transactionBuilder = factory.from(rawTxBase64);
+      const transactionBuilder = factory.from(txRaw);
       rebuiltTransaction = await transactionBuilder.build();
     } catch {
       throw new Error('Invalid transaction');
@@ -273,11 +271,7 @@ export class Near extends BaseCoin {
       throw new Error('missing required tx prebuild property txHex');
     }
 
-    let rawTxBase64 = rawTx;
-    if (HEX_REGEX.test(rawTx)) {
-      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
-    }
-    transaction.fromRawTransaction(rawTxBase64);
+    transaction.fromRawTransaction(rawTx);
 
     // TO-DO: new explainTransaction to be implemented in account-lib
 

@@ -32,13 +32,25 @@ describe('Near Transaction', () => {
   });
 
   describe('from raw transaction', () => {
-    it('build a transfer from raw', async () => {
+    it('build a signed transfer from raw hex', async () => {
+      tx.fromRawTransaction(NearResources.rawTx.transfer.signedHex);
+      const json = tx.toJson();
+      should.equal(json.signerId, NearResources.accounts.account1.address);
+    });
+
+    it('build a unsigned transfer from raw hex', async () => {
+      tx.fromRawTransaction(NearResources.rawTx.transfer.unsignedHex);
+      const json = tx.toJson();
+      should.equal(json.signerId, NearResources.accounts.account1.address);
+    });
+
+    it('build a signed transfer from raw base64', async () => {
       tx.fromRawTransaction(NearResources.rawTx.transfer.signed);
       const json = tx.toJson();
       should.equal(json.signerId, NearResources.accounts.account1.address);
     });
 
-    it('build a unsigned transfer from raw', async () => {
+    it('build a unsigned transfer from raw base64', async () => {
       tx.fromRawTransaction(NearResources.rawTx.transfer.unsigned);
       const json = tx.toJson();
       should.equal(json.signerId, NearResources.accounts.account1.address);
