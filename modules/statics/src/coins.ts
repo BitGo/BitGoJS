@@ -774,14 +774,14 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofccrv', 'Curve DAO Token', 18, UnderlyingAsset.CRV),
   ofcerc20('ofccvx', 'Convex Finance', 18, UnderlyingAsset.CVX),
   ofcerc20(
-      'ofcdai',
-      'Dai',
-      18,
-      UnderlyingAsset.DAI,
-      undefined,
-      undefined,
-      undefined,
-      'SAI'
+    'ofcdai',
+    'Dai',
+    18,
+    UnderlyingAsset.DAI,
+    undefined,
+    undefined,
+    undefined,
+    'SAI'
   ),
   ofcerc20('ofcdydx', 'dYdX', 18, UnderlyingAsset.DYDX),
   ofcerc20('ofcgrt', 'The Graph', 18, UnderlyingAsset.GRT),
