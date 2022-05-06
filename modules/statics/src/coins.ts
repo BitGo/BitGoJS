@@ -19,10 +19,8 @@ import {
   algoToken,
   solToken,
   tsolToken,
-  tfiatToken,
   terc721,
   erc721,
-  fiatToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -1361,6 +1359,4 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
-  tfiatToken('tfiat:USD', 'FIAT US Dollar', UnderlyingAsset.USD, 2),
-  fiatToken('fiat:USD', 'FIAT US Dollar', UnderlyingAsset.USD, 2),
 ]);
