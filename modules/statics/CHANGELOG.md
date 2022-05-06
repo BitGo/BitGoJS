@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.0...@bitgo/statics@6.18.0-rc.1) (2022-05-06)
+
+
+### Features
+
+* **statics:** create statics for avaxp ([34776cd](https://github.com/BitGo/BitGoJS/commit/34776cd649f424a05b33481b4a582ea4cf844325))
+
+
+
+
+
 # [6.17.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.17.0...@bitgo/statics@6.17.0-rc.24) (2022-05-04)
 
 
