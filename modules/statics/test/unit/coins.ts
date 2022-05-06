@@ -28,7 +28,7 @@ coins.forEach((coin, coinName) => {
       coin.name.should.eql(coinName);
     });
 
-    if (!coin.isToken) {
+    if (!coin.isToken && coin.family !== CoinFamily.FIAT) {
       it(`has expected network type`, function () {
         coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
       });

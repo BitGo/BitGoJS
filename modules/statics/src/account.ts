@@ -76,6 +76,12 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
 }
 
+type FiatCoinName = `fiat${string}` | `tfiat${string}`;
+export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
+  name: FiatCoinName;
+  kind: CoinKind;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -281,6 +287,29 @@ export class AvaxERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
+ * Fiat currencies, such as USD, EUR, or YEN.
+ */
+export class FiatCoin extends BaseCoin {
+  public static readonly DEFAULT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
+
+  public readonly network: BaseNetwork;
+
+  constructor(options: FiatCoinConstructorOptions) {
+    super(options);
+
+    this.network = options.network;
+  }
+
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.ACCOUNT_MODEL]);
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.UNSPENT_MODEL]);
+  }
+}
+
+/**
  * Factory function for account coin instances.
  *
  * @param name unique identifier of the coin
@@ -288,11 +317,11 @@ export class AvaxERC20Token extends ContractAddressDefinedToken {
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve? The elliptic curve for this chain/token
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
- * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function account(
   name: string,
@@ -1130,5 +1159,50 @@ export function tavaxErc20(
     suffix,
     network,
     primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for fiat coin instances.
+ *
+ * @param name unique identifier of the coin, should start with 'fiat' or 'tfiat'
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `FiatCoin`
+ * @param primaryKeyCurve? The elliptic curve for this chain/token
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this coin is a token of another coin
+ * @param kind? Differentiates coins which represent fiat assets from those which represent crypto assets
+ */
+export function fiat(
+  name: FiatCoinName,
+  fullName: string,
+  network: BaseNetwork,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = FiatCoin.DEFAULT_FEATURES,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  isToken = false,
+  kind: CoinKind = CoinKind.FIAT
+) {
+  return Object.freeze(
+    new FiatCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      primaryKeyCurve,
+      kind,
+    })
   );
 }

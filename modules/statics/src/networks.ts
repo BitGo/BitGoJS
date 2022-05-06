@@ -510,13 +510,13 @@ class SUSDTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
-class FiatTestnet extends Testnet implements AccountNetwork {
+class FiatTestnet extends Testnet implements BaseNetwork {
   name = 'FiatTestnet';
   family = CoinFamily.FIAT;
   explorerUrl = undefined;
 }
 
-class Fiat extends Mainnet implements AccountNetwork {
+class Fiat extends Mainnet implements BaseNetwork {
   name = 'Fiat';
   family = CoinFamily.FIAT;
   explorerUrl = undefined;
