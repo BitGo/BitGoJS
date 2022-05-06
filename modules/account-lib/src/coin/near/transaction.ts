@@ -62,7 +62,7 @@ export class Transaction extends BaseTransaction {
       parsedAction = {
         functionCall: {
           methodName: functionCallObject.methodName,
-          args: JSON.parse(functionCallObject.args.toString()),
+          args: JSON.parse(Buffer.from(functionCallObject.args).toString()),
           gas: functionCallObject.gas.toString(),
           deposit: functionCallObject.deposit.toString(),
         },
