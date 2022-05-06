@@ -161,7 +161,7 @@ export class RpcClient {
       case utxolib.networks.litecoin:
         return ['/LitecoinCore:0.17.1/'];
       case utxolib.networks.zcash:
-        return ['/MagicBean:4.5.1-1/'];
+        return ['/MagicBean:4.7.0/'];
       default:
         return [];
     }

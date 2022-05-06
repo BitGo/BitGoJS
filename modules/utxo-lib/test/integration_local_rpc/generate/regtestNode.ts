@@ -48,7 +48,7 @@ function getDockerParams(network: Network): DockerImageParams {
         throw new Error(`envvar ZCASH_PARAMS_DIR not set`);
       }
       return dockerImage(
-        'electriccoinco/zcashd:v4.5.1-1',
+        'electriccoinco/zcashd:v4.7.0',
         undefined, // `zcashd` is implicit
         [
           '-nuparams=5ba81b19:10',
@@ -57,7 +57,7 @@ function getDockerParams(network: Network): DockerImageParams {
           '-nuparams=f5b9230b:40',
           '-nuparams=e9ff75a6:400',
           // https://zips.z.cash/zip-0252
-          '-nuparams=37519621:500',
+          '-nuparams=c2d6d0b4:500',
         ],
         [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
       );
