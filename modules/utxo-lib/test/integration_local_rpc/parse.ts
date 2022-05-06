@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as bip32 from 'bip32';
 
 import { Network, isTestnet, TxOutput, getNetworkList, getNetworkName } from '../../src';
+import { isZcash } from '../../src/networks';
 
 import {
   createTransactionBuilderForNetwork,
@@ -27,7 +28,13 @@ import {
   ScriptType,
   scriptTypes,
 } from './generate/outputScripts.util';
-import { fixtureKeys, getProtocolVersions, readFixture, TransactionFixtureWithInputs } from './generate/fixtures';
+import {
+  fixtureKeys,
+  getProtocolVersions,
+  Protocol,
+  readFixture,
+  TransactionFixtureWithInputs,
+} from './generate/fixtures';
 import { parseTransactionRoundTrip } from '../transaction_util';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';
 import { getDefaultCosigner } from '../testutil';
@@ -35,11 +42,7 @@ import { getDefaultCosigner } from '../testutil';
 const fixtureTxTypes = ['deposit', 'spend'] as const;
 type FixtureTxType = typeof fixtureTxTypes[number];
 
-function runTestParse(
-  protocol: { network: Network; version: number | undefined },
-  txType: FixtureTxType,
-  scriptType: ScriptType
-) {
+function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: ScriptType) {
   if (txType === 'deposit' && !isSupportedDepositType(protocol.network, scriptType)) {
     return;
   }
@@ -268,8 +271,14 @@ describe(`regtest fixtures`, function () {
       return;
     }
 
-    [undefined, ...getProtocolVersions(network)].forEach((version) => {
-      describe(`${getNetworkName(network)} fixtures (version=${version})`, function () {
+    const allVersions = getProtocolVersions(network);
+    it('tests default version', function () {
+      assert.strictEqual(allVersions.filter((v) => v === getDefaultTransactionVersion(network)).length, 1);
+    });
+
+    getProtocolVersions(network).forEach((version) => {
+      const isDefault = version === getDefaultTransactionVersion(network);
+      describe(`${getNetworkName(network)} fixtures (version=${version}, isDefault=${isDefault})`, function () {
         scriptTypes.forEach((scriptType) => {
           fixtureTxTypes.forEach((txType) => {
             runTestParse({ network, version }, txType, scriptType);
