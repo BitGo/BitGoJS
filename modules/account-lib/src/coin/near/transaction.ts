@@ -3,7 +3,7 @@ import { BaseKey, Entry, TransactionRecipient } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionExplanation, TxData, Action } from './iface';
-import { StakingContractMethodNames } from './constants';
+import { HEX_REGEX, StakingContractMethodNames } from './constants';
 import utils from './utils';
 import { KeyPair } from './keyPair';
 import * as nearAPI from 'near-api-js';
@@ -62,7 +62,7 @@ export class Transaction extends BaseTransaction {
       parsedAction = {
         functionCall: {
           methodName: functionCallObject.methodName,
-          args: JSON.parse(functionCallObject.args.toString()),
+          args: JSON.parse(Buffer.from(functionCallObject.args).toString()),
           gas: functionCallObject.gas.toString(),
           deposit: functionCallObject.deposit.toString(),
         },
@@ -92,15 +92,15 @@ export class Transaction extends BaseTransaction {
   /**
    * Sets this transaction payload
    *
-   * @param rawTransaction
+   * @param rawTx
    */
   fromRawTransaction(rawTx: string): void {
-    const rawTransaction = Buffer.from(rawTx, 'base64');
+    const bufferRawTransaction = HEX_REGEX.test(rawTx) ? Buffer.from(rawTx, 'hex') : Buffer.from(rawTx, 'base64');
     try {
       const signedTx = nearAPI.utils.serialize.deserialize(
         nearAPI.transactions.SCHEMA,
         nearAPI.transactions.SignedTransaction,
-        rawTransaction,
+        bufferRawTransaction,
       );
       signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
       this._nearSignedTransaction = signedTx;
@@ -111,7 +111,7 @@ export class Transaction extends BaseTransaction {
         const unsignedTx = nearAPI.utils.serialize.deserialize(
           nearAPI.transactions.SCHEMA,
           nearAPI.transactions.Transaction,
-          rawTransaction,
+          bufferRawTransaction,
         );
         unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
         this._nearTransaction = unsignedTx;

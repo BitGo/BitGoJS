@@ -29,6 +29,7 @@ import { CoinMap } from './map';
 import { Networks } from './networks';
 import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
+import { avaxp } from './avaxp';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -60,6 +61,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH),
   utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC),
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
+  avaxp('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, UnderlyingAsset.AVAXP),
+  avaxp('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, UnderlyingAsset.AVAXP),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, ALGO_FEATURES, KeyCurve.Ed25519),
   account(
     'talgo',

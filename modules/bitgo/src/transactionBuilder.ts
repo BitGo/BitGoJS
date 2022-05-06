@@ -927,6 +927,14 @@ exports.signTransaction = function (params) {
     if (rootExtKey) {
       const { walletSubPath = '/0/0' } = keychain;
       const path = sanitizeLegacyPath(keychain.path + walletSubPath + chainPath);
+      debug(
+        'derived user key path "%s" using keychain path "%s", walletSubPath "%s", keychain walletSubPath "%s" and chainPath "%s"',
+        path,
+        keychain.path,
+        walletSubPath,
+        keychain.walletSubPath,
+        chainPath,
+      );
       privKey = rootExtKey.derivePath(path);
     }
 
@@ -946,13 +954,33 @@ exports.signTransaction = function (params) {
       const sigHash = utxolib.bitgo.getDefaultSigHash(network);
       txb.sign(index, privKey, subscript, sigHash, currentUnspent.value, witnessScript);
     } catch (e) {
+      // try fallback derivation path (see BG-46497)
+      let fallbackSigningSuccessful = false;
+      try {
+        const fallbackPath = sanitizeLegacyPath(keychain.path + chainPath);
+        debug(
+          'derived fallback user key path "%s" using keychain path "%s" and chainPath "%s"',
+          fallbackPath,
+          keychain.path,
+          chainPath,
+        );
+        privKey = rootExtKey.derivePath(fallbackPath);
+        const witnessScript = currentUnspent.witnessScript ? Buffer.from(currentUnspent.witnessScript, 'hex') : undefined;
+        const sigHash = utxolib.bitgo.getDefaultSigHash(network);
+        txb.sign(index, privKey, subscript, sigHash, currentUnspent.value, witnessScript);
+        fallbackSigningSuccessful = true;
+      } catch (fallbackError) {
+        debug('input sign failed for fallback path: %s', fallbackError.message);
+      }
       // we need to know what's causing this
-      e.result = {
-        unspent: currentUnspent,
-      };
-      e.message = `Failed to sign input #${index} - ${e.message} - ${JSON.stringify(e.result, null, 4)} - \n${e.stack}`;
-      debug('input sign failed: %s', e.message);
-      return Bluebird.reject(e);
+      if (!fallbackSigningSuccessful) {
+        e.result = {
+          unspent: currentUnspent,
+        };
+        e.message = `Failed to sign input #${index} - ${e.message} - ${JSON.stringify(e.result, null, 4)} - \n${e.stack}`;
+        debug('input sign failed: %s', e.message);
+        return Bluebird.reject(e);
+      }
     }
   }
 

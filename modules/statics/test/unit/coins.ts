@@ -38,6 +38,10 @@ coins.forEach((coin, coinName) => {
       it('does not support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
       });
+    } else if (coin.family === CoinFamily.AVAXP) {
+      it('does not require custody', () => {
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
+      });
     } else {
       it('does support custody', () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(true);
