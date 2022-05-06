@@ -8,4 +8,4 @@ Many examples for Bitcoin, Bitcoin Cash, Bitcoin Gold, Bitcoin SV, and Litecoin 
 
 ## Bitcoin Gold
 
-* [Create Address](./examples/utxo/create-address-gold.ts)
+* [Create Address](./examples/utxo/create-address-btg.ts)
