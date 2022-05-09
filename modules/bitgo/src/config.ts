@@ -6,7 +6,6 @@ import { CeloTokenConfig } from './v2/coins/celoToken';
 import { EosTokenConfig } from './v2/coins/eosToken';
 import { AlgoTokenConfig } from './v2/coins/algoToken';
 import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
-import { FiatTokenConfig } from './v2/coins/fiatToken';
 import {
   coins,
   Erc20Coin,
@@ -19,7 +18,6 @@ import {
   Networks,
   AlgoCoin,
   AvaxERC20Token,
-  FiatToken,
 } from '@bitgo/statics';
 import { EnvironmentName, Environments } from '@bitgo/sdk-core';
 
@@ -46,9 +44,6 @@ export interface Tokens {
     avaxc: {
       tokens: AvaxcTokenConfig[];
     };
-    fiat: {
-      tokens: FiatTokenConfig[];
-    };
   };
   testnet: {
     eth: {
@@ -71,9 +66,6 @@ export interface Tokens {
     };
     avaxc: {
       tokens: AvaxcTokenConfig[];
-    };
-    fiat: {
-      tokens: FiatTokenConfig[];
     };
   };
 }
@@ -189,19 +181,6 @@ const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
   return acc;
 }, []);
 
-const formattedFiatTokens = coins.reduce((acc: FiatTokenConfig[], coin) => {
-  if (coin instanceof FiatToken) {
-    acc.push({
-      name: coin.fullName,
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'fiat' : 'tfiat',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
-
 const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
   if (coin instanceof AvaxERC20Token) {
     acc.push({
@@ -240,9 +219,6 @@ export const tokens: Tokens = {
     avaxc: {
       tokens: formattedAvaxCTokens.filter(token => token.network === 'Mainnet'),
     },
-    fiat: {
-      tokens: formattedFiatTokens.filter(token => token.network === 'Mainnet'),
-    },
   },
   // network name for test environments
   testnet: {
@@ -266,9 +242,6 @@ export const tokens: Tokens = {
     },
     avaxc: {
       tokens: formattedAvaxCTokens.filter(token => token.network === 'Testnet'),
-    },
-    fiat: {
-      tokens: formattedFiatTokens.filter(token => token.network === 'Testnet'),
     },
   },
 };
