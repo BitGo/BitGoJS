@@ -27,7 +27,7 @@
   "dependencies": {
     "@bitgo/blockapis": "^1.0.1-rc.6",
     "@bitgo/statics": "^6.18.0-rc.1",
-    "@bitgo/utxo-lib": "^2.2.2-rc.6",
+    "@bitgo/utxo-lib": "^2.3.0-rc.0",
     "archy": "^1.0.0",
     "chalk": "4",
     "yargs": "^17.3.1"
