@@ -46,7 +46,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/utxo-lib": "^2.2.1",
+    "@bitgo/utxo-lib": "^2.2.2",
     "@types/superagent": "4.1.15",
     "bip32": "^2.0.6",
     "bitcoinjs-message": "^2.0.0",
