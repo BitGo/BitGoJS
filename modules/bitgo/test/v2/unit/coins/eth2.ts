@@ -44,6 +44,8 @@ describe('Ethereum 2.0', function () {
   });
 
   it('should generate keypair without seed', function () {
+    // FIXME(BG-47812): this test is flaky
+    this.skip();
     const localBaseCoin = bitgo.coin('teth2');
     const keyPair = localBaseCoin.generateKeyPair();
     keyPair.pub.length.should.equal(98);
