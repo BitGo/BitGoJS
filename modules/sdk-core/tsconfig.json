@@ -4,8 +4,14 @@
     "outDir": "./dist",
     "rootDir": "./",
     "esModuleInterop": true,
-    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../statics"
+    }
+  ]
 }

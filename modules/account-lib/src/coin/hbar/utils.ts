@@ -71,26 +71,6 @@ export function isValidPublicKey(key: string): boolean {
 }
 
 /**
- * Returns an hex string of the given buffer
- *
- * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
- * @returns {string} - the hex value
- */
-export function toHex(buffer: Buffer | Uint8Array): string {
-  return hex.encode(buffer, true);
-}
-
-/**
- * Returns a Uint8Array of the given hex string
- *
- * @param {string} str - the hex string to be converted
- * @returns {string} - the Uint8Array value
- */
-export function toUint8Array(str: string): Uint8Array {
-  return hex.decode(str);
-}
-
-/**
  * Checks whether nodeJS.process exist and if a node version is defined to determine if this is an nodeJS environment
  *
  * @returns {boolean} - the validation result
