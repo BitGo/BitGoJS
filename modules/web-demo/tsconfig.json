@@ -12,7 +12,11 @@
     "rootDir": "./",
     "baseUrl": "./",
     "outDir": "./dist",
-    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types",
+      "../../node_modules/@types"
+    ],
     "paths": {
       "@src/*": ["src/*"],
       "@images/*": ["src/images/*"],
@@ -22,7 +26,8 @@
     "removeComments": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es6"
+    "target": "es6",
+    "types": ["node", "cypress", "@testing-library/cypress"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"],

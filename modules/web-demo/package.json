@@ -5,7 +5,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/demo/web"
+    "directory": "modules/web-demo"
   },
   "license": "MIT",
   "author": "BitGo Inc.",
@@ -19,7 +19,9 @@
     "check-fmt": "prettier --check '{src,webpack}/**/*.{tsx,ts,js}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "cypress-ui": "cypress open-ct",
+    "test": "cypress run-ct"
   },
   "dependencies": {
     "@bitgo/sdk-api": "^1.0.0",
@@ -31,12 +33,17 @@
     "styled-components": "^5.3.5"
   },
   "devDependencies": {
+    "@cypress/react": "^5.12.4",
+    "@cypress/webpack-dev-server": "^1.8.4",
+    "@testing-library/cypress": "^8.0.2",
     "@types/react": "17.0.24",
     "@types/react-dom": "^17.0.3",
     "@types/styled-components": "^5.1.25",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^8.1.1",
     "css-loader": "^5.2.4",
+    "cypress": "9.6.1",
+    "eslint-plugin-cypress": "^2.12.1",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
     "husky": "^1.3.1",

@@ -8,7 +8,7 @@ const sdk = new BitGo();
 const BitGoJS = () => {
   return (
     <React.Fragment>
-      <h3>BitGo SDK API</h3>
+      <h3>BitGoJS SDK</h3>
       <br />
       <ReactJson src={sdk} />
     </React.Fragment>
