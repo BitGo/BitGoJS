@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CLValue, CLPublicKey as PublicKey, RuntimeArgs, CLValueBuilder, CLString } from 'casper-js-sdk';
-import { BuildTransactionError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Owner, WalletInitContractArgs } from './ifaces';

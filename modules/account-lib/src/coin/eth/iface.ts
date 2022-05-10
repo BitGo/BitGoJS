@@ -1,4 +1,4 @@
-import { BaseFee } from '../baseCoin/iface';
+import { BaseFee } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 
 export interface EthFee extends BaseFee {

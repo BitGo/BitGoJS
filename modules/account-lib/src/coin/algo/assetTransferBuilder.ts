@@ -1,8 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
-import { BaseAddress } from '../baseCoin/iface';
-import { InvalidTransactionError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
 import { AssetTransferTxnSchema, AssetToggleTxnSchema } from './txnSchema';

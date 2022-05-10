@@ -1,7 +1,14 @@
 import BigNumber from 'bignumber.js';
-import { BaseTransaction, TransactionType } from '../baseCoin';
+import {
+  BaseTransaction,
+  Entry,
+  InvalidTransactionError,
+  ParseTransactionError,
+  SigningError,
+  TransactionRecipient,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { Blockhash, PublicKey, Signer, SystemInstruction, Transaction as SolTransaction } from '@solana/web3.js';
 import {
   DurableNonceParams,
@@ -20,7 +27,6 @@ import { getTransactionType, isValidRawTransaction, requiresAllSignatures } from
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
-import { Entry, TransactionRecipient } from '../baseCoin/iface';
 
 const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export class Transaction extends BaseTransaction {

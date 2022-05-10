@@ -1,8 +1,16 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder, Interface, TransactionType } from '../baseCoin';
-import { BuildTransactionError, SigningError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey, FeeOptions, PublicKey as BasePublicKey } from '../baseCoin/iface';
+import {
+  BaseAddress,
+  BaseKey,
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  FeeOptions,
+  PublicKey as BasePublicKey,
+  Signature,
+  SigningError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { isValidAddress, isValidBlockId, isValidMemo, validateAddress, validateRawTransaction } from './utils';
@@ -15,7 +23,7 @@ import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
-  private _signatures: Interface.Signature[] = [];
+  private _signatures: Signature[] = [];
   private _lamportsPerSignature: number;
 
   protected _sender: string;

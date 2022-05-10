@@ -1,5 +1,4 @@
-import { BaseUtils } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import { BaseUtils, NotImplementedError } from '@bitgo/sdk-core';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */

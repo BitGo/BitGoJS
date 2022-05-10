@@ -1,6 +1,4 @@
-import { BaseTransaction } from '../baseCoin';
-import { BaseKey } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
+import { BaseKey, BaseTransaction, NotImplementedError } from '@bitgo/sdk-core';
 
 export class Transaction extends BaseTransaction {
   /** @inheritdoc */

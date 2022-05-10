@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import { TransactionId, AccountId, PublicKey, PrivateKey } from '@hashgraph/sdk';
-import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { UtilsError } from '../baseCoin/errors';
 import { AddressDetails } from './ifaces';
 import url from 'url';
 import querystring from 'querystring';
+import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
+export { toHex, toUint8Array };
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 

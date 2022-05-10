@@ -3,13 +3,11 @@ import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@su
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
-import { TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { MethodNames, StakeArgs, StakeArgsPayee, StakeArgsPayeeRaw } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { StakeTransactionSchema } from './txnSchema';
-import { BaseAddress } from '../baseCoin/iface';
 
 export class StakingBuilder extends TransactionBuilder {
   protected _amount: string;

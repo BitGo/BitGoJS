@@ -5,14 +5,19 @@ import * as nacl from 'tweetnacl';
 import base32 from 'hi-base32';
 import sha512 from 'js-sha512';
 import _ from 'lodash';
-import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '../../utils/crypto';
-import { BaseUtils } from '../baseCoin';
-import { InvalidKey, InvalidTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { Address, EncodedTx, Seed } from './ifaces';
 import { KeyPair } from './keyPair';
 import { SeedEncoding } from './seedEncoding';
 import * as algoNacl from 'algosdk/dist/cjs/src/nacl/naclWrappers';
 import * as encoding from 'algosdk/dist/cjs/src/encoding/encoding';
+import {
+  BaseUtils,
+  NotImplementedError,
+  InvalidTransactionError,
+  InvalidKey,
+  isValidEd25519PublicKey,
+  isValidEd25519SecretKey,
+} from '@bitgo/sdk-core';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_SEED_LENGTH = 58;

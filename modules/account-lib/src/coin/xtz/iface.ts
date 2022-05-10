@@ -1,4 +1,4 @@
-import { BaseFee, BaseKey } from '../baseCoin/iface';
+import { BaseFee, BaseKey } from '@bitgo/sdk-core';
 
 export interface HashType {
   prefix: Buffer;

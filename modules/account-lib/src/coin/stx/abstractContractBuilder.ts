@@ -10,8 +10,12 @@ import {
   UnsignedContractCallOptions,
   UnsignedMultiSigContractCallOptions,
 } from '@stacks/transactions';
-import { TransactionType } from '../baseCoin';
-import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  InvalidParameterValueError,
+  InvalidTransactionError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 

@@ -1,8 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import algosdk from 'algosdk';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey } from '../baseCoin/iface';
-import { InvalidTransactionError, InvalidKey, SigningError } from '../baseCoin/errors';
+import {
+  BaseTransaction,
+  TransactionType,
+  BaseKey,
+  InvalidTransactionError,
+  InvalidKey,
+  SigningError,
+} from '@bitgo/sdk-core';
 import utils from './utils';
 import { KeyPair } from './keyPair';
 import { TxData } from './ifaces';

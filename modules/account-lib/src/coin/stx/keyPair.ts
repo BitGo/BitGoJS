@@ -2,9 +2,16 @@ import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
 import { ECPair } from 'bitcoinjs-lib';
 import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
-import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
-import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
-import { isValidXprv, isValidXpub } from '../../utils/crypto';
+import {
+  DefaultKeys,
+  isPrivateKey,
+  isPublicKey,
+  isSeed,
+  isValidXprv,
+  isValidXpub,
+  KeyPairOptions,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo/sdk-core';
 import { isValidPrivateKey, isValidPublicKey } from './utils';
 import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 

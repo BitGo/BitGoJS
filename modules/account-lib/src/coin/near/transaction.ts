@@ -1,6 +1,11 @@
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, Entry, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import {
+  BaseKey,
+  BaseTransaction,
+  Entry,
+  InvalidTransactionError,
+  TransactionRecipient,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionExplanation, TxData, Action } from './iface';
 import { HEX_REGEX, StakingContractMethodNames } from './constants';

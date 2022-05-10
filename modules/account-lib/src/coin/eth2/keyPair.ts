@@ -1,6 +1,11 @@
-import { BlsKeyPair } from '../baseCoin/blsKeyPair';
-import { KeyPairOptions, BlsKeys } from '../baseCoin/iface';
-import { isValidBLSPublicKey, isValidBLSPrivateKey, bigIntToHex } from '../../utils/crypto';
+import {
+  bigIntToHex,
+  BlsKeyPair,
+  BlsKeys,
+  isValidBLSPrivateKey,
+  isValidBLSPublicKey,
+  KeyPairOptions,
+} from '@bitgo/sdk-core';
 
 /**
  * Ethereum keys and address management.

@@ -2,12 +2,16 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
+import {
+  BaseKey,
+  BuildTransactionError,
+  InvalidParameterValueError,
+  SigningError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
-import { TransactionType } from '../baseCoin';
 
 export class TransferBuilder extends TransactionBuilder {
   private _txBodyData: proto.CryptoTransferTransactionBody;

@@ -1,6 +1,6 @@
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
-import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
+import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {

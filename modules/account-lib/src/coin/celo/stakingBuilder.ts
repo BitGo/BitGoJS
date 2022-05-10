@@ -1,8 +1,12 @@
 import ethUtil from 'ethereumjs-utils-old';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
-import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
-import { StakingOperationTypes } from '../baseCoin';
+import {
+  BuildTransactionError,
+  InvalidParameterValueError,
+  InvalidTransactionError,
+  StakingOperationTypes,
+} from '@bitgo/sdk-core';
 import { StakingCall } from './stakingCall';
 import {
   getOperationConfig,

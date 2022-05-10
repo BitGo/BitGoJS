@@ -16,8 +16,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
 import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
-import { BuildTransactionError, SigningError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin';
+import { BuildTransactionError, SigningError, TransactionType } from '@bitgo/sdk-core';
 import {
   ActivateMethodId,
   LockMethodId,

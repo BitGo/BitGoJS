@@ -15,7 +15,7 @@ import {
   tupleCV,
   uintCV,
 } from '@stacks/transactions';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import {
   functionArgsToSendParams,

@@ -1,7 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DeployUtil } from 'casper-js-sdk';
-import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
-import { BaseTransactionBuilderFactory, TransactionType } from '../baseCoin';
+import {
+  BaseTransactionBuilderFactory,
+  TransactionType,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '@bitgo/sdk-core';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';

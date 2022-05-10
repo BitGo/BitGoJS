@@ -1,4 +1,4 @@
-import { BuildTransactionError, InvalidParameterValueError } from '../../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { ContractCall } from '../contractCall';
 import { decodeERC1155TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
 import {

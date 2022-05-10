@@ -1,5 +1,5 @@
 import { NetworkType } from '@bitgo/statics';
-import { StakingOperationTypes } from '../baseCoin';
+import { StakingOperationTypes } from '@bitgo/sdk-core';
 import { ContractMethodConfig } from '../eth/iface';
 
 export const LockMethodId = '0xf83d08ba'; // lock()

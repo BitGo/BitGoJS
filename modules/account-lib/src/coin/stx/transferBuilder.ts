@@ -7,8 +7,12 @@ import {
   TokenTransferOptions,
   UnsignedMultiSigTokenTransferOptions,
 } from '@stacks/transactions';
-import { TransactionType } from '../baseCoin';
-import { InvalidParameterValueError, InvalidTransactionError, BuildTransactionError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  InvalidParameterValueError,
+  InvalidTransactionError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAddress, isValidAmount } from './utils';

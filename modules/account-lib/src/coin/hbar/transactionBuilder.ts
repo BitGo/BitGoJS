@@ -1,14 +1,16 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AccountId } from '@hashgraph/sdk';
-import { BaseTransactionBuilder } from '../baseCoin';
 import {
+  BaseAddress,
+  BaseFee,
+  BaseKey,
+  BaseTransactionBuilder,
   BuildTransactionError,
   InvalidParameterValueError,
   ParseTransactionError,
   SigningError,
-} from '../baseCoin/errors';
-import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+} from '@bitgo/sdk-core';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';

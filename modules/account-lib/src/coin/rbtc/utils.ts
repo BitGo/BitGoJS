@@ -2,7 +2,7 @@ import EthereumCommon from '@ethereumjs/common';
 import { NetworkType } from '@bitgo/statics';
 import { Utils, KeyPair } from '../eth';
 import { TxData } from '../eth/iface';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError } from '@bitgo/sdk-core';
 import { testnetCommon, mainnetCommon } from './resources';
 
 /**
