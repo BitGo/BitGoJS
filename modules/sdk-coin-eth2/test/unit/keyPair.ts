@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { randomBytes } from 'crypto';
 import should from 'should';
 import { KeyPair } from '../../src';
 import * as testData from '../resources/eth2';
@@ -26,8 +27,10 @@ describe('Eth2 Key Pair', () => {
       assert.throws(
         () =>
           new KeyPair({
-            secretShares: ['0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002'],
+            secretShares: ['73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002'],
             publicShare: pub,
+            chaincode: randomBytes(32).toString('hex'),
+            seed: randomBytes(32).toString('hex'),
           })
       );
     });
@@ -38,6 +41,8 @@ describe('Eth2 Key Pair', () => {
           new KeyPair({
             secretShares: [prv],
             publicShare: '123',
+            chaincode: randomBytes(32).toString('hex'),
+            seed: randomBytes(32).toString('hex'),
           })
       );
     });
@@ -47,9 +52,20 @@ describe('Eth2 Key Pair', () => {
         threshold: 1,
         participants: 2,
       });
-      should.exists(keyPair.getKeys().secretShares);
-      should.exists(keyPair.getKeys().publicShare);
-      should.equal(keyPair.getKeys().secretShares.length, 2);
+      const keys = keyPair.getKeys();
+      should.exists(keys.seed);
+      should.equal(keys.seed.length, 64);
+      should.exists(keys.chaincode);
+      should.equal(keys.chaincode.length, 64);
+      should.exists(keys.publicShare);
+      should.equal(keys.publicShare.length, 96);
+      KeyPair.isValidPub(keys.publicShare).should.be.true();
+      should.exists(keys.secretShares);
+      should.equal(keys.secretShares.length, 2);
+      keys.secretShares.forEach((secret) => {
+        should.equal(secret.length, 64);
+        KeyPair.isValidPrv(secret).should.be.true();
+      });
     });
 
     it('from invalid dkg options', () => {
@@ -76,7 +92,7 @@ describe('Eth2 Key Pair', () => {
       const prvBuff = Buffer.from(testData.ACCOUNT_1.privateKeyBytes);
       KeyPair.isValidPrv(prvBuff).should.be.true();
 
-      const prvString = '0x' + prvBuff.toString('hex');
+      const prvString = prvBuff.toString('hex');
       KeyPair.isValidPrv(prvString).should.be.true();
     });
 
@@ -84,7 +100,7 @@ describe('Eth2 Key Pair', () => {
       const prvBuff = Buffer.from('73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
       KeyPair.isValidPrv(prvBuff).should.be.false();
 
-      const prvString = '0x' + prvBuff.toString('hex');
+      const prvString = prvBuff.toString('hex');
       KeyPair.isValidPrv(prvString).should.be.false();
     });
   });
@@ -94,7 +110,8 @@ describe('Eth2 Key Pair', () => {
       const keyPair = new KeyPair();
       const pub = keyPair.getKeys().publicShare;
       const aggregatedKey = KeyPair.aggregatePubkeys([pub]);
-      aggregatedKey.length.should.equal(98);
+      aggregatedKey.length.should.equal(96);
+      KeyPair.isValidPub(aggregatedKey).should.be.true();
     });
 
     it('from a set of valid pubkeys', () => {
@@ -104,7 +121,27 @@ describe('Eth2 Key Pair', () => {
       const keyPair2 = new KeyPair();
       const pub2 = keyPair2.getKeys().publicShare;
       const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
-      aggregatedKey.length.should.equal(98);
+      aggregatedKey.length.should.equal(96);
+      KeyPair.isValidPub(aggregatedKey).should.be.true();
+    });
+  });
+
+  describe('should validly perform chaincode aggregation', () => {
+    it('from a single chaincode', () => {
+      const keyPair = new KeyPair();
+      const chaincode = keyPair.getKeys().chaincode;
+      const aggregatedKey = KeyPair.aggregateChaincodes([chaincode]);
+      aggregatedKey.length.should.equal(64);
+    });
+
+    it('from a set of chaincodes', () => {
+      const keyPair1 = new KeyPair();
+      const chaincode1 = keyPair1.getKeys().chaincode;
+
+      const keyPair2 = new KeyPair();
+      const chaincode2 = keyPair2.getKeys().chaincode;
+      const aggregatedKey = KeyPair.aggregateChaincodes([chaincode1, chaincode2]);
+      aggregatedKey.length.should.equal(64);
     });
   });
 
@@ -112,14 +149,14 @@ describe('Eth2 Key Pair', () => {
     it('from a public key', () => {
       assert.throws(
         () => new KeyPair().recordKeysFromPublicKey(pub),
-        (e) => e.message.includes(testData.errorMessageInvalidPublicKey)
+        (e: Error) => e.message.includes(testData.errorMessageInvalidPublicKey)
       );
     });
 
     it('from a private key', () => {
       assert.throws(
         () => new KeyPair().recordKeysFromPrivateKey(prv),
-        (e) => e.message === testData.errorMessageInvalidPrivateKey
+        (e: Error) => e.message === testData.errorMessageInvalidPrivateKey
       );
     });
   });
@@ -131,12 +168,12 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('from a single invalid pubkey buffer', () => {
-      const pub = '0x' + Buffer.from('abc').toString('hex');
+      const pub = Buffer.from('abc').toString('hex');
       assert.throws(() => KeyPair.aggregatePubkeys([pub]));
     });
 
     it('from a set of invalid pubkeys', () => {
-      const pub1 = '0x' + Buffer.from('abc').toString('hex');
+      const pub1 = Buffer.from('abc').toString('hex');
 
       const keyPair2 = new KeyPair();
       const pub2 = keyPair2.getKeys().publicShare;
@@ -144,16 +181,16 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('from a single invalid prvkey string', () => {
-      const prv = BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
-      assert.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv.toString(16)]));
+      const prv = '73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002';
+      assert.throws(() => KeyPair.aggregatePrvkeys([prv]));
     });
 
     it('from a set of invalid prvkeys', () => {
-      const prv1 = BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
+      const prv1 = '73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002';
 
       const keyPair2 = new KeyPair();
       const secretShares2 = keyPair2.getKeys().secretShares;
-      assert.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv1.toString(16), secretShares2[1]]));
+      assert.throws(() => KeyPair.aggregatePrvkeys([prv1, secretShares2[1]]));
     });
   });
 
@@ -295,6 +332,39 @@ describe('Eth2 Key Pair', () => {
 
       (await KeyPair.verifySignature(aggregatedKey, msg, aggregatedSig)).should.be.false();
       (await KeyPair.verifySignature(aggregatedKey, msg, sig1)).should.be.false();
+    });
+
+    it('should accept child key signature', async () => {
+      const msg = Buffer.from('test message');
+      const keyPair1 = new KeyPair();
+      const pub1 = keyPair1.getKeys().publicShare;
+      const chaincode1 = keyPair1.getKeys().chaincode;
+      const seed1 = keyPair1.getKeys().seed;
+
+      const keyPair2 = new KeyPair();
+      const secrets2 = keyPair2.getKeys().secretShares;
+      const pub2 = keyPair2.getKeys().publicShare;
+      const chaincode2 = keyPair2.getKeys().chaincode;
+
+      const keyPair3 = new KeyPair();
+      const secrets3 = keyPair3.getKeys().secretShares;
+      const pub3 = keyPair3.getKeys().publicShare;
+      const chaincode3 = keyPair3.getKeys().chaincode;
+
+      const commonPub = KeyPair.aggregatePubkeys([pub1, pub2, pub3]);
+      const commonChaincode = KeyPair.aggregateChaincodes([chaincode1, chaincode2, chaincode3]);
+      const childKey = KeyPair.keyDerive(seed1, commonPub, commonChaincode, 'm/12381/3600/0/0/0');
+      const secrets1 = childKey.secretShares;
+      const prv1 = KeyPair.aggregatePrvkeys([secrets1[0], secrets2[0], secrets3[0]]);
+      const signKeyPair1 = new KeyPair({ prv: prv1 });
+      const sig1 = await signKeyPair1.sign(msg);
+      const prv3 = KeyPair.aggregatePrvkeys([secrets1[2], secrets2[2], secrets3[2]]);
+      const signKeyPair3 = new KeyPair({ prv: prv3 });
+      const sig3 = await signKeyPair3.sign(msg);
+      const aggregatedSig = KeyPair.aggregateSignatures({ 1: BigInt(sig1), 3: BigInt(sig3) });
+      const derivedCommonPub = KeyPair.aggregatePubkeys([childKey.publicShare, pub2, pub3]);
+
+      (await KeyPair.verifySignature(derivedCommonPub, msg, aggregatedSig)).should.be.true();
     });
   });
 });

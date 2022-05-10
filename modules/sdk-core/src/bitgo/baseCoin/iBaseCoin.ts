@@ -94,6 +94,8 @@ export interface KeyPair {
 
 export interface IBlsKeyPair extends KeyPair {
   secretShares?: string[];
+  chaincode: string;
+  seed?: string;
 }
 
 export interface VerifyAddressOptions {
