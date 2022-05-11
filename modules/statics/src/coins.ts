@@ -59,6 +59,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH),
   utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC),
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
+  utxo('doge', 'Dogecoin', Networks.main.dogecoin, UnderlyingAsset.DOGE),
+  utxo('tdoge', 'Testnet Dogecoin', Networks.test.dogecoin, UnderlyingAsset.DOGE),
   avaxp('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, UnderlyingAsset.AVAXP),
   avaxp('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, UnderlyingAsset.AVAXP),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, ALGO_FEATURES, KeyCurve.Ed25519),
