@@ -26,6 +26,7 @@ import { TokenManagementType } from '../types';
 import * as errors from '../../errors';
 import { InvalidKey } from '@bitgo/account-lib/dist/src/coin/baseCoin/errors';
 import stellar from 'stellar-sdk';
+import { TransactionType } from '@bitgo/sdk-core';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n
@@ -255,7 +256,7 @@ export class Algo extends BaseCoin {
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+    if (tx.type === TransactionType.Send) {
       const outputs: TransactionRecipient[] = [
         {
           address: txJson.to,
@@ -311,7 +312,7 @@ export class Algo extends BaseCoin {
       return explanationResult;
     }
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.WalletInitialization) {
+    if (tx.type === TransactionType.WalletInitialization) {
       const displayOrder = [
         'id',
         'fee',

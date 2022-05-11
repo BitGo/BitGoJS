@@ -16,6 +16,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
+import { TransactionType } from '@bitgo/sdk-core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {
@@ -213,7 +214,7 @@ export class Stx extends BaseCoin {
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+    if (tx.type === TransactionType.Send) {
       const outputs: TransactionRecipient[] = [
         {
           address: txJson.payload.to,
@@ -236,7 +237,7 @@ export class Stx extends BaseCoin {
       };
     }
 
-    if (tx.type === accountLib.BaseCoin.TransactionType.ContractCall) {
+    if (tx.type === TransactionType.ContractCall) {
       const displayOrder = [
         'id',
         'fee',

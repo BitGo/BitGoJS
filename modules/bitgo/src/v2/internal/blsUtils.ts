@@ -5,12 +5,11 @@
 import { randomBytes } from 'crypto';
 import { SerializedKeyPair, generateKey } from 'openpgp';
 
-import { BaseCoin as BaseCoinAccountLib } from '@bitgo/account-lib';
-
 import { BaseCoin, KeychainsTriplet, BlsKeyPair } from '../baseCoin';
 import { Keychain } from '../keychains';
 import { BitGo } from '../../bitgo';
 import { MpcUtils } from './mpcUtils';
+import { BlsKeyPair as BlsKeyPairClass } from '@bitgo/sdk-core';
 
 /**
  * Utility functions for BLS-DKG work flows.
@@ -56,12 +55,12 @@ export class BlsUtils extends MpcUtils {
 
     const bitGoToUserPrivateShare = await this.decryptPrivateShare(bitGoToUserShare.privateShare, userGpgKey);
 
-    const userPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
+    const userPrivateKey = BlsKeyPairClass.aggregatePrvkeys([
       userKeyShare.secretShares[0],
       backupKeyShare.secretShares[0],
       bitGoToUserPrivateShare,
     ]);
-    const commonPub = BaseCoinAccountLib.BlsKeyPair.aggregatePubkeys([
+    const commonPub = BlsKeyPairClass.aggregatePubkeys([
       userKeyShare.pub,
       backupKeyShare.pub,
       bitGoToUserShare.publicShare,
@@ -116,12 +115,12 @@ export class BlsUtils extends MpcUtils {
 
     const bitGoToBackupPrivateShare = await this.decryptPrivateShare(bitGoToBackupShare.privateShare, userGpgKey);
 
-    const backupPrivateKey = BaseCoinAccountLib.BlsKeyPair.aggregatePrvkeys([
+    const backupPrivateKey = BlsKeyPairClass.aggregatePrvkeys([
       userKeyShare.secretShares[1],
       backupKeyShare.secretShares[1],
       bitGoToBackupPrivateShare,
     ]);
-    const commonPub = BaseCoinAccountLib.BlsKeyPair.aggregatePubkeys([
+    const commonPub = BlsKeyPairClass.aggregatePubkeys([
       userKeyShare.pub,
       backupKeyShare.pub,
       bitGoToBackupShare.publicShare,

@@ -22,6 +22,7 @@ import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
 import { KeyIndices } from '..';
+import { TransactionType } from '@bitgo/sdk-core';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -276,7 +277,7 @@ export class Cspr extends BaseCoin {
     const operations: TransactionOperation[] = [];
 
     switch (tx.type) {
-      case accountLib.BaseCoin.TransactionType.Send: {
+      case TransactionType.Send: {
         transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
         const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
         outputs.push({
@@ -286,20 +287,20 @@ export class Cspr extends BaseCoin {
         });
         break;
       }
-      case accountLib.BaseCoin.TransactionType.StakingLock: {
+      case TransactionType.StakingLock: {
         const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
         operations.push({
-          type: accountLib.BaseCoin.TransactionType.StakingLock,
+          type: TransactionType.StakingLock,
           amount,
           coin: this.getChain(),
           validator: validator,
         });
         break;
       }
-      case accountLib.BaseCoin.TransactionType.StakingUnlock: {
+      case TransactionType.StakingUnlock: {
         const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
         operations.push({
-          type: accountLib.BaseCoin.TransactionType.StakingUnlock,
+          type: TransactionType.StakingUnlock,
           amount,
           coin: this.getChain(),
           validator: validator,

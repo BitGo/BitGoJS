@@ -20,6 +20,7 @@ import {
 } from '../baseCoin';
 import * as base58 from 'bs58';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseTransaction } from '@bitgo/sdk-core';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -194,7 +195,7 @@ export class Near extends BaseCoin {
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<NearTransactionExplanation> {
     const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
-    let rebuiltTransaction: accountLib.BaseCoin.BaseTransaction;
+    let rebuiltTransaction: BaseTransaction;
     const txRaw = params.txPrebuild.txHex;
 
     try {
@@ -252,13 +253,13 @@ export class Near extends BaseCoin {
     const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
     const txBuilder = factory.from(params.txPrebuild.txHex);
     txBuilder.sign({ key: params.prv });
-    const transaction: accountLib.BaseCoin.BaseTransaction = await txBuilder.build();
+    const transaction: BaseTransaction = await txBuilder.build();
 
     if (!transaction) {
       throw new Error('Invalid transaction');
     }
 
-    const serializedTx = (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat();
+    const serializedTx = (transaction as BaseTransaction).toBroadcastFormat();
 
     return {
       txHex: serializedTx,

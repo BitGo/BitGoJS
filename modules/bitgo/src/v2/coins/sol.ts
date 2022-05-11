@@ -26,6 +26,7 @@ import { Memo } from '../wallet';
 import * as _ from 'lodash';
 import { MethodNotImplementedError } from '../../errors';
 import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
+import { BaseTransaction } from '@bitgo/sdk-core';
 
 export interface TransactionFee {
   fee: string;
@@ -238,13 +239,13 @@ export class Sol extends BaseCoin {
     const rawTx = params.txPrebuild.txHex || params.txPrebuild.txBase64;
     const txBuilder = factory.from(rawTx);
     txBuilder.sign({ key: params.prv });
-    const transaction: accountLib.BaseCoin.BaseTransaction = await txBuilder.build();
+    const transaction: BaseTransaction = await txBuilder.build();
 
     if (!transaction) {
       throw new Error('Invalid transaction');
     }
 
-    const serializedTx = (transaction as accountLib.BaseCoin.BaseTransaction).toBroadcastFormat();
+    const serializedTx = (transaction as BaseTransaction).toBroadcastFormat();
 
     return {
       txHex: serializedTx,
@@ -312,7 +313,7 @@ export class Sol extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
-    const explainedTransaction = (rebuiltTransaction as accountLib.BaseCoin.BaseTransaction).explainTransaction();
+    const explainedTransaction = (rebuiltTransaction as BaseTransaction).explainTransaction();
 
     return explainedTransaction as SolTransactionExplanation;
   }
