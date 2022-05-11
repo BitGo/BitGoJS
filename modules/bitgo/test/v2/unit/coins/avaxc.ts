@@ -1,11 +1,11 @@
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { AvaxC, TavaxC } from '../../../../src/v2/coins';
-import { getBuilder, AvaxC as AvaxCAccountLib, BaseCoin } from '@bitgo/account-lib';
+import { getBuilder, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import * as secp256k1 from 'secp256k1';
 import * as bip32 from 'bip32';
 import { Wallet } from '../../../../src';
 import * as nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { common, TransactionType } from '@bitgo/sdk-core';
 
 nock.enableNetConnect();
 
@@ -205,7 +205,7 @@ describe('Avalanche C-Chain', function () {
         gasLimit: '7000000',
       });
       builder.counter(1);
-      builder.type(BaseCoin.TransactionType.Send);
+      builder.type(TransactionType.Send);
       builder.contract(account_1.address);
       builder
         .transfer()
@@ -246,7 +246,7 @@ describe('Avalanche C-Chain', function () {
         }
       });
       builder.counter(1);
-      builder.type(BaseCoin.TransactionType.Send);
+      builder.type(TransactionType.Send);
       builder.contract(account_1.address);
       builder
         .transfer()
@@ -289,7 +289,7 @@ describe('Avalanche C-Chain', function () {
         gasLimit: '7000000',
       });
       builder.counter(1);
-      builder.type(BaseCoin.TransactionType.Send);
+      builder.type(TransactionType.Send);
       builder.contract(account_1.address);
       builder
         .transfer()
