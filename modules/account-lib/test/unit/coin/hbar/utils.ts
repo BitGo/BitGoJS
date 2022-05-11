@@ -3,7 +3,7 @@ import should from 'should';
 import * as stellar from 'stellar-sdk';
 import * as Utils from '../../../../src/coin/hbar/utils';
 import * as testData from '../../../resources/hbar/hbar';
-import { isValidEd25519PublicKey } from '../../../../src/utils/crypto';
+import { isValidEd25519PublicKey } from '@bitgo/sdk-core';
 
 describe('HBAR util library', function () {
   describe('address', function () {

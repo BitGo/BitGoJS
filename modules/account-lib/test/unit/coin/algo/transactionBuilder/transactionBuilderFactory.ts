@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { register } from '../../../../../src/index';
 import {
   TransactionBuilderFactory,

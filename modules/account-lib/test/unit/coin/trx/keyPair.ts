@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 
 import { Trx } from '../../../../src';
-import { AddressFormat } from '../../../../src/coin/baseCoin/enum';
+import { AddressFormat } from '@bitgo/sdk-core';
 
 describe('Trx KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(32) };

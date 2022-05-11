@@ -4,7 +4,7 @@ import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
 import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);

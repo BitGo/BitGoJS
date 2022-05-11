@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { KeyPair, Transaction, TransferBuilder } from '../../../../src/coin/dot';
 import { TxData } from '../../../../src/coin/dot/iface';
 import utils from '../../../../src/coin/dot/utils';

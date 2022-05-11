@@ -24,9 +24,8 @@ import {
 import { KeyIndices } from '../keychains';
 import { TokenManagementType } from '../types';
 import * as errors from '../../errors';
-import { InvalidKey } from '@bitgo/account-lib/dist/src/coin/baseCoin/errors';
 import stellar from 'stellar-sdk';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType, InvalidKey } from '@bitgo/sdk-core';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n

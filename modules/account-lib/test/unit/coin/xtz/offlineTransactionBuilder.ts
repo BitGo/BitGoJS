@@ -1,6 +1,6 @@
 import should from 'should';
 
-import { TransactionType } from '../../../../src/coin/baseCoin/';
+import { TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Xtz } from '../../../../src';
 import { KeyPair } from '../../../../src/coin/xtz';
 

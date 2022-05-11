@@ -4,7 +4,7 @@ import { Dot } from '../../../../src';
 import { accounts } from '../../../resources/dot';
 import bs58 from 'bs58';
 import utils from '../../../../src/coin/dot/utils';
-import { AddressFormat } from '../../../../src/coin/baseCoin/enum';
+import { AddressFormat } from '@bitgo/sdk-core';
 
 describe('Dot KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };

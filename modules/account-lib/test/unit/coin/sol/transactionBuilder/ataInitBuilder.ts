@@ -2,7 +2,7 @@ import { register } from '../../../../../src';
 import { TransactionBuilderFactory, KeyPair, Utils, AtaInitializationBuilder } from '../../../../../src/coin/sol';
 import should from 'should';
 import * as testData from '../../../../resources/sol/sol';
-import { BaseTransaction } from '../../../../../src/coin/baseCoin';
+import { BaseTransaction } from '@bitgo/sdk-core';
 
 describe('Sol Associated Token Account Builder', () => {
   function verifyInputOutputAndRawTransaction(tx: BaseTransaction, rawTx: string) {
