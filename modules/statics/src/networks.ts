@@ -254,6 +254,20 @@ class DashTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://testnet-insight.dashevo.org/insight/tx/';
 }
 
+class Dogecoin extends Mainnet implements UtxoNetwork {
+  name = 'Dogecoin';
+  family = CoinFamily.DOGE;
+  utxolibName = 'dogecoin';
+  explorerUrl = 'https://blockchair.com/dogecoin/transaction/';
+}
+
+class DogecoinTestnet extends Testnet implements UtxoNetwork {
+  name = 'DogecoinTestnet';
+  family = CoinFamily.DOGE;
+  utxolibName = 'dogecoinTest';
+  explorerUrl = 'https://blockexplorer.one/dogecoin/testnet/tx/';
+}
+
 class Polkadot extends Mainnet implements DotNetwork {
   name = 'Polkadot';
   family = CoinFamily.DOT;
@@ -605,6 +619,7 @@ export const Networks = {
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
+    dogecoin: Object.freeze(new Dogecoin()),
     dot: Object.freeze(new Polkadot()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
@@ -638,6 +653,7 @@ export const Networks = {
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
+    dogecoin: Object.freeze(new DogecoinTestnet()),
     dot: Object.freeze(new PolkadotTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
