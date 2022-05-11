@@ -174,7 +174,7 @@ describe('CSPR Delegate Builder', () => {
 
     it('a private key', () => {
       const txBuilder = factory.getDelegateBuilder();
-      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Unsupported private key/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
     });
 

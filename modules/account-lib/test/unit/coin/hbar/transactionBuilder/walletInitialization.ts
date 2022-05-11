@@ -180,7 +180,7 @@ describe('HBAR Wallet initialization', () => {
 
     it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid private key length/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.prvKeyWithPrefix }));
     });
 
@@ -195,9 +195,9 @@ describe('HBAR Wallet initialization', () => {
 
     it('a transaction to build', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: wrong number of owners/);
       txBuilder.fee({ fee: '10' });
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing source/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: wrong number of owners/);
       txBuilder.source(testData.VALID_ADDRESS);
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(testData.OWNER1);

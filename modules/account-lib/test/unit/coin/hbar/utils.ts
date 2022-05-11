@@ -133,7 +133,7 @@ describe('HBAR util library', function () {
 
     it('should throw when memoId=null', async function () {
       const addr = '0.0.41098?memoId=';
-      assert.throws(() => Utils.getAddressDetails(addr), new RegExp(`invalid address: '${addr}', memoId is not valid`));
+      assert.throws(() => Utils.getAddressDetails(addr), /invalid address: '0.0.41098\?memoId=', memoId is not valid/);
     });
 
     it('should get memoId and address when no memoId', async function () {

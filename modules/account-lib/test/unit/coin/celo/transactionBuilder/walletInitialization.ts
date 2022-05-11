@@ -106,7 +106,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
       assert.throws(() => builder.from('0x00001000'), /There was error in decoding the hex string/);
-      assert.throws(() => builder.from(''), /There was error in decoding the hex string/);
+      assert.throws(() => builder.from(''), /Raw transaction is empty/);
       assert.throws(() => builder.from('pqrs'), /There was error in parsing the JSON string/);
       assert.throws(() => builder.from(1234), /Transaction is not a hex string or stringified json/);
     });

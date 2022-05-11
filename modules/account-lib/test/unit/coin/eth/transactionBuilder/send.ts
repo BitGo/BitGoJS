@@ -19,8 +19,8 @@ describe('Eth transaction builder send', () => {
       fee: '10',
       gasLimit: '1000',
     });
-    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing chain id/);
-    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing source/);
+    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing contract address/);
+    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing contract address/);
   });
 
   describe('should sign and build', () => {

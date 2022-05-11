@@ -162,17 +162,17 @@ describe('CSPR Wallet initialization', () => {
 
     it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Unsupported private key/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
     });
 
     it('a transaction to build', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing wallet owners/);
       txBuilder.fee(testData.FEE);
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing source/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing wallet owners/);
       txBuilder.source({ address: testData.VALID_ADDRESS });
-      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing wallet owners/);
       txBuilder.owner(new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 1/);
       txBuilder.owner(new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());

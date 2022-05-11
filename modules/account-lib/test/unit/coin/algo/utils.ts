@@ -40,7 +40,7 @@ describe('utils', () => {
     const secretKeyInValid = '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$';
     assert.throws(
       () => Algo.algoUtils.secretKeyToMnemonic(Buffer.from(secretKeyInValid, 'hex')),
-      /InvalidKey: The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f is invalid/,
+      /The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f is invalid/,
     );
   });
 

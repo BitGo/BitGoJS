@@ -52,14 +52,14 @@ describe('NEAR KeyPair', () => {
       const source = {
         pub: '01D63D',
       };
-      assert.throws(() => new Near.KeyPair(source), /address seems to be malformed/);
+      assert.throws(() => new Near.KeyPair(source), /Non-base58 character/);
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      assert.throws(() => new Near.KeyPair(source), /Invalid base32 characters/);
+      assert.throws(() => new Near.KeyPair(source), /Non-base58 character/);
     });
   });
 

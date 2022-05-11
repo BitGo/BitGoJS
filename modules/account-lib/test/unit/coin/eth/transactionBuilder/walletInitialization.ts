@@ -314,7 +314,7 @@ describe('Eth Transaction builder wallet initialization', function () {
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
       assert.throws(() => builder.from('0x00001000'), /There was error in decoding the hex string/);
-      assert.throws(() => builder.from(''), /There was error in decoding the hex string/);
+      assert.throws(() => builder.from(''), /Raw transaction is empty/);
       assert.throws(() => builder.from('pqrs'), /There was error in parsing the JSON string/);
       assert.throws(() => builder.from(1234), /Transaction is not a hex string or stringified json/);
     });
@@ -328,8 +328,8 @@ describe('Eth Transaction builder wallet initialization', function () {
         fee: '10',
         gasLimit: '1000',
       });
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing chain id/);
-      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing source/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
       const source = {
         prv: sourcePrv,
       };

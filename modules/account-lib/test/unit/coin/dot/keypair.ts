@@ -76,7 +76,7 @@ describe('Dot KeyPair', () => {
       const source = {
         pub: '01D63D',
       };
-      assert.throws(() => new Dot.KeyPair(source), /address seems to be malformed/);
+      assert.throws(() => new Dot.KeyPair(source), /Expected a valid key to convert/);
     });
 
     it('should fail to create from an invalid private key', () => {

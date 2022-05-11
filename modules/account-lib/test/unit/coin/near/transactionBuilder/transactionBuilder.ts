@@ -120,7 +120,7 @@ describe('NEAR Transaction Builder', async () => {
     for (const txBuilder of builders) {
       assert.throws(
         () => txBuilder.sender(testData.accounts.account1.publicKey),
-        new RegExp('Invalid or missing address, got: undefined'),
+        new RegExp('Invalid or missing pubKey, got: undefined'),
       );
     }
   });
