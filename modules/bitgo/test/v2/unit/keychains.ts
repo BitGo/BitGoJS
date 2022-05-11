@@ -55,6 +55,7 @@ describe('V2 Keychains', function () {
       && n.kind === CoinKind.CRYPTO
       && n.asset !== UnderlyingAsset.USD
       && n.asset !== UnderlyingAsset.AVAXP
+      && n.asset !== UnderlyingAsset.DOGE
       && coinFamilyValues.includes(n.name));
 
     const expectedXpub = 'xpub661MyMwAqRbcGpZf8mxNWhSPdWaLGvQzzage6vq2oQFzq8toVzmkjygYZ3HcZw6eCzAfn9ZdyGjKoKkcpKwackdgznVbiunpq7rkxDu7quS';
