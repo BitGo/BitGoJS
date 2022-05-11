@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as stellar from 'stellar-sdk';
 import * as Utils from '../../../../src/coin/hbar/utils';
@@ -132,7 +133,7 @@ describe('HBAR util library', function () {
 
     it('should throw when memoId=null', async function () {
       const addr = '0.0.41098?memoId=';
-      should.throws(() => Utils.getAddressDetails(addr), `invalid address: '${addr}', memoId is not valid`);
+      assert.throws(() => Utils.getAddressDetails(addr), new RegExp(`invalid address: '${addr}', memoId is not valid`));
     });
 
     it('should get memoId and address when no memoId', async function () {
@@ -185,9 +186,9 @@ describe('HBAR util library', function () {
 
       const address5 = '0.0.0.0';
       const baseAddress5 = '0.0.41098';
-      should.throws(
+      assert.throws(
         () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
-        `invalid address: ${address5}`,
+        new RegExp(`invalid address: ${address5}`),
       );
     });
   });

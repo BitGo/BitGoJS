@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/cspr';
@@ -116,35 +117,35 @@ describe('Casper Key Pair', () => {
 
     it('should not be able to get keys from prv', () => {
       const keyPair = new KeyPair({ prv: prvKey });
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('should get the keys in extended format from pub', () => {
       const keyPair = new KeyPair({ pub: pubKey });
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
   });
 
   describe('should fail to create a KeyPair', () => {
     it('from an invalid public key', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair({ pub: testData.INVALID_SHORT_KEYPAIR_KEY }),
         (e) => e.message.includes(testData.INVALID_PUBLIC_KEY_ERROR_MESSAGE),
       );
     });
 
     it('from an invalid private key', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair({ prv: testData.INVALID_SHORT_KEYPAIR_KEY }),
         (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );
-      should.throws(
+      assert.throws(
         () => {
           new KeyPair({ prv: testData.INVALID_LONG_KEYPAIR_PRV });
         },
         (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair({ prv: prvKey + pubKey }),
         (e) => e.message === testData.INVALID_PRIVATE_KEY_ERROR_MESSAGE,
       );

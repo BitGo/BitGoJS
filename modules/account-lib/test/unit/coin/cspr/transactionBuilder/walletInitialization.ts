@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr';
@@ -119,10 +120,10 @@ describe('CSPR Wallet initialization', () => {
       txBuilder.source({ address: sourceAddress });
       await txBuilder.build().should.be.rejectedWith(testData.INVALID_NUMBER_OF_OWNERS_TWO_OF_THREE);
 
-      should.throws(() => txBuilder.owner(owner1Address), 'Repeated owner address: ' + owner1Address);
+      assert.throws(() => txBuilder.owner(owner1Address), 'Repeated owner address: ' + owner1Address);
 
       should.doesNotThrow(() => txBuilder.owner(owner3Address));
-      should.throws(() => txBuilder.owner(owner4Address), 'A maximum of 3 owners can be set for a multisig wallet');
+      assert.throws(() => txBuilder.owner(owner4Address), /A maximum of 3 owners can be set for a multisig wallet/);
 
       const newTxBuilder = factory.getWalletInitializationBuilder();
       newTxBuilder.fee(testData.FEE);
@@ -147,35 +148,35 @@ describe('CSPR Wallet initialization', () => {
     it('an address', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       txBuilder.validateAddress({ address: testData.VALID_ADDRESS });
-      should.throws(
+      assert.throws(
         () => txBuilder.validateAddress({ address: testData.INVALID_ADDRESS }),
-        'Invalid address ' + testData.INVALID_ADDRESS,
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS),
       );
     });
 
     it('value should be greater than zero', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.fee({ gasLimit: '-10' }));
+      assert.throws(() => txBuilder.fee({ gasLimit: '-10' }));
       should.doesNotThrow(() => txBuilder.fee({ gasLimit: '10' }));
     });
 
     it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
     });
 
     it('a transaction to build', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing fee');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
       txBuilder.fee(testData.FEE);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing source/);
       txBuilder.source({ address: testData.VALID_ADDRESS });
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 0');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 1');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 1/);
       txBuilder.owner(new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 2');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 2/);
       txBuilder.owner(new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress());
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });

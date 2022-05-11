@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import * as AlgoResources from '../../../resources/algo';
@@ -34,19 +35,19 @@ describe('Algo Transaction', () => {
 
   describe('empty transaction', () => {
     it('should throw empty transaction', () => {
-      should.throws(() => tx.toJson(), 'Empty transaction');
-      should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
+      assert.throws(() => tx.toJson(), /Empty transaction/);
+      assert.throws(() => tx.toBroadcastFormat(), /Empty transaction/);
     });
 
     it('should not sign', () => {
-      should.throws(
+      assert.throws(
         () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
-        'Empty transaction',
+        /Empty transaction/,
       );
       tx.setNumberOfRequiredSigners(2);
-      should.throws(
+      assert.throws(
         () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
-        'Empty transaction',
+        /Empty transaction/,
       );
     });
   });

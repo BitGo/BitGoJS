@@ -1,9 +1,10 @@
+import assert from 'assert';
 import should from 'should';
 import { getBuilder } from '../../src';
 
 describe('Coin factory', () => {
   it('should fail to instantiate an unsupported coin', () => {
-    should.throws(() => getBuilder('fakeUnsupported'));
+    assert.throws(() => getBuilder('fakeUnsupported'));
   });
 
   it('should instantiate TRX builder properly', () => {

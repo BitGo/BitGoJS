@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
@@ -263,7 +264,7 @@ describe('Eth Transaction builder wallet initialization', function () {
         gasLimit: '1000',
       });
       txBuilder.counter(1);
-      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
+      assert.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
 
     it('a signed wallet initialization transaction', () => {
@@ -278,9 +279,9 @@ describe('Eth Transaction builder wallet initialization', function () {
       txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
       txBuilder.owner(new Eth.KeyPair({ prv: sourcePrv }).getAddress());
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      should.throws(
+      assert.throws(
         () => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }),
-        'Cannot sign multiple times a non send-type transaction',
+        new RegExp('Cannot sign multiple times a non send-type transaction'),
       );
     });
   });
@@ -289,22 +290,22 @@ describe('Eth Transaction builder wallet initialization', function () {
     it('an address', async () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.validateAddress(testData.VALID_ADDRESS);
-      should.throws(
+      assert.throws(
         () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
-        'Invalid address ' + testData.INVALID_ADDRESS,
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address),
       );
     });
 
     it('value should be greater than zero', () => {
       const txBuilder: any = getBuilder('eth');
-      should.throws(() => txBuilder.fee({ fee: '-10' }));
+      assert.throws(() => txBuilder.fee({ fee: '-10' }));
       should.doesNotThrow(() => txBuilder.fee({ fee: '10' }));
     });
 
     it('a private key', () => {
       const txBuilder: any = getBuilder('eth');
-      should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
-      should.throws(() => txBuilder.validateKey({ key: testData.PUBLIC_KEY }), 'Invalid key');
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid key/);
+      assert.throws(() => txBuilder.validateKey({ key: testData.PUBLIC_KEY }), /Invalid key/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.PRIVATE_KEY }));
     });
 
@@ -312,34 +313,34 @@ describe('Eth Transaction builder wallet initialization', function () {
       const builder: any = getBuilder('eth');
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
-      should.throws(() => builder.from('0x00001000'), 'There was error in decoding the hex string');
-      should.throws(() => builder.from(''), 'There was error in decoding the hex string');
-      should.throws(() => builder.from('pqrs'), 'There was error in parsing the JSON string');
-      should.throws(() => builder.from(1234), 'Transaction is not a hex string or stringified json');
+      assert.throws(() => builder.from('0x00001000'), /There was error in decoding the hex string/);
+      assert.throws(() => builder.from(''), /There was error in decoding the hex string/);
+      assert.throws(() => builder.from('pqrs'), /There was error in parsing the JSON string/);
+      assert.throws(() => builder.from(1234), /Transaction is not a hex string or stringified json/);
     });
 
     it('a transaction to build', async () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.counter(undefined);
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing fee');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing fee/);
       txBuilder.fee({
         fee: '10',
         gasLimit: '1000',
       });
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing chain id');
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing chain id/);
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing source/);
       const source = {
         prv: sourcePrv,
       };
       const sourceKeyPair = new Eth.KeyPair(source);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing address counter');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
       txBuilder.counter(1);
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 0');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(sourceKeyPair.getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 1');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 1/);
       txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 2');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 2/);
       txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });
@@ -350,9 +351,9 @@ describe('Eth Transaction builder wallet initialization', function () {
       const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.Send);
       const sourceKeyPair = new Eth.KeyPair({ prv: sourcePrv });
-      should.throws(
+      assert.throws(
         () => txBuilder.owner(sourceKeyPair.getAddress()),
-        'Multisig wallet owner can only be set for initialization transactions',
+        new RegExp('Multisig wallet owner can only be set for initialization transactions'),
       );
     });
 
@@ -368,9 +369,9 @@ describe('Eth Transaction builder wallet initialization', function () {
       txBuilder.owner(sourceKeyPair.getAddress());
       txBuilder.owner('0x7325A3F7d4f9E86AE62Cf742426078C3755730d5');
       txBuilder.owner('0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7');
-      should.throws(
+      assert.throws(
         () => txBuilder.owner('0x1A88Ee4Bc80BE080fC91AC472Af2F59260695060'),
-        'A maximum of 3 owners can be set for a multisig wallet',
+        new RegExp('A maximum of 3 owners can be set for a multisig wallet'),
       );
     });
 
@@ -382,7 +383,7 @@ describe('Eth Transaction builder wallet initialization', function () {
         gasLimit: '1000',
       });
       txBuilder.counter(1);
-      should.throws(() => txBuilder.owner('0x7325A3F7d4f9E86AE62C'), 'Invalid address');
+      assert.throws(() => txBuilder.owner('0x7325A3F7d4f9E86AE62C'), /Invalid address/);
     });
   });
 

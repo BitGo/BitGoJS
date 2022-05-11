@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as testData from '../../../resources/sol/sol';
 import { Sol } from '../../../../src';
@@ -63,21 +64,21 @@ describe('Sol KeyPair', function () {
 
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Sol.KeyPair(seed));
+      assert.throws(() => new Sol.KeyPair(seed));
     });
 
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Sol.KeyPair(source));
+      assert.throws(() => new Sol.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
         prv: '82A34E',
       };
-      should.throws(() => new Sol.KeyPair(source));
+      assert.throws(() => new Sol.KeyPair(source));
     });
   });
 
@@ -178,12 +179,12 @@ describe('Sol KeyPair', function () {
 
     it('should not be able to derive without private key', () => {
       const rootKeyPair = new Sol.KeyPair({ pub: testData.accountWithSeed.publicKey });
-      should.throws(() => rootKeyPair.deriveHardened("m/0'/0'/0'/0'"), 'need private key to derive hardened keypair');
+      assert.throws(() => rootKeyPair.deriveHardened("m/0'/0'/0'/0'"), /need private key to derive hardened keypair/);
     });
 
     it('should throw error for non-hardened path', () => {
       const rootKeyPair = new Sol.KeyPair();
-      should.throws(() => rootKeyPair.deriveHardened('m/0/0/0/0'), 'Invalid derivation path');
+      assert.throws(() => rootKeyPair.deriveHardened('m/0/0/0/0'), /Invalid derivation path/);
     });
   });
 });

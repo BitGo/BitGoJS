@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { KeyPair, Transaction } from '../../../../src/coin/xtz';
@@ -93,7 +94,7 @@ describe('Tezos transaction', function () {
 
     it('to get the transaction JSON if it is empty', async () => {
       const tx = new Transaction(coins.get('txtz'));
-      should.throws(() => tx.toJson());
+      assert.throws(() => tx.toJson());
     });
 
     it('to sign if the transaction is empty', async () => {

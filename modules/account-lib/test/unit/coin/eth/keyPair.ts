@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import { Eth } from '../../../../src';
@@ -46,7 +47,7 @@ describe('Eth KeyPair', function () {
       should.not.exist(defaultKeys.prv);
       defaultKeys.pub.should.equal(uncompressedPub);
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a compressed public key', () => {
@@ -54,7 +55,7 @@ describe('Eth KeyPair', function () {
       const defaultKeys = keyPair.getKeys();
       should.not.exist(defaultKeys.prv);
       defaultKeys.pub.should.equal(uncompressedPub);
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a raw private key', () => {
@@ -63,7 +64,7 @@ describe('Eth KeyPair', function () {
       defaultKeys.prv!.should.equal(prv);
       defaultKeys.pub.should.equal(uncompressedPub);
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from an empty value', () => {
@@ -87,15 +88,15 @@ describe('Eth KeyPair', function () {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Eth.KeyPair(source));
+      assert.throws(() => new Eth.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
         prv: '82A34E',
       };
-      should.throws(() => new Eth.KeyPair(source));
-      should.throws(
+      assert.throws(() => new Eth.KeyPair(source));
+      assert.throws(
         () => new KeyPair({ prv: prv + pub }),
         (e) => e.message === invalidPrivateKeyErrorMessage,
       );
@@ -152,19 +153,19 @@ describe('Eth KeyPair', function () {
     it('should not be able to get keys from prv', () => {
       const keyPair = new Eth.KeyPair({ prv });
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('should get the keys in extended format from pub', () => {
       const keyPair = new Eth.KeyPair({ pub });
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('should get the keys in extended format from uncompressed pub', () => {
       const keyPair = new Eth.KeyPair({ pub: uncompressedPub });
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
   });
 });

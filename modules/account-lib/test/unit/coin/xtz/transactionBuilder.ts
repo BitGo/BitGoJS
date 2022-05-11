@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import { TransactionType } from '../../../../src/coin/baseCoin/';
@@ -575,14 +576,14 @@ describe('Tezos Transaction builder', function () {
     it('a transaction with no source account', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
+      assert.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
 
     it('a transaction with a different private key than the source account', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.from(testData.emptyUnsignedSerializedOriginationTransaction);
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.sign({ key: new KeyPair().getKeys().prv }));
+      assert.throws(() => txBuilder.sign({ key: new KeyPair().getKeys().prv }));
     });
 
     it('a transaction with some keys with custom index', async () => {
@@ -590,7 +591,7 @@ describe('Tezos Transaction builder', function () {
       // Multisig keys
       genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
       genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
-      should.throws(
+      assert.throws(
         () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 2 }),
         new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
       );
@@ -601,7 +602,7 @@ describe('Tezos Transaction builder', function () {
       // Multisig keys
       genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 0 });
       genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 1 });
-      should.throws(
+      assert.throws(
         () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv }),
         new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
       );
@@ -609,7 +610,7 @@ describe('Tezos Transaction builder', function () {
 
     it('a transaction with a key with invalid custom index', async () => {
       genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      should.throws(
+      assert.throws(
         () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 3 }),
         new RegExp('Custom index cannot be greater'),
       );
@@ -622,13 +623,13 @@ describe('Tezos Transaction builder', function () {
       txBuilder.branch('BKnfiSVFTjixbhzsTbR1eDmit6yK7UBcgRJPhmgeWcZqiMHRZ6E');
       txBuilder.counter('1');
       txBuilder.source(defaultKeyPair.getAddress());
-      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
+      assert.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
 
     it('an address initialization transaction without public key', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AccountUpdate);
-      should.throws(
+      assert.throws(
         () => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }),
         new RegExp('Cannot sign a public key revelation transaction without public key'),
       );
@@ -640,34 +641,34 @@ describe('Tezos Transaction builder', function () {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.owner(defaultKeyPair.getKeys().pub);
-      should.throws(() => txBuilder.type(TransactionType.Send));
+      assert.throws(() => txBuilder.type(TransactionType.Send));
     });
 
     it('build a send transaction with owners', async () => {
       const txBuilder: any = getBuilder('xtz');
-      should.throws(() => txBuilder.owner(defaultKeyPair.getKeys().pub));
+      assert.throws(() => txBuilder.owner(defaultKeyPair.getKeys().pub));
     });
 
     it('build a transaction with an invalid branch id', async () => {
       const txBuilder: any = getBuilder('xtz');
-      should.throws(() => txBuilder.branch(''));
+      assert.throws(() => txBuilder.branch(''));
     });
 
     it('build a transaction with an invalid value', async () => {
       const txBuilder: any = getBuilder('xtz');
-      should.throws(() => txBuilder.initialBalance('-1'));
+      assert.throws(() => txBuilder.initialBalance('-1'));
     });
 
     it('build a non wallet initialization transaction with initial balance', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.Send);
-      should.throws(() => txBuilder.initialBalance('100'));
+      assert.throws(() => txBuilder.initialBalance('100'));
     });
 
     it('build transfer for non send-type transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.transfer('100'), new RegExp('Transfers can only be set for send transactions'));
+      assert.throws(() => txBuilder.transfer('100'), new RegExp('Transfers can only be set for send transactions'));
     });
 
     it('add more owners than the multisig maximum', async () => {
@@ -676,7 +677,7 @@ describe('Tezos Transaction builder', function () {
       txBuilder.owner('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
       txBuilder.owner('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
       txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
-      should.throws(
+      assert.throws(
         () => txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
         new RegExp('A maximum of 3 owners'),
       );
@@ -686,7 +687,7 @@ describe('Tezos Transaction builder', function () {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
-      should.throws(
+      assert.throws(
         () => txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
         new RegExp('Repeated owner public key'),
       );
@@ -695,13 +696,13 @@ describe('Tezos Transaction builder', function () {
     it('add an invalid owner public key', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.owner('sppk'), new RegExp('Invalid public key'));
+      assert.throws(() => txBuilder.owner('sppk'), new RegExp('Invalid public key'));
     });
 
     it('add an invalid public key to reveal', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AccountUpdate);
-      should.throws(() => txBuilder.publicKeyToReveal('sppk'), new RegExp('Unsupported public key'));
+      assert.throws(() => txBuilder.publicKeyToReveal('sppk'), new RegExp('Unsupported public key'));
     });
 
     it('add the same public key to reveal twice', async () => {
@@ -709,7 +710,7 @@ describe('Tezos Transaction builder', function () {
       txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
       txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub);
-      should.throws(
+      assert.throws(
         () => txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub),
         new RegExp('Public key to reveal already set'),
       );
@@ -719,7 +720,7 @@ describe('Tezos Transaction builder', function () {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
-      should.throws(
+      assert.throws(
         () => txBuilder.publicKeyToReveal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
         new RegExp('Public key does not match the source address'),
       );
@@ -736,7 +737,7 @@ describe('Tezos Transaction builder', function () {
         .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
         .fee('4764');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      should.throws(
+      assert.throws(
         () => txBuilder.type(TransactionType.WalletInitialization),
         new RegExp('Transaction contains transfers and can only be labeled as Send'),
       );

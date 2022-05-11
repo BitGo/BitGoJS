@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { AvaxC, getBuilder, BaseCoin } from '../../../../../src';
 import { TransactionBuilder } from '../../../../../src/coin/avaxc';
@@ -148,7 +149,7 @@ describe('Avax C-Chain Transfer Transaction', function () {
     builder.counter(1);
     builder.contract(testData.TEST_ACCOUNT.ethAddress);
     builder.type(TransactionType.WalletInitialization);
-    should.throws(
+    assert.throws(
       () => builder.transfer(),
       (e) => e.message === 'Transfers can only be set for send transactions',
     );

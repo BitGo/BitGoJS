@@ -1,5 +1,6 @@
+import assert from 'assert';
 import should from 'should';
-import { spy, assert } from 'sinon';
+import { spy, assert as SinonAssert } from 'sinon';
 import { ClaimBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
 import {
@@ -27,22 +28,22 @@ describe('Dot Claim Builder', () => {
   describe('setter validation', () => {
     it('should validate era', () => {
       const spyValidateValue = spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.claimEra('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.claimEra('1000'));
-      assert.calledTwice(spyValidateValue);
+      SinonAssert.calledTwice(spyValidateValue);
     });
 
     it('should validate validatorStash address', () => {
       const spyValidateAddress = spy(builder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => builder.validatorStash({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
       should.doesNotThrow(() => builder.validatorStash({ address: validatorStash.address }));
-      assert.calledTwice(spyValidateAddress);
+      SinonAssert.calledTwice(spyValidateAddress);
     });
   });
 

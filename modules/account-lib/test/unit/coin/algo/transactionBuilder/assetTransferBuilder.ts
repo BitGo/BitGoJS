@@ -1,4 +1,5 @@
 import { coins } from '@bitgo/statics';
+import assert from 'assert';
 import should from 'should';
 import { test } from 'mocha';
 import { AssetTransferBuilder, TransactionBuilderFactory } from '../../../../../src/coin/algo';
@@ -20,8 +21,8 @@ describe('Algo Asset Transfer Transaction Builder', () => {
 
   describe('setter validation', () => {
     it('should validate asset id is not lte 0', () => {
-      should.throws(() => txnBuilder.tokenId(-1));
-      should.throws(() => txnBuilder.tokenId(0));
+      assert.throws(() => txnBuilder.tokenId(-1));
+      assert.throws(() => txnBuilder.tokenId(0));
       should.doesNotThrow(() => txnBuilder.tokenId(1));
     });
   });
@@ -109,27 +110,27 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     it('should not build a token transaction with an invalid sender address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(
+      assert.throws(
         () => tx.sender({ address: wrongAddress }),
-        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
       );
     });
 
     it('should not build a token transaction with an invalid closeRemainderTo address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(
+      assert.throws(
         () => tx.closeRemainderTo({ address: wrongAddress }),
-        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
       );
     });
 
     it('should not build a token transaction with an invalid to address', async function () {
       const wrongAddress = 'RIJVLDYWASZZNGOSQNOK7HN6JNFLMMZ3FFBBFG2NNROM5CE744DAJSPZJ';
       const tx = await txnBuilder.testnet();
-      should.throws(
+      assert.throws(
         () => tx.to({ address: wrongAddress }),
-        "The address '" + wrongAddress + "' is not a well-formed algorand address",
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
       );
     });
 
@@ -281,10 +282,10 @@ describe('Algo Asset Transfer Transaction Builder', () => {
     });
 
     it('should fail to decode other types of transactions', () => {
-      should.throws(() => txnBuilder.from(rawTx.keyReg.unsigned), 'Invalid Transaction Type: keyreg. Expected axfer');
-      should.throws(() => txnBuilder.from(rawTx.keyReg.signed), 'Invalid Transaction Type: keyreg. Expected axfer');
-      should.throws(() => txnBuilder.from(rawTx.transfer.unsigned), 'Invalid Transaction Type: pay. Expected axfer');
-      should.throws(() => txnBuilder.from(rawTx.transfer.signed), 'Invalid Transaction Type: pay. Expected axfer');
+      assert.throws(() => txnBuilder.from(rawTx.keyReg.unsigned), /Invalid Transaction Type: keyreg. Expected axfer/);
+      assert.throws(() => txnBuilder.from(rawTx.keyReg.signed), /Invalid Transaction Type: keyreg. Expected axfer/);
+      assert.throws(() => txnBuilder.from(rawTx.transfer.unsigned), /Invalid Transaction Type: pay. Expected axfer/);
+      assert.throws(() => txnBuilder.from(rawTx.transfer.signed), /Invalid Transaction Type: pay. Expected axfer/);
     });
   });
 

@@ -1,5 +1,6 @@
+import assert from 'assert';
 import should from 'should';
-import { spy, assert } from 'sinon';
+import { spy, assert as SinonAssert } from 'sinon';
 import { UnstakeBuilder } from '../../../../../src/coin/dot';
 import utils from '../../../../../src/coin/dot/utils';
 import {
@@ -26,12 +27,12 @@ describe('Dot Unstake Builder', () => {
   describe('setter validation', () => {
     it('should validate unstake amount', () => {
       const spyValidateValue = spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.amount('1000'));
-      assert.calledTwice(spyValidateValue);
+      SinonAssert.calledTwice(spyValidateValue);
     });
   });
 

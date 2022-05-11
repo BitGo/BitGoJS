@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
@@ -305,27 +306,27 @@ describe('Stx Transfer Builder', () => {
     describe('should fail', () => {
       it('a transfer transaction with an invalid key', () => {
         const builder = initTxBuilder();
-        should.throws(() => builder.sign({ key: 'invalidKey' }), 'Unsupported private key');
+        assert.throws(() => builder.sign({ key: 'invalidKey' }), /Unsupported private key/);
       });
 
       it('a transfer transaction with an invalid destination address', () => {
         const txBuilder = factory.getTransferBuilder();
-        should.throws(() => txBuilder.to('invalidaddress'), 'Invalid address');
+        assert.throws(() => txBuilder.to('invalidaddress'), /Invalid address/);
       });
 
       it('a transfer transaction with an invalid amount: text value', () => {
         const txBuilder = factory.getTransferBuilder();
-        should.throws(() => txBuilder.amount('invalidamount'), 'Invalid amount');
+        assert.throws(() => txBuilder.amount('invalidamount'), /Invalid amount/);
       });
 
       it('a transfer transaction with an invalid amount: negative value', () => {
         const txBuilder = factory.getTransferBuilder();
-        should.throws(() => txBuilder.amount('-5'), 'Invalid amount');
+        assert.throws(() => txBuilder.amount('-5'), /Invalid amount/);
       });
 
       it('a transfer transaction with an invalid memo', async () => {
         const txBuilder = factory.getTransferBuilder();
-        should.throws(() => txBuilder.memo('This is a memo that is too long for a transaction'), 'Memo is too long');
+        assert.throws(() => txBuilder.memo('This is a memo that is too long for a transaction'), /Memo is too long/);
       });
     });
   });

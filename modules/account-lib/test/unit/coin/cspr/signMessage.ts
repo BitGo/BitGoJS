@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import should from 'should';
+import assert from 'assert';
 import { KeyPair } from '../../../../src/coin/cspr/keyPair';
 import { isValidMessageSignature, signMessage } from '../../../../src/coin/cspr/utils';
 import * as testData from '../../../resources/cspr/cspr';
@@ -26,7 +26,7 @@ describe('Sign Message', () => {
   it('should fail with missing private key', async () => {
     const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
-    should.throws(
+    assert.throws(
       () => signMessage(keyPair, messageToSign),
       (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
     );
@@ -35,7 +35,7 @@ describe('Sign Message', () => {
   it('should fail with missing private key using extended key', async () => {
     const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.xPublicKey });
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
-    should.throws(
+    assert.throws(
       () => signMessage(keyPair, messageToSign),
       (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
     );

@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import assert from 'assert';
 import * as should from 'should';
 import * as testData from '../../../../resources/cspr/cspr';
 import { register } from '../../../../../src';
@@ -53,7 +54,7 @@ describe('Casper Transaction Builder', () => {
   describe('should validate', () => {
     it('an empty raw transaction', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.validateRawTransaction('');
         },
@@ -63,7 +64,7 @@ describe('Casper Transaction Builder', () => {
 
     it('an invalid raw transfer transaction', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
@@ -73,7 +74,7 @@ describe('Casper Transaction Builder', () => {
 
     it('an invalid raw wallet init transaction', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
@@ -125,7 +126,7 @@ describe('Casper Transaction Builder', () => {
 
     it('an invalid expiration time', async () => {
       const builder = initWalletBuilder();
-      should.throws(
+      assert.throws(
         () => builder.expiration(testData.MAX_TRANSACTION_EXPIRATION + 1),
         (e) => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
       );

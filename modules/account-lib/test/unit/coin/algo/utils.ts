@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import algosdk from 'algosdk';
 import utils from '../../../../src/coin/algo/utils';
@@ -37,9 +38,9 @@ describe('utils', () => {
 
   it('it should return error if the secret key is invalid', () => {
     const secretKeyInValid = '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$';
-    should.throws(
+    assert.throws(
       () => Algo.algoUtils.secretKeyToMnemonic(Buffer.from(secretKeyInValid, 'hex')),
-      'The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$ is invalid',
+      /InvalidKey: The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f is invalid/,
     );
   });
 
@@ -54,9 +55,9 @@ describe('utils', () => {
   it('it should return error if the mnemonic is invalid', () => {
     const mnemonicInValid =
       'crisp hello solution ten remove object watch enhance future rather biology era myth image swap crash coffee scatter buffalo depart day twist advance about unfair';
-    should.throws(
+    assert.throws(
       () => Algo.algoUtils.seedFromMnemonic(mnemonicInValid),
-      'the mnemonic contains a word that is not in the wordlist',
+      new RegExp('the mnemonic contains a word that is not in the wordlist'),
     );
   });
 
@@ -75,7 +76,7 @@ describe('utils', () => {
     const seedInValid = new Uint8Array(
       Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$', 'hex'),
     );
-    should.throws(() => Algo.algoUtils.keyPairFromSeed(seedInValid), 'seed length must be 32');
+    assert.throws(() => Algo.algoUtils.keyPairFromSeed(seedInValid), /Seed length must be 32/);
   });
 
   it('should generate the same keyPair with which it started', () => {
@@ -112,13 +113,13 @@ describe('utils', () => {
   it('stellarAddressToAlgoAddress should return error if the xlm and algoaddress are invalid', () => {
     const xlmAddress = 'GDV4ZW7UBRSQAHLORJPQF4L6OZJBKU3ZIVS2O6C7WWGSNZOV42JDHPM/';
     const algoAddress = '5PGNX5AMMUAB23UKL4BPC7TWKIKVG6KFMWTXQX5VRUTOLVPGSIZSHUA7H/';
-    should.throws(
+    assert.throws(
       () => Algo.algoUtils.stellarAddressToAlgoAddress(xlmAddress),
-      'Neither an Algorand address nor a stellar pubkey',
+      new RegExp('Neither an Algorand address nor a stellar pubkey'),
     );
-    should.throws(
+    assert.throws(
       () => Algo.algoUtils.stellarAddressToAlgoAddress(algoAddress),
-      'Neither an Algorand address nor a stellar pubkey',
+      new RegExp('Neither an Algorand address nor a stellar pubkey'),
     );
   });
 
@@ -131,8 +132,8 @@ describe('utils', () => {
   it('should returns error when invalid address', () => {
     const invalidAddress1 = '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QT/';
     const invalidAddress2 = '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTEF';
-    should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress1), 'Error: Invalid base32 characters');
-    should.throws(() => Algo.algoUtils.decodeAddress(invalidAddress2), 'Error: address seems to be malformed');
+    assert.throws(() => Algo.algoUtils.decodeAddress(invalidAddress1), /Error: Invalid base32 characters/);
+    assert.throws(() => Algo.algoUtils.decodeAddress(invalidAddress2), /Error: address seems to be malformed/);
   });
 
   it('multisigAddress should return the same string with accountLib and algosdk', () => {
@@ -151,7 +152,7 @@ describe('utils', () => {
     const threshold = 2;
     const addrs = ['X4GMYVKF6VVNKA4Q4AUSRUYXYCGQSY7DZS7QXVJC33VYQTRUKCU7DDFE2U'];
 
-    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: bad multisig threshold');
+    assert.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), /Error: bad multisig threshold/);
   });
 
   it('multisigAddress should fail when  threshold is 3', () => {
@@ -159,7 +160,7 @@ describe('utils', () => {
     const threshold = 3;
     const addrs = ['X4GMYVKF6VVNKA4Q4AUSRUYXYCGQSY7DZS7QXVJC33VYQTRUKCU7DDFE2U'];
 
-    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: bad multisig threshold');
+    assert.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), /Error: bad multisig threshold/);
   });
 
   it('multisigAddress should fail when  version is 2', () => {
@@ -167,7 +168,7 @@ describe('utils', () => {
     const threshold = 1;
     const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QTE'];
 
-    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: invalid multisig version');
+    assert.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), /Error: invalid multisig version/);
   });
 
   it('multisigAddress should fail when  address is not valid', () => {
@@ -175,7 +176,7 @@ describe('utils', () => {
     const threshold = 1;
     const addrs = ['25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5QT-'];
 
-    should.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), 'Error: Invalid base32 characters');
+    assert.throws(() => Algo.algoUtils.multisigAddress(version, threshold, addrs), /Error: Invalid base32 characters/);
   });
 
   it('generateAccount should of create a valid addres and valid secretKey', () => {
@@ -287,7 +288,7 @@ describe('utils', () => {
   it('Should not be able to get a txID from an incomplete multising Tx', () => {
     const rawTxn = invalidTxn.txn;
 
-    should.throws(() => {
+    assert.throws(() => {
       Algo.algoUtils.getMultisigTxID(rawTxn);
     }, 'RangeError: Insufficient data');
   });
@@ -295,7 +296,7 @@ describe('utils', () => {
   it('Should not be able to get a txID from a simple Tx', () => {
     const rawTxn = invalidTxn2.txn;
 
-    should.throws(() => {
+    assert.throws(() => {
       Algo.algoUtils.getMultisigTxID(rawTxn);
     }, 'Error: The object contains empty or 0 values. First empty or 0 value encountered during encoding: msig');
   });

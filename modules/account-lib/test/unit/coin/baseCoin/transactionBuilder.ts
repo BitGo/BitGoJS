@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import assert from 'assert';
 import should from 'should';
 import { TestTransactionBuilder } from '../../../resources/testTransactionBuilder';
 import { TestTransaction } from '../../../resources/testTransaction';
@@ -33,7 +34,7 @@ describe('Transaction builder', () => {
     const validateKey = sinon.spy(txBuilder, 'validateKey');
 
     txBuilder.from(testTx);
-    should.throws(() => txBuilder.sign({ key: 'invalidKey' }));
+    assert.throws(() => txBuilder.sign({ key: 'invalidKey' }));
 
     sandbox.assert.calledOnce(validateKey);
   });

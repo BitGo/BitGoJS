@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins, EthereumNetwork } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/eth';
@@ -19,8 +20,8 @@ describe('ETH Transaction', () => {
   describe('should throw ', () => {
     it('an empty transaction', () => {
       const tx = getTransaction();
-      should.throws(() => tx.toJson());
-      should.throws(() => tx.toBroadcastFormat());
+      assert.throws(() => tx.toJson());
+      assert.throws(() => tx.toBroadcastFormat());
     });
   });
 

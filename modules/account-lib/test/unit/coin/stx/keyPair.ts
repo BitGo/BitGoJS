@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as testData from '../../../resources/stx/stx';
 
@@ -52,21 +53,21 @@ describe('Stx KeyPair', function () {
   describe('should fail to create a KeyPair', function () {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Stx.KeyPair(seed));
+      assert.throws(() => new Stx.KeyPair(seed));
     });
 
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Stx.KeyPair(source));
+      assert.throws(() => new Stx.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
         prv: '82A34E',
       };
-      should.throws(() => new Stx.KeyPair(source));
+      assert.throws(() => new Stx.KeyPair(source));
     });
   });
 
