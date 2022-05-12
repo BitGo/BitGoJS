@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
@@ -95,17 +96,17 @@ describe('Util library should', function () {
   });
 
   it('should fail to verify a signed message if the message is not in hex', () => {
-    should.throws(() => Utils.verifySignature(txt, base58, signedString, true));
+    assert.throws(() => Utils.verifySignature(txt, base58, signedString, true));
   });
 
   it('should fail to verify a signed message if the address is not in base58', () => {
     const hexEncodedString = Buffer.from(txt).toString('hex');
-    should.throws(() => Utils.verifySignature(hexEncodedString, addressHex, signedString, true));
+    assert.throws(() => Utils.verifySignature(hexEncodedString, addressHex, signedString, true));
   });
 
   it('should fail to verify a signed message if the signature is not in hex', () => {
     const hexEncodedString = Buffer.from(txt).toString('hex');
-    should.throws(() => Utils.verifySignature(hexEncodedString, base58, 'abc', true));
+    assert.throws(() => Utils.verifySignature(hexEncodedString, base58, 'abc', true));
   });
 
   it('should return transaction data', () => {

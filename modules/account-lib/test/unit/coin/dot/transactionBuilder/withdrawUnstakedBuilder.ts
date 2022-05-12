@@ -1,5 +1,6 @@
+import assert from 'assert';
 import should from 'should';
-import { assert, spy } from 'sinon';
+import { assert as SinonAssert, spy } from 'sinon';
 import { WithdrawUnstakedBuilder } from '../../../../../src/coin/dot';
 import { buildTestConfig } from './base';
 import {
@@ -27,12 +28,12 @@ describe('Dot WithdrawUnstaked Builder', () => {
   describe('setter validation', () => {
     it('should validate slashing spans', () => {
       const spyValidateValue = spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.slashingSpans(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.slashingSpans(10));
-      assert.calledTwice(spyValidateValue);
+      SinonAssert.calledTwice(spyValidateValue);
     });
   });
 

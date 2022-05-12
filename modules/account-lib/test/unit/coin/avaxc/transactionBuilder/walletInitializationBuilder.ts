@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { AvaxC, getBuilder } from '../../../../../src';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -84,7 +85,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
         gasLimit: '7000000',
       });
       txBuilder.counter(1);
-      should.throws(
+      assert.throws(
         () => txBuilder.owner(testData.OWNER_1.ethAddress),
         (e) => e.message === 'Multisig wallet owner can only be set for initialization transactions',
       );
@@ -98,7 +99,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       });
       txBuilder.counter(1);
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(
+      assert.throws(
         () => txBuilder.sign({ key: testData.OWNER_1.ethKey }),
         (e) => e.message === 'Cannot sign an wallet initialization transaction without owners',
       );

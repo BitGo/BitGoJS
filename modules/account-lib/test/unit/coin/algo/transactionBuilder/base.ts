@@ -1,8 +1,9 @@
 import crypto from 'crypto';
 import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
 import algosdk from 'algosdk';
+import assert from 'assert';
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import sinon, { assert as SinonAssert } from 'sinon';
 import {
   AddressValidationError,
   InsufficientFeeError,
@@ -108,7 +109,7 @@ describe('Algo Transaction Builder', () => {
     it('should validate fee is not lt 1000 microalgos if flat fee is set to true', () => {
       txnBuilder.isFlatFee(true);
 
-      should.throws(
+      assert.throws(
         () => txnBuilder.fee({ fee: '999' }),
         (e: Error) => e.name === InsufficientFeeError.name,
       );
@@ -117,16 +118,16 @@ describe('Algo Transaction Builder', () => {
 
     it('should validate sender address is a valid algo address', () => {
       const spy = sinon.spy(txnBuilder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => txnBuilder.sender({ address: 'asdf' }),
         (e: Error) => e.name === AddressValidationError.name,
       );
       should.doesNotThrow(() => txnBuilder.sender({ address: account1.address }));
-      assert.calledTwice(spy);
+      SinonAssert.calledTwice(spy);
     });
 
     it('should validate number of signers is not less than 0', () => {
-      should.throws(() => txnBuilder.numberOfRequiredSigners(-1), "Number of signers: '-1' cannot be negative");
+      assert.throws(() => txnBuilder.numberOfRequiredSigners(-1), /Number of signers: '-1' cannot be negative/);
 
       for (let i = 0; i < STANDARD_REQUIRED_NUMBER_OF_SIGNERS; i++) {
         should.doesNotThrow(() => txnBuilder.numberOfRequiredSigners(i));
@@ -272,9 +273,9 @@ describe('Algo Transaction Builder', () => {
       txn.setAlgoTransaction(algoTxn);
       txn.setNumberOfRequiredSigners(1);
 
-      should.throws(
+      assert.throws(
         () => txnBuilder.signImplementation({ key: Buffer.from(account1.prvKey).toString('hex') }),
-        'Invalid base32 characters',
+        new RegExp('Invalid base32 characters'),
       );
     });
 
@@ -313,9 +314,11 @@ describe('Algo Transaction Builder', () => {
         .genesisId(testnet.genesisID)
         .genesisHash(testnet.genesisHash);
 
-      should.throws(
+      assert.throws(
         () => txnBuilder.validateTransaction(txnBuilder.getTransaction()),
-        'Transaction validation failed: "value" failed custom validation because lastRound cannot be greater than or equal to firstRound',
+        new RegExp(
+          'Transaction validation failed: "value" failed custom validation because lastRound cannot be greater than or equal to firstRound',
+        ),
       );
     });
 

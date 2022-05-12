@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { Dot } from '../../../../src';
 import { accounts } from '../../../resources/dot';
@@ -63,7 +64,7 @@ describe('Dot KeyPair', () => {
   describe('KeyPair validation', () => {
     it('should fail to create from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Dot.KeyPair(seed), 'bad seed size');
+      assert.throws(() => new Dot.KeyPair(seed), /bad seed size/);
     });
 
     it('should create from a valid seed', () => {
@@ -75,14 +76,14 @@ describe('Dot KeyPair', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Dot.KeyPair(source), 'address seems to be malformed');
+      assert.throws(() => new Dot.KeyPair(source), /Expected a valid key to convert/);
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      should.throws(() => new Dot.KeyPair(source), 'Invalid base32 characters');
+      assert.throws(() => new Dot.KeyPair(source), /Invalid base32 characters/);
     });
   });
 

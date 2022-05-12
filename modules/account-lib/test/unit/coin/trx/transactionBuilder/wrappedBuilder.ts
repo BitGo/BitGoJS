@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import assert from 'assert';
 import should from 'should';
 import { WrappedBuilder } from '../../../../../src/coin/trx';
 import { getBuilder } from '../../../../../src/index';
@@ -13,7 +14,7 @@ describe('Trx Contract call Builder', () => {
     });
 
     it('an empty address', () => {
-      should.throws(
+      assert.throws(
         () => {
           builder.validateAddress({ address: '' });
         },
@@ -22,7 +23,7 @@ describe('Trx Contract call Builder', () => {
     });
 
     it('a hex address', () => {
-      should.throws(
+      assert.throws(
         () => {
           builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
         },
@@ -31,7 +32,7 @@ describe('Trx Contract call Builder', () => {
     });
 
     it('a hex address', () => {
-      should.throws(
+      assert.throws(
         () => {
           builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
         },
@@ -46,7 +47,7 @@ describe('Trx Contract call Builder', () => {
 
     it('a negative value', () => {
       const value = new BigNumber('-13456');
-      should.throws(
+      assert.throws(
         () => {
           builder.validateValue(value);
         },
@@ -56,7 +57,7 @@ describe('Trx Contract call Builder', () => {
 
     it('a value too big', () => {
       const value = new BigNumber('9223372036854775808');
-      should.throws(
+      assert.throws(
         () => {
           builder.validateValue(value);
         },

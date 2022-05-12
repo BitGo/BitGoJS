@@ -1,4 +1,4 @@
-import should from 'should';
+import assert from 'assert';
 import { coins } from '@bitgo/statics';
 import { UnsignedBuildTransaction } from '../../../resources/trx';
 import { Transaction } from '../../../../src/coin/trx';
@@ -20,17 +20,17 @@ describe('Tron transactions', function () {
   describe('should throw when', () => {
     it('transaction is empty and toJson is called', () => {
       const tx = new Transaction(coins.get('ttrx'));
-      should.throws(() => tx.toJson());
+      assert.throws(() => tx.toJson());
     });
 
     it('transaction is empty and extendExpiration is called', () => {
       const tx = new Transaction(coins.get('ttrx'));
-      should.throws(() => tx.extendExpiration(1));
+      assert.throws(() => tx.extendExpiration(1));
     });
 
     it('the extension time is negative', () => {
       const tx = new Transaction(coins.get('ttrx'));
-      should.throws(() => tx.extendExpiration(-1));
+      assert.throws(() => tx.extendExpiration(-1));
     });
   });
 });

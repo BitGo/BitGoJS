@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { NetworkType } from '@bitgo/statics';
 import { TEST_ACCOUNT, TEST_ACCOUNT_2 } from '../../../resources/avaxc/avaxc';
@@ -259,7 +260,7 @@ describe('AVAX util library', () => {
     });
 
     it('getCommon for invalid network', () => {
-      should.throws(
+      assert.throws(
         () => getCommon('invalidNetwork' as NetworkType),
         (e) => e.message === 'Missing network common configuration',
       );

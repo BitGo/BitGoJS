@@ -1,7 +1,8 @@
 import { coins } from '@bitgo/statics';
 import algosdk from 'algosdk';
+import assert from 'assert';
 import should from 'should';
-import sinon, { assert } from 'sinon';
+import sinon, { assert as SinonAssert } from 'sinon';
 import { Transaction } from '../../../../../src/coin/algo';
 import { KeyRegistrationBuilder } from '../../../../../src/coin/algo/keyRegistrationBuilder';
 
@@ -39,30 +40,30 @@ describe('Algo KeyRegistration Builder', () => {
 
     it('should validate voteFirst is gt than 0', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.voteFirst(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.voteFirst(15));
-      assert.calledTwice(spy);
+      SinonAssert.calledTwice(spy);
     });
 
     it('should validate voteLast is gt than 0', () => {
       const validateValueSpy = sinon.spy(builder, 'validateValue');
       builder.voteFirst(1);
-      should.throws(
+      assert.throws(
         () => builder.voteLast(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
       should.doesNotThrow(() => builder.voteLast(15));
-      assert.calledThrice(validateValueSpy);
+      SinonAssert.calledThrice(validateValueSpy);
     });
 
     it('should validate vote Key Dilution', () => {
       const validateValueSpy = sinon.spy(builder, 'validateValue');
       builder.voteFirst(5).voteLast(18);
       should.doesNotThrow(() => builder.voteKeyDilution(2));
-      assert.calledThrice(validateValueSpy);
+      SinonAssert.calledThrice(validateValueSpy);
     });
   });
 
@@ -155,7 +156,7 @@ describe('Algo KeyRegistration Builder', () => {
         .voteFirst(1)
         .voteLast(100)
         .voteKeyDilution(9);
-      should.throws(() => builder.stateProofKey(malformatedStateProofKey), 'Error: Invalid base64 string');
+      assert.throws(() => builder.stateProofKey(malformatedStateProofKey), 'Error: Invalid base64 string');
     });
 
     it('should build an offline key registration transaction', async () => {

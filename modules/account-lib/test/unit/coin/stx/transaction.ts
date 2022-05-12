@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/stx/transaction';
@@ -9,8 +10,8 @@ describe('Stx Transaction', () => {
 
   it('should throw empty transaction', () => {
     const tx = new Transaction(coin);
-    should.throws(() => tx.toJson(), 'Empty transaction');
-    should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
+    assert.throws(() => tx.toJson(), /Empty transaction/);
+    assert.throws(() => tx.toBroadcastFormat(), /Empty transaction/);
   });
 
   describe('should sign if transaction is', () => {

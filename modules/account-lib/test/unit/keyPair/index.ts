@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import should from 'should';
+import assert from 'assert';
 import { register } from '../../../src/keyPair';
 import * as coinModules from '../../../src';
 import { coins } from '@bitgo/statics';
@@ -26,7 +26,7 @@ describe('Key Pair Factory', () => {
     });
 
     it('should fail to instantiate an unsupported coin', () => {
-      should.throws(() => register('fakeUnsupported'));
+      assert.throws(() => register('fakeUnsupported'));
     });
   });
 

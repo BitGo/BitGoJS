@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr';
@@ -146,9 +147,9 @@ describe('CSPR Undelegate Builder', () => {
     it('an address', async () => {
       const txBuilder = factory.getUndelegateBuilder();
       txBuilder.validateAddress({ address: testData.VALID_ADDRESS });
-      should.throws(
+      assert.throws(
         () => txBuilder.validateAddress({ address: testData.INVALID_ADDRESS }),
-        'Invalid address ' + testData.INVALID_ADDRESS,
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS),
       );
     });
 
@@ -157,24 +158,24 @@ describe('CSPR Undelegate Builder', () => {
       txBuilder = addFeeToBuilder(txBuilder, testData.FEE.gasLimit, testData.FEE.gasPrice);
       txBuilder = addSourceToBuilder(txBuilder, sender);
       txBuilder = addAmountToBuilder(txBuilder, '10');
-      should.throws(() => txBuilder.validator('abc'), 'Invalid address');
+      assert.throws(() => txBuilder.validator('abc'), /Invalid address/);
     });
 
     it('fee value should be greater than zero', () => {
       const txBuilder = factory.getUndelegateBuilder();
-      should.throws(() => txBuilder.fee({ gasLimit: '-10' }));
+      assert.throws(() => txBuilder.fee({ gasLimit: '-10' }));
       should.doesNotThrow(() => txBuilder.fee(testData.FEE));
     });
 
     it('amount value should be greater than zero', () => {
       const txBuilder = factory.getUndelegateBuilder();
-      should.throws(() => txBuilder.amount('-1'));
+      assert.throws(() => txBuilder.amount('-1'));
       should.doesNotThrow(() => txBuilder.amount('1'));
     });
 
     it('a private key', () => {
       const txBuilder = factory.getUndelegateBuilder();
-      should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Unsupported private key/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
     });
 
@@ -183,9 +184,9 @@ describe('CSPR Undelegate Builder', () => {
       should.doesNotThrow(() => txBuilder.sign({ key: testData.ACCOUNT_1.privateKey }));
       should.doesNotThrow(() => txBuilder.sign({ key: testData.ACCOUNT_2.privateKey }));
       should.doesNotThrow(() => txBuilder.sign({ key: testData.ACCOUNT_3.privateKey }));
-      should.throws(
+      assert.throws(
         () => txBuilder.sign({ key: testData.ACCOUNT_4.privateKey }),
-        'A maximum of 3 can sign the transaction.',
+        new RegExp('A maximum of 3 can sign the transaction.'),
       );
     });
   });

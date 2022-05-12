@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 import * as Utils from '../../../../src/coin/cspr/utils';
 import { KeyPair } from '../../../../src/coin/cspr';
@@ -90,7 +91,7 @@ describe('CSPR util library', function () {
       const data = '';
       const publicKey = '018267d68f8d249b1430551ecc7b4c176d66f2ba2bf98d5547e7c3accc99375e53';
 
-      should.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
+      assert.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
     });
 
     it('should fail to verify invalid tx signature', function () {
@@ -99,7 +100,7 @@ describe('CSPR util library', function () {
       const data = '';
       const publicKey = '018267d68f8d249b1430551ecc7b4c176d66f2ba2bf98d5547e7c3accc99375e53';
 
-      should.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
+      assert.throws(() => Utils.verifySignature(invalidSignature, data, publicKey));
     });
 
     it('should verify valid message signature', function () {

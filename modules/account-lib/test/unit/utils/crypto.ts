@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import * as Crypto from '../../../src/utils/crypto';
@@ -40,15 +41,15 @@ describe('Crypto utils', function () {
 
   describe('should fail', function () {
     it('to get a valid uncompressed public key from an invalid xpub', () => {
-      should.throws(() => Crypto.xpubToUncompressedPub('xpub'));
+      assert.throws(() => Crypto.xpubToUncompressedPub('xpub'));
     });
 
     it('to get a valid raw private key from an invalid xprv', () => {
-      should.throws(() => Crypto.xprvToRawPrv('xprv'));
+      assert.throws(() => Crypto.xprvToRawPrv('xprv'));
     });
 
     it('to get a valid extended keys from an invalid raw private key', () => {
-      should.throws(() => Crypto.rawPrvToExtendedKeys('ABCD'));
+      assert.throws(() => Crypto.rawPrvToExtendedKeys('ABCD'));
     });
   });
 });

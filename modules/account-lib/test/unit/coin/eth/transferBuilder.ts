@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransferBuilder } from '../../../../src/coin/eth';
 import { Eth } from '../../../../src';
@@ -178,17 +179,17 @@ describe('Eth send multi sig builder', function () {
 
     it('should fail if a sequenceId param is missing', () => {
       const builder = new TransferBuilder().amount(amount).to(toAddress).key(key);
-      should.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild());
     });
 
     it('should fail if a destination param is missing', () => {
       const builder = new TransferBuilder().amount(amount).contractSequenceId(2).key(key);
-      should.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild());
     });
 
     it('should fail if a amount param is missing', () => {
       const builder = new TransferBuilder().to(toAddress).contractSequenceId(2).key(key);
-      should.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild());
     });
   });
 });

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
@@ -221,7 +222,7 @@ describe('Send transaction', function () {
       initTxBuilder();
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
-      should.throws(() => {
+      assert.throws(() => {
         txBuilder.transfer();
       }, 'Error: Token transfers can only be set for send token transactions');
     });

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins, EthereumNetwork } from '@bitgo/statics';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -13,13 +14,13 @@ describe('Eth transaction builder send', () => {
     const tx = new Eth.Transaction(coinConfig, common);
     txBuilder.counter(1);
     txBuilder.type(TransactionType.Send);
-    should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing fee');
+    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing fee/);
     txBuilder.fee({
       fee: '10',
       gasLimit: '1000',
     });
-    should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing chain id');
-    should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing source');
+    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing contract address/);
+    assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing contract address/);
   });
 
   describe('should sign and build', () => {

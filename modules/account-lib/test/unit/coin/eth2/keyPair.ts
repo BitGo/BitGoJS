@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../../../src/coin/eth2';
 import * as testData from '../../../resources/eth2/eth2';
@@ -22,7 +23,7 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('from a bls key with a single invalid private share', () => {
-      should.throws(
+      assert.throws(
         () =>
           new KeyPair({
             secretShares: ['0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002'],
@@ -32,7 +33,7 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('from a bls key with an invalid public share', () => {
-      should.throws(
+      assert.throws(
         () =>
           new KeyPair({
             secretShares: [prv],
@@ -52,7 +53,7 @@ describe('Eth2 Key Pair', () => {
     });
 
     it('from invalid dkg options', () => {
-      should.throws(
+      assert.throws(
         () =>
           new KeyPair({
             threshold: 2,
@@ -109,14 +110,14 @@ describe('Eth2 Key Pair', () => {
 
   describe('should fail to create a KeyPair', () => {
     it('from a public key', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair().recordKeysFromPublicKey(pub),
         (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
       );
     });
 
     it('from a private key', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair().recordKeysFromPrivateKey(prv),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
@@ -126,12 +127,12 @@ describe('Eth2 Key Pair', () => {
   describe('should reject key aggregation', () => {
     it('from a single invalid pubkey string', () => {
       const pub = '123';
-      should.throws(() => KeyPair.aggregatePubkeys([pub]));
+      assert.throws(() => KeyPair.aggregatePubkeys([pub]));
     });
 
     it('from a single invalid pubkey buffer', () => {
       const pub = '0x' + Buffer.from('abc').toString('hex');
-      should.throws(() => KeyPair.aggregatePubkeys([pub]));
+      assert.throws(() => KeyPair.aggregatePubkeys([pub]));
     });
 
     it('from a set of invalid pubkeys', () => {
@@ -139,12 +140,12 @@ describe('Eth2 Key Pair', () => {
 
       const keyPair2 = new KeyPair();
       const pub2 = keyPair2.getKeys().publicShare;
-      should.throws(() => KeyPair.aggregatePubkeys([pub1, pub2]));
+      assert.throws(() => KeyPair.aggregatePubkeys([pub1, pub2]));
     });
 
     it('from a single invalid prvkey string', () => {
       const prv = BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000002');
-      should.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv.toString(16)]));
+      assert.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv.toString(16)]));
     });
 
     it('from a set of invalid prvkeys', () => {
@@ -152,7 +153,7 @@ describe('Eth2 Key Pair', () => {
 
       const keyPair2 = new KeyPair();
       const secretShares2 = keyPair2.getKeys().secretShares;
-      should.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv1.toString(16), secretShares2[1]]));
+      assert.throws(() => KeyPair.aggregatePrvkeys(['0x' + prv1.toString(16), secretShares2[1]]));
     });
   });
 

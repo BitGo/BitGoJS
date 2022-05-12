@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins, TronNetwork } from '@bitgo/statics/';
 import BigNumber from 'bignumber.js';
@@ -173,7 +174,7 @@ describe('Trx Contract call Builder', () => {
     describe('should fail to build', () => {
       it('a transaction with wrong data', async () => {
         const txBuilder = initTxBuilder();
-        should.throws(
+        assert.throws(
           () => {
             txBuilder.data('addMintRequest()');
           },
@@ -185,7 +186,7 @@ describe('Trx Contract call Builder', () => {
         const txBuilder = initTxBuilder();
         txBuilder.data(MINT_CONFIRM_DATA);
         txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
-        should.throws(
+        assert.throws(
           () => {
             txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
           },
@@ -199,7 +200,7 @@ describe('Trx Contract call Builder', () => {
       });
 
       it('an invalid raw transaction', () => {
-        should.throws(
+        assert.throws(
           () => {
             getBuilder('ttrx').from('an invalid raw transaction');
           },
@@ -228,7 +229,7 @@ describe('Trx Contract call Builder', () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
       txBuilder.timestamp(now);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.expiration(now + 31536000001);
         },
@@ -241,7 +242,7 @@ describe('Trx Contract call Builder', () => {
       const txBuilder = initTxBuilder();
       txBuilder.timestamp(now - 2000);
       txBuilder.data(MINT_CONFIRM_DATA);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.expiration(now - 1000);
         },
@@ -254,7 +255,7 @@ describe('Trx Contract call Builder', () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
       txBuilder.timestamp(now + 2000);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.expiration(now + 1000);
         },
@@ -268,7 +269,7 @@ describe('Trx Contract call Builder', () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
       await txBuilder.build();
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.expiration(expiration);
         },
@@ -283,7 +284,7 @@ describe('Trx Contract call Builder', () => {
       txBuilder.data(MINT_CONFIRM_DATA);
       const tx = await txBuilder.build();
       const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
-      should.throws(
+      assert.throws(
         () => {
           txBuilder2.expiration(expiration);
         },
@@ -294,7 +295,7 @@ describe('Trx Contract call Builder', () => {
     it('an extension without a set expiration', async () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.extendValidTo(20000);
         },
@@ -310,7 +311,7 @@ describe('Trx Contract call Builder', () => {
       const tx = await txBuilder.build();
 
       const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
-      should.throws(
+      assert.throws(
         () => {
           txBuilder2.extendValidTo(0);
         },
@@ -326,7 +327,7 @@ describe('Trx Contract call Builder', () => {
       const tx = await txBuilder.build();
 
       const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
-      should.throws(
+      assert.throws(
         () => {
           txBuilder2.extendValidTo(31536000001);
         },
@@ -341,7 +342,7 @@ describe('Trx Contract call Builder', () => {
       const tx = await txBuilder.build();
 
       const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
-      should.throws(
+      assert.throws(
         () => {
           txBuilder2.extendValidTo(20000);
         },
@@ -352,21 +353,21 @@ describe('Trx Contract call Builder', () => {
     it('fee limit', async () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.fee({ feeLimit: 'not a number' });
         },
         (e) => e.message === 'Invalid fee limit value',
       );
 
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.fee({ feeLimit: '-15000' });
         },
         (e) => e.message === 'Invalid fee limit value',
       );
 
-      should.throws(
+      assert.throws(
         () => {
           const tronNetwork = coins.get('ttrx').network as TronNetwork;
           txBuilder.fee({ feeLimit: new BigNumber(tronNetwork.maxFeeLimit).plus(1).toString() });

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { StakingBuilder } from '../../../../src/coin/celo/stakingBuilder';
@@ -47,7 +48,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the index is invalid', () => {
     builder.type(StakingOperationTypes.WITHDRAW);
-    should.throws(
+    assert.throws(
       () => {
         builder.index(-1);
       },
@@ -97,7 +98,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the unvote index is invalid', () => {
     builder.type(StakingOperationTypes.UNVOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.index(-1);
       },
@@ -111,7 +112,7 @@ describe('Celo staking operations builder', function () {
     builder.lesser(testData.LESSER_ADDRESS);
     builder.greater(testData.GREATER_ADDRESS);
     builder.amount('1');
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -125,7 +126,7 @@ describe('Celo staking operations builder', function () {
     builder.greater(testData.GREATER_ADDRESS);
     builder.amount('1');
     builder.index(1);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -140,7 +141,7 @@ describe('Celo staking operations builder', function () {
     builder.group(testData.GROUP_ADDRESS);
     builder.greater(testData.GREATER_ADDRESS);
     builder.index(1);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -150,7 +151,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the address to unvote for is not set', () => {
     builder.type(StakingOperationTypes.UNVOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -161,7 +162,7 @@ describe('Celo staking operations builder', function () {
   it('should fail if the lesser or greater unvote are not set', () => {
     builder.type(StakingOperationTypes.UNVOTE);
     builder.group(testData.GROUP_ADDRESS);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -171,7 +172,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the group to unvote address is invalid', () => {
     builder.type(StakingOperationTypes.UNVOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.group('invalidaddress');
       },
@@ -181,7 +182,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the lesser unvote address is invalid', () => {
     builder.type(StakingOperationTypes.UNVOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.lesser('invalidaddress');
       },
@@ -191,7 +192,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the greater unvote address is invalid', () => {
     builder.type(StakingOperationTypes.UNVOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.greater('invalidaddress');
       },
@@ -209,7 +210,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the activate address is not set', () => {
     builder.type(StakingOperationTypes.ACTIVATE);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -219,7 +220,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the address to vote for is not set', () => {
     builder.type(StakingOperationTypes.VOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -230,7 +231,7 @@ describe('Celo staking operations builder', function () {
   it('should fail if the lesser or greater are not set', () => {
     builder.type(StakingOperationTypes.VOTE);
     builder.group(testData.GROUP_ADDRESS);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },
@@ -240,7 +241,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the group to vote address is invalid', () => {
     builder.type(StakingOperationTypes.VOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.group('invalidaddress');
       },
@@ -250,7 +251,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the lesser address is invalid', () => {
     builder.type(StakingOperationTypes.VOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.lesser('invalidaddress');
       },
@@ -260,7 +261,7 @@ describe('Celo staking operations builder', function () {
 
   it('should fail if the greater address is invalid', () => {
     builder.type(StakingOperationTypes.VOTE);
-    should.throws(
+    assert.throws(
       () => {
         builder.greater('invalidaddress');
       },
@@ -269,7 +270,7 @@ describe('Celo staking operations builder', function () {
   });
 
   it('should fail if amount is invalid number', () => {
-    should.throws(
+    assert.throws(
       () => {
         builder.amount('asd');
       },
@@ -280,7 +281,7 @@ describe('Celo staking operations builder', function () {
   it('should fail to build if type is not supported', function () {
     const NOT_SUPPORTED = 100;
     builder.type(NOT_SUPPORTED);
-    should.throws(
+    assert.throws(
       () => {
         builder.build();
       },

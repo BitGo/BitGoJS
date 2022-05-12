@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as should from 'should';
+import assert from 'assert';
 import * as bs58 from 'bs58';
 import { randomBytes } from 'crypto';
 import * as sol from '@solana/web3.js';
@@ -317,8 +317,8 @@ describe('TSS EDDSA key generation and signing', function () {
     });
 
     it('should fail if seed is not length 64', function () {
-      should.throws(() => MPC.keyShare(1, 2, 3, randomBytes(33)), 'Seed must have length 64');
-      should.throws(() => MPC.keyShare(1, 2, 3, randomBytes(66)), 'Seed must have length 64');
+      assert.throws(() => MPC.keyShare(1, 2, 3, randomBytes(33)), /Seed must have length 64/);
+      assert.throws(() => MPC.keyShare(1, 2, 3, randomBytes(66)), /Seed must have length 64/);
     });
   });
 });

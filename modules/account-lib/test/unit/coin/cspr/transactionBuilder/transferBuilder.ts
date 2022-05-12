@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { DeployUtil, CLOption, CLString, CLU512, CLU64, CLValueBuilder } from 'casper-js-sdk';
 import BigNumber from 'bignumber.js';
@@ -480,88 +481,64 @@ describe('Casper Transfer Builder', () => {
       tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'to_address', CLValueBuilder.byteArray(Uint8Array.from([])));
 
       const builder2 = factory.getTransferBuilder();
-      should.throws(() => {
+      assert.throws(() => {
         builder2.from(tx.toBroadcastFormat());
-      }, testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM);
+      }, new RegExp(testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM));
     });
   });
 
   describe('should fail', () => {
     it('a transfer transaction with an invalid source address', () => {
-      should.throws(
-        () => {
-          initTxTransferBuilder().source({ address: testData.INVALID_ADDRESS });
-        },
-        (e) => e.message.startsWith(testData.ERROR_INVALID_ADDRESS),
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().source({ address: testData.INVALID_ADDRESS });
+      }, new RegExp(testData.ERROR_INVALID_ADDRESS));
     });
 
     it('a transfer transaction with an invalid destination address', () => {
-      should.throws(
-        () => {
-          initTxTransferBuilder().to(testData.INVALID_ADDRESS);
-        },
-        (e) => e.message === testData.ERROR_INVALID_ADDRESS,
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().to(testData.INVALID_ADDRESS);
+      }, new RegExp(testData.ERROR_INVALID_ADDRESS));
     });
 
     it('a transfer transaction with repeated sign', async () => {
       const txBuilder = await initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
-      should.throws(
-        () => {
-          txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
-          txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
-        },
-        (e) => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
-      );
+      assert.throws(() => {
+        txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
+        txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
+      }, new RegExp(testData.ERROR_REPEATED_SIGNATURE));
     });
 
     it('a transfer transaction with repeated sign using extended keys', async () => {
       const txBuilder = await initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
-      should.throws(
-        () => {
-          txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
-          txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
-        },
-        (e) => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
-      );
+      assert.throws(() => {
+        txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
+        txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
+      }, new RegExp(testData.ERROR_REPEATED_SIGNATURE));
     });
 
     it('a transfer transaction with an invalid amount: text value', () => {
-      should.throws(
-        () => {
-          initTxTransferBuilder().amount('invalid_value');
-        },
-        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().amount('invalid_value');
+      }, new RegExp(testData.ERROR_INVALID_AMOUNT));
     });
 
     it('a transfer transaction with an invalid amount: negative value', () => {
-      should.throws(
-        () => {
-          initTxTransferBuilder().amount('-1');
-        },
-        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().amount('-1');
+      }, new RegExp(testData.ERROR_INVALID_AMOUNT));
     });
 
     it('a transfer transaction with an invalid amount: zero', () => {
-      should.throws(
-        () => {
-          initTxTransferBuilder().amount('0');
-        },
-        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().amount('0');
+      }, new RegExp(testData.ERROR_INVALID_AMOUNT));
     });
 
     it('a transfer transaction with an invalid amount: minAmount - 1', () => {
       const maxInvalidAmount = new BigNumber(testData.MIN_MOTES_AMOUNT).minus(1).toString();
-      should.throws(
-        () => {
-          initTxTransferBuilder().amount(maxInvalidAmount);
-        },
-        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
-      );
+      assert.throws(() => {
+        initTxTransferBuilder().amount(maxInvalidAmount);
+      }, new RegExp(testData.ERROR_INVALID_AMOUNT));
     });
 
     it('a transfer transaction without destination param', () => {
@@ -574,12 +551,9 @@ describe('Casper Transfer Builder', () => {
 
     it('a transfer transaction with invalid destination param', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
-        () => {
-          txBuilder.to(testData.INVALID_ADDRESS);
-        },
-        (e) => e.message === testData.ERROR_INVALID_ADDRESS,
-      );
+      assert.throws(() => {
+        txBuilder.to(testData.INVALID_ADDRESS);
+      }, new RegExp(testData.ERROR_INVALID_ADDRESS));
     });
 
     it('a transfer transaction without amount', () => {
@@ -596,22 +570,16 @@ describe('Casper Transfer Builder', () => {
       txBuilder.fee(testData.FEE);
       txBuilder.source({ address: owner1Address });
       txBuilder.to(owner2Address);
-      should.throws(
-        () => {
-          txBuilder.amount('');
-        },
-        (e) => e.message === testData.ERROR_INVALID_AMOUNT,
-      );
+      assert.throws(() => {
+        txBuilder.amount('');
+      }, new RegExp(testData.ERROR_INVALID_AMOUNT));
     });
 
     it('a transfer transaction with invalid transfer id', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
-        () => {
-          txBuilder.transferId(-1);
-        },
-        (e) => e.message === testData.ERROR_INVALID_TRANSFER_ID,
-      );
+      assert.throws(() => {
+        txBuilder.transferId(-1);
+      }, new RegExp(testData.ERROR_INVALID_TRANSFER_ID));
     });
 
     it('a transfer transaction with more than 3 signatures', () => {
@@ -619,12 +587,9 @@ describe('Casper Transfer Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
       builder.sign({ key: testData.ACCOUNT_1.privateKey });
       builder.sign({ key: testData.ACCOUNT_2.privateKey });
-      should.throws(
-        () => {
-          builder.sign({ key: testData.ACCOUNT_2.privateKey });
-        },
-        (e) => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
-      );
+      assert.throws(() => {
+        builder.sign({ key: testData.ACCOUNT_2.privateKey });
+      }, new RegExp(testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED));
     });
 
     it('a transfer transaction with more than 3 signatures with extended keys', () => {
@@ -632,12 +597,9 @@ describe('Casper Transfer Builder', () => {
       builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
       builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
       builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
-      should.throws(
-        () => {
-          builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
-        },
-        (e) => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
-      );
+      assert.throws(() => {
+        builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
+      }, new RegExp(testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED));
     });
   });
 

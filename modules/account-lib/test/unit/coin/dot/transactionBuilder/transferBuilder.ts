@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { TransferBuilder } from '../../../../../src/coin/dot';
@@ -29,7 +30,7 @@ describe('Dot Transfer Builder', () => {
   describe('setter validation', () => {
     it('should validate real address', () => {
       const spy = sinon.spy(builder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => builder.owner({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
@@ -38,7 +39,7 @@ describe('Dot Transfer Builder', () => {
     });
     it('should validate to address', () => {
       const spy = sinon.spy(builder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => builder.to({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
@@ -47,7 +48,7 @@ describe('Dot Transfer Builder', () => {
     });
     it('should validate transfer amount', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );

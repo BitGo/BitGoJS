@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
@@ -85,7 +86,7 @@ describe('Hedera Key Pair', () => {
   describe('should fail to create a KeyPair', () => {
     it('from an invalid public key', () => {
       const source = { pub: '01D63D' };
-      should.throws(
+      assert.throws(
         () => new KeyPair(source),
         (e) => e.message.includes(testData.errorMessageInvalidPublicKey),
       );
@@ -97,27 +98,27 @@ describe('Hedera Key Pair', () => {
       const prvWithPrefix = { prv: testData.ed25519PrivKeyPrefix + prv + '12' };
       const prvWithOddNumber = { prv: testData.ed25519PrivKeyPrefix + prv + '1' };
       const prvWithNonHex = { prv: testData.ed25519PrivKeyPrefix + prv + 'GG' };
-      should.throws(
+      assert.throws(
         () => new KeyPair(shorterPrv),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair(longerPrv),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair(prvWithPrefix),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair({ prv: prv + pub }),
         (e) => e.message === testData.errorMessageInvalidPrivateKey,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair(prvWithOddNumber),
         (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
       );
-      should.throws(
+      assert.throws(
         () => new KeyPair(prvWithNonHex),
         (e) => e.message === testData.errorMessageOddLengthOrNonHexPrivateKey,
       );
@@ -127,7 +128,7 @@ describe('Hedera Key Pair', () => {
   describe('should fail to get address ', () => {
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prv });
-      should.throws(
+      assert.throws(
         () => keyPair.getAddress(),
         (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
@@ -135,7 +136,7 @@ describe('Hedera Key Pair', () => {
 
     it('from a public key', () => {
       const keyPair = new KeyPair({ pub: pub });
-      should.throws(
+      assert.throws(
         () => keyPair.getAddress(),
         (e) => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
@@ -186,7 +187,7 @@ describe('Hedera Key Pair', () => {
     it('a message without a private key', () => {
       const message = 'Hello World!';
       const keyPair = new KeyPair({ pub: pub });
-      should.throws(
+      assert.throws(
         () => keyPair.signMessage(message),
         (e) => e.message === testData.errorMessageMissingPrivateKey,
       );

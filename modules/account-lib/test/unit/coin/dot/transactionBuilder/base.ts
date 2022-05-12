@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import Eddsa from '../../../../../src/mpc/tss';
+import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -87,7 +88,7 @@ describe('Dot Transfer Builder', () => {
   describe('setter validation', () => {
     it('should validate sender address', () => {
       const spy = sinon.spy(builder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => builder.sender({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
@@ -97,7 +98,7 @@ describe('Dot Transfer Builder', () => {
 
     it('should validate eraPeriod', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.validity({ maxDuration: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
@@ -107,7 +108,7 @@ describe('Dot Transfer Builder', () => {
 
     it('should validate nonce', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.sequenceId({ name: 'Nonce', keyword: 'nonce', value: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
@@ -117,7 +118,7 @@ describe('Dot Transfer Builder', () => {
 
     it('should validate tip', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.fee({ amount: -1, type: 'tip' }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
@@ -127,7 +128,7 @@ describe('Dot Transfer Builder', () => {
 
     it('should validate blockNumber', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.validity({ firstValid: -1 }),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
