@@ -10,8 +10,8 @@ import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
+  ParsedTransaction as BaseParsedTransaction,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
@@ -45,6 +45,29 @@ export interface VerifiedTransactionParameters {
   txHex: string;
   prv: string;
   signer: string;
+}
+
+export interface NearParseTransactionOptions extends BaseParseTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  publicKey: string;
+  feeInfo: {
+    fee: string;
+  };
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: string;
+}
+
+type TransactionInput = TransactionOutput;
+
+export interface NearParsedTransaction extends BaseParsedTransaction {
+  // total assets being moved, including fees
+  inputs: TransactionInput[];
+
+  // where assets are moved to
+  outputs: TransactionOutput[];
 }
 
 export type NearTransactionExplanation = TransactionExplanation;
@@ -250,8 +273,47 @@ export class Near extends BaseCoin {
     throw new MethodNotImplementedError('Near recovery not implemented');
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new MethodNotImplementedError('Near parse transaction not implemented');
+  async parseTransaction(params: NearParseTransactionOptions): Promise<NearParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({
+      txPrebuild: params.txPrebuild,
+      publicKey: params.publicKey,
+      feeInfo: params.feeInfo,
+    });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    const nearTransaction = transactionExplanation as NearTransactionExplanation;
+    if (nearTransaction.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+      };
+    }
+
+    const senderAddress = nearTransaction.outputs[0].address;
+    const feeAmount = new BigNumber(nearTransaction.fee.fee === '' ? '0' : nearTransaction.fee.fee);
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(nearTransaction.outputAmount).plus(feeAmount).toFixed(),
+      },
+    ];
+
+    const outputs: TransactionOutput[] = nearTransaction.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+
+    return {
+      inputs,
+      outputs,
+    };
   }
 
   isWalletAddress(params: VerifyAddressOptions): boolean {

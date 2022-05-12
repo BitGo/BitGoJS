@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
+import { Near } from '../../../../src/v2/coins/near';
 
 describe('NEAR:', function () {
   let bitgo;
@@ -407,8 +408,6 @@ describe('NEAR:', function () {
     });
 
     it('should explain activate staking transaction', async function () {
-      const amount = '1000000';
-      const gas = '125000000000000';
       const txBuilder = factory.getStakingActivateBuilder();
       txBuilder
         .amount(amount)
@@ -552,6 +551,149 @@ describe('NEAR:', function () {
       } catch (error) {
         should.equal(error.message, 'Invalid transaction');
       }
+    });
+  });
+
+  describe('Parse Transactions:', () => {
+    const TEN_MILLION_NEAR = '10000000000000000000000000000000';
+    const ONE_MILLION_NEAR = '1000000000000000000000000';
+
+    const amount = TEN_MILLION_NEAR;
+    const gas = '125000000000000';
+
+    const response1 = {
+      address: '9f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f0254',
+      amount: ONE_MILLION_NEAR,
+    };
+
+    const response2 = {
+      address: 'lavenderfive.pool.f863973.m0',
+      amount: TEN_MILLION_NEAR
+    };
+
+    const response3 = {
+      address: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
+      amount: TEN_MILLION_NEAR
+    };
+
+    it('should parse an unsigned transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txPrebuild: {
+          txHex: rawTx.transfer.unsigned,
+        },
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [response1],
+        outputs: [response1],
+      });
+    });
+
+    it('should parse a signed transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txPrebuild: {
+          txHex: rawTx.transfer.signed,
+        },
+        feeInfo: {
+          fee: '',
+        },
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [response1],
+        outputs: [response1],
+      });
+    });
+
+    it('should fail parse a signed transfer transaction when explainTransaction response is undefined', async function () {
+      const stub = sinon.stub(Near.prototype, 'explainTransaction');
+      stub.resolves(undefined);
+      await basecoin.parseTransaction({
+        txPrebuild: {
+          txHex: rawTx.transfer.signed,
+        },
+        feeInfo: {
+          fee: '',
+        },
+      })
+      .should.be.rejectedWith('Invalid transaction');
+      stub.restore();
+    });
+
+    it('should parse activate staking transaction', async function () {
+      const txBuilder = factory.getStakingActivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const parsedTransaction = await basecoin.parseTransaction({        
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        }
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [response2],
+        outputs: [response2],
+      });
+    });
+
+    it('should parse deactivate staking transaction', async function () {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+      const parsedTransaction = await basecoin.parseTransaction({        
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        }
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [],
+        outputs: [],
+      });
+    });
+
+    it('should parse withdraw staking transaction', async function () {
+      const txBuilder = factory.getStakingWithdrawBuilder();
+      txBuilder
+        .amount(amount)
+        .gas(gas)
+        .sender(accounts.account1.address, accounts.account1.publicKey)
+        .receiverId(validatorContractAddress)
+        .recentBlockHash(blockHash.block1)
+        .nonce(1);
+      txBuilder.sign({ key: accounts.account1.secretKey });
+      const tx = await txBuilder.build();
+      const txToBroadcastFormat = tx.toBroadcastFormat();
+
+      const parsedTransaction = await basecoin.parseTransaction({        
+        txPrebuild: {
+          txHex: txToBroadcastFormat,
+        }
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [response3],
+        outputs: [response3],
+      });
     });
   });
 });
