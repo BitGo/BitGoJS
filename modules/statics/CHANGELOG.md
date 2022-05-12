@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.2...@bitgo/statics@6.18.0-rc.3) (2022-05-12)
+
+
+### Bug Fixes
+
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([e88d8b9](https://github.com/BitGo/BitGoJS/commit/e88d8b93cf24617094f8f0a892083f2e15a35019))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([c2f90b7](https://github.com/BitGo/BitGoJS/commit/c2f90b7e7522bd245b9f20b8fe6755b50f087815))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([44dcff6](https://github.com/BitGo/BitGoJS/commit/44dcff68c2b03a70094e2e744039c3cc9c7fe505))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([438c7cc](https://github.com/BitGo/BitGoJS/commit/438c7ccb48375ae081f39225810094b4283acb3e))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([64bde49](https://github.com/BitGo/BitGoJS/commit/64bde499a6ed71a015cf3baa51c2e07d3d7fbaf7))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([fce2d8e](https://github.com/BitGo/BitGoJS/commit/fce2d8e70bef87096fe185ebcfb4df3e391ac1d4))
+* **statics:** change the display of BitGo DAI to SAI to reduce entry errors ([7b39d92](https://github.com/BitGo/BitGoJS/commit/7b39d9298a937ce1bc1bc2606bf5c87883269398))
+
+
+### Features
+
+* **statics:** cFX token deletion from bitgo wallet ([e7e32d6](https://github.com/BitGo/BitGoJS/commit/e7e32d6051aa2f2316dcd796d12b44b957f96d08))
+
+
+
+
+
 # [6.18.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.0...@bitgo/statics@6.18.0-rc.1) (2022-05-06)
 
 

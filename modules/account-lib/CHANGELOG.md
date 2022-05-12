@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.2...@bitgo/account-lib@2.20.0-rc.3) (2022-05-12)
+
+
+### Features
+
+* **account-lib:** added missing exports for Near staking related builders ([4e4ea86](https://github.com/BitGo/BitGoJS/commit/4e4ea86c8e31453011cd6331485b536261fed676))
+
+
+
+
+
 # [2.20.0-rc.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.0...@bitgo/account-lib@2.20.0-rc.1) (2022-05-06)
 
 
