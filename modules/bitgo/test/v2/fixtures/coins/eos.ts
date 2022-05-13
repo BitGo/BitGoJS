@@ -208,7 +208,7 @@ const explainTransactionInputNative = {
   headers: {
     ref_block_prefix: 686520069,
     ref_block_num: 3530,
-    expiration: '2021-10-04T16:41:53'
+    expiration: '2021-10-04T16:41:53',
   },
   transaction: {
     packed_trx: 'd12e5b61ca0d0577eb28000000000100a6823403ea3055000000572d3ccdcd01105cc353653a5dc30000000080ab26a7b501105cc353653a5dc380ef765363e5b246080700000000000004454f5300000000930152554e2038203535313538373234203020313830302031363634393031363832205349475f4b315f48314e717664617379576a4e74666e774265634543705148646374466943504b4e656359626b507974764d634e7943644e754434446f6e4c66546a347969683841753568727a3934334442363752727073397665336e69587734657a536d2073636f756e6472656c31323300',
@@ -225,7 +225,7 @@ const explainTransactionOutputNative = {
     'fee',
     'memo',
     'proxy',
-    'producers'
+    'producers',
   ],
   id: '0a6477b113b05b256e7cf3e425b7c9002da36059083dfab6172a18a2abd44953',
   changeOutputs: [],
@@ -235,14 +235,14 @@ const explainTransactionOutputNative = {
   fee: {},
   memo: 'RUN 8 55158724 0 1800 1664901682 SIG_K1_H1NqvdasyWjNtfnwBecECpQHdctFiCPKNecYbkPytvMcNyCdNuD4DonLfTj4yih8Au5hrz943DB67Rrps9ve3niXw4ezSm scoundrel123',
   proxy: undefined,
-  producers: undefined
+  producers: undefined,
 };
 
 const explainTransactionInputChex = {
   headers: {
     ref_block_prefix: 791036278,
     ref_block_num: 37429,
-    expiration: '2021-10-04T12:22:25'
+    expiration: '2021-10-04T12:22:25',
   },
   transaction: {
     packed_trx: '01f25a6135927641262f0000000001d055435d35d45543000000572d3ccdcd0190558c8663aa267d00000000a8ed32327a90558c8663aa267d00405789ab09183300c9f0252f0000000843484558000000597b2274797065223a2273656c6c2d6c696d6974222c2273796d626f6c223a226368657863686578636865782d636865782d656f73222c227072696365223a22302e303038303638222c226368616e6e656c223a22776562227d00',
@@ -259,7 +259,7 @@ const explainTransactionOutputChex = {
     'fee',
     'memo',
     'proxy',
-    'producers'
+    'producers',
   ],
   id: '2cc715f0ec7660d2161239f3814d731650e1f90c6d8dce9b36f6b6300e371b02',
   changeOutputs: [],
@@ -269,7 +269,7 @@ const explainTransactionOutputChex = {
   fee: {},
   memo: '{"type":"sell-limit","symbol":"chexchexchex-chex-eos","price":"0.008068","channel":"web"}',
   proxy: undefined,
-  producers: undefined
+  producers: undefined,
 };
 
 const explainUnstakeInput1 = {
@@ -327,7 +327,7 @@ const explainUnstakeOutput2 = {
     'fee',
     'memo',
     'proxy',
-    'producers'
+    'producers',
   ],
   id: '2bdb06d0813ed09c25a22d94e8b6dd33f206e394d9e4093ee49577a76c7752cd',
   changeOutputs: [],

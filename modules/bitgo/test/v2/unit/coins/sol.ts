@@ -950,7 +950,7 @@ describe('SOL:', function () {
       };
       await basecoin.presignTransaction({
         walletData: hotWallet,
-        txPrebuild: {}
+        txPrebuild: {},
       }).should.rejectedWith('Missing txRequestId');
     });
   });
