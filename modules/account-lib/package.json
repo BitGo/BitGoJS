@@ -19,6 +19,7 @@
     "hedera-gen-protobufts": "pbts -o ./resources/hbar/protobuf/hedera.d.ts ./resources/hbar/protobuf/hedera.js",
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
+    "precommit": "yarn lint-staged",
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
@@ -112,14 +113,10 @@
       "src/**/*.ts"
     ]
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix"
+      "yarn prettier --write",
+      "yarn eslint --fix"
     ]
   },
   "publishConfig": {
