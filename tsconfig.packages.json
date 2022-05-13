@@ -24,6 +24,9 @@
     },
     {
       "path": "./modules/utxo-lib"
+    },
+    {
+      "path": "./modules/web-demo"
     }
   ]
 }
