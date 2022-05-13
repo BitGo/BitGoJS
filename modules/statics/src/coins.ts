@@ -21,6 +21,7 @@ import {
   tsolToken,
   terc721,
   erc721,
+  fiat,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -1544,4 +1545,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
+  fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
+  fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
 ]);

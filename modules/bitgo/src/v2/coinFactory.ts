@@ -25,6 +25,7 @@ import {
   Sol,
   Stx,
   Susd,
+  FiatUsd,
   Talgo,
   TavaxC,
   Tbch,
@@ -45,6 +46,7 @@ import {
   Tsol,
   Tstx,
   Tsusd,
+  TfiatUsd,
   Ttrx,
   Xtz,
   Txtz,
@@ -129,6 +131,8 @@ function getCoinConstructors(): Map<string, CoinConstructor> {
   registerCoinConstructor(m, 'ofc', Ofc.createInstance);
   registerCoinConstructor(m, 'susd', Susd.createInstance);
   registerCoinConstructor(m, 'tsusd', Tsusd.createInstance);
+  registerCoinConstructor(m, 'fiatusd', FiatUsd.createInstance);
+  registerCoinConstructor(m, 'tfiatusd', TfiatUsd.createInstance);
   registerCoinConstructor(m, 'cspr', Cspr.createInstance);
   registerCoinConstructor(m, 'tcspr', Tcspr.createInstance);
   registerCoinConstructor(m, 'stx', Stx.createInstance);
