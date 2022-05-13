@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.4](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.3...bitgo@14.2.0-rc.4) (2022-05-13)
+
+
+### Features
+
+* **bitgo:** add parse transaction in core ([1775c73](https://github.com/BitGo/BitGoJS/commit/1775c737f12b0fed4dfc3e927855304b928530e9))
+* **statics:** create statics for dogecoin ([66e8862](https://github.com/BitGo/BitGoJS/commit/66e88626e09cf886748c2db2ce866b9a7f26cab3))
+
+
+
+
+
 # [14.2.0-rc.3](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.2...bitgo@14.2.0-rc.3) (2022-05-12)
 
 **Note:** Version bump only for package bitgo

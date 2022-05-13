@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.3...@bitgo/statics@6.18.0-rc.4) (2022-05-13)
+
+
+### Features
+
+* **statics:** create statics for dogecoin ([66e8862](https://github.com/BitGo/BitGoJS/commit/66e88626e09cf886748c2db2ce866b9a7f26cab3))
+
+
+
+
+
 # [6.18.0-rc.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.2...@bitgo/statics@6.18.0-rc.3) (2022-05-12)
 
 
