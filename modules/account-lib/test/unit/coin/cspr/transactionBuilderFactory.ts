@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { register } from '../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr/';
@@ -259,7 +260,7 @@ describe('should build ', () => {
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
-      should.throws(
+      assert.throws(
         () => tx2.sign(keypair),
         (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
@@ -277,7 +278,7 @@ describe('should build ', () => {
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
-      should.throws(
+      assert.throws(
         () => tx2.sign(keypair),
         (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
@@ -295,7 +296,7 @@ describe('should build ', () => {
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
-      should.throws(
+      assert.throws(
         () => tx2.sign(keypair),
         (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
@@ -313,7 +314,7 @@ describe('should build ', () => {
       const builder2 = factory.from(JSON.stringify(txJson));
       const tx2 = (await builder2.build()) as Transaction;
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
-      should.throws(
+      assert.throws(
         () => tx2.sign(keypair),
         (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
       );
@@ -327,7 +328,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session'] = { OtherType: '' };
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },
@@ -343,7 +344,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session'] = { OtherType: '' };
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },
@@ -352,7 +353,7 @@ describe('should build ', () => {
     });
 
     it('a transaction with empty raw transaction', async () => {
-      should.throws(
+      assert.throws(
         () => {
           factory.from('{}');
         },
@@ -361,7 +362,7 @@ describe('should build ', () => {
     });
 
     it('a transaction with undefined as raw transaction', async () => {
-      should.throws(
+      assert.throws(
         () => {
           factory.from(undefined as unknown as string);
         },
@@ -377,7 +378,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session']['ModuleBytes']['module_bytes'] = testData.INVALID_WALLET_INIT_CONTRACT;
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },
@@ -393,7 +394,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session']['ModuleBytes']['module_bytes'] = testData.INVALID_WALLET_INIT_CONTRACT;
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },
@@ -409,7 +410,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session'] = { OtherType: '' };
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },
@@ -425,7 +426,7 @@ describe('should build ', () => {
       const txJson = JSON.parse(tx.toBroadcastFormat());
       txJson['deploy']['session'] = { OtherType: '' };
 
-      should.throws(
+      assert.throws(
         () => {
           factory.from(JSON.stringify(txJson));
         },

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import {
@@ -88,7 +89,7 @@ describe('Tron TransactionBuilder', function () {
       it('a transaction with the same key', () => {
         const txJson = JSON.stringify(FirstSigOnBuildTransaction);
         txBuilder.from(txJson);
-        should.throws(() => txBuilder.sign({ key: FirstPrivateKey }));
+        assert.throws(() => txBuilder.sign({ key: FirstPrivateKey }));
       });
     });
   });
@@ -149,7 +150,7 @@ describe('Tron TransactionBuilder', function () {
       txBuilder.from(txJson);
       txBuilder.sign({ key: FirstPrivateKey });
 
-      should.throws(() => txBuilder.extendValidTo(10000));
+      assert.throws(() => txBuilder.extendValidTo(10000));
     });
 
     it('should extend an unsigned tx', async () => {
@@ -174,32 +175,32 @@ describe('Tron TransactionBuilder', function () {
 
     it('should catch an invalid id', async () => {
       const txJson = JSON.stringify(InvalidIDTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of wrong id', () => {
       const txJson = JSON.stringify(UnsignedBuildInvalidIDTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of empty id', () => {
       const txJson = JSON.stringify(UnsignedBuildEmptyIDTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of invalid time stamp', () => {
       const txJson = JSON.stringify(UnsignedInvalidTimeStampBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of invalid expiration time', () => {
       const txJson = JSON.stringify(UnsignedInvalidExpirationBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of non-existence of contract', () => {
       const txJson = JSON.stringify(UnsignedInvalidContractBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      assert.throws(() => txBuilder.from(txJson));
     });
 
     it('should validate JSON transaction', () => {
@@ -221,7 +222,7 @@ describe('Tron TransactionBuilder', function () {
 
     it('should throw an error when the key is invalid', () => {
       const key = 'jiraiya';
-      should.throws(() => txBuilder.validateKey({ key }), 'The provided key is not valid');
+      assert.throws(() => txBuilder.validateKey({ key }), /The provided key is not valid/);
     });
   });
 });

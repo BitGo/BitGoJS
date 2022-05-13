@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
@@ -248,9 +249,9 @@ describe('Stx Contract call Builder', () => {
       it('invalid type', () => {
         const builder = initTxBuilder();
 
-        should.throws(
+        assert.throws(
           () => builder.functionArgs([{ type: 'unknow', val: 'any-val' }]),
-          (e) => e.message === 'Unexpected Clarity ABI type primitive: "unknow"',
+          new RegExp('Unexpected Clarity ABI type primitive: "unknow"'),
         );
       });
     });
@@ -258,21 +259,21 @@ describe('Stx Contract call Builder', () => {
     describe('should fail', () => {
       it('a contract call with an invalid key', () => {
         const builder = initTxBuilder();
-        should.throws(() => builder.sign({ key: 'invalidKey' }), 'Unsupported private key');
+        assert.throws(() => builder.sign({ key: 'invalidKey' }), /Unsupported private key/);
       });
       it('a contract call with an invalid contract address', () => {
         const builder = initTxBuilder();
-        should.throws(() => builder.contractAddress(testData.ACCOUNT_1.address), 'Invalid contract address');
+        assert.throws(() => builder.contractAddress(testData.ACCOUNT_1.address), /Invalid contract address/);
       });
       it('a contract call with an invalid contract name', () => {
         const builder = initTxBuilder();
-        should.throws(() => builder.contractName('test'), 'Only pox and send-many-memo contracts supported');
+        assert.throws(() => builder.contractName('test'), /Only pox and send-many-memo contracts supported/);
       });
       it('a contract call with an invalid contract function name', () => {
         const builder = initTxBuilder();
-        should.throws(
+        assert.throws(
           () => builder.functionName('test-function'),
-          'test-function is not supported contract function name',
+          new RegExp('test-function is not supported contract function name'),
         );
       });
     });

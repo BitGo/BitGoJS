@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/hbar/transaction';
@@ -16,10 +17,10 @@ describe('Hbar Transaction', () => {
 
   it('should throw empty transaction', () => {
     const tx = getTransaction();
-    should.throws(() => {
+    assert.throws(() => {
       tx.toJson();
     });
-    should.throws(() => {
+    assert.throws(() => {
       tx.toBroadcastFormat();
     });
   });

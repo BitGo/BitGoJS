@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin/';
 import { getBuilder, Celo } from '../../../../../src';
@@ -104,10 +105,10 @@ describe('Celo Transaction builder for wallet initialization', () => {
       const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
-      should.throws(() => builder.from('0x00001000'), 'There was error in decoding the hex string');
-      should.throws(() => builder.from(''), 'There was error in decoding the hex string');
-      should.throws(() => builder.from('pqrs'), 'There was error in parsing the JSON string');
-      should.throws(() => builder.from(1234), 'Transaction is not a hex string or stringified json');
+      assert.throws(() => builder.from('0x00001000'), /There was error in decoding the hex string/);
+      assert.throws(() => builder.from(''), /Raw transaction is empty/);
+      assert.throws(() => builder.from('pqrs'), /There was error in parsing the JSON string/);
+      assert.throws(() => builder.from(1234), /Transaction is not a hex string or stringified json/);
     });
   });
 });

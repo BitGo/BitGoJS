@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../../../src/coin/avaxc/keyPair';
 import { TEST_ACCOUNT } from '../../../resources/avaxc/avaxc';
@@ -42,7 +43,7 @@ describe('Avax Key Pair', () => {
       should.equal(keys.prv, TEST_ACCOUNT.ethPrivateKey);
       should.equal(keys.pub, TEST_ACCOUNT.ethUncompressedPublicKey);
 
-      should.throws(() => keyPairObj.getExtendedKeys());
+      assert.throws(() => keyPairObj.getExtendedKeys());
     });
 
     it('from a compressed public key', () => {
@@ -53,7 +54,7 @@ describe('Avax Key Pair', () => {
       should.exists(keys.pub);
       should.equal(keys.pub, TEST_ACCOUNT.ethUncompressedPublicKey);
 
-      should.throws(() => keyPairObj.getExtendedKeys());
+      assert.throws(() => keyPairObj.getExtendedKeys());
     });
 
     it('from an uncompressed public key', () => {
@@ -64,7 +65,7 @@ describe('Avax Key Pair', () => {
       should.exists(keys.pub);
       should.equal(keys.pub, TEST_ACCOUNT.ethUncompressedPublicKey);
 
-      should.throws(() => keyPairObj.getExtendedKeys());
+      assert.throws(() => keyPairObj.getExtendedKeys());
     });
 
     it('from an extended private key', () => {
@@ -100,14 +101,14 @@ describe('Avax Key Pair', () => {
 
   describe('should fail to create a KeyPair', () => {
     it('from an invalid privateKey', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair({ prv: '' }),
         (e) => e.message === 'Unsupported private key',
       );
     });
 
     it('from an invalid publicKey', () => {
-      should.throws(
+      assert.throws(
         () => new KeyPair({ pub: '' }),
         (e) => e.message.startsWith('Unsupported public key'),
       );
@@ -115,7 +116,7 @@ describe('Avax Key Pair', () => {
 
     it('from an undefined seed', () => {
       const undefinedBuffer = undefined as unknown as Buffer;
-      should.throws(
+      assert.throws(
         () => new KeyPair({ seed: undefinedBuffer }),
         (e) => e.message.startsWith('Invalid key pair options'),
       );
@@ -123,7 +124,7 @@ describe('Avax Key Pair', () => {
 
     it('from an undefined private key', () => {
       const undefinedStr: string = undefined as unknown as string;
-      should.throws(
+      assert.throws(
         () => new KeyPair({ prv: undefinedStr }),
         (e) => e.message.startsWith('Invalid key pair options'),
       );
@@ -131,7 +132,7 @@ describe('Avax Key Pair', () => {
 
     it('from an undefined public key', () => {
       const undefinedStr: string = undefined as unknown as string;
-      should.throws(
+      assert.throws(
         () => new KeyPair({ pub: undefinedStr }),
         (e) => e.message.startsWith('Invalid key pair options'),
       );

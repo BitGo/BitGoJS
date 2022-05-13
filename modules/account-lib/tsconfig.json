@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "target": "es5",
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]

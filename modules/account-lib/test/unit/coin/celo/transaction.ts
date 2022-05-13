@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/celo';
@@ -17,10 +18,10 @@ describe('Celo Transaction', function () {
 
   it('should throw empty transaction', function () {
     const tx = getTransaction();
-    should.throws(() => {
+    assert.throws(() => {
       tx.toJson();
     });
-    should.throws(() => {
+    assert.throws(() => {
       tx.toBroadcastFormat();
     });
   });

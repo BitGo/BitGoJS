@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { Near } from '../../../../src';
 import * as NearResources from '../../../resources/near';
@@ -44,21 +45,21 @@ describe('NEAR KeyPair', () => {
   describe('KeyPair validation', () => {
     it('should fail to create from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Near.KeyPair(seed), 'bad seed size');
+      assert.throws(() => new Near.KeyPair(seed), /bad seed size/);
     });
 
     it('should fail to create from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Near.KeyPair(source), 'address seems to be malformed');
+      assert.throws(() => new Near.KeyPair(source), /Non-base58 character/);
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      should.throws(() => new Near.KeyPair(source), 'Invalid base32 characters');
+      assert.throws(() => new Near.KeyPair(source), /Non-base58 character/);
     });
   });
 

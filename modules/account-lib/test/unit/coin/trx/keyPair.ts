@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import { Trx } from '../../../../src';
@@ -56,7 +57,7 @@ describe('Trx KeyPair', function () {
         '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       );
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a compressed public key', () => {
@@ -70,7 +71,7 @@ describe('Trx KeyPair', function () {
         '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       );
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a raw private key', () => {
@@ -84,28 +85,28 @@ describe('Trx KeyPair', function () {
         '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       );
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
   });
 
   describe('should fail to create a KeyPair', function () {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be at least 128 bits (16 bytes, not 8)
-      should.throws(() => new Trx.KeyPair(seed));
+      assert.throws(() => new Trx.KeyPair(seed));
     });
 
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Trx.KeyPair(source));
+      assert.throws(() => new Trx.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
         prv: '82A34E',
       };
-      should.throws(() => new Trx.KeyPair(source));
+      assert.throws(() => new Trx.KeyPair(source));
     });
   });
 
@@ -186,7 +187,7 @@ describe('Trx KeyPair', function () {
       };
       const keyPair = new Trx.KeyPair(source);
       const message = 'Hello world';
-      should.throws(() => keyPair.signMessage(message));
+      assert.throws(() => keyPair.signMessage(message));
     });
   });
 

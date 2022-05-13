@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { Algo } from '../../../../src';
 import * as AlgoResources from '../../../resources/algo';
@@ -37,21 +38,21 @@ describe('Algo KeyPair', () => {
   describe('KeyPair validation', () => {
     it('should fail to create from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be 512 bits (64 bytes)
-      should.throws(() => new Algo.KeyPair(seed), 'bad seed size');
+      assert.throws(() => new Algo.KeyPair(seed), /bad seed size/);
     });
 
     it('should fail to create from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Algo.KeyPair(source), 'address seems to be malformed');
+      assert.throws(() => new Algo.KeyPair(source), /address seems to be malformed/);
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      should.throws(() => new Algo.KeyPair(source), 'Invalid base32 characters');
+      assert.throws(() => new Algo.KeyPair(source), /Invalid base32 characters/);
     });
   });
 

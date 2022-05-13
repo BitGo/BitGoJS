@@ -1,5 +1,6 @@
+import assert from 'assert';
 import should from 'should';
-import { spy, assert } from 'sinon';
+import { spy, assert as SinonAssert } from 'sinon';
 import { BatchTransactionBuilder } from '../../../../../src/coin/dot';
 import { accounts, mockTssSignature, rawTx, specVersion, txVersion } from '../../../../resources/dot';
 import { buildTestConfig } from './base';
@@ -17,12 +18,12 @@ describe('Dot Batch Transaction Builder', () => {
     it('should validate list of calls', () => {
       const call = 'invalidUnsignedTransaction';
       const spyValidateCalls = spy(builder, 'validateCalls');
-      should.throws(
+      assert.throws(
         () => builder.calls([call]),
         (e: Error) => e.message === `call in string format must be hex format of a method and its arguments`,
       );
       should.doesNotThrow(() => builder.calls(rawTx.anonymous.batch));
-      assert.calledTwice(spyValidateCalls);
+      SinonAssert.calledTwice(spyValidateCalls);
     });
   });
 

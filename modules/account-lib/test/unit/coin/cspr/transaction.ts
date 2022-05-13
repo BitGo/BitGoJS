@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { CLString, DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
@@ -73,10 +74,10 @@ describe('Cspr Transaction', () => {
 
   it('should throw empty transaction', () => {
     const tx = getTransaction();
-    should.throws(() => {
+    assert.throws(() => {
       tx.toJson();
     });
-    should.throws(() => {
+    assert.throws(() => {
       tx.toBroadcastFormat();
     });
   });
@@ -249,13 +250,13 @@ describe('Cspr Transaction', () => {
   describe('should reject sign if transaction signer is', () => {
     it('invalid private key', function () {
       const tx = getTransaction();
-      should.throws(() => tx.sign(testData.INVALID_KEYPAIR_PRV));
+      assert.throws(() => tx.sign(testData.INVALID_KEYPAIR_PRV));
     });
 
     it('public key', function () {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
-      should.throws(
+      assert.throws(
         () => tx.sign(keypair),
         (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
       );
@@ -264,7 +265,7 @@ describe('Cspr Transaction', () => {
     it('public extended key', function () {
       const tx = getTransaction();
       const keypair = new KeyPair({ pub: testData.ACCOUNT_1.xPublicKey });
-      should.throws(
+      assert.throws(
         () => tx.sign(keypair),
         (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
       );

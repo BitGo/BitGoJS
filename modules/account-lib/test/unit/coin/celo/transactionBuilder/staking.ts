@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Celo, getBuilder } from '../../../../../src';
@@ -287,7 +288,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call lock if it is not an staking lock type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.lock();
         },
@@ -297,7 +298,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call vote if it is not an staking vote type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.vote();
         },
@@ -307,7 +308,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call activate if it is not an staking activate type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.activate();
         },
@@ -317,7 +318,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call unlock if it is not an staking unlock type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.unlock();
         },
@@ -327,7 +328,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call unvote if it is not an staking unvote type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.unvote();
         },
@@ -337,7 +338,7 @@ describe('Celo staking transaction builder', () => {
 
     it('should fail to call withdraw if it is not an staking withdraw type transaction', () => {
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(
+      assert.throws(
         () => {
           txBuilder.withdraw();
         },

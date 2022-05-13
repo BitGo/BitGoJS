@@ -478,6 +478,7 @@ export abstract class BitGoAPI {
     // scheme, so we need to use a raw superagent instance to do this request.
     // Proxy settings must still be respected however
     const resultPromise = superagent.get(this.url('/client/constants'));
+    resultPromise.set('BitGo-SDK-Version', this._version);
     const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
     BitGoAPI._constants[env] = result.body.constants;
 

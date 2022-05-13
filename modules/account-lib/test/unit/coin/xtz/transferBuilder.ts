@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import { TransferBuilder } from '../../../../src/coin/xtz/transferBuilder';
@@ -51,7 +52,7 @@ describe('Tezos Transfer builder', function () {
   describe('should fail to', () => {
     it('build an empty transfer', async () => {
       const builder = new TransferBuilder();
-      should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
+      assert.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 
     it('build a transfer without amount', async () => {
@@ -59,17 +60,17 @@ describe('Tezos Transfer builder', function () {
         .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
         .to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A')
         .fee('20');
-      should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
+      assert.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 
     it('build a transfer without from address', async () => {
       const builder = new TransferBuilder().amount('10').to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A').fee('20');
-      should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
+      assert.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 
     it('build a transfer without destination address', async () => {
       const builder = new TransferBuilder().amount('10').from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL').fee('20');
-      should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
+      assert.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
 
     it('build a transfer without fee', async () => {
@@ -77,7 +78,7 @@ describe('Tezos Transfer builder', function () {
         .amount('10')
         .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
         .to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
-      should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
+      assert.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
   });
 });

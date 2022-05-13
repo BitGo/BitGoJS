@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory } from '../../../../../src/coin/near';
@@ -101,9 +102,9 @@ describe('NEAR Transaction Builder', async () => {
       txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
       txBuilder.nonce(1);
       txBuilder.receiverId(testData.accounts.account2.address);
-      should.throws(
+      assert.throws(
         () => txBuilder.recentBlockHash(testData.errorBlockHash.block1),
-        'Invalid blockHash CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9',
+        new RegExp('Invalid blockHash CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9'),
       );
     }
   });
@@ -111,15 +112,15 @@ describe('NEAR Transaction Builder', async () => {
   it('should fail to build if have invalid nonce', async () => {
     for (const txBuilder of builders) {
       txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      should.throws(() => txBuilder.nonce(-1), 'Invalid nonce: -1');
+      assert.throws(() => txBuilder.nonce(-1), /Invalid nonce: -1/);
     }
   });
 
   it('should fail to build if have undefined address', async () => {
     for (const txBuilder of builders) {
-      should.throws(
+      assert.throws(
         () => txBuilder.sender(testData.accounts.account1.publicKey),
-        'Invalid or missing address, got: undefined',
+        new RegExp('Invalid or missing pubKey, got: undefined'),
       );
     }
   });

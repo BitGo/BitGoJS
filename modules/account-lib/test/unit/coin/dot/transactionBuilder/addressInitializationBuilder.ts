@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { AddressInitializationBuilder } from '../../../../../src/coin/dot';
@@ -28,7 +29,7 @@ describe('Dot Address Initialization Builder', () => {
   describe('setter validation', () => {
     it('should validate delay', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.delay('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );
@@ -38,7 +39,7 @@ describe('Dot Address Initialization Builder', () => {
 
     it('should validate owner address', () => {
       const spy = sinon.spy(builder, 'validateAddress');
-      should.throws(
+      assert.throws(
         () => builder.owner({ address: 'asd' }),
         (e: Error) => e.message === `The address 'asd' is not a well-formed dot address`,
       );
@@ -48,7 +49,7 @@ describe('Dot Address Initialization Builder', () => {
 
     it('should validate index', () => {
       const spy = sinon.spy(builder, 'validateValue');
-      should.throws(
+      assert.throws(
         () => builder.index(-1),
         (e: Error) => e.message === 'Value cannot be less than zero',
       );

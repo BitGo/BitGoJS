@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
@@ -173,7 +174,7 @@ describe('HBAR Transfer Builder', () => {
   describe('should fail', () => {
     it('a transfer transaction with an invalid key', () => {
       const builder = initTxBuilder();
-      should.throws(
+      assert.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90AA' }),
         (e) => e.message === 'Invalid private key',
       );
@@ -184,7 +185,7 @@ describe('HBAR Transfer Builder', () => {
       builder.sign({ key: testData.ACCOUNT_2.privateKey });
       builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       builder.sign({ key: testData.ACCOUNT_3.privateKey });
-      should.throws(
+      assert.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
         (e) => e.message === 'A maximum of 3 can sign the transaction.',
       );
@@ -193,7 +194,7 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with repeated sign', () => {
       const builder = initTxBuilder();
       builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
-      should.throws(
+      assert.throws(
         () => builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix }),
         (e) =>
           e.message ===
@@ -203,7 +204,7 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with an invalid destination address', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => txBuilder.to('invalidaddress'),
         (e) => e.message === 'Invalid address',
       );
@@ -211,7 +212,7 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with an invalid amount: text value', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => txBuilder.amount('invalidamount'),
         (e) => e.message === 'Invalid amount',
       );
@@ -219,7 +220,7 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with an invalid amount: negative value', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => txBuilder.amount('-5'),
         (e) => e.message === 'Invalid amount',
       );
@@ -227,7 +228,7 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with an invalid destination memo', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () =>
           txBuilder.memo(
             'This sentence has more than 100 bytes allowed for the memo, this should throw error -----------------',
@@ -254,11 +255,11 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with invalid start time', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => txBuilder.startTime('invalid start time'),
         (e) => e.message === 'Invalid value for time parameter',
       );
-      should.throws(
+      assert.throws(
         () => txBuilder.startTime('-5'),
         (e) => e.message === 'Invalid value for time parameter',
       );
@@ -266,7 +267,7 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with invalid node', () => {
       const txBuilder = factory.getTransferBuilder();
-      should.throws(
+      assert.throws(
         () => txBuilder.node({ nodeId: 'invalid node' }),
         (e) => e.message === 'Invalid Hedera node address',
       );

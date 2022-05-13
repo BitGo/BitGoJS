@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
@@ -140,7 +141,7 @@ describe('HBAR Wallet initialization', () => {
         .build()
         .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
 
-      should.throws(() => txBuilder.owner(testData.OWNER1), 'Repeated owner address: ' + testData.OWNER1);
+      assert.throws(() => txBuilder.owner(testData.OWNER1), new RegExp('Repeated owner address: ' + testData.OWNER1));
 
       const newTxBuilder = factory.getWalletInitializationBuilder();
       newTxBuilder.fee({ fee: '1000000000' });
@@ -165,44 +166,44 @@ describe('HBAR Wallet initialization', () => {
     it('an address', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       txBuilder.validateAddress(testData.VALID_ADDRESS);
-      should.throws(
+      assert.throws(
         () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
-        'Invalid address ' + testData.INVALID_ADDRESS,
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address),
       );
     });
 
     it('value should be greater than zero', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.fee({ fee: '-10' }));
+      assert.throws(() => txBuilder.fee({ fee: '-10' }));
       should.doesNotThrow(() => txBuilder.fee({ fee: '10' }));
     });
 
     it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
+      assert.throws(() => txBuilder.validateKey({ key: 'abc' }), /Invalid private key length/);
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.prvKeyWithPrefix }));
     });
 
     it('a raw transaction', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       should.doesNotThrow(() => txBuilder.validateRawTransaction(testData.WALLET_INITIALIZATION));
-      should.throws(() => txBuilder.validateRawTransaction('0x00001000'));
-      should.throws(() => txBuilder.validateRawTransaction(''));
-      should.throws(() => txBuilder.validateRawTransaction('pqrs'));
-      should.throws(() => txBuilder.validateRawTransaction(1234));
+      assert.throws(() => txBuilder.validateRawTransaction('0x00001000'));
+      assert.throws(() => txBuilder.validateRawTransaction(''));
+      assert.throws(() => txBuilder.validateRawTransaction('pqrs'));
+      assert.throws(() => txBuilder.validateRawTransaction(1234));
     });
 
     it('a transaction to build', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing fee');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: wrong number of owners/);
       txBuilder.fee({ fee: '10' });
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
+      assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: wrong number of owners/);
       txBuilder.source(testData.VALID_ADDRESS);
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 0');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(testData.OWNER1);
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 1');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 1/);
       txBuilder.owner(testData.OWNER2);
-      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 2');
+      assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 2/);
       txBuilder.owner(testData.OWNER3);
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });

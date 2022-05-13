@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import { KeyPair, Transaction, TransferBuilder } from '../../../../src/coin/dot';
@@ -30,8 +31,8 @@ describe('Dot Transaction', () => {
 
   describe('empty transaction', () => {
     it('should throw empty transaction', () => {
-      should.throws(() => tx.toJson(), 'Empty transaction');
-      should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
+      assert.throws(() => tx.toJson(), /Empty transaction/);
+      assert.throws(() => tx.toBroadcastFormat(), /Empty transaction/);
     });
 
     it('should not sign', async () => {

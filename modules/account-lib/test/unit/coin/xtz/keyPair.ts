@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 
 import { Xtz } from '../../../../src';
@@ -49,7 +50,7 @@ describe('Xtz KeyPair', function () {
       should.not.exist(defaultKeys.prv);
       defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a compressed public key', () => {
@@ -61,7 +62,7 @@ describe('Xtz KeyPair', function () {
       should.not.exist(defaultKeys.prv);
       defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a Tezos public key', () => {
@@ -73,7 +74,7 @@ describe('Xtz KeyPair', function () {
       should.not.exist(defaultKeys.prv);
       defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a raw private key', () => {
@@ -85,7 +86,7 @@ describe('Xtz KeyPair', function () {
       defaultKeys.prv!.should.equal('spsk2R6ek35CtfJMt2XHPWgFcf1wUGLK2fKbU3f4hWZNABo1YrrqP7');
       defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a Tezos private key', () => {
@@ -98,28 +99,28 @@ describe('Xtz KeyPair', function () {
       defaultKeys.pub.should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
       keyPair.getAddress().should.equal('tz2P2E8EgHaLA6A17rH3pE9T2tx6DA7D4siW');
 
-      should.throws(() => keyPair.getExtendedKeys());
+      assert.throws(() => keyPair.getExtendedKeys());
     });
   });
 
   describe('should fail to create a KeyPair', function () {
     it('from an invalid seed', () => {
       const seed = { seed: Buffer.alloc(8) }; //  Seed should be at least 128 bits (16 bytes, not 8)
-      should.throws(() => new Xtz.KeyPair(seed));
+      assert.throws(() => new Xtz.KeyPair(seed));
     });
 
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D',
       };
-      should.throws(() => new Xtz.KeyPair(source));
+      assert.throws(() => new Xtz.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
         prv: '82A34E',
       };
-      should.throws(() => new Xtz.KeyPair(source));
+      assert.throws(() => new Xtz.KeyPair(source));
     });
   });
 

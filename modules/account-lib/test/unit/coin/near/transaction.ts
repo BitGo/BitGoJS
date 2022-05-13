@@ -1,4 +1,5 @@
 import { coins } from '@bitgo/statics';
+import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
 import { Transaction } from '../../../../src/coin/near';
@@ -14,8 +15,8 @@ describe('Near Transaction', () => {
 
   describe('empty transaction', () => {
     it('should throw empty transaction', () => {
-      should.throws(() => tx.toJson(), 'Empty transaction');
-      should.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
+      assert.throws(() => tx.toJson(), 'Empty transaction');
+      assert.throws(() => tx.toBroadcastFormat(), 'Empty transaction');
     });
   });
 
@@ -57,7 +58,7 @@ describe('Near Transaction', () => {
     });
 
     it('build a transfer from incorrent raw data', async () => {
-      should.throws(() => tx.fromRawTransaction('11' + NearResources.rawTx.transfer.signed), 'incorrect raw data');
+      assert.throws(() => tx.fromRawTransaction('11' + NearResources.rawTx.transfer.signed), 'incorrect raw data');
     });
   });
 

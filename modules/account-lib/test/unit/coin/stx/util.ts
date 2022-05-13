@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { AddressVersion, ClarityType, IntCV, NoneCV, SomeCV, UIntCV, ListCV } from '@stacks/transactions';
 import * as testData from '../../../resources/stx/stx';
@@ -92,15 +93,15 @@ describe('Stx util library', function () {
     });
 
     it('should not generate multisig addresses from invalid input', function () {
-      should.throws(() => Utils.getSTXAddressFromPubKeys([]), 'Invalid number of public keys');
-      should.throws(() => Utils.getSTXAddressFromPubKeys(['badkey', 'badkey2']), 'Invalid public key');
-      should.throws(
+      assert.throws(() => Utils.getSTXAddressFromPubKeys([]), /Invalid number of public keys/);
+      assert.throws(() => Utils.getSTXAddressFromPubKeys(['badkey', 'badkey2']), /Invalid public key/);
+      assert.throws(
         () =>
           Utils.getSTXAddressFromPubKeys([
             '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0',
             'badkey',
           ]),
-        'Invalid public key',
+        /Invalid public key/,
       );
     });
   });
@@ -247,9 +248,9 @@ describe('Stx util library', function () {
 
     it('should not verify signatures', function () {
       // empty message
-      should.throws(
+      assert.throws(
         () => Stx.Utils.verifySignature('', testData.expectedSignature1, keyPair1.getKeys().pub),
-        'Cannot verify empty messages',
+        new RegExp('Cannot verify empty messages'),
       );
 
       // wrong public key
@@ -376,9 +377,9 @@ describe('Stx util library', function () {
 
       const address5 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDF';
       const baseAddress5 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
-      should.throws(
+      assert.throws(
         () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
-        `invalid address: ${address5}`,
+        new RegExp(`invalid address: ${address5}`),
       );
     });
   });

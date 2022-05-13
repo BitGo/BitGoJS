@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import * as Utils from '../../../../src/coin/xtz/utils';
 import {
@@ -212,7 +213,7 @@ describe('XTZ util library', function () {
     });
 
     it('should fail if the contract address has the wrong format', function () {
-      should.throws(
+      assert.throws(
         () =>
           Utils.generateDataToSign(
             'tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS',
@@ -225,7 +226,7 @@ describe('XTZ util library', function () {
     });
 
     it('should fail if the destination address has the wrong format', function () {
-      should.throws(
+      assert.throws(
         () => Utils.generateDataToSign('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL', 'abc', '0', '0'),
         new RegExp('Invalid destination address'),
       );
@@ -281,7 +282,7 @@ describe('XTZ util library', function () {
       ];
 
       for (const data of invalidKeys) {
-        should.throws(
+        assert.throws(
           () => Utils.decodeKey(data[0] as string, data[1] as HashType),
           new RegExp('Unsupported private key'),
         );
