@@ -415,14 +415,14 @@ describe('Bitgo Express', function () {
 
       (() => expressApp(args)).should.throw({
         name: 'ExternalSignerConfigError',
-        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.',
       });
 
       args.signerMode = undefined;
       args.signerFileSystemPath = 'signerFileSystemPath';
       (() => expressApp(args)).should.throw({
         name: 'ExternalSignerConfigError',
-        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+        message: 'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.',
       });
 
       const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
@@ -440,7 +440,7 @@ describe('Bitgo Express', function () {
       };
       (() => expressApp(args)).should.throw({
         name: 'ExternalSignerConfigError',
-        message: 'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.'
+        message: 'signerMode or signerFileSystemPath is set, but externalSignerUrl is also set.',
       });
 
       args.signerMode = undefined;

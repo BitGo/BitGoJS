@@ -11,7 +11,7 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "precommit": "lint-staged",
+    "precommit": "yarn lint-staged",
     "prepare": "npm run build",
     "webpack-dev": "webpack",
     "webpack-prod": "webpack --mode=production --node-env=production",
@@ -24,14 +24,10 @@
     "url": "https://github.com/BitGo/BitGoJS.git",
     "directory": "modules/sdk-api"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
-    "**/*.ts": [
-      "prettier --write"
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
     ]
   },
   "publishConfig": {

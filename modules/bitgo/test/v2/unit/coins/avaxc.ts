@@ -243,7 +243,7 @@ describe('Avalanche C-Chain', function () {
         eip1559: {
           maxFeePerGas: '7593123',
           maxPriorityFeePerGas: '150',
-        }
+        },
       });
       builder.counter(1);
       builder.type(BaseCoin.TransactionType.Send);
@@ -264,7 +264,7 @@ describe('Avalanche C-Chain', function () {
           eip1559: {
             maxFeePerGas: '7593123',
             maxPriorityFeePerGas: '150',
-          }
+          },
         },
         prv: account_1.owner_2,
       });

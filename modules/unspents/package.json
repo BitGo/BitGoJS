@@ -12,6 +12,7 @@
     "test": "mocha",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
+    "precommit": "yarn lint-staged",
     "unit-test": "npm run test"
   },
   "repository": {
@@ -40,6 +41,12 @@
     "@bitgo/utxo-lib": "^2.2.2",
     "lodash": "~4.17.21",
     "tcomb": "~3.2.29"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
   },
   "publishConfig": {
     "access": "public"
