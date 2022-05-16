@@ -7,6 +7,7 @@ import { BaseCoin } from './baseCoin';
 import {
   Algo,
   AvaxC,
+  AvaxP,
   Bch,
   Bsv,
   Btc,
@@ -28,6 +29,7 @@ import {
   FiatUsd,
   Talgo,
   TavaxC,
+  TavaxP,
   Tbch,
   Tbsv,
   Tbtc,
@@ -112,6 +114,8 @@ function getCoinConstructors(): Map<string, CoinConstructor> {
   registerCoinConstructor(m, 'tcelo', Tcelo.createInstance);
   registerCoinConstructor(m, 'avaxc', AvaxC.createInstance);
   registerCoinConstructor(m, 'tavaxc', TavaxC.createInstance);
+  registerCoinConstructor(m, 'avaxp', AvaxP.createInstance);
+  registerCoinConstructor(m, 'tavaxp', TavaxP.createInstance);
   registerCoinConstructor(m, 'xrp', Xrp.createInstance);
   registerCoinConstructor(m, 'txrp', Txrp.createInstance);
   registerCoinConstructor(m, 'xlm', Xlm.createInstance);
