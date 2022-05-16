@@ -1,0 +1,42 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "rootDir": "./",
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types",
+      "../../node_modules/@types"
+    ],
+    "paths": {
+      "@src/*": ["src/*"],
+      "@images/*": ["src/images/*"],
+      "@styles/*": ["src/styles/*"],
+      "@components/*": ["src/components/*"]
+    },
+    "removeComments": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es6",
+    "types": ["node", "cypress", "@testing-library/cypress"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../bitgo"
+    },
+    {
+      "path": "../sdk-api"
+    }
+  ]
+}

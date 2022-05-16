@@ -101,7 +101,7 @@ export const DefaultConfig: Config = {
  * @param url
  * @return {string}
  */
- function _forceSecureUrl(url: string): string {
+function _forceSecureUrl(url: string): string {
   const regex = new RegExp(/(^\w+:|^)\/\//);
   if (regex.test(url)) {
     return url.replace(/(^\w+:|^)\/\//, 'https://');

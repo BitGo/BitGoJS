@@ -34,9 +34,9 @@ async function setForwarderFlags() {
     coinSpecific: {
       gteth: {
         deployForwardersManually: !deployForwardersManually,
-        flushForwardersManually: !flushForwardersManually
-      }
-    }
+        flushForwardersManually: !flushForwardersManually,
+      },
+    },
   };
 
   await wallet.updateForwarders(forwarderFlags);

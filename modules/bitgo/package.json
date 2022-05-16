@@ -38,7 +38,7 @@
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
-    "precommit": "lint-staged",
+    "precommit": "yarn lint-staged",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
     "upload-docs": "node scripts/upload-docs.js",
@@ -104,7 +104,6 @@
     "karma-jasmine": "^4.0.0",
     "karma-mocha": "^2.0.1",
     "karma-typescript": "^5.0.3",
-    "lint-staged": "^8.1.4",
     "minimist": "^1.2.5",
     "nock": "=9.0.28",
     "nyc": "^15.0.0",
@@ -134,6 +133,12 @@
   "nyc": {
     "extension": [
       ".ts"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
     ]
   },
   "publishConfig": {

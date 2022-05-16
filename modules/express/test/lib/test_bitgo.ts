@@ -227,7 +227,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     tethWallet,
     tbtcWallet,
     unspentWallet,
-    sweep1Wallet
+    sweep1Wallet,
   } = yield Bluebird.props({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
@@ -279,8 +279,8 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
 const oldFetchConstants = BitGo.prototype.fetchConstants;
 BitGo.prototype.fetchConstants = function () {
   nock(this._baseUrl)
-  .get('/api/v1/client/constants')
-  .reply(200, { ttl: 3600, constants: {} });
+    .get('/api/v1/client/constants')
+    .reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
   BitGo.prototype._constants = undefined;

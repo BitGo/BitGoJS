@@ -1365,7 +1365,7 @@ describe('V2 Wallet:', function () {
           intentType: 'payment',
           memo: {
             type: 'type',
-            value: 'test memo'
+            value: 'test memo',
           },
         });
 
@@ -1375,8 +1375,8 @@ describe('V2 Wallet:', function () {
           type: 'transfer',
           memo: {
             type: 'type',
-            value: 'test memo'
-          }
+            value: 'test memo',
+          },
         });
 
         txPrebuild.should.deepEqual({
@@ -1500,7 +1500,7 @@ describe('V2 Wallet:', function () {
         type: 'transfer',
         recipients: [{
           address: 'address',
-          amount: '1000'
+          amount: '1000',
         }],
       };
 

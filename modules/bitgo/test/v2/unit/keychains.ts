@@ -264,7 +264,7 @@ describe('V2 Keychains', function () {
           multisigType: 'tss',
           passphrase: 'password',
           enterprise: 'enterprise',
-          originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode'
+          originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
         });
         keychains.should.deepEqual(stubbedKeychainsTriplet);
       });
