@@ -1,0 +1,54 @@
+{
+  "name": "@bitgo/sdk-coin-avaxp",
+  "version": "0.0.1",
+  "description": "BitGo's SDK coin library for avaxp coin",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build",
+    "scriptsComment": {
+      "build": "Need to re-add unit-test: 'nyc -- mocha' and test 'npm run unit-test', removed to green build and will add tests as implemented"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-avaxp"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0",
+    "avalanche": "3.13.3",
+    "bignumber.js": "^9.0.0",
+    "bip32": "^2.0.6",
+    "secp256k1": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^11.11.4"
+  }
+}
