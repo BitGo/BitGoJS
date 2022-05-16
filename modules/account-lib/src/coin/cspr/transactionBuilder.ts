@@ -2,14 +2,16 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import _ from 'lodash';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import {
+  BaseAddress,
+  BaseKey,
+  BaseTransactionBuilder,
   BuildTransactionError,
-  SigningError,
   InvalidTransactionError,
   ParseTransactionError,
-} from '../baseCoin/errors';
+  SigningError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import {

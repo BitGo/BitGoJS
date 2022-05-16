@@ -1,5 +1,4 @@
-import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
-import { KeyPairOptions } from '../baseCoin/iface';
+import { KeyPairOptions, Secp256k1ExtendedKeyPair } from '@bitgo/sdk-core';
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**

@@ -1,10 +1,10 @@
 import assert from 'assert';
 import should from 'should';
-import { AvaxC, getBuilder, BaseCoin } from '../../../../../src';
+import { AvaxC, getBuilder } from '../../../../../src';
 import { TransactionBuilder } from '../../../../../src/coin/avaxc';
 import { ETHTransactionType, TxData } from '../../../../../src/coin/eth/iface';
 import * as testData from '../../../../resources/avaxc/avaxc';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('Avax C-Chain Transfer Transaction', function () {
   let txBuilder: AvaxC.TransactionBuilder;
@@ -51,7 +51,7 @@ describe('Avax C-Chain Transfer Transaction', function () {
       fee: '280000000000',
       gasLimit: '7000000',
     });
-    builder.type(BaseCoin.TransactionType.Send);
+    builder.type(TransactionType.Send);
     builder.contract(testData.TEST_ACCOUNT.ethAddress);
     builder
       .transfer()
@@ -126,7 +126,7 @@ describe('Avax C-Chain Transfer Transaction', function () {
   it('Should fail building transfer tx without fee', async function () {
     const builder = getBuilder('tavaxc') as TransactionBuilder;
     builder.counter(1);
-    builder.type(BaseCoin.TransactionType.Send);
+    builder.type(TransactionType.Send);
     builder.contract(testData.TEST_ACCOUNT.ethAddress);
     builder
       .transfer()

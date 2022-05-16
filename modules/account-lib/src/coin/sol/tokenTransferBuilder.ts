@@ -1,8 +1,7 @@
 import { BaseCoin as CoinConfig, coins, SolCoin } from '@bitgo/statics';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { getAssociatedTokenAccountAddress, isValidAmount, validateAddress } from './utils';
-import { TransactionType } from '../baseCoin';
 import { InstructionBuilderTypes } from './constants';
 import { TokenTransfer } from './iface';
 

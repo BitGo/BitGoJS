@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import { TransactionId, AccountId, PublicKey, PrivateKey } from '@hashgraph/sdk';
-import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { UtilsError } from '../baseCoin/errors';
 import { AddressDetails } from './ifaces';
 import url from 'url';
 import querystring from 'querystring';
+import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
+export { toHex, toUint8Array };
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -68,26 +68,6 @@ export function isValidPublicKey(key: string): boolean {
   } catch (e) {
     return false;
   }
-}
-
-/**
- * Returns an hex string of the given buffer
- *
- * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
- * @returns {string} - the hex value
- */
-export function toHex(buffer: Buffer | Uint8Array): string {
-  return hex.encode(buffer, true);
-}
-
-/**
- * Returns a Uint8Array of the given hex string
- *
- * @param {string} str - the hex string to be converted
- * @returns {string} - the Uint8Array value
- */
-export function toUint8Array(str: string): Uint8Array {
-  return hex.decode(str);
 }
 
 /**

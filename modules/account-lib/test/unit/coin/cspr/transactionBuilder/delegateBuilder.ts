@@ -4,7 +4,7 @@ import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr';
 import { DELEGATE_VALIDATOR_ACCOUNT } from '../../../../../src/coin/cspr/constants';
 import * as testData from '../../../../resources/cspr/cspr';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { DelegateBuilder } from '../../../../../src/coin/cspr/delegateBuilder';
 
 describe('CSPR Delegate Builder', () => {

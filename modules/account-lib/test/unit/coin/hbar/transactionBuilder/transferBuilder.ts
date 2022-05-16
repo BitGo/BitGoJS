@@ -3,7 +3,7 @@ import * as should from 'should';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('HBAR Transfer Builder', () => {
   const factory = register('thbar', TransactionBuilderFactory);

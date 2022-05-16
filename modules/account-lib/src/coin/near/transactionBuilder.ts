@@ -1,8 +1,13 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder, Interface } from '../baseCoin';
-import { BuildTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey, PublicKey as BasePublicKey } from '../baseCoin/iface';
+import {
+  BaseAddress,
+  BaseKey,
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  PublicKey as BasePublicKey,
+  Signature,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import * as nearAPI from 'near-api-js';
 import { AddressValidationError } from './errors';
@@ -19,7 +24,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _nonce: number;
   private _recentBlockHash: string;
   private _signer: KeyPair;
-  private _signatures: Interface.Signature[] = []; // only support single sig for now
+  private _signatures: Signature[] = []; // only support single sig for now
   protected _actions: nearAPI.transactions.Action[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {

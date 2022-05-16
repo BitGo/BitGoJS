@@ -1,7 +1,7 @@
 import { coins } from '@bitgo/statics';
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from '../../../../src/coin/near';
 import * as NearResources from '../../../resources/near';
 

@@ -1,12 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from '.';
-import { Entry, TransactionRecipient } from '../baseCoin/iface';
+import { Entry, TransactionRecipient, NotSupported } from '@bitgo/sdk-core';
 import { instructionParamsFactory } from './instructionParamsFactory';
 import { InstructionBuilderTypes } from './constants';
 import { getSolTokenFromAddress } from './utils';
 import { AtaInit, Memo, TransactionExplanation } from './iface';
 import BigNumber from 'bignumber.js';
-import { NotSupported } from '../baseCoin/errors';
 
 const TRANSFER_AMOUNT_UNKNOWN_TEXT = 'TRANSFER_AMOUNT_UNKNOWN';
 

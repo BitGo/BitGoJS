@@ -1,7 +1,7 @@
 import ethUtil from 'ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
-import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 
 /** ETH transfer builder */

@@ -1,14 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TransactionType } from '../baseCoin';
 import { AddAnonymousProxyArgs, AddProxyArgs, MethodNames, ProxyType } from './iface';
 import { AddressInitializationSchema, AnonymousAddressInitializationSchema } from './txnSchema';
-import { BaseAddress } from '../baseCoin/iface';
 import { ValidationResult } from 'joi';
 
 export class AddressInitializationBuilder extends TransactionBuilder {

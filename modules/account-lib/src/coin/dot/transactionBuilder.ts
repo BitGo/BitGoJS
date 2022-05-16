@@ -4,17 +4,20 @@ import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate
 import { decode } from '@substrate/txwrapper-polkadot';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { isValidEd25519Seed } from '../../utils/crypto';
-import { BaseTransactionBuilder, TransactionType, Interface } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import {
   BaseAddress,
   BaseKey,
+  BaseTransactionBuilder,
+  BuildTransactionError,
   FeeOptions,
-  SequenceId,
-  ValidityWindow,
+  InvalidTransactionError,
+  isValidEd25519Seed,
   PublicKey as BasePublicKey,
-} from '../baseCoin/iface';
+  SequenceId,
+  Signature,
+  TransactionType,
+  ValidityWindow,
+} from '@bitgo/sdk-core';
 import { AddressValidationError, InvalidFeeError } from './errors';
 import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
@@ -40,7 +43,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // signatures that will be used to sign a transaction when building
   // not the same as the _signatures in transaction which is the signature in
   // string hex format used for validation after we call .build()
-  protected _signatures: Interface.Signature[] = []; // only support single sig for now
+  protected _signatures: Signature[] = []; // only support single sig for now
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);

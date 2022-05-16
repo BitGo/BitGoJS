@@ -1,8 +1,6 @@
 import * as coinModules from '..';
-import { BaseKeyPair } from '../coin/baseCoin';
-import { KeyPairOptions } from '../coin/baseCoin/iface';
+import { BaseKeyPair, KeyPairOptions, NotSupported } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
-import { NotSupported } from '../coin/baseCoin/errors';
 
 export function register(coinName: string, source?: KeyPairOptions): BaseKeyPair {
   const sanitizedCoinName = coins.get(coinName.trim().toLowerCase()).family;

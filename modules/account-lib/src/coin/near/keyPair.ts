@@ -1,5 +1,4 @@
-import { Ed25519KeyPair } from '../baseCoin';
-import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair } from '@bitgo/sdk-core';
 import * as nearApi from 'near-api-js';
 import { toHex, toUint8Array } from '../hbar/utils';
 import * as nacl from 'tweetnacl';

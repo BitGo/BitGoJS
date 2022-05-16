@@ -1,6 +1,5 @@
 import BN from 'bn.js';
-import { TransactionType } from '../baseCoin';
-import { TransactionExplanation as BaseTransactionExplanation } from '../baseCoin/iface';
+import { TransactionType, TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;

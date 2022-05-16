@@ -1,7 +1,6 @@
 import { StakeInstruction, SystemInstruction, TransactionInstruction } from '@solana/web3.js';
 
-import { TransactionType } from '../baseCoin';
-import { NotSupported } from '../baseCoin/errors';
+import { TransactionType, NotSupported } from '@bitgo/sdk-core';
 import {
   InstructionBuilderTypes,
   ValidInstructionTypesEnum,

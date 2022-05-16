@@ -1,6 +1,12 @@
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
-import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
-import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
+import {
+  DefaultKeys,
+  isPrivateKey,
+  isPublicKey,
+  isSeed,
+  KeyPairOptions,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo/sdk-core';
 import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
 

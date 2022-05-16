@@ -1,15 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseKey, BaseTransaction, SigningError, toHex, toUint8Array, TransactionType } from '@bitgo/sdk-core';
 import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import * as Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey } from '../baseCoin/iface';
-import { SigningError } from '../baseCoin/errors';
 import { TxData } from './ifaces';
-import { stringifyAccountId, stringifyTxTime, toHex, toUint8Array } from './utils';
+import { stringifyAccountId, stringifyTxTime } from './utils';
 import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {

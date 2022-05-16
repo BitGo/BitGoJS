@@ -4,7 +4,7 @@ import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
 import { BlsKeys, KeyPairOptions, isDkg, isBlsKey, isPrivateKey } from './iface';
-import { isValidBLSPublicKey, isValidBLSPrivateKey, bigIntToHex } from '../../utils/crypto';
+import { isValidBLSPublicKey, isValidBLSPrivateKey, bigIntToHex } from '../util/crypto';
 
 const DEFAULT_SIGNATURE_THRESHOLD = 2;
 const DEFAULT_SIGNATURE_PARTICIPANTS = 3;
@@ -86,7 +86,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @return signature of the bytes using this keypair
    */
   async sign(msg: Buffer): Promise<string> {
-    if (this.keyPair.prv) {
+    if (this.keyPair?.prv) {
       const signedMessage = await BLS.sign(msg, BigInt(this.keyPair.prv));
       return bigIntToHex(signedMessage);
     }
