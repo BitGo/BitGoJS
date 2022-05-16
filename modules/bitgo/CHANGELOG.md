@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.6](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.5...bitgo@14.2.0-rc.6) (2022-05-16)
+
+
+### Features
+
+* **statics:** add fiatusd and tfiatusd coins ([1750a43](https://github.com/BitGo/BitGoJS/commit/1750a4319298a839fc7dd3f418420f26b2cdb5a0))
+
+
+
+
+
 # [14.2.0-rc.5](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.4...bitgo@14.2.0-rc.5) (2022-05-13)
 
 **Note:** Version bump only for package bitgo
