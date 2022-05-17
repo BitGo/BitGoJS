@@ -1,3 +1,4 @@
+export * from './trading/iTradingAccount';
 export * from './bitgoBase';
 export * from './environments';
 export * from './types';
