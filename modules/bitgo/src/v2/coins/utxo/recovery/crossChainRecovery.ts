@@ -19,7 +19,7 @@ import {
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { Dimensions } from '@bitgo/unspents';
 
-import { BitGo } from '../../../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, TransactionInfo } from '../../abstractUtxoCoin';
 import { Wallet } from '../../../wallet';
 
@@ -91,7 +91,11 @@ type WalletV1 = {
   getEncryptedUserKeychain(): Promise<{ encryptedXprv: string }>;
 };
 
-export async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: string): Promise<Wallet | WalletV1> {
+export async function getWallet(
+  bitgo: BitGoBase,
+  coin: AbstractUtxoCoin,
+  walletId: string
+): Promise<Wallet | WalletV1> {
   try {
     return await coin.wallets().get({ id: walletId });
   } catch (e) {
@@ -369,11 +373,11 @@ type RecoverParams = {
  * Fetches the unspent data from BitGo's public blockchain API and the script data from the user's
  * wallet.
  *
- * @param {BitGo} bitgo
+ * @param {BitGoBase} bitgo
  * @param {RecoverParams} params
  */
 export async function recoverCrossChain(
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   params: RecoverParams
 ): Promise<CrossChainRecoverySigned | CrossChainRecoveryUnsigned> {
   const wallet = await getWallet(bitgo, params.recoveryCoin, params.walletId);

@@ -4,10 +4,9 @@
 import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BitGoBase, TransactionType } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { BitGo } from '../bitgo';
 import { RequestTracer } from './internal/util';
 import { Wallet, WalletData } from './wallet';
 import { Wallets } from './wallets';
@@ -220,7 +219,7 @@ export type SignedTransaction =
   | SignedTransactionRequest;
 
 export abstract class BaseCoin {
-  protected readonly bitgo: BitGo;
+  protected readonly bitgo: BitGoBase;
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
   protected readonly _wallets: Wallets;
@@ -230,7 +229,7 @@ export abstract class BaseCoin {
   protected readonly _markets: Markets;
   protected static readonly _coinTokenPatternSeparator = ':';
 
-  protected constructor(bitgo: BitGo) {
+  protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
     this._url = this.bitgo.url('/', 2);
     this._wallets = new Wallets(this.bitgo, this);

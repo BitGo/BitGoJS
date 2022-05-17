@@ -1,10 +1,9 @@
 import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
 
 import { BaseCoin, KeychainsTriplet, KeyPair } from './baseCoin';
 import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import { TssUtils } from './internal/tssUtils';
 import { BlsUtils } from './internal/blsUtils';
 
@@ -125,10 +124,10 @@ export enum KeyIndices {
 
 export class Keychains {
 
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

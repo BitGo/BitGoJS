@@ -5,7 +5,7 @@
 
 /**
  */
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin } from '../baseCoin';
 import { isUndefined } from 'lodash';
 
@@ -20,7 +20,7 @@ import { isUndefined } from 'lodash';
 export async function getFirstPendingTransaction(
   params: { walletId?: string; enterpriseId?: string },
   baseCoin: BaseCoin,
-  bitgo: BitGo
+  bitgo: BitGoBase
 ): Promise<any> {
   // These errors should never happen when this is called from wallet.js or enterprise.js
   if (isUndefined(baseCoin)) {

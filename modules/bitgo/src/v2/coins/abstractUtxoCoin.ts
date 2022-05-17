@@ -19,7 +19,7 @@ import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import * as config from '../../config';
 import * as errors from '../../errors';
 
@@ -242,7 +242,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   public supportAltScriptDestination?: boolean;
   private readonly _network: utxolib.Network;
 
-  protected constructor(bitgo: BitGo, network: utxolib.Network) {
+  protected constructor(bitgo: BitGoBase, network: utxolib.Network) {
     super(bitgo);
     if (!_.isObject(network)) {
       throw new Error('network must be an object');

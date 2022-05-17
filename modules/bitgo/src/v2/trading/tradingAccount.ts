@@ -3,7 +3,7 @@
  */
 
 import { BigNumber } from 'bignumber.js';
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 
 import { Wallet } from '../wallet';
 import { Payload } from './payload';
@@ -45,12 +45,12 @@ export interface CalculateSettlementFeesParams {
 }
 
 export class TradingAccount {
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly enterpriseId: string;
 
   public wallet: Wallet;
 
-  constructor(enterpriseId: string, wallet: Wallet, bitgo: BitGo) {
+  constructor(enterpriseId: string, wallet: Wallet, bitgo: BitGoBase) {
     this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;

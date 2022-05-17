@@ -3,9 +3,8 @@
  */
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
-import { BitGo } from '../bitgo';
 
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import { PendingApproval } from './pendingApproval';
 import { BaseCoin } from './baseCoin';
 
@@ -26,10 +25,10 @@ export interface ListPendingApprovalsResult {
 }
 
 export class PendingApprovals {
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

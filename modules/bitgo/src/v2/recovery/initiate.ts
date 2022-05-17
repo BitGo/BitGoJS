@@ -5,7 +5,7 @@
 import * as bip32 from 'bip32';
 import * as stellar from 'stellar-sdk';
 
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin } from '../baseCoin';
 import * as config from '../../config';
 
@@ -75,7 +75,7 @@ export function getIsUnsignedSweep({ backupKey, userKey }: { backupKey: string; 
 }
 
 export function validateKey(
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   { key, source, passphrase, isUnsignedSweep, isKrsRecovery }: ValidateKeyOptions
 ): bip32.BIP32Interface {
   if (!key.startsWith('xprv') && !isUnsignedSweep) {
@@ -96,7 +96,7 @@ export function validateKey(
 }
 
 export function getBip32Keys(
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   params: InitiateRecoveryOptions,
   { requireBitGoXpub }: { requireBitGoXpub: boolean }
 ): bip32.BIP32Interface[] {
@@ -136,7 +136,7 @@ export function getBip32Keys(
   return keys;
 }
 
-export function getStellarKeys(bitgo: BitGo, params: InitiateRecoveryOptions): stellar.Keypair[] {
+export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions): stellar.Keypair[] {
   const keys: stellar.Keypair[] = [];
   let userKey = params.userKey;
   let backupKey = params.backupKey;

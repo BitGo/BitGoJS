@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 
 import { Lock } from './lock';
 import { Payload } from './payload';
@@ -17,7 +17,7 @@ export enum AffirmationStatus {
 }
 
 export class Affirmation {
-  private bitgo: BitGo;
+  private bitgo: BitGoBase;
   private enterpriseId: string;
 
   public id?: string;
@@ -29,7 +29,7 @@ export class Affirmation {
   public createdAt?: Date;
   public expireAt?: Date;
 
-  constructor(affirmationData: any, bitgo: BitGo, enterpriseId: string) {
+  constructor(affirmationData: any, bitgo: BitGoBase, enterpriseId: string) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
 

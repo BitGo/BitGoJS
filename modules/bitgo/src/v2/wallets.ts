@@ -5,8 +5,7 @@ import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
-import { BitGo } from '../bitgo';
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
 import { Keychain } from './keychains';
 import { IRequestTracer, sanitizeLegacyPath } from '@bitgo/sdk-api';
@@ -102,10 +101,10 @@ export interface ListWalletOptions extends PaginationOptions {
 }
 
 export class Wallets {
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

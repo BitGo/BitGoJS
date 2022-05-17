@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 
 import { TradingAccount } from './tradingAccount';
 import { TradingPartner, TradingPartnerType } from './tradingPartner';
@@ -22,12 +22,12 @@ export interface TradingPartnerAddByCodeParameters {
 }
 
 export class TradingPartners {
-  private bitgo: BitGo;
+  private bitgo: BitGoBase;
 
   private enterpriseId: string;
   private account: TradingAccount;
 
-  constructor(bitgo: BitGo, enterpriseId: string, account: TradingAccount) {
+  constructor(bitgo: BitGoBase, enterpriseId: string, account: TradingAccount) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
     this.account = account;

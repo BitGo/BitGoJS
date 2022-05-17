@@ -11,7 +11,7 @@ import Eddsa, { KeyShare, YShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 
 import { BaseCoin, KeychainsTriplet } from '../baseCoin';
 import { Keychain, KeyType } from '../keychains';
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
 import { Memo, Wallet } from '..';
@@ -79,7 +79,7 @@ export interface SignatureShareRecord {
 export class TssUtils extends MpcUtils {
   private _wallet?: Wallet;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, wallet?: Wallet) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin, wallet?: Wallet) {
     super(bitgo, baseCoin);
     this._wallet = wallet;
   }
