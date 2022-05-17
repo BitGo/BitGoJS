@@ -1,3 +1,3 @@
-export interface Keychains {
+export interface IKeychains {
   placehold: unknown;
 }

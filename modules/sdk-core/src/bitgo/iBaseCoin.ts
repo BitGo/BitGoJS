@@ -1,3 +1,3 @@
-export interface BaseCoin {
+export interface IBaseCoin {
   placeholder: unknown;
 }

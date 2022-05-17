@@ -1,3 +1,3 @@
-export interface Webhooks {
+export interface IWebhooks {
   placehold: unknown;
 }

@@ -1,3 +1,3 @@
-export interface PendingApprovals {
+export interface IPendingApprovals {
   placehold: unknown;
 }

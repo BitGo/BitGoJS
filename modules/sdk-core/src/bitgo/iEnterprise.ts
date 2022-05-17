@@ -1,3 +1,3 @@
-export interface Enterprise {
+export interface IEnterprise {
   placehold: unknown;
 }

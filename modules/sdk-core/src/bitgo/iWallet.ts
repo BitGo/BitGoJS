@@ -1,3 +1,3 @@
-export interface Wallet {
+export interface IWallet {
   placeholder: unknown;
 }
