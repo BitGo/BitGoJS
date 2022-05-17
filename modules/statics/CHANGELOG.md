@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.6...@bitgo/statics@6.18.0-rc.7) (2022-05-17)
+
+
+### Bug Fixes
+
+* **statics:** remove bn.js dependency ([d473aa1](https://github.com/BitGo/BitGoJS/commit/d473aa1958ee405c35d4e86ed520082fd5cb64b1))
+
+
+### Features
+
+* **statics:** add fly coin ([4ee0b05](https://github.com/BitGo/BitGoJS/commit/4ee0b0556a3358999fe5f9986882ca3e2389038c))
+* **statics:** add polygon coin config ([fc7f9b3](https://github.com/BitGo/BitGoJS/commit/fc7f9b3ee22849cf615ca49dc32ac2fcac687ec7))
+
+
+
+
+
 # [6.18.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.5...@bitgo/statics@6.18.0-rc.6) (2022-05-16)
 
 
