@@ -1,4 +1,5 @@
 import { IRequestTracer } from '../api';
+import { KeychainsTriplet, KeyPair } from './iBaseCoin';
 import { IWallet } from './iWallet';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
@@ -106,17 +107,6 @@ interface CreateMpcOptions {
 interface GetKeysForSigningOptions {
   reqId?: IRequestTracer;
   wallet?: IWallet;
-}
-
-export interface KeyPair {
-  pub?: string;
-  prv: string;
-}
-
-export interface KeychainsTriplet {
-  userKeychain: Keychain;
-  backupKeychain: Keychain;
-  bitgoKeychain: Keychain;
 }
 
 export enum KeyIndices {
