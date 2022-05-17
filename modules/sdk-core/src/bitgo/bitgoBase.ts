@@ -1,28 +1,5 @@
-import * as superagent from 'superagent';
+import { BitGoRequest, DecryptOptions, EncryptOptions, GetSharingKeyOptions, IRequestTracer } from '../api';
 import { EnvironmentName } from './environments';
-
-export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest {
-  result: (optionalField?: string) => Promise<ResultType>;
-}
-
-export interface DecryptOptions {
-  input: string;
-  password?: string;
-}
-
-export interface EncryptOptions {
-  input: string;
-  password?: string;
-}
-
-export interface GetSharingKeyOptions {
-  email: string;
-}
-
-export interface IRequestTracer {
-  inc(): void;
-  toString(): string;
-}
 
 export interface BitGoBase {
   coin(coinName: string): any; // need to change it to BaseCoin once it's moved to @bitgo/sdk-core

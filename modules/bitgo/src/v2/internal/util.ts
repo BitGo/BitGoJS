@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { EthereumLibraryUnavailableError } from '../../errors';
-import { IRequestTracer } from '@bitgo/sdk-api';
+import { IRequestTracer } from '@bitgo/sdk-core';
 
 const debug = debugLib('bitgo:v2:util');
 

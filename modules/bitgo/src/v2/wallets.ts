@@ -5,10 +5,10 @@ import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
-import { BitGoBase, common } from '@bitgo/sdk-core';
+import { BitGoBase, common, IRequestTracer } from '@bitgo/sdk-core';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
 import { Keychain } from './keychains';
-import { IRequestTracer, sanitizeLegacyPath } from '@bitgo/sdk-api';
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { PaginationOptions, Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';

@@ -1,4 +1,4 @@
-import { BitGoJsError, EnvironmentName, V1Network } from '@bitgo/sdk-core';
+import { BitGoJsError, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 
 export interface BitGoAPIOptions {
   accessToken?: string;
@@ -18,11 +18,6 @@ export interface BitGoAPIOptions {
   useProduction?: boolean;
   userAgent?: string;
   validate?: boolean;
-}
-
-export interface IRequestTracer {
-  inc(): void;
-  toString(): string;
 }
 
 export interface AccessTokenOptions {
@@ -125,16 +120,6 @@ export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
   }
 }
 
-export interface EncryptOptions {
-  input: string;
-  password?: string;
-}
-
-export interface DecryptOptions {
-  input: string;
-  password?: string;
-}
-
 export interface User {
   username: string;
 }
@@ -185,8 +170,4 @@ export interface UnlockOptions {
 }
 export interface ExtendTokenOptions {
   duration?: string;
-}
-
-export interface GetSharingKeyOptions {
-  email: string;
 }
