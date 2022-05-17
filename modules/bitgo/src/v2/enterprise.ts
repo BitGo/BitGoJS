@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin } from './baseCoin';
 import { Wallet } from './wallet';
 import { getFirstPendingTransaction } from './internal/internal';
@@ -11,12 +11,12 @@ import { Settlements } from './trading/settlements';
 import { Affirmations } from './trading/affirmations';
 
 export class Enterprise {
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly baseCoin: BaseCoin;
   readonly id: string;
   readonly name: string;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     if (!_.isObject(enterpriseData)) {

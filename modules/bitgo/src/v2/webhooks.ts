@@ -5,9 +5,8 @@
  */
 
 import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
 
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import { BaseCoin } from './baseCoin';
 
 const { validateParams } = common;
@@ -34,9 +33,9 @@ export interface SimulateOptions {
 }
 
 export class Webhooks {
-  private bitgo: BitGo;
+  private bitgo: BitGoBase;
   private baseCoin: BaseCoin;
-  public constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  public constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

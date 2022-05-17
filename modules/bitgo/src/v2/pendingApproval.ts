@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import { BitGo } from '../bitgo';
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 
@@ -67,13 +66,13 @@ export interface ApproveOptions {
 }
 
 export class PendingApproval {
-  private readonly bitgo: BitGo;
+  private readonly bitgo: BitGoBase;
   private readonly baseCoin: BaseCoin;
   private tssUtils: TssUtils;
   private wallet?: Wallet;
   private _pendingApproval: PendingApprovalData;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, pendingApprovalData: PendingApprovalData, wallet?: Wallet) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin, pendingApprovalData: PendingApprovalData, wallet?: Wallet) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this.wallet = wallet;

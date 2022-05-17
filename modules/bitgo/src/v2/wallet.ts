@@ -7,8 +7,7 @@ import * as _ from 'lodash';
 import * as debugLib from 'debug';
 
 import { makeRandomKey } from '../bitcoin';
-import { BitGo } from '../bitgo';
-import { common } from '@bitgo/sdk-core';
+import { BitGoBase, common } from '@bitgo/sdk-core';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import {
   BaseCoin,
@@ -517,13 +516,13 @@ export interface DownloadKeycardOptions {
 // #endregion
 
 export class Wallet {
-  public readonly bitgo: BitGo;
+  public readonly bitgo: BitGoBase;
   public readonly baseCoin: BaseCoin;
   private _wallet: WalletData;
   private readonly tssUtils: TssUtils;
   private readonly _permissions?: string[];
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
+  constructor(bitgo: BitGoBase, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this._wallet = walletData;
