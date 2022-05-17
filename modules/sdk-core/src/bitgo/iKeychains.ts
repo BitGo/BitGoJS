@@ -1,3 +1,139 @@
+import { IRequestTracer } from '../api';
+import { IWallet } from './iWallet';
+
+export type KeyType = 'tss' | 'independent' | 'blsdkg';
+
+export interface Keychain {
+  id: string;
+  pub: string;
+  prv?: string;
+  provider?: string;
+  encryptedPrv?: string;
+  derivationPath?: string;
+  derivedFromParentWithSeed?: string;
+  commonPub?: string;
+  commonKeychain?: string;
+  keyShares?: KeyShare[];
+}
+
+export interface ChangedKeychains {
+  [pubkey: string]: string;
+}
+
+export interface ListKeychainsResult {
+  keys: Keychain[];
+  nextBatchPrevId?: string;
+}
+
+export interface GetKeychainOptions {
+  id: string;
+  xpub?: string;
+  ethAddress?: string;
+  reqId?: IRequestTracer;
+}
+
+export interface ListKeychainOptions {
+  limit?: number;
+  prevId?: string;
+}
+
+export interface UpdatePasswordOptions {
+  oldPassword: string;
+  newPassword: string;
+}
+
+interface UpdateSingleKeychainPasswordOptions {
+  keychain?: Keychain;
+  oldPassword?: string;
+  newPassword?: string;
+}
+
+interface AddKeychainOptions {
+  pub?: string;
+  commonPub?: string;
+  commonKeychain?: string;
+  encryptedPrv?: string;
+  type?: string;
+  keyType?: KeyType;
+  source?: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
+  derivedFromParentWithSeed?: any;
+  disableKRSEmail?: boolean;
+  provider?: string;
+  reqId?: IRequestTracer;
+  krsSpecific?: any;
+  keyShares?: KeyShare[];
+  userGPGPublicKey?: string;
+  backupGPGPublicKey?: string;
+}
+
+interface KeyShare {
+  from: string;
+  to: string;
+  publicShare: string;
+  privateShare: string;
+}
+
+export interface CreateBackupOptions {
+  provider?: string;
+  source?: string;
+  disableKRSEmail?: boolean;
+  krsSpecific?: any;
+  type?: string;
+  keyType?: KeyType;
+  reqId?: IRequestTracer;
+  commonPub?: string;
+  commonKeychain?: string;
+  prv?: string;
+  encryptedPrv?: string;
+}
+
+interface CreateBitGoOptions {
+  source?: 'bitgo';
+  enterprise?: string;
+  reqId?: IRequestTracer;
+  keyType?: KeyType;
+}
+
+interface CreateMpcOptions {
+  multisigType: 'onchain' | 'tss' | 'blsdkg';
+  passphrase: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
+}
+
+interface GetKeysForSigningOptions {
+  reqId?: IRequestTracer;
+  wallet?: IWallet;
+}
+
+export interface KeyPair {
+  pub?: string;
+  prv: string;
+}
+
+export interface KeychainsTriplet {
+  userKeychain: Keychain;
+  backupKeychain: Keychain;
+  bitgoKeychain: Keychain;
+}
+
+export enum KeyIndices {
+  USER = 0,
+  BACKUP = 1,
+  BITGO = 2,
+}
+
 export interface IKeychains {
-  placehold: unknown;
+  get(params: GetKeychainOptions): Promise<Keychain>;
+  list(params: ListKeychainOptions): Promise<ListKeychainsResult>;
+  updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
+  updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions): Keychain;
+  create(params: { seed?: Buffer }): KeyPair;
+  add(params: AddKeychainOptions): Promise<Keychain>;
+  createBitGo(params: CreateBitGoOptions): Promise<Keychain>;
+  createBackup(params: CreateBackupOptions): Promise<Keychain>;
+  getKeysForSigning(params: GetKeysForSigningOptions): Promise<Keychain[]>;
+  createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
 }
