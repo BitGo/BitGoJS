@@ -1,6 +1,5 @@
 import { CoinFamily } from './base';
 import { mainnetMetadataRpc, westendMetadataRpc } from '../resources/dot';
-import * as BN from 'bn.js';
 
 export enum NetworkType {
   MAINNET = 'mainnet',
@@ -23,21 +22,21 @@ export interface AvalancheNetwork extends BaseNetwork {
   readonly alias: string;
   readonly blockchainID: string;
   readonly vm: string;
-  readonly creationTxFee: BN;
-  readonly createSubnetTx: BN;
-  readonly createChainTx: BN;
+  readonly creationTxFee: bigint;
+  readonly createSubnetTx: bigint;
+  readonly createChainTx: bigint;
   readonly minConsumption: number;
   readonly maxConsumption: number;
-  readonly maxStakingDuration: BN;
-  readonly maxSupply: BN;
-  readonly minStake: BN;
+  readonly maxStakingDuration: bigint;
+  readonly maxSupply: bigint;
+  readonly minStake: bigint;
   readonly minStakeDuration: number;
   readonly maxStakeDuration: number;
-  readonly minDelegationStake: BN;
-  readonly minDelegationFee: BN;
+  readonly minDelegationStake: bigint;
+  readonly minDelegationFee: bigint;
   // current valid asset id is AVAX
   readonly avaxAssetID: string;
-  readonly txFee: BN;
+  readonly txFee: bigint;
 }
 
 export interface AccountNetwork extends BaseNetwork {
@@ -131,19 +130,19 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
   avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
   alias = 'P';
   vm = 'platformvm';
-  txFee = new BN(1000000); // 1 MILLIAVAX
-  createSubnetTx = new BN(1000000000); // 1 AVAX
-  createChainTx = new BN(1000000000); // 1 AVAX
-  creationTxFee = new BN(10000000); // 1 CENTIAVAX
+  txFee = BigInt(1000000); // 1 MILLIAVAX
+  createSubnetTx = BigInt(1000000000); // 1 AVAX
+  createChainTx = BigInt(1000000000); // 1 AVAX
+  creationTxFee = BigInt(10000000); // 1 CENTIAVAX
   minConsumption = 0.1;
   maxConsumption = 0.12;
-  maxStakingDuration = new BN(31536000); // 1 year
-  maxSupply = new BN(720000000).mul(new BN(1000000000)); // 720 mil tokens
-  minStake = new BN(1000000000).mul(new BN(2000));
+  maxStakingDuration = BigInt(31536000); // 1 year
+  maxSupply = BigInt(720000000) * BigInt(1000000000); // 720 mil tokens
+  minStake = BigInt(1000000000) * BigInt(2000);
   minStakeDuration = 2 * 7 * 24 * 60 * 60; // 2 weeks
   maxStakeDuration = 365 * 24 * 60 * 60; // 1 year
-  minDelegationStake = new BN(1000000000).mul(new BN(25));
-  minDelegationFee = new BN(2);
+  minDelegationStake = BigInt(1000000000) * BigInt(25);
+  minDelegationFee = BigInt(2);
 }
 
 class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
@@ -155,19 +154,19 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
   alias = 'P';
   vm = 'platformvm';
-  txFee = new BN(1000000); // 1 MILLIAVAX
-  createSubnetTx = new BN(1000000000); // 1 AVAX
-  createChainTx = new BN(1000000000); // 1 AVAX
-  creationTxFee = new BN(10000000); // 1 CENTIAVAX
+  txFee = BigInt(1000000); // 1 MILLIAVAX
+  createSubnetTx = BigInt(1000000000); // 1 AVAX
+  createChainTx = BigInt(1000000000); // 1 AVAX
+  creationTxFee = BigInt(10000000); // 1 CENTIAVAX
   minConsumption = 0.1;
   maxConsumption = 0.12;
-  maxStakingDuration = new BN(31536000); // 1 year
-  maxSupply = new BN(720000000).mul(new BN(1000000000)); // 720 mil tokens
-  minStake = new BN(1000000000); // 1 AVAX
+  maxStakingDuration = BigInt(31536000); // 1 year
+  maxSupply = BigInt(720000000) * BigInt(1000000000); // 720 mil tokens
+  minStake = BigInt(1000000000); // 1 AVAX
   minStakeDuration = 24 * 60 * 60; // 1 day
   maxStakeDuration = 365 * 24 * 60 * 60; // 1 year
-  minDelegationStake = new BN(1000000000); // 1 AVAX
-  minDelegationFee = new BN(2);
+  minDelegationStake = BigInt(1000000000); // 1 AVAX
+  minDelegationFee = BigInt(2);
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {
