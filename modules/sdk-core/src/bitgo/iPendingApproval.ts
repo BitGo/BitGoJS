@@ -1,3 +1,10 @@
+import { IRequestTracer } from '../api';
+
+export enum OwnerType {
+  WALLET = 'wallet',
+  ENTERPRISE = 'enterprise',
+}
+
 export enum State {
   PENDING = 'pending',
   AWAITING_SIGNATURE = 'awaitingSignature',
@@ -15,6 +22,13 @@ export enum Type {
   TRANSACTION_REQUEST = 'transactionRequest',
   POLICY_RULE_REQUEST = 'policyRuleRequest',
   UPDATE_APPROVALS_REQUIRED_REQUEST = 'updateApprovalsRequiredRequest',
+}
+
+export interface ApproveOptions {
+  walletPassphrase?: string;
+  otp?: string;
+  tx?: string;
+  xprv?: string;
 }
 
 export interface PendingApprovalInfo {
@@ -42,5 +56,20 @@ export interface PendingApprovalData {
 }
 
 export interface IPendingApproval {
-  placehold: unknown;
+  id(): string;
+  ownerType(): OwnerType;
+  walletId(): string | undefined;
+  enterpriseId(): string | undefined;
+  state(): State;
+  creator(): string;
+  type(): Type;
+  info(): PendingApprovalInfo;
+  approvalsRequired(): number;
+  url(extra: undefined): string;
+  get(params: Record<string, never>): Promise<IPendingApproval>;
+  approve(params: ApproveOptions): Promise<any>;
+  reject(params: Record<string, never>): Promise<any>;
+  cancel(params: Record<string, never>): Promise<any>;
+  recreateAndSignTSSTransaction(params: ApproveOptions, reqId: IRequestTracer): Promise<{ txHex: string }>;
+  recreateAndSignTransaction(params: any): Promise<any>;
 }
