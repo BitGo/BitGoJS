@@ -21,11 +21,16 @@ import {
   VALID_SYSTEM_INSTRUCTION_TYPES,
   walletInitInstructionIndexes,
 } from './constants';
-import { TransactionType } from '../baseCoin';
-import { BuildTransactionError, NotSupported, ParseTransactionError, UtilsError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  isValidXpub,
+  NotSupported,
+  ParseTransactionError,
+  TransactionType,
+  UtilsError,
+} from '@bitgo/sdk-core';
 import { ValidInstructionTypes } from './iface';
 import nacl from 'tweetnacl';
-import * as Crypto from './../../utils/crypto';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
@@ -63,7 +68,7 @@ export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
 /** @inheritdoc */
 export function isValidPublicKey(pubKey: string): boolean {
   try {
-    if (Crypto.isValidXpub(pubKey)) return true;
+    if (isValidXpub(pubKey)) return true;
     new PublicKey(pubKey);
     return true;
   } catch {

@@ -1,8 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 
-import { TransactionType } from '../baseCoin';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes } from './constants';
 import { StakingDeactivate } from './iface';
 import { Transaction } from './transaction';

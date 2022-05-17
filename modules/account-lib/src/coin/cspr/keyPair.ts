@@ -1,7 +1,13 @@
 import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
-import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed, DefaultKeys } from '../baseCoin/iface';
-import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
+import {
+  KeyPairOptions,
+  isPrivateKey,
+  isPublicKey,
+  isSeed,
+  DefaultKeys,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo/sdk-core';
 import { SECP256K1_PREFIX } from './constants';
 const DEFAULT_SEED_SIZE_BYTES = 16;
 

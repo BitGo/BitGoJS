@@ -10,7 +10,7 @@ import {
   getCommon,
 } from '../../../../src/coin/avaxc/utils';
 import { AvaxC, getBuilder } from '../../../../src/';
-import { TransactionType } from '../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { KeyPair, TransactionBuilder } from '../../../../src/coin/avaxc';
 import { ETHTransactionType, TxData } from '../../../../src/coin/eth/iface';
 

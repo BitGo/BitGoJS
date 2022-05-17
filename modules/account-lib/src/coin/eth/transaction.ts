@@ -3,9 +3,14 @@
  */
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, Entry } from '../baseCoin/iface';
-import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
+import {
+  BaseKey,
+  Entry,
+  BaseTransaction,
+  TransactionType,
+  InvalidTransactionError,
+  SigningError,
+} from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { EthLikeTransactionData, TxData } from './iface';
 import { EthTransactionData } from './types';

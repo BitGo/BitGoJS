@@ -1,4 +1,4 @@
-import { Cspr as CsprAccountLib, register, BaseCoin } from '@bitgo/account-lib';
+import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
@@ -6,6 +6,7 @@ import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
 import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from '../../fixtures/coins/cspr';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('Casper', function () {
   const coinName = 'tcspr';
@@ -389,7 +390,7 @@ describe('Casper', function () {
           gasPrice: '1',
         },
         from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
-        deployType: BaseCoin.TransactionType.StakingLock,
+        deployType: TransactionType.StakingLock,
         amount: delegateAmount,
         validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
       };
@@ -424,7 +425,7 @@ describe('Casper', function () {
             gasPrice: '1',
           },
           from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
-          deployType: BaseCoin.TransactionType.StakingLock,
+          deployType: TransactionType.StakingLock,
           amount: delegateAmount,
           validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
         },
@@ -482,7 +483,7 @@ describe('Casper', function () {
           gasPrice: '1',
         },
         from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
-        deployType: BaseCoin.TransactionType.StakingUnlock,
+        deployType: TransactionType.StakingUnlock,
         amount: undelegateAmount,
         validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
       };
@@ -517,7 +518,7 @@ describe('Casper', function () {
             gasPrice: '1',
           },
           from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
-          deployType: BaseCoin.TransactionType.StakingUnlock,
+          deployType: TransactionType.StakingUnlock,
           amount: undelegateAmount,
           validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
         },

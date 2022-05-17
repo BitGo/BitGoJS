@@ -14,9 +14,15 @@ import {
   TransactionSigner,
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo/statics';
-import { InvalidTransactionError, NotSupported, ParseTransactionError, SigningError } from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
-import { BaseTransaction, TransactionType } from '../baseCoin';
+import {
+  BaseKey,
+  BaseTransaction,
+  InvalidTransactionError,
+  NotSupported,
+  ParseTransactionError,
+  SigningError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
 import { functionArgsToSendParams, getTxSenderAddress, removeHexPrefix, stringifyCv, unpadMemo } from './utils';
 import { KeyPair } from './keyPair';

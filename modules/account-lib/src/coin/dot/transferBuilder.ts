@@ -1,15 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { TransactionType } from '../baseCoin';
 import { MethodNames, ProxyArgs, ProxyType, TransferArgs } from './iface';
 import { ProxyTransactionSchema, TransferTransactionSchema } from './txnSchema';
 import utils from './utils';
-import { BaseAddress } from '../baseCoin/iface';
 import { SingletonRegistry } from './singletonRegistry';
 
 export class TransferBuilder extends TransactionBuilder {

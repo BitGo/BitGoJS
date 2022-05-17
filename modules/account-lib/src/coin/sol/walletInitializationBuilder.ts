@@ -1,11 +1,10 @@
 import assert from 'assert';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAmount, validateAddress } from './utils';
-import { TransactionType } from '../baseCoin';
 import { WalletInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
 

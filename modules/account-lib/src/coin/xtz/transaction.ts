@@ -1,9 +1,13 @@
 import { CODEC, localForger } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
+import {
+  BaseKey,
+  BaseTransaction,
+  InvalidTransactionError,
+  ParseTransactionError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import {
   getMultisigTransferDataFromOperation,
   getMultisigTransferSignatures,

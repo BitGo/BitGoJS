@@ -10,7 +10,7 @@ import {
   someCV,
   tupleCV,
 } from '@stacks/transactions';
-import { InvalidParameterValueError } from '../baseCoin/errors';
+import { InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { isValidAddress } from './utils';
 import { ClarityValueJson } from './iface';

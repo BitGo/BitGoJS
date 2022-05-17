@@ -172,7 +172,8 @@ export const Environments: Environments = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     uri: process.env.BITGO_CUSTOM_ROOT_URI!,
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
-    hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
+    hsmXpub:
+      process.env.NODE_ENV === 'production' ? hardcodedPublicKeys.hsmXpub.prod : hardcodedPublicKeys.hsmXpub.test,
     btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://blockstream.info/testnet/api'

@@ -1,4 +1,4 @@
-import { BaseAddress } from '../baseCoin/iface';
+import { BaseAddress } from '@bitgo/sdk-core';
 
 /**
  * Base 58 address with tz2 prefix (secp256k1)

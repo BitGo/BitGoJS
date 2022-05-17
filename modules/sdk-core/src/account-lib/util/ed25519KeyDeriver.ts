@@ -43,7 +43,7 @@ export class Ed25519KeyDeriver {
     const segments = path.split('/').slice(1).map(this.replaceDerive);
     return segments.reduce(
       (parentKeys, segment) => this.CKDPriv(parentKeys, segment + Ed25519KeyDeriver.HARDENED_OFFSET),
-      { key, chainCode },
+      { key, chainCode }
     );
   }
 

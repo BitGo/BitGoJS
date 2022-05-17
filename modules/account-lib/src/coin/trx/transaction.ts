@@ -1,11 +1,14 @@
 import { createHash } from 'crypto';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseTransaction } from '../baseCoin';
 import { protocol } from '../../../resources/trx/protobuf/tron';
-import { ParseTransactionError, ExtendTransactionError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin/';
-import { BaseKey } from '../baseCoin/iface';
+import {
+  BaseKey,
+  BaseTransaction,
+  ExtendTransactionError,
+  ParseTransactionError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { ContractType } from './enum';
 import { decodeTransaction } from './utils';
 import { ContractEntry, RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';

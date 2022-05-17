@@ -4,8 +4,7 @@ import * as nacl from 'tweetnacl';
 import * as hex from '@stablelib/hex';
 import * as bls from 'noble-bls12-381';
 import { stripHexPrefix } from 'ethereumjs-utils-old';
-import { ExtendedKeys } from '../coin/baseCoin/iface';
-import { toUint8Array } from '../coin/hbar/utils';
+import { ExtendedKeys } from '../baseCoin/iface';
 import bs58 from 'bs58';
 
 /**
@@ -224,4 +223,14 @@ export function isBase58(value: string, length: number): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Returns a Uint8Array of the given hex string
+ *
+ * @param {string} str - the hex string to be converted
+ * @returns {string} - the Uint8Array value
+ */
+export function toUint8Array(str: string): Uint8Array {
+  return hex.decode(str);
 }

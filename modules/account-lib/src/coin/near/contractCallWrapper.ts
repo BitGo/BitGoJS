@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { InvalidParameterValueError } from '../baseCoin/errors';
+import { InvalidParameterValueError } from '@bitgo/sdk-core';
 import { FunctionCall } from './iface';
 
 /**

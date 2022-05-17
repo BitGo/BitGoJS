@@ -1,7 +1,5 @@
 import algosdk, { encodeAddress } from 'algosdk';
-import { Ed25519KeyPair } from '../baseCoin';
-import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
-import { InvalidKey } from '../baseCoin/errors';
+import { Ed25519KeyPair, DefaultKeys, KeyPairOptions, InvalidKey } from '@bitgo/sdk-core';
 import utils from './utils';
 
 export class KeyPair extends Ed25519KeyPair {

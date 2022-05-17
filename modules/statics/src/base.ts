@@ -35,7 +35,7 @@ export enum CoinFamily {
   FIAT = 'fiat',
   HBAR = 'hbar',
   LTC = 'ltc',
-  MATICL = 'maticl',
+  POLYGON = 'polygon',
   NEAR = 'near',
   OFC = 'ofc',
   RBTC = 'rbtc',
@@ -159,7 +159,7 @@ export enum UnderlyingAsset {
   EOS = 'eos',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
-  MATICL = 'maticl',
+  POLYGON = 'polygon',
   NEAR = 'near',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
@@ -354,6 +354,7 @@ export enum UnderlyingAsset {
   FFT = 'fft',
   FIRE = 'fire',
   FIXED = 'fixed',
+  FLY = 'fly',
   FMF = 'fmf',
   FORTH = 'forth',
   FTM = 'ftm',

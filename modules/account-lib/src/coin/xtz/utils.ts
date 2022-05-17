@@ -2,11 +2,10 @@ import * as base58check from 'bs58check';
 import sodium from 'libsodium-wrappers';
 import { InMemorySigner } from '@taquito/signer';
 import { ec as EC } from 'elliptic';
-import { SigningError } from '../baseCoin/errors';
+import { isValidXpub, SigningError } from '@bitgo/sdk-core';
 import { genericMultisigDataToSign } from './multisigUtils';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
-import * as Crypto from './../../utils/crypto';
 
 // By default, use the transactions prefix
 export const DEFAULT_WATERMARK = new Uint8Array([3]);
@@ -226,7 +225,7 @@ export function isValidPublicKey(publicKey: string): boolean {
     isValidHash(publicKey, hashTypes.sppk) ||
     isValidHash(publicKey, hashTypes.p2pk) ||
     isValidHash(publicKey, hashTypes.edpk) ||
-    Crypto.isValidXpub(publicKey) // xpubs are valid too.
+    isValidXpub(publicKey) // xpubs are valid too.
   );
 }
 

@@ -6,10 +6,11 @@ import * as _ from 'lodash';
 import * as should from 'should';
 import * as bip32 from 'bip32';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
+import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
+import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {
@@ -38,7 +39,7 @@ describe('ETH-like coins', () => {
        * @param tx The transaction to calculate operatino hash from
        * @return The operation hash
        */
-      const getOperationHash = (tx: BaseCoin.BaseTransaction): string => {
+      const getOperationHash = (tx: BaseTransaction): string => {
         const { data } = tx.toJson();
         const { tokenContractAddress, expireTime, sequenceId, amount, to } = Eth.Utils.decodeTransferData(data);
 
@@ -83,7 +84,7 @@ describe('ETH-like coins', () => {
        * @param tx The transaction to recover a signer from
        * @return The eth address of the signer
        */
-      const recoverSigner = function (tx: BaseCoin.BaseTransaction) {
+      const recoverSigner = function (tx: BaseTransaction) {
         const { signature } = Eth.Utils.decodeTransferData(tx.toJson().data);
         const { v, r, s } = ethUtil.fromRpcSig(signature);
         const operationHash = getOperationHash(tx);
@@ -115,7 +116,7 @@ describe('ETH-like coins', () => {
         gasLimit = '20000',
       }) {
         const txBuilder: Eth.TransactionBuilder = getBuilder(coinName) as Eth.TransactionBuilder;
-        txBuilder.type(BaseCoin.TransactionType.Send);
+        txBuilder.type(TransactionType.Send);
         txBuilder.fee({
           fee: gasPrice,
           gasLimit: gasLimit,

@@ -3,16 +3,20 @@ import EthereumCommon from '@ethereumjs/common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 
-import * as Crypto from '../../utils/crypto';
-import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction, TransferBuilder, Utils } from '../eth';
 import {
+  BaseAddress,
+  BaseKey,
+  BaseTransaction,
+  BaseTransactionBuilder,
   BuildTransactionError,
   InvalidTransactionError,
+  isValidPrv,
+  isValidXprv,
   ParseTransactionError,
   SigningError,
-} from '../baseCoin/errors';
+  TransactionType,
+} from '@bitgo/sdk-core';
+import { Transaction, TransferBuilder, Utils } from '../eth';
 import { KeyPair } from './keyPair';
 import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
 import {
@@ -231,7 +235,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    if (!(Crypto.isValidXprv(key.key) || Crypto.isValidPrv(key.key))) {
+    if (!(isValidXprv(key.key) || isValidPrv(key.key))) {
       throw new BuildTransactionError('Invalid key');
     }
   }

@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
-import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
+import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Celo } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';

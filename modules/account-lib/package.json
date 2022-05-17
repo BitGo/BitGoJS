@@ -21,8 +21,8 @@
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "precommit": "yarn lint-staged",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
-    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "prepare": "npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
+    "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
@@ -42,6 +42,7 @@
     "@bitgo/bls": "^0.1.0",
     "@bitgo/bls-dkg": "^1.1.0-rc.0",
     "@bitgo/statics": "^6.18.0-rc.6",
+    "@bitgo/sdk-core": "^1.0.2-rc.0",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",

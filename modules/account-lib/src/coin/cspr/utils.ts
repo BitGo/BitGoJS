@@ -6,10 +6,19 @@ import BigNumber from 'bignumber.js';
 import { CLPublicKey as PublicKey, Keys, DeployUtil, CLTypeTag, CLU512, CLU64, CLOption } from 'casper-js-sdk';
 import * as hex from '@stablelib/hex';
 import { ecdsaSign, ecdsaVerify } from 'secp256k1';
-import { InvalidTransactionError, SigningError, UtilsError } from '../baseCoin/errors';
-import { DefaultKeys } from '../baseCoin/iface';
-import { TransactionType } from '../baseCoin';
-import * as Crypto from './../../utils/crypto';
+import {
+  DefaultKeys,
+  InvalidTransactionError,
+  isValidEd25519PublicKey,
+  isValidPrv,
+  isValidPub,
+  isValidXprv,
+  isValidXpub,
+  SigningError,
+  TransactionType,
+  UtilsError,
+} from '@bitgo/sdk-core';
+
 import {
   SECP256K1_PREFIX,
   TRANSFER_TO_ADDRESS,
@@ -45,7 +54,7 @@ export function getAccountHash(keys: DefaultKeys): Uint8Array {
  * @returns {boolean} true if prv is a valid private key
  */
 export function isValidPrivateKey(prv: string): boolean {
-  return Crypto.isValidXprv(prv) || Crypto.isValidPrv(prv);
+  return isValidXprv(prv) || isValidPrv(prv);
 }
 
 /**
@@ -55,7 +64,7 @@ export function isValidPrivateKey(prv: string): boolean {
  * @returns {boolean} true if pub is a valid public key
  */
 export function isValidPublicKey(pub: string): boolean {
-  return Crypto.isValidXpub(pub) || Crypto.isValidPub(pub);
+  return isValidXpub(pub) || isValidPub(pub);
 }
 
 /**
@@ -76,7 +85,7 @@ export function isValidEd25519Address(address: string): boolean {
   return (
     isValidHex(address) &&
     address.startsWith(ED25519_PREFIX) &&
-    Crypto.isValidEd25519PublicKey(address.slice(ED25519_PREFIX.length))
+    isValidEd25519PublicKey(address.slice(ED25519_PREFIX.length))
   );
 }
 
@@ -87,9 +96,7 @@ export function isValidEd25519Address(address: string): boolean {
  */
 export function isValidSecp256k1Address(address: string): boolean {
   return (
-    isValidHex(address) &&
-    address.startsWith(SECP256K1_PREFIX) &&
-    Crypto.isValidPub(address.slice(SECP256K1_PREFIX.length))
+    isValidHex(address) && address.startsWith(SECP256K1_PREFIX) && isValidPub(address.slice(SECP256K1_PREFIX.length))
   );
 }
 

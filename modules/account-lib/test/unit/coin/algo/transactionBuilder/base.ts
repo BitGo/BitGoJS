@@ -12,10 +12,9 @@ import {
   algoUtils,
 } from '../../../../../src/coin/algo';
 import { Transaction } from '../../../../../src/coin/algo/transaction';
-import { BaseKey } from '../../../../../src/coin/baseCoin/iface';
 
 import * as AlgoResources from '../../../../resources/algo';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { BaseKey, TransactionType } from '@bitgo/sdk-core';
 import { EncodedTx } from '../../../../../src/coin/algo/ifaces';
 
 const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;

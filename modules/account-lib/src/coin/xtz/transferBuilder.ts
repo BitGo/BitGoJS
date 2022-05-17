@@ -1,4 +1,4 @@
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError } from '@bitgo/sdk-core';
 import { TransferData } from './iface';
 
 /** Tezos transfer builder. */

@@ -1,7 +1,12 @@
 import * as nacl from 'tweetnacl';
-import { toHex, toUint8Array } from '../hbar/utils';
-import { isValidEd25519PublicKey, isValidEd25519SecretKey, isValidEd25519Seed } from '../../utils/crypto';
-import { Ed25519KeyDeriver } from '../../utils/ed25519KeyDeriver';
+import {
+  isValidEd25519PublicKey,
+  isValidEd25519SecretKey,
+  isValidEd25519Seed,
+  toHex,
+  toUint8Array,
+} from '../util/crypto';
+import { Ed25519KeyDeriver } from '../util/ed25519KeyDeriver';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
@@ -90,7 +95,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    */
   signMessage(message: string): Uint8Array {
     const messageToSign = toUint8Array(Buffer.from(message).toString('hex'));
-    const { prv } = this.keyPair;
+    const prv = this.keyPair?.prv;
     if (!prv) {
       throw new Error('Missing private key');
     }
@@ -111,6 +116,9 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
     } else {
       messageToVerify = message;
     }
+    if (!this.keyPair?.pub) {
+      return false;
+    }
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
   }
@@ -122,7 +130,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * @param path derivation path
    */
   deriveHardened(path: string): DefaultKeys {
-    if (!this.keyPair.prv) {
+    if (!this.keyPair?.prv) {
       throw new Error('need private key to derive hardened keypair');
     }
 

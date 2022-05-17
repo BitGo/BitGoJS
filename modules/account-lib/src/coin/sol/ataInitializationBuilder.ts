@@ -1,11 +1,10 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { TransactionType } from '../baseCoin';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { AtaInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import { getAssociatedTokenAccountAddress, getSolTokenFromTokenName, isValidAmount, isValidPublicKey } from './utils';
-import { BuildTransactionError } from '../baseCoin/errors';
 import assert from 'assert';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
