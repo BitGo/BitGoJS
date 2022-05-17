@@ -1,0 +1,31 @@
+{
+  "name": "avax-p-lib",
+  "version": "1.0.0",
+  "description": "BitGo's AVAX-P library",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BitGo/BitGoJS.git"
+  },
+  "keywords": [
+    "avax-p-lib"
+  ],
+  "author": "Blockchain Integration <blockchain-integrations@bitgo.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BitGo/BitGoJS/issues"
+  },
+  "homepage": "https://github.com/BitGo/BitGoJS#readme",
+  "dependencies": {
+    "avalanche": "^3.14.0"
+  },
+  "devDependencies": {
+    "should": "^13.2.3"
+  }
+}
