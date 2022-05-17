@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 
 import { Transaction, WrappedBuilder } from '../../../../../src/coin/trx';
 import { getBuilder } from '../../../../../src/index';
-import { TransactionType } from '../../../../../src/coin/baseCoin/';
+import { TransactionType } from '@bitgo/sdk-core';
 import {
   PARTICIPANTS,
   CONTRACTS,

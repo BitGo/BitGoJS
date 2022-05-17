@@ -7,7 +7,7 @@ import * as coinModules from '../../../src';
 import { coins } from '@bitgo/statics';
 import { KeyPair as EthKeyPair } from '../../../src/coin/eth';
 import { KeyPair as Eth2KeyPair } from '../../../src/coin/eth2';
-import { Ed25519KeyPair } from '../../../src/coin/baseCoin';
+import { Ed25519KeyPair } from '@bitgo/sdk-core';
 
 describe('Key Pair Factory', () => {
   describe('coinToKey map initialization', function () {

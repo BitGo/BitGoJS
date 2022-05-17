@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
-import { BaseAddress, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseKey, BaseTransactionBuilder, NotImplementedError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {

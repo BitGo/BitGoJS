@@ -4,7 +4,7 @@ import { recoverTransaction } from '@celo/wallet-base';
 import * as ethers from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ETHTransactionType, LegacyTxData } from '../eth/iface';
-import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError } from '@bitgo/sdk-core';
 import { mainnetCommon, testnetCommon } from './resources';
 
 /**

@@ -10,7 +10,7 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "precommit": "lint-staged",
+    "precommit": "yarn lint-staged",
     "prepare": "npm run build"
   },
   "author": "BitGo Inc.",
@@ -20,14 +20,10 @@
     "url": "https://github.com/BitGo/BitGoJS.git",
     "directory": "modules/sdk-core"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
-    "**/*.ts": [
-      "prettier --write"
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
     ]
   },
   "publishConfig": {
@@ -39,6 +35,17 @@
     ]
   },
   "dependencies": {
-    "debug": "3.1.0"
+    "@bitgo/statics": "^6.17.0",
+    "bip32": "^2.0.6",
+    "bitcoinjs-message": "^2.0.0",
+    "bs58": "^2.0.1",
+    "debug": "3.1.0",
+    "lodash": "^4.17.15",
+    "noble-bls12-381": "0.7.2",
+    "strip-hex-prefix": "^1.0.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.151"
   }
 }

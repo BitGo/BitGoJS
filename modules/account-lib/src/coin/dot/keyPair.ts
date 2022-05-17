@@ -1,10 +1,8 @@
 import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { AddressFormat, Ed25519KeyPair } from '../baseCoin';
-import { DefaultKeys, KeyPairOptions } from '../baseCoin/iface';
+import { DefaultKeys, KeyPairOptions, AddressFormat, Ed25519KeyPair, toHex, isBase58 } from '@bitgo/sdk-core';
 import utils from './utils';
-import { toHex, isBase58 } from '../../utils/crypto';
 import bs58 from 'bs58';
 
 const TYPE = 'ed25519';

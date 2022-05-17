@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '../baseCoin';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -7,7 +7,6 @@ import { InstructionBuilderTypes } from './constants';
 import assert from 'assert';
 import { StakingWithdraw } from './iface';
 import { isValidStakingAmount, validateAddress } from './utils';
-import { BuildTransactionError } from '../baseCoin/errors';
 
 export class StakingWithdrawBuilder extends TransactionBuilder {
   protected _stakingAddress: string;

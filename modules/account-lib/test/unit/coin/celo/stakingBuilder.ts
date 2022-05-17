@@ -3,7 +3,7 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 import { StakingBuilder } from '../../../../src/coin/celo/stakingBuilder';
 import { getOperationConfig } from '../../../../src/coin/celo/stakingUtils';
-import { StakingOperationTypes } from '../../../../src/coin/baseCoin';
+import { StakingOperationTypes } from '@bitgo/sdk-core';
 import * as testData from '../../../resources/celo/celo';
 
 describe('Celo staking operations builder', function () {

@@ -1,6 +1,5 @@
-import { BaseUtils } from '../baseCoin';
+import { BaseUtils, isBase58 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { isBase58 } from './../../utils/crypto';
 import bs58 from 'bs58';
 
 export class Utils implements BaseUtils {

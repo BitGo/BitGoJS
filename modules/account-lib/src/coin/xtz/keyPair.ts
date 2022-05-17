@@ -2,9 +2,18 @@ import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
 import blake2b from '@bitgo/blake2b';
 import { ECPair } from 'bitcoinjs-lib';
-import * as CryptoUtils from '../../utils/crypto';
-import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
-import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
+import {
+  DefaultKeys,
+  isPrivateKey,
+  isPublicKey,
+  isSeed,
+  isValidPrv,
+  isValidPub,
+  isValidXprv,
+  isValidXpub,
+  KeyPairOptions,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo/sdk-core';
 import * as Utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
@@ -46,9 +55,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} prv An extended or raw private key
    */
   recordKeysFromPrivateKey(prv: string): void {
-    if (CryptoUtils.isValidXprv(prv)) {
+    if (isValidXprv(prv)) {
       this.hdNode = bip32.fromBase58(prv);
-    } else if (CryptoUtils.isValidPrv(prv)) {
+    } else if (isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPrivateKey(Buffer.from(prv, 'hex'));
     } else if (Utils.isValidKey(prv, Utils.hashTypes.spsk)) {
@@ -65,9 +74,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} pub - An extended, compressed, or uncompressed public key
    */
   recordKeysFromPublicKey(pub: string): void {
-    if (CryptoUtils.isValidXpub(pub)) {
+    if (isValidXpub(pub)) {
       this.hdNode = bip32.fromBase58(pub);
-    } else if (CryptoUtils.isValidPub(pub)) {
+    } else if (isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
     } else if (Utils.isValidKey(pub, Utils.hashTypes.sppk)) {

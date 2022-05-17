@@ -2,7 +2,7 @@ import should from 'should';
 import * as testData from '../../../../resources/near';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory } from '../../../../../src/coin/near';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { validatorContractAddress } from '../../../../resources/near';
 
 describe('Near Staking withdraw Builder', () => {

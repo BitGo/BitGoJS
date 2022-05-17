@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Celo, getBuilder } from '../../../../../src';
-import { StakingOperationTypes, TransactionType } from '../../../../../src/coin/baseCoin';
+import { StakingOperationTypes, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../../../resources/celo/celo';
 import { getOperationConfig } from '../../../../../src/coin/celo/stakingUtils';
 

@@ -1,4 +1,4 @@
-import { BaseAddress } from '../baseCoin/iface';
+import { BaseAddress } from '@bitgo/sdk-core';
 
 /**
  * Addresses can be encoded in three varieties:

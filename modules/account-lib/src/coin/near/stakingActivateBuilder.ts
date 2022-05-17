@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '../baseCoin';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import BigNumber from 'bignumber.js';
 import * as NearAPI from 'near-api-js';
@@ -9,7 +9,6 @@ import BN from 'bn.js';
 import { ContractCallWrapper } from './contractCallWrapper';
 import { TransactionBuilder } from './transactionBuilder';
 import { StakingContractMethodNames } from './constants';
-import { BuildTransactionError } from '../baseCoin/errors';
 
 export class StakingActivateBuilder extends TransactionBuilder {
   private contractCallWrapper: ContractCallWrapper;

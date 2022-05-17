@@ -5,7 +5,7 @@ import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/stx';
 import * as testData from '../../../../resources/stx/stx';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
 import { stringifyCv } from '../../../../../src/coin/stx/utils';
 

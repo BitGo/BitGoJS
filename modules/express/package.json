@@ -32,7 +32,7 @@
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
     "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
     "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
-    "precommit": "lint-staged",
+    "precommit": "yarn lint-staged",
     "check-fmt": "yarn prettier --check '{src,test}/**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
     "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
@@ -71,6 +71,12 @@
     "sinon": "^13.0.1",
     "supertest": "^4.0.2",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
   },
   "nyc": {
     "extension": [

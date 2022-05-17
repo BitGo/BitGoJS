@@ -19,13 +19,13 @@ const accessToken = '';
 const walletId = '';
 
 async function addLowFeeWebhook() {
-    bitgo.authenticateWithAccessToken({ accessToken });
-    const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
-    const url = 'http://test.com/';
-    const type = 'lowFee';
-    wallet.addWebhook({ url: url, type: type });
-    const webhooks = await wallet.listWebhooks();
-    console.log(`Wallet Webhooks:  ${webhooks}`);
+  bitgo.authenticateWithAccessToken({ accessToken });
+  const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
+  const url = 'http://test.com/';
+  const type = 'lowFee';
+  wallet.addWebhook({ url: url, type: type });
+  const webhooks = await wallet.listWebhooks();
+  console.log(`Wallet Webhooks:  ${webhooks}`);
 }
 
 addLowFeeWebhook().catch((e) => console.error(e));

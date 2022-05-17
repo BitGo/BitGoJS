@@ -396,6 +396,7 @@ export const coins = CoinMap.fromCoins([
   erc20('ff1', 'Two Prime FF1', 18, '0x59af0356cdebd1fa23ae5dadff9170bbfc31278c', UnderlyingAsset.FF1),
   erc20('fft', 'Fight to Fame Token', 18, '0xdea05e09f5b0e102616bb145a0e4772a9b5ab193', UnderlyingAsset.FFT),
   erc20('fire', 'Ceramic Token', 18, '0x2033e559cddff6dd36ec204e3014faa75a01052e', UnderlyingAsset.FIRE),
+  erc20('fly', 'FlyCoin', 18, '0x4e568ab95f029e8df1e39b30c9d6d076eaa15945', UnderlyingAsset.FLY),
   erc20('fmf', 'Formosa Financial', 18, '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc', UnderlyingAsset.FMF),
   erc20(
     'forth',

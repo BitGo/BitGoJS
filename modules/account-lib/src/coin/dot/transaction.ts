@@ -1,7 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey, TransactionRecipient } from '../baseCoin/iface';
-import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
+import {
+  BaseKey,
+  BaseTransaction,
+  InvalidTransactionError,
+  ParseTransactionError,
+  SigningError,
+  TransactionRecipient,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';

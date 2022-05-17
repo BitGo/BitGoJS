@@ -1,11 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidPublicKey, toUint8Array, toHex } from './utils';
 import { KeyPair } from './';
-import { TransactionType } from '../baseCoin';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];

@@ -354,6 +354,7 @@ export enum UnderlyingAsset {
   FFT = 'fft',
   FIRE = 'fire',
   FIXED = 'fixed',
+  FLY = 'fly',
   FMF = 'fmf',
   FORTH = 'forth',
   FTM = 'ftm',

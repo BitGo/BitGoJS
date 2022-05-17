@@ -1,15 +1,22 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
-import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
-import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
-import { isValidEd25519Seed } from '../../utils/crypto';
+
 import { Transaction } from './transaction';
 import { AddressValidationError, InsufficientFeeError } from './errors';
 import { KeyPair } from './keyPair';
 import { BaseTransactionSchema } from './txnSchema';
 import Utils from './utils';
+import {
+  BaseAddress,
+  BaseFee,
+  BaseKey,
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  InvalidTransactionError,
+  isValidEd25519Seed,
+  TransactionType,
+} from '@bitgo/sdk-core';
 
 const MIN_FEE = 1000; // in microalgos
 

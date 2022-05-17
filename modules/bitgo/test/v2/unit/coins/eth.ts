@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
-  UnexpectedAddressError
+  UnexpectedAddressError,
 } from '../../../../src/errors';
 
 nock.enableNetConnect();
@@ -522,8 +522,8 @@ describe('ETH:', function () {
           pendingChainInitialization: true,
           creationFailure: [],
           pendingDeployment: false,
-          forwarderVersion: 0
-        }
+          forwarderVersion: 0,
+        },
       };
 
       const isAddressVerified = await coin.verifyAddress(params);

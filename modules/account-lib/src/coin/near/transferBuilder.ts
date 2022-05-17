@@ -1,11 +1,9 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey } from '../baseCoin/iface';
+import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransactionType } from '../baseCoin';
 import * as NearAPI from 'near-api-js';
 import assert from 'assert';
-import { BuildTransactionError } from '../baseCoin/errors';
 import BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 

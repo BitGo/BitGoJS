@@ -34,7 +34,7 @@ describe('Create Address', () => {
       },
       query: {},
       body: {
-        chain: 0
+        chain: 0,
       },
     } as unknown as express.Request;
 

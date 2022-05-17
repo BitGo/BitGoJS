@@ -1,6 +1,6 @@
 import * as bip32 from 'bip32';
 import { ECPair } from 'bitcoinjs-lib';
-import * as Crypto from '../../utils/crypto';
+import * as Crypto from '../util/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
@@ -38,14 +38,14 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
    * @return Buffer 33 bytes if `compressed` is set, 65 bytes otherwise. Standard libsecp256k1 format.
    */
   getPublicKey({ compressed }: { compressed: boolean }): Buffer {
-    return ECPair.fromPublicKey(this.keyPair.publicKey, { compressed }).publicKey;
+    return ECPair.fromPublicKey(this.keyPair?.publicKey, { compressed }).publicKey;
   }
 
   /**
    * @return Buffer 32 bytes in standard libsecp256k1 format
    */
   getPrivateKey(): Buffer | undefined {
-    return this.keyPair.privateKey;
+    return this.keyPair?.privateKey;
   }
 
   /**

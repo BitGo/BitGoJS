@@ -1,12 +1,11 @@
 import assert from 'assert';
+import { xpubToUncompressedPub, xprvToRawPrv, rawPrvToExtendedKeys } from '@bitgo/sdk-core';
 import should from 'should';
-
-import * as Crypto from '../../../src/utils/crypto';
 
 describe('Crypto utils', function () {
   describe('should succeed', function () {
     it('to get a valid uncompressed public key from an xpub', () => {
-      const pub = Crypto.xpubToUncompressedPub(
+      const pub = xpubToUncompressedPub(
         'xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6S598UeKT2DjCgZD5oxriwVyS4t5pz7Ga5xJVNyBPcvJVxaRq5q',
       );
 
@@ -17,7 +16,7 @@ describe('Crypto utils', function () {
     });
 
     it('to get a valid raw private key from an xprv', () => {
-      const prv = Crypto.xprvToRawPrv(
+      const prv = xprvToRawPrv(
         'xprv9s21ZrQH143K24Mfq5zL5MhWK9hUhhGbd45hLXo2Pq2oqzMMo63oStZzF9HJ1Z6954LhpFkdHzUXfqoE7GH6eyJvQSfYuAdK2gXGjM6mvd2',
       );
 
@@ -26,7 +25,7 @@ describe('Crypto utils', function () {
     });
 
     it('to get a valid extended keys from a raw private key', () => {
-      const pub = Crypto.rawPrvToExtendedKeys('1F3CD7A858A11EEF3E3F591CB5532241CE12C26B588197C88EBB42C6B6CBB5BA');
+      const pub = rawPrvToExtendedKeys('1F3CD7A858A11EEF3E3F591CB5532241CE12C26B588197C88EBB42C6B6CBB5BA');
 
       should.exist(pub.xprv);
       should.exist(pub.xpub);
@@ -41,15 +40,15 @@ describe('Crypto utils', function () {
 
   describe('should fail', function () {
     it('to get a valid uncompressed public key from an invalid xpub', () => {
-      assert.throws(() => Crypto.xpubToUncompressedPub('xpub'));
+      assert.throws(() => xpubToUncompressedPub('xpub'));
     });
 
     it('to get a valid raw private key from an invalid xprv', () => {
-      assert.throws(() => Crypto.xprvToRawPrv('xprv'));
+      assert.throws(() => xprvToRawPrv('xprv'));
     });
 
     it('to get a valid extended keys from an invalid raw private key', () => {
-      assert.throws(() => Crypto.rawPrvToExtendedKeys('ABCD'));
+      assert.throws(() => rawPrvToExtendedKeys('ABCD'));
     });
   });
 });

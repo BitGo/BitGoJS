@@ -2,13 +2,11 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
-import { TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { ClaimArgs, MethodNames } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { ClaimTransactionSchema } from './txnSchema';
-import { BaseAddress } from '../baseCoin/iface';
 import utils from './utils';
 
 export class ClaimBuilder extends TransactionBuilder {

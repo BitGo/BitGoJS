@@ -1,8 +1,7 @@
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { KeyRegTxnSchema } from './txnSchema';

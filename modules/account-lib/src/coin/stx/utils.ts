@@ -29,8 +29,7 @@ import {
 } from '@stacks/transactions';
 import { ec } from 'elliptic';
 import * as _ from 'lodash';
-import { isValidXprv, isValidXpub } from '../../utils/crypto';
-import { InvalidTransactionError, SigningError, UtilsError } from '../baseCoin/errors';
+import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
 import { AddressDetails, SendParams } from './iface';
 import { KeyPair } from '.';
 import { StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';

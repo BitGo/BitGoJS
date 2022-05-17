@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '../../../../src/coin/baseCoin/';
+import { rawPrvToExtendedKeys, TransactionType } from '@bitgo/sdk-core';
 import {
   UnsignedBuildTransaction,
   FirstSigOnBuildTransaction,
@@ -17,7 +17,6 @@ import {
   UnsignedInvalidTimeStampBuildTransaction,
 } from '../../../resources/trx';
 import { getBuilder } from '../../../../src';
-import * as Crypto from '../../../../src/utils/crypto';
 
 describe('Tron TransactionBuilder', function () {
   let txBuilder;
@@ -61,7 +60,7 @@ describe('Tron TransactionBuilder', function () {
 
       it('a signed transaction with an xprv', async () => {
         txBuilder.from(FirstSigOnBuildTransaction);
-        const SecondPrivateKeyXprv = Crypto.rawPrvToExtendedKeys(SecondPrivateKey);
+        const SecondPrivateKeyXprv = rawPrvToExtendedKeys(SecondPrivateKey);
         txBuilder.sign({ key: SecondPrivateKeyXprv.xprv });
         const tx = await txBuilder.build();
 

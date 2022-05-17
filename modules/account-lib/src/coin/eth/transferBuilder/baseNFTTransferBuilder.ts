@@ -1,4 +1,4 @@
-import { InvalidParameterValueError, InvalidSignatureError } from '../../baseCoin/errors';
+import { InvalidParameterValueError, InvalidSignatureError } from '@bitgo/sdk-core';
 import { isValidEthAddress } from '../utils';
 import { joinSignature, solidityKeccak256, SigningKey } from 'ethers/lib/utils';
 

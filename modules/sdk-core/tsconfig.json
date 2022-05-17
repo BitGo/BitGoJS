@@ -3,9 +3,15 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./",
+    "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../statics"
+    }
+  ]
 }

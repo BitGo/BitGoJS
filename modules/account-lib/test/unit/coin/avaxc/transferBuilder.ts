@@ -2,7 +2,7 @@ import should from 'should';
 import { TransferBuilder as AvaxCTransferBuilder } from '../../../../src/coin/avaxc';
 import { AvaxC, Eth, getBuilder } from '../../../../src';
 import * as testData from '../../../resources/avaxc/avaxc';
-import { TransactionType } from '../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 
 // import * as testData from '../../../resources/avaxc/avaxc';
 const amount = '20000';

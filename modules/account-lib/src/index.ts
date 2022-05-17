@@ -1,19 +1,12 @@
 import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError } from './coin/baseCoin/errors';
+import { BaseBuilder, BaseTransactionBuilderFactory, BuildTransactionError, Ed25519KeyDeriver } from '@bitgo/sdk-core';
 import Eddsa from './mpc/tss';
 import { Ed25519BIP32 } from './mpc/hdTree';
 export { Eddsa, Ed25519BIP32 };
 
-import * as crypto from './utils/crypto';
-export { crypto };
-
-import { Ed25519KeyDeriver } from './utils/ed25519KeyDeriver';
 export { Ed25519KeyDeriver };
 
 // coins
-import * as BaseCoin from './coin/baseCoin';
-export { BaseCoin };
-
 import * as Trx from './coin/trx';
 export { Trx };
 
@@ -105,7 +98,7 @@ export const supportedCoins = Object.keys(coinBuilderMap);
  * @param {string} coinName One of the {@code supportedCoins}
  * @returns {any} An instance of a {@code TransactionBuilder}
  */
-export function getBuilder(coinName: string): BaseCoin.Interface.BaseBuilder {
+export function getBuilder(coinName: string): BaseBuilder {
   const builderClass = coinBuilderMap[coinName];
   if (!builderClass) {
     throw new BuildTransactionError(`Coin ${coinName} not supported`);
@@ -121,7 +114,7 @@ export function getBuilder(coinName: string): BaseCoin.Interface.BaseBuilder {
  * @param {any} builderFactory the builder factory class for that coin
  * @returns {any} the factory instance for the registered coin
  */
-export function register<T extends BaseCoin.BaseTransactionBuilderFactory>(
+export function register<T extends BaseTransactionBuilderFactory>(
   coinName: string,
   builderFactory: { new (_coinConfig: Readonly<CoinConfig>): T },
 ): T {

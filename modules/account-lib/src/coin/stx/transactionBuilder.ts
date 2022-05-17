@@ -14,16 +14,18 @@ import {
   PubKeyEncoding,
 } from '@stacks/transactions';
 import { StacksNetwork, StacksTestnet, StacksMainnet } from '@stacks/network';
-import { BaseTransactionBuilder } from '../baseCoin';
 import {
+  BaseAddress,
+  BaseFee,
+  BaseKey,
+  BaseTransactionBuilder,
   BuildTransactionError,
+  InvalidParameterValueError,
+  InvalidTransactionError,
   ParseTransactionError,
   SigningError,
-  InvalidTransactionError,
-  InvalidParameterValueError,
-} from '../baseCoin/errors';
-import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
-import { xprvToRawPrv } from '../../utils/crypto';
+  xprvToRawPrv,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';

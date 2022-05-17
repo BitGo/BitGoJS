@@ -1,8 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
-import { TransactionType } from '../baseCoin';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { MethodNames } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';

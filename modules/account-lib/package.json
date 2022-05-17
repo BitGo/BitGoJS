@@ -19,8 +19,9 @@
     "hedera-gen-protobufts": "pbts -o ./resources/hbar/protobuf/hedera.d.ts ./resources/hbar/protobuf/hedera.js",
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
+    "precommit": "yarn lint-staged",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
+    "prepare": "npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
     "test": "npm run unit-test",
@@ -41,6 +42,7 @@
     "@bitgo/bls": "^0.1.0",
     "@bitgo/bls-dkg": "^1.0.2",
     "@bitgo/statics": "^6.17.0",
+    "@bitgo/sdk-core": "^1.0.1",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
@@ -112,14 +114,10 @@
       "src/**/*.ts"
     ]
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix"
+      "yarn prettier --write",
+      "yarn eslint --fix"
     ]
   },
   "publishConfig": {

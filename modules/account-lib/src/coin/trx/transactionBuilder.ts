@@ -3,13 +3,13 @@ import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  SigningError,
+  BaseKey,
+  BaseTransactionBuilder,
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
-} from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
-import { BaseTransactionBuilder } from '../baseCoin';
+  SigningError,
+} from '@bitgo/sdk-core';
 import { TransactionReceipt } from './iface';
 import { Address } from './address';
 import { signTransaction, isBase58Address, decodeTransaction } from './utils';

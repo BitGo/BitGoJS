@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import { coins, EthereumNetwork } from '@bitgo/statics';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
 import { decodeTransferData, getCommon } from '../../../../../src/coin/eth/utils';

@@ -1,4 +1,4 @@
-import { Entry } from '../baseCoin/iface';
+import { Entry } from '@bitgo/sdk-core';
 import { ContractType, PermissionType } from './enum';
 
 export interface Account {

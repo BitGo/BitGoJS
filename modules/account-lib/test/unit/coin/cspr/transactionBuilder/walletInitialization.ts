@@ -3,7 +3,7 @@ import should from 'should';
 import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr';
 import * as testData from '../../../../resources/cspr/cspr';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from '../../../../../src/coin/cspr/transaction';
 import { verifySignature } from '../../../../../src/coin/cspr/utils';
 import { CLString } from 'casper-js-sdk';
