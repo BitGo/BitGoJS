@@ -47,7 +47,7 @@ export class EosToken extends Eos {
     return this.tokenConfig.tokenContractAddress;
   }
 
-  get decimalPlaces() {
+  get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
   }
 
