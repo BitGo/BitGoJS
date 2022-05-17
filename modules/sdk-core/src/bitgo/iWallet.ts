@@ -2,7 +2,7 @@ import { IRequestTracer } from '../api';
 import { IBaseCoin, SignedTransaction, TransactionPrebuild, VerificationOptions } from './iBaseCoin';
 import { Keychain } from './iKeychains';
 import { IPendingApproval, PendingApprovalData } from './iPendingApproval';
-import { ITradingAccount } from './trading/iTradingAccount';
+import { ITradingAccount } from './trading';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
