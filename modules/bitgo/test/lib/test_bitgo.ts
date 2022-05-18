@@ -5,14 +5,14 @@
 //
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { BitGo as BG } from '../../src/bitgo';
-import { KeyIndices, Wallet } from '../../src';
+import { Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
 
 import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { common, KeyIndices } from '@bitgo/sdk-core';
 import { promiseProps } from '../../src/v2/promise-utils';
 nock.enableNetConnect();
 

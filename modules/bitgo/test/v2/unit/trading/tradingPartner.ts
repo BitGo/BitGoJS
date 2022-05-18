@@ -2,13 +2,11 @@ import * as nock from 'nock';
 import * as should from 'should';
 
 import fixtures from '../../fixtures/trading/tradingPartner';
-import { TradingPartnerStatus, TradingPartnerType } from '../../../../src/v2/trading/tradingPartner';
-import { TradingReferralRequesterSide } from '../../../../src/v2/trading/tradingPartners';
 
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Environments } from '@bitgo/sdk-core';
+import { Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide } from '@bitgo/sdk-core';
 
 describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;

@@ -2,12 +2,11 @@ import * as should from 'should';
 import * as nock from 'nock';
 
 import fixtures from '../../fixtures/trading/affirmation';
-import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
 
 import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common } from '@bitgo/sdk-core';
+import { AffirmationStatus, common } from '@bitgo/sdk-core';
 import { Environments } from '../../../../src';
 
 describe('Affirmations', function () {

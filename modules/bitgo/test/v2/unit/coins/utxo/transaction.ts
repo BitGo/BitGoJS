@@ -24,12 +24,8 @@ import {
   getDefaultWalletKeys,
 } from './util';
 
-import {
-  FullySignedTransaction,
-  HalfSignedUtxoTransaction,
-  Triple,
-  WalletSignTransactionOptions,
-} from '../../../../../src';
+import { Triple } from '../../../../../src';
+import { FullySignedTransaction, HalfSignedUtxoTransaction, WalletSignTransactionOptions } from '@bitgo/sdk-core';
 
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {
