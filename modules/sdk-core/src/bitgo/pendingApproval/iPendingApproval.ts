@@ -1,4 +1,4 @@
-import { IRequestTracer } from '../api';
+import { IRequestTracer } from '../../api';
 
 export enum OwnerType {
   WALLET = 'wallet',

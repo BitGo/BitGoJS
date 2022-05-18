@@ -1,5 +1,5 @@
-import { IRequestTracer } from '../api';
-import { KeychainsTriplet } from './iBaseCoin';
+import { IRequestTracer } from '../../api';
+import { KeychainsTriplet } from '../baseCoin';
 import { IWallet, PaginationOptions } from './iWallet';
 
 export interface GetWalletOptions {

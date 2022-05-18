@@ -1,5 +1,5 @@
-import { IWallet } from './iWallet';
-import { IAffirmations, ISettlements } from './trading';
+import { ISettlements, IAffirmations } from '../trading';
+import { IWallet } from '../wallet';
 
 export interface IEnterprise {
   url(query: undefined): string;

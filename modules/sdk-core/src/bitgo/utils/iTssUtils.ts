@@ -1,9 +1,9 @@
+import type { SerializedKeyPair } from 'openpgp';
 import { KeyShare } from '../../account-lib/mpc/tss';
 import { IRequestTracer } from '../../api';
-import { Keychain } from '../iKeychains';
-import { Memo } from '../iWallet';
-import type { SerializedKeyPair } from 'openpgp';
-import { KeychainsTriplet } from '../iBaseCoin';
+import { KeychainsTriplet } from '../baseCoin';
+import { Keychain } from '../keychain';
+import { Memo } from '../wallet';
 
 interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;

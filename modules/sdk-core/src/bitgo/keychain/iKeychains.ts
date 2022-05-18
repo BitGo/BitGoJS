@@ -1,6 +1,6 @@
-import { IRequestTracer } from '../api';
-import { KeychainsTriplet, KeyPair } from './iBaseCoin';
-import { IWallet } from './iWallet';
+import { IRequestTracer } from '../../api';
+import { KeyPair, KeychainsTriplet } from '../baseCoin';
+import { IWallet } from '../wallet';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 

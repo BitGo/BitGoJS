@@ -1,13 +1,13 @@
-import { IRequestTracer } from '../api';
-import { IEnterprises } from './iEnterprises';
-import { IKeychains, Keychain } from './iKeychains';
-import { IMarkets } from './iMarkets';
-import { IPendingApprovals } from './iPendingApprovals';
-import { IWallet, WalletData } from './iWallet';
-import { IWallets } from './iWallets';
-import { IWebhooks } from './iWebhooks';
-import { InitiateRecoveryOptions } from './recovery';
-import { ITssUtils } from './utils/iTssUtils';
+import { IRequestTracer } from '../../api';
+import { IEnterprises } from '../enterprise';
+import { Keychain, IKeychains } from '../keychain';
+import { IMarkets } from '../market';
+import { IPendingApprovals } from '../pendingApproval';
+import { InitiateRecoveryOptions } from '../recovery';
+import { ITssUtils } from '../utils';
+import { IWallet, IWallets, WalletData } from '../wallet';
+
+import { IWebhooks } from '../webhook/iWebhooks';
 
 export interface ITransactionRecipient {
   address: string;
