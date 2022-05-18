@@ -199,13 +199,53 @@ export interface SignedTransactionRequest {
   txRequestId: string;
 }
 
+export interface DeriveKeyWithSeedOptions {
+  key: string;
+  seed: string;
+}
+
+export interface ValidMofNOptions {
+  m?: number;
+  n?: number;
+}
+
 export type SignedTransaction =
   | HalfSignedAccountTransaction
   | HalfSignedUtxoTransaction
   | FullySignedTransaction
   | SignedTransactionRequest;
 
+export interface RecoverWalletTokenOptions {
+  tokenContractAddress: string;
+  wallet: IWallet;
+  recipient: string;
+  broadcast?: boolean;
+  walletPassphrase?: string;
+  prv?: string;
+}
+
+export interface Recipient {
+  address: string;
+  amount: string;
+  data?: string;
+}
+
+export interface RecoverTokenTransaction {
+  halfSigned: {
+    recipient: Recipient;
+    expireTime: number;
+    contractSequenceId: number;
+    operationHash: string;
+    signature: string;
+    gasLimit: number;
+    gasPrice: number;
+    tokenContractAddress: string;
+    walletId: string;
+  };
+}
+
 export interface IBaseCoin {
+  type: string;
   url(suffix: string): string;
   wallets(): IWallets;
   enterprises(): IEnterprises;
@@ -238,15 +278,17 @@ export interface IBaseCoin {
   presignTransaction(params: PresignTransactionOptions): Promise<PresignTransactionOptions>;
   newWalletObject(walletParams: any): IWallet;
   feeEstimate(params: FeeEstimateOptions): Promise<any>;
-  deriveKeyWithSeed(key: undefined, seed: undefined): { key: string; derivationPath: string };
+  deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): { key: string; derivationPath: string };
   keyIdsForSigning(): number[];
   preCreateBitGo(params: PrecreateBitGoOptions): void;
   initiateRecovery(params: InitiateRecoveryOptions): never;
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
-  generateKeyPair(seed: Buffer): KeyPair;
+  generateKeyPair(seed?: Buffer): KeyPair;
   isValidPub(pub: string): boolean;
-  isValidMofNSetup(m: undefined, n: undefined): boolean;
+  isValidMofNSetup(params: ValidMofNOptions): boolean;
   isValidAddress(address: string): boolean;
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction>;
   getSignablePayload(serializedTx: string): Promise<Buffer>;
+  // TODO - this only belongs in eth coins
+  recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction>;
 }

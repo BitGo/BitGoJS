@@ -65,7 +65,7 @@ export interface IPendingApproval {
   type(): Type;
   info(): PendingApprovalInfo;
   approvalsRequired(): number;
-  url(extra: undefined): string;
+  url(extra: string): string;
   get(params: Record<string, never>): Promise<IPendingApproval>;
   approve(params: ApproveOptions): Promise<any>;
   reject(params: Record<string, never>): Promise<any>;

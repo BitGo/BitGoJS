@@ -2,24 +2,11 @@
  * @prettier
  */
 
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, ITradingPartner, TradingPartnerStatus, TradingPartnerType } from '@bitgo/sdk-core';
 
 import { TradingAccount } from './tradingAccount';
 
-export enum TradingPartnerStatus {
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-  CANCELED = 'canceled',
-  PENDING = 'pending',
-}
-
-// Type of partnership used for settlements
-export enum TradingPartnerType {
-  DIRECT = 'direct', // direct settlement between requester and counterparty
-  AGENCY = 'agency', // agent settlement between two counterparties of the agent
-}
-
-export class TradingPartner {
+export class TradingPartner implements ITradingPartner {
   private bitgo: BitGoBase;
   private enterpriseId: string;
   private currentAccount: TradingAccount; // account of the user using the SDK, needed to construct balance check URL

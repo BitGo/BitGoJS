@@ -6,10 +6,9 @@ import { randomBytes } from 'crypto';
 import { SerializedKeyPair, generateKey } from 'openpgp';
 
 import { BaseCoin, KeychainsTriplet, BlsKeyPair } from '../baseCoin';
-import { Keychain } from '../keychains';
 import { BitGo } from '../../bitgo';
 import { MpcUtils } from './mpcUtils';
-import { BlsKeyPair as BlsKeyPairClass } from '@bitgo/sdk-core';
+import { BlsKeyPair as BlsKeyPairClass, Keychain } from '@bitgo/sdk-core';
 
 /**
  * Utility functions for BLS-DKG work flows.

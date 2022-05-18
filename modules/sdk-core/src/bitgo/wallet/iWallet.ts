@@ -468,7 +468,8 @@ export interface DownloadKeycardOptions {
 }
 
 export interface IWallet {
-  url(extra: undefined): string;
+  baseCoin: IBaseCoin;
+  url(extra: string): string;
   id(): string;
   approvalsRequired(): number;
   balance(): number;

@@ -22,7 +22,7 @@ export interface SimulateOptions {
 
 export interface IWebhooks {
   list(): Promise<any>;
-  add(url: undefined, type: undefined, label: undefined, numConfirmations: undefined): Promise<any>;
+  add(params: AddOptions): Promise<any>;
   remove(params: RemoveOptions): Promise<any>;
   listNotifications(params: ListNotificationsOptions): Promise<any>;
   simulate(params: SimulateOptions): Promise<any>;

@@ -2,20 +2,15 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, GetEnterpriseOptions, IBaseCoin, IEnterprises } from '@bitgo/sdk-core';
 
-import { BaseCoin } from './baseCoin';
 import { Enterprise } from './enterprise';
 
-export interface GetEnterpriseOptions {
-  id?: string;
-}
-
-export class Enterprises {
+export class Enterprises implements IEnterprises {
   private readonly bitgo: BitGoBase;
-  private readonly baseCoin: BaseCoin;
+  private readonly baseCoin: IBaseCoin;
 
-  constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import * as errors from '../../errors';
 import { AddressVerificationData, TransactionPrebuild, VerificationOptions } from '../baseCoin';
 import { AbstractUtxoCoin, Output, TransactionParams } from '../coins/abstractUtxoCoin';
-import { Keychain } from '../keychains';
+import { Keychain } from '@bitgo/sdk-core';
 import { Wallet } from '../wallet';
 import { RequestTracer } from './util';
 

@@ -4,16 +4,26 @@
 import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import { BitGoBase, TransactionType } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  IBaseCoin,
+  Keychain,
+  KeyIndices,
+  NotImplementedError,
+  RecoverTokenTransaction,
+  RecoverWalletTokenOptions,
+  TransactionType,
+  WalletData,
+} from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { RequestTracer } from './internal/util';
-import { Wallet, WalletData } from './wallet';
+import { Wallet } from './wallet';
 import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 import { PendingApprovals } from './pendingApprovals';
-import { Keychain, Keychains, KeyIndices } from './keychains';
+import { Keychains } from './keychains';
 import { Enterprises } from './enterprises';
 
 import { InitiateRecoveryOptions } from './recovery/initiate';
@@ -218,7 +228,7 @@ export type SignedTransaction =
   | FullySignedTransaction
   | SignedTransactionRequest;
 
-export abstract class BaseCoin {
+export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
@@ -573,5 +583,9 @@ export abstract class BaseCoin {
    */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
     return Buffer.from(serializedTx);
+  }
+
+  async recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction> {
+    throw new NotImplementedError('recoverToken is not supported for this coin');
   }
 }

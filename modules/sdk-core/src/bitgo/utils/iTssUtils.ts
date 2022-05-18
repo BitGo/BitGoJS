@@ -75,10 +75,9 @@ export interface ITssUtils {
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
-  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion: undefined): Promise<TxRequest>;
+  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion: string): Promise<TxRequest>;
   deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]>;
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
-  getPublicKeyFromCommonKeychain(commonKeychain: string): string;
 }

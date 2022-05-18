@@ -2,8 +2,8 @@ import { ISettlements, IAffirmations } from '../trading';
 import { IWallet } from '../wallet';
 
 export interface IEnterprise {
-  url(query: undefined): string;
-  coinUrl(query: undefined): string;
+  url(query: string): string;
+  coinUrl(query: string): string;
   coinWallets(params: Record<string, never>): Promise<IWallet[]>;
   users(params: Record<string, never>): Promise<any>;
   getFeeAddressBalance(params: Record<string, never>): Promise<any>;

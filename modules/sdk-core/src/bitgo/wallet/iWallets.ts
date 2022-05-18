@@ -2,35 +2,23 @@ import { IRequestTracer } from '../../api';
 import { KeychainsTriplet } from '../baseCoin';
 import { IWallet, PaginationOptions } from './iWallet';
 
+export interface WalletWithKeychains extends KeychainsTriplet {
+  wallet: IWallet;
+  warning?: string;
+}
+
 export interface GetWalletOptions {
   allTokens?: boolean;
   reqId?: IRequestTracer;
   id?: string;
 }
 
-export interface ListWalletOptions extends PaginationOptions {
-  skip?: number;
-  getbalances?: boolean;
-  allTokens?: boolean;
-}
-
-export interface AddWalletOptions {
-  type?: string;
-  keys?: string[];
-  m?: number;
-  n?: number;
-  tags?: string[];
-  clientFlags?: string[];
-  isCold?: boolean;
-  isCustodial?: boolean;
-  address?: string;
-  rootPub?: string;
-  rootPrivateKey?: string;
-  initializationTxs?: any;
-  disableTransactionNotifications?: boolean;
-  gasPrice?: number;
-  walletVersion?: number;
-  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+export interface GenerateMpcWalletOptions {
+  multisigType: 'onchain' | 'tss' | 'blsdkg';
+  label: string;
+  passphrase: string;
+  originalPasscodeEncryptionCode?: string;
+  enterprise?: string;
 }
 
 export interface GenerateWalletOptions {
@@ -57,9 +45,9 @@ export interface GenerateWalletOptions {
   multisigType?: 'onchain' | 'tss' | 'blsdkg';
 }
 
-export interface WalletWithKeychains extends KeychainsTriplet {
-  wallet: IWallet;
-  warning?: string;
+export interface GetWalletByAddressOptions {
+  address?: string;
+  reqId?: IRequestTracer;
 }
 
 export interface UpdateShareOptions {
@@ -75,9 +63,29 @@ export interface AcceptShareOptions {
   newWalletPassphrase?: string;
 }
 
-export interface GetWalletByAddressOptions {
+export interface AddWalletOptions {
+  type?: string;
+  keys?: string[];
+  m?: number;
+  n?: number;
+  tags?: string[];
+  clientFlags?: string[];
+  isCold?: boolean;
+  isCustodial?: boolean;
   address?: string;
-  reqId?: IRequestTracer;
+  rootPub?: string;
+  rootPrivateKey?: string;
+  initializationTxs?: any;
+  disableTransactionNotifications?: boolean;
+  gasPrice?: number;
+  walletVersion?: number;
+  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+}
+
+export interface ListWalletOptions extends PaginationOptions {
+  skip?: number;
+  getbalances?: boolean;
+  allTokens?: boolean;
 }
 
 export interface IWallets {

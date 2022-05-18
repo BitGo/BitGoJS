@@ -10,9 +10,8 @@ import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
-import { KeyIndices } from '../keychains';
 
-import { common } from '@bitgo/sdk-core';
+import { common, KeyIndices } from '@bitgo/sdk-core';
 import {
   InvalidAddressError,
   InvalidMemoIdError,

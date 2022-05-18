@@ -21,8 +21,7 @@ import {
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
-import { KeyIndices } from '..';
-import { TransactionType } from '@bitgo/sdk-core';
+import { KeyIndices, TransactionType } from '@bitgo/sdk-core';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;

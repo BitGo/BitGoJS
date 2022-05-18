@@ -6,29 +6,23 @@
  *
  * @prettier
  */
-import { BitGoBase, common } from '@bitgo/sdk-core';
-import { BaseCoin } from './baseCoin';
+import {
+  BitGoBase,
+  common,
+  IMarkets,
+  LatestOptions,
+  LastDaysOptions,
+  YesterdayOptions,
+  IBaseCoin,
+} from '@bitgo/sdk-core';
 
 const { validateParams } = common;
 
-// TODO (SDKT-9): reverse engineer and add options
-// export interface LatestOptions {}
-export type LatestOptions = any;
-
-// TODO (SDKT-9): reverse engineer and add options
-// export interface YesterdayOptions {}
-export type YesterdayOptions = any;
-
-export interface LastDaysOptions {
-  currencyName: string;
-  days?: string;
-}
-
-export class Markets {
+export class Markets implements IMarkets {
   private readonly bitgo: BitGoBase;
-  private readonly baseCoin: BaseCoin;
+  private readonly baseCoin: IBaseCoin;
 
-  public constructor(bitgo: BitGoBase, baseCoin: BaseCoin) {
+  public constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

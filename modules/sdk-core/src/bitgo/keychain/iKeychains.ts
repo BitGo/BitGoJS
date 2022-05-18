@@ -43,13 +43,13 @@ export interface UpdatePasswordOptions {
   newPassword: string;
 }
 
-interface UpdateSingleKeychainPasswordOptions {
+export interface UpdateSingleKeychainPasswordOptions {
   keychain?: Keychain;
   oldPassword?: string;
   newPassword?: string;
 }
 
-interface AddKeychainOptions {
+export interface AddKeychainOptions {
   pub?: string;
   commonPub?: string;
   commonKeychain?: string;
@@ -69,7 +69,7 @@ interface AddKeychainOptions {
   backupGPGPublicKey?: string;
 }
 
-interface KeyShare {
+export interface KeyShare {
   from: string;
   to: string;
   publicShare: string;
@@ -90,21 +90,21 @@ export interface CreateBackupOptions {
   encryptedPrv?: string;
 }
 
-interface CreateBitGoOptions {
+export interface CreateBitGoOptions {
   source?: 'bitgo';
   enterprise?: string;
   reqId?: IRequestTracer;
   keyType?: KeyType;
 }
 
-interface CreateMpcOptions {
+export interface CreateMpcOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
 }
 
-interface GetKeysForSigningOptions {
+export interface GetKeysForSigningOptions {
   reqId?: IRequestTracer;
   wallet?: IWallet;
 }
@@ -120,7 +120,7 @@ export interface IKeychains {
   list(params: ListKeychainOptions): Promise<ListKeychainsResult>;
   updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
   updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions): Keychain;
-  create(params: { seed?: Buffer }): KeyPair;
+  create(params?: { seed?: Buffer }): KeyPair;
   add(params: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params: CreateBitGoOptions): Promise<Keychain>;
   createBackup(params: CreateBackupOptions): Promise<Keychain>;

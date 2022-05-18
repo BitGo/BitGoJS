@@ -19,11 +19,10 @@ import {
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { Dimensions } from '@bitgo/unspents';
 
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, IWallet, Keychain } from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, TransactionInfo } from '../../abstractUtxoCoin';
 import { Wallet } from '../../../wallet';
 
-import { Keychain } from '../../../keychains';
 import { Triple } from '../../../triple';
 import { decrypt } from '@bitgo/sdk-api';
 import { signAndVerifyWalletTransaction } from '../sign';
@@ -120,7 +119,7 @@ export async function getWallet(
   bitgo: BitGoBase,
   coin: AbstractUtxoCoin,
   walletId: string
-): Promise<Wallet | WalletV1> {
+): Promise<IWallet | WalletV1> {
   try {
     return await coin.wallets().get({ id: walletId });
   } catch (e) {
@@ -143,7 +142,7 @@ export async function getWallet(
  * @param wallet
  * @return wallet pubkeys
  */
-async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: Wallet | WalletV1): Promise<RootWalletKeys> {
+async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | WalletV1): Promise<RootWalletKeys> {
   let xpubs: Triple<string>;
 
   if (wallet instanceof Wallet) {
@@ -153,7 +152,7 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: Wallet | Wa
     }
     xpubs = keychains.map((k) => k.pub) as Triple<string>;
   } else {
-    xpubs = wallet.keychains.map((k) => k.xpub) as Triple<string>;
+    xpubs = (wallet as WalletV1).keychains.map((k) => k.xpub) as Triple<string>;
   }
 
   return new RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<bip32.BIP32Interface>);
@@ -179,13 +178,13 @@ type ScriptId = {
   index: number;
 };
 
-async function getScriptId(coin: AbstractUtxoCoin, wallet: Wallet | WalletV1, script: Buffer): Promise<ScriptId> {
+async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Buffer): Promise<ScriptId> {
   const address = utxolib.address.fromOutputScript(script, coin.network);
   let addressData: { chain: number; index: number };
   if (wallet instanceof Wallet) {
     addressData = await wallet.getAddress({ address });
   } else {
-    addressData = await wallet.address({ address });
+    addressData = await (wallet as WalletV1).address({ address });
   }
   if (typeof addressData.chain === 'number' && typeof addressData.index === 'number') {
     return { chain: addressData.chain, index: addressData.index };
@@ -208,7 +207,7 @@ async function toWalletUnspents(
   sourceCoin: AbstractUtxoCoin,
   recoveryCoin: AbstractUtxoCoin,
   unspents: Unspent[],
-  wallet: Wallet | WalletV1
+  wallet: IWallet | WalletV1
 ): Promise<WalletUnspent[]> {
   const addresses = new Set(unspents.map((u) => u.address));
   return (
@@ -260,7 +259,7 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
  * @param wallet
  * @return signing key
  */
-async function getPrv(xprv?: string, passphrase?: string, wallet?: Wallet | WalletV1): Promise<bip32.BIP32Interface> {
+async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | WalletV1): Promise<bip32.BIP32Interface> {
   if (xprv) {
     const key = bip32.fromBase58(xprv);
     if (key.isNeutered()) {
@@ -277,7 +276,7 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: Wallet | Wall
   if (wallet instanceof Wallet) {
     encryptedPrv = (await wallet.getEncryptedUserKeychain()).encryptedPrv;
   } else {
-    encryptedPrv = (await wallet.getEncryptedUserKeychain()).encryptedXprv;
+    encryptedPrv = (await (wallet as WalletV1).getEncryptedUserKeychain()).encryptedXprv;
   }
 
   return getPrv(decrypt(passphrase, encryptedPrv));

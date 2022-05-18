@@ -2,26 +2,12 @@
  * @prettier
  */
 
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, CreateSettlementParams, GetOptions, ISettlement, ISettlements } from '@bitgo/sdk-core';
 
 import { Settlement } from './settlement';
-import { Payload } from './payload';
-import { Trade } from './trade';
+
 import { TradingAccount } from './tradingAccount';
-
-export interface CreateSettlementParams {
-  requesterAccountId: string;
-  payload: Payload;
-  signature: string;
-  trades: Trade[];
-}
-
-export interface GetOptions {
-  id: string;
-  accountId: string;
-}
-
-export class Settlements {
+export class Settlements implements ISettlements {
   private bitgo: BitGoBase;
   private enterpriseId: string;
   private account?: TradingAccount;
@@ -54,7 +40,7 @@ export class Settlements {
    * @param id ID of the settlement
    * @param accountId ID of the trading account that the affirmation belongs to
    */
-  async get({ id, accountId }: GetOptions): Promise<Settlement> {
+  async get({ id, accountId }: GetOptions): Promise<ISettlement> {
     const account = accountId || (this.account && this.account.id);
     if (!account) {
       throw new Error('accountId must be provided in parameters for an enterprise context');

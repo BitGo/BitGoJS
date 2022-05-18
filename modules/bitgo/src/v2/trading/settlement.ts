@@ -3,23 +3,10 @@
  */
 
 import { BitGo } from '../../bitgo';
-import { Trade } from './trade';
 import { Affirmation } from './affirmation';
+import { ISettlement, SettlementStatus, SettlementType, Trade } from '@bitgo/sdk-core';
 
-export enum SettlementStatus {
-  CANCELED = 'canceled',
-  PENDING = 'pending',
-  REJECTED = 'rejected',
-  SETTLED = 'settled',
-  FAILED = 'failed',
-}
-
-export enum SettlementType {
-  DIRECT = 'direct',
-  AGENCY = 'agency',
-}
-
-export class Settlement {
+export class Settlement implements ISettlement {
   private readonly bitgo: BitGo;
   private readonly enterpriseId: string;
 

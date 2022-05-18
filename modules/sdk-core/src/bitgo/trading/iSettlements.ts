@@ -16,6 +16,6 @@ export interface GetOptions {
 
 export interface ISettlements {
   list(): Promise<ISettlement[]>;
-  get(id: undefined, accountId: undefined): Promise<ISettlement>;
+  get(options: GetOptions): Promise<ISettlement>;
   create(params: CreateSettlementParams): Promise<ISettlement>;
 }

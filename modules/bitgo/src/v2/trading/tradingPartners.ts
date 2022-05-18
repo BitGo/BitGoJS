@@ -2,26 +2,12 @@
  * @prettier
  */
 
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, ITradingPartners, TradingPartnerAddByCodeParameters } from '@bitgo/sdk-core';
 
 import { TradingAccount } from './tradingAccount';
-import { TradingPartner, TradingPartnerType } from './tradingPartner';
+import { TradingPartner } from './tradingPartner';
 
-// Side of the requester (if they should be considered the primary or the secondary)
-// Only important for agency partnerships
-// the primaryAccount is the agent, settling trades for the secondary account id
-export enum TradingReferralRequesterSide {
-  PRIMARY = 'primary', // if partnership is of type agency, primary is the agent
-  SECONDARY = 'secondary',
-}
-
-export interface TradingPartnerAddByCodeParameters {
-  referralCode: string;
-  type: TradingPartnerType;
-  requesterSide: TradingReferralRequesterSide;
-}
-
-export class TradingPartners {
+export class TradingPartners implements ITradingPartners {
   private bitgo: BitGoBase;
 
   private enterpriseId: string;

@@ -22,11 +22,10 @@ import {
   PresignTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { Memo } from '../wallet';
 import * as _ from 'lodash';
 import { MethodNotImplementedError } from '../../errors';
 import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
-import { BaseTransaction } from '@bitgo/sdk-core';
+import { BaseTransaction, Memo } from '@bitgo/sdk-core';
 
 export interface TransactionFee {
   fee: string;

@@ -18,9 +18,8 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, KeyIndices } from '@bitgo/sdk-core';
 import { MethodNotImplementedError } from '../../errors';
-import { KeyIndices } from '../keychains';
 
 interface Recipient {
   address: string;

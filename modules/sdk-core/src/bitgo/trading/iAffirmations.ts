@@ -6,6 +6,6 @@ export interface GetAffirmationParameters {
 }
 
 export interface IAffirmations {
-  list(status: AffirmationStatus): Promise<AffirmationStatus[]>;
-  get(id: undefined, accountId: undefined): Promise<IAffirmation>;
+  list(status?: AffirmationStatus): Promise<IAffirmation[]>;
+  get(options: GetAffirmationParameters): Promise<IAffirmation>;
 }

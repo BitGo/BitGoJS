@@ -19,7 +19,7 @@ import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, Keychain, KeyIndices } from '@bitgo/sdk-core';
 import * as config from '../../config';
 import * as errors from '../../errors';
 
@@ -53,7 +53,6 @@ import {
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
-import { Keychain, KeyIndices } from '../keychains';
 import { Triple } from '../triple';
 import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
