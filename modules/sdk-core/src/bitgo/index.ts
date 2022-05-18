@@ -1,7 +1,5 @@
-export * from './trading/iTradingAccount';
 export * from './bitgoBase';
 export * from './environments';
-export * from './types';
 export * from './iBaseCoin';
 export * from './iEnterprise';
 export * from './iEnterprises';
@@ -12,3 +10,5 @@ export * from './iPendingApprovals';
 export * from './iWallet';
 export * from './iWallets';
 export * from './iWebhooks';
+export * from './trading';
+export * from './types';
