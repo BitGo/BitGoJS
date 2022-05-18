@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.8](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.7...bitgo@14.2.0-rc.8) (2022-05-18)
+
+
+### Bug Fixes
+
+* v1 getWallet call ([0dad23c](https://github.com/BitGo/BitGoJS/commit/0dad23cf96541a49dc3e0a3135dbd099eabc7c6b))
+
+
+
+
+
 # [14.2.0-rc.7](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.6...bitgo@14.2.0-rc.7) (2022-05-17)
 
 **Note:** Version bump only for package bitgo
