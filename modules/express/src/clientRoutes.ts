@@ -1,17 +1,9 @@
 /**
  * @prettier
  */
+import { CustomSigningFunction } from '@bitgo/sdk-core';
 import { CoinFamily } from '@bitgo/statics';
-import {
-  BaseCoin,
-  BitGo,
-  BitGoOptions,
-  Coin,
-  CustomSigningFunction,
-  Errors,
-  SignedTransaction,
-  TransactionPrebuild,
-} from 'bitgo';
+import { BaseCoin, BitGo, BitGoOptions, Coin, Errors, SignedTransaction, TransactionPrebuild } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
 import * as express from 'express';
