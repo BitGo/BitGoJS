@@ -17,11 +17,13 @@ import {
   IBaseCoin,
   IWallets,
   Keychain,
+  KeychainsTriplet,
   ListWalletOptions,
+  SupplementGenerateWalletOptions,
   UpdateShareOptions,
   WalletWithKeychains,
 } from '@bitgo/sdk-core';
-import { KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
+
 import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';

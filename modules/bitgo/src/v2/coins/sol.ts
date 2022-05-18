@@ -7,8 +7,14 @@ import * as base58 from 'bs58';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as accountLib from '@bitgo/account-lib';
+import { BaseCoin } from '../baseCoin';
+import { BitGo } from '../../bitgo';
+import * as _ from 'lodash';
+import { MethodNotImplementedError } from '../../errors';
+import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
 import {
-  BaseCoin,
+  BaseTransaction,
+  Memo,
   KeyPair,
   ParsedTransaction as BaseParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
@@ -20,12 +26,7 @@ import {
   SignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
   PresignTransactionOptions,
-} from '../baseCoin';
-import { BitGo } from '../../bitgo';
-import * as _ from 'lodash';
-import { MethodNotImplementedError } from '../../errors';
-import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
-import { BaseTransaction, Memo } from '@bitgo/sdk-core';
+} from '@bitgo/sdk-core';
 
 export interface TransactionFee {
   fee: string;

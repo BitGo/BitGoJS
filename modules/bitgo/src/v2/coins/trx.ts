@@ -8,10 +8,8 @@ import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
-import { common } from '@bitgo/sdk-core';
-
 import {
-  BaseCoin,
+  common,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -23,7 +21,9 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
+
+import { BaseCoin } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
 import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';

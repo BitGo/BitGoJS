@@ -44,20 +44,24 @@ import {
   SendManyOptions,
   SendOptions,
   ShareWalletOptions,
+  SignedTransaction,
+  SignedTransactionRequest,
   SimulateWebhookOptions,
   SubmitTransactionOptions,
   SweepOptions,
+  TransactionPrebuild,
   TransferBySequenceIdOptions,
   TransferCommentOptions,
   TransfersOptions,
   UnspentsOptions,
   UpdateAddressOptions,
+  VerifyAddressOptions,
   WalletCoinSpecific,
   WalletData,
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
-import { SignedTransaction, SignedTransactionRequest, TransactionPrebuild, VerifyAddressOptions } from './baseCoin';
+
 import * as internal from './internal/internal';
 import { drawKeycard } from './internal/keycard';
 import { TradingAccount } from './trading/tradingAccount';

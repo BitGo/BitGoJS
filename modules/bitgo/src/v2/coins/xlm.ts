@@ -11,27 +11,28 @@ import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 
-import { common, KeyIndices } from '@bitgo/sdk-core';
+import {
+  common,
+  ExtraPrebuildParamsOptions,
+  KeyIndices,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation as BaseTransactionExplanation,
+  TransactionParams as BaseTransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient as BaseTransactionOutput,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 import {
   InvalidAddressError,
   InvalidMemoIdError,
   UnexpectedAddressError,
   StellarFederationUserNotFoundError,
 } from '../../errors';
-import {
-  BaseCoin,
-  TransactionRecipient as BaseTransactionOutput,
-  TransactionExplanation as BaseTransactionExplanation,
-  KeyPair,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  VerifyTransactionOptions as BaseVerifyTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionParams as BaseTransactionParams,
-  ExtraPrebuildParamsOptions,
-} from '../baseCoin';
+import { BaseCoin } from '../baseCoin';
 import { promiseProps } from '../promise-utils';
 import { Wallet } from '../wallet';
 import { toBitgoRequest } from '@bitgo/sdk-api';

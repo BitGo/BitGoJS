@@ -6,8 +6,8 @@ import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
+import { BaseCoin } from '../baseCoin';
 import {
-  BaseCoin,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   KeyPair,
@@ -19,8 +19,7 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
-} from '../baseCoin';
-
+} from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import BigNumber from 'bignumber.js';

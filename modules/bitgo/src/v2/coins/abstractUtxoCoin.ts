@@ -19,7 +19,6 @@ import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 
-import { BitGoBase, Keychain, KeyIndices } from '@bitgo/sdk-core';
 import * as config from '../../config';
 import * as errors from '../../errors';
 
@@ -30,27 +29,32 @@ import {
   recoverCrossChain,
 } from './utxo/recovery/crossChainRecovery';
 
+import { BaseCoin } from '../baseCoin';
 import {
   AddressCoinSpecific,
-  BaseCoin,
+  BitGoBase,
   ExtraPrebuildParamsOptions,
+  HalfSignedUtxoTransaction,
+  Keychain,
   KeychainsTriplet,
-  ParseTransactionOptions as BaseParseTransactionOptions,
+  KeyIndices,
   ParsedTransaction as BaseParsedTransaction,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
-  TransactionExplanation as BaseTransactionExplanation,
+  ITransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
-  HalfSignedUtxoTransaction,
-} from '../baseCoin';
+  IWallet,
+  IRequestTracer,
+} from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { RequestTracer } from '../internal/util';
 import { Triple } from '../triple';
@@ -121,9 +125,9 @@ export interface TransactionParams extends BaseTransactionParams {
 export interface ParseTransactionOptions extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild;
-  wallet: Wallet;
+  wallet: IWallet;
   verification?: VerificationOptions;
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
 }
 
 export interface ParsedTransaction extends BaseParsedTransaction {
@@ -434,7 +438,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
     const disableNetworking = verification.disableNetworking;
 
-    const fetchKeychains = async (wallet: Wallet): Promise<VerificationOptions['keychains']> => {
+    const fetchKeychains = async (wallet: IWallet): Promise<VerificationOptions['keychains']> => {
       return promiseProps({
         user: this.keychains().get({ id: wallet.keyIds()[KeyIndices.USER], reqId }),
         backup: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP], reqId }),

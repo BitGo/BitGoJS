@@ -3,8 +3,7 @@
  */
 
 import { SerializedKeyPair, readPrivateKey, decrypt, readMessage } from 'openpgp';
-import { BitGoBase, IBaseCoin, Keychain, KeyType } from '@bitgo/sdk-core';
-import { KeychainsTriplet } from '../baseCoin';
+import { BitGoBase, IBaseCoin, Keychain, KeychainsTriplet, KeyType } from '@bitgo/sdk-core';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 
 export interface MpcKeyShare {

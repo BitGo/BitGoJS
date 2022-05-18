@@ -9,7 +9,6 @@ import _ = require('lodash');
 import { Ed25519BIP32 } from '@bitgo/account-lib/dist/src/mpc/hdTree';
 import Eddsa, { KeyShare, YShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 
-import { KeychainsTriplet } from '../baseCoin';
 import {
   AddKeychainOptions,
   BitGoBase,
@@ -18,6 +17,7 @@ import {
   ITssUtils,
   IWallet,
   Keychain,
+  KeychainsTriplet,
   KeyType,
   Memo,
 } from '@bitgo/sdk-core';

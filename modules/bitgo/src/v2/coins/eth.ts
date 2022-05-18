@@ -10,8 +10,11 @@ import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
 
+import { BaseCoin } from '../baseCoin';
+import { Erc20Token } from './erc20Token';
+import { BitGo } from '../../bitgo';
+import { Wallet } from '../wallet';
 import {
-  BaseCoin,
   FeeEstimateOptions,
   HalfSignedAccountTransaction,
   KeyPair,
@@ -25,11 +28,9 @@ import {
   TransactionParams,
   TransactionRecipient,
   AddressCoinSpecific,
-} from '../baseCoin';
-import { Erc20Token } from './erc20Token';
-import { BitGo } from '../../bitgo';
-import { Wallet } from '../wallet';
-import { common } from '@bitgo/sdk-core';
+  common,
+  IWallet,
+} from '@bitgo/sdk-core';
 import * as config from '../../config';
 import { Util } from '../internal/util';
 import {
@@ -1372,7 +1373,7 @@ export class Eth extends BaseCoin {
    * @throws Error if The prebuild is invalid
    */
   async validateHopPrebuild(
-    wallet: Wallet,
+    wallet: IWallet,
     hopPrebuild: HopPrebuild,
     originalParams?: { recipients: Recipient[] }
   ): Promise<void> {

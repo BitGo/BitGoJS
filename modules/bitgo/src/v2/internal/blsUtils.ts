@@ -5,10 +5,10 @@
 import { randomBytes } from 'crypto';
 import { SerializedKeyPair, generateKey } from 'openpgp';
 
-import { BaseCoin, KeychainsTriplet, BlsKeyPair } from '../baseCoin';
+import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { MpcUtils } from './mpcUtils';
-import { BlsKeyPair as BlsKeyPairClass, Keychain } from '@bitgo/sdk-core';
+import { BlsKeyPair as BlsKeyPairClass, IBlsKeyPair, KeychainsTriplet, Keychain } from '@bitgo/sdk-core';
 
 /**
  * Utility functions for BLS-DKG work flows.
@@ -29,8 +29,8 @@ export class BlsUtils extends MpcUtils {
    */
   async createUserKeychain(
     userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: BlsKeyPair,
-    backupKeyShare: BlsKeyPair,
+    userKeyShare: IBlsKeyPair,
+    backupKeyShare: IBlsKeyPair,
     bitgoKeychain: Keychain,
     passphrase: string,
     originalPasscodeEncryptionCode?: string
@@ -90,8 +90,8 @@ export class BlsUtils extends MpcUtils {
    */
   async createBackupKeychain(
     userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: BlsKeyPair,
-    backupKeyShare: BlsKeyPair,
+    userKeyShare: IBlsKeyPair,
+    backupKeyShare: IBlsKeyPair,
     bitgoKeychain: Keychain,
     passphrase: string
   ): Promise<Keychain> {
@@ -146,8 +146,8 @@ export class BlsUtils extends MpcUtils {
    */
   async createBitgoKeychain(
     userGpgKey: SerializedKeyPair<string>,
-    userKeyShare: BlsKeyPair,
-    backupKeyShare: BlsKeyPair,
+    userKeyShare: IBlsKeyPair,
+    backupKeyShare: IBlsKeyPair,
     enterprise?: string
   ): Promise<Keychain> {
     if (!userKeyShare.secretShares || !userKeyShare.pub) {

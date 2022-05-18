@@ -7,18 +7,19 @@ import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 
+import { BaseCoin } from '../baseCoin';
+import { BitGo } from '../../bitgo';
 import {
-  BaseCoin,
+  IBlsKeyPair,
+  common,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
-  BlsKeyPair,
-  ParseTransactionOptions,
+  KeyIndices,
   ParsedTransaction,
+  ParseTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
-import { BitGo } from '../../bitgo';
-import { common, KeyIndices } from '@bitgo/sdk-core';
+} from '@bitgo/sdk-core';
 import { MethodNotImplementedError } from '../../errors';
 
 interface Recipient {
@@ -297,7 +298,7 @@ export class Eth2 extends BaseCoin {
    * @param seed - byte array to generate BLS key pair from
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer): BlsKeyPair {
+  generateKeyPair(seed?: Buffer): IBlsKeyPair {
     let keyPair = new Eth2AccountLib.KeyPair();
     if (seed && Eth2AccountLib.KeyPair.isValidPrv(seed)) {
       const seedStr = '0x' + Buffer.from(seed).toString('hex');
@@ -346,7 +347,7 @@ export class Eth2 extends BaseCoin {
     return ethUtil.toBuffer(signedMessage);
   }
 
-  aggregateShares(shares: { pubShares: string[]; prvShares: string[] }): BlsKeyPair {
+  aggregateShares(shares: { pubShares: string[]; prvShares: string[] }): IBlsKeyPair {
     const commonPub = Eth2AccountLib.KeyPair.aggregatePubkeys(shares.pubShares);
     const prv = Eth2AccountLib.KeyPair.aggregatePrvkeys(shares.prvShares);
 
