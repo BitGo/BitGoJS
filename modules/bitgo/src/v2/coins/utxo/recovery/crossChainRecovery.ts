@@ -103,9 +103,9 @@ export async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: 
   }
 
   try {
-    return await this.bitgo.wallets().get({ id: walletId });
+    return await bitgo.wallets().get({ id: walletId });
   } catch (e) {
-    throw new Error(`could not get wallet ${walletId} from v1 or v2`);
+    throw new Error(`could not get wallet ${walletId} from v1 or v2: ${e.toString()}`);
   }
 }
 
