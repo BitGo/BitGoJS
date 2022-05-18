@@ -263,11 +263,13 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
       const nockV2Wallet = nockBitGo(bitgo)
         .get(`/api/v2/${recoveryCoin.getChain()}/wallet/${recoveryWalletId}`)
         .reply(error);
+      const nockV1Wallet = nockBitGo(bitgo).get(`/api/v1/wallet/${recoveryWalletId}`).reply(error);
       await assert.rejects(
         () => getWallet(bitgo, recoveryCoin, recoveryWalletId),
-        Error(`could not get wallet ${recoveryWalletId} from v1 or v2`)
+        Error(`could not get wallet ${recoveryWalletId} from v1 or v2: ApiResponseError: ${error}`)
       );
       nockV2Wallet.done();
+      nockV1Wallet.done();
     }
   });
 
