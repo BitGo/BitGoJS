@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "9.12.2-rc.5",
+  "version": "9.12.2-rc.6",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^14.2.0-rc.8",
+    "bitgo": "^14.2.0-rc.9",
     "bluebird": "^3.5.3",
     "body-parser": "^1.19.0",
     "connect-timeout": "^1.9.0",

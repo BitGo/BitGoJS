@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.9](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.8...bitgo@14.2.0-rc.9) (2022-05-19)
+
+
+### Bug Fixes
+
+* **bitgo:** getUnspentInfo to handle missing unspents ([8fe1ae9](https://github.com/BitGo/BitGoJS/commit/8fe1ae9094c728f25f0cc3a53ec170c1c348b49d))
+
+
+
+
+
 # [14.2.0-rc.8](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.7...bitgo@14.2.0-rc.8) (2022-05-18)
 
 
