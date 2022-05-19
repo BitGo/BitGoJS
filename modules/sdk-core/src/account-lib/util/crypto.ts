@@ -3,7 +3,7 @@ import { ECPair, networks } from 'bitcoinjs-lib';
 import * as nacl from 'tweetnacl';
 import * as hex from '@stablelib/hex';
 import * as bls from 'noble-bls12-381';
-import { stripHexPrefix } from 'ethereumjs-utils-old';
+import stripHexPrefix from 'strip-hex-prefix';
 import { ExtendedKeys } from '../baseCoin/iface';
 import bs58 from 'bs58';
 
