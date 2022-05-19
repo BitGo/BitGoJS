@@ -53,6 +53,7 @@ import {
   sendMultiSigTokenTypes,
   sendMultiSigTypes,
   walletInitializationFirstBytes,
+  v1WalletInitializationFirstBytes,
   walletSimpleConstructor,
 } from './walletUtil';
 import { EthTransactionData } from './types';
@@ -217,7 +218,7 @@ export function isValidAmount(amount: string): boolean {
  * @returns {string[]} - The list of signer addresses
  */
 export function decodeWalletCreationData(data: string): string[] {
-  if (!data.startsWith(walletInitializationFirstBytes)) {
+  if (!(data.startsWith(walletInitializationFirstBytes) || data.startsWith(v1WalletInitializationFirstBytes))) {
     throw new BuildTransactionError(`Invalid wallet bytecode: ${data}`);
   }
 
@@ -446,6 +447,7 @@ export function classifyTransaction(data: string): TransactionType {
  */
 const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
+  [v1WalletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
