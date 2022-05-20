@@ -16,6 +16,10 @@ export function bigIntFromBufferBE(buf: Buffer): bigint {
   return BigInt('0x' + buf.toString('hex'));
 }
 
+export function bigIntFromU8ABE(buf: Uint8Array): bigint {
+  return bigIntFromBufferBE(Buffer.from(buf));
+}
+
 export function bigIntToBufferBE(n: bigint, bytes?: number): Buffer {
   let v = n.toString(16);
   v = '0'.slice(0, v.length % 2) + v;
