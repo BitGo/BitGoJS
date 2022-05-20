@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as _ from 'lodash';
 import * as assert from 'assert';
 import * as should from 'should';
 import * as nock from 'nock';
@@ -11,6 +12,7 @@ import * as config from '../../../../../../src/config';
 import { Triple } from '../../../../../../src';
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import {
+  BitgoPublicApi,
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   getWallet,
@@ -77,6 +79,14 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
       coinSpecific: address.coinSpecific,
     })
     .persist();
+}
+
+function nockAddressWithUnspents(coin: AbstractUtxoCoin, address: string, unspents: Unspent[]): nock.Scope {
+  return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(200, unspents).persist();
+}
+
+function nockAddressWithoutUnspents(coin: AbstractUtxoCoin, address: string): nock.Scope {
+  return nockBitGo().get(`/api/v2/${coin.getChain()}/public/addressUnspents/${address}`).reply(404).persist();
 }
 
 function nockBitGoPublicTransactionInfo(
@@ -263,11 +273,13 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
       const nockV2Wallet = nockBitGo(bitgo)
         .get(`/api/v2/${recoveryCoin.getChain()}/wallet/${recoveryWalletId}`)
         .reply(error);
+      const nockV1Wallet = nockBitGo(bitgo).get(`/api/v1/wallet/${recoveryWalletId}`).reply(error);
       await assert.rejects(
         () => getWallet(bitgo, recoveryCoin, recoveryWalletId),
-        Error(`could not get wallet ${recoveryWalletId} from v1 or v2`)
+        Error(`could not get wallet ${recoveryWalletId} from v1 or v2: ApiResponseError: ${error}`)
       );
       nockV2Wallet.done();
+      nockV1Wallet.done();
     }
   });
 
@@ -286,5 +298,71 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
       });
       nockV2Wallet.done();
     }
+  });
+});
+
+describe(`Cross-Chain Recovery BitgoPublicApi.getUnspentInfo`, async function () {
+  const coin = getUtxoCoin('btc');
+
+  const withUnspent1 = 'addresswithUnspent1';
+
+  const unspent1: Unspent = {
+    id: 'txid1',
+
+    address: withUnspent1,
+
+    value: 1000,
+  };
+
+  const withUnspent2 = 'addresswithUnspent2';
+
+  const unspent2: Unspent = {
+    id: 'txid2',
+
+    address: withUnspent2,
+
+    value: 1000,
+  };
+
+  const withoutUnspent = 'addressWithoutUnspent';
+
+  const nocks: nock.Scope[] = [];
+
+  afterEach(function () {
+    nocks.forEach((n) => n.done());
+
+    nock.cleanAll();
+  });
+
+  const api = new BitgoPublicApi(coin);
+
+  it('should first attempt a single batched address call to the addressUnspents api', async function () {
+    const addresses = [withUnspent1, withUnspent2];
+
+    nocks.push(nockAddressWithUnspents(coin, _.uniq(addresses).join(','), [unspent1, unspent2]));
+
+    (await api.getUnspentInfo(addresses)).should.eql([unspent1, unspent2]);
+  });
+
+  it('should ignore duplicate addresses and those which have missing (already spent) unspents', async function () {
+    const addresses = [withUnspent1, withUnspent1, withoutUnspent, withUnspent2];
+
+    nocks.push(nockAddressWithoutUnspents(coin, _.uniq(addresses).join(',')));
+
+    nocks.push(nockAddressWithUnspents(coin, withUnspent1, [unspent1]));
+
+    nocks.push(nockAddressWithUnspents(coin, withUnspent2, [unspent2]));
+
+    nocks.push(nockAddressWithoutUnspents(coin, withoutUnspent));
+
+    (await api.getUnspentInfo(addresses)).should.eql([unspent1, unspent2]);
+  });
+
+  it('should throw an error if no unspents are found', async function () {
+    const addresses = [withoutUnspent];
+
+    nocks.push(nockAddressWithoutUnspents(coin, withoutUnspent));
+
+    await api.getUnspentInfo(addresses).should.be.rejectedWith(`no unspents found for addresses: ${addresses}`);
   });
 });

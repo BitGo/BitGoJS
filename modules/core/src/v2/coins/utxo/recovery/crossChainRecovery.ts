@@ -33,7 +33,7 @@ export interface ExplorerTxInfo {
   outputs: { address: string }[];
 }
 
-class BitgoPublicApi {
+export class BitgoPublicApi {
   constructor(public coin: AbstractUtxoCoin) {}
 
   async getTransactionInfo(txid: string): Promise<ExplorerTxInfo> {
@@ -47,8 +47,33 @@ class BitgoPublicApi {
    * @returns {*}
    */
   async getUnspentInfo(addresses: string[]): Promise<Unspent[]> {
-    const url = this.coin.url(`/public/addressUnspents/${_.uniq(addresses).join(',')}`);
-    return (await request.get(url)).body as Unspent[];
+    const uniqueAddresses = _.uniq(addresses);
+    try {
+      const url = this.coin.url(`/public/addressUnspents/${uniqueAddresses.join(',')}`);
+      return (await request.get(url)).body as Unspent[];
+    } catch (e) {
+      if (e.status !== 404) {
+        throw e;
+      }
+    }
+    const res = await Bluebird.map(
+      uniqueAddresses,
+      async (address): Promise<Unspent[]> => {
+        try {
+          const res = await request.get(this.coin.url(`/public/addressUnspents/${address}`));
+          return res.body;
+        } catch (e) {
+          console.log(`error getting unspent for ${address}:`, e);
+          return [];
+        }
+      },
+      { concurrency: 4 }
+    );
+    const unspents = res.flat() as Unspent[];
+    if (unspents.length < 1) {
+      throw new Error(`no unspents found for addresses: ${addresses}`);
+    }
+    return unspents;
   }
 }
 
@@ -103,9 +128,9 @@ export async function getWallet(bitgo: BitGo, coin: AbstractUtxoCoin, walletId: 
   }
 
   try {
-    return await this.bitgo.wallets().get({ id: walletId });
+    return await bitgo.wallets().get({ id: walletId });
   } catch (e) {
-    throw new Error(`could not get wallet ${walletId} from v1 or v2`);
+    throw new Error(`could not get wallet ${walletId} from v1 or v2: ${e.toString()}`);
   }
 }
 
