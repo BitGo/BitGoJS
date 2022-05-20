@@ -92,8 +92,8 @@ const coinBuilderMap = {
   dot: Dot.TransactionBuilderFactory,
   tdot: Dot.TransactionBuilderFactory,
   near: Near.TransactionBuilderFactory,
-  maticl: MaticL.TransactionBuilderFactory,
-  tmaticl: MaticL.TransactionBuilderFactory,
+  polygon: Polygon.TransactionBuilderFactory,
+  tpolygon: Polygon.TransactionBuilderFactory,
 };
 
 /**
