@@ -31,94 +31,27 @@
  */
 const assert = require('assert');
 import { randomBytes, createHash } from 'crypto';
-import { Ed25519Curve } from './curves';
-import Shamir from './shamir';
-import HDTree from './hdTree';
-import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE, clamp } from './util';
+import { Ed25519Curve } from '../../curves';
+import Shamir from '../../shamir';
+import HDTree from '../../hdTree';
+import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE, clamp } from '../../util';
+import {
+  KeyShare,
+  UShare,
+  YShare,
+  KeyCombine,
+  PShare,
+  SubkeyShare,
+  JShare,
+  SignShare,
+  Signature,
+  XShare,
+  RShare,
+  GShare,
+} from './types';
 
 // 2^256
 const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');
-
-export interface UShare {
-  i: number;
-  t: number;
-  n: number;
-  y: string;
-  seed: string;
-  chaincode: string;
-}
-
-export interface YShare {
-  i: number;
-  j: number;
-  y: string;
-  u: string;
-  chaincode: string;
-}
-
-export interface KeyShare {
-  uShare: UShare;
-  yShares: Record<number, YShare>;
-}
-
-export interface PShare {
-  i: number;
-  t: number;
-  n: number;
-  y: string;
-  u: string;
-  prefix: string;
-  chaincode: string;
-}
-
-export interface JShare {
-  i: number;
-  j: number;
-}
-
-interface KeyCombine {
-  pShare: PShare;
-  jShares: Record<number, JShare>;
-}
-
-interface SubkeyShare {
-  pShare: PShare;
-  yShares: Record<number, YShare>;
-}
-
-export interface XShare {
-  i: number;
-  y: string;
-  u: string;
-  r: string;
-  R: string;
-}
-
-export interface RShare {
-  i: number;
-  j: number;
-  u: string;
-  r: string;
-  R: string;
-}
-
-export interface SignShare {
-  xShare: XShare;
-  rShares: Record<number, RShare>;
-}
-
-export interface GShare {
-  i: number;
-  y: string;
-  gamma: string;
-  R: string;
-}
-
-interface Signature {
-  y: string;
-  R: string;
-  sigma: string;
-}
 
 export default class Eddsa {
   static curve: Ed25519Curve = new Ed25519Curve();
@@ -142,7 +75,7 @@ export default class Eddsa {
 
   keyShare(index: number, threshold: number, numShares: number, seed?: Buffer): KeyShare {
     assert(index > 0 && index <= numShares);
-    if (seed && seed.length != 64) {
+    if (seed && seed.length !== 64) {
       throw new Error('Seed must have length 64');
     }
 
