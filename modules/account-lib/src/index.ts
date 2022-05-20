@@ -58,6 +58,9 @@ export { Dot };
 import * as Near from './coin/near';
 export { Near };
 
+import * as Polygon from './coin/polygon';
+export { Polygon };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -89,6 +92,8 @@ const coinBuilderMap = {
   dot: Dot.TransactionBuilderFactory,
   tdot: Dot.TransactionBuilderFactory,
   near: Near.TransactionBuilderFactory,
+  maticl: MaticL.TransactionBuilderFactory,
+  tmaticl: MaticL.TransactionBuilderFactory,
 };
 
 /**

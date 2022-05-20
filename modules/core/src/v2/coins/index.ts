@@ -56,3 +56,5 @@ export { TavaxC } from './tavaxc';
 export { AvaxCToken } from './avaxcToken';
 export { Sol } from './sol';
 export { Tsol } from './tsol';
+export { Polygon } from './polygon';
+export { Tpolygon } from './tpolygon';

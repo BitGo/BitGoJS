@@ -20,6 +20,7 @@ import {
   Eth2,
   Hbar,
   Ltc,
+  Polygon,
   Ofc,
   Rbtc,
   Sol,
@@ -40,6 +41,7 @@ import {
   Gteth,
   Thbar,
   Tltc,
+  Tpolygon,
   Trbtc,
   Trx,
   Tsol,
@@ -179,6 +181,8 @@ GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tstx', Tstx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('sol', Sol.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsol', Tsol.createInstance);
+GlobalCoinFactory.registerCoinConstructor('polygon', Polygon.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tpolygon', Tpolygon.createInstance);
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
