@@ -8,8 +8,6 @@
  */
 import { BitGoBase, common, IMarkets, LatestOptions, LastDaysOptions, YesterdayOptions, IBaseCoin } from '../../index';
 
-const { validateParams } = common;
-
 export class Markets implements IMarkets {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
@@ -45,7 +43,7 @@ export class Markets implements IMarkets {
    * @returns {*} an object containing average prices from a number of previous days
    */
   async lastDays(params: LastDaysOptions): Promise<any> {
-    validateParams(params, ['currencyName'], []);
+    common.validateParams(params, ['currencyName'], []);
 
     const days = params.days && !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;
 

@@ -14,7 +14,6 @@ import {
 } from '../../index';
 import { PendingApproval } from './pendingApproval';
 
-const { validateParams } = common;
 const debug = require('debug')('bitgo:v2:pendingApprovals');
 
 export class PendingApprovals implements IPendingApprovals {
@@ -31,7 +30,7 @@ export class PendingApprovals implements IPendingApprovals {
    * @param params
    */
   async list(params: ListPendingApprovalsOptions = {}): Promise<ListPendingApprovalsResult> {
-    validateParams(params, [], ['walletId', 'enterpriseId']);
+    common.validateParams(params, [], ['walletId', 'enterpriseId']);
     const queryParams: any = {};
     if (_.isString(params.walletId)) {
       queryParams.walletId = params.walletId;
@@ -56,7 +55,7 @@ export class PendingApprovals implements IPendingApprovals {
    * @param params
    */
   async get(params: GetPendingApprovalOptions = {}): Promise<PendingApproval> {
-    validateParams(params, ['id'], []);
+    common.validateParams(params, ['id'], []);
 
     const approvalData = (await this.bitgo.get(this.baseCoin.url('/pendingapprovals/' + params.id)).result()) as any;
     let approvalWallet;

@@ -24,8 +24,6 @@ import {
   UpdateSingleKeychainPasswordOptions,
 } from '../../index';
 
-const { validateParams } = common;
-
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
@@ -44,7 +42,7 @@ export class Keychains implements IKeychains {
    * @param params.reqId (optional)
    */
   async get(params: GetKeychainOptions): Promise<Keychain> {
-    validateParams(params, [], ['xpub', 'ethAddress']);
+    common.validateParams(params, [], ['xpub', 'ethAddress']);
 
     if (_.isUndefined(params.id)) {
       throw new Error('id must be defined');
@@ -102,7 +100,7 @@ export class Keychains implements IKeychains {
    *  }
    */
   async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
-    validateParams(params, ['oldPassword', 'newPassword'], []);
+    common.validateParams(params, ['oldPassword', 'newPassword'], []);
     const changedKeys: ChangedKeychains = {};
     let prevId;
     let keysLeft = true;
@@ -184,7 +182,7 @@ export class Keychains implements IKeychains {
    */
   async add(params: AddKeychainOptions = {}): Promise<Keychain> {
     params = params || {};
-    validateParams(
+    common.validateParams(
       params,
       [],
       [

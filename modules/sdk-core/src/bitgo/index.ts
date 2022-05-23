@@ -8,7 +8,6 @@ export * from './market';
 export * from './pendingApproval';
 export * from './recovery';
 export * from './trading';
-export * from './trading';
 export * from './types';
 export * from './utils';
 export * from './wallet';

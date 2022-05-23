@@ -17,8 +17,6 @@ import {
   SimulateOptions,
 } from '../../index';
 
-const { validateParams } = common;
-
 export class Webhooks implements IWebhooks {
   private bitgo: BitGoBase;
   private baseCoin: IBaseCoin;
@@ -44,7 +42,7 @@ export class Webhooks implements IWebhooks {
    * @returns {*}
    */
   async add({ url, type, label, numConfirmations = 0 }: AddOptions): Promise<any> {
-    validateParams({ url, type, label, numConfirmations }, ['url', 'type'], ['string', 'numConfirmations']);
+    common.validateParams({ url, type, label, numConfirmations }, ['url', 'type'], ['string', 'numConfirmations']);
     return await this.bitgo.post(this.baseCoin.url('/webhooks')).send({ url, type, label, numConfirmations }).result();
   }
 
@@ -55,7 +53,7 @@ export class Webhooks implements IWebhooks {
    * @returns {*}
    */
   async remove(params: RemoveOptions): Promise<any> {
-    validateParams(params, ['url', 'type'], []);
+    common.validateParams(params, ['url', 'type'], []);
 
     return this.bitgo.del(this.baseCoin.url('/webhooks')).send(params).result();
   }
@@ -92,7 +90,7 @@ export class Webhooks implements IWebhooks {
    * @returns {*}
    */
   async simulate(params: SimulateOptions): Promise<any> {
-    validateParams(params, ['webhookId', 'blockId'], []);
+    common.validateParams(params, ['webhookId', 'blockId'], []);
 
     const webhookId = params.webhookId;
     return this.bitgo

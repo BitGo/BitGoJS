@@ -17,8 +17,6 @@ import {
 import * as _ from 'lodash';
 import { RequestTracer, TssUtils } from '../utils';
 
-const { validateParams } = common;
-
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
@@ -161,7 +159,7 @@ export class PendingApproval implements IPendingApproval {
    * Sets this PendingApproval to an approved state
    */
   async approve(params: ApproveOptions = {}): Promise<any> {
-    validateParams(params, [], ['walletPassphrase', 'otp']);
+    common.validateParams(params, [], ['walletPassphrase', 'otp']);
 
     let canRecreateTransaction = true;
     /*
