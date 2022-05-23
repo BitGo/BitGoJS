@@ -17,9 +17,9 @@ import {
 } from '../index';
 
 import { IWallet } from '../wallet';
-import { ITradingPartners } from './itradingPartners';
-import { IAffirmations } from './iaffirmations';
-import { ISettlements } from './isettlements';
+import { ITradingPartners } from './iTradingPartners';
+import { IAffirmations } from './iAffirmations';
+import { ISettlements } from './iSettlements';
 
 const TRADE_PAYLOAD_VERSION = '1.2.0';
 
