@@ -5,11 +5,15 @@
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import * as errors from '../../errors';
-import { AddressVerificationData, TransactionPrebuild, VerificationOptions } from '../baseCoin';
+import {
+  AddressVerificationData,
+  IRequestTracer,
+  IWallet,
+  Keychain,
+  TransactionPrebuild,
+  VerificationOptions,
+} from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, Output, TransactionParams } from '../coins/abstractUtxoCoin';
-import { Keychain } from '../keychains';
-import { Wallet } from '../wallet';
-import { RequestTracer } from './util';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
@@ -43,7 +47,7 @@ const debug = debugLib('bitgo:v2:parseoutput');
  * @param wallet {Wallet} wallet which is making the transaction
  * @param currentAddress {string} address to check for externality relative to v1 wallet base address
  */
-function isMigratedAddress(wallet: Wallet, currentAddress: string): boolean {
+function isMigratedAddress(wallet: IWallet, currentAddress: string): boolean {
   if (_.isString(wallet.migratedFrom()) && wallet.migratedFrom() === currentAddress) {
     debug('found address %s which was migrated from v1 wallet, address is not external', currentAddress);
     return true;
@@ -83,7 +87,7 @@ function verifyCustomChangeAddress(params: VerifyCustomChangeAddressOptions): bo
 interface HandleVerifyAddressErrorOptions {
   e: Error;
   currentAddress: string;
-  wallet: Wallet;
+  wallet: IWallet;
   txParams: TransactionParams;
   customChangeKeys?: CustomChangeOptions['keys'];
   coin: AbstractUtxoCoin;
@@ -147,12 +151,12 @@ function handleVerifyAddressError({
 }
 
 interface FetchAddressDetailsOptions {
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
   disableNetworking: boolean;
   addressDetailsPrebuild: any;
   addressDetailsVerification: any;
   currentAddress: string;
-  wallet: Wallet;
+  wallet: IWallet;
 }
 
 async function fetchAddressDetails({
@@ -183,10 +187,10 @@ export interface ParseOutputOptions {
   txPrebuild: TransactionPrebuild;
   verification: VerificationOptions;
   keychainArray: [Keychain, Keychain, Keychain];
-  wallet: Wallet;
+  wallet: IWallet;
   txParams: TransactionParams;
   customChange?: CustomChangeOptions;
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
 }
 
 export async function parseOutput({

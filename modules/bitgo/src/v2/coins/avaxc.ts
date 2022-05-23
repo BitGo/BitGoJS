@@ -6,29 +6,30 @@ import * as bip32 from 'bip32';
 import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
+import { BaseCoin } from '../baseCoin';
+import { BitGo } from '../../bitgo';
+import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import {
-  BaseCoin,
+  common,
   FeeEstimateOptions,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
+  IWallet,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
   PresignTransactionOptions as BasePresignTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
+  TransactionFee,
+  TransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionFee,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionExplanation,
-  TransactionRecipient,
-  TransactionParams,
-} from '../baseCoin';
-import { BitGo } from '../../bitgo';
-import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
-import { common } from '@bitgo/sdk-core';
+} from '@bitgo/sdk-core';
 
 import { optionalDeps } from './eth';
 import { Wallet } from '../wallet';
@@ -447,7 +448,7 @@ export class AvaxC extends BaseCoin {
    * @throws Error if The prebuild is invalid
    */
   async validateHopPrebuild(
-    wallet: Wallet,
+    wallet: IWallet,
     hopPrebuild: HopPrebuild,
     originalParams?: { recipients: Recipient[] }
   ): Promise<void> {

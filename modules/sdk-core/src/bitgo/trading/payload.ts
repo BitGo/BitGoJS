@@ -1,9 +1,3 @@
-/**
- * @prettier
- */
-
-/**
- */
 type CURRENT_PAYLOAD_VERSION = '1.2.0';
 
 export interface Payload {

@@ -5,24 +5,24 @@ import * as accountLib from '@bitgo/account-lib';
 import { ECPair } from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 
-import {
-  BaseCoin,
-  KeyPair,
-  SignedTransaction,
-  VerifyTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionExplanation,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  VerifyAddressOptions,
-} from '../baseCoin';
+import { BaseCoin } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
-import { KeyIndices } from '..';
-import { TransactionType } from '@bitgo/sdk-core';
+import {
+  KeyIndices,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionType,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;

@@ -5,107 +5,36 @@ import { BigNumber } from 'bignumber.js';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
-import { BitGo } from '../bitgo';
-import { common } from '@bitgo/sdk-core';
-import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
-import { Keychain } from './keychains';
-import { IRequestTracer, sanitizeLegacyPath } from '@bitgo/sdk-api';
-import { PaginationOptions, Wallet } from './wallet';
+import {
+  AcceptShareOptions,
+  AddWalletOptions,
+  BitGoBase,
+  common,
+  GenerateMpcWalletOptions,
+  GenerateWalletOptions,
+  GetWalletByAddressOptions,
+  GetWalletOptions,
+  IBaseCoin,
+  IWallets,
+  Keychain,
+  KeychainsTriplet,
+  ListWalletOptions,
+  SupplementGenerateWalletOptions,
+  UpdateShareOptions,
+  WalletWithKeychains,
+} from '@bitgo/sdk-core';
+
+import { sanitizeLegacyPath } from '@bitgo/sdk-api';
+import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
 import { getSharedSecret } from '../ecdh';
 import { promiseProps } from './promise-utils';
 
-export interface WalletWithKeychains extends KeychainsTriplet {
-  wallet: Wallet;
-  warning?: string;
-}
+export class Wallets implements IWallets {
+  private readonly bitgo: BitGoBase;
+  private readonly baseCoin: IBaseCoin;
 
-export interface GetWalletOptions {
-  allTokens?: boolean;
-  reqId?: IRequestTracer;
-  id?: string;
-}
-
-export interface GenerateMpcWalletOptions {
-  multisigType: 'onchain' | 'tss' | 'blsdkg';
-  label: string;
-  passphrase: string;
-  originalPasscodeEncryptionCode?: string;
-  enterprise?: string;
-}
-
-export interface GenerateWalletOptions {
-  label?: string;
-  passphrase?: string;
-  userKey?: string;
-  backupXpub?: string;
-  backupXpubProvider?: string;
-  passcodeEncryptionCode?: string;
-  enterprise?: string;
-  disableTransactionNotifications?: string;
-  gasPrice?: string;
-  eip1559?: {
-    maxFeePerGas: string;
-    maxPriorityFeePerGas: string;
-  };
-  walletVersion?: number;
-  disableKRSEmail?: boolean;
-  krsSpecific?: {
-    [index: string]: boolean | string | number;
-  };
-  coldDerivationSeed?: string;
-  rootPrivateKey?: string;
-  multisigType?: 'onchain' | 'tss' | 'blsdkg';
-}
-
-export interface GetWalletByAddressOptions {
-  address?: string;
-  reqId?: RequestTracer;
-}
-
-export interface UpdateShareOptions {
-  walletShareId?: string;
-  state?: string;
-  encryptedPrv?: string;
-}
-
-export interface AcceptShareOptions {
-  overrideEncryptedPrv?: string;
-  walletShareId?: string;
-  userPassword?: string;
-  newWalletPassphrase?: string;
-}
-
-export interface AddWalletOptions {
-  type?: string;
-  keys?: string[];
-  m?: number;
-  n?: number;
-  tags?: string[];
-  clientFlags?: string[];
-  isCold?: boolean;
-  isCustodial?: boolean;
-  address?: string;
-  rootPub?: string;
-  rootPrivateKey?: string;
-  initializationTxs?: any;
-  disableTransactionNotifications?: boolean;
-  gasPrice?: number;
-  walletVersion?: number;
-  multisigType?: 'onchain' | 'tss' | 'blsdkg';
-}
-
-export interface ListWalletOptions extends PaginationOptions {
-  skip?: number;
-  getbalances?: boolean;
-  allTokens?: boolean;
-}
-
-export class Wallets {
-  private readonly bitgo: BitGo;
-  private readonly baseCoin: BaseCoin;
-
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

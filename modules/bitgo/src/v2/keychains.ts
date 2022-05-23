@@ -1,134 +1,18 @@
 import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
 
-import { BaseCoin, KeychainsTriplet, KeyPair } from './baseCoin';
-import { Wallet } from './wallet';
 import { RequestTracer } from './internal/util';
-import { common } from '@bitgo/sdk-core';
+import { AddKeychainOptions, BitGoBase, ChangedKeychains, common, CreateBackupOptions, CreateBitGoOptions, CreateMpcOptions, GetKeychainOptions, GetKeysForSigningOptions, IBaseCoin, IKeychains, Keychain, KeychainsTriplet, KeyPair, ListKeychainOptions, ListKeychainsResult, UpdatePasswordOptions, UpdateSingleKeychainPasswordOptions } from '@bitgo/sdk-core';
 import { TssUtils } from './internal/tssUtils';
 import { BlsUtils } from './internal/blsUtils';
 
 const { validateParams } = common;
 
-export type KeyType = 'tss' | 'independent' | 'blsdkg';
+export class Keychains implements IKeychains {
 
-export interface Keychain {
-  id: string;
-  pub: string;
-  prv?: string;
-  provider?: string;
-  encryptedPrv?: string;
-  derivationPath?: string;
-  derivedFromParentWithSeed?: string;
-  commonPub?: string;
-  commonKeychain?: string;
-  keyShares?: KeyShare[];
-}
+  private readonly bitgo: BitGoBase;
+  private readonly baseCoin: IBaseCoin;
 
-export interface ChangedKeychains {
-  [pubkey: string]: string;
-}
-
-export interface ListKeychainsResult {
-  keys: Keychain[];
-  nextBatchPrevId?: string;
-}
-
-export interface GetKeychainOptions {
-  id: string;
-  xpub?: string;
-  ethAddress?: string;
-  reqId?: RequestTracer;
-}
-
-export interface ListKeychainOptions {
-  limit?: number;
-  prevId?: string;
-}
-
-export interface UpdatePasswordOptions {
-  oldPassword: string;
-  newPassword: string;
-}
-
-interface UpdateSingleKeychainPasswordOptions {
-  keychain?: Keychain;
-  oldPassword?: string;
-  newPassword?: string;
-}
-
-interface AddKeychainOptions {
-  pub?: string;
-  commonPub?: string;
-  commonKeychain?: string;
-  encryptedPrv?: string;
-  type?: string;
-  keyType?: KeyType;
-  source?: string;
-  originalPasscodeEncryptionCode?: string;
-  enterprise?: string;
-  derivedFromParentWithSeed?: any;
-  disableKRSEmail?: boolean;
-  provider?: string;
-  reqId?: RequestTracer;
-  krsSpecific?: any;
-  keyShares?: KeyShare[];
-  userGPGPublicKey?: string;
-  backupGPGPublicKey?: string;
-}
-
-interface KeyShare {
-  from: string;
-  to: string;
-  publicShare: string;
-  privateShare: string;
-}
-
-export interface CreateBackupOptions {
-  provider?: string;
-  source?: string;
-  disableKRSEmail?: boolean;
-  krsSpecific?: any;
-  type?: string;
-  keyType?: KeyType;
-  reqId?: RequestTracer;
-  commonPub?: string;
-  commonKeychain?: string;
-  prv?: string;
-  encryptedPrv?: string;
-}
-
-interface CreateBitGoOptions {
-  source?: 'bitgo';
-  enterprise?: string;
-  reqId?: RequestTracer;
-  keyType?: KeyType;
-}
-
-interface CreateMpcOptions {
-  multisigType: 'onchain' | 'tss' | 'blsdkg';
-  passphrase: string;
-  originalPasscodeEncryptionCode?: string;
-  enterprise?: string;
-}
-
-interface GetKeysForSigningOptions {
-  reqId?: RequestTracer;
-  wallet?: Wallet;
-}
-
-export enum KeyIndices {
-  USER = 0,
-  BACKUP = 1,
-  BITGO = 2,
-}
-
-export class Keychains {
-
-  private readonly bitgo: BitGo;
-  private readonly baseCoin: BaseCoin;
-
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

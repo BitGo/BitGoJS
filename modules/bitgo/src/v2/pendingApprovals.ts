@@ -3,33 +3,26 @@
  */
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
-import { BitGo } from '../bitgo';
 
-import { common } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  common,
+  GetPendingApprovalOptions,
+  IBaseCoin,
+  IPendingApprovals,
+  ListPendingApprovalsOptions,
+  ListPendingApprovalsResult,
+} from '@bitgo/sdk-core';
 import { PendingApproval } from './pendingApproval';
-import { BaseCoin } from './baseCoin';
 
 const { validateParams } = common;
 const debug = debugLib('bitgo:v2:pendingApprovals');
 
-export interface ListPendingApprovalsOptions {
-  walletId?: string;
-  enterpriseId?: string;
-}
+export class PendingApprovals implements IPendingApprovals {
+  private readonly bitgo: BitGoBase;
+  private readonly baseCoin: IBaseCoin;
 
-export interface GetPendingApprovalOptions {
-  id?: string;
-}
-
-export interface ListPendingApprovalsResult {
-  pendingApprovals: PendingApproval[];
-}
-
-export class PendingApprovals {
-  private readonly bitgo: BitGo;
-  private readonly baseCoin: BaseCoin;
-
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

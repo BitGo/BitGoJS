@@ -6,10 +6,10 @@ import * as sinon from 'sinon';
 
 import { Ed25519BIP32 } from '../../../../../account-lib/dist/src/mpc/hdTree';
 import Eddsa, { KeyShare } from '../../../../../account-lib/dist/src/mpc/tss';
-import { Keychain, Wallet } from '../../../../src';
+import { Wallet } from '../../../../src';
 import { SignatureShareRecord, SignatureShareType, TssUtils, TxRequest } from '../../../../src/v2/internal/tssUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, Keychain } from '@bitgo/sdk-core';
 import { RequestTracer } from '../../../../src/v2/internal/util';
 import { createUserSignShare, ShareKeyPosition } from '../../../../src/tss';
 

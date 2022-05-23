@@ -1,4 +1,4 @@
-import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
+import { AffirmationStatus } from '@bitgo/sdk-core';
 
 export default {
   listAffirmations: {

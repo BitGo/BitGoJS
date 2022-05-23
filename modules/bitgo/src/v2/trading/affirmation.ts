@@ -2,22 +2,10 @@
  * @prettier
  */
 
-import { BitGo } from '../../bitgo';
+import { AffirmationStatus, BitGoBase, IAffirmation, Lock, Payload } from '@bitgo/sdk-core';
 
-import { Lock } from './lock';
-import { Payload } from './payload';
-
-export enum AffirmationStatus {
-  PENDING = 'pending',
-  OVERDUE = 'overdue',
-  REJECTED = 'rejected',
-  AFFIRMED = 'affirmed',
-  FAILED = 'failed',
-  CANCELED = 'canceled',
-}
-
-export class Affirmation {
-  private bitgo: BitGo;
+export class Affirmation implements IAffirmation {
+  private bitgo: BitGoBase;
   private enterpriseId: string;
 
   public id?: string;
@@ -29,7 +17,7 @@ export class Affirmation {
   public createdAt?: Date;
   public expireAt?: Date;
 
-  constructor(affirmationData: any, bitgo: BitGo, enterpriseId: string) {
+  constructor(affirmationData: any, bitgo: BitGoBase, enterpriseId: string) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
 

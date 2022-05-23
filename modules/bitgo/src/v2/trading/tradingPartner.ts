@@ -2,25 +2,12 @@
  * @prettier
  */
 
-import { BitGo } from '../../bitgo';
+import { BitGoBase, ITradingPartner, TradingPartnerStatus, TradingPartnerType } from '@bitgo/sdk-core';
 
 import { TradingAccount } from './tradingAccount';
 
-export enum TradingPartnerStatus {
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-  CANCELED = 'canceled',
-  PENDING = 'pending',
-}
-
-// Type of partnership used for settlements
-export enum TradingPartnerType {
-  DIRECT = 'direct', // direct settlement between requester and counterparty
-  AGENCY = 'agency', // agent settlement between two counterparties of the agent
-}
-
-export class TradingPartner {
-  private bitgo: BitGo;
+export class TradingPartner implements ITradingPartner {
+  private bitgo: BitGoBase;
   private enterpriseId: string;
   private currentAccount: TradingAccount; // account of the user using the SDK, needed to construct balance check URL
 
@@ -33,7 +20,7 @@ export class TradingPartner {
   public status: TradingPartnerStatus;
   public type: TradingPartnerType;
 
-  constructor(tradingPartnerData: any, bitgo: BitGo, enterpriseId: string, currentAccount: TradingAccount) {
+  constructor(tradingPartnerData: any, bitgo: BitGoBase, enterpriseId: string, currentAccount: TradingAccount) {
     this.id = tradingPartnerData.id;
     this.primaryEnterpriseName = tradingPartnerData.primaryEnterpriseName;
     this.primaryAccountId = tradingPartnerData.primaryAccountId;

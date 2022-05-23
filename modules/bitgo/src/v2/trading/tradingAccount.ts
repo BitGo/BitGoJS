@@ -3,54 +3,30 @@
  */
 
 import { BigNumber } from 'bignumber.js';
-import { BitGo } from '../../bitgo';
+import {
+  BitGoBase,
+  BuildPayloadParameters,
+  CalculateSettlementFeesParams,
+  ITradingAccount,
+  Payload,
+  SettlementFees,
+  SignPayloadParameters,
+} from '@bitgo/sdk-core';
 
 import { Wallet } from '../wallet';
-import { Payload } from './payload';
 import { TradingPartners } from './tradingPartners';
 import { Affirmations } from './affirmations';
 import { Settlements } from './settlements';
 
 const TRADE_PAYLOAD_VERSION = '1.2.0';
 
-export interface BuildPayloadParameters {
-  amounts: BuildPayloadAmounts[];
-}
-
-export interface BuildPayloadAmounts {
-  accountId: string;
-  sendAmount: string;
-  sendCurrency: string;
-  receiveAmount: string;
-  receiveCurrency: string;
-}
-
-export interface SignPayloadParameters {
-  payload: Payload;
-  walletPassphrase: string;
-}
-
-export interface SettlementFees {
-  feeRate: string;
-  feeAmount: string;
-  feeCurrency: string;
-}
-
-export interface CalculateSettlementFeesParams {
-  counterpartyAccountId: string;
-  sendCurrency: string;
-  sendAmount: string;
-  receiveCurrency: string;
-  receiveAmount: string;
-}
-
-export class TradingAccount {
-  private readonly bitgo: BitGo;
+export class TradingAccount implements ITradingAccount {
+  private readonly bitgo: BitGoBase;
   private readonly enterpriseId: string;
 
   public wallet: Wallet;
 
-  constructor(enterpriseId: string, wallet: Wallet, bitgo: BitGo) {
+  constructor(enterpriseId: string, wallet: Wallet, bitgo: BitGoBase) {
     this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;

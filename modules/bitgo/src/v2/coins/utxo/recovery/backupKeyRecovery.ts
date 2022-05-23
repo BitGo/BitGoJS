@@ -18,7 +18,7 @@ import {
 
 import { VirtualSizes } from '@bitgo/unspents';
 
-import { BitGo } from '../../../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 import * as config from '../../../../config';
 import * as errors from '../../../../errors';
 import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
@@ -224,7 +224,7 @@ export type BackupKeyRecoveryTransansaction = {
  */
 export async function backupKeyRecovery(
   coin: AbstractUtxoCoin,
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   params: RecoverParams
 ): Promise<BackupKeyRecoveryTransansaction | FormattedOfflineVaultTxInfo> {
   if (_.isUndefined(params.userKey)) {

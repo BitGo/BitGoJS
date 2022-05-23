@@ -4,7 +4,6 @@ import * as secp256k1 from 'secp256k1';
 import * as bs58 from 'bs58';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import {
-  BitGoRequest,
   handleResponseError,
   handleResponseResult,
   serializeRequestData,
@@ -17,12 +16,20 @@ import * as superagent from 'superagent';
 import * as urlLib from 'url';
 import { createHmac } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
-import { AliasEnvironments, common, EnvironmentName } from '@bitgo/sdk-core';
+import {
+  AliasEnvironments,
+  BitGoRequest,
+  common,
+  DecryptOptions,
+  EncryptOptions,
+  EnvironmentName,
+  GetSharingKeyOptions,
+  IRequestTracer,
+} from '@bitgo/sdk-core';
 import { getAddressP2PKH, makeRandomKey } from './util';
 import * as sjcl from '@bitgo/sjcl';
 import {
   AccessTokenOptions,
-  IRequestTracer,
   PingOptions,
   AuthenticateOptions,
   CalculateHmacSubjectOptions,
@@ -33,8 +40,6 @@ import {
   VerifyResponseInfo,
   VerifyResponseOptions,
   BitGoAPIOptions,
-  DecryptOptions,
-  EncryptOptions,
   User,
   BitGoJson,
   VerifyPasswordOptions,
@@ -45,7 +50,6 @@ import {
   GetUserOptions,
   UnlockOptions,
   ExtendTokenOptions,
-  GetSharingKeyOptions,
 } from './types';
 import pjson = require('../package.json');
 import { decrypt, encrypt } from './encrypt';

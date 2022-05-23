@@ -1,3 +1,4 @@
+import { ITransactionExplanation } from '../../bitgo';
 import { BaseTransactionBuilder } from './baseTransactionBuilder';
 import { BaseTransactionBuilderFactory } from './baseTransactionBuilderFactory';
 
@@ -152,16 +153,7 @@ export interface TransactionChanges {
   changeAmount: string;
 }
 
-export interface TransactionExplanation {
-  displayOrder: string[];
-  id: string;
-  outputs: TransactionRecipient[];
-  outputAmount: string;
-  changeOutputs: TransactionRecipient[];
-  changeAmount: string;
-  fee: TransactionFee;
-}
-
+export type TransactionExplanation = ITransactionExplanation<TransactionFee>;
 /**
  * Fee options.
  */

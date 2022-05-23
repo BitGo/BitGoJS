@@ -1,79 +1,34 @@
 /**
  * @prettier
  */
-import { BitGo } from '../bitgo';
-import { common } from '@bitgo/sdk-core';
+import {
+  ApproveOptions,
+  BitGoBase,
+  common,
+  IBaseCoin,
+  IPendingApproval,
+  IWallet,
+  OwnerType,
+  PendingApprovalData,
+  PendingApprovalInfo,
+  State,
+  Type,
+} from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { RequestTracer } from './internal/util';
 
-import { Wallet } from './wallet';
-import { BaseCoin } from './baseCoin';
 import { TssUtils } from './internal/tssUtils';
 
 const { validateParams } = common;
-export interface PendingApprovalInfo {
-  type: Type;
-  transactionRequest?: {
-    coinSpecific: { [key: string]: any };
-    recipients: any;
-    buildParams: {
-      type?: 'fanout' | 'consolidate';
-      [index: string]: any;
-    };
-    sourceWallet?: string;
-  };
-}
 
-export interface PendingApprovalData {
-  id: string;
-  wallet?: string;
-  enterprise?: string;
-  state: State;
-  creator: string;
-  info: PendingApprovalInfo;
-  approvalsRequired?: number;
-  txRequestId?: string;
-}
-
-export enum OwnerType {
-  WALLET = 'wallet',
-  ENTERPRISE = 'enterprise',
-}
-
-export enum State {
-  PENDING = 'pending',
-  AWAITING_SIGNATURE = 'awaitingSignature',
-  PENDING_BITGO_ADMIN_APPROVAL = 'pendingBitGoAdminApproval',
-  PENDING_ID_VERIFICATION = 'pendingIdVerification',
-  PENDING_CUSTODIAN_APPROVAL = 'pendingCustodianApproval',
-  PENDING_FINAL_APPROVAL = 'pendingFinalApproval',
-  APPROVED = 'approved',
-  PROCESSING = 'processing',
-  REJECTED = 'rejected',
-}
-
-export enum Type {
-  USER_CHANGE_REQUEST = 'userChangeRequest',
-  TRANSACTION_REQUEST = 'transactionRequest',
-  POLICY_RULE_REQUEST = 'policyRuleRequest',
-  UPDATE_APPROVALS_REQUIRED_REQUEST = 'updateApprovalsRequiredRequest',
-}
-
-export interface ApproveOptions {
-  walletPassphrase?: string;
-  otp?: string;
-  tx?: string;
-  xprv?: string;
-}
-
-export class PendingApproval {
-  private readonly bitgo: BitGo;
-  private readonly baseCoin: BaseCoin;
+export class PendingApproval implements IPendingApproval {
+  private readonly bitgo: BitGoBase;
+  private readonly baseCoin: IBaseCoin;
   private tssUtils: TssUtils;
-  private wallet?: Wallet;
+  private wallet?: IWallet;
   private _pendingApproval: PendingApprovalData;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, pendingApprovalData: PendingApprovalData, wallet?: Wallet) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, pendingApprovalData: PendingApprovalData, wallet?: IWallet) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this.wallet = wallet;
@@ -187,7 +142,7 @@ export class PendingApproval {
     }
 
     if (_.isUndefined(this.wallet)) {
-      const updatedWallet: Wallet = await this.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
+      const updatedWallet: IWallet = await this.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
 
       if (_.isUndefined(updatedWallet)) {
         throw new Error('unexpected - unable to get wallet using sourcewallet');

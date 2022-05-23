@@ -8,24 +8,25 @@ import { BitGo } from '../../bitgo';
 import { SeedValidator } from '../internal/seedValidator';
 import { CoinFamily } from '@bitgo/statics';
 
+import { BaseCoin } from '../baseCoin';
 import {
-  BaseCoin,
-  TransactionExplanation,
-  KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  VerifyTransactionOptions,
-  SignedTransaction,
-  TransactionRecipient,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  VerifyAddressOptions,
   AddressCoinSpecific,
-} from '../baseCoin';
-import { KeyIndices } from '../keychains';
+  InvalidKey,
+  KeyIndices,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
+  TransactionRecipient,
+  TransactionType,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 import { TokenManagementType } from '../types';
 import * as errors from '../../errors';
 import stellar from 'stellar-sdk';
-import { TransactionType, InvalidKey } from '@bitgo/sdk-core';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n

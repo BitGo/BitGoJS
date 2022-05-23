@@ -9,14 +9,12 @@ import * as superagent from 'superagent';
 import * as urlLib from 'url';
 import * as querystring from 'querystring';
 
+import { BitGoRequest } from '@bitgo/sdk-core';
+
 import { ApiResponseError, VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';
 
 const debug = Debug('bitgo:api');
-
-export interface BitGoRequest<ResultType = any> extends superagent.SuperAgentRequest {
-  result: (optionalField?: string) => Promise<ResultType>;
-}
 
 /**
  * Add the bitgo-specific result() function on a superagent request.

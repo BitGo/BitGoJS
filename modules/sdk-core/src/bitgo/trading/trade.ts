@@ -1,7 +1,4 @@
 /**
- * @prettier
- */
-/**
  * Represents a single trade to be settled as part of a settlement. Only off-chain (OFC) currencies are supported, and
  * all amounts must be represented in base units (such as cents, satoshi, or wei)
  */

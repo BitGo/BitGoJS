@@ -7,7 +7,7 @@
 // Copyright 2022, BitGo, Inc.  All Rights Reserved.
 //
 import * as _ from 'lodash';
-import { common } from '@bitgo/sdk-core';
+import { common, CustomSigningFunction, SignedTransaction } from '@bitgo/sdk-core';
 export * from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
 
@@ -22,6 +22,9 @@ export * as bitcoin from './legacyBitcoin';
 export const sjcl = require('@bitgo/sjcl');
 
 export { Buffer } from 'buffer';
+
+// TODO - remove this once sdk-core is published. Express relies on this coming from bitgo
+export { CustomSigningFunction, SignedTransaction };
 
 export const Environments = _.cloneDeep(common.Environments);
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';

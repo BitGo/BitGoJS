@@ -4,223 +4,48 @@
 import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import { TransactionType } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  ExtraPrebuildParamsOptions,
+  FeeEstimateOptions,
+  IBaseCoin,
+  ITransactionExplanation,
+  KeychainsTriplet,
+  KeyIndices,
+  KeyPair,
+  NotImplementedError,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  PrecreateBitGoOptions,
+  PresignTransactionOptions,
+  RecoverTokenTransaction,
+  RecoverWalletTokenOptions,
+  SignedTransaction,
+  SignTransactionOptions,
+  SupplementGenerateWalletOptions,
+  TransactionPrebuild,
+  TransactionType,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { BitGo } from '../bitgo';
-import { RequestTracer } from './internal/util';
-import { Wallet, WalletData } from './wallet';
+import { Wallet } from './wallet';
 import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 import { PendingApprovals } from './pendingApprovals';
-import { Keychain, Keychains, KeyIndices } from './keychains';
+import { Keychains } from './keychains';
 import { Enterprises } from './enterprises';
 
 import { InitiateRecoveryOptions } from './recovery/initiate';
 import { signMessage } from '../bip32util';
-import { TssUtils } from './internal/tssUtils';
 
 // re-export account lib transaction types
 export { TransactionType };
-export interface TransactionRecipient {
-  address: string;
-  amount: string | number;
-  memo?: string;
-}
 
-export interface TransactionFee<TAmount = string> {
-  fee: TAmount;
-  feeRate?: number;
-  size?: number;
-}
-
-export interface TransactionExplanation<TFee = any, TAmount = any> {
-  displayOrder: string[];
-  id: string;
-  outputs: TransactionRecipient[];
-  outputAmount: TAmount;
-  changeOutputs: TransactionRecipient[];
-  changeAmount: TAmount;
-  fee: TFee;
-  proxy?: string;
-  producers?: string[];
-}
-
-export interface KeyPair {
-  pub?: string;
-  prv: string;
-}
-
-export interface BlsKeyPair extends KeyPair {
-  secretShares?: string[];
-}
-
-export interface VerifyAddressOptions {
-  address: string;
-  addressType?: string;
-  keychains?: {
-    pub: string;
-  }[];
-  error?: string;
-  coinSpecific?: AddressCoinSpecific;
-  impliedForwarderVersion?: number;
-}
-
-export interface TransactionParams {
-  recipients?: TransactionRecipient[];
-  walletPassphrase?: string;
-  type?: string;
-}
-
-export interface AddressVerificationData {
-  coinSpecific?: AddressCoinSpecific;
-  chain?: number;
-  index?: number;
-}
-
-export interface VerificationOptions {
-  disableNetworking?: boolean;
-  keychains?: {
-    user?: Keychain;
-    backup?: Keychain;
-    bitgo?: Keychain;
-  };
-  addresses?: { [address: string]: AddressVerificationData };
-  allowPaygoOutput?: boolean;
-  considerMigratedFromAddressInternal?: boolean;
-}
-
-export interface VerifyTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  txParams: TransactionParams;
-  wallet: Wallet;
-  verification?: VerificationOptions;
-  reqId?: RequestTracer;
-}
-
-export interface SupplementGenerateWalletOptions {
-  label: string;
-  m: number;
-  n: number;
-  enterprise?: string;
-  disableTransactionNotifications?: boolean;
-  gasPrice?: number | string;
-  eip1559?: {
-    maxFeePerGas: number | string;
-    maxPriorityFeePerGas?: number | string;
-  };
-  walletVersion?: number;
-  keys: string[];
-  isCold: boolean;
-  keySignatures?: {
-    backup: string;
-    bitgo: string;
-  };
-  rootPrivateKey?: string;
-  disableKRSEmail?: boolean;
-  multisigType?: 'tss' | 'onchain' | 'blsdkg';
-}
-
-export interface FeeEstimateOptions {
-  numBlocks?: number;
-  hop?: boolean;
-  recipient?: string;
-  data?: string;
-  amount?: string;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface ExtraPrebuildParamsOptions {
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface PresignTransactionOptions {
-  txPrebuild?: TransactionPrebuild;
-  walletData: WalletData;
-  tssUtils: TssUtils;
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface PrecreateBitGoOptions {
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface VerifyRecoveryTransactionOptions {
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface ParseTransactionOptions {
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface ParsedTransaction {
-  [index: string]: unknown;
-}
-
-// TODO (SDKT-9): reverse engineer and add options
-export interface SignTransactionOptions {
-  [index: string]: unknown;
-}
-
-export interface KeychainsTriplet {
-  userKeychain: Keychain;
-  backupKeychain: Keychain;
-  bitgoKeychain: Keychain;
-}
-
-export interface TransactionPrebuild {
-  txBase64?: string;
-  txHex?: string;
-  txInfo?: unknown;
-  wallet?: Wallet;
-  buildParams?: any;
-  consolidateId?: string;
-  txRequestId?: string;
-}
-
-export interface AddressCoinSpecific {
-  outputScript?: string;
-  redeemScript?: string;
-  witnessScript?: string;
-  baseAddress?: string;
-  pendingChainInitialization?: boolean;
-  forwarderVersion?: number;
-}
-
-export interface FullySignedTransaction {
-  txHex: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
-}
-
-export interface HalfSignedUtxoTransaction {
-  txHex: string;
-}
-
-export interface HalfSignedAccountTransaction {
-  halfSigned?: {
-    txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
-    payload?: string;
-    txBase64?: string;
-  };
-}
-
-export interface SignedTransactionRequest {
-  txRequestId: string;
-}
-
-export type SignedTransaction =
-  | HalfSignedAccountTransaction
-  | HalfSignedUtxoTransaction
-  | FullySignedTransaction
-  | SignedTransactionRequest;
-
-export abstract class BaseCoin {
-  protected readonly bitgo: BitGo;
+export abstract class BaseCoin implements IBaseCoin {
+  protected readonly bitgo: BitGoBase;
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
   protected readonly _wallets: Wallets;
@@ -230,7 +55,7 @@ export abstract class BaseCoin {
   protected readonly _markets: Markets;
   protected static readonly _coinTokenPatternSeparator = ':';
 
-  protected constructor(bitgo: BitGo) {
+  protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
     this._url = this.bitgo.url('/', 2);
     this._wallets = new Wallets(this.bitgo, this);
@@ -386,7 +211,7 @@ export abstract class BaseCoin {
    * Decompose a raw transaction into useful information.
    * @param options - coin-specific
    */
-  explainTransaction(options: Record<string, any>): Promise<TransactionExplanation<any, string | number> | undefined> {
+  explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined> {
     throw new Error(`not implemented`);
   }
 
@@ -574,5 +399,9 @@ export abstract class BaseCoin {
    */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
     return Buffer.from(serializedTx);
+  }
+
+  async recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction> {
+    throw new NotImplementedError('recoverToken is not supported for this coin');
   }
 }

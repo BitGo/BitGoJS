@@ -11,7 +11,7 @@ import Eddsa, {
 import { readSignedMessage, encryptAndSignText } from './v2/internal/opengpgUtils';
 import { SignatureShareRecord, SignatureShareType, TxRequest } from './v2/internal/tssUtils';
 import _ = require('lodash');
-import { BitGo } from './bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 
 
 // YShare that has been encrypted and signed via GPG
@@ -230,7 +230,7 @@ export async function createUserToBitGoGShare(
 
 /**
  * Sends the User to Bitgo RShare to Bitgo
- * @param {BitGo} bitgo - the bitgo instance
+ * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {SignShare} userSignShare - the user Sign Share
@@ -238,7 +238,7 @@ export async function createUserToBitGoGShare(
  * @returns {Promise<void>}
  */
 export async function offerUserToBitgoRShare(
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
   userSignShare: SignShare,
@@ -263,12 +263,12 @@ export async function offerUserToBitgoRShare(
 /**
  * Gets the Bitgo to User RShare from Bitgo
  *
- * @param {BitGo} bitgo - the bitgo instance
+ * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
-export async function getBitgoToUserRShare(bitgo: BitGo, walletId: string, txRequestId: string): Promise<SignatureShareRecord> {
+export async function getBitgoToUserRShare(bitgo: BitGoBase, walletId: string, txRequestId: string): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
   const signatureShares = txRequest.signatureShares;
   if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
@@ -288,13 +288,13 @@ export async function getBitgoToUserRShare(bitgo: BitGo, walletId: string, txReq
 /**
  * Sends the User to Bitgo GShare to Bitgo
  *
- * @param {BitGo} bitgo - the bitgo instance
+ * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {GShare} userToBitgoGShare - the User to Bitgo GShare
  * @returns {Promise<void>}
  */
-export async function sendUserToBitgoGShare(bitgo:BitGo, walletId: string, txRequestId: string, userToBitgoGShare: GShare): Promise<void> {
+export async function sendUserToBitgoGShare(bitgo: BitGoBase, walletId: string, txRequestId: string, userToBitgoGShare: GShare): Promise<void> {
   if (userToBitgoGShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid GShare, doesnt belong to the User');
   }
@@ -310,12 +310,12 @@ export async function sendUserToBitgoGShare(bitgo:BitGo, walletId: string, txReq
 /**
  * Gets the latest Tx Request by id
  *
- * @param {BitGo} bitgo - the bitgo instance
+ * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @returns {Promise<TxRequest>}
  */
-export async function getTxRequest(bitgo: BitGo, walletId: string, txRequestId: string): Promise<TxRequest> {
+export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequestId: string): Promise<TxRequest> {
   const txRequestRes = await bitgo
     .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
     .query({ txRequestIds: txRequestId, latest: 'true' })
@@ -331,14 +331,14 @@ export async function getTxRequest(bitgo: BitGo, walletId: string, txRequestId: 
 /**
  * Sends a Signature Share
  *
- * @param {BitGo} bitgo - the bitgo instance
+ * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param {SignatureShareRecord} signatureShare - a Signature Share
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShare(
-  bitgo: BitGo,
+  bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
   signatureShare: SignatureShareRecord,

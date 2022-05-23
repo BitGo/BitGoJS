@@ -9,8 +9,8 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { CustomSigningFunction, Wallet } from '../../../src/';
-import { common } from '@bitgo/sdk-core';
+import { Wallet } from '../../../src/';
+import { common, CustomSigningFunction } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';

@@ -4,6 +4,8 @@ import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
+} from '../baseCoin';
+import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -11,7 +13,7 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {

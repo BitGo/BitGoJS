@@ -2,8 +2,8 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
+import { BaseCoin } from '../baseCoin';
 import {
-  BaseCoin,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -11,7 +11,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
 import { MethodNotImplementedError } from '../../errors';
 
 export class Susd extends BaseCoin {

@@ -10,14 +10,14 @@ import {
   sign,
   verify,
 } from 'openpgp';
-import { BitGo } from '../../bitgo';
+import { BitGoBase } from '@bitgo/sdk-core';
 
 /**
  * Fetches BitGo's pubic gpg key used in MPC flows
  * @param {BitGo} bitgo BitGo object
  * @return {Key} public gpg key
  */
-export async function getBitgoGpgPubKey(bitgo: BitGo): Promise<Key> {
+export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
   const constants = await bitgo.fetchConstants();
   if (!constants.mpc || !constants.mpc.bitgoPublicKey) {
     throw new Error('Unable to create MPC keys - bitgoPublicKey is missing from constants');

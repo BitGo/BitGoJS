@@ -2,21 +2,16 @@
  * @prettier
  */
 
-import { BitGo } from '../../bitgo';
-import { Affirmation, AffirmationStatus } from './affirmation';
+import { AffirmationStatus, BitGoBase, GetAffirmationParameters, IAffirmations } from '@bitgo/sdk-core';
+import { Affirmation } from './affirmation';
 import { TradingAccount } from './tradingAccount';
 
-export interface GetAffirmationParameters {
-  id: string;
-  accountId?: string;
-}
-
-export class Affirmations {
-  private bitgo: BitGo;
+export class Affirmations implements IAffirmations {
+  private bitgo: BitGoBase;
   private enterpriseId: string;
   private account?: TradingAccount;
 
-  constructor(bitgo: BitGo, enterpriseId: string, account?: TradingAccount) {
+  constructor(bitgo: BitGoBase, enterpriseId: string, account?: TradingAccount) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
     this.account = account;

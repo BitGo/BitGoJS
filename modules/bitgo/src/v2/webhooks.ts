@@ -5,38 +5,24 @@
  */
 
 import * as _ from 'lodash';
-import { BitGo } from '../bitgo';
 
-import { common } from '@bitgo/sdk-core';
-import { BaseCoin } from './baseCoin';
+import {
+  AddOptions,
+  BitGoBase,
+  common,
+  IBaseCoin,
+  IWebhooks,
+  ListNotificationsOptions,
+  RemoveOptions,
+  SimulateOptions,
+} from '@bitgo/sdk-core';
 
 const { validateParams } = common;
-export interface AddOptions {
-  url: string;
-  type: 'block' | 'wallet_confirmation';
-  label?: string;
-  numConfirmations?: number;
-}
 
-export interface RemoveOptions {
-  url: string;
-  type: 'block' | 'wallet_confirmation';
-}
-
-export interface ListNotificationsOptions {
-  prevId?: string;
-  limit?: number;
-}
-
-export interface SimulateOptions {
-  webhookId: string;
-  blockId: string;
-}
-
-export class Webhooks {
-  private bitgo: BitGo;
-  private baseCoin: BaseCoin;
-  public constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+export class Webhooks implements IWebhooks {
+  private bitgo: BitGoBase;
+  private baseCoin: IBaseCoin;
+  public constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

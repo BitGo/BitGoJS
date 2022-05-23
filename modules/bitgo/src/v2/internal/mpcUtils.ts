@@ -3,9 +3,7 @@
  */
 
 import { SerializedKeyPair, readPrivateKey, decrypt, readMessage } from 'openpgp';
-import { BitGo } from '../../bitgo';
-import { BaseCoin, KeychainsTriplet } from '../baseCoin';
-import { Keychain, KeyType } from '../keychains';
+import { BitGoBase, IBaseCoin, Keychain, KeychainsTriplet, KeyType } from '@bitgo/sdk-core';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 
 export interface MpcKeyShare {
@@ -14,10 +12,10 @@ export interface MpcKeyShare {
 }
 
 export abstract class MpcUtils {
-  protected bitgo: BitGo;
-  protected baseCoin: BaseCoin;
+  protected bitgo: BitGoBase;
+  protected baseCoin: IBaseCoin;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }

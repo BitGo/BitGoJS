@@ -5,7 +5,7 @@
 /**
  */
 import { isUndefined } from 'lodash';
-import { Keychain } from '../keychains';
+import { Keychain } from '@bitgo/sdk-core';
 /**
  * Return the list of questions that will appear on the second page of the keycard
  * @param coin name of the coin

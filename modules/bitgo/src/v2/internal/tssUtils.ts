@@ -9,12 +9,20 @@ import _ = require('lodash');
 import { Ed25519BIP32 } from '@bitgo/account-lib/dist/src/mpc/hdTree';
 import Eddsa, { KeyShare, YShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 
-import { BaseCoin, KeychainsTriplet } from '../baseCoin';
-import { Keychain, KeyType } from '../keychains';
-import { BitGo } from '../../bitgo';
+import {
+  AddKeychainOptions,
+  BitGoBase,
+  IBaseCoin,
+  IRequestTracer,
+  ITssUtils,
+  IWallet,
+  Keychain,
+  KeychainsTriplet,
+  KeyType,
+  Memo,
+} from '@bitgo/sdk-core';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { MpcUtils } from './mpcUtils';
-import { Memo, Wallet } from '..';
 import {
   SigningMaterial,
   createUserSignShare,
@@ -24,12 +32,11 @@ import {
   getTxRequest,
   sendUserToBitgoGShare,
 } from '../../tss';
-import { RequestTracer } from '../internal/util';
 import * as bs58 from 'bs58';
 
 // #region Interfaces
 interface PrebuildTransactionWithIntentOptions {
-  reqId: RequestTracer;
+  reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
   recipients: {
@@ -76,15 +83,15 @@ export interface SignatureShareRecord {
  * Utility functions for TSS work flows.
  */
 
-export class TssUtils extends MpcUtils {
-  private _wallet?: Wallet;
+export class TssUtils extends MpcUtils implements ITssUtils {
+  private _wallet?: IWallet;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, wallet?: Wallet) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
     super(bitgo, baseCoin);
     this._wallet = wallet;
   }
 
-  private get wallet(): Wallet {
+  private get wallet(): IWallet {
     if (_.isNil(this._wallet)) {
       throw new Error('Wallet not defined');
     }
@@ -143,7 +150,7 @@ export class TssUtils extends MpcUtils {
       backupYShare: backupKeyShare.yShares[1],
     };
 
-    const userKeychainParams = {
+    const userKeychainParams: AddKeychainOptions = {
       source: 'user',
       keyType: 'tss' as KeyType,
       commonKeychain: bitgoKeychain.commonKeychain,
@@ -330,7 +337,7 @@ export class TssUtils extends MpcUtils {
   async signTxRequest(params: {
     txRequest: string | TxRequest;
     prv: string;
-    reqId: RequestTracer;
+    reqId: IRequestTracer;
   }): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
@@ -455,7 +462,7 @@ export class TssUtils extends MpcUtils {
    * @param {RequestTracer} reqId id tracer.
    * @returns {Promise<any>}
    */
-  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: RequestTracer): Promise<TxRequest> {
+  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
     await this.deleteSignatureShares(txRequestId);
     // after delete signatures shares get the tx without them
     const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);

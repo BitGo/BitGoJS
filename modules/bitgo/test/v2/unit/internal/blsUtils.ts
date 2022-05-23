@@ -3,10 +3,9 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { BlsKeyPair, Keychain } from '../../../../src';
 import { BlsUtils } from '../../../../src/v2/internal/blsUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {
@@ -203,8 +202,8 @@ describe('BLS Utils:', async function () {
 
   async function nockBitgoKeychain(params: {
     coin: string,
-    userKeyShare: BlsKeyPair,
-    backupKeyShare: BlsKeyPair
+    userKeyShare: IBlsKeyPair,
+    backupKeyShare: IBlsKeyPair
     userGpgKey: openpgp.SerializedKeyPair<string>,
   }): Promise<Keychain> {
 

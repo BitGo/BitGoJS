@@ -1,9 +1,3 @@
-/**
- * @prettier
- */
-
-/**
- */
 export interface Lock {
   id: string;
   accountId: string;
