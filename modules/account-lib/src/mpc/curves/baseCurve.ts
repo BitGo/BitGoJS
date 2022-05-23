@@ -28,7 +28,9 @@ interface BaseCurve {
   // Function that adds two group elements.
   pointAdd(p: bigint, q: bigint): bigint;
   // Function that verifies a signature.
-  verify(y: bigint, signedMessage: Buffer): Buffer;
+  verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean;
+  // order of the curve
+  order?: () => bigint;
 }
 
 export default BaseCurve;

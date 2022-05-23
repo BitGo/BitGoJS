@@ -386,13 +386,9 @@ export default class Eddsa {
     return result;
   }
 
-  verify(message: Buffer, signature: Signature): Buffer {
+  verify(message: Buffer, signature: Signature): boolean {
     const publicKey = bigIntFromBufferLE(Buffer.from(signature.y, 'hex'));
-    const signedMessage = Buffer.concat([
-      Buffer.from(signature.R, 'hex'),
-      Buffer.from(signature.sigma, 'hex'),
-      message,
-    ]);
-    return Eddsa.curve.verify(publicKey, signedMessage);
+    const signedMessage = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+    return Eddsa.curve.verify(message, signedMessage, publicKey);
   }
 }

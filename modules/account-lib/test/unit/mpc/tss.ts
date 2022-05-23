@@ -34,6 +34,9 @@ describe('TSS EDDSA key generation and signing', function () {
     const message = 'MPC on a Friday night';
     const message_buffer = Buffer.from(message);
 
+    const incorrect_message = 'MPC on a Monday night';
+    const incorrect_message_buffer = Buffer.from(incorrect_message);
+
     // signing with 3-3 signatures
     let A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2], A_combine.jShares[3]]);
     let B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1], B_combine.jShares[3]]);
@@ -42,8 +45,10 @@ describe('TSS EDDSA key generation and signing', function () {
     let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
     let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
     let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
-    let result = MPC.verify(message_buffer, signature).toString();
-    result.should.equal(message);
+    let result = MPC.verify(message_buffer, signature);
+    result.should.equal(true);
+    const resultTwo = MPC.verify(incorrect_message_buffer, signature);
+    resultTwo.should.equal(false);
 
     // signing with A and B
     A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]]);
@@ -51,8 +56,8 @@ describe('TSS EDDSA key generation and signing', function () {
     A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
     B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
     signature = MPC.signCombine([A_sign, B_sign]);
-    result = MPC.verify(message_buffer, signature).toString();
-    result.should.equal(message);
+    result = MPC.verify(message_buffer, signature);
+    result.should.equal(true);
 
     // signing with A and C
     A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]]);
@@ -60,8 +65,8 @@ describe('TSS EDDSA key generation and signing', function () {
     A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
     C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
     signature = MPC.signCombine([A_sign, C_sign]);
-    result = MPC.verify(message_buffer, signature).toString();
-    result.should.equal(message);
+    result = MPC.verify(message_buffer, signature);
+    result.should.equal(true);
 
     // signing with B and C
     B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[3]]);
@@ -69,8 +74,8 @@ describe('TSS EDDSA key generation and signing', function () {
     B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [C_sign_share.rShares[2]], [A.yShares[2]]);
     C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [B_sign_share.rShares[3]], [A.yShares[3]]);
     signature = MPC.signCombine([B_sign, C_sign]);
-    result = MPC.verify(message_buffer, signature).toString();
-    result.should.equal(message);
+    result = MPC.verify(message_buffer, signature);
+    result.should.equal(true);
   });
 
   it('should verify BIP32 subkey signature', function () {
@@ -115,8 +120,8 @@ describe('TSS EDDSA key generation and signing', function () {
     const A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
     const B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
     const signature = MPC.signCombine([A_sign, B_sign]);
-    const result = MPC.verify(message_buffer, signature).toString();
-    result.should.equal(message);
+    const result = MPC.verify(message_buffer, signature);
+    result.should.equal(true);
 
     // Verify the public key in the signature equals the separately derived public subkey.
     signature.y.should.equal(y);
@@ -198,7 +203,7 @@ describe('TSS EDDSA key generation and signing', function () {
 
     const A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]]);
     const signature = MPC.signCombine([A_sign]);
-    MPC.verify.bind(MPC, message_buffer, signature).should.throw();
+    MPC.verify(message_buffer, signature).should.equal(false);
   });
 
   describe('with specific seed', function () {
@@ -229,8 +234,8 @@ describe('TSS EDDSA key generation and signing', function () {
       let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
       let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
       let signature = MPC.signCombine([A_sign, B_sign, C_sign]);
-      let result = MPC.verify(message_buffer, signature).toString();
-      result.should.equal(message);
+      let result = MPC.verify(message_buffer, signature);
+      result.should.equal(true);
 
       // signing with A and B
       A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]]);
@@ -238,8 +243,8 @@ describe('TSS EDDSA key generation and signing', function () {
       A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
       B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
       signature = MPC.signCombine([A_sign, B_sign]);
-      result = MPC.verify(message_buffer, signature).toString();
-      result.should.equal(message);
+      result = MPC.verify(message_buffer, signature);
+      result.should.equal(true);
 
       // signing with A and C
       A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]]);
@@ -247,8 +252,8 @@ describe('TSS EDDSA key generation and signing', function () {
       A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
       C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
       signature = MPC.signCombine([A_sign, C_sign]);
-      result = MPC.verify(message_buffer, signature).toString();
-      result.should.equal(message);
+      result = MPC.verify(message_buffer, signature);
+      result.should.equal(true);
 
       // signing with B and C
       B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[3]]);
@@ -256,8 +261,8 @@ describe('TSS EDDSA key generation and signing', function () {
       B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [C_sign_share.rShares[2]], [A.yShares[2]]);
       C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [B_sign_share.rShares[3]], [A.yShares[3]]);
       signature = MPC.signCombine([B_sign, C_sign]);
-      result = MPC.verify(message_buffer, signature).toString();
-      result.should.equal(message);
+      result = MPC.verify(message_buffer, signature);
+      result.should.equal(true);
     });
 
     it('should verify BIP32 subkey signature', function () {
@@ -309,8 +314,8 @@ describe('TSS EDDSA key generation and signing', function () {
       const A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
       const B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
       const signature = MPC.signCombine([A_sign, B_sign]);
-      const result = MPC.verify(message_buffer, signature).toString();
-      result.should.equal(message);
+      const result = MPC.verify(message_buffer, signature);
+      result.should.equal(true);
 
       // Verify the public key in the signature equals the separately derived public subkey.
       signature.y.should.equal(y);
