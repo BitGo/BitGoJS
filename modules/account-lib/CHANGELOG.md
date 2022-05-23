@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.8...@bitgo/account-lib@2.20.0-rc.9) (2022-05-23)
+
+
+### Features
+
+* **account-lib:** add support for secp256k1 curve ([7467f8c](https://github.com/BitGo/BitGoJS/commit/7467f8c1203d72247fa8a41d83088616229f6301))
+
+
+
+
+
 # [2.20.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.7...@bitgo/account-lib@2.20.0-rc.8) (2022-05-19)
 
 **Note:** Version bump only for package @bitgo/account-lib

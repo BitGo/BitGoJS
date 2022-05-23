@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.7...@bitgo/statics@6.18.0-rc.8) (2022-05-23)
+
+
+### Features
+
+* **statics:** update new wxrp ([ba6ff5d](https://github.com/BitGo/BitGoJS/commit/ba6ff5dd310f1b3738e303c58f122621481f5fb0))
+
+
+
+
+
 # [6.18.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.6...@bitgo/statics@6.18.0-rc.7) (2022-05-17)
 
 
