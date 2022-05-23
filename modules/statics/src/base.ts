@@ -733,6 +733,7 @@ export enum UnderlyingAsset {
   WPX = 'wpx',
   WTC = 'wtc',
   WXRP = 'wxrp',
+  WXRPV0 = 'wxrpv0',
   WXT = 'wxt',
   XAUD = 'xaud',
   XBGOLD = 'xbgold',
