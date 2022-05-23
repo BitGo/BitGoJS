@@ -2,6 +2,7 @@ export * from './baseCoin';
 export * from './bitgoBase';
 export * from './enterprise';
 export * from './environments';
+export * from './internal';
 export * from './keychain';
 export * from './market';
 export * from './pendingApproval';

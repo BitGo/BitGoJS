@@ -35,6 +35,7 @@ export interface CalculateSettlementFeesParams {
 }
 
 export interface ITradingAccount {
+  readonly id: string;
   buildPayload(params: BuildPayloadParameters): Promise<Payload>;
   verifyPayload(params: BuildPayloadParameters, payload: string): boolean;
   calculateSettlementFees(params: CalculateSettlementFeesParams): Promise<SettlementFees>;
