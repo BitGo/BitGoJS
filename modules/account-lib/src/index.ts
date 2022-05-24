@@ -32,6 +32,9 @@ export { Etc };
 import * as AvaxC from './coin/avaxc';
 export { AvaxC };
 
+import * as AvaxP from './coin/avaxp';
+export { AvaxP };
+
 import * as Rbtc from './coin/rbtc';
 export { Rbtc };
 

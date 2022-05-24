@@ -11,3 +11,5 @@ package-lock.json
 lab/
 .vscode/
 .env
+.DS_Store
+generateWallet.js

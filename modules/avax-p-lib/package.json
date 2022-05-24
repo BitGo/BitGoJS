@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "unit-test": "nyc -- mocha",
+    "test": "npm run unit-test"
   },
   "repository": {
     "type": "git",

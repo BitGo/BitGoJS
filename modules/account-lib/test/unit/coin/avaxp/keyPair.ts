@@ -1,5 +1,5 @@
 import should from 'should';
-import { KeyPair } from '../src/keyPair';
+import { KeyPair } from '../../../../src/coin/avaxp';
 import * as testData from './resources/avaxp';
 import { ACCOUNT_1, SEED_ACCOUNT } from './resources/avaxp';
 const pubKey = testData.ACCOUNT_1.pubkey;

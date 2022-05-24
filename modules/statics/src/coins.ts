@@ -72,6 +72,8 @@ export const coins = CoinMap.fromCoins([
   ),
   account('avaxc', 'Avalanche C-Chain', Networks.main.avalancheC, 18, UnderlyingAsset.AVAXC, ETH_FEATURES),
   account('tavaxc', 'Testnet Avalanche C-Chain', Networks.test.avalancheC, 18, UnderlyingAsset.AVAXC, ETH_FEATURES),
+  account('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, 18, UnderlyingAsset.AVAXP, ETH_FEATURES),
+  account('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, 18, UnderlyingAsset.AVAXP, ETH_FEATURES),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR, CSPR_FEATURES),
   account('dot', 'Polkadot', Networks.main.dot, 10, UnderlyingAsset.DOT, DOT_FEATURES, KeyCurve.Ed25519),

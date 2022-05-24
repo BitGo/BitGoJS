@@ -7,6 +7,7 @@ import { BaseCoin } from './baseCoin';
 import {
   Algo,
   AvaxC,
+  AvaxP,
   Bch,
   Bsv,
   Btc,
@@ -27,6 +28,7 @@ import {
   Susd,
   Talgo,
   TavaxC,
+  TavaxP,
   Tbch,
   Tbsv,
   Tbtc,
@@ -183,6 +185,8 @@ GlobalCoinFactory.registerCoinConstructor('sol', Sol.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsol', Tsol.createInstance);
 GlobalCoinFactory.registerCoinConstructor('near', Near.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tnear', TNear.createInstance);
+GlobalCoinFactory.registerCoinConstructor('avaxp', AvaxP.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tavaxp', TavaxP.createInstance);
 
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
