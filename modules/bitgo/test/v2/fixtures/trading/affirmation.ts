@@ -121,9 +121,12 @@ export default {
     payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendSubtotal":"500","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendSubtotal":"555","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}',
   },
   updateAffirmation: function (status) {
+    // @ts-expect-error - 'status' is specified more than once, so this usage will be overwritten.
     const affirmation = { status, ...this.singleAffirmation };
     if (status !== AffirmationStatus.AFFIRMED) {
+      // @ts-expect-error - The operand of a 'delete' operator must be optional.
       delete affirmation.payload;
+      // @ts-expect-error - The operand of a 'delete' operator must be optional.
       delete affirmation.signature;
     }
     return affirmation;

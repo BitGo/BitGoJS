@@ -45,6 +45,7 @@ describe('Ethereum 2.0', function () {
 
   it('should generate keypair without seed', function () {
     // FIXME(BG-47812): this test is flaky
+    // @ts-expect-error - no implicit this
     this.skip();
     const localBaseCoin = bitgo.coin('teth2');
     const keyPair = localBaseCoin.generateKeyPair();
@@ -66,7 +67,7 @@ describe('Ethereum 2.0', function () {
       const userKeyPair = basecoin.generateKeyPair();
       const backupKeyPair = basecoin.generateKeyPair();
       const walletKeyPair = basecoin.generateKeyPair();
-      
+
       const message = 'hello world';
       const userKey = basecoin.aggregateShares({
         pubShares: [userKeyPair.pub, backupKeyPair.pub, walletKeyPair.pub],

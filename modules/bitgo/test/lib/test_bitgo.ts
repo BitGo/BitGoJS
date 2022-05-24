@@ -432,6 +432,7 @@ BitGo.prototype.nockEthWallet = function () {
 
 const oldFetchConstants = BitGoAPI.prototype.fetchConstants;
 BitGoAPI.prototype.fetchConstants = function () {
+  // @ts-expect-error - no implicit this
   nock(this._baseUrl)
     .get('/api/v1/client/constants')
     .reply(200, { ttl: 3600, constants: {} });
