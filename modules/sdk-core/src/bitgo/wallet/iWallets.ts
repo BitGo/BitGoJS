@@ -1,6 +1,7 @@
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet } from '../baseCoin';
 import { IWallet, PaginationOptions } from './iWallet';
+import { Wallet } from './wallet';
 
 export interface WalletWithKeychains extends KeychainsTriplet {
   wallet: IWallet;
@@ -89,7 +90,7 @@ export interface ListWalletOptions extends PaginationOptions {
 }
 
 export interface IWallets {
-  get(params: GetWalletOptions): Promise<IWallet>;
+  get(params: GetWalletOptions): Promise<Wallet>;
   list(params: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
   add(params: AddWalletOptions): Promise<any>;
   generateWallet(params: GenerateWalletOptions): Promise<WalletWithKeychains>;

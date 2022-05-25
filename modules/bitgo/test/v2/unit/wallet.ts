@@ -9,12 +9,9 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { Wallet } from '../../../src/';
-import { common, CustomSigningFunction } from '@bitgo/sdk-core';
+import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
-import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';
-import { RequestTracer } from '../../../src/v2/internal/util';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
 

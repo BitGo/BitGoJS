@@ -9,6 +9,7 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 import { networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import {
+  BaseCoin,
   common,
   KeyPair,
   ParsedTransaction,
@@ -22,8 +23,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
-
-import { BaseCoin } from '../baseCoin';
 
 import { BitGo } from '../../bitgo';
 import { getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';

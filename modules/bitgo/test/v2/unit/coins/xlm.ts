@@ -4,7 +4,7 @@ import * as stellar from 'stellar-sdk';
 
 import { Environments } from '../../../../src';
 
-import { Wallet } from '../../../../src/v2/wallet';
+import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 import * as nock from 'nock';

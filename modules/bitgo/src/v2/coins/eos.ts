@@ -13,25 +13,25 @@ import * as request from 'superagent';
 import * as url from 'url';
 
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from '../../stringTextDecoder';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import {
+  BaseCoin,
   Environments,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  RequestTracer,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  Wallet,
 } from '@bitgo/sdk-core';
 import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
-import { Wallet } from '../wallet';
-import { RequestTracer } from '../internal/util';
 
 interface AddressDetails {
   address: string;

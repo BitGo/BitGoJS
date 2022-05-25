@@ -8,9 +8,9 @@ import { BitGo } from '../../bitgo';
 import { SeedValidator } from '../internal/seedValidator';
 import { CoinFamily } from '@bitgo/statics';
 
-import { BaseCoin } from '../baseCoin';
 import {
   AddressCoinSpecific,
+  BaseCoin,
   InvalidKey,
   KeyIndices,
   KeyPair,

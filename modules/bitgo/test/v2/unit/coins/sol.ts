@@ -6,8 +6,7 @@ import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 import * as _ from 'lodash';
 import * as accountLib from '@bitgo/account-lib';
 import { Sol, Tsol } from '../../../../src/v2/coins/';
-import { Wallet } from '../../../../src';
-import { TssUtils } from '../../../../src/v2/internal/tssUtils';
+import { TssUtils, Wallet } from '@bitgo/sdk-core';
 
 describe('SOL:', function () {
   let bitgo;

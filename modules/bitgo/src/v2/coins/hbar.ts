@@ -4,8 +4,8 @@
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
-import { BaseCoin } from '../baseCoin';
 import {
+  BaseCoin,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,

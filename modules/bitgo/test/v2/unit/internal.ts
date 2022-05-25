@@ -1,7 +1,7 @@
 import 'should';
 
 import * as bip32 from 'bip32';
-import { Util } from '../../../src/v2/internal/util';
+import { Util } from '@bitgo/sdk-core';
 
 describe('Internal:', () => {
 

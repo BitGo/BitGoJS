@@ -4,8 +4,6 @@ import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
-} from '../baseCoin';
-import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,

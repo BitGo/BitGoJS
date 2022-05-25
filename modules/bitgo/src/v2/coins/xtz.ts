@@ -5,12 +5,11 @@ import * as bip32 from 'bip32';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
-import { BaseCoin } from '../baseCoin';
-
 import { BitGo } from '../../bitgo';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
 import {
+  BaseCoin,
   BaseTransactionBuilder,
   KeyPair,
   ParsedTransaction,

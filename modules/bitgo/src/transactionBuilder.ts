@@ -16,10 +16,9 @@ import * as Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import { getAddressP2PKH, getNetwork } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
-import { common } from '@bitgo/sdk-core';
+import { common, getAddressP2PKH, getNetwork } from '@bitgo/sdk-core';
 import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 interface BaseOutput {

@@ -3,11 +3,17 @@ import * as nock from 'nock';
 
 import fixtures from '../../fixtures/trading/settlement';
 
-import { Wallet } from '../../../../src/v2/wallet';
-import { Enterprise } from '../../../../src/v2/enterprise';
-import { Settlement } from '../../../..//src/v2/trading/settlement';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common, TradeStatus, AffirmationStatus, SettlementStatus, SettlementType } from '@bitgo/sdk-core';
+import {
+  AffirmationStatus,
+  common,
+  Enterprise,
+  Settlement,
+  SettlementStatus,
+  SettlementType,
+  TradeStatus,
+  Wallet,
+} from '@bitgo/sdk-core';
 
 describe('Settlements', function () {
   const microservicesUri = common.Environments['mock'].uri;

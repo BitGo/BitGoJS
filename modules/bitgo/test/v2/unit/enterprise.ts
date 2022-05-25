@@ -3,8 +3,7 @@
 //
 
 import * as nock from 'nock';
-import { Enterprise } from '../../../src/v2/enterprise';
-import { common } from '@bitgo/sdk-core';
+import { common, Enterprise } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 

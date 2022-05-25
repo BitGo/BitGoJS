@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import { BaseCoin } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BitGo } from '../bitgo';
-import { BaseCoin } from './baseCoin';
 import {
   Algo,
   AvaxC,

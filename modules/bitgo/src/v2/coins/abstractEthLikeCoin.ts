@@ -6,8 +6,8 @@ import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
-import { BaseCoin } from '../baseCoin';
 import {
+  BaseCoin,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   KeyPair,

@@ -3,9 +3,8 @@ import { AvaxC, TavaxC } from '../../../../src/v2/coins';
 import { getBuilder, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import * as secp256k1 from 'secp256k1';
 import * as bip32 from 'bip32';
-import { Wallet } from '../../../../src';
 import * as nock from 'nock';
-import { common, TransactionType } from '@bitgo/sdk-core';
+import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 
 nock.enableNetConnect();
 

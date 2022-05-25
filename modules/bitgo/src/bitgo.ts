@@ -8,7 +8,6 @@ import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import bitcoinMessage = require('bitcoinjs-message');
-import { BaseCoin } from './v2/baseCoin';
 const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
@@ -26,8 +25,7 @@ import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
 import { GlobalCoinFactory } from './v2/coinFactory';
-import { getSharedSecret } from './ecdh';
-import { common } from '@bitgo/sdk-core';
+import { BaseCoin, common, getSharedSecret } from '@bitgo/sdk-core';
 import {
   BitGoAPI,
   BitGoAPIOptions,

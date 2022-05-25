@@ -1,5 +1,5 @@
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import { Dot } from './dot';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 

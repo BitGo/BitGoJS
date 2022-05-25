@@ -7,9 +7,9 @@ import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 
-import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import {
+  BaseCoin,
   IBlsKeyPair,
   common,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,

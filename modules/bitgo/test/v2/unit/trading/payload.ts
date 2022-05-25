@@ -9,11 +9,8 @@ import * as bitcoinMessage from 'bitcoinjs-message';
 
 import fixtures from '../../fixtures/trading/payload';
 
-import { Enterprise } from '../../../../src/v2/enterprise';
-import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common } from '@bitgo/sdk-core';
-import { getAddressP2PKH } from '../../../../src/bitcoin';
+import { common, Enterprise, getAddressP2PKH, Wallet } from '@bitgo/sdk-core';
 
 describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
