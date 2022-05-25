@@ -1,12 +1,12 @@
 import 'should';
+const assert = require('assert');
 import { BitGoJsError, NodeEnvironmentError } from '../../../src/errors';
 
 describe('Error handling', () => {
   it('should capture stack trace', function namedFunc() {
-    const bitGoJsError = new BitGoJsError();
-    bitGoJsError.stack!.should.match(/BitGoJsError:/);
-    bitGoJsError.stack!.should.match(/at Context\.namedFunc/);
-
+    const { stack } = new BitGoJsError();
+    assert.match(stack, /BitGoJsError/);
+    assert.match(stack, /at Context\.namedFunc/);
     (new NodeEnvironmentError()).stack!.should.match(/NodeEnvironmentError:/);
   });
 });
