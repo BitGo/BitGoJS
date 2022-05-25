@@ -4,47 +4,39 @@
 import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
-import {
-  BitGoBase,
-  Enterprises,
-  ExtraPrebuildParamsOptions,
-  FeeEstimateOptions,
-  IBaseCoin,
-  IEnterprises,
-  IKeychains,
-  IMarkets,
-  IPendingApprovals,
-  ITransactionExplanation,
-  IWallet,
-  IWallets,
-  IWebhooks,
-  Keychains,
-  KeychainsTriplet,
-  KeyIndices,
-  KeyPair,
-  Markets,
-  NotImplementedError,
-  ParsedTransaction,
-  ParseTransactionOptions,
-  PendingApprovals,
-  PrecreateBitGoOptions,
-  PresignTransactionOptions,
-  RecoverTokenTransaction,
-  RecoverWalletTokenOptions,
-  SignedTransaction,
-  SignTransactionOptions,
-  SupplementGenerateWalletOptions,
-  TransactionPrebuild,
-  VerifyAddressOptions,
-  VerifyTransactionOptions,
-  Wallet,
-  Wallets,
-  Webhooks,
-} from '../../index';
+
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { InitiateRecoveryOptions } from '../recovery';
 import { signMessage } from '../bip32util';
+import { NotImplementedError } from '../../account-lib';
+import { BitGoBase } from '../bitgoBase';
+import { IEnterprises, Enterprises } from '../enterprise';
+import { IKeychains, Keychains, KeyIndices } from '../keychain';
+import { IMarkets, Markets } from '../market';
+import { IPendingApprovals, PendingApprovals } from '../pendingApproval';
+import { IWallets, Wallets, IWallet, Wallet } from '../wallet';
+import { IWebhooks, Webhooks } from '../webhook';
+import {
+  IBaseCoin,
+  ITransactionExplanation,
+  VerifyTransactionOptions,
+  VerifyAddressOptions,
+  SupplementGenerateWalletOptions,
+  KeychainsTriplet,
+  KeyPair,
+  ExtraPrebuildParamsOptions,
+  TransactionPrebuild,
+  PresignTransactionOptions,
+  FeeEstimateOptions,
+  PrecreateBitGoOptions,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  SignTransactionOptions,
+  SignedTransaction,
+  RecoverWalletTokenOptions,
+  RecoverTokenTransaction,
+} from './iBaseCoin';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
