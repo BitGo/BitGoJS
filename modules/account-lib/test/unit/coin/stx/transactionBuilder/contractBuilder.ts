@@ -75,6 +75,41 @@ describe('Stx Contract call Builder', () => {
       tx.inputs[0].value.should.equal('0');
     });
 
+    it('an unsigned self stacking contract call transaction', async () => {
+      const builder = initTxBuilder();
+      builder.functionArgs([
+        { type: 'uint128', val: '400000000' },
+        {
+          type: 'tuple',
+          val: [
+            { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
+            { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
+          ],
+        },
+        { type: 'uint128', val: '52800' },
+        { type: 'uint128', val: '2' },
+      ]);
+      builder.fromPubKey(testData.TX_SENDER.pub);
+      builder.numberSignatures(1);
+      const tx = await builder.build();
+
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+      should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+      should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+      should.deepEqual(txJson.nonce, 0);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_SELF_STACK_CONTRACT_CALL);
+
+      tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
+    });
+
     it('a signed contract call with args', async () => {
       const builder = initTxBuilder();
       builder.functionArgs([
@@ -102,6 +137,40 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.nonce, 0);
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_WITH_ARGS);
+
+      tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
+    });
+
+    it('a signed self stacking contract call', async () => {
+      const builder = initTxBuilder();
+      builder.functionArgs([
+        { type: 'uint128', val: '400000000' },
+        {
+          type: 'tuple',
+          val: [
+            { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
+            { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
+          ],
+        },
+        { type: 'uint128', val: '52800' },
+        { type: 'uint128', val: '2' },
+      ]);
+      builder.sign({ key: testData.TX_SENDER.prv });
+      const tx = await builder.build();
+
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+      should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+      should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+      should.deepEqual(txJson.nonce, 0);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
 
       tx.type.should.equal(TransactionType.ContractCall);
       tx.outputs.length.should.equal(1);
@@ -141,6 +210,26 @@ describe('Stx Contract call Builder', () => {
       should.deepEqual(txJson.fee.toString(), '180');
       should.deepEqual(txJson.payload.functionArgs, [stringifyCv(someCV(intCV(123)))]);
       should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_CONTRACT_CALL);
+      tx.type.should.equal(TransactionType.ContractCall);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+      tx.outputs[0].value.should.equal('0');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('0');
+    });
+
+    it('a signed serialized self stacking contract call transaction', async () => {
+      const builder = factory.from(testData.SIGNED_SELF_STACK_CONTRACT_CALL);
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+      should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+      should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+      should.deepEqual(txJson.nonce, 0);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.functionArgs.length, 4);
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
       tx.type.should.equal(TransactionType.ContractCall);
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
