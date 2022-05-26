@@ -1,10 +1,9 @@
 import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
-import Eddsa from '../../../../../src/mpc/tss';
 import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
-import { BaseKey, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, Eddsa, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder, Transaction, KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';

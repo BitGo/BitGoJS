@@ -1,11 +1,9 @@
 import should from 'should';
 import * as bs58 from 'bs58';
 
-import Eddsa from '../../../../../src/mpc/tss';
-import { Ed25519BIP32 } from '../../../../../src/mpc/hdTree';
 import { register } from '../../../../../src';
 import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/sol';
-import { TransactionType } from '@bitgo/sdk-core';
+import { Ed25519BIP32, Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../../../resources/sol/sol';
 import BigNumber from 'bignumber.js';
 

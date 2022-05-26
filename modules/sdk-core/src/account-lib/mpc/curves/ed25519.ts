@@ -17,7 +17,7 @@ export class Ed25519Curve implements BaseCurve {
 
   scalarRandom(): bigint {
     return bigIntFromBufferLE(
-      Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(bigIntFromBufferLE(randomBytes(64)))),
+      Buffer.from(sodium.crypto_core_ed25519_scalar_reduce(bigIntFromBufferLE(randomBytes(64))))
     );
   }
 
@@ -35,19 +35,19 @@ export class Ed25519Curve implements BaseCurve {
 
   scalarAdd(x: bigint, y: bigint): bigint {
     return bigIntFromBufferLE(
-      Buffer.from(sodium.crypto_core_ed25519_scalar_add(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+      Buffer.from(sodium.crypto_core_ed25519_scalar_add(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32)))
     );
   }
 
   scalarSub(x: bigint, y: bigint): bigint {
     return bigIntFromBufferLE(
-      Buffer.from(sodium.crypto_core_ed25519_scalar_sub(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+      Buffer.from(sodium.crypto_core_ed25519_scalar_sub(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32)))
     );
   }
 
   scalarMult(x: bigint, y: bigint): bigint {
     return bigIntFromBufferLE(
-      Buffer.from(sodium.crypto_core_ed25519_scalar_mul(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32))),
+      Buffer.from(sodium.crypto_core_ed25519_scalar_mul(bigIntToBufferLE(x, 32), bigIntToBufferLE(y, 32)))
     );
   }
 
@@ -57,7 +57,7 @@ export class Ed25519Curve implements BaseCurve {
 
   pointAdd(p: bigint, q: bigint): bigint {
     return bigIntFromBufferLE(
-      Buffer.from(sodium.crypto_core_ed25519_add(bigIntToBufferLE(p, 32), bigIntToBufferLE(q, 32))),
+      Buffer.from(sodium.crypto_core_ed25519_add(bigIntToBufferLE(p, 32), bigIntToBufferLE(q, 32)))
     );
   }
 

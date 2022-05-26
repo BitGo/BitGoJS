@@ -36,7 +36,7 @@ export default class Shamir {
     const coefs: bigint[] = [];
     for (let ind = 0; ind < threshold - 1; ind++) {
       const coeff = clamp(
-        bigIntFromBufferLE(crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest()),
+        bigIntFromBufferLE(crypto.createHmac('sha256', ind.toString(10)).update(bigIntToBufferLE(secret, 32)).digest())
       );
       coefs.push(coeff);
     }

@@ -447,9 +447,10 @@ Wallet.prototype.address = function (params, callback) {
 
   const url = this.url('/addresses/' + params.address);
 
-  return this.bitgo.get(url)
-    .result()
-    .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(url)
+      .result()
+  ).nodeify(callback);
 };
 
 /**

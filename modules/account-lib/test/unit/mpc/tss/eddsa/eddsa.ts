@@ -6,12 +6,17 @@ import * as bs58 from 'bs58';
 import { randomBytes } from 'crypto';
 import * as sol from '@solana/web3.js';
 
-import { Dot, Sol } from '../../../src';
+import { Dot, Sol } from '../../../../../src';
 
-import Eddsa from '../../../src/mpc/tss';
-import HDTree, { Ed25519BIP32 } from '../../../src/mpc/hdTree';
-
-import { bigIntFromBufferLE, bigIntToBufferLE, bigIntFromBufferBE, bigIntToBufferBE } from '../../../src/mpc/util';
+import {
+  bigIntFromBufferLE,
+  bigIntToBufferLE,
+  bigIntFromBufferBE,
+  bigIntToBufferBE,
+  Ed25519BIP32,
+  Eddsa,
+  HDTree,
+} from '@bitgo/sdk-core';
 
 describe('TSS EDDSA key generation and signing', function () {
   let MPC: Eddsa;

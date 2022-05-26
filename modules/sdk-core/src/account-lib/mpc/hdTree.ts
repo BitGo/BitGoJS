@@ -111,7 +111,7 @@ export class Ed25519BIP32 {
     }
     const [pk, sk, prefix, chaincode] = indices.reduce(
       deriveIndex,
-      deriveIndex([keychain.pk, keychain.sk, keychain.prefix, keychain.chaincode], indices.shift()),
+      deriveIndex([keychain.pk, keychain.sk, keychain.prefix, keychain.chaincode], indices.shift())
     );
     return { pk, sk, prefix, chaincode };
   }
