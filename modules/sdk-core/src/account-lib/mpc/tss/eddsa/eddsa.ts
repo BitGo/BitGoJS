@@ -167,7 +167,7 @@ export default class Eddsa {
         pk: bigIntFromBufferLE(keychain.slice(0, 32)),
         chaincode: bigIntFromBufferBE(keychain.slice(32)),
       },
-      path,
+      path
     );
 
     const derivedPk = bigIntToBufferLE(derivedPublicKeychain.pk, 32).toString('hex');
