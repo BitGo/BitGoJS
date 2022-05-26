@@ -901,6 +901,57 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@bitgo/account-lib@^2.19.0":
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.19.0.tgz#14e7ffbe2deb14bf433ff94a8ca81af060ce5f7d"
+  integrity sha512-LUQAN2KZsX/gOEA+d6m280z4dN/7srezLL4Tj3oq81AuTz5HnClo+k5/dshw5e6pka3XSdtScE1QHlrbuF7GTw==
+  dependencies:
+    "@bitgo/blake2b" "^3.0.2"
+    "@bitgo/bls" "^0.1.0"
+    "@bitgo/bls-dkg" "^1.0.2"
+    "@bitgo/statics" "^6.17.0"
+    "@celo/contractkit" "^1.2.4"
+    "@ethereumjs/common" "^2.4.0"
+    "@ethereumjs/tx" "^3.3.0"
+    "@hashgraph/sdk" "~2.3.0"
+    "@polkadot/api" "7.15.1"
+    "@solana/spl-token" "0.1.8"
+    "@solana/web3.js" "1.31.0"
+    "@stablelib/hex" "^1.0.0"
+    "@stablelib/sha384" "^1.0.0"
+    "@stacks/transactions" "2.0.1"
+    "@substrate/txwrapper-core" "1.5.9"
+    "@substrate/txwrapper-polkadot" "1.5.9"
+    "@taquito/local-forging" "6.3.5-beta.0"
+    "@taquito/signer" "6.3.5-beta.0"
+    "@types/lodash" "^4.14.151"
+    algosdk "^1.14.0"
+    bignumber.js "^9.0.0"
+    bip32 "^2.0.6"
+    bitcoinjs-lib "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3"
+    bs58 "^4.0.1"
+    bs58check "^2.1.2"
+    casper-js-sdk "2.7.6"
+    create-hmac "^1.1.7"
+    elliptic "^6.5.2"
+    ethereumjs-abi "^0.6.5"
+    ethereumjs-util "6.2.1"
+    ethereumjs-utils-old "npm:ethereumjs-util@5.2.0"
+    ethers "^5.1.3"
+    hi-base32 "^0.5.1"
+    joi "^17.4.0"
+    libsodium-wrappers "^0.7.6"
+    libsodium-wrappers-sumo "^0.7.9"
+    lodash "^4.17.15"
+    long "^4.0.0"
+    near-api-js "^0.44.2"
+    noble-bls12-381 "0.7.2"
+    protobufjs "^6.8.9"
+    secp256k1 "4.0.2"
+    stellar-sdk "^10.0.1"
+    tronweb "^3.2.6"
+    tweetnacl "^1.0.3"
+
 "@bitgo/bls@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@bitgo/bls/-/bls-0.1.0.tgz#8fb1ecaeeeb776a6678d3e58067f83ef7a29aad7"
@@ -917,18 +968,10 @@
   dependencies:
     buffer "^5.4.3"
 
-"@bitgo/utxo-lib@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-2.2.1.tgz#566a8aedbb42ffe9dd80f9db815bc316dcee3421"
-  integrity sha512-RqevJSXHYdzhwH8JACQ4q/pLTNt0obGZU0d19BY+k6CdpWil2RuPxybxlFN1OISCldw4Z7/kZuV1Nu3FcLCAbw==
-  dependencies:
-    "@bitgo/blake2b" "^3.0.2"
-    bitcoin-ops "^1.3.0"
-    bitcoinjs-lib "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3"
-    bs58check "^2.0.0"
-    cashaddress "^1.1.0"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
+"@bitgo/statics@^6.17.0":
+  version "6.17.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-6.17.0.tgz#5b89866808d6735c4f6a400e8a4bb0b67b4427ac"
+  integrity sha512-XE/MMGHKM4xzEtH5Yp9mBsP+7BEurRgdfVioIRNYNw+HOyGQHsrpj6Uh9JDnbtGLm6bwlrPvFRaAk0Dvm6zF+g==
 
 "@celo/base@1.5.2":
   version "1.5.2"
@@ -1182,17 +1225,12 @@
   resolved "https://registry.yarnpkg.com/@commitlint/types/-/types-11.0.0.tgz#719cf05fcc1abb6533610a2e0f5dd1e61eac14fe"
   integrity sha512-VoNqai1vR5anRF5Tuh/+SWDFk7xi7oMwHrHrbm1BprYXjB2RJsWLhUrStMssDxEl5lW/z3EUdg8RvH/IUBccSQ==
 
-"@cspotcode/source-map-consumer@0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@cspotcode/source-map-consumer/-/source-map-consumer-0.8.0.tgz#33bf4b7b39c178821606f669bbc447a6a629786b"
-  integrity sha512-41qniHzTU8yAGbCp04ohlmSrZf8bkf/iJsl3V0dRGsQN/5GFfx+LbCSsCpp2gqrqjTVg/K6O8ycoV35JIwAzAg==
-
-"@cspotcode/source-map-support@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.7.0.tgz#4789840aa859e46d2f3173727ab707c66bf344f5"
-  integrity sha512-X4xqRHqN8ACt2aHVe51OxeA2HjbcL4MqFqXkrmQszJ1NOUuUu5u6Vqx/0lZSVNku7velL5FC/s5uEAj1lsBMhA==
+"@cspotcode/source-map-support@^0.8.0":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
+  integrity sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==
   dependencies:
-    "@cspotcode/source-map-consumer" "0.8.0"
+    "@jridgewell/trace-mapping" "0.3.9"
 
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
@@ -1710,6 +1748,14 @@
   version "1.4.11"
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.11.tgz#771a1d8d744eeb71b6adb35808e1a6c7b9b8c8ec"
   integrity sha512-Fg32GrJo61m+VqYSdRSjRXMjQ06j8YIYfcTqndLYVAaHmroZHLJZCydsWBOTDqXS2v+mjxohBWEMfg97GXmYQg==
+
+"@jridgewell/trace-mapping@0.3.9":
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.9.tgz#6534fd5933a53ba7cbf3a17615e273a0d1273ff9"
+  integrity sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==
+  dependencies:
+    "@jridgewell/resolve-uri" "^3.0.3"
+    "@jridgewell/sourcemap-codec" "^1.4.10"
 
 "@jridgewell/trace-mapping@^0.3.0":
   version "0.3.4"
@@ -4861,6 +4907,56 @@ bitcoinjs-message@^2.0.0:
     create-hash "^1.1.2"
     secp256k1 "^3.0.1"
     varuint-bitcoin "^1.0.1"
+
+bitgo@^14.1.0:
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/bitgo/-/bitgo-14.1.0.tgz#d248e1bbb4ddbbc60b76a8ef4bf5d55f6e575225"
+  integrity sha512-enSMP+FB3Ch2ZQwt9yxIzgZeaiySvCMz8qDWObTNo5gsN690b3vcoaccY0w7Kh4EIiuei1ejCXyIeWQ2nfGqBw==
+  dependencies:
+    "@bitgo/account-lib" "^2.19.0"
+    "@bitgo/blockapis" "^1.0.1"
+    "@bitgo/sdk-api" "^1.0.1"
+    "@bitgo/sdk-core" "^1.0.1"
+    "@bitgo/sjcl" "^1.0.1"
+    "@bitgo/statics" "^6.17.0"
+    "@bitgo/unspents" "^0.8.0"
+    "@bitgo/utxo-lib" "^2.2.2"
+    "@types/bluebird" "^3.5.25"
+    "@types/superagent" "^4.1.3"
+    algosdk "^1.14.0"
+    assert "^2.0.0"
+    big.js "^3.1.3"
+    bigi "^1.4.0"
+    bignumber.js "^8.0.1"
+    bip32 "^2.0.6"
+    bitcoinjs-message "^2.0.0"
+    bluebird "^3.5.3"
+    bs58 "^2.0.1"
+    bs58check "^1.0.4"
+    cashaddress "^1.1.0"
+    debug "^3.1.0"
+    ecurve "^1.0.6"
+    eol "^0.5.0"
+    eosjs "^21.0.2"
+    eosjs-ecc "^4.0.4"
+    lodash "^4.17.14"
+    moment "^2.20.1"
+    openpgp "5.1.0"
+    ripple-address-codec "~4.1.3"
+    ripple-binary-codec "~0.2.4"
+    ripple-keypairs "^0.11.0"
+    ripple-lib "~1.4.1"
+    sanitize-html "^1.27.5"
+    secp256k1 "^4.0.2"
+    secrets.js-grempe "^1.1.0"
+    stellar-sdk "^10.0.1"
+    superagent "^3.8.3"
+    superagent-proxy "^3.0.0"
+  optionalDependencies:
+    "@ethereumjs/common" "^2.4.0"
+    "@ethereumjs/tx" "^3.3.0"
+    ethereumjs-abi "^0.6.5"
+    ethereumjs-util "6.2.1"
 
 blakejs@^1.1.0:
   version "1.2.1"
@@ -15624,12 +15720,12 @@ tronweb@^3.2.6:
     semver "^5.6.0"
     validator "^13.6.0"
 
-ts-node@^10.4.0:
-  version "10.7.0"
-  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.7.0.tgz#35d503d0fab3e2baa672a0e94f4b40653c2463f5"
-  integrity sha512-TbIGS4xgJoX2i3do417KSaep1uRAW/Lu+WAL2doDHC0D6ummjirVOXU5/7aiZotbQ5p1Zp9tP7U6cYhA0O7M8A==
+ts-node@10.8.0:
+  version "10.8.0"
+  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.8.0.tgz#3ceb5ac3e67ae8025c1950626aafbdecb55d82ce"
+  integrity sha512-/fNd5Qh+zTt8Vt1KbYZjRHCE9sI5i7nqfD/dzBBRDeVXZXS6kToW6R7tTU6Nd4XavFs0mAVCg29Q//ML7WsZYA==
   dependencies:
-    "@cspotcode/source-map-support" "0.7.0"
+    "@cspotcode/source-map-support" "^0.8.0"
     "@tsconfig/node10" "^1.0.7"
     "@tsconfig/node12" "^1.0.7"
     "@tsconfig/node14" "^1.0.0"
@@ -15640,7 +15736,7 @@ ts-node@^10.4.0:
     create-require "^1.1.0"
     diff "^4.0.1"
     make-error "^1.1.1"
-    v8-compile-cache-lib "^3.0.0"
+    v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
 ts-node@^8.4.1:
@@ -15649,18 +15745,6 @@ ts-node@^8.4.1:
   integrity sha512-ISJJGgkIpDdBhWVu3jufsWpK3Rzo7bdiIXJjQc0ynKxVOVcg2oIrf2H2cejminGrptVc6q6/uynAHNCuWGbpVA==
   dependencies:
     arg "^4.1.0"
-    diff "^4.0.1"
-    make-error "^1.1.1"
-    source-map-support "^0.5.17"
-    yn "3.1.1"
-
-ts-node@^9.1.1:
-  version "9.1.1"
-  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-9.1.1.tgz#51a9a450a3e959401bda5f004a72d54b936d376d"
-  integrity sha512-hPlt7ZACERQGf03M253ytLY3dHbGNGrAq9qIHWUY9XHYl1z7wYngSr3OQ5xmui8o2AaxsONxIzjafLUiWBo1Fg==
-  dependencies:
-    arg "^4.1.0"
-    create-require "^1.1.0"
     diff "^4.0.1"
     make-error "^1.1.1"
     source-map-support "^0.5.17"
@@ -15838,10 +15922,10 @@ typescript@^3.6.4:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.10.tgz#70f3910ac7a51ed6bef79da7800690b19bf778b8"
   integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
 
-typescript@^4.5.4:
-  version "4.6.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.3.tgz#eefeafa6afdd31d725584c67a0eaba80f6fc6c6c"
-  integrity sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw==
+typescript@^4.2.4:
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.2.tgz#1f9aa2ceb9af87cca227813b4310fff0b51593c4"
+  integrity sha512-Mamb1iX2FDUpcTRzltPxgWMKy3fhg0TN378ylbktPGPK/99KbDtMQ4W1hwgsbPAsG3a0xKa1vmw4VKZQbkvz5A==
 
 typescript@~4.2.4:
   version "4.2.4"
@@ -16153,10 +16237,10 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-v8-compile-cache-lib@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.0.tgz#0582bcb1c74f3a2ee46487ceecf372e46bce53e8"
-  integrity sha512-mpSYqfsFvASnSn5qMiwrr4VKfumbPyONLCOPmsR3A6pTY/r0+tSaVbgPWSAIuzbk3lCTa+FForeTiO+wBQGkjA==
+v8-compile-cache-lib@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.1.tgz#6336e8d71965cb3d35a1bbb7868445a7c05264bf"
+  integrity sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"
