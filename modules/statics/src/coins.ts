@@ -161,9 +161,10 @@ export const coins = CoinMap.fromCoins([
     '0.0.3',
     AccountCoin.DEFAULT_FEATURES
   ),
+  ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
+  ofc('ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   ofc('ofcavaxc', 'Avalanche C-Chain', 18, UnderlyingAsset.AVAXC, CoinKind.CRYPTO),
   ofc('ofccspr', 'Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
-  ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   ofc('ofceth', 'Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
   ofc('ofcltc', 'Litecoin', 8, UnderlyingAsset.LTC, CoinKind.CRYPTO),
@@ -181,6 +182,7 @@ export const coins = CoinMap.fromCoins([
   ofc('ofcstx', 'Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
   ofc('ofchbar', 'Mainnet Hedera HBAR', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   tofc('ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
+  tofc('ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc('ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
   tofc('ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
@@ -1549,4 +1551,6 @@ export const coins = CoinMap.fromCoins([
   ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat('tfiatusd', 'Testnet US Dollar', Networks.test.fiat, 2, UnderlyingAsset.USD),
+  fiat('fiateur', 'European Union Euro', Networks.main.fiat, 2, UnderlyingAsset.EUR),
+  fiat('tfiateur', 'Testnet European Union Euro', Networks.test.fiat, 2, UnderlyingAsset.EUR),
 ]);

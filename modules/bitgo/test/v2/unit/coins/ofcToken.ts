@@ -17,10 +17,17 @@ describe('OFC:', function () {
     otestusdCoin = bitgo.coin('ofctusd');
   });
 
-  it('functions that return constants', function () {
+  it('test fiat constants for OFCTUSD', function () {
     otestusdCoin.getChain().should.equal('ofctusd');
     otestusdCoin.getFullName().should.equal('Test USD');
     otestusdCoin.getBaseFactor().should.equal(PRECISION_2);
+  });
+
+  it('test fiat constants for OFCTEUR', function () {
+    const teur = bitgo.coin('ofcteur');
+    teur.getChain().should.equal('ofcteur');
+    teur.getFullName().should.equal('Test Euro');
+    teur.getBaseFactor().should.equal(PRECISION_2);
   });
 
   it('test crypto coins for ofctbtc', function () {
