@@ -182,6 +182,33 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('TETH Wallet Addresses', function () {
+    let ethWallet;
+
+    before(async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+    });
+
+    it('should throw errors for invalid expected parameters', async function () {
+      await ethWallet.addresses({ includeBalances: true, returnBalancesForToken: 1 }).should.be.rejectedWith('invalid returnBalancesForToken argument, expecting string');
+
+      await ethWallet.addresses({ pendingDeployment: 1 }).should.be.rejectedWith('invalid pendingDeployment argument, expecting boolean');
+
+      await ethWallet.addresses({ includeBalances: 1 }).should.be.rejectedWith('invalid includeBalances argument, expecting boolean');
+
+      await ethWallet.addresses({ includeTotalAddressCount: 1 }).should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
+    });
+  });
+
   describe('Get User Prv', () => {
     const prv = 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
     const derivedPrv = 'xprv9yoG67Td11uwjXwbV8zEmrySVXERu5FZAsLD9suBeEJbgJqANs8Yng5dEJoii7hag5JermK6PbfxgDmSzW7ewWeLmeJEkmPfmZUSLdETtHx';
