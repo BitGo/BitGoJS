@@ -2159,12 +2159,18 @@ export class Wallet implements IWallet {
     // this could return 100 build transactions
     const buildResponse = (await this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.id() + '/consolidateAccount/build'))
-      .send(whitelistedParams)
-      .result()) as any;
+      .send(whitelistedParams)) as any;
+
+    const consolidations: PrebuildTransactionResult[] = [];
+    // When call '/consolidateAccount/build' endpoint and all receive addresses
+    // do not have spendable balance to consolidate this endpoint will return
+    // 204 HTTP response since it isn't an error that there isn't any amount to consolidate
+    if (buildResponse.status === 204) {
+      return consolidations;
+    }
 
     // we need to step over each prebuild now - should be in an array in the body
-    const consolidations: PrebuildTransactionResult[] = [];
-    for (const consolidateAccountBuild of buildResponse) {
+    for (const consolidateAccountBuild of buildResponse.body) {
       let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
         Object.assign(consolidateAccountBuild, { wallet: this, buildParams: whitelistedParams })
       )) as PrebuildTransactionResult;
