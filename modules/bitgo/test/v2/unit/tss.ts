@@ -1,5 +1,3 @@
-import { Ed25519BIP32, Eddsa } from '@bitgo/account-lib';
-import { KeyShare } from '@bitgo/account-lib/dist/src/mpc/tss';
 import {
   encryptYShare,
   createCombinedKey,
@@ -13,6 +11,9 @@ import {
   readSignedMessage,
   SignatureShareRecord,
   Wallet,
+  KeyShare,
+  Ed25519BIP32,
+  Eddsa,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';

@@ -4,9 +4,6 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { Ed25519BIP32 } from '../../../../../account-lib/dist/src/mpc/hdTree';
-import Eddsa, { KeyShare } from '../../../../../account-lib/dist/src/mpc/tss';
-import { } from '../../../../src';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import {
   common,
@@ -19,6 +16,9 @@ import {
   TssUtils,
   TxRequest,
   Wallet,
+  Eddsa,
+  KeyShare,
+  Ed25519BIP32,
 } from '@bitgo/sdk-core';
 
 describe('TSS Utils:', async function () {
