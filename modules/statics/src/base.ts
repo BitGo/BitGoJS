@@ -151,22 +151,23 @@ export enum UnderlyingAsset {
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
   CSPR = 'cspr',
-  USD = 'usd',
   ETH = 'eth',
   ETH2 = 'eth2',
-  GTETH = 'gteth',
   ETC = 'etc',
   EOS = 'eos',
+  EUR = 'eur',
+  GTETH = 'gteth',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
-  POLYGON = 'polygon',
   NEAR = 'near',
+  POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SOL = 'sol',
   STX = 'stx',
   TRX = 'trx',
-  XRP = 'xrp',
+  USD = 'usd',
   XLM = 'xlm',
+  XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
 
