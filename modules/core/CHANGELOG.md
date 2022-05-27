@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.1.0-wrw-hotfix.2](https://github.com/BitGo/BitGoJS/compare/bitgo@14.1.0-wrw-hotfix.1...bitgo@14.1.0-wrw-hotfix.2) (2022-05-27)
+
+
+### Bug Fixes
+
+* hotfix for wrw app ([24c10e2](https://github.com/BitGo/BitGoJS/commit/24c10e2f9c0b39547995c078f2d7a33d4b057760))
+
+
+
+
+
 # [14.1.0-wrw-hotfix.1](https://github.com/BitGo/BitGoJS/compare/bitgo@14.1.0-wrw-hotfix.0...bitgo@14.1.0-wrw-hotfix.1) (2022-05-20)
 
 
