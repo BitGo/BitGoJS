@@ -1,15 +1,12 @@
 /**
- * List deployed receive addresses of a eth wallet and their given token balances.
- *
- * This tool will help you see how to use the BitGo API to easily list your
- * BitGo wallets.
+ * List deployed receive addresses of an eth wallet and balances of the given token.
  *
  * Copyright 2022, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGo } from 'bitgo';
 const bitgo = new BitGo({ env: 'test' });
 
-const coin = 'teth';
+const coin = 'gteth';
 const basecoin = bitgo.coin(coin);
 // TODO: set your access token here
 const accessToken = '';
