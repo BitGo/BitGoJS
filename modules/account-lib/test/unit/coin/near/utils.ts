@@ -71,5 +71,6 @@ describe('utils', () => {
     should.equal(utils.isValidAddress(accounts.errorsAccounts.address3), false);
     should.equal(utils.isValidAddress(accounts.errorsAccounts.address4), false);
     should.equal(utils.isValidAddress(accounts.errorsAccounts.address5), false);
+    should.equal(utils.isValidAddress(accounts.errorsAccounts.address6), false);
   });
 });

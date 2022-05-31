@@ -224,6 +224,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
 
     it('have valid signatures for full-signed transaction', function () {
       if (!fullSign) {
+        // @ts-expect-error - no implicit this
         return this.skip();
       }
       assert(transactionStages.fullSignedUserBackup && transactionStages.fullSignedUserBitGo);

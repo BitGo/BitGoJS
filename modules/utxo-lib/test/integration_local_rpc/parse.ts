@@ -196,6 +196,7 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
 
         if (scriptType === 'p2tr') {
           // TODO implement verifySignature for p2tr
+          // @ts-expect-error - no implicit this
           this.skip();
         }
 

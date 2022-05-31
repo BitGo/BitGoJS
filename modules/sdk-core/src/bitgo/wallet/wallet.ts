@@ -907,6 +907,34 @@ export class Wallet implements IWallet {
       query.chains = params.chains;
     }
 
+    if (!_.isNil(params.includeBalances)) {
+      if (!_.isBoolean(params.includeBalances)) {
+        throw new Error('invalid includeBalances argument, expecting boolean');
+      }
+      query.includeBalances = params.includeBalances;
+    }
+
+    if (!_.isNil(params.includeTotalAddressCount)) {
+      if (!_.isBoolean(params.includeTotalAddressCount)) {
+        throw new Error('invalid includeTotalAddressCount argument, expecting boolean');
+      }
+      query.includeTotalAddressCount = params.includeTotalAddressCount;
+    }
+
+    if (params.returnBalancesForToken) {
+      if (!_.isString(params.returnBalancesForToken)) {
+        throw new Error('invalid returnBalancesForToken argument, expecting string');
+      }
+      query.returnBalancesForToken = params.returnBalancesForToken;
+    }
+
+    if (!_.isNil(params.pendingDeployment)) {
+      if (!_.isBoolean(params.pendingDeployment)) {
+        throw new Error('invalid pendingDeployment argument, expecting boolean');
+      }
+      query.pendingDeployment = params.pendingDeployment;
+    }
+
     return this.bitgo
       .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
       .query(query)

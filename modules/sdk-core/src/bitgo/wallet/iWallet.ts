@@ -236,6 +236,10 @@ export interface AddressesOptions extends PaginationOptions {
   labelContains?: string;
   segwit?: boolean;
   chains?: number[];
+  includeBalances?: boolean;
+  includeTotalAddressCount?: boolean;
+  returnBalancesForToken?: string;
+  pendingDeployment?: boolean;
 }
 
 export interface GetAddressOptions {

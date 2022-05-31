@@ -21,6 +21,7 @@ import { common } from '@bitgo/sdk-core';
 // Constructor
 //
 const Blockchain = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 

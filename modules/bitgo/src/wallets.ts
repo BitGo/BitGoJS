@@ -22,6 +22,7 @@ const Wallet = require('./wallet');
 // Constructor
 //
 const Wallets = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 
@@ -143,6 +144,7 @@ Wallets.prototype.resendShareInvite = function (params, callback) {
     common.validateParams(params, ['walletShareId'], [], callback);
 
     const urlParts = params.walletShareId + '/resendemail';
+    // @ts-expect-error - no implicit this
     return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
       .result();
   }).call(this).asCallback(callback);
