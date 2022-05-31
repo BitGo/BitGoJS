@@ -57,10 +57,10 @@ import {
   Wallet,
   IWallet,
   IRequestTracer,
+  sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { Triple } from '../triple';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 const debug = debugLib('bitgo:v2:utxo');
 

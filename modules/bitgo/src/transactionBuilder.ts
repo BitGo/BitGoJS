@@ -18,8 +18,7 @@ import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
-import { common, getAddressP2PKH, getNetwork } from '@bitgo/sdk-core';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
+import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
 
 interface BaseOutput {
   amount: number;

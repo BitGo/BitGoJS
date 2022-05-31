@@ -18,11 +18,10 @@ const TransactionBuilder = require('./transactionBuilder');
 import * as utxolib from '@bitgo/utxo-lib';
 const PendingApproval = require('./pendingapproval');
 
-import { common, getNetwork, getSharedSecret, makeRandomKey } from '@bitgo/sdk-core';
+import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 import {
   getExternalChainCode,
   getInternalChainCode,

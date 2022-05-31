@@ -13,11 +13,10 @@
 
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
-import { common, Util } from '@bitgo/sdk-core';
+import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
 let ethereumUtil;
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 const co = Bluebird.coroutine;
 
 try {

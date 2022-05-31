@@ -10,13 +10,11 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-import { common, getNetwork, getSharedSecret, makeRandomKey } from '@bitgo/sdk-core';
+import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 interface DecryptReceivedTravelRuleOptions {
   tx?: {

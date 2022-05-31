@@ -10,12 +10,11 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-import { common, getAddressP2PKH, getNetwork, getSharedSecret, makeRandomKey } from '@bitgo/sdk-core';
+import { common, getAddressP2PKH, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 

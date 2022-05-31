@@ -3,10 +3,9 @@
  *
  * @prettier
  */
-import { bitcoinUtil } from '@bitgo/sdk-core';
+import { bitcoinUtil, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 interface ECPairCompat extends utxolib.ECPairInterface {
   getPublicKeyBuffer(): Buffer;
