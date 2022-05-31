@@ -31,6 +31,7 @@ try {
 // Constructor
 //
 const Keychains = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 
@@ -194,8 +195,10 @@ Keychains.prototype.list = function (params, callback) {
 Keychains.prototype.updatePassword = function (params, callback) {
   return co(function *coUpdatePassword() {
     common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
+    // @ts-expect-error - no implicit this
     const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
     const newKeychains = {};
+    // @ts-expect-error - no implicit this
     const self = this;
     _.forOwn((encrypted as any).keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
       try {

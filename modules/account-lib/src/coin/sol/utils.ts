@@ -58,7 +58,7 @@ export function isValidBlockId(hash: string): boolean {
 /** @inheritdoc */
 export function isValidPrivateKey(prvKey: string | Uint8Array): boolean {
   try {
-    const key: Uint8Array = typeof prvKey === 'string' ? this.base58ToUint8Array(prvKey) : prvKey;
+    const key: Uint8Array = typeof prvKey === 'string' ? base58ToUint8Array(prvKey) : prvKey;
     return !!Keypair.fromSecretKey(key);
   } catch (e) {
     return false;
@@ -88,7 +88,7 @@ export function isValidSignature(signature: string): boolean {
 /** @inheritdoc */
 // TransactionId are the first signature on a Transaction
 export function isValidTransactionId(txId: string): boolean {
-  return this.isValidSignature(txId);
+  return isValidSignature(txId);
 }
 
 /**

@@ -9,6 +9,7 @@
     "lib": ["dom", "es2019"],
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictBindCallApply": true,

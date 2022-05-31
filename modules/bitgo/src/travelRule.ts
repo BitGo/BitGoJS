@@ -48,6 +48,7 @@ interface Recipient {
 // Constructor
 //
 const TravelRule = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 

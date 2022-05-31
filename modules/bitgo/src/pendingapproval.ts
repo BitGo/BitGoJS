@@ -19,8 +19,11 @@ import * as _ from 'lodash';
 // Constructor
 //
 const PendingApproval = function (bitgo, pendingApproval, wallet) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
+  // @ts-expect-error - no implicit this
   this.pendingApproval = pendingApproval;
+  // @ts-expect-error - no implicit this
   this.wallet = wallet;
 };
 
