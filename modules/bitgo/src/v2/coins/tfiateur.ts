@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin } from '@bitgo/sdk-core';
 import { FiatEur } from './fiateur';
 
 export class TfiatEur extends FiatEur {
