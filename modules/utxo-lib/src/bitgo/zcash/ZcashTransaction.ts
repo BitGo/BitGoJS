@@ -5,7 +5,7 @@ import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 const varuint = require('varuint-bitcoin');
 const typeforce = require('typeforce');
 
-import { isMainnet, networks } from '../../networks';
+import { networks } from '../../networks';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { fromBufferV4, fromBufferV5, toBufferV4, toBufferV5, VALUE_INT64_ZERO } from './ZcashBufferutils';
 import { getBlake2bHash, getSignatureDigest, getTxidDigest } from './hashZip0244';
@@ -47,11 +47,10 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
       return 0;
     case 3:
       return OVERWINTER_BRANCH_ID;
-    case 4:
-      return isMainnet(network) ? CANOPY_BRANCH_ID : NU5_BRANCH_ID;
     case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
+    case 4:
     case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU5:
     case ZcashTransaction.VERSION5_BRANCH_NU5:
