@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-hotfix.0](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.10...bitgo@14.2.0-hotfix.0) (2022-05-31)
+
+
+### Bug Fixes
+
+* **utxo-lib:** always use VERSION4_BRANCH_NU5 for zcash ([ba66eb5](https://github.com/BitGo/BitGoJS/commit/ba66eb5c8b355026514f2e53d11e24c5c72fa612))
+
+
+
+
+
 # [14.2.0-rc.10](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.9...bitgo@14.2.0-rc.10) (2022-05-19)
 
 **Note:** Version bump only for package bitgo
