@@ -7,7 +7,6 @@ import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
-import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import {
@@ -16,8 +15,10 @@ import {
   FeeEstimateOptions,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
+  InvalidAddressError,
   IWallet,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   PresignTransactionOptions as BasePresignTransactionOptions,

@@ -11,6 +11,7 @@ import { CoinFamily } from '@bitgo/statics';
 import {
   AddressCoinSpecific,
   BaseCoin,
+  InvalidAddressError,
   InvalidKey,
   KeyIndices,
   KeyPair,
@@ -18,14 +19,14 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TokenManagementType,
   TransactionExplanation,
   TransactionRecipient,
   TransactionType,
+  UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { TokenManagementType } from '../types';
-import * as errors from '../../errors';
 import stellar from 'stellar-sdk';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
@@ -480,7 +481,7 @@ export class Algo extends BaseCoin {
     } = params;
 
     if (!this.isValidAddress(address)) {
-      throw new errors.InvalidAddressError(`invalid address: ${address}`);
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
     if (!keychains) {
@@ -545,7 +546,7 @@ export class Algo extends BaseCoin {
     }
 
     if (!stellar.StrKey.isValidEd25519PublicKey(addressOrPubKey)) {
-      throw new errors.UnexpectedAddressError('Neither an Algorand address nor a stellar pubkey.');
+      throw new UnexpectedAddressError('Neither an Algorand address nor a stellar pubkey.');
     }
 
     // we have a stellar key
@@ -553,7 +554,7 @@ export class Algo extends BaseCoin {
     const algoAddress = accountLib.Algo.algoUtils.encodeAddress(stellarPub);
 
     if (!this.isValidAddress(algoAddress)) {
-      throw new errors.UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via pubkey.');
+      throw new UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via pubkey.');
     }
 
     return algoAddress;

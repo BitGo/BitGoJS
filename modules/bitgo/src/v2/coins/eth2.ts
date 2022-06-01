@@ -10,17 +10,17 @@ import BigNumber from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
-  IBlsKeyPair,
   common,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
+  IBlsKeyPair,
   KeyIndices,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { MethodNotImplementedError } from '../../errors';
 
 interface Recipient {
   address: string;

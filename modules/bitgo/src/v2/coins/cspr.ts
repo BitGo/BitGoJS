@@ -7,9 +7,10 @@ import BigNumber from 'bignumber.js';
 
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
 import {
   BaseCoin,
+  InvalidAddressError,
+  InvalidTransactionError,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
@@ -19,6 +20,7 @@ import {
   TransactionExplanation,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionType,
+  UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';

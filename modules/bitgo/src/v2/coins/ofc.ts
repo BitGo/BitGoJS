@@ -3,10 +3,10 @@
  */
 import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
-import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,

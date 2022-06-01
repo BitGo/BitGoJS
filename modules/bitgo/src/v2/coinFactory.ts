@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, UnsupportedCoinError } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BitGo } from '../bitgo';
 import {
@@ -67,7 +67,6 @@ import {
   AvaxCToken,
 } from './coins';
 import { tokens } from '../config';
-import * as errors from '../errors';
 import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
@@ -239,7 +238,7 @@ export class CoinFactory {
       }
     }
 
-    throw new errors.UnsupportedCoinError(name);
+    throw new UnsupportedCoinError(name);
   }
 }
 

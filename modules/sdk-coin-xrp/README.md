@@ -15,18 +15,17 @@ npm i @bitgo/sdk-api @bitgo/sdk-coin-xrp
 Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of via `bitgo`.
 
 ```javascript
-import { BitGo } from '@bitgo/sk-api';
+import { BitGo } from '@bitgo/sdk-api';
 
 async function init() {
   const xrp = await import('@bitgo/sdk-coin-xrp');
   BitGo.register(xrp);
-  return new BitGo()
+  return new BitGo();
 }
 
 async function main() {
   (await init()).coin('xrp');
 }
-
 ```
 
 ## Development

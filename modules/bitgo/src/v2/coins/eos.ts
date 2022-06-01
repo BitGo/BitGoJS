@@ -15,23 +15,27 @@ import * as url from 'url';
 import { BitGo } from '../../bitgo';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from '../../stringTextDecoder';
-import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import {
   BaseCoin,
+  checkKrsProvider,
   Environments,
+  getBip32Keys,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
+  InvalidAddressError,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
   RequestTracer,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
+  UnexpectedAddressError,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { checkKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 interface AddressDetails {
   address: string;

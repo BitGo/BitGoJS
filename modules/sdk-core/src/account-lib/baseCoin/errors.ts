@@ -45,15 +45,6 @@ export class ExtendTransactionError extends ExtendableError {
 }
 
 /**
- * Error for invalid transaction status
- */
-export class InvalidTransactionError extends ExtendableError {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-/**
  * Error for an invalid value for a contract method parameter
  */
 export class InvalidParameterValueError extends ExtendableError {
