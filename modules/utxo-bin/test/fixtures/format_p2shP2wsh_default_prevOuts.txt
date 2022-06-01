@@ -10,14 +10,14 @@ transaction: a7b64a92c6fb7e0c6ea0b95c0db8a3253347d22f76562df4dc187ed5d442767b
 │ ├─┬ 0: 61268e441d4078474679c063d1c268b5098163410553329dac0c8069f51bba97:0
 │ │ ├─┬ sigScript: p2shP2wsh
 │ │ │ └─┬ signatures: [72byte] [72byte]
-│ │ │   └── signed by: 0, 2
+│ │ │   └── signed by: [0, 2]
 │ │ ├── value: 1
 │ │ └─┬ pubScript: a9142280193aca8462021ec369d4e2ff1c95741fba7f87
 │ │   └── address: 2MvPeRFSGYJq9BXoV2fxrMpJjsZMGx2m6Zk
 │ └─┬ 1: 1761eea952ede40e9f363134f8ee4fb72658f02c4fbb13c882bb2f020a9e512e:1
 │   ├─┬ sigScript: p2shP2wsh
 │   │ └─┬ signatures: [72byte] [71byte]
-│   │   └── signed by: 0, 2
+│   │   └── signed by: [0, 2]
 │   ├── value: 1
 │   └─┬ pubScript: a9142280193aca8462021ec369d4e2ff1c95741fba7f87
 │     └── address: 2MvPeRFSGYJq9BXoV2fxrMpJjsZMGx2m6Zk
