@@ -4,13 +4,10 @@
 
 import 'should';
 import * as nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';
 import * as sinon from 'sinon';
-import { Wallets } from '../../../src';
-import { TssUtils } from '../../../src/v2/internal/tssUtils';
-import { BlsUtils } from '../../../src/v2/internal/blsUtils';
 
 describe('V2 Wallets:', function () {
   const bitgo = new TestBitGo({ env: 'mock' });

@@ -12,12 +12,14 @@ import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 
 import {
+  BaseCoin,
   common,
   ExtraPrebuildParamsOptions,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  promiseProps,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
@@ -25,6 +27,7 @@ import {
   TransactionRecipient as BaseTransactionOutput,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  Wallet,
 } from '@bitgo/sdk-core';
 import {
   InvalidAddressError,
@@ -32,9 +35,6 @@ import {
   UnexpectedAddressError,
   StellarFederationUserNotFoundError,
 } from '../../errors';
-import { BaseCoin } from '../baseCoin';
-import { promiseProps } from '../promise-utils';
-import { Wallet } from '../wallet';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 

@@ -4,8 +4,8 @@
 import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseCoin } from '../baseCoin';
 import {
+  BaseCoin,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,

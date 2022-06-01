@@ -2,8 +2,8 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import {
+  BaseCoin,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,

@@ -3,9 +3,8 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { BlsUtils } from '../../../../src/v2/internal/blsUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
+import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {

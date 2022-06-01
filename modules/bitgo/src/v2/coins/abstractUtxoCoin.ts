@@ -29,9 +29,9 @@ import {
   recoverCrossChain,
 } from './utxo/recovery/crossChainRecovery';
 
-import { BaseCoin } from '../baseCoin';
 import {
   AddressCoinSpecific,
+  BaseCoin,
   BitGoBase,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
@@ -42,6 +42,8 @@ import {
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
+  promiseProps,
+  RequestTracer,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
@@ -52,15 +54,13 @@ import {
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  Wallet,
   IWallet,
   IRequestTracer,
+  sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
-import { RequestTracer } from '../internal/util';
 import { Triple } from '../triple';
-import { promiseProps } from '../promise-utils';
-import { Wallet } from '../wallet';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 
 const debug = debugLib('bitgo:v2:utxo');
 

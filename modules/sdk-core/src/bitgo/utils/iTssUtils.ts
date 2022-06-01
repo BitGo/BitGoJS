@@ -5,7 +5,7 @@ import { KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychain';
 import { Memo } from '../wallet';
 
-interface PrebuildTransactionWithIntentOptions {
+export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
   intentType: string;
   sequenceId?: string;
@@ -75,7 +75,7 @@ export interface ITssUtils {
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
-  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion: string): Promise<TxRequest>;
+  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion?: string): Promise<TxRequest>;
   deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]>;
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;

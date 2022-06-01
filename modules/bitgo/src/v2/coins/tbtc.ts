@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import { Btc } from './btc';
 import * as utxolib from '@bitgo/utxo-lib';
 

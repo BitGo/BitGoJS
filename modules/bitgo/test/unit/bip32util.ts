@@ -1,12 +1,12 @@
 /**
  * @prettier
  */
+import { signMessage, verifyMessage } from '@bitgo/sdk-core';
 import * as crypto from 'crypto';
 import * as bip32 from 'bip32';
 import 'should';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import * as bip32util from '../../src/bip32util';
 
 describe('bip32util', function () {
   function getSeedBuffers(length: number) {
@@ -17,13 +17,13 @@ describe('bip32util', function () {
     const messages = ['hello', 'goodbye'];
     keys.forEach((key) => {
       messages.forEach((message) => {
-        const signature = bip32util.signMessage(message, key, utxolib.networks.bitcoin);
+        const signature = signMessage(message, key, utxolib.networks.bitcoin);
 
         keys.forEach((otherKey) => {
           messages.forEach((otherMessage) => {
-            bip32util
-              .verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin)
-              .should.eql(message === otherMessage && key === otherKey);
+            verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin).should.eql(
+              message === otherMessage && key === otherKey
+            );
           });
         });
       });

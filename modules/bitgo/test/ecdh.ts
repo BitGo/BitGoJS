@@ -6,7 +6,7 @@ import * as bip32 from 'bip32';
 import * as crypto from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { getSharedSecret } from '../src/ecdh';
+import { getSharedSecret } from '@bitgo/sdk-core';
 
 describe('ECDH sharing secret', () => {
   function getKey(seed: string) {

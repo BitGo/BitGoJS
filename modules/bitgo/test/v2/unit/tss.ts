@@ -1,12 +1,22 @@
-import { Ed25519BIP32, Eddsa } from '@bitgo/account-lib';
-import { KeyShare } from '@bitgo/account-lib/dist/src/mpc/tss';
-import { encryptYShare, createCombinedKey, createUserSignShare, sendSignatureShare,
-  getBitgoToUserRShare, getTxRequest, offerUserToBitgoRShare, createUserToBitGoGShare, sendUserToBitgoGShare } from '../../../src/tss';
+import {
+  encryptYShare,
+  createCombinedKey,
+  createUserSignShare,
+  sendSignatureShare,
+  getBitgoToUserRShare,
+  getTxRequest,
+  offerUserToBitgoRShare,
+  createUserToBitGoGShare,
+  sendUserToBitgoGShare,
+  readSignedMessage,
+  SignatureShareRecord,
+  Wallet,
+  KeyShare,
+  Ed25519BIP32,
+  Eddsa,
+} from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
-import { readSignedMessage } from '../../../src/v2/internal/opengpgUtils';
 import * as should from 'should';
-import { SignatureShareRecord } from '../../../src/v2/internal/tssUtils';
-import { Wallet } from '../../../src';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 import { TestBitGo } from '../../lib/test_bitgo';

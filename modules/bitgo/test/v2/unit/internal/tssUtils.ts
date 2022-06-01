@@ -4,14 +4,22 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { Ed25519BIP32 } from '../../../../../account-lib/dist/src/mpc/hdTree';
-import Eddsa, { KeyShare } from '../../../../../account-lib/dist/src/mpc/tss';
-import { Wallet } from '../../../../src';
-import { SignatureShareRecord, SignatureShareType, TssUtils, TxRequest } from '../../../../src/v2/internal/tssUtils';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { common, Keychain } from '@bitgo/sdk-core';
-import { RequestTracer } from '../../../../src/v2/internal/util';
-import { createUserSignShare, ShareKeyPosition } from '../../../../src/tss';
+import {
+  common,
+  createUserSignShare,
+  Keychain,
+  RequestTracer,
+  ShareKeyPosition,
+  SignatureShareRecord,
+  SignatureShareType,
+  TssUtils,
+  TxRequest,
+  Wallet,
+  Eddsa,
+  KeyShare,
+  Ed25519BIP32,
+} from '@bitgo/sdk-core';
 
 describe('TSS Utils:', async function () {
   let sandbox: sinon.SinonSandbox;

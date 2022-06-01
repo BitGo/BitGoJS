@@ -8,10 +8,8 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { common } from '@bitgo/sdk-core';
+import { BlsUtils, common, TssUtils } from '@bitgo/sdk-core';
 import { TestBitGo } from '../../lib/test_bitgo';
-import { TssUtils } from '../../../src/v2/internal/tssUtils';
-import { BlsUtils } from '../../../src/v2/internal/blsUtils';
 
 describe('V2 Keychains', function () {
   let bitgo;

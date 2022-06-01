@@ -19,9 +19,8 @@ import {
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { Dimensions } from '@bitgo/unspents';
 
-import { BitGoBase, IWallet, Keychain } from '@bitgo/sdk-core';
+import { BitGoBase, IWallet, Keychain, Wallet } from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, TransactionInfo } from '../../abstractUtxoCoin';
-import { Wallet } from '../../../wallet';
 
 import { Triple } from '../../../triple';
 import { decrypt } from '@bitgo/sdk-api';

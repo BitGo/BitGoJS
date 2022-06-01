@@ -14,11 +14,12 @@ import * as rippleBinaryCodec from 'ripple-binary-codec';
 import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 import * as rippleKeypairs from 'ripple-keypairs';
 
-import { BaseCoin } from '../baseCoin';
 import {
+  BaseCoin,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
+  promiseProps,
   TransactionExplanation,
   TransactionPrebuild,
   SignTransactionOptions as BaseSignTransactionOptions,
@@ -27,7 +28,6 @@ import {
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { promiseProps } from '../promise-utils';
 import {
   checkKrsProvider,
   getBip32Keys,

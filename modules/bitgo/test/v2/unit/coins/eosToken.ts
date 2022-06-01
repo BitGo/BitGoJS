@@ -3,7 +3,7 @@ import 'should';
 import * as _ from 'lodash';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Wallet } from '../../../../src';
+import { Wallet } from '@bitgo/sdk-core';
 
 
 describe('EOS Token:', function () {

@@ -3,7 +3,7 @@
  *
  * @format
  */
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Trx } from './trx';

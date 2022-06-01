@@ -7,12 +7,18 @@ import * as sinon from 'sinon';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 
-import { BaseCoin, PendingApproval, Wallet } from '../../../src/v2';
-import { PendingApprovalData, State, Type } from '@bitgo/sdk-core';
-import { SignatureShareType, TssUtils } from '../../../src/v2/internal/tssUtils';
-
-import { Environments } from '../../../src';
-import { RequestTracer } from '../../../src/v2/internal/util';
+import {
+  BaseCoin,
+  Environments,
+  PendingApproval,
+  PendingApprovalData,
+  RequestTracer,
+  SignatureShareType,
+  State,
+  TssUtils,
+  Type,
+  Wallet,
+} from '@bitgo/sdk-core';
 
 describe('Pending Approvals:', () => {
   let sandbox: sinon.SinonSandbox;

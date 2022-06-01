@@ -1,3 +1,5 @@
+export * from './affirmation';
+export * from './affirmations';
 export * from './iAffirmation';
 export * from './iAffirmations';
 export * from './iSettlement';
@@ -7,4 +9,9 @@ export * from './iTradingPartner';
 export * from './iTradingPartners';
 export * from './lock';
 export * from './payload';
+export * from './settlement';
+export * from './settlements';
 export * from './trade';
+export * from './tradingAccount';
+export * from './tradingPartner';
+export * from './tradingPartners';

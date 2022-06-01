@@ -25,6 +25,7 @@ import {
   EnvironmentName,
   GetSharingKeyOptions,
   IRequestTracer,
+  sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import { getAddressP2PKH, makeRandomKey } from './util';
 import * as sjcl from '@bitgo/sjcl';
@@ -53,7 +54,6 @@ import {
 } from './types';
 import pjson = require('../package.json');
 import { decrypt, encrypt } from './encrypt';
-import { sanitizeLegacyPath } from './bip32path';
 
 const debug = debugLib('bitgo:api');
 

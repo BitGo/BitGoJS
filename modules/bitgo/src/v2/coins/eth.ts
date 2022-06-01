@@ -10,11 +10,10 @@ import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
 
-import { BaseCoin } from '../baseCoin';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
-import { Wallet } from '../wallet';
 import {
+  BaseCoin,
   FeeEstimateOptions,
   HalfSignedAccountTransaction,
   KeyPair,
@@ -30,9 +29,10 @@ import {
   AddressCoinSpecific,
   common,
   IWallet,
+  Wallet,
+  Util,
 } from '@bitgo/sdk-core';
 import * as config from '../../config';
-import { Util } from '../internal/util';
 import {
   EthereumLibraryUnavailableError,
   InvalidAddressError,

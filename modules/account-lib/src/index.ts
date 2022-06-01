@@ -1,7 +1,12 @@
 import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseBuilder, BaseTransactionBuilderFactory, BuildTransactionError, Ed25519KeyDeriver } from '@bitgo/sdk-core';
-import Eddsa from './mpc/tss';
-import { Ed25519BIP32 } from './mpc/hdTree';
+import {
+  BaseBuilder,
+  BaseTransactionBuilderFactory,
+  BuildTransactionError,
+  Ed25519BIP32,
+  Ed25519KeyDeriver,
+  Eddsa,
+} from '@bitgo/sdk-core';
 export { Eddsa, Ed25519BIP32 };
 
 export { Ed25519KeyDeriver };

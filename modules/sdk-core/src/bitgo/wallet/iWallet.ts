@@ -1,7 +1,8 @@
 import { IRequestTracer } from '../../api';
-import { VerificationOptions, TransactionPrebuild, IBaseCoin, SignedTransaction } from '../baseCoin';
+import { IBaseCoin, SignedTransaction, TransactionPrebuild, VerificationOptions } from '../baseCoin';
+import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
-import { PendingApprovalData, IPendingApproval } from '../pendingApproval';
+import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { ITradingAccount } from '../trading';
 
 export interface MaximumSpendableOptions {
@@ -472,6 +473,7 @@ export interface DownloadKeycardOptions {
 }
 
 export interface IWallet {
+  bitgo: BitGoBase;
   baseCoin: IBaseCoin;
   url(extra: string): string;
   id(): string;

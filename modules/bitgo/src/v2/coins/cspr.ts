@@ -5,12 +5,11 @@ import * as accountLib from '@bitgo/account-lib';
 import { ECPair } from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 
-import { BaseCoin } from '../baseCoin';
-
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { InvalidAddressError, InvalidTransactionError, UnexpectedAddressError } from '../../errors';
 import {
+  BaseCoin,
   KeyIndices,
   KeyPair,
   ParsedTransaction,

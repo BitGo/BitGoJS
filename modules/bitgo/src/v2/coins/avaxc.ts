@@ -6,12 +6,12 @@ import * as bip32 from 'bip32';
 import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import {
+  BaseCoin,
   common,
   FeeEstimateOptions,
   FullySignedTransaction,
@@ -29,10 +29,10 @@ import {
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  Wallet,
 } from '@bitgo/sdk-core';
 
 import { optionalDeps } from './eth';
-import { Wallet } from '../wallet';
 
 // For precreateBitgo
 interface PrecreateBitGoOptions {

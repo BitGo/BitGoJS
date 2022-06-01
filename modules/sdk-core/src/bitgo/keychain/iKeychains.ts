@@ -69,7 +69,7 @@ export interface AddKeychainOptions {
   backupGPGPublicKey?: string;
 }
 
-export interface KeyShare {
+interface KeyShare {
   from: string;
   to: string;
   publicShare: string;

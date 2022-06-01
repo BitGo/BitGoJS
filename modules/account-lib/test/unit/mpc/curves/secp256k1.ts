@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import { Secp256k1Curve } from '../../../../src/mpc/curves';
-import { bigIntToBufferBE } from '../../../../src/mpc/util';
+import { bigIntToBufferBE, Secp256k1Curve } from '@bitgo/sdk-core';
 
 describe('secp256k1 curve implementation', function () {
   const sec256k1 = new Secp256k1Curve();

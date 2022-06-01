@@ -5,8 +5,7 @@
 import * as bip32 from 'bip32';
 import * as stellar from 'stellar-sdk';
 
-import { BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import * as config from '../../config';
 
 interface ValidateKeyOptions {
