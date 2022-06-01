@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.12](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.11...bitgo@14.2.0-rc.12) (2022-06-01)
+
+
+### Bug Fixes
+
+* add missing examples and filters for list addresses api ([6a6ad90](https://github.com/BitGo/BitGoJS/commit/6a6ad90c670710cd169cc11aeb68f227bfd60a7c))
+* **bitgo:** fix v1 wallet get address ([74c2420](https://github.com/BitGo/BitGoJS/commit/74c24206fb63ef3fbaea3ad6a17c0e2dcea6ea32))
+* **utxo-lib:** always use VERSION4_BRANCH_NU5 for zcash ([ef0692c](https://github.com/BitGo/BitGoJS/commit/ef0692c6772f6d21fce3da6cc515dc74915c3c6d))
+
+
+### Features
+
+* **sdk-core:** Define new BitGoBase interface in sdk-core ([907bd9e](https://github.com/BitGo/BitGoJS/commit/907bd9e024f196bfb707f04065a47d74e0f7ce0d))
+
+
+
+
+
 # [14.2.0-rc.11](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.10...bitgo@14.2.0-rc.11) (2022-05-23)
 
 **Note:** Version bump only for package bitgo

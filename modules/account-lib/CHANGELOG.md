@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.9...@bitgo/account-lib@2.20.0-rc.10) (2022-06-01)
+
+
+### Features
+
+* **account-lib:** add tests to verify self stacking STX tx builder ([88c6dd1](https://github.com/BitGo/BitGoJS/commit/88c6dd1962c8eb97e56ae7b8ba87b2cbb2446a9e))
+* **account-lib:** fix is valid account id ([b14f7d1](https://github.com/BitGo/BitGoJS/commit/b14f7d136441437ca4ae9bb7dcf14c283eabbcc7))
+
+
+
+
+
 # [2.20.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.8...@bitgo/account-lib@2.20.0-rc.9) (2022-05-23)
 
 

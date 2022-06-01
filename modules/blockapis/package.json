@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/blockapis",
   "description": "Access public block explorer APIs for a variety of coins",
-  "version": "1.0.1-rc.10",
+  "version": "1.0.1-rc.11",
   "main": "dist/src/index.js",
   "files": [
     "dist/src/**/*"
@@ -23,7 +23,7 @@
     "directory": "modules/blockapis"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "^2.3.0-rc.4",
+    "@bitgo/utxo-lib": "^2.3.0-rc.5",
     "bluebird": "^3.7.2",
     "superagent": "^7.1.1"
   },

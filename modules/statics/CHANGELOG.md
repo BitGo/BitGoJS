@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.8...@bitgo/statics@6.18.0-rc.9) (2022-06-01)
+
+
+### Features
+
+* **statics:** add tokens of end of may ([21d895d](https://github.com/BitGo/BitGoJS/commit/21d895de437600e9cdfcbc45e1f920e0065f83cb))
+
+
+
+
+
 # [6.18.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.7...@bitgo/statics@6.18.0-rc.8) (2022-05-23)
 
 
