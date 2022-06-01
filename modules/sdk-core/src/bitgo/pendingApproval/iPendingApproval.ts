@@ -65,11 +65,11 @@ export interface IPendingApproval {
   type(): Type;
   info(): PendingApprovalInfo;
   approvalsRequired(): number;
-  url(extra: string): string;
-  get(params: Record<string, never>): Promise<IPendingApproval>;
-  approve(params: ApproveOptions): Promise<any>;
-  reject(params: Record<string, never>): Promise<any>;
-  cancel(params: Record<string, never>): Promise<any>;
+  url(extra?: string): string;
+  get(params?: Record<string, never>): Promise<IPendingApproval>;
+  approve(params?: ApproveOptions): Promise<any>;
+  reject(params?: Record<string, never>): Promise<any>;
+  cancel(params?: Record<string, never>): Promise<any>;
   recreateAndSignTSSTransaction(params: ApproveOptions, reqId: IRequestTracer): Promise<{ txHex: string }>;
-  recreateAndSignTransaction(params: any): Promise<any>;
+  recreateAndSignTransaction(params?: any): Promise<any>;
 }

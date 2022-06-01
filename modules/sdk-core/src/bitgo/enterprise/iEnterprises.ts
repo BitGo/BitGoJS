@@ -5,7 +5,7 @@ export interface GetEnterpriseOptions {
 }
 
 export interface IEnterprises {
-  list(params: Record<string, never>): Promise<IEnterprise[]>;
-  get(params: GetEnterpriseOptions): Promise<IEnterprise>;
-  create(params: any): Promise<IEnterprise>;
+  list(params?: Record<string, never>): Promise<IEnterprise[]>;
+  get(params?: GetEnterpriseOptions): Promise<IEnterprise>;
+  create(params?: any): Promise<IEnterprise>;
 }

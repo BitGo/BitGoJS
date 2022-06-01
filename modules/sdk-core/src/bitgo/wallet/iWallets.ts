@@ -90,17 +90,17 @@ export interface ListWalletOptions extends PaginationOptions {
 }
 
 export interface IWallets {
-  get(params: GetWalletOptions): Promise<Wallet>;
-  list(params: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
-  add(params: AddWalletOptions): Promise<any>;
-  generateWallet(params: GenerateWalletOptions): Promise<WalletWithKeychains>;
-  listShares(params: Record<string, unknown>): Promise<any>;
-  getShare(params: { walletShareId?: string }): Promise<any>;
-  updateShare(params: UpdateShareOptions): Promise<any>;
-  resendShareInvite(params: { walletShareId?: string }): Promise<any>;
-  cancelShare(params: { walletShareId?: string }): Promise<any>;
-  acceptShare(params: AcceptShareOptions): Promise<any>;
-  getWallet(params: GetWalletOptions): Promise<IWallet>;
-  getWalletByAddress(params: GetWalletByAddressOptions): Promise<IWallet>;
-  getTotalBalances(params: Record<string, never>): Promise<any>;
+  get(params?: GetWalletOptions): Promise<Wallet>;
+  list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
+  add(params?: AddWalletOptions): Promise<any>;
+  generateWallet(params?: GenerateWalletOptions): Promise<WalletWithKeychains>;
+  listShares(params?: Record<string, unknown>): Promise<any>;
+  getShare(params?: { walletShareId?: string }): Promise<any>;
+  updateShare(params?: UpdateShareOptions): Promise<any>;
+  resendShareInvite(params?: { walletShareId?: string }): Promise<any>;
+  cancelShare(params?: { walletShareId?: string }): Promise<any>;
+  acceptShare(params?: AcceptShareOptions): Promise<any>;
+  getWallet(params?: GetWalletOptions): Promise<IWallet>;
+  getWalletByAddress(params?: GetWalletByAddressOptions): Promise<IWallet>;
+  getTotalBalances(params?: Record<string, never>): Promise<any>;
 }
