@@ -939,6 +939,13 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@bitgo/bls-dkg@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/bls-dkg/-/bls-dkg-1.0.2.tgz#8fc3ce8a2318754e27c75dd1a70478439da2bda5"
+  integrity sha512-xuAHajy+B7JqF2gsXHcWNmLuqKSs9k9YcJ20tcMpuALMawQozcpNQ06rrB1R83nUdh4dXAUcw3zuRIAitT6+sA==
+  dependencies:
+    noble-bls12-381 "^0.7.2"
+
 "@bitgo/bls@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@bitgo/bls/-/bls-0.1.0.tgz#8fb1ecaeeeb776a6678d3e58067f83ef7a29aad7"
