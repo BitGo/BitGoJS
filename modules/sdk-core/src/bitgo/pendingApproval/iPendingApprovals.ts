@@ -14,6 +14,6 @@ export interface ListPendingApprovalsResult {
 }
 
 export interface IPendingApprovals {
-  list(params: ListPendingApprovalsOptions): Promise<ListPendingApprovalsResult>;
-  get(params: GetPendingApprovalOptions): Promise<IPendingApproval>;
+  list(params?: ListPendingApprovalsOptions): Promise<ListPendingApprovalsResult>;
+  get(params?: GetPendingApprovalOptions): Promise<IPendingApproval>;
 }
