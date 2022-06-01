@@ -60,3 +60,5 @@ export { TavaxC } from './tavaxc';
 export { AvaxCToken } from './avaxcToken';
 export { Sol } from './sol';
 export { Tsol } from './tsol';
+export { AvaxP } from './avaxp';
+export { TavaxP } from './tavaxp';
