@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { Environments, V1Network } from './v2';
+import { Environments, V1Network } from './bitgo';
 
 // re-export from here for backwards compatibility reasons
 export { Environments };

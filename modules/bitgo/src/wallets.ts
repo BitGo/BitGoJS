@@ -10,15 +10,11 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-
+import { common, getAddressP2PKH, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { makeRandomKey, getNetwork, getAddressP2PKH } from './bitcoin';
-import { common } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
-import { getSharedSecret } from './ecdh';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 
@@ -26,6 +22,7 @@ const Wallet = require('./wallet');
 // Constructor
 //
 const Wallets = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 
@@ -147,6 +144,7 @@ Wallets.prototype.resendShareInvite = function (params, callback) {
     common.validateParams(params, ['walletShareId'], [], callback);
 
     const urlParts = params.walletShareId + '/resendemail';
+    // @ts-expect-error - no implicit this
     return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
       .result();
   }).call(this).asCallback(callback);

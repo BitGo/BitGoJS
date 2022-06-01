@@ -3,7 +3,7 @@
  */
 import 'should';
 import { ECPair } from '@bitgo/utxo-lib';
-import { getAddressP2PKH } from '../../../src/bitcoin';
+import { getAddressP2PKH } from '@bitgo/sdk-core';
 
 describe('Bitcoin utils:', function () {
   it('should produce equivalent addresses when using getAddress() vs getAddressP2PKH() for an ECPair key', () => {

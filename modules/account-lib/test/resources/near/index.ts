@@ -31,6 +31,7 @@ export const accounts = {
     address3: 'me@google.com',
     address4: '$$$',
     address5: 'abcdefghijklmnopqrstuvwxyz.abcdefghijklmnopqrstuvwxyz.abcdefghijklmnopqrstuvwxyz',
+    address6: '',
   },
   default: {
     secretKey: '0000000000000000000000000000000000000000000000000000000000000000',

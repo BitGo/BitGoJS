@@ -46,16 +46,12 @@ export class Utils implements BaseUtils {
    * or can create a new keyPair
    */
   isValidAccountId(accountId: string): boolean {
-    try {
-      // this regex is from near doc, https://docs.near.org/docs/concepts/account
+    return (
       (/^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$/.test(accountId) &&
-        accountId.length > 2 &&
-        accountId.length < 64) ||
-        new KeyPair({ pub: accountId });
-      return true;
-    } catch {
-      return false;
-    }
+        accountId.length >= 2 &&
+        accountId.length <= 64) ||
+      isBase58(accountId, 32)
+    );
   }
 
   /** @inheritdoc */

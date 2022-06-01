@@ -9,12 +9,9 @@ import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
-import { CustomSigningFunction, Wallet } from '../../../src/';
-import { common } from '@bitgo/sdk-core';
+import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../lib/test_bitgo';
-import { TssUtils, TxRequest } from '../../../src/v2/internal/tssUtils';
-import { RequestTracer } from '../../../src/v2/internal/util';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
 
@@ -179,6 +176,50 @@ describe('V2 Wallet:', function () {
       }
 
       scope.isDone().should.be.True();
+    });
+  });
+
+  describe('TETH Wallet Addresses', function () {
+    let ethWallet;
+
+    before(async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+    });
+
+    it('search list addresses should return success', async function () {
+      const params = { includeBalances: true, returnBalancesForToken: 'gterc6dp', pendingDeployment: false, includeTotalAddressCount: true };
+
+      const scope =
+        nock(bgUrl)
+          .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
+          .query(params)
+          .reply(200);
+      try {
+        await wallet.addresses(params);
+        throw '';
+      } catch (error) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      scope.isDone().should.be.True();
+    });
+
+    it('should throw errors for invalid expected parameters', async function () {
+      await ethWallet.addresses({ includeBalances: true, returnBalancesForToken: 1 }).should.be.rejectedWith('invalid returnBalancesForToken argument, expecting string');
+
+      await ethWallet.addresses({ pendingDeployment: 1 }).should.be.rejectedWith('invalid pendingDeployment argument, expecting boolean');
+
+      await ethWallet.addresses({ includeBalances: 1 }).should.be.rejectedWith('invalid includeBalances argument, expecting boolean');
+
+      await ethWallet.addresses({ includeTotalAddressCount: 1 }).should.be.rejectedWith('invalid includeTotalAddressCount argument, expecting boolean');
     });
   });
 

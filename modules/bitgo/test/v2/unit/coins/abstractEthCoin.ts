@@ -159,11 +159,13 @@ describe('ETH-like coins', () => {
 
         it('Should not throw when verifying valid addresses', function () {
           // FIXME(BG-43225): not implemented
+          // @ts-expect-error - no implicit this
           this.skip();
         });
 
         it('Should throw when verifying invalid addresses', function () {
           // FIXME(BG-43225): not implemented
+          // @ts-expect-error - no implicit this
           this.skip();
         });
       });

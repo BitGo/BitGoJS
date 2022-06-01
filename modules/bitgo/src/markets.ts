@@ -19,6 +19,7 @@ import { common } from '@bitgo/sdk-core';
 // Constructor
 //
 const Markets = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 

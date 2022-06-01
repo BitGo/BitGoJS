@@ -1,5 +1,5 @@
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import { Eth2 } from './eth2';
 
 export class Teth2 extends Eth2 {

@@ -9,6 +9,7 @@
     "lib": ["dom", "es2019"],
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictBindCallApply": true,
@@ -16,7 +17,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "es2019",
-    "typeRoots": ["./node_modules/@types", "./types"],
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "exclude": ["node_modules"]
 }

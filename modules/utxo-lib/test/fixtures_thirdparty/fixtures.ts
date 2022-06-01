@@ -100,6 +100,7 @@ export function testFixture<T>(
   callback: (this: Mocha.Context, data: T) => void
 ): void {
   it(filename, async function () {
+    // @ts-expect-error - no implicit this
     callback.call(this, await readJSON(network, filename));
   });
 }

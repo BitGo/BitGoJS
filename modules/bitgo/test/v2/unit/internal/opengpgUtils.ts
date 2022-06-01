@@ -1,7 +1,7 @@
 import * as openpgp from 'openpgp';
 import 'should';
 
-import * as openpgpUtils from '../../../../src/v2/internal/opengpgUtils';
+import { openpgpUtils } from '@bitgo/sdk-core';
 
 describe('OpenGPG Utils Tests', function () {
   let senderKey: { publicKey: string, privateKey: string };

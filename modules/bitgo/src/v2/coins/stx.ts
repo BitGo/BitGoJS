@@ -4,19 +4,19 @@
 import * as accountLib from '@bitgo/account-lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 
+import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
   KeyPair,
   SignedTransaction,
+  SignTransactionOptions,
   TransactionExplanation,
+  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  TransactionType,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  SignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-} from '../baseCoin';
-import { BitGo } from '../../bitgo';
-import { TransactionType } from '@bitgo/sdk-core';
+} from '@bitgo/sdk-core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {

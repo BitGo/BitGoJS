@@ -2,8 +2,7 @@ import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/near';
 import should from 'should';
 import * as testData from '../../../../resources/near';
-import { TransactionType } from '@bitgo/sdk-core';
-import Eddsa from '../../../../../src/mpc/tss';
+import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as base58 from 'bs58';
 
 describe('Near Transfer Builder', () => {

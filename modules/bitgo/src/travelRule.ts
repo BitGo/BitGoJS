@@ -10,16 +10,11 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-
+import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-
-import { common } from '@bitgo/sdk-core';
-import { getNetwork, makeRandomKey } from './bitcoin';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
-import { getSharedSecret } from './ecdh';
 
 interface DecryptReceivedTravelRuleOptions {
   tx?: {
@@ -48,6 +43,7 @@ interface Recipient {
 // Constructor
 //
 const TravelRule = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 

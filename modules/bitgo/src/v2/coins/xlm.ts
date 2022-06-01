@@ -10,31 +10,31 @@ import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
-import { KeyIndices } from '../keychains';
 
-import { common } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  common,
+  ExtraPrebuildParamsOptions,
+  KeyIndices,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  promiseProps,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation as BaseTransactionExplanation,
+  TransactionParams as BaseTransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient as BaseTransactionOutput,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  Wallet,
+} from '@bitgo/sdk-core';
 import {
   InvalidAddressError,
   InvalidMemoIdError,
   UnexpectedAddressError,
   StellarFederationUserNotFoundError,
 } from '../../errors';
-import {
-  BaseCoin,
-  TransactionRecipient as BaseTransactionOutput,
-  TransactionExplanation as BaseTransactionExplanation,
-  KeyPair,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  VerifyTransactionOptions as BaseVerifyTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionParams as BaseTransactionParams,
-  ExtraPrebuildParamsOptions,
-} from '../baseCoin';
-import { promiseProps } from '../promise-utils';
-import { Wallet } from '../wallet';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
 

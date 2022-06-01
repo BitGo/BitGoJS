@@ -21,6 +21,7 @@ const PendingApproval = require('./pendingapproval');
 // Constructor
 //
 const PendingApprovals = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 

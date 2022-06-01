@@ -1,7 +1,6 @@
+import { BaseCoin, common } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
 import { Eos } from './eos';
-import { common } from '@bitgo/sdk-core';
 
 export class Teos extends Eos {
   static createInstance(bitgo: BitGo): BaseCoin {

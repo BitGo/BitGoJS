@@ -19,15 +19,15 @@ import {
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
+  promiseProps,
   TransactionExplanation,
   TransactionPrebuild,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { promiseProps } from '../promise-utils';
 import {
   checkKrsProvider,
   getBip32Keys,

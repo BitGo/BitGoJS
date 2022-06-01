@@ -5,15 +5,13 @@
 //
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { BitGo as BG } from '../../src/bitgo';
-import { KeyIndices, Wallet } from '../../src';
 const BigNumber = require('bignumber.js');
 
 import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import { common } from '@bitgo/sdk-core';
-import { promiseProps } from '../../src/v2/promise-utils';
+import { common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
 nock.enableNetConnect();
 
 const BitGo: any = BG;
@@ -432,6 +430,7 @@ BitGo.prototype.nockEthWallet = function () {
 
 const oldFetchConstants = BitGoAPI.prototype.fetchConstants;
 BitGoAPI.prototype.fetchConstants = function () {
+  // @ts-expect-error - no implicit this
   nock(this._baseUrl)
     .get('/api/v1/client/constants')
     .reply(200, { ttl: 3600, constants: {} });

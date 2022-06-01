@@ -13,7 +13,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 
 export class Ofc extends BaseCoin {

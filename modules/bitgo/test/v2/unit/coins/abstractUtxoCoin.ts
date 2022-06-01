@@ -1,9 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
-
-import { BitGo, VerificationOptions } from '../../../../src';
-import { Wallet } from '../../../../src/v2';
+import { VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { BitGo } from '../../../../src';
 import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as errors from '../../../../src/errors';

@@ -18,13 +18,10 @@ const TransactionBuilder = require('./transactionBuilder');
 import * as utxolib from '@bitgo/utxo-lib';
 const PendingApproval = require('./pendingapproval');
 
-import { common } from '@bitgo/sdk-core';
+import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-import { makeRandomKey, getNetwork } from './bitcoin';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
-import { getSharedSecret } from './ecdh';
 import {
   getExternalChainCode,
   getInternalChainCode,
@@ -37,11 +34,15 @@ const request = require('superagent');
 // Constructor
 //
 const Wallet = function (bitgo, wallet) {
+  // @ts-expect-error - no implicit this
   (this.bitgo as any) = bitgo;
+  // @ts-expect-error - no implicit this
   this.wallet = wallet;
+  // @ts-expect-error - no implicit this
   this.keychains = [];
 
   if (wallet.private) {
+    // @ts-expect-error - no implicit this
     this.keychains = wallet.private.keychains;
   }
 };
@@ -430,8 +431,11 @@ Wallet.prototype.refresh = function (params, callback) {
   return co(function *() {
     // when set to true, gpk returns the private data of safe wallets
     const query = _.extend({}, _.pick(params, ['gpk']));
+    // @ts-expect-error - no implicit this
     const res = yield this.bitgo.get(this.url()).query(query).result();
+    // @ts-expect-error - no implicit this
     this.wallet = res;
+    // @ts-expect-error - no implicit this
     return this;
   }).call(this).asCallback(callback);
 };
@@ -449,9 +453,10 @@ Wallet.prototype.address = function (params, callback) {
 
   const url = this.url('/addresses/' + params.address);
 
-  return this.bitgo.get(url)
-    .result()
-    .nodeify(callback);
+  return Bluebird.resolve(
+    this.bitgo.get(url)
+      .result()
+  ).nodeify(callback);
 };
 
 /**
@@ -843,6 +848,7 @@ Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], [], callback);
+    // @ts-expect-error - no implicit this
     const self = this;
 
     const tryKeyChain = co(function *(index) {
@@ -1062,6 +1068,7 @@ Wallet.prototype.confirmInviteAndShareWallet = function (params, callback) {
       return self.shareWallet(options);
     })
     .then(function () {
+      // @ts-expect-error - no implicit this
       return this.bitgo.put(this.bitgo.url('/walletinvite/' + params.walletInviteId));
     })
     .nodeify(callback);
@@ -1301,6 +1308,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
       while (uncoveredChildFee > 0 && additionalUnspents.length < maxUnspents) {
         // try to get enough unspents to cover the rest of the child fee
+        // @ts-expect-error - no implicit this
         const unspents = (yield this.unspents({
           minConfirms: 1,
           target: uncoveredChildFee,
@@ -1448,6 +1456,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       throw Error('Expecting positive integer for parameter: maxAdditionalUnspents');
     }
 
+    // @ts-expect-error - no implicit this
     const parentTx = yield this.getTransaction({ id: params.transactionID });
     if (parentTx.confirmations > 0) {
       throw new Error(`Transaction ${params.transactionID} is already confirmed and cannot be accelerated`);
@@ -1475,6 +1484,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       // find the unspent corresponding to this particular output
       // TODO: is there a better way to get this unspent?
       // TODO: The best we can do here is set minSize = maxSize = outputToUse.value
+      // @ts-expect-error - no implicit this
       const unspentsResult = yield this.unspents({
         minSize: outputToUse.value,
         maxSize: outputToUse.value,
@@ -1533,6 +1543,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // try to get the min change size from the server, otherwise default to 0.1 BTC
     // TODO: minChangeSize is not currently a constant defined on the client and should be added
+    // @ts-expect-error - no implicit this
     const minChangeSize = this.bitgo.getConstants().minChangeSize || 1e7;
 
     if (outputToUse.value < childFee + minChangeSize) {
@@ -1553,6 +1564,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     // sanity check the fee rate we're paying for the combined tx
     // to make sure it's under the max fee rate. Only the child tx
     // can break this limit, but the combined tx shall not
+    // @ts-expect-error - no implicit this
     const maxFeeRate = this.bitgo.getConstants().maxFeeRate;
     const childVSize = estimateTxVSize(childInputs);
     const combinedVSize = childVSize + parentVSize;
@@ -1569,10 +1581,13 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     // and such zero-output transactions are forbidden by the Bitcoin protocol,
     // so we need at least a single recipient for the change which won't be pruned.
     const changeAmount = _.sumBy(unspentsToUse, (unspent) => unspent.value) - childFee;
+    // @ts-expect-error - no implicit this
     const changeChain = this.getChangeChain({});
+    // @ts-expect-error - no implicit this
     const changeAddress = yield this.createAddress({ chain: changeChain });
 
     // create the child tx and broadcast
+    // @ts-expect-error - no implicit this
     const tx = yield this.createAndSignTransaction({
       unspents: unspentsToUse,
       recipients: [{
@@ -1597,6 +1612,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       tx.ignoreMaxFeeRate = true;
     }
 
+    // @ts-expect-error - no implicit this
     return this.sendTransaction(tx);
   }).call(this).asCallback(callback);
 };
@@ -1636,6 +1652,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       throw new Error('invalid argument for instant - boolean expected');
     }
 
+    // @ts-expect-error - no implicit this
     const transaction = (yield this.createTransaction(params)) as any;
     const fee = transaction.fee;
     const feeRate = transaction.feeRate;
@@ -1646,6 +1663,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
 
     // Sign the transaction
     try {
+      // @ts-expect-error - no implicit this
       const keychain = yield this.getAndPrepareSigningKeychain(params);
       transaction.keychain = keychain;
     } catch (e) {
@@ -1653,9 +1671,12 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
         throw e;
       }
       // this might be a safe wallet, so let's retrieve the private key info
+      // @ts-expect-error - no implicit this
       yield this.refresh({ gpk: true });
+      // @ts-expect-error - no implicit this
       const safeUserKey = _.get(this.wallet, 'private.userPrivKey');
       if (_.isString(safeUserKey) && _.isString(params.walletPassphrase)) {
+        // @ts-expect-error - no implicit this
         transaction.signingKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: safeUserKey });
       } else {
         throw e;
@@ -1663,6 +1684,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
     }
 
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
+    // @ts-expect-error - no implicit this
     const result = yield this.signTransaction(transaction);
     return _.extend(result, {
       fee,

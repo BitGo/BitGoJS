@@ -9,7 +9,7 @@ import { Eos } from '../../../../src/v2/coins';
 import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Wallet } from '../../../../src';
+import { Wallet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 
 describe('EOS:', function () {

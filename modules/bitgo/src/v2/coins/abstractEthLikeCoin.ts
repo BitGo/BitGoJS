@@ -19,8 +19,7 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
-} from '../baseCoin';
-
+} from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import BigNumber from 'bignumber.js';

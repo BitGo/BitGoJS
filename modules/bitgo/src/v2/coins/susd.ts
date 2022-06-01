@@ -11,7 +11,7 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '../baseCoin';
+} from '@bitgo/sdk-core';
 import { MethodNotImplementedError } from '../../errors';
 
 export class Susd extends BaseCoin {

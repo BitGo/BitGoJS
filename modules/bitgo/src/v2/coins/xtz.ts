@@ -5,8 +5,12 @@ import * as bip32 from 'bip32';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
+import { BitGo } from '../../bitgo';
+import BigNumber from 'bignumber.js';
+import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
+  BaseTransactionBuilder,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -18,12 +22,7 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
-} from '../baseCoin';
-
-import { BitGo } from '../../bitgo';
-import BigNumber from 'bignumber.js';
-import { MethodNotImplementedError } from '../../errors';
-import { BaseTransactionBuilder } from '@bitgo/sdk-core';
+} from '@bitgo/sdk-core';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;

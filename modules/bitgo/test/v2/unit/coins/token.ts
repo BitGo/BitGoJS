@@ -1,5 +1,5 @@
 import 'should';
-import { BaseCoin } from '../../../../src/v2/baseCoin';
+import { BaseCoin } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 

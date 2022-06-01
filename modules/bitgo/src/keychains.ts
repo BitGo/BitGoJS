@@ -13,12 +13,10 @@
 
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
-import { common } from '@bitgo/sdk-core';
-import { Util } from './v2/internal/util';
+import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
 let ethereumUtil;
 import * as Bluebird from 'bluebird';
-import { sanitizeLegacyPath } from '@bitgo/sdk-api';
 const co = Bluebird.coroutine;
 
 try {
@@ -31,6 +29,7 @@ try {
 // Constructor
 //
 const Keychains = function (bitgo) {
+  // @ts-expect-error - no implicit this
   this.bitgo = bitgo;
 };
 
@@ -194,8 +193,10 @@ Keychains.prototype.list = function (params, callback) {
 Keychains.prototype.updatePassword = function (params, callback) {
   return co(function *coUpdatePassword() {
     common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
+    // @ts-expect-error - no implicit this
     const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
     const newKeychains = {};
+    // @ts-expect-error - no implicit this
     const self = this;
     _.forOwn((encrypted as any).keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
       try {

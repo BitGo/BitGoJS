@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
+import { BaseCoin } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BitGo } from '../bitgo';
-import { BaseCoin } from './baseCoin';
 import {
   Algo,
   AvaxC,
@@ -25,6 +25,7 @@ import {
   Sol,
   Stx,
   Susd,
+  FiatEur,
   FiatUsd,
   Talgo,
   TavaxC,
@@ -46,6 +47,7 @@ import {
   Tsol,
   Tstx,
   Tsusd,
+  TfiatEur,
   TfiatUsd,
   Ttrx,
   Xtz,
@@ -133,6 +135,8 @@ function getCoinConstructors(): Map<string, CoinConstructor> {
   registerCoinConstructor(m, 'tsusd', Tsusd.createInstance);
   registerCoinConstructor(m, 'fiatusd', FiatUsd.createInstance);
   registerCoinConstructor(m, 'tfiatusd', TfiatUsd.createInstance);
+  registerCoinConstructor(m, 'fiateur', FiatEur.createInstance);
+  registerCoinConstructor(m, 'tfiateur', TfiatEur.createInstance);
   registerCoinConstructor(m, 'cspr', Cspr.createInstance);
   registerCoinConstructor(m, 'tcspr', Tcspr.createInstance);
   registerCoinConstructor(m, 'stx', Stx.createInstance);

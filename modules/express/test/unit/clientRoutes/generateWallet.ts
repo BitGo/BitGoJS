@@ -9,7 +9,8 @@ import * as express from 'express';
 
 import { handleV2GenerateWallet } from '../../../src/clientRoutes';
 
-import { BaseCoin, BitGo, Wallets, WalletWithKeychains } from 'bitgo';
+import { BitGo } from 'bitgo';
+import { BaseCoin, Wallets, WalletWithKeychains } from '@bitgo/sdk-core';
 
 describe('Generate Wallet', () => {
   it('should return the internal wallet object by default', async () => {
