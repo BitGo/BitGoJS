@@ -1,10 +1,11 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -12,10 +13,13 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { MethodNotImplementedError } from '../../errors';
 
 export class Susd extends BaseCoin {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Susd(bitgo);
   }
 
@@ -23,26 +27,26 @@ export class Susd extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): number {
     return 1e2;
   }
 
-  getChain() {
+  getChain(): string {
     return 'susd';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'susd';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Silvergate USD';
   }
 
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }: { m: number; n: number }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
     return m === 0 && n === 0;
   }
 

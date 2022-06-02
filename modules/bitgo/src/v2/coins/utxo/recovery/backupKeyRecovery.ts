@@ -18,10 +18,15 @@ import {
 
 import { VirtualSizes } from '@bitgo/unspents';
 
-import { BitGoBase } from '@bitgo/sdk-core';
-import * as config from '../../../../config';
-import * as errors from '../../../../errors';
-import { getKrsProvider, getBip32Keys, getIsKrsRecovery, getIsUnsignedSweep } from '../../../recovery/initiate';
+import {
+  BitGoBase,
+  ErrorNoInputToRecover,
+  getKrsProvider,
+  getBip32Keys,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
+  krsProviders,
+} from '@bitgo/sdk-core';
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
@@ -94,7 +99,7 @@ async function calculateFeeAmount(
   coin: AbstractUtxoCoin,
   params: { provider: string; amount?: number }
 ): Promise<number> {
-  const krsProvider = config.krsProviders[params.provider];
+  const krsProvider = krsProviders[params.provider];
 
   if (krsProvider === undefined) {
     throw new Error(`no fee structure specified for provider ${params.provider}`);
@@ -279,7 +284,7 @@ export async function backupKeyRecovery(
   // Execute the queries and gather the unspents
   const totalInputAmount = unspents.reduce((sum, u) => sum + u.value, 0);
   if (totalInputAmount <= 0) {
-    throw new errors.ErrorNoInputToRecover();
+    throw new ErrorNoInputToRecover();
   }
 
   // Build the transaction

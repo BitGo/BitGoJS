@@ -20,7 +20,6 @@ import * as debugLib from 'debug';
 import * as _ from 'lodash';
 
 import * as config from '../../config';
-import * as errors from '../../errors';
 
 import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
 import {
@@ -31,33 +30,42 @@ import {
 
 import {
   AddressCoinSpecific,
+  AddressTypeChainMismatchError,
   BaseCoin,
   BitGoBase,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
+  InvalidAddressDerivationPropertyError,
+  InvalidAddressError,
+  InvalidAddressVerificationObjectPropertyError,
+  IRequestTracer,
+  ITransactionExplanation as BaseTransactionExplanation,
+  IWallet,
   Keychain,
   KeychainsTriplet,
   KeyIndices,
+  P2shP2wshUnsupportedError,
+  P2trUnsupportedError,
+  P2wshUnsupportedError,
   ParsedTransaction as BaseParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
   promiseProps,
   RequestTracer,
+  sanitizeLegacyPath,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
-  ITransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  UnexpectedAddressError,
+  UnsupportedAddressTypeError,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
-  IWallet,
-  IRequestTracer,
-  sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { Triple } from '../triple';
@@ -67,7 +75,6 @@ const debug = debugLib('bitgo:v2:utxo');
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './utxo/replayProtection';
 import { signAndVerifyWalletTransaction } from './utxo/sign';
-
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
   index: number;
@@ -883,17 +890,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const { address, addressType, keychains, coinSpecific, chain, index } = params;
 
     if (!this.isValidAddress(address)) {
-      throw new errors.InvalidAddressError(`invalid address: ${address}`);
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
     if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
-      throw new errors.InvalidAddressDerivationPropertyError(
+      throw new InvalidAddressDerivationPropertyError(
         `address validation failure: invalid chain (${chain}) or index (${index})`
       );
     }
 
     if (!_.isObject(coinSpecific)) {
-      throw new errors.InvalidAddressVerificationObjectPropertyError(
+      throw new InvalidAddressVerificationObjectPropertyError(
         'address validation failure: coinSpecific field must be an object'
       );
     }
@@ -911,7 +918,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     });
 
     if (expectedAddress.address !== address) {
-      throw new errors.UnexpectedAddressError(
+      throw new UnexpectedAddressError(
         `address validation failure: expected ${expectedAddress.address} but got ${address}`
       );
     }
@@ -983,7 +990,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const addressType = params.addressType || convertFlagsToAddressType();
 
     if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
-      throw new errors.AddressTypeChainMismatchError(addressType, derivationChain);
+      throw new AddressTypeChainMismatchError(addressType, derivationChain);
     }
 
     if (!this.supportsAddressType(addressType)) {
@@ -991,13 +998,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         case 'p2sh':
           throw new Error(`internal error: p2sh should always be supported`);
         case 'p2shP2wsh':
-          throw new errors.P2shP2wshUnsupportedError();
+          throw new P2shP2wshUnsupportedError();
         case 'p2wsh':
-          throw new errors.P2wshUnsupportedError();
+          throw new P2wshUnsupportedError();
         case 'p2tr':
-          throw new errors.P2trUnsupportedError();
+          throw new P2trUnsupportedError();
         default:
-          throw new errors.UnsupportedAddressTypeError();
+          throw new UnsupportedAddressTypeError();
       }
     }
 

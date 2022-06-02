@@ -6,13 +6,13 @@ import BigNumber from 'bignumber.js';
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
-import { MethodNotImplementedError } from '../../errors';
 import * as base58 from 'bs58';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BaseTransaction,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction as BaseParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,

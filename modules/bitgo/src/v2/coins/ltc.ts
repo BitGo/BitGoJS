@@ -1,12 +1,11 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, InvalidAddressError } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import { BitGo } from '../../bitgo';
-import { InvalidAddressError } from '../../errors';
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {

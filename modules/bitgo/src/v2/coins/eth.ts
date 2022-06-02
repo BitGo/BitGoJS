@@ -13,34 +13,34 @@ import * as request from 'superagent';
 import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
 import {
-  BaseCoin,
-  FeeEstimateOptions,
-  HalfSignedAccountTransaction,
-  KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  PresignTransactionOptions as BasePresignTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyTransactionOptions,
-  TransactionParams,
-  TransactionRecipient,
   AddressCoinSpecific,
+  BaseCoin,
+  checkKrsProvider,
   common,
-  IWallet,
-  Wallet,
-  Util,
-} from '@bitgo/sdk-core';
-import * as config from '../../config';
-import {
   EthereumLibraryUnavailableError,
+  FeeEstimateOptions,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
+  HalfSignedAccountTransaction,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
+  IWallet,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
   UnexpectedAddressError,
-} from '../../errors';
+  PresignTransactionOptions as BasePresignTransactionOptions,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient,
+  Util,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions,
+  Wallet,
+} from '@bitgo/sdk-core';
+import * as config from '../../config';
 import { BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
-import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 import type * as EthTxLib from '@ethereumjs/tx';
 import type * as EthCommon from '@ethereumjs/common';
 import * as accountLib from '@bitgo/account-lib';

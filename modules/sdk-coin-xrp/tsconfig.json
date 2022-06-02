@@ -11,7 +11,7 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../statics"
+      "path": "../sdk-core"
     },
     {
       "path": "../utxo-lib"

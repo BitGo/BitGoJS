@@ -4,13 +4,14 @@
 
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
-import * as errors from '../../errors';
 import {
   AddressVerificationData,
   IRequestTracer,
+  InvalidAddressDerivationPropertyError,
   IWallet,
   Keychain,
   TransactionPrebuild,
+  UnexpectedAddressError,
   VerificationOptions,
 } from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, Output, TransactionParams } from '../coins/abstractUtxoCoin';
@@ -109,7 +110,7 @@ function handleVerifyAddressError({
 }: HandleVerifyAddressErrorOptions): { external: boolean; needsCustomChangeKeySignatureVerification?: boolean } {
   // Todo: name server-side errors to avoid message-based checking [BG-5124]
   const walletAddressNotFound = e.message.includes('wallet address not found');
-  const unexpectedAddress = e instanceof errors.UnexpectedAddressError;
+  const unexpectedAddress = e instanceof UnexpectedAddressError;
   if (walletAddressNotFound || unexpectedAddress) {
     if (unexpectedAddress && !walletAddressNotFound) {
       // check to see if this is a migrated v1 bch address - it could be internal
@@ -135,7 +136,7 @@ function handleVerifyAddressError({
     // the address was found, but not on the wallet, which simply means it's external
     debug('Address %s presumed external', currentAddress);
     return { external: true };
-  } else if (e instanceof errors.InvalidAddressDerivationPropertyError && currentAddress === txParams.changeAddress) {
+  } else if (e instanceof InvalidAddressDerivationPropertyError && currentAddress === txParams.changeAddress) {
     // expect to see this error when passing in a custom changeAddress with no chain or index
     return { external: false };
   }
