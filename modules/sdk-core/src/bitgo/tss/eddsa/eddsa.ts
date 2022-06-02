@@ -1,85 +1,14 @@
-import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, UShare, YShare } from '../account-lib/mpc/tss';
-import { BitGoBase } from './bitgoBase';
-import { encryptAndSignText, readSignedMessage, SignatureShareRecord, SignatureShareType, TxRequest } from './utils';
+import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
+import { BitGoBase } from './../../bitgoBase';
+import { DecryptableYShare, CombinedKey, SigningMaterial, ShareKeyPosition, EncryptedYShare } from './../types';
+import {
+  encryptAndSignText,
+  readSignedMessage,
+  SignatureShareRecord,
+  SignatureShareType,
+  TxRequest,
+} from './../../utils';
 import _ = require('lodash');
-
-// YShare that has been encrypted and signed via GPG
-export type EncryptedYShare = {
-  i: number;
-  j: number;
-  publicShare: string;
-  // signed and encrypted gpg armor
-  encryptedPrivateShare: string;
-};
-
-// YShare with information needed to decrypt and verify a GPG mesasge
-export type DecryptableYShare = {
-  yShare: EncryptedYShare;
-  recipientPrivateArmor: string;
-  senderPublicArmor: string;
-};
-
-// Final TSS "Keypair"
-export type CombinedKey = {
-  commonKeychain: string;
-  signingMaterial: SigningMaterial;
-};
-
-// Private portion of a TSS key, this must be handled like any other private key
-export type SigningMaterial = {
-  uShare: UShare;
-  bitgoYShare: YShare;
-  backupYShare?: YShare;
-  userYShare?: YShare;
-};
-
-export enum ShareKeyPosition {
-  USER = 1,
-  BACKUP = 2,
-  BITGO = 3,
-}
-
-/**
- * Prepares a YShare to be exchanged with other key holders.
- * Output is in a format that is usable within BitGo's ecosystem.
- *
- * @param params.keyShare - TSS key share of the party preparing exchange materials
- * @param params.recipientIndex - index of the recipient (1, 2, or 3)
- * @param params.recipientGpgPublicArmor - recipient's public gpg key in armor format
- * @param params.senderGpgPrivateArmor - sender's private gpg key in armor format
- * @returns { EncryptedYShare } encrypted Y Share
- */
-export async function encryptYShare(params: {
-  keyShare: KeyShare;
-  recipientIndex: number;
-  recipientGpgPublicArmor: string;
-  senderGpgPrivateArmor: string;
-}): Promise<EncryptedYShare> {
-  const { keyShare, recipientIndex, recipientGpgPublicArmor, senderGpgPrivateArmor } = params;
-
-  const yShare = keyShare.yShares[recipientIndex];
-  if (!yShare) {
-    throw new Error('Invalid recipient');
-  }
-
-  const publicShare = Buffer.concat([
-    Buffer.from(keyShare.uShare.y, 'hex'),
-    Buffer.from(keyShare.uShare.chaincode, 'hex'),
-  ]).toString('hex');
-
-  const privateShare = Buffer.concat([Buffer.from(yShare.u, 'hex'), Buffer.from(yShare.chaincode, 'hex')]).toString(
-    'hex'
-  );
-
-  const encryptedPrivateShare = await encryptAndSignText(privateShare, recipientGpgPublicArmor, senderGpgPrivateArmor);
-
-  return {
-    i: yShare.i,
-    j: yShare.j,
-    publicShare,
-    encryptedPrivateShare,
-  };
-}
 
 /**
  * Combines YShares to combine the final TSS key
@@ -348,4 +277,46 @@ export async function sendSignatureShare(
       signerShare,
     })
     .result();
+}
+
+/**
+ * Prepares a YShare to be exchanged with other key holders.
+ * Output is in a format that is usable within BitGo's ecosystem.
+ *
+ * @param params.keyShare - TSS key share of the party preparing exchange materials
+ * @param params.recipientIndex - index of the recipient (1, 2, or 3)
+ * @param params.recipientGpgPublicArmor - recipient's public gpg key in armor format
+ * @param params.senderGpgPrivateArmor - sender's private gpg key in armor format
+ * @returns { EncryptedYShare } encrypted Y Share
+ */
+export async function encryptYShare(params: {
+  keyShare: KeyShare;
+  recipientIndex: number;
+  recipientGpgPublicArmor: string;
+  senderGpgPrivateArmor: string;
+}): Promise<EncryptedYShare> {
+  const { keyShare, recipientIndex, recipientGpgPublicArmor, senderGpgPrivateArmor } = params;
+
+  const yShare = keyShare.yShares[recipientIndex];
+  if (!yShare) {
+    throw new Error('Invalid recipient');
+  }
+
+  const publicShare = Buffer.concat([
+    Buffer.from(keyShare.uShare.y, 'hex'),
+    Buffer.from(keyShare.uShare.chaincode, 'hex'),
+  ]).toString('hex');
+
+  const privateShare = Buffer.concat([Buffer.from(yShare.u, 'hex'), Buffer.from(yShare.chaincode, 'hex')]).toString(
+    'hex'
+  );
+
+  const encryptedPrivateShare = await encryptAndSignText(privateShare, recipientGpgPublicArmor, senderGpgPrivateArmor);
+
+  return {
+    i: yShare.i,
+    j: yShare.j,
+    publicShare,
+    encryptedPrivateShare,
+  };
 }
