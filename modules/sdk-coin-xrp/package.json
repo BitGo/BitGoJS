@@ -38,8 +38,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.0.1",
-    "@bitgo/utxo-lib": "^2.2.2",
+    "@bitgo/sdk-core": "^1.1.0-rc.3",
+    "@bitgo/utxo-lib": "^2.3.0-rc.5",
     "bignumber.js": "^8.0.1",
     "bip32": "^2.0.6",
     "lodash": "^4.17.14",
