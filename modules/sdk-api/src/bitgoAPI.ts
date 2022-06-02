@@ -18,12 +18,14 @@ import { createHmac } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   AliasEnvironments,
+  BitGoBase,
   BitGoRequest,
   common,
   DecryptOptions,
   EncryptOptions,
   EnvironmentName,
   GetSharingKeyOptions,
+  IBaseCoin,
   IRequestTracer,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
@@ -64,7 +66,7 @@ if (!(process as any)?.browser) {
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
-export abstract class BitGoAPI {
+export abstract class BitGoAPI implements BitGoBase {
   protected static _constants: any;
   protected static _constantsExpire: any;
   protected static _testnetWarningMessage = false;
@@ -226,6 +228,18 @@ export abstract class BitGoAPI {
         debug(e.stack);
       }
     });
+  }
+
+  wallets(): any {
+    throw new Error('Method not implemented.');
+  }
+
+  coin(coinName: string): IBaseCoin {
+    throw new Error('Method not implemented.');
+  }
+
+  getECDHSharingKeychain(): Promise<any> {
+    throw new Error('Method not implemented.');
   }
 
   /**

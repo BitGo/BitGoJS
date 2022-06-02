@@ -12,8 +12,7 @@ import * as binary from 'ripple-binary-codec';
 import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 
 function computeSignature(tx, privateKey, signAs) {
-  const signingData = signAs ?
-    binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
+  const signingData = signAs ? binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
   return rippleKeypairs.sign(signingData, privateKey);
 }
 
@@ -45,7 +44,7 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
     throw new Error('transaction must not contain "TxnSignature" or "Signers" properties');
   }
 
-  tx.SigningPubKey = (options && options.signAs) ? '' : publicKey;
+  tx.SigningPubKey = options && options.signAs ? '' : publicKey;
 
   if (options && options.signAs) {
     const expectedSigner = rippleKeypairs.deriveAddress(publicKey);

@@ -1,14 +1,13 @@
 /**
  * @prettier
  */
-import { Util } from '@bitgo/sdk-core';
+import { Util, checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
 import { CoinConstructor } from '../coinFactory';
-import { checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '../recovery/initiate';
 
 export interface Erc20TokenConfig {
   name: string;

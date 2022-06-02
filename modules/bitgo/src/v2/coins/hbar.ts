@@ -7,6 +7,7 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 import {
   BaseCoin,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -19,7 +20,6 @@ import {
   TransactionExplanation,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { MethodNotImplementedError } from '../../errors';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from '../internal/seedValidator';
 

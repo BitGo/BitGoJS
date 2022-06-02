@@ -14,6 +14,9 @@
       "path": "./modules/sdk-api"
     },
     {
+      "path": "./modules/sdk-coin-xrp"
+    },
+    {
       "path": "./modules/sdk-core"
     },
     {
@@ -27,6 +30,9 @@
     },
     {
       "path": "./modules/web-demo"
+    },
+    {
+      "path": "./modules/sdk-coin-avaxp"
     }
   ]
 }

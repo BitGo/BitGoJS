@@ -16,25 +16,24 @@ import * as rippleKeypairs from 'ripple-keypairs';
 
 import {
   BaseCoin,
-  KeyPair,
-  ParseTransactionOptions,
-  ParsedTransaction,
-  promiseProps,
-  TransactionExplanation,
-  TransactionPrebuild,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
-import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import {
+  BitGoBase,
   checkKrsProvider,
   getBip32Keys,
   InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
-} from '../recovery/initiate';
+  InvalidAddressError,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  promiseProps,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation,
+  TransactionPrebuild,
+  UnexpectedAddressError,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 
-const ripple = require('../../ripple');
+const ripple = require('./ripple');
 
 interface Address {
   address: string;
@@ -92,11 +91,11 @@ interface SupplementGenerateWalletOptions {
 }
 
 export class Xrp extends BaseCoin {
-  protected constructor(bitgo: BitGo) {
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Xrp(bitgo);
   }
 
@@ -541,7 +540,7 @@ export class Xrp extends BaseCoin {
         );
       }
 
-      const parsedTag = parseInt(queryDetails.dt, 10);
+      const parsedTag = parseInt(queryDetails.dt as string, 10);
       if (Number.isInteger(parsedTag)) {
         destinationTag = parsedTag;
       }

@@ -1,12 +1,13 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, UnsupportedCoinError } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BitGo } from '../bitgo';
 import {
   Algo,
   AvaxC,
+  AvaxP,
   Bch,
   Bsv,
   Btc,
@@ -29,6 +30,7 @@ import {
   FiatUsd,
   Talgo,
   TavaxC,
+  TavaxP,
   Tbch,
   Tbsv,
   Tbtc,
@@ -67,7 +69,6 @@ import {
   AvaxCToken,
 } from './coins';
 import { tokens } from '../config';
-import * as errors from '../errors';
 import { Bcha } from './coins/bcha';
 import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
@@ -114,6 +115,8 @@ function getCoinConstructors(): Map<string, CoinConstructor> {
   registerCoinConstructor(m, 'tcelo', Tcelo.createInstance);
   registerCoinConstructor(m, 'avaxc', AvaxC.createInstance);
   registerCoinConstructor(m, 'tavaxc', TavaxC.createInstance);
+  registerCoinConstructor(m, 'avaxp', AvaxP.createInstance);
+  registerCoinConstructor(m, 'tavaxp', TavaxP.createInstance);
   registerCoinConstructor(m, 'xrp', Xrp.createInstance);
   registerCoinConstructor(m, 'txrp', Txrp.createInstance);
   registerCoinConstructor(m, 'xlm', Xlm.createInstance);
@@ -239,7 +242,7 @@ export class CoinFactory {
       }
     }
 
-    throw new errors.UnsupportedCoinError(name);
+    throw new UnsupportedCoinError(name);
   }
 }
 

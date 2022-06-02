@@ -1,10 +1,9 @@
 import { BitGoRequest, DecryptOptions, EncryptOptions, GetSharingKeyOptions, IRequestTracer } from '../api';
 import { IBaseCoin } from './baseCoin';
 import { EnvironmentName } from './environments';
-import { IWallets } from './wallet';
 
 export interface BitGoBase {
-  wallets(): IWallets;
+  wallets(): any; // TODO - define v1 wallets type
   coin(coinName: string): IBaseCoin; // need to change it to BaseCoin once it's moved to @bitgo/sdk-core
   decrypt(params: DecryptOptions): string;
   del(url: string): BitGoRequest;

@@ -3,16 +3,15 @@
  *
  * @format
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Xrp } from './xrp';
 
 export class Txrp extends Xrp {
-  protected constructor(bitgo: BitGo) {
+  protected constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Txrp(bitgo);
   }
   /**

@@ -19,10 +19,13 @@
   },
   "references": [
     {
-      "path": "../sdk-core"
+      "path": "../sdk-api"
     },
     {
-      "path": "../sdk-api"
+      "path": "../sdk-coin-xrp"
+    },
+    {
+      "path": "../sdk-core"
     },
     {
       "path": "../statics"

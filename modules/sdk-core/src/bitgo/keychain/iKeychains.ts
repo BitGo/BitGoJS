@@ -117,13 +117,13 @@ export enum KeyIndices {
 
 export interface IKeychains {
   get(params: GetKeychainOptions): Promise<Keychain>;
-  list(params: ListKeychainOptions): Promise<ListKeychainsResult>;
+  list(params?: ListKeychainOptions): Promise<ListKeychainsResult>;
   updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
-  updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions): Keychain;
+  updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Keychain;
   create(params?: { seed?: Buffer }): KeyPair;
-  add(params: AddKeychainOptions): Promise<Keychain>;
-  createBitGo(params: CreateBitGoOptions): Promise<Keychain>;
-  createBackup(params: CreateBackupOptions): Promise<Keychain>;
-  getKeysForSigning(params: GetKeysForSigningOptions): Promise<Keychain[]>;
+  add(params?: AddKeychainOptions): Promise<Keychain>;
+  createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;
+  createBackup(params?: CreateBackupOptions): Promise<Keychain>;
+  getKeysForSigning(params?: GetKeysForSigningOptions): Promise<Keychain[]>;
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
 }

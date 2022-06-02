@@ -5,6 +5,7 @@ import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -12,7 +13,6 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { MethodNotImplementedError } from '../../errors';
 
 export class FiatEur extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {

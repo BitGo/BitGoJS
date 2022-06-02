@@ -13,30 +13,29 @@ import { BitGo } from '../../bitgo';
 
 import {
   BaseCoin,
+  checkKrsProvider,
   common,
   ExtraPrebuildParamsOptions,
+  InvalidAddressError,
+  InvalidMemoIdError,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
   SignTransactionOptions as BaseSignTransactionOptions,
+  StellarFederationUserNotFoundError,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient as BaseTransactionOutput,
+  UnexpectedAddressError,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import {
-  InvalidAddressError,
-  InvalidMemoIdError,
-  UnexpectedAddressError,
-  StellarFederationUserNotFoundError,
-} from '../../errors';
 import { toBitgoRequest } from '@bitgo/sdk-api';
-import { checkKrsProvider, getStellarKeys } from '../recovery/initiate';
+import { getStellarKeys } from '../recovery/initiate';
 
 /**
  * XLM accounts support virtual (muxed) addresses

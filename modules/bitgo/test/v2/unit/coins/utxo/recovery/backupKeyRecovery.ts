@@ -9,7 +9,7 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import * as config from '../../../../../../src/config';
+import { Config } from '../../../../../../src/config';
 import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import {
   backupKeyRecovery,
@@ -34,11 +34,14 @@ import {
 
 import { MockRecoveryProvider } from './mock';
 import { Triple } from '../../../../../../src';
+import { krsProviders } from '@bitgo/sdk-core';
+
+const config = { krsProviders };
 
 nock.disableNetConnect();
 
-function configOverride(f: (config: config.Config) => void) {
-  const backup = { ...config };
+function configOverride(f: (config: Config) => void) {
+  const backup = { ...krsProviders };
   before(function () {
     f(config);
   });
@@ -129,12 +132,12 @@ function run(
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
     });
 
-    configOverride(function (config: config.Config) {
-      const krsProviders = { ...config.krsProviders };
+    configOverride(function (config: Config) {
+      const configKrsProviders = { ...config.krsProviders };
       keyRecoveryServiceAddress = getWalletAddress(coin.network, externalWallet, 0, 100);
-      krsProviders.keyternal.supportedCoins = [coin.getFamily()];
-      krsProviders.keyternal.feeAddresses = { [coin.getChain()]: keyRecoveryServiceAddress };
-      config.krsProviders = krsProviders;
+      configKrsProviders.keyternal.supportedCoins = [coin.getFamily()];
+      configKrsProviders.keyternal.feeAddresses = { [coin.getChain()]: keyRecoveryServiceAddress };
+      config.krsProviders = configKrsProviders;
     });
 
     after(function () {

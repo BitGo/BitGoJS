@@ -7,11 +7,11 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import { BitGo } from '../../bitgo';
 import BigNumber from 'bignumber.js';
-import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   BaseTransactionBuilder,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,

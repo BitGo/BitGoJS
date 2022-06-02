@@ -11,12 +11,12 @@ import { InitiateRecoveryOptions } from '../recovery';
 import { signMessage } from '../bip32util';
 import { NotImplementedError } from '../../account-lib';
 import { BitGoBase } from '../bitgoBase';
-import { IEnterprises, Enterprises } from '../enterprise';
-import { IKeychains, Keychains, KeyIndices } from '../keychain';
-import { IMarkets, Markets } from '../market';
-import { IPendingApprovals, PendingApprovals } from '../pendingApproval';
-import { IWallets, Wallets, IWallet, Wallet } from '../wallet';
-import { IWebhooks, Webhooks } from '../webhook';
+import { Enterprises } from '../enterprise';
+import { Keychains, KeyIndices } from '../keychain';
+import { Markets } from '../market';
+import { PendingApprovals } from '../pendingApproval';
+import { Wallets, IWallet, Wallet } from '../wallet';
+import { Webhooks } from '../webhook';
 import {
   IBaseCoin,
   ITransactionExplanation,
@@ -41,12 +41,12 @@ import {
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
   protected readonly _url: string;
-  protected readonly _enterprises: IEnterprises;
-  protected readonly _wallets: IWallets;
-  protected readonly _keychains: IKeychains;
-  protected readonly _webhooks: IWebhooks;
-  protected readonly _pendingApprovals: IPendingApprovals;
-  protected readonly _markets: IMarkets;
+  protected readonly _enterprises: Enterprises;
+  protected readonly _wallets: Wallets;
+  protected readonly _keychains: Keychains;
+  protected readonly _webhooks: Webhooks;
+  protected readonly _pendingApprovals: PendingApprovals;
+  protected readonly _markets: Markets;
   protected static readonly _coinTokenPatternSeparator = ':';
 
   protected constructor(bitgo: BitGoBase) {
@@ -64,27 +64,27 @@ export abstract class BaseCoin implements IBaseCoin {
     return this._url + this.getChain() + suffix;
   }
 
-  public wallets(): IWallets {
+  public wallets(): Wallets {
     return this._wallets;
   }
 
-  public enterprises(): IEnterprises {
+  public enterprises(): Enterprises {
     return this._enterprises;
   }
 
-  public keychains(): IKeychains {
+  public keychains(): Keychains {
     return this._keychains;
   }
 
-  public webhooks(): IWebhooks {
+  public webhooks(): Webhooks {
     return this._webhooks;
   }
 
-  public pendingApprovals(): IPendingApprovals {
+  public pendingApprovals(): PendingApprovals {
     return this._pendingApprovals;
   }
 
-  public markets(): IMarkets {
+  public markets(): Markets {
     return this._markets;
   }
 

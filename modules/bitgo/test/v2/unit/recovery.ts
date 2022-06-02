@@ -7,8 +7,9 @@ import * as nock from 'nock';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
-import * as config from '../../../src/config';
+
 import moment = require('moment');
+import { krsProviders } from '@bitgo/sdk-core';
 nock.disableNetConnect();
 
 describe('Recovery:', function () {
@@ -19,8 +20,8 @@ describe('Recovery:', function () {
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins
-    config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'bcha', 'ltc', 'zec', 'dash', 'xlm', 'bsv'];
-    (config.krsProviders.keyternal.feeAddresses as any) = {
+    krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'bcha', 'ltc', 'zec', 'dash', 'xlm', 'bsv'];
+    (krsProviders.keyternal.feeAddresses as any) = {
       tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tbsv: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',

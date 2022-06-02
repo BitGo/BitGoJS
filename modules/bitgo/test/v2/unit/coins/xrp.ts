@@ -2,7 +2,7 @@ import 'should';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-const ripple = require('../../../../src/ripple');
+const ripple = require('../../../../../sdk-coin-xrp/src/ripple');
 
 import * as nock from 'nock';
 nock.disableNetConnect();

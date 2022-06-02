@@ -11,6 +11,7 @@ import {
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   KeyPair,
+  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignTransactionOptions,
@@ -21,7 +22,6 @@ import {
   TransactionExplanation,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
-import { MethodNotImplementedError } from '../../errors';
 import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {

@@ -1,3 +1,5 @@
+import { Xrp, Txrp } from '@bitgo/sdk-coin-xrp';
+export { Xrp, Txrp };
 
 export { AbstractUtxoCoin } from './abstractUtxoCoin';
 export { Algo } from './algo';
@@ -46,10 +48,8 @@ export { Thbar } from './thbar';
 export { Xtz } from './xtz';
 export { Txtz } from './txtz';
 export { Txlm } from './txlm';
-export { Txrp } from './txrp';
 export { Tzec } from './tzec';
 export { Xlm } from './xlm';
-export { Xrp } from './xrp';
 export { Zec } from './zec';
 export { Cspr } from './cspr';
 export { Tcspr } from './tcspr';
@@ -60,3 +60,5 @@ export { TavaxC } from './tavaxc';
 export { AvaxCToken } from './avaxcToken';
 export { Sol } from './sol';
 export { Tsol } from './tsol';
+export { AvaxP } from './avaxp';
+export { TavaxP } from './tavaxp';
