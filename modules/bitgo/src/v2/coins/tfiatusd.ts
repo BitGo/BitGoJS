@@ -1,12 +1,11 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { FiatUsd } from './fiatusd';
 
 export class TfiatUsd extends FiatUsd {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new TfiatUsd(bitgo);
   }
 

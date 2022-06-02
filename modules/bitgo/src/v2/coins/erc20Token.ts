@@ -1,13 +1,18 @@
 /**
  * @prettier
  */
-import { Util, checkKrsProvider, getIsKrsRecovery, getIsUnsignedSweep } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  CoinConstructor,
+  Util,
+  checkKrsProvider,
+  getIsKrsRecovery,
+  getIsUnsignedSweep,
+} from '@bitgo/sdk-core';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
-import { CoinConstructor } from '../coinFactory';
 
 export interface Erc20TokenConfig {
   name: string;
@@ -22,14 +27,14 @@ export class Erc20Token extends Eth {
   public readonly tokenConfig: Erc20TokenConfig;
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
-  constructor(bitgo: BitGo, tokenConfig: Erc20TokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: Erc20TokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
     this.sendMethodName = 'sendMultiSigToken';
   }
 
   static createTokenConstructor(config: Erc20TokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new Erc20Token(bitgo, config);
+    return (bitgo: BitGoBase) => new Erc20Token(bitgo, config);
   }
 
   get type() {

@@ -5,10 +5,10 @@ import * as bip32 from 'bip32';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
-import { BitGo } from '../../bitgo';
 import BigNumber from 'bignumber.js';
 import {
   BaseCoin,
+  BitGoBase,
   BaseTransactionBuilder,
   KeyPair,
   MethodNotImplementedError,
@@ -67,7 +67,7 @@ export interface ExplainTransactionOptions {
 export class Xtz extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -93,7 +93,7 @@ export class Xtz extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Xtz(bitgo, staticsCoin);
   }
 

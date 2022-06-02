@@ -1,10 +1,8 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
-
 import { Eos } from './eos';
-import { CoinConstructor } from '../coinFactory';
+import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
 
 export interface EosTokenConfig {
   name: string;
@@ -18,13 +16,13 @@ export interface EosTokenConfig {
 export class EosToken extends Eos {
   public readonly tokenConfig: EosTokenConfig;
 
-  constructor(bitgo: BitGo, tokenConfig: EosTokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: EosTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
   static createTokenConstructor(config: EosTokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new EosToken(bitgo, config);
+    return (bitgo: BitGoBase) => new EosToken(bitgo, config);
   }
 
   get type() {

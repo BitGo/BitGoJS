@@ -6,11 +6,11 @@ import * as bip32 from 'bip32';
 import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import {
   BaseCoin,
+  BitGoBase,
   common,
   FeeEstimateOptions,
   FullySignedTransaction,
@@ -189,7 +189,7 @@ export class AvaxC extends BaseCoin {
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -199,7 +199,7 @@ export class AvaxC extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new AvaxC(bitgo, staticsCoin);
   }
 

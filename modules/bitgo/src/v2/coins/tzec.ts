@@ -1,14 +1,13 @@
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Zec } from './zec';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export class Tzec extends Zec {
-  constructor(bitgo: BitGo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo, utxolib.networks.zcashTest);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tzec(bitgo);
   }
 

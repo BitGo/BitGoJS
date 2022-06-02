@@ -1,11 +1,10 @@
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
-import { Dot } from './dot';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Dot } from './dot';
 
 export class Tdot extends Dot {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
@@ -15,7 +14,7 @@ export class Tdot extends Dot {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tdot(bitgo, staticsCoin);
   }
 

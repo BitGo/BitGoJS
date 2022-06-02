@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Btc } from './btc';
 import * as utxolib from '@bitgo/utxo-lib';
 
@@ -11,7 +10,7 @@ export class Tbtc extends Btc {
     super(bitgo, utxolib.networks.testnet);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbtc(bitgo);
   }
 

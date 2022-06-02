@@ -15,10 +15,6 @@ import {
 } from '@bitgo/sdk-core';
 
 export class Susd extends BaseCoin {
-  constructor(bitgo: BitGoBase) {
-    super(bitgo);
-  }
-
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Susd(bitgo);
   }

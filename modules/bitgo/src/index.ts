@@ -10,6 +10,7 @@ import * as _ from 'lodash';
 import { common, CustomSigningFunction, SignedTransaction, tss } from '@bitgo/sdk-core';
 export * from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
+import GlobalCoinFactory from './v2/coinFactory';
 
 export * from './bitgo';
 
@@ -27,8 +28,8 @@ export { Buffer } from 'buffer';
 export { CustomSigningFunction, SignedTransaction };
 
 export const Environments = _.cloneDeep(common.Environments);
-export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
-export { EnvironmentName, V1Network } from '@bitgo/sdk-core';
+export { CoinConstructor, EnvironmentName, V1Network } from '@bitgo/sdk-core';
+export { GlobalCoinFactory };
 export * from './v2';
 export { tss };
 

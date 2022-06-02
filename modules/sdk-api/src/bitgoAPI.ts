@@ -20,11 +20,13 @@ import {
   AliasEnvironments,
   BitGoBase,
   BitGoRequest,
+  CoinConstructor,
   common,
   DecryptOptions,
   EncryptOptions,
   EnvironmentName,
   GetSharingKeyOptions,
+  GlobalCoinFactory,
   IBaseCoin,
   IRequestTracer,
   sanitizeLegacyPath,
@@ -33,26 +35,26 @@ import { getAddressP2PKH, makeRandomKey } from './util';
 import * as sjcl from '@bitgo/sjcl';
 import {
   AccessTokenOptions,
-  PingOptions,
+  AddAccessTokenOptions,
   AuthenticateOptions,
+  BitGoAPIOptions,
+  BitGoJson,
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,
   CalculateRequestHmacOptions,
+  ExtendTokenOptions,
+  GetUserOptions,
+  PingOptions,
   ProcessedAuthenticationOptions,
+  RemoveAccessTokenOptions,
   RequestHeaders,
+  TokenIssuance,
+  TokenIssuanceResponse,
+  UnlockOptions,
+  User,
+  VerifyPasswordOptions,
   VerifyResponseInfo,
   VerifyResponseOptions,
-  BitGoAPIOptions,
-  User,
-  BitGoJson,
-  VerifyPasswordOptions,
-  TokenIssuanceResponse,
-  TokenIssuance,
-  RemoveAccessTokenOptions,
-  AddAccessTokenOptions,
-  GetUserOptions,
-  UnlockOptions,
-  ExtendTokenOptions,
 } from './types';
 import pjson = require('../package.json');
 import { decrypt, encrypt } from './encrypt';
@@ -234,8 +236,12 @@ export class BitGoAPI implements BitGoBase {
     throw new Error('Method not implemented.');
   }
 
-  coin(coinName: string): IBaseCoin {
-    throw new Error('Method not implemented.');
+  /**
+   * Create a basecoin object
+   * @param name
+   */
+  public coin(name: string): IBaseCoin {
+    return GlobalCoinFactory.getInstance(this, name);
   }
 
   getECDHSharingKeychain(): Promise<any> {
@@ -1160,5 +1166,15 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('invalid argument');
     }
     this._validate = validate;
+  }
+
+  /**
+   * Register a new coin instance with its builder factory
+   * @param {string} name coin name as it was registered in @bitgo/statics
+   * @param {CoinConstructor} coin the builder factory class for that coin
+   * @returns {void}
+   */
+  public register(name: string, coin: CoinConstructor): void {
+    GlobalCoinFactory.register(name, coin);
   }
 }

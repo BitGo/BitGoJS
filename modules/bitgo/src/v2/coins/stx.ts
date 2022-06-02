@@ -4,9 +4,9 @@
 import * as accountLib from '@bitgo/account-lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   SignedTransaction,
   SignTransactionOptions,
@@ -58,7 +58,7 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
 export class Stx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -68,7 +68,7 @@ export class Stx extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Stx(bitgo, staticsCoin);
   }
 
