@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.13](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.12...bitgo@14.2.0-rc.13) (2022-06-02)
+
+
+### Bug Fixes
+
+* **account-lib:** fix sdk avax build issues ([7991aef](https://github.com/BitGo/BitGoJS/commit/7991aef5ba8218da376f482ed9e2273f8b9a349b))
+
+
+### Features
+
+* **sdk-coin-avaxp:** add new sdk coin avaxp ([328d546](https://github.com/BitGo/BitGoJS/commit/328d546897d5df645d5bcbf6ca22c56d045bc306))
+
+
+
+
+
 # [14.2.0-rc.12](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.11...bitgo@14.2.0-rc.12) (2022-06-01)
 
 
