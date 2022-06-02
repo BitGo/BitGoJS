@@ -1,5 +1,6 @@
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import {
+  BaseCoin,
   KeyPair,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -10,7 +11,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
 } from '@bitgo/sdk-core';
-import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 
