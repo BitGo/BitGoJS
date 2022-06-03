@@ -21,6 +21,8 @@ export interface UtxoNetwork extends BaseNetwork {
 export interface AvalancheNetwork extends BaseNetwork {
   readonly alias: string;
   readonly blockchainID: string;
+  readonly networkID: number;
+  readonly hrp: string;
   readonly vm: string;
   readonly creationTxFee: bigint;
   readonly createSubnetTx: bigint;
@@ -128,6 +130,8 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
   accountExplorerUrl = 'https://explorer-xp.avax.network/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  networkID = 1;
+  hrp = 'avax';
   alias = 'P';
   vm = 'platformvm';
   txFee = BigInt(1000000); // 1 MILLIAVAX
@@ -151,8 +155,10 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   explorerUrl = 'https://explorer-xp.avax-test.network/tx/';
   accountExplorerUrl = 'https://explorer-xp.avax-test.network/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
-  avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  avaxAssetID = 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
+  networkID = 5;
   alias = 'P';
+  hrp = 'fuji';
   vm = 'platformvm';
   txFee = BigInt(1000000); // 1 MILLIAVAX
   createSubnetTx = BigInt(1000000000); // 1 AVAX
