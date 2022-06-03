@@ -21,6 +21,7 @@ import {
   Eth2,
   Hbar,
   Ltc,
+  Polygon,
   Ofc,
   Rbtc,
   Sol,
@@ -44,6 +45,7 @@ import {
   Gteth,
   Thbar,
   Tltc,
+  Tpolygon,
   Trbtc,
   Trx,
   Tsol,
@@ -148,6 +150,8 @@ function getCoinConstructors(): Map<string, CoinConstructor> {
   registerCoinConstructor(m, 'tsol', Tsol.createInstance);
   registerCoinConstructor(m, 'near', Near.createInstance);
   registerCoinConstructor(m, 'tnear', TNear.createInstance);
+  registerCoinConstructor(m, 'polygon', Polygon.createInstance);
+  registerCoinConstructor(m, 'tpolygon', Tpolygon.createInstance);
 
   for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
     const tokenConstructor = Erc20Token.createTokenConstructor(token);

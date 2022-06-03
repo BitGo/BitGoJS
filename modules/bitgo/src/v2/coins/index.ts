@@ -62,3 +62,5 @@ export { Sol } from './sol';
 export { Tsol } from './tsol';
 export { AvaxP } from './avaxp';
 export { TavaxP } from './tavaxp';
+export { Polygon } from './polygon';
+export { Tpolygon } from './tpolygon';
