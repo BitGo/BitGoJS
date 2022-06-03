@@ -1,4 +1,4 @@
-import { TransferableInput, TransferableOutput, SECPOwnerOutput } from 'avalanche/dist/apis/platformvm';
+import { TransferableInput, TransferableOutput } from 'avalanche/dist/apis/platformvm';
 import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 /**
@@ -20,19 +20,20 @@ export interface TxData {
   outputs: TransferableOutput[];
   inputs: TransferableInput[];
   memo: string;
+  // TODO(STLX-16570): [avax-lib] explainTransaction
   // addDelegator extends BaseTx
-  validator?: {
-    nodeID: string;
-    startTime: number; // unix time
-    endTime: number; // unix time
-    weight: number; // amount delegator stakes
-  };
-  stake?: {
-    lockedOuts: TransferableOutput[]; // array of transferable outputs that are locked during staking period
-  };
-  rewards_owner?: SECPOwnerOutput;
-  // addValidator extends BaseTx, validator, stake, rewards_owner
-  shares?: number; // 10,000 x percentage of reward taken from delegators
+  // validator?: {
+  //   nodeID: string;
+  //   startTime: number; // unix time
+  //   endTime: number; // unix time
+  //   weight: number; // amount delegator stakes
+  // };
+  // stake?: {
+  //   lockedOuts: TransferableOutput[]; // array of transferable outputs that are locked during staking period
+  // };
+  // rewards_owner?: SECPOwnerOutput;
+  // // addValidator extends BaseTx, validator, stake, rewards_owner
+  // shares?: number; // 10,000 x percentage of reward taken from delegators
 }
 
 export enum TransactionTypes {
@@ -47,3 +48,18 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   blockchain_id: string;
   memo?: string;
 }
+
+/**
+ * Decoded UTXO object. This is for a single utxo
+ *
+ * @param {number} outputID
+ * @param {string} amount Amount as a Big Number string
+ * @param {string} txid Transaction ID encoded as cb58
+ * @param {string} outputidx Output index as a string
+ */
+export type DecodedUtxoObj = {
+  outputID: number;
+  amount: string;
+  txid: string;
+  outputidx: string;
+};

@@ -41,6 +41,10 @@ export enum TransactionType {
   Batch,
   // Claim the staking rewards
   StakingClaim,
+  // Add delegator to p-chain
+  addDelegator,
+  // Add validator to p-chain
+  addValidator,
 }
 
 /**
