@@ -1,29 +1,85 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { NotImplementedError, BaseAddress, BaseKey, BaseTransactionBuilder, TransactionType } from '@bitgo/sdk-core';
+import {
+  NotImplementedError,
+  BaseAddress,
+  BaseKey,
+  BaseTransactionBuilder,
+  TransactionType,
+  InvalidTransactionError,
+  ParseTransactionError,
+  BuildTransactionError,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { DEFAULT_CHAIN_NAMES } from './constants';
+import { KeyPair } from './keyPair';
+import { BN, Buffer } from 'avalanche';
+import { BaseTx } from 'avalanche/dist/apis/platformvm/basetx';
+import { Credential } from 'avalanche/dist/common';
+import utils from './utils';
+import { DecodedUtxoObj } from './iface';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
-  protected _sender!: string; // this is not required for baseTx that extends all the other tx maybe switch into addDelegator / addValidator
-  protected _network: string;
+  protected _network: AvalancheNetwork;
+  protected _networkID: number;
+  protected _assetId: Buffer;
+  protected _blockchainID: Buffer;
+  protected _memo?: Buffer;
+  protected _signer: KeyPair;
+  protected _threshold = 2;
+  protected _locktime: BN = new BN(0);
+  protected _fromPubKeys: Buffer[] = [];
+  protected _utxos: DecodedUtxoObj[] = [];
+  protected _txFee: BN;
+
+  private _credentials: Credential[]; // how are we passing in multisig?
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
-    this._network = this.coinName() === 'avaxp' ? DEFAULT_CHAIN_NAMES.mainnet : DEFAULT_CHAIN_NAMES.testnet;
+    this._network = _coinConfig.network as AvalancheNetwork;
+    this._assetId = utils.cb58Decode(this._network.avaxAssetID);
+    this._blockchainID = utils.cb58Decode(this._network.blockchainID);
+    this._networkID = this._network.networkID;
+    this._txFee = new BN(this._network.txFee.toString());
   }
 
   /**
-   *
-   * @param {BaseAddress} address The p-chain address.
-   * @returns {TransactionBuilder} This transaction builder.
-   *
+   * commented out check until multisig signing is in effect
+   * @param value
    */
-  sender({ address }: BaseAddress): this {
-    this.validateAddress({ address });
-    this._sender = address;
-    this._transaction.sender(address);
+
+  threshold(value: number): this {
+    // this.validateThreshold(value);
+    this._threshold = value;
+    return this;
+  }
+
+  locktime(value: string | number): this {
+    this.validateLocktime(new BN(value));
+    this._locktime = new BN(value);
+    return this;
+  }
+
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    this._fromPubKeys = pubKeys.map(utils.parseAddress);
+    return this;
+  }
+
+  utxos(value: DecodedUtxoObj[]): this {
+    this.validateUtxos(value);
+    this._utxos = value;
+    return this;
+  }
+  /**
+   *
+   * @param value Optional Buffer for the memo
+   * @returns value Buffer for the memo
+   * set using Buffer.from("message")
+   */
+  memo(value: string): this {
+    this._memo = utils.stringToBuffer(value);
     return this;
   }
 
@@ -32,24 +88,50 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {Transaction} tx the transaction data
    */
-  initBuilder(tx: Transaction): void {
-    throw new NotImplementedError('initBuilder not implemented');
+  initBuilder(tx?: BaseTx): this {
+    if (!tx) return this;
+    if (tx.getNetworkID() !== this._networkID || !tx.getBlockchainID().equals(this._blockchainID)) {
+      throw new Error('Network or blockchain is not equals');
+    }
+    this._memo = tx.getMemo();
+    const out = tx.getOuts()[0];
+    if (!out.getAssetID().equals(this._assetId)) {
+      throw new Error('AssetID are not equals');
+    }
+    const secpOut = out.getOutput();
+    this._locktime = secpOut.getLocktime();
+    this._threshold = secpOut.getThreshold();
+    this._fromPubKeys = secpOut.getAddresses();
+    this._transaction.avaxPTransaction = tx;
+    return this;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    throw new NotImplementedError('fromImplementation not implemented');
+    this.validateRawTransaction(rawTransaction);
+    this.buildImplementation();
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new NotImplementedError('buildImplementation not implemented');
+    this.transaction.avaxPTransaction = this.buildAvaxpTransaction();
+    if (this._signer) {
+      // TODO: sign method in transaction.ts
+      this.transaction.sign(this._signer);
+    }
+    // TODO: multisig support addition
+    // if (this._credentials.length > 0) {
+    //   this.transaction.constructSignedPayload(this._credentials[0]);
+    // }
+    return this.transaction;
   }
 
   /**
-   * Builds the avaxp transaction.
+   * Builds the avaxp transaction
+   * @return {Transaction} avaxp sdk transaction
    */
-  protected abstract buildAvaxpTransaction(): Transaction;
+  protected abstract buildAvaxpTransaction(): BaseTx;
 
   // region Getters and Setters
   /** @inheritdoc */
@@ -62,6 +144,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // endregion
 
   // region Validators
+
+  /**
+   * Validates the threshold
+   * @param threshold
+   */
+  validateThreshold(threshold: number): void {
+    if (!threshold || threshold !== 2) {
+      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
+    }
+  }
+
+  /**
+   * Validates locktime
+   * @param locktime
+   */
+  validateLocktime(locktime: BN): void {
+    if (!locktime || locktime.lt(new BN(0))) {
+      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
+    }
+  }
+
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     throw new NotImplementedError('validateAddress not implemented');
@@ -69,22 +172,45 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new NotImplementedError('validateKey not implemented');
+    if (!new KeyPair({ prv: key.key })) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    if (utils.allHexChars(rawTransaction)) {
+      throw new ParseTransactionError('Raw transaction is not hex string');
+    }
   }
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    throw new NotImplementedError('validateTransaction not implemented');
+    // throw new NotImplementedError('validateTransaction not implemented');
   }
 
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
-    throw new NotImplementedError('validateValue not implemented');
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
   }
+
+  validateUtxos(values: DecodedUtxoObj[]): void {
+    if (values.length === 0) {
+      throw new BuildTransactionError("Utxos can't be empty array");
+    }
+    values.forEach(this.validateUtxo);
+  }
+
+  validateUtxo(value: DecodedUtxoObj): void {
+    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
+      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
+    });
+  }
+
   // endregion
 }
