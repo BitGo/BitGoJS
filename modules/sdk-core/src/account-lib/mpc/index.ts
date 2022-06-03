@@ -1,8 +1,11 @@
 import HDTree, { Ed25519BIP32 } from './hdTree';
-import Eddsa from './tss/eddsa';
-import { KeyShare } from './tss/eddsa/types';
+import { EDDSA } from './tss';
+
+export { Ecdsa, ECDSA, Eddsa, EDDSA } from './tss';
 
 export * from './curves';
 export * from './util';
 
-export { Eddsa, Ed25519BIP32, HDTree, KeyShare };
+type KeyShare = EDDSA.KeyShare;
+
+export { Ed25519BIP32, HDTree, KeyShare };
