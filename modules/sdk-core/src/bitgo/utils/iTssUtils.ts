@@ -19,20 +19,32 @@ export interface PrebuildTransactionWithIntentOptions {
   nonce?: string;
 }
 
+export type TxRequestVersion = 'full' | 'lite';
+
+export type UnsignedTransaction = {
+  serializedTxHex: string;
+  signableHex: string;
+  feeInfo?: {
+    fee: number;
+    feeString: string;
+  };
+  derivationPath: string;
+};
+
 // complete with more props if neccesary
 export interface TxRequest {
   txRequestId: string;
-  unsignedTxs: {
-    serializedTxHex: string;
-    signableHex: string;
-    feeInfo?: {
-      fee: number;
-      feeString: string;
-    };
-    derivationPath: string;
-  }[];
+  // Only available in 'lite' version
+  unsignedTxs: UnsignedTransaction[];
   signatureShares?: SignatureShareRecord[];
-  apiVersion?: string;
+  // Only available in 'full' version
+  transactions: {
+    state: string;
+    unsignedTx: UnsignedTransaction;
+    privateSignatureShares: SignatureShareRecord[];
+    signatureShares: SignatureShareRecord[];
+  }[];
+  apiVersion?: TxRequestVersion;
 }
 
 export enum SignatureShareType {
@@ -75,7 +87,7 @@ export interface ITssUtils {
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
-  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion?: string): Promise<TxRequest>;
+  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion?: TxRequestVersion): Promise<TxRequest>;
   deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]>;
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;

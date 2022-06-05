@@ -21,7 +21,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest } from '../utils';
+import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest, UnsignedTransaction } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -2265,46 +2265,63 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+    const apiVersion = this._wallet.type === 'custodial' ? 'full' : 'lite';
 
-    let unsignedTxRequest: TxRequest;
+    let txRequest: TxRequest;
     switch (params.type) {
       case 'transfer':
-        unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
-          reqId,
-          intentType: 'payment',
-          sequenceId: params.sequenceId,
-          comment: params.comment,
-          recipients: params.recipients || [],
-          memo: params.memo,
-          nonce: params.nonce,
-        });
+        txRequest = await this.tssUtils.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'payment',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            recipients: params.recipients || [],
+            memo: params.memo,
+            nonce: params.nonce,
+          },
+          apiVersion
+        );
         break;
       case 'enabletoken':
-        unsignedTxRequest = await this.tssUtils.prebuildTxWithIntent({
-          reqId,
-          intentType: 'createAccount',
-          recipients: params.recipients || [],
-          tokenName: params.tokenName,
-          memo: params.memo,
-        });
+        txRequest = await this.tssUtils.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'createAccount',
+            recipients: params.recipients || [],
+            tokenName: params.tokenName,
+            memo: params.memo,
+          },
+          apiVersion
+        );
         break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
 
-    const unsignedTxs = unsignedTxRequest.unsignedTxs;
-    if (unsignedTxs.length !== 1) {
-      throw new Error(`Expected a single unsigned tx for tx request with id: ${unsignedTxRequest.txRequestId}`);
+    let unsignedTx: UnsignedTransaction;
+
+    if (txRequest.apiVersion === 'full') {
+      if (txRequest.transactions.length !== 1) {
+        throw new Error(`Expected a single unsigned tx for tx request with id: ${txRequest.txRequestId}`);
+      }
+
+      unsignedTx = txRequest.transactions[0].unsignedTx;
+    } else {
+      if (txRequest.unsignedTxs.length !== 1) {
+        throw new Error(`Expected a single unsigned tx for tx request with id: ${txRequest.txRequestId}`);
+      }
+      unsignedTx = txRequest.unsignedTxs[0];
     }
 
     const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
     return {
       walletId: this.id(),
       wallet: this,
-      txRequestId: unsignedTxRequest.txRequestId,
-      txHex: unsignedTxs[0].serializedTxHex,
+      txRequestId: txRequest.txRequestId,
+      txHex: unsignedTx.serializedTxHex,
       buildParams: whitelistedParams,
-      feeInfo: unsignedTxs[0].feeInfo,
+      feeInfo: unsignedTx.feeInfo,
     };
   }
 
