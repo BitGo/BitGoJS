@@ -608,6 +608,7 @@ export enum UnderlyingAsset {
   SILV = 'silv',
   SIPHER = 'sipher',
   SKALE = 'skale',
+  SKL = 'skl',
   SLAB = 'slab',
   SLND = 'slnd',
   SLOT = 'slot',
