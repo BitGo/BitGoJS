@@ -136,7 +136,7 @@ describe('Instruction Builder Tests: ', function () {
           new PublicKey(fromAddress),
           [],
           new BigNumber(amount).toNumber(),
-          6,
+          9,
         ),
       ]);
     });

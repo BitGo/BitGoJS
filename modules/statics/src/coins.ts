@@ -1506,7 +1506,7 @@ export const coins = CoinMap.fromCoins([
   tsolToken(
     'tsol:srm',
     'Serum',
-    6,
+    9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
     UnderlyingAsset.SRM,
     AccountCoin.DEFAULT_FEATURES
@@ -1514,7 +1514,7 @@ export const coins = CoinMap.fromCoins([
   tsolToken(
     'tsol:orca',
     'Orca',
-    6,
+    9,
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset.ORCA,
     AccountCoin.DEFAULT_FEATURES
@@ -1522,7 +1522,7 @@ export const coins = CoinMap.fromCoins([
   tsolToken(
     'tsol:usdc',
     'USD Coin',
-    6,
+    9,
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     UnderlyingAsset.USDC,
     AccountCoin.DEFAULT_FEATURES
@@ -1530,7 +1530,7 @@ export const coins = CoinMap.fromCoins([
   tsolToken(
     'tsol:ray',
     'Raydium',
-    6,
+    9,
     '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
     UnderlyingAsset.RAY,
     AccountCoin.DEFAULT_FEATURES
@@ -1546,7 +1546,7 @@ export const coins = CoinMap.fromCoins([
   tsolToken(
     'tsol:slnd',
     'Solend',
-    6,
+    9,
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
