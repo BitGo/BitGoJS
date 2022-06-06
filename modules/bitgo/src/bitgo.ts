@@ -163,6 +163,7 @@ export class BitGo extends BitGoAPI {
     this._version = pjson.version;
     this._keychains = null;
     this._wallets = null;
+    this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
   }
 
   /**

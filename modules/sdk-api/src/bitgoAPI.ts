@@ -66,7 +66,7 @@ if (!(process as any)?.browser) {
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
-export abstract class BitGoAPI implements BitGoBase {
+export class BitGoAPI implements BitGoBase {
   protected static _constants: any;
   protected static _constantsExpire: any;
   protected static _testnetWarningMessage = false;
@@ -188,7 +188,7 @@ export abstract class BitGoAPI implements BitGoBase {
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._token = params.accessToken;
-    this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
+    this._userAgent = params.userAgent || 'BitGoJS-api/' + this.version();
     this._reqId = undefined;
     this._refreshToken = params.refreshToken;
     this._clientId = params.clientId;
