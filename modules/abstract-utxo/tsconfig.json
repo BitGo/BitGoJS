@@ -4,7 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./",
     "strictPropertyInitialization": false,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*"],

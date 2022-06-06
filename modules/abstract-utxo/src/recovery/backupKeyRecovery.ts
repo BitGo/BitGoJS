@@ -25,16 +25,16 @@ import {
   getBip32Keys,
   getIsKrsRecovery,
   getIsUnsignedSweep,
+  isTriple,
   krsProviders,
 } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { ApiNotImplementedError, ApiRequestError } from './baseApi';
 import { SmartbitApi } from './smartbitApi';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { isTriple } from '../../../triple';
 import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface OfflineVaultTxInfo {

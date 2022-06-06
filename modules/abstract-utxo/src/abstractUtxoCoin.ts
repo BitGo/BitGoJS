@@ -19,14 +19,8 @@ import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 
-import * as config from '../../config';
-
-import { backupKeyRecovery, RecoverParams } from './utxo/recovery/backupKeyRecovery';
-import {
-  CrossChainRecoverySigned,
-  CrossChainRecoveryUnsigned,
-  recoverCrossChain,
-} from './utxo/recovery/crossChainRecovery';
+import { backupKeyRecovery, RecoverParams } from './recovery/backupKeyRecovery';
+import { CrossChainRecoverySigned, CrossChainRecoveryUnsigned, recoverCrossChain } from './recovery';
 
 import {
   AddressCoinSpecific,
@@ -60,6 +54,7 @@ import {
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  Triple,
   UnexpectedAddressError,
   UnsupportedAddressTypeError,
   VerificationOptions,
@@ -67,14 +62,14 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
-import { Triple } from '../triple';
+import { CustomChangeOptions, parseOutput } from './parseOutput';
 
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { isReplayProtectionUnspent } from './utxo/replayProtection';
-import { signAndVerifyWalletTransaction } from './utxo/sign';
+import { isReplayProtectionUnspent } from './replayProtection';
+import { signAndVerifyWalletTransaction } from './sign';
+import { supportedCrossChainRecoveries } from './config';
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
   index: number;
@@ -1300,7 +1295,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const sourceCoinFamily = this.getFamily();
     const recoveryCoinFamily = recoveryCoin.getFamily();
-    const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
+    const supportedRecoveryCoins = supportedCrossChainRecoveries[sourceCoinFamily];
 
     if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
       throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
