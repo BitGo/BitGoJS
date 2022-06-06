@@ -1,16 +1,24 @@
-import { randomBytes } from 'crypto';
-import * as bip32 from 'bip32';
 import {
-  KeyPairOptions,
+  DefaultKeys,
   isPrivateKey,
   isPublicKey,
   isSeed,
-  DefaultKeys,
-} from '@bitgo/sdk-core/src/account-lib/baseCoin/iface';
-import { Secp256k1ExtendedKeyPair } from '@bitgo/sdk-core/src/account-lib/baseCoin/secp256k1ExtendedKeyPair';
+  isValidXprv,
+  isValidXpub,
+  KeyPairOptions,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo/sdk-core';
+import { Buffer as BufferAvax } from 'avalanche';
+import { SECP256k1KeyPair } from 'avalanche/dist/common';
+import { bech32 } from 'bech32';
+import * as bip32 from 'bip32';
+import { ECPair } from 'bitcoinjs-lib';
+import { randomBytes } from 'crypto';
+import { mainnet } from './constants';
+import utils from './utils';
+
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
-// npm run test --scope bitgo (runs bitgo module)
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
@@ -38,6 +46,38 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   }
 
   /**
+   * Build a keypair from a protocol private key or extended private key.
+   *
+   * @param {string} prv A raw private key
+   */
+  recordKeysFromPrivateKey(prv: string): void {
+    if (!utils.isValidPrivateKey(prv)) {
+      throw new Error('Unsupported private key');
+    }
+    if (isValidXprv(prv)) {
+      this.hdNode = bip32.fromBase58(prv);
+    } else {
+      this.keyPair = ECPair.fromPrivateKey(Buffer.from(prv.slice(0, 64), 'hex'));
+    }
+  }
+
+  /**
+   * Build an ECPair from a protocol public key or extended public key.
+   *
+   * @param {string} pub A raw public key
+   */
+  recordKeysFromPublicKey(pub: string): void {
+    if (!utils.isValidPublicKey(pub)) {
+      throw new Error('Unsupported public key');
+    }
+    if (isValidXpub(pub)) {
+      this.hdNode = bip32.fromBase58(pub);
+    } else {
+      this.keyPair = ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
+    }
+  }
+
+  /**
    * Default keys format is a pair of Uint8Array keys
    *
    * @returns { DefaultKeys } The keys in the defined format
@@ -49,10 +89,24 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     };
   }
 
-  // TO DO
-  /** @inheritdoc */
+  /**
+   * Get an Avalanche P-Chain public mainnet address
+   *
+   * @returns {string} The mainnet address derived from the public key
+   */
   getAddress(): string {
-    const keys = this.getKeys();
-    return keys.pub;
+    return this.getAvaxPAddress(mainnet);
+  }
+
+  /**
+   * Get a public address of public key.
+   *
+   * @param {string} hrp - select Mainnet(avax) or Testnet(fuji) for the address
+   * @returns {string} The address derived from the public key and hrp
+   */
+  getAvaxPAddress(hrp: string): string {
+    const publicKey = BufferAvax.from(this.getKeys().pub, 'hex');
+    const addrressBuffer: BufferAvax = SECP256k1KeyPair.addressFromPublicKey(publicKey);
+    return bech32.encode(hrp, bech32.toWords(addrressBuffer));
   }
 }
