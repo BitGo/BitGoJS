@@ -78,7 +78,6 @@
     "long": "^4.0.0",
     "near-api-js": "^0.44.2",
     "noble-bls12-381": "0.7.2",
-    "paillier-bigint": "3.3.0",
     "protobufjs": "^6.8.9",
     "secp256k1": "4.0.2",
     "stellar-sdk": "^10.0.1",
