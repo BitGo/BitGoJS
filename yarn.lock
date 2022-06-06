@@ -5227,6 +5227,18 @@ bigi@1.4.2, bigi@^1.1.0, bigi@^1.4.0, bigi@^1.4.2:
   resolved "https://registry.yarnpkg.com/bigi/-/bigi-1.4.2.tgz#9c665a95f88b8b08fc05cfd731f561859d725825"
   integrity sha1-nGZalfiLiwj8Bc/XMfVhhZ1yWCU=
 
+bigint-crypto-utils@^3.0.17:
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/bigint-crypto-utils/-/bigint-crypto-utils-3.0.24.tgz#ae8b4f3d6236a7a34df13d411b7c3bbe6779c5d8"
+  integrity sha512-TZZ04h0BCfE5kAR5VTiUp+8eWHcclXFCI+4EFL5Y8z0++XJqqUnEjgwzBbVIpMHbSBu3Gjv7VT6msIXJzzSfTg==
+  dependencies:
+    bigint-mod-arith "^3.0.1"
+
+bigint-mod-arith@^3.0.1:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/bigint-mod-arith/-/bigint-mod-arith-3.0.2.tgz#a25a723af3ee3a79d452c370a55e3adc0e3f0cc3"
+  integrity sha512-tlhD4h/D1sv4pJfZzBesKOlfXRCQTeMMUrGbpc2PAawMAjb/S/OPAQfi667w6COt/UHOfvOW47sCSMaSEj4zIg==
+
 bignumber.js@8.1.1, bignumber.js@^8.0.1:
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-8.1.1.tgz#4b072ae5aea9c20f6730e4e5d529df1271c4d885"
@@ -13574,6 +13586,13 @@ paged-request@^2.0.1:
   integrity sha512-NWrGqneZImDdcMU/7vMcAOo1bIi5h/pmpJqe7/jdsy85BA/s5MSaU/KlpxwW/IVPmIwBcq2uKPrBWWhEWhtxag==
   dependencies:
     axios "^0.21.1"
+
+paillier-bigint@3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/paillier-bigint/-/paillier-bigint-3.3.0.tgz#25afb724fdce8359625d3eea93bf80cb6024065a"
+  integrity sha512-Aa8a75dODYOGxLYQhi1Y0Xsi0Vbl+5gzPvaVfxuCA/zT8CK/keXv5CA2Ddn5AV9VxmTkpIEdYs40hv1rkFcODg==
+  dependencies:
+    bigint-crypto-utils "^3.0.17"
 
 pako@2.0.3:
   version "2.0.3"
