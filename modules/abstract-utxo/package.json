@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

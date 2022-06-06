@@ -19,6 +19,9 @@
   },
   "references": [
     {
+      "path": "../abstract-utxo"
+    },
+    {
       "path": "../sdk-api"
     },
     {

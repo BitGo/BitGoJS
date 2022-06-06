@@ -3,7 +3,7 @@
  */
 import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 import { AddressInfo } from '@bitgo/blockapis';
-import { RecoveryProvider } from '../../../../../../src/v2/coins/utxo/recovery/RecoveryProvider';
+import { RecoveryProvider } from '@bitgo/abstract-utxo';
 
 export class MockRecoveryProvider implements RecoveryProvider {
   constructor(public unspents: Unspent[]) {}

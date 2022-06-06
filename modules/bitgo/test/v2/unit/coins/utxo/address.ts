@@ -6,8 +6,7 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { chainCodes } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import { GenerateAddressOptions } from '../../../../../src/v2/coins/abstractUtxoCoin';
+import { AbstractUtxoCoin, GenerateAddressOptions } from '@bitgo/abstract-utxo';
 
 import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 
