@@ -14,14 +14,15 @@ const ZERO = Buffer.from('000000000000000000000000000000000000000000000000000000
 
 export type ZcashNetwork = typeof networks.zcash | typeof networks.zcashTest;
 
-// https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L29
+// https://github.com/zcash/zcash/blob/v4.7.0/src/primitives/transaction.h#L40
 const SAPLING_VERSION_GROUP_ID = 0x892f2085;
+// https://github.com/zcash/zcash/blob/v4.7.0/src/primitives/transaction.h#L52
 const ZIP225_VERSION_GROUP_ID = 0x26a7270a;
 
-// https://github.com/zcash/zcash/blob/v4.5.1/src/consensus/upgrades.cpp#L11
+// https://github.com/zcash/zcash/blob/v4.7.0/src/consensus/upgrades.cpp#L11
 const OVERWINTER_BRANCH_ID = 0x5ba81b19;
 const CANOPY_BRANCH_ID = 0xe9ff75a6;
-const NU5_BRANCH_ID = 0x37519621;
+const NU5_BRANCH_ID = 0xc2d6d0b4;
 
 export class UnsupportedTransactionError extends Error {
   constructor(message: string) {
