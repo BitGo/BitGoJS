@@ -168,10 +168,7 @@ describe('Sol Transaction Builder', async () => {
     const txBuilder = factory.from(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
-    should.equal(
-      builtTx.id,
-      '61y3eZC1L9AXhw5jvMaeVUe3cz7WZ5vGyH3PHgb3k18Lcwa3A97qbj2zco6SWw2Hxo3m4F2MLs1gzNrqvB8VNjfV',
-    );
+    should.equal(builtTx.id, 'S6H1ahay3rdgpdipazUi1yxTkC8Gkchcmk8ARwLYRqnWTu4Va54ha6okJ8D5CdPSsngAuA26tWVyM4B9FffH2N7');
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
       address: testData.associatedTokenAccounts.accounts[0].pub,
@@ -185,7 +182,7 @@ describe('Sol Transaction Builder', async () => {
       coin: 'tsol:orca',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('61y3eZC1L9AXhw5jvMaeVUe3cz7WZ5vGyH3PHgb3k18Lcwa3A97qbj2zco6SWw2Hxo3m4F2MLs1gzNrqvB8VNjfV');
+    jsonTx.id.should.equal('S6H1ahay3rdgpdipazUi1yxTkC8Gkchcmk8ARwLYRqnWTu4Va54ha6okJ8D5CdPSsngAuA26tWVyM4B9FffH2N7');
     jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);

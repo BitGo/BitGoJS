@@ -7,4 +7,5 @@ export const DEFAULT_CHAIN_NAMES = {
 
 export const serializedType: SerializedType = 'bech32';
 export const chainID = 'P';
-export const hrp = 'fuji';
+export const testnet = 'fuji';
+export const mainnet = 'avax';
