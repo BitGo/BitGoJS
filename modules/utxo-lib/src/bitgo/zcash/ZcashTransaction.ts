@@ -5,7 +5,7 @@ import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 const varuint = require('varuint-bitcoin');
 const typeforce = require('typeforce');
 
-import { isMainnet, networks } from '../../networks';
+import { networks } from '../../networks';
 import { UtxoTransaction, varSliceSize } from '../UtxoTransaction';
 import { fromBufferV4, fromBufferV5, toBufferV4, toBufferV5, VALUE_INT64_ZERO } from './ZcashBufferutils';
 import { getBlake2bHash, getSignatureDigest, getTxidDigest } from './hashZip0244';
@@ -14,14 +14,15 @@ const ZERO = Buffer.from('000000000000000000000000000000000000000000000000000000
 
 export type ZcashNetwork = typeof networks.zcash | typeof networks.zcashTest;
 
-// https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L29
+// https://github.com/zcash/zcash/blob/v4.7.0/src/primitives/transaction.h#L40
 const SAPLING_VERSION_GROUP_ID = 0x892f2085;
+// https://github.com/zcash/zcash/blob/v4.7.0/src/primitives/transaction.h#L52
 const ZIP225_VERSION_GROUP_ID = 0x26a7270a;
 
-// https://github.com/zcash/zcash/blob/v4.5.1/src/consensus/upgrades.cpp#L11
+// https://github.com/zcash/zcash/blob/v4.7.0/src/consensus/upgrades.cpp#L11
 const OVERWINTER_BRANCH_ID = 0x5ba81b19;
 const CANOPY_BRANCH_ID = 0xe9ff75a6;
-const NU5_BRANCH_ID = 0x37519621;
+const NU5_BRANCH_ID = 0xc2d6d0b4;
 
 export class UnsupportedTransactionError extends Error {
   constructor(message: string) {
@@ -47,11 +48,10 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
       return 0;
     case 3:
       return OVERWINTER_BRANCH_ID;
-    case 4:
-      return isMainnet(network) ? CANOPY_BRANCH_ID : NU5_BRANCH_ID;
     case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
+    case 4:
     case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU5:
     case ZcashTransaction.VERSION5_BRANCH_NU5:
