@@ -4,9 +4,9 @@
 import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
+import { Polygon } from './polygon';
 
-export class Tpolygon extends AbstractEthLikeCoin {
+export class Tpolygon extends Polygon {
   protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
