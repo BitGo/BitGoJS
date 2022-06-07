@@ -3,7 +3,7 @@
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
+import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { Celo as CeloAccountLib } from '@bitgo/account-lib';
 
 export class Celo extends AbstractEthLikeCoin {

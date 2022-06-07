@@ -3,7 +3,7 @@
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
+import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 
 export class Tetc extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {

@@ -11,10 +11,13 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../sdk-api"
+      "path": "../account-lib"
     },
     {
       "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
     }
   ]
 }

@@ -3,7 +3,7 @@
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
+import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { Rbtc as RbtcAccountLib } from '@bitgo/account-lib';
 
 export class Rbtc extends AbstractEthLikeCoin {
