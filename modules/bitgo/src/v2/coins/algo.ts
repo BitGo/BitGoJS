@@ -4,13 +4,13 @@
 import * as accountLib from '@bitgo/account-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 import { SeedValidator } from '../internal/seedValidator';
 import { CoinFamily } from '@bitgo/statics';
 
 import {
   AddressCoinSpecific,
   BaseCoin,
+  BitGoBase,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -125,11 +125,11 @@ export class Algo extends BaseCoin {
   readonly ENABLE_TOKEN: TokenManagementType = 'enabletoken';
   readonly DISABLE_TOKEN: TokenManagementType = 'disabletoken';
 
-  constructor(bitgo: BitGo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Algo(bitgo);
   }
 

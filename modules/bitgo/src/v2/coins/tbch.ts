@@ -1,17 +1,16 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Bch } from './bch';
 import * as bitcoin from '@bitgo/utxo-lib';
 
 export class Tbch extends Bch {
-  constructor(bitgo: BitGo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo, bitcoin.networks.bitcoincashTestnet);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbch(bitgo);
   }
 

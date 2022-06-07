@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Algo } from './algo';
 
 export class Talgo extends Algo {
@@ -10,7 +9,7 @@ export class Talgo extends Algo {
     super(bitgo);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Talgo(bitgo);
   }
 

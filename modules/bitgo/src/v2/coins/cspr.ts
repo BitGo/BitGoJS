@@ -5,10 +5,10 @@ import * as accountLib from '@bitgo/account-lib';
 import { ECPair } from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 
-import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import {
   BaseCoin,
+  BitGoBase,
   InvalidAddressError,
   InvalidTransactionError,
   KeyIndices,
@@ -67,7 +67,7 @@ interface TransactionOperation {
 export class Cspr extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -77,7 +77,7 @@ export class Cspr extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Cspr(bitgo, staticsCoin);
   }
 

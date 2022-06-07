@@ -1,5 +1,4 @@
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Sol } from './sol';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
@@ -7,7 +6,7 @@ export class Tsol extends Sol {
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
@@ -17,7 +16,7 @@ export class Tsol extends Sol {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tsol(bitgo, staticsCoin);
   }
 

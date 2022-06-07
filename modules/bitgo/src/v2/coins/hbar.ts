@@ -6,6 +6,7 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -19,7 +20,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from '../internal/seedValidator';
 
@@ -61,7 +61,7 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 export class Hbar extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -87,7 +87,7 @@ export class Hbar extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Hbar(bitgo, staticsCoin);
   }
 

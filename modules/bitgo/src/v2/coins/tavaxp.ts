@@ -1,5 +1,4 @@
-import { BitGo } from '../../bitgo';
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { AvaxP } from './avaxp';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
@@ -7,7 +6,7 @@ export class TavaxP extends AvaxP {
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
@@ -17,7 +16,7 @@ export class TavaxP extends AvaxP {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new TavaxP(bitgo, staticsCoin);
   }
 

@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 
 import {
   BaseCoin,
+  BitGoBase,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
   KeyPair,
@@ -21,7 +22,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
 import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
@@ -71,7 +71,7 @@ export type SignedEthLikeTransaction = HalfSignedEthLikeTransaction | FullySigne
 export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {

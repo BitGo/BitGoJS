@@ -1,8 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Xtz } from './xtz';
 
@@ -10,11 +9,11 @@ import { Xtz } from './xtz';
  * Tezos testnet.
  */
 export class Txtz extends Xtz {
-  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Txtz(bitgo, staticsCoin);
   }
 }

@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import * as bip32 from 'bip32';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -14,10 +15,9 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
 
 export class Ofc extends BaseCoin {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Ofc(bitgo);
   }
 

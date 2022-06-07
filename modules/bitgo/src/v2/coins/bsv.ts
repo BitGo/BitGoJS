@@ -1,19 +1,18 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { UtxoNetwork } from './abstractUtxoCoin';
 import { Bch } from './bch';
-import { BitGo } from '../../bitgo';
 
 export class Bsv extends Bch {
-  constructor(bitgo: BitGo, network?: UtxoNetwork) {
+  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.bitcoinsv);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Bsv(bitgo);
   }
 

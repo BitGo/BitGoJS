@@ -1,14 +1,13 @@
 /**
  * @prettier
  */
-import { BaseCoin, InvalidAddressError } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, InvalidAddressError } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
-import { BitGo } from '../../bitgo';
 
 export class Ltc extends AbstractUtxoCoin {
-  constructor(bitgo: BitGo, network?: UtxoNetwork) {
+  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.litecoin);
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = utxolib.networks.bitcoin.scriptHash;
@@ -16,7 +15,7 @@ export class Ltc extends AbstractUtxoCoin {
     this.supportAltScriptDestination = false;
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Ltc(bitgo);
   }
 

@@ -1,17 +1,16 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BitGo } from '../../bitgo';
 import { Dash } from './dash';
 
 export class Tdash extends Dash {
-  constructor(bitgo: BitGo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo, utxolib.networks.dashTest);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tdash(bitgo);
   }
 

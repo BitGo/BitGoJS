@@ -11,10 +11,10 @@ import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
 
 import { Erc20Token } from './erc20Token';
-import { BitGo } from '../../bitgo';
 import {
   AddressCoinSpecific,
   BaseCoin,
+  BitGoBase,
   checkKrsProvider,
   common,
   EthereumLibraryUnavailableError,
@@ -343,13 +343,13 @@ export class Eth extends BaseCoin {
 
   readonly staticsCoin?: Readonly<StaticsBaseCoin>;
 
-  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
     this.staticsCoin = staticsCoin;
     this.sendMethodName = 'sendMultiSig';
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Eth(bitgo, staticsCoin);
   }
 

@@ -9,10 +9,10 @@ import * as url from 'url';
 import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
-import { BitGo } from '../../bitgo';
 
 import {
   BaseCoin,
+  BitGoBase,
   checkKrsProvider,
   common,
   ExtraPrebuildParamsOptions,
@@ -151,12 +151,12 @@ export class Xlm extends BaseCoin {
   // See: https://www.stellar.org/developers/guides/concepts/assets.html#amount-precision-and-representation
   static readonly maxTrustlineLimit: string = '9223372036854775807';
 
-  constructor(bitgo: BitGo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
     this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Xlm(bitgo);
   }
 

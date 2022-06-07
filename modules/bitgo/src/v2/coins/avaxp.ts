@@ -1,6 +1,7 @@
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -11,7 +12,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
 } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 
 export interface ExplainTransactionOptions {
@@ -42,7 +42,7 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -52,7 +52,7 @@ export class AvaxP extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new AvaxP(bitgo, staticsCoin);
   }
 

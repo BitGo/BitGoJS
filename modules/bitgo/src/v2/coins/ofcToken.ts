@@ -2,11 +2,8 @@
  * @prettier
  */
 import { isString } from 'lodash';
-
-import { BitGo } from '../../bitgo';
-import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
-import { SignTransactionOptions as BaseSignTransactionOptions } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, SignTransactionOptions as BaseSignTransactionOptions } from '@bitgo/sdk-core';
 import { SignedTransaction } from './eth';
 
 export interface OfcTokenConfig {
@@ -29,7 +26,7 @@ const publicIdRegex = /^[a-f\d]{32}$/i;
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
-  constructor(bitgo: BitGo, tokenConfig: OfcTokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: OfcTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
@@ -79,7 +76,7 @@ export class OfcToken extends Ofc {
   }
 
   static createTokenConstructor(config: OfcTokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new OfcToken(bitgo, config);
+    return (bitgo: BitGoBase) => new OfcToken(bitgo, config);
   }
 
   /**

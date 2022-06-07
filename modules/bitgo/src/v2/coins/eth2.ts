@@ -7,9 +7,9 @@ import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
+  BitGoBase,
   common,
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   IBlsKeyPair,
@@ -107,7 +107,7 @@ export interface RecoveryInfo {
 }
 
 export class Eth2 extends BaseCoin {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Eth2(bitgo);
   }
 

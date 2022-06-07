@@ -24,7 +24,7 @@ const TravelRule = require('./travelRule');
 import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
-import { GlobalCoinFactory } from './v2/coinFactory';
+import GlobalCoinFactory from './v2/coinFactory';
 import { BaseCoin, common, getSharedSecret } from '@bitgo/sdk-core';
 import {
   BitGoAPI,
