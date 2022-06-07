@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.1-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.0.1-rc.9...@bitgo/web-demo@1.0.1-rc.10) (2022-06-07)
+
+
+### Bug Fixes
+
+* **sdk-api:** api uses own version ([e2091e9](https://github.com/BitGo/BitGoJS/commit/e2091e9074f392fcebea468c8cb60cb6eb445b84))
+
+
+
+
+
 ## [1.0.1-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.0.1-rc.8...@bitgo/web-demo@1.0.1-rc.9) (2022-06-07)
 
 **Note:** Version bump only for package @bitgo/web-demo

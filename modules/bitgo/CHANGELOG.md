@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.16](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.15...bitgo@14.2.0-rc.16) (2022-06-07)
+
+
+### Bug Fixes
+
+* **sdk-api:** api uses own version ([e2091e9](https://github.com/BitGo/BitGoJS/commit/e2091e9074f392fcebea468c8cb60cb6eb445b84))
+
+
+
+
+
 # [14.2.0-rc.15](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.14...bitgo@14.2.0-rc.15) (2022-06-07)
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.5...@bitgo/utxo-lib@2.3.0-rc.6) (2022-06-07)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
 # [2.3.0-rc.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.4...@bitgo/utxo-lib@2.3.0-rc.5) (2022-06-01)
 
 

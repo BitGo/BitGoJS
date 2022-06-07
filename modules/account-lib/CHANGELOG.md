@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.13...@bitgo/account-lib@2.20.0-rc.14) (2022-06-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** add paillier bigint dep ([a8cd71e](https://github.com/BitGo/BitGoJS/commit/a8cd71ea6b7ee9db98b4b004fb1661995dd94916))
+* **statics:** fix tsol token decimal ([3b66d7e](https://github.com/BitGo/BitGoJS/commit/3b66d7e5fa5277d63eb810b1c7b70607ce9ce663))
+
+
+
+
+
 # [2.20.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.12...@bitgo/account-lib@2.20.0-rc.13) (2022-06-07)
 
 

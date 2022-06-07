@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.0-rc.9...@bitgo/unspents@0.8.0-rc.10) (2022-06-07)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+
+
+
+
 # [0.8.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.8.0-rc.8...@bitgo/unspents@0.8.0-rc.9) (2022-06-01)
 
 **Note:** Version bump only for package @bitgo/unspents

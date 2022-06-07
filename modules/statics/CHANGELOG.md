@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.10...@bitgo/statics@6.18.0-rc.11) (2022-06-07)
+
+
+### Bug Fixes
+
+* **statics:** fix tsol token decimal ([3b66d7e](https://github.com/BitGo/BitGoJS/commit/3b66d7e5fa5277d63eb810b1c7b70607ce9ce663))
+
+
+
+
+
 # [6.18.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.9...@bitgo/statics@6.18.0-rc.10) (2022-06-07)
 
 
