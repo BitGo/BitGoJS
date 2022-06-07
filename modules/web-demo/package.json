@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/web-demo",
-  "version": "1.0.1-rc.8",
+  "version": "1.0.1-rc.9",
   "description": "BitGoJS Web demo package",
   "repository": {
     "type": "git",
@@ -24,8 +24,8 @@
     "precommit": "yarn lint-staged"
   },
   "dependencies": {
-    "@bitgo/sdk-api": "1.1.0-rc.8",
-    "bitgo": "14.2.0-rc.14",
+    "@bitgo/sdk-api": "^1.1.0-rc.9",
+    "bitgo": "^14.2.0-rc.15",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-json-view": "^1.21.3",

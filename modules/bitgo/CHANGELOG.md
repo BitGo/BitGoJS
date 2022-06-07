@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.15](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.14...bitgo@14.2.0-rc.15) (2022-06-07)
+
+
+### Features
+
+* implement polygon util method, core skeleton ([562855a](https://github.com/BitGo/BitGoJS/commit/562855afea41458f9569c90914619a6d515b92c0))
+
+
+
+
+
 # [14.2.0-rc.14](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.13...bitgo@14.2.0-rc.14) (2022-06-02)
 
 **Note:** Version bump only for package bitgo

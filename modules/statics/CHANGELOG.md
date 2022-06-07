@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.9...@bitgo/statics@6.18.0-rc.10) (2022-06-07)
+
+
+### Features
+
+* implement polygon util method, core skeleton ([562855a](https://github.com/BitGo/BitGoJS/commit/562855afea41458f9569c90914619a6d515b92c0))
+
+
+
+
+
 # [6.18.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.8...@bitgo/statics@6.18.0-rc.9) (2022-06-01)
 
 

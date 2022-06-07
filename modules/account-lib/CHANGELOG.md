@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.12...@bitgo/account-lib@2.20.0-rc.13) (2022-06-07)
+
+
+### Features
+
+* **account-lib:** add support for ecdsa keyshare generation tss ([c71bc34](https://github.com/BitGo/BitGoJS/commit/c71bc3437af7f5bdf0d1ef19d53b05a4a232ffe4))
+* implement polygon util method, core skeleton ([562855a](https://github.com/BitGo/BitGoJS/commit/562855afea41458f9569c90914619a6d515b92c0))
+
+
+
+
+
 # [2.20.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.11...@bitgo/account-lib@2.20.0-rc.12) (2022-06-02)
 
 **Note:** Version bump only for package @bitgo/account-lib
