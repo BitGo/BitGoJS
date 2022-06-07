@@ -1,0 +1,44 @@
+{
+  "name": "@bitgo/abstract-eth",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for ETH base implementation",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-eth"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-api": "^1.0.1",
+    "@bitgo/sdk-core": "^1.0.1"
+  }
+}
