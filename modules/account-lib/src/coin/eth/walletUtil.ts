@@ -1,5 +1,7 @@
 export const sendMultisigMethodId = '0x39125215';
 export const sendMultisigTokenMethodId = '0x0dcd7a6c';
+export const v1CreateForwarderMethodId = '0xfb90b320';
+export const v1WalletInitializationFirstBytes = '0x60806040';
 export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
 export const flushForwarderTokensMethodId = '0x2da03409';
