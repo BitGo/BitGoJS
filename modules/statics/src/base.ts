@@ -139,6 +139,7 @@ export enum CoinFeature {
 export enum UnderlyingAsset {
   ALGO = 'algo',
   APE = 'ape',
+  api3 = 'api3',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
   AXL = 'AXL',
@@ -155,7 +156,9 @@ export enum UnderlyingAsset {
   ETH2 = 'eth2',
   ETC = 'etc',
   EOS = 'eos',
+  ERD = 'erd',
   EUR = 'eur',
+  EUROC = 'euroc',
   GTETH = 'gteth',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
