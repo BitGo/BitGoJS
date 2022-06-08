@@ -60,31 +60,26 @@ describe('OpenGPG Utils Tests', function () {
       await openpgpUtils.readSignedMessage(signedMessage, senderKey.publicKey, otherKey.privateKey)
         .should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
-  });
 
-  describe('signatures and verification', function() {
-    it('should verify signature', async function () {
-      const text = 'some payload';
-      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
-      const isValidSignature = await openpgpUtils.verifySignature(text, signature, senderKey.publicKey);
+    it('should fail on signature verification', async function () {
+      const text = 'original message';
 
-      isValidSignature.should.be.true();
-    });
+      const message = await openpgp.createMessage({ text });
 
-    it('should fail verification if public key is incorrect', async function () {
-      const text = 'some payload';
-      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
-      const isValidSignature = await openpgpUtils.verifySignature(text, signature, recipientKey.publicKey);
+      const otherPrivateKey = await openpgp.readPrivateKey({ armoredKey: otherKey.privateKey });
+      const invalidSignature = await openpgp.sign({
+        message,
+        signingKeys: otherPrivateKey,
+        detached: true,
+      });
 
-      isValidSignature.should.be.false();
-    });
-
-    it('should fail verification if message is incorrect', async function () {
-      const text = 'some payload';
-      const signature = await openpgpUtils.signText(text, senderKey.privateKey);
-      const isValidSignature = await openpgpUtils.verifySignature('something else', signature, senderKey.publicKey);
-
-      isValidSignature.should.be.false();
+      const signedMessage = await openpgpUtils.encryptAndSignText(text, recipientKey.publicKey, senderKey.privateKey);
+      const invalidSignedMessage = {
+        encryptedText: signedMessage.encryptedText,
+        signature: invalidSignature,
+      };
+      await openpgpUtils.readSignedMessage(invalidSignedMessage, senderKey.publicKey, recipientKey.privateKey)
+        .should.be.rejectedWith('Signature does not match public key');
     });
   });
 });

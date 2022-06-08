@@ -35,8 +35,12 @@ export async function createCombinedKey(params: {
   let backupYShare: YShare | undefined;
 
   for (const encryptedYShare of encryptedYShares) {
+    const signedMessage = {
+      encryptedText: encryptedYShare.yShare.encryptedPrivateShare,
+      signature: encryptedYShare.yShare.privateShareSignature,
+    };
     const privateShare = await readSignedMessage(
-      encryptedYShare.yShare.encryptedPrivateShare,
+      signedMessage,
       encryptedYShare.senderPublicArmor,
       encryptedYShare.recipientPrivateArmor
     );
@@ -317,6 +321,7 @@ export async function encryptYShare(params: {
     i: yShare.i,
     j: yShare.j,
     publicShare,
-    encryptedPrivateShare,
+    encryptedPrivateShare: encryptedPrivateShare.encryptedText,
+    privateShareSignature: encryptedPrivateShare.signature,
   };
 }

@@ -90,7 +90,11 @@ describe('test tss helper functions', function () {
           recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
         });
 
-        const decryptedMessage = await readSignedMessage(encryptedYShare.encryptedPrivateShare, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey);
+        const signedMessage = {
+          encryptedText: encryptedYShare.encryptedPrivateShare,
+          signature: encryptedYShare.privateShareSignature,
+        };
+        const decryptedMessage = await readSignedMessage(signedMessage, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey);
         decryptedMessage.should.equal(userKeyShare.yShares[i].u + userKeyShare.yShares[i].chaincode);
 
         encryptedYShare.i.should.equal(i);

@@ -5,8 +5,8 @@ export type EncryptedYShare = {
   i: number;
   j: number;
   publicShare: string;
-  // signed and encrypted gpg armor
   encryptedPrivateShare: string;
+  privateShareSignature: string;
 };
 
 // YShare with information needed to decrypt and verify a GPG mesasge
