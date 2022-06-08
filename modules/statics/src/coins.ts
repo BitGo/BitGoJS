@@ -38,10 +38,15 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 );
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
+const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const SOL_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE, CoinFeature.SUPPORTS_TOKENS];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
+const SOL_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.REQUIRES_RESERVE,
+  CoinFeature.SUPPORTS_TOKENS,
+];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
