@@ -123,10 +123,15 @@ export enum CoinFeature {
    * This coin requires that accounts keep a minimum balance as reserve
    */
   REQUIRES_RESERVE = 'requires-reserve',
-  /**
+  /*
    * This coin supports custodial wallet types
    */
   CUSTODY = 'custody',
+
+  /*
+  This coin uses TSS for key creation and signing
+   */
+  TSS = 'tss',
 }
 
 /**
