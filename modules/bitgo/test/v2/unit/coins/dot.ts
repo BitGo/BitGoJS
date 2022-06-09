@@ -3,6 +3,8 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
+import { UnsignedTransaction } from '../../../../src';
+import * as testData from '../../fixtures/coins/dot';
 
 describe('DOT:', function () {
   let bitgo;
@@ -145,4 +147,29 @@ describe('DOT:', function () {
       bigUnit.should.equal('0.04');
     });
   });
+
+  describe('Explain Transactions:', () => {
+    it('should explain an unsigned transfer transaction', async function () {
+      const unsignedTransaction: UnsignedTransaction = testData.unsignedTransaction;
+      const explainedTransaction = await basecoin.explainTransaction(unsignedTransaction);
+      explainedTransaction.should.deepEqual({
+        changeOutputs: [],
+        changeAmount: '0',
+        sequenceId: 0,
+        feeInfo: '10',
+        txid: '0x0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8',
+        type: '0',
+        outputs: [
+          {
+            address: '5DkddSfPsWojjfuH9iJEcUV7ZseQ9EJ6RjtNmCR1w3CEb8S9',
+            valueString: '90034235235350',
+            coinName: 'tdot',
+            wallet: '62a1205751675b2f0fe72328',
+          },
+        ],
+        blockNumber: 8619307,
+      });
+    });
+  });
 });
+
