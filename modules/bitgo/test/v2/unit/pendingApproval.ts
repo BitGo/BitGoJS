@@ -129,6 +129,7 @@ describe('Pending Approvals:', () => {
           share: '9d7159a76700635TEST',
         },
       ],
+      transactions: [],
     };
 
     const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');

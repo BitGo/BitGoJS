@@ -1332,9 +1332,11 @@ describe('V2 Wallet:', function () {
       multisigType: 'tss',
     };
     const tssWallet = new Wallet(bitgo, tsol, walletData);
+    const custodialTssWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
 
     const txRequest: TxRequest = {
       txRequestId: 'id',
+      transactions: [],
       unsignedTxs: [
         {
           serializedTxHex: 'ababcdcd',
@@ -1346,6 +1348,26 @@ describe('V2 Wallet:', function () {
           derivationPath: 'm/0',
         },
       ],
+    };
+
+    const txRequestFull: TxRequest = {
+      txRequestId: 'id',
+      transactions: [{
+        state: 'pendingSignature',
+        unsignedTx: {
+          serializedTxHex: 'ababcdcd',
+          signableHex: 'deadbeef',
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+          derivationPath: 'm/0',
+        },
+        privateSignatureShares: [],
+        signatureShares: [],
+      }],
+      unsignedTxs: [],
+      apiVersion: 'full',
     };
 
     afterEach(function () {
@@ -1497,6 +1519,43 @@ describe('V2 Wallet:', function () {
           }],
           type: 'stake',
         }).should.be.rejectedWith('transaction type not supported: stake');
+      });
+
+      it('should build a single recipient transfer transaction for full', async function () {
+        const recipients = [{
+          address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+          amount: '1000',
+        }];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        }, 'full');
+
+        const txPrebuild = await custodialTssWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+        });
+
+
+        txPrebuild.should.deepEqual({
+          walletId: tssWallet.id(),
+          wallet: custodialTssWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
       });
     });
 
