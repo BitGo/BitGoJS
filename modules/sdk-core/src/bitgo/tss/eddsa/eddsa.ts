@@ -1,6 +1,7 @@
 import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
 import { BitGoBase } from './../../bitgoBase';
-import { DecryptableYShare, CombinedKey, SigningMaterial, ShareKeyPosition, EncryptedYShare } from './../types';
+import { DecryptableYShare, CombinedKey, SigningMaterial, EncryptedYShare } from './types';
+import { ShareKeyPosition } from './../types';
 import {
   encryptAndSignText,
   readSignedMessage,

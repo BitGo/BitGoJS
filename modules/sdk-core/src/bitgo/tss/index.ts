@@ -1,5 +1,9 @@
-export { EncryptedYShare, DecryptableYShare, CombinedKey, SigningMaterial, ShareKeyPosition } from './types';
+import EDDSAMethods, { EDDSAMethodTypes } from './eddsa';
 
+export { EDDSAMethods, EDDSAMethodTypes };
+export { ShareKeyPosition } from './types';
+
+// exporting this types for backward compatibility.
 export {
   createCombinedKey,
   createUserSignShare,
@@ -10,4 +14,8 @@ export {
   getTxRequest,
   sendSignatureShare,
   encryptYShare,
+  EncryptedYShare,
+  DecryptableYShare,
+  CombinedKey,
+  SigningMaterial,
 } from './eddsa';
