@@ -6,13 +6,19 @@ import * as crypto from 'crypto';
 import * as _ from 'lodash';
 import * as openpgp from 'openpgp';
 import { Ed25519BIP32 } from '../../account-lib/mpc/hdTree';
-import Eddsa, { KeyShare, YShare } from '../../account-lib/mpc/tss';
+import Eddsa, { KeyShare, SignShare, YShare } from '../../account-lib/mpc/tss';
 import { IRequestTracer } from '../../api';
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
 import { IWallet } from '../wallet';
-import { ITssUtils, PrebuildTransactionWithIntentOptions, SignatureShareRecord, TxRequest } from './iTssUtils';
+import {
+  ITssUtils,
+  PrebuildTransactionWithIntentOptions,
+  SignatureShareRecord,
+  SignatureShareType,
+  TxRequest,
+} from './iTssUtils';
 import { MpcUtils } from './mpcUtils';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import {
@@ -335,6 +341,84 @@ export class TssUtils extends MpcUtils implements ITssUtils {
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare);
 
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+  }
+
+  async demo_createUserGShare(params: {
+    signableHex: string;
+    bitgoToUserRShare: string;
+    prv: string;
+    userSignShare: string;
+  }): Promise<SignatureShareRecord> {
+    const { signableHex, prv, userSignShare, bitgoToUserRShare } = params;
+    // const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
+    const actualBitgoToUserRShare = JSON.parse(bitgoToUserRShare) as SignatureShareRecord;
+    const actualUserSignShare = JSON.parse(userSignShare) as SignShare;
+
+    const signablePayload = Buffer.from(signableHex, 'hex');
+
+    const userToBitGoGShare = await createUserToBitGoGShare(
+      actualUserSignShare,
+      actualBitgoToUserRShare,
+      userSigningMaterial.backupYShare,
+      userSigningMaterial.bitgoYShare,
+      signablePayload
+    );
+
+    return {
+      from: SignatureShareType.USER,
+      to: SignatureShareType.BITGO,
+      share: userToBitGoGShare.R + userToBitGoGShare.gamma,
+    };
+  }
+
+  async demo_createUserRShare(params: {
+    signableHex: string;
+    derivationPath: string;
+    prv: string;
+  }): Promise<{ signatureShare: SignatureShareRecord; signerShare: string; userSignShare: SignShare }> {
+    // const { txRequest, prv } = params;
+    const { signableHex, derivationPath, prv } = params;
+
+    // const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+
+    const hdTree = await Ed25519BIP32.initialize();
+    const MPC = await Eddsa.initialize(hdTree);
+
+    const userSigningMaterial: SigningMaterial = JSON.parse(prv);
+    if (!userSigningMaterial.backupYShare) {
+      throw new Error('Invalid user key - missing backupYShare');
+    }
+
+    const signingKey = MPC.keyDerive(
+      userSigningMaterial.uShare,
+      [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
+      derivationPath
+    );
+
+    const signablePayload = Buffer.from(signableHex, 'hex');
+
+    const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
+    const rShare = userSignShare.rShares[3];
+
+    const signerShare = signingKey.yShares[3].u + signingKey.yShares[3].chaincode;
+    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const encryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
+
+    return {
+      signatureShare: {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: rShare.r + rShare.R,
+      },
+      signerShare: encryptedSignerShare,
+      userSignShare,
+    };
   }
 
   /**

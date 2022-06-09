@@ -1,5 +1,5 @@
 import type { SerializedKeyPair } from 'openpgp';
-import { KeyShare } from '../../account-lib/mpc/tss';
+import { KeyShare, SignShare } from '../../account-lib/mpc/tss';
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet } from '../baseCoin';
 import { Keychain } from '../keychain';
@@ -80,4 +80,15 @@ export interface ITssUtils {
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
+  demo_createUserRShare(params: {
+    signableHex: string;
+    derivationPath: string;
+    prv: string;
+  }): Promise<{ signatureShare: SignatureShareRecord; signerShare: string; userSignShare: SignShare }>;
+  demo_createUserGShare(params: {
+    signableHex: string;
+    bitgoToUserRShare: string;
+    prv: string;
+    userSignShare: string;
+  }): Promise<SignatureShareRecord>;
 }

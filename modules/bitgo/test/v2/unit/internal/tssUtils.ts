@@ -346,6 +346,39 @@ describe('TSS Utils:', async function () {
     });
   });
 
+  describe('demo', async function () {
+    const userPrv = '{"uShare":{"i":1,"t":2,"n":3,"y":"f64e064e630ef21034182e48305f026dac7c0245ed07208b41d54e5ecb7b0a93","seed":"56e480a8ad430ae1f279ab7181c7df40634c6c128c0c3ad24391b8fd588d5ce7","chaincode":"0472849c477591d232c2e0caee2c4e5435ec73a4e9343e632e105dddff95e444"},"bitgoYShare":{"i":1,"j":3,"y":"572622e04a3104791f4c39c3f79062e6239d330d0a560ec85f1eab1faea6f05b","u":"07989726475f972477b5346ae6b98b482acd462db1868b979db475e32fc9bf0a","chaincode":"4c74d65b7865e441040e9f3078579aaef61ea80401e23a9891ae928bcd7f1941"},"backupYShare":{"i":1,"j":2,"y":"2c18fb8faf76e946cda3b413751bae16bb28c6d264de39a23b29a662b176a3e1","u":"c49a7e8d7146a0c8d1b3058577ed077227ccb83f9209a49175a6588b50d0f505","chaincode":"2fdf4d95ea4fe89a9f4e8e9491c0f4152a28057f8b9a66bbd88d3f6d482a62a6"}}';
+    const signableHex = '6d9fbd7e6e3d48f142288d054f8f38d0a65bbadf867f8313937c8f3c8b63731a';
+
+    it('should generate r share', async function () {
+
+      const derivationPath = 'm/999999/187246649/33072247/0';
+
+      const rShare = await tssUtils.demo_createUserRShare({
+        signableHex,
+        derivationPath,
+        prv: userPrv,
+      });
+
+      console.log(JSON.stringify(rShare, undefined, 2));
+    });
+
+    it('should generate g share', async function () {
+      // Copy over from test output above
+      const userSignShare = '';
+      // Get signature share record from DB
+      const bitgoToUserRShare = '';
+      const gShare = await tssUtils.demo_createUserGShare({
+        prv: userPrv,
+        userSignShare,
+        bitgoToUserRShare,
+        signableHex,
+      });
+
+      console.log(JSON.stringify(gShare, undefined, 2));
+    });
+  });
+
   describe('prebuildTxWithIntent:', async function() {
     it('should build single recipient tx', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
