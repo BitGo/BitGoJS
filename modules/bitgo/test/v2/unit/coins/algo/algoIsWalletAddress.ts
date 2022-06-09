@@ -1,5 +1,6 @@
 import { TestBitGo } from '@bitgo/sdk-test';
 import { VerifyAlgoAddressOptions } from '../../../../../src/v2/coins/algo';
+import { Talgo } from '../../../../../src/v2/coins/talgo';
 import { AssertionError } from 'assert';
 const should = require('should');
 
@@ -10,6 +11,7 @@ describe('Algo class', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('talgo', Talgo.createInstance);
     basecoin = bitgo.coin('talgo');
   });
 

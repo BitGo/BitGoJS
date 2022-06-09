@@ -20,6 +20,7 @@ import {
   KeyShare,
   Ed25519BIP32,
 } from '@bitgo/sdk-core';
+import { Tsol } from '../../../../src/v2/coins/tsol';
 
 describe('TSS Utils:', async function () {
   let sandbox: sinon.SinonSandbox;
@@ -30,6 +31,7 @@ describe('TSS Utils:', async function () {
   let bitgoKeyShare;
   const reqId = new RequestTracer;
   const coinName = 'tsol';
+  const coinConstructor = Tsol.createInstance;
   const validUserSigningMaterial = {
     uShare: {
       i: 1,
@@ -104,6 +106,7 @@ describe('TSS Utils:', async function () {
 
     const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister(coinName, coinConstructor);
 
     const baseCoin = bitgo.coin(coinName);
 

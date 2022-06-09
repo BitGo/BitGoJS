@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { StellarToken } from '../../../../src/v2/coins/stellarToken';
 
 describe('Stellar Token:', function () {
   let bitgo;
@@ -10,6 +11,7 @@ describe('Stellar Token:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.registerToken('xlm', StellarToken.createTokenConstructor);
     stellarTokenCoin = bitgo.coin(tokenName);
   });
 

@@ -1,5 +1,5 @@
 import { TestBitGo } from '@bitgo/sdk-test';
-import { AvaxC, TavaxC } from '../../../../src/v2/coins';
+import { AvaxC, TavaxC, Teth } from '../../../../src/v2/coins';
 import { getBuilder, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import * as secp256k1 from 'secp256k1';
 import * as bip32 from 'bip32';
@@ -36,6 +36,9 @@ describe('Avalanche C-Chain', function () {
     bitgo = new TestBitGo({ env: 'test' });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
+    bitgo.safeRegister('avaxc', AvaxC.createInstance);
+    bitgo.safeRegister('tavaxc', TavaxC.createInstance);
+    bitgo.safeRegister('teth', Teth.createInstance);
   });
 
   beforeEach(() => {

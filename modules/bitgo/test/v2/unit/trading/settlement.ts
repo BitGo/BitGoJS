@@ -14,6 +14,7 @@ import {
   TradeStatus,
   Wallet,
 } from '@bitgo/sdk-core';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('Settlements', function () {
   const microservicesUri = common.Environments['mock'].uri;
@@ -26,6 +27,7 @@ describe('Settlements', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 

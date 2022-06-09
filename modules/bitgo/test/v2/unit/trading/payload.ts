@@ -11,6 +11,7 @@ import fixtures from '../../fixtures/trading/payload';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { common, Enterprise, getAddressP2PKH, Wallet } from '@bitgo/sdk-core';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('Trade Payloads', function () {
   const microservicesUri = common.Environments['mock'].uri;
@@ -23,6 +24,7 @@ describe('Trade Payloads', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 

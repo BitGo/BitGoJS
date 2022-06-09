@@ -20,6 +20,7 @@ import * as should from 'should';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Tsol } from '../../../src/v2/coins/tsol';
 
 describe('test tss helper functions', function () {
   let mpc: Eddsa;
@@ -254,6 +255,7 @@ describe('test tss helper functions', function () {
   describe('tss signing helper function', async function() {
     const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tsol', Tsol.createInstance);
 
     let wallet: Wallet;
     const path = 'm/0';

@@ -28,6 +28,8 @@ describe('STX:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('stx', Stx.createInstance);
+    bitgo.safeRegister('Tstx', Tstx.createInstance);
     basecoin = bitgo.coin('tstx');
   });
 

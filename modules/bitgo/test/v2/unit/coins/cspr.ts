@@ -18,6 +18,8 @@ describe('Casper', function () {
       env: 'mock',
     });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('cspr', Cspr.createInstance);
+    bitgo.safeRegister('tcspr', Tcspr.createInstance);
     basecoin = bitgo.coin(coinName);
   });
 

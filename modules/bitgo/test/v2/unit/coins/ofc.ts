@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('OFC:', function () {
   let bitgo;
@@ -9,6 +10,7 @@ describe('OFC:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     ofcCoin = bitgo.coin('ofc');
   });
 

@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Tsusd } from '../../../../src/v2/coins/tsusd';
 
 describe('TSUSD:', function () {
   let bitgo;
@@ -9,6 +10,7 @@ describe('TSUSD:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tsusd', Tsusd.createInstance);
     susdCoin = bitgo.coin('tsusd');
   });
 

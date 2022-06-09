@@ -5,6 +5,7 @@ import fixtures from '../../fixtures/trading/tradingPartner';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { Enterprise, Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide, Wallet } from '@bitgo/sdk-core';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('Trading Partners', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -16,6 +17,7 @@ describe('Trading Partners', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 

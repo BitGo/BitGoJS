@@ -5,11 +5,13 @@ import * as openpgp from 'openpgp';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
+import { Eth2 } from '../../../../src/v2/coins/eth2';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {
   const bitgo = new TestBitGo({ env: 'mock' });
   bitgo.initializeTestVars();
+  bitgo.safeRegister('eth2', Eth2.createInstance);
   const eth2 = bitgo.coin('eth2');
   let bgUrl: string;
   let blsUtils: BlsUtils;

@@ -6,6 +6,7 @@ import * as nock from 'nock';
 import { common, Enterprise } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Tbtc } from '../../../src/v2/coins/tbtc';
 
 describe('Enterprise:', function () {
   let bitgo;
@@ -16,6 +17,7 @@ describe('Enterprise:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tbtc', Tbtc.createInstance);
     baseCoin = bitgo.coin('tbtc');
     enterprise = new Enterprise(bitgo, baseCoin, { id: '593f1ece99d37c23080a557283edcc89', name: 'Test Enterprise' });
     bgUrl = common.Environments[bitgo.getEnv()].uri;

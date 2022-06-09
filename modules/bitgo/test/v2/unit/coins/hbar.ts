@@ -2,7 +2,8 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
-import { Hbar } from '../../../../src/v2/coins/';
+import { Hbar } from '../../../../src/v2/coins/hbar';
+import { Thbar } from '../../../../src/v2/coins/thbar';
 import * as should from 'should';
 
 describe('Hedera Hashgraph:', function () {
@@ -12,6 +13,8 @@ describe('Hedera Hashgraph:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('hbar', Hbar.createInstance);
+    bitgo.safeRegister('thbar', Thbar.createInstance);
     basecoin = bitgo.coin('thbar');
   });
 

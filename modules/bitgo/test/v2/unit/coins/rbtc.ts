@@ -7,6 +7,8 @@ describe('RSK Smart Bitcoin', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('rbtc', Rbtc.createInstance);
+    bitgo.safeRegister('trbtc', Trbtc.createInstance);
   });
 
   it('should instantiate the coin', function () {

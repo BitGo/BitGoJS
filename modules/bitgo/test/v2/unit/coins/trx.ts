@@ -1,4 +1,4 @@
-import { Trx } from '../../../../src/v2/coins/';
+import { Trx, Ttrx } from '../../../../src/v2/coins/';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
 import * as _ from 'lodash';
@@ -11,6 +11,8 @@ describe('TRON:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('trx', Trx.createInstance);
+    bitgo.safeRegister('ttrx', Ttrx.createInstance);
     basecoin = bitgo.coin('ttrx');
   });
 

@@ -6,6 +6,7 @@ import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixt
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
 import { Near } from '../../../../src/v2/coins/near';
+import { TNear } from '../../../../src/v2/coins/tnear';
 
 describe('NEAR:', function () {
   let bitgo;
@@ -31,6 +32,8 @@ describe('NEAR:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('near', Near.createInstance);
+    bitgo.safeRegister('tnear', TNear.createInstance);
     basecoin = bitgo.coin('tnear');
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);

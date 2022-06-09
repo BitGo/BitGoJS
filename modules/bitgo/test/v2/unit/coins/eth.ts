@@ -10,6 +10,7 @@ import {
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError,
 } from '../../../../src/errors';
+import { Teth } from '../../../../src/v2/coins/teth';
 
 nock.enableNetConnect();
 
@@ -38,6 +39,7 @@ describe('ETH:', function () {
     bitgo = new TestBitGo({ env: 'test' });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teth', Teth.createInstance);
   });
 
   after(function () {

@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Txrp } from '@bitgo/sdk-coin-xrp';
 
 const ripple = require('../../../../../sdk-coin-xrp/src/ripple');
 
@@ -14,6 +15,7 @@ describe('XRP:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('txrp', Txrp.createInstance);
     basecoin = bitgo.coin('txrp');
   });
 

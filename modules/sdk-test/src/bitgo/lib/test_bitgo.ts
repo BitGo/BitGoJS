@@ -3,6 +3,11 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
+import * as _ from 'lodash';
+import * as bip32 from 'bip32';
+import * as config from './config';
+import * as utxolib from '@bitgo/utxo-lib';
+import shamir = require('secrets.js-grempe');
 import { BitGoAPI } from '@bitgo/sdk-api';
 const BigNumber = require('bignumber.js');
 
@@ -10,7 +15,7 @@ import 'should';
 import 'should-http';
 
 import nock from 'nock';
-import { common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
+import { common, getSharedSecret, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
 nock.enableNetConnect();
 
 const BitGo: any = BitGoAPI;
@@ -57,6 +62,270 @@ BitGo.TEST_REFRESHTOKEN = '8519fcc7787d9d6971ed89a757e3309a72ddedc8';
 BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbce56db7f135';
 
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
+
+BitGo.prototype.safeRegister = function (coinName, coinConstructor) {
+  try {
+    this.register(coinName, coinConstructor);
+  } catch (_) {}
+};
+
+BitGo.prototype.registerToken = function (tokenFamily, createTokenConstructor) {
+  let tokens;
+
+  switch (tokenFamily) {
+    case 'eth':
+      tokens = [...config.tokens.bitcoin.eth.tokens, ...config.tokens.testnet.eth.tokens];
+      break;
+    case 'xlm':
+      tokens = [...config.tokens.bitcoin.xlm.tokens, ...config.tokens.testnet.xlm.tokens];
+      break;
+    case 'ofc':
+      tokens = [...config.tokens.bitcoin.ofc.tokens, ...config.tokens.testnet.ofc.tokens];
+      break;
+    case 'celo':
+      tokens = [...config.tokens.bitcoin.celo.tokens, ...config.tokens.testnet.celo.tokens];
+      break;
+    case 'eos':
+      tokens = [...config.tokens.bitcoin.eos.tokens, ...config.tokens.testnet.eos.tokens];
+      break;
+    case 'algo':
+      tokens = [...config.tokens.bitcoin.algo.tokens, ...config.tokens.testnet.algo.tokens];
+      break;
+    case 'avaxc':
+      tokens = [...config.tokens.bitcoin.avaxc.tokens, ...config.tokens.testnet.avaxc.tokens];
+      break;
+    default:
+      tokens = [];
+  }
+
+  for (const token of tokens) {
+    const tokenConstructor = createTokenConstructor(token);
+    this.safeRegister(token.type, tokenConstructor);
+    this.safeRegister(token.tokenContractAddress, tokenConstructor);
+  }
+};
+
+BitGo.prototype.reconstituteSecret = function (reconstituteSecretOptions) {
+  const { shards, passwords } = reconstituteSecretOptions;
+
+  if (!Array.isArray(shards)) {
+    throw new Error('shards must be an array');
+  }
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+
+  if (shards.length !== passwords.length) {
+    throw new Error('shards and passwords arrays must have same length');
+  }
+
+  const secrets = _.zipWith(shards, passwords, (shard, password) => {
+    return this.decrypt({ input: shard, password });
+  });
+  const seed: string = shamir.combine(secrets);
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  return {
+    xpub: node.neutered().toBase58() as string,
+    xprv: node.toBase58() as string,
+    seed,
+  };
+};
+
+BitGo.prototype.verifyShards = function (verifyShardsOptions) {
+  const { shards, passwords, m, xpub } = verifyShardsOptions;
+
+  const generateCombinations = (array: string[], m: number, entryIndices: number[] = []): string[][] => {
+    let combinations: string[][] = [];
+
+    if (entryIndices.length === m) {
+      const currentCombination = _.at(array, entryIndices);
+      return [currentCombination];
+    }
+
+    // The highest index
+    let entryIndex = _.last(entryIndices);
+    // If there are currently no indices, assume -1
+    if (_.isUndefined(entryIndex)) {
+      entryIndex = -1;
+    }
+    for (let i = entryIndex + 1; i < array.length; i++) {
+      // append the current index to the trailing indices
+      const currentEntryIndices = [...entryIndices, i];
+      const newCombinations = generateCombinations(array, m, currentEntryIndices);
+      combinations = [...combinations, ...newCombinations];
+    }
+
+    return combinations;
+  };
+
+  if (!Array.isArray(shards)) {
+    throw new Error('shards must be an array');
+  }
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+
+  if (shards.length !== passwords.length) {
+    throw new Error('shards and passwords arrays must have same length');
+  }
+
+  const secrets = _.zipWith(shards, passwords, (shard, password) => {
+    return this.decrypt({ input: shard, password });
+  });
+  const secretCombinations = generateCombinations(secrets, m);
+  const seeds = secretCombinations.map((currentCombination) => {
+    return shamir.combine(currentCombination);
+  });
+  const uniqueSeeds = _.uniq(seeds);
+  if (uniqueSeeds.length !== 1) {
+    return false;
+  }
+  const seed = _.first(uniqueSeeds);
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  const restoredXpub = node.neutered().toBase58();
+
+  if (!_.isUndefined(xpub)) {
+    if (!_.isString(xpub)) {
+      throw new Error('xpub must be a string');
+    }
+    if (restoredXpub !== xpub) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+BitGo.prototype.keychains = function () {
+  return {
+    updatePassword: function (params) {
+      return {
+        keychains: {},
+        version: 'test-version',
+      };
+    },
+  };
+};
+
+BitGo.prototype.token = async function (tokenName) {
+  await this.fetchConstants();
+  return this.coin(tokenName);
+};
+
+BitGo.prototype.verifyAddress = function (params) {
+  common.validateParams(params, ['address'], []);
+
+  if (!_.isString(params.address)) {
+    throw new Error('missing required string address');
+  }
+
+  const networkName = common.Environments[this.getEnv()].network;
+  const network = utxolib.networks[networkName];
+
+  let address;
+  try {
+    address = utxolib.address.fromBase58Check(params.address, network);
+  } catch (e) {
+    return false;
+  }
+
+  return address.version === network.pubKeyHash || address.version === network.scriptHash;
+};
+
+BitGo.prototype.splitSecret = function (splitSecretOptions) {
+  const { seed, passwords, m } = splitSecretOptions;
+
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+  if (!_.isInteger(m) || m < 2) {
+    throw new Error('m must be a positive integer greater than or equal to 2');
+  }
+
+  if (passwords.length < m) {
+    throw new Error('passwords array length cannot be less than m');
+  }
+
+  const n = passwords.length;
+  const secrets: string[] = shamir.share(seed, n, m);
+  const shards = _.zipWith(secrets, passwords, (shard, password) => {
+    return this.encrypt({ input: shard, password });
+  });
+  const node = bip32.fromSeed(Buffer.from(seed, 'hex'));
+  return {
+    xpub: node.neutered().toBase58(),
+    m,
+    n,
+    seedShares: shards,
+  };
+};
+
+BitGo.prototype.getECDHSecret = function (getECDHSecretOptions) {
+  const { otherPubKeyHex, eckey } = getECDHSecretOptions;
+
+  if (!_.isString(otherPubKeyHex)) {
+    throw new Error('otherPubKeyHex string required');
+  }
+  if (!_.isObject(eckey)) {
+    throw new Error('eckey object required');
+  }
+
+  return getSharedSecret(eckey as any, Buffer.from(otherPubKeyHex, 'hex')).toString('hex');
+};
+
+BitGo.prototype.changePassword = async function (changePasswordOptions) {
+  const { oldPassword, newPassword } = changePasswordOptions;
+
+  if (!_.isString(oldPassword)) {
+    throw new Error('expected string oldPassword');
+  }
+
+  if (!_.isString(newPassword)) {
+    throw new Error('expected string newPassword');
+  }
+
+  const user = this.user();
+  if (typeof user !== 'object' || !user.username) {
+    throw new Error('missing required object user');
+  }
+
+  const validation = await this.verifyPassword({ password: oldPassword });
+  if (!validation) {
+    throw new Error('the provided oldPassword is incorrect');
+  }
+
+  // it doesn't matter which coin we choose because the v2 updatePassword functions updates all v2 keychains
+  // we just need to choose a coin that exists in the current environment
+  const coin = common.Environments[this.getEnv()].network === 'bitcoin' ? 'btc' : 'tbtc';
+
+  const updateKeychainPasswordParams = { oldPassword, newPassword };
+  const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
+  const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
+
+  const updatePasswordParams = {
+    keychains: v1KeychainUpdatePWResult.keychains,
+    v2_keychains: v2Keychains,
+    version: v1KeychainUpdatePWResult.version,
+    oldPassword: this.calculateHMAC(user.username, oldPassword),
+    password: this.calculateHMAC(user.username, newPassword),
+  };
+
+  return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
+};
+
+BitGo.prototype.getConstants = function () {
+  // kick off a fresh request for the client constants
+  this.fetchConstants().catch(function (err) {
+    if (err) {
+      // make sure an error does not terminate the entire script
+      console.error('failed to fetch client constants from BitGo');
+      console.trace(err);
+    }
+  });
+
+  // use defaultConstants as the backup for keys that are not set in this._constants
+  return _.merge({}, config.defaultConstants(this.getEnv()), this._constants[this.getEnv()]);
+};
 
 BitGo.prototype.initializeTestVars = function () {
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {

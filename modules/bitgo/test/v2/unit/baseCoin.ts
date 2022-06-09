@@ -9,6 +9,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { Erc20Token } from '../../../src/v2/coins/erc20Token';
 import { StellarToken } from '../../../src/v2/coins/stellarToken';
 import { unsignedTxForExplainTransfer } from '../fixtures/coins/stx';
+import { Tbtc, Teth, Tltc, Tstx, Txlm } from '../../../src/v2/coins';
 
 nock.disableNetConnect();
 
@@ -24,6 +25,13 @@ describe('V2 Base Coin:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tbtc', Tbtc.createInstance);
+    bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('tltc', Tltc.createInstance);
+    bitgo.safeRegister('tstx', Tstx.createInstance);
+    bitgo.safeRegister('txlm', Txlm.createInstance);
+    bitgo.registerToken('eth', Erc20Token.createTokenConstructor);
+    bitgo.registerToken('xlm', StellarToken.createTokenConstructor);
     basecoinEth = bitgo.coin('teth');
     basecoinBtc = bitgo.coin('tbtc');
     basecoinXlm = bitgo.coin('txlm');

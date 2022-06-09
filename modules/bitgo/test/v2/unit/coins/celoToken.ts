@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { CeloToken } from '../../../../src/v2/coins/celoToken';
 
 describe('Celo Token:', function () {
   let bitgo;
@@ -10,6 +11,7 @@ describe('Celo Token:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.registerToken('celo', CeloToken.createTokenConstructor);
     celoTokenCoin = bitgo.coin(tokenName);
   });
 

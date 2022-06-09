@@ -2,7 +2,7 @@
  * @prettier
  */
 import nock from 'nock';
-import { Environments } from '../../core/environments';
+import { Environments } from '@bitgo/sdk-core';
 
 export const nockXrpRecovery = function nockXrpRecovery() {
   nock('https://s.altnet.rippletest.net:51234', { allowUnmocked: false })

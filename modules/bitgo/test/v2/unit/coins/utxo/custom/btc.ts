@@ -1,7 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { Btc } from '../../../../../../src/v2/coins';
+import { Btc, Tbtc } from '../../../../../../src/v2/coins';
 
 describe('BTC:', function () {
   let bitgo;
@@ -9,6 +9,7 @@ describe('BTC:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tbtc', Tbtc.createInstance);
   });
 
   describe('Address validation:', () => {

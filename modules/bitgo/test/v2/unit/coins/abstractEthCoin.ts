@@ -11,6 +11,13 @@ import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
+import { Tcelo, Tetc, Trbtc } from '../../../../src/v2/coins';
+
+const coinConstructors = {
+  tcelo: Tcelo.createInstance,
+  tetc: Tetc.createInstance,
+  trbtc: Trbtc.createInstance,
+};
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {
@@ -138,6 +145,7 @@ describe('ETH-like coins', () => {
       before(function () {
         bitgo = new TestBitGo({ env: 'mock' });
         bitgo.initializeTestVars();
+        bitgo.safeRegister(coinName, coinConstructors[coinName]);
         basecoin = bitgo.coin(coinName);
         coin = coins.get(coinName);
       });

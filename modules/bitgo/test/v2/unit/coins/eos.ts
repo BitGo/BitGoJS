@@ -5,7 +5,7 @@ import * as should from 'should';
 import * as ecc from 'eosjs-ecc';
 import * as bip32 from 'bip32';
 import * as sinon from 'sinon';
-import { Eos } from '../../../../src/v2/coins';
+import { Eos, Teos } from '../../../../src/v2/coins';
 import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -19,6 +19,7 @@ describe('EOS:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teos', Teos.createInstance);
     basecoin = bitgo.coin('teos');
   });
 

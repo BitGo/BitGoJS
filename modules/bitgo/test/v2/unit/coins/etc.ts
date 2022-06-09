@@ -8,6 +8,8 @@ describe('Ethereum Classic', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('etc', Etc.createInstance);
+    bitgo.safeRegister('tetc', Tetc.createInstance);
   });
 
   it('should instantiate the coin', function () {

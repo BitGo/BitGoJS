@@ -1,6 +1,6 @@
 import * as bitgoAccountLib from '@bitgo/account-lib';
 
-import { Xtz } from '../../../../src/v2/coins/';
+import { Txtz, Xtz } from '../../../../src/v2/coins/';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import {
@@ -17,6 +17,8 @@ describe('Tezos:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('txtz', Txtz.createInstance);
+    bitgo.safeRegister('xtz', Xtz.createInstance);
     basecoin = bitgo.coin('txtz');
   });
 

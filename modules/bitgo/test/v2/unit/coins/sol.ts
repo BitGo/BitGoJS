@@ -88,6 +88,8 @@ describe('SOL:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('sol', Sol.createInstance);
+    bitgo.safeRegister('tsol', Tsol.createInstance);
     basecoin = bitgo.coin('tsol');
     keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);
     newTxPrebuild = () => {

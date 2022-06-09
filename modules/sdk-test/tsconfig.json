@@ -12,6 +12,15 @@
   "references": [
     {
       "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../utxo-lib"
     }
   ]
 }

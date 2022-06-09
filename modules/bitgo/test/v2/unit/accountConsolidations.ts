@@ -10,7 +10,13 @@ import * as nock from 'nock';
 import { common, Wallet } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Talgo, Tbtc, Txtz } from '../../../src/v2/coins';
 const algoFixtures = require('../fixtures/coins/algo');
+const coinConstructors = {
+  talgo: Talgo.createInstance,
+  tbtc: Tbtc.createInstance,
+  txtz: Txtz.createInstance,
+};
 
 nock.disableNetConnect();
 
@@ -26,6 +32,8 @@ describe('Account Consolidations:', function () {
       before(function () {
         bitgo = new TestBitGo({ env: 'test' });
         bitgo.initializeTestVars();
+        bitgo.safeRegister(coinName, coinConstructors[coinName]);
+        bitgo.safeRegister('tbtc', coinConstructors['tbtc']);
         basecoin = bitgo.coin(coinName);
 
         const walletData = {

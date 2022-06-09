@@ -8,6 +8,8 @@ describe('Celo Gold', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('celo', Celo.createInstance);
+    bitgo.safeRegister('Tcelo', Tcelo.createInstance);
   });
 
   it('should instantiate the coin', function () {

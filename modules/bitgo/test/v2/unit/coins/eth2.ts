@@ -11,6 +11,8 @@ describe('Ethereum 2.0', function () {
   before(async function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('eth2', Eth2.createInstance);
+    bitgo.safeRegister('teth2', Teth2.createInstance);
     basecoin = bitgo.coin('teth2');
   });
 

@@ -19,6 +19,7 @@ import {
   Type,
   Wallet,
 } from '@bitgo/sdk-core';
+import { Tbtc } from '../../../src/v2/coins';
 
 describe('Pending Approvals:', () => {
   let sandbox: sinon.SinonSandbox;
@@ -67,6 +68,7 @@ describe('Pending Approvals:', () => {
     // create wallet
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister(coin, Tbtc.createInstance);
     basecoin = bitgo.coin(coin);
 
     wallet = new Wallet(bitgo, basecoin, walletData);

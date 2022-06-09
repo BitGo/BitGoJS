@@ -3,6 +3,7 @@ import * as nock from 'nock';
 
 import { Enterprise, Environments, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('Trading Accounts', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -14,6 +15,7 @@ describe('Trading Accounts', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     basecoin = bitgo.coin('ofc');
 
     enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });

@@ -10,6 +10,7 @@ import * as sinon from 'sinon';
 
 import { BlsUtils, common, TssUtils } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Eth2, Tltc, Tsol, OfcToken } from '../../../src/v2/coins';
 
 describe('V2 Keychains', function () {
   let bitgo;
@@ -21,6 +22,10 @@ describe('V2 Keychains', function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
+    bitgo.safeRegister('eth2', Eth2.createInstance);
+    bitgo.safeRegister('tltc', Tltc.createInstance);
+    bitgo.safeRegister('tsol', Tsol.createInstance);
+    bitgo.registerToken('ofc', OfcToken.createTokenConstructor);
     basecoin = bitgo.coin('tltc');
     keychains = basecoin.keychains();
 

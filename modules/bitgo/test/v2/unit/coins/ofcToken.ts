@@ -1,5 +1,6 @@
 import 'should';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { OfcToken } from '../../../../src/v2/coins/ofcToken';
 
 const PRECISION_2 = '100';
 const PRECISION_6 = '1000000';
@@ -14,6 +15,7 @@ describe('OFC:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.registerToken('ofc', OfcToken.createTokenConstructor);
     otestusdCoin = bitgo.coin('ofctusd');
   });
 

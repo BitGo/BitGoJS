@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { AvaxCToken } from '../../../../src/v2/coins/avaxcToken';
 
 describe('Avaxc Token:', function () {
   let bitgo;
@@ -12,6 +13,7 @@ describe('Avaxc Token:', function () {
     before(function () {
       bitgo = new TestBitGo({ env: 'test' });
       bitgo.initializeTestVars();
+      bitgo.registerToken('avaxc', AvaxCToken.createTokenConstructor);
       avaxcTokenCoin = bitgo.coin(tokenName);
     });
 

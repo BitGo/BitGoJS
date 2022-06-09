@@ -14,6 +14,7 @@ import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wall
 import { TestBitGo } from '@bitgo/sdk-test';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
+import { Tbtc, Teth, Txlm, Txrp } from '../../../src/v2/coins';
 
 nock.disableNetConnect();
 
@@ -21,6 +22,9 @@ describe('V2 Wallet:', function () {
   const reqId = new RequestTracer();
   const bitgo = new TestBitGo({ env: 'test' });
   bitgo.initializeTestVars();
+  bitgo.safeRegister('tbtc', Tbtc.createInstance);
+  bitgo.safeRegister('teth', Teth.createInstance);
+
   const basecoin = bitgo.coin('tbtc');
   const walletData = {
     id: '5b34252f1bf349930e34020a00000000',
@@ -192,6 +196,7 @@ describe('V2 Wallet:', function () {
           '5935d59cf660764331bafcade1855fd7',
         ],
       };
+
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
     });
 
@@ -656,6 +661,9 @@ describe('V2 Wallet:', function () {
     const passphrase = '#Bondiola1234';
     const solBitgo = new TestBitGo({ env: 'mock' });
     solBitgo.initializeTestVars();
+    solBitgo.safeRegister('txlm', Txlm.createInstance);
+    solBitgo.safeRegister('txrp', Txrp.createInstance);
+
     const walletData = {
       id: '598f606cd8fc24710d2ebadb1d9459bb',
       coinSpecific: {

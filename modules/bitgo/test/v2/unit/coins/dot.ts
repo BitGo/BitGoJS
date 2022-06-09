@@ -3,6 +3,8 @@ import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
+import { Dot } from '../../../../src/v2/coins/dot';
+import { Tdot } from '../../../../src/v2/coins/tdot';
 
 describe('DOT:', function () {
   let bitgo;
@@ -13,6 +15,8 @@ describe('DOT:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('dot', Dot.createInstance);
+    bitgo.safeRegister('tdot', Tdot.createInstance);
     basecoin = bitgo.coin('tdot');
     prodCoin = bitgo.coin('dot');
   });

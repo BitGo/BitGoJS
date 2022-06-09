@@ -4,6 +4,8 @@ import * as _ from 'lodash';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { Wallet } from '@bitgo/sdk-core';
+import { Teos } from '../../../../src/v2/coins/teos';
+import { EosToken } from '../../../../src/v2/coins/eosToken';
 
 
 describe('EOS Token:', function () {
@@ -15,6 +17,8 @@ describe('EOS Token:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teos', Teos.createInstance);
+    bitgo.registerToken('eos', EosToken.createTokenConstructor);
     eosTokenCoin = bitgo.coin(tokenName);
     baseCoin = bitgo.coin('teos');
   });

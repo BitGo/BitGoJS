@@ -8,6 +8,7 @@ import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as sinon from 'sinon';
+import { Eth2, Tbtc, Teos, Teth } from '../../../src/v2/coins';
 
 describe('V2 Wallets:', function () {
   const bitgo = new TestBitGo({ env: 'mock' });
@@ -21,6 +22,7 @@ describe('V2 Wallets:', function () {
       .reply(200, { ttl: 3600, constants: {} });
 
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tbtc', Tbtc.createInstance);
 
     const basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
@@ -71,6 +73,7 @@ describe('V2 Wallets:', function () {
     it('creates an eos wallet with custom address', async function () {
       const eosBitGo = new TestBitGo({ env: 'mock' });
       eosBitGo.initializeTestVars();
+      eosBitGo.safeRegister('teos', Teos.createInstance);
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';
       nock(bgUrl)
@@ -101,6 +104,7 @@ describe('V2 Wallets:', function () {
     it('creates a wallet with custom gasPrice', async function () {
       const ethBitGo = new TestBitGo({ env: 'mock' });
       ethBitGo.initializeTestVars();
+      ethBitGo.safeRegister('teth', Teth.createInstance);
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
         .post('/api/v2/teth/wallet', function (body) {
@@ -118,6 +122,7 @@ describe('V2 Wallets:', function () {
     it('creates a new wallet with walletVersion', async function () {
       const ethBitGo = new TestBitGo({ env: 'mock' });
       ethBitGo.initializeTestVars();
+      ethBitGo.safeRegister('teth', Teth.createInstance);
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
         .post('/api/v2/teth/wallet', function (body) {
@@ -405,6 +410,7 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Generate BLS-DKG wallet:', function() {
+    bitgo.safeRegister('eth2', Eth2.createInstance);
     const eth2 = bitgo.coin('eth2');
 
     it('should create a new BLS-DKG wallet', async function () {

@@ -9,6 +9,8 @@ import { TestBitGo, recoveryNocks } from '@bitgo/sdk-test';
 
 import moment = require('moment');
 import { krsProviders } from '@bitgo/sdk-core';
+import { Teth, Teos, Ttrx, Txlm, Txrp, Erc20Token } from '../../../src/v2/coins';
+
 nock.disableNetConnect();
 
 describe('Recovery:', function () {
@@ -17,6 +19,12 @@ describe('Recovery:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('teos', Teos.createInstance);
+    bitgo.safeRegister('ttrx', Ttrx.createInstance);
+    bitgo.safeRegister('txlm', Txlm.createInstance);
+    bitgo.safeRegister('txrp', Txrp.createInstance);
+    bitgo.registerToken('eth', Erc20Token.createTokenConstructor);
 
     // pretend that Keyternal accepts recoveries for all coins
     krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'bcha', 'ltc', 'zec', 'dash', 'xlm', 'bsv'];

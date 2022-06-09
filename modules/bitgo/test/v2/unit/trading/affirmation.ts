@@ -4,8 +4,8 @@ import * as nock from 'nock';
 import fixtures from '../../fixtures/trading/affirmation';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
-import { Environments } from '../../../../src';
+import { AffirmationStatus, common, Environments, Enterprise, Wallet } from '@bitgo/sdk-core';
+import { Ofc } from '../../../../src/v2/coins/ofc';
 
 describe('Affirmations', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -20,6 +20,7 @@ describe('Affirmations', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('ofc', Ofc.createInstance);
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 

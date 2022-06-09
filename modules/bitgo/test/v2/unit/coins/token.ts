@@ -2,6 +2,7 @@ import 'should';
 import { BaseCoin } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Erc20Token } from '../../../../src/v2/coins/erc20Token';
 
 describe('Virtual Token:', function () {
   let bitgo;
@@ -9,6 +10,7 @@ describe('Virtual Token:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.registerToken('eth', Erc20Token.createTokenConstructor);
   });
 
   it('should not instantiate coin interface before loading client constants', function () {

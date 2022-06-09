@@ -11,6 +11,8 @@ const fixtures = require('../fixtures/coins/eth');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 
 import { getBuilder, Eth } from '@bitgo/account-lib';
+import { Teth } from '../../../src/v2/coins/teth';
+import { Erc20Token } from '../../../src/v2/coins/erc20Token';
 
 describe('Sign ETH Transaction', async function () {
 
@@ -22,6 +24,8 @@ describe('Sign ETH Transaction', async function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.registerToken('eth', Erc20Token.createTokenConstructor);
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
     recipients = [{
@@ -114,6 +118,7 @@ describe('Ethereum Hop Transactions', function () {
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
+    bitgo.safeRegister('teth', Teth.createInstance);
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject({ keys: ['user', 'backup', 'bitgo'] });
   });
@@ -269,6 +274,7 @@ describe('Add final signature to ETH tx from offline vault', function () {
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
     bitgo = new TestBitGo({ env: 'test' });
+    bitgo.safeRegister('teth', Teth.createInstance);
     coin = bitgo.coin('teth');
   });
 
@@ -302,6 +308,7 @@ describe('Add signature to EIP1559 tx from offline vault', function () {
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
     bitgo = new TestBitGo({ env: 'test' });
+    bitgo.safeRegister('teth', Teth.createInstance);
     coin = bitgo.coin('teth');
   });
 
@@ -323,6 +330,7 @@ describe('prebuildTransaction', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('teth', Teth.createInstance);
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
     gasLimit = 2100000;
@@ -360,6 +368,7 @@ describe('prebuildTransaction', function () {
 describe('final-sign transaction from WRW', function () {
   it('should add a second signature to unsigned sweep for teth', async function () {
     const bitgo = new TestBitGo({ env: 'test' });
+    bitgo.safeRegister('teth', Teth.createInstance);
     const basecoin = bitgo.coin('teth');
     const gasPrice = 200000000000;
     const gasLimit = 500000;

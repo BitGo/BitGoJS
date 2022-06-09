@@ -13,6 +13,7 @@ const rp = require('request-promise');
 import * as _ from 'lodash';
 import * as bip32 from 'bip32';
 import { ECPair } from '@bitgo/utxo-lib';
+import { Tltc } from '../../src/v2/coins/tltc';
 
 nock.disableNetConnect();
 
@@ -429,6 +430,8 @@ describe('BitGo Prototype Methods', function () {
     });
 
     it('should correctly verify a response hmac', async function () {
+      // register tltc
+      bitgo.safeRegister('tltc', Tltc.createInstance);
       const url = bitgo.coin('tltc').url('/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1');
       const requestHeaderData = bitgo.calculateRequestHeaders({ url, token });
       const requestHeaders = {

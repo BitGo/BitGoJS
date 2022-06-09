@@ -1,6 +1,7 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
+import { AlgoToken } from '../../../../src/v2/coins/algoToken';
 
 describe('Algo Unison Token:', function () {
   let bitgo;
@@ -10,6 +11,7 @@ describe('Algo Unison Token:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.registerToken('algo', AlgoToken.createTokenConstructor);
     algoTokenCoin = bitgo.coin(tokenName);
   });
 

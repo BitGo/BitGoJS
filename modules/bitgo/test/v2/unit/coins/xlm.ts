@@ -2,10 +2,9 @@ import * as should from 'should';
 import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
 
-import { Environments } from '../../../../src';
-
-import { Wallet } from '@bitgo/sdk-core';
+import { Wallet, Environments } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { Txlm } from '../../../../src/v2/coins/txlm';
 
 import * as nock from 'nock';
 nock.enableNetConnect();
@@ -18,6 +17,7 @@ describe('XLM:', function () {
   before(function () {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('txlm', Txlm.createInstance);
     basecoin = bitgo.coin('txlm');
     uri = Environments[bitgo.getEnv()].uri;
   });
