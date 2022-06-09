@@ -13,7 +13,7 @@ import {
   getInternalChainCode,
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import { getSeed } from '../../../../../lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';

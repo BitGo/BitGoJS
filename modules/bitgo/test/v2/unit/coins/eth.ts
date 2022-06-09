@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 import * as nock from 'nock';
 import * as bip32 from 'bip32';

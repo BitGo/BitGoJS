@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Rbtc, Trbtc } from '../../../../src/v2/coins';
 
 describe('RSK Smart Bitcoin', function () {

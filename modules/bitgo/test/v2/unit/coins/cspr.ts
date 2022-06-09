@@ -1,5 +1,5 @@
 import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
 import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';

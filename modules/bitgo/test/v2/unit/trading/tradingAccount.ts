@@ -2,7 +2,7 @@ import * as should from 'should';
 import * as nock from 'nock';
 
 import { Enterprise, Environments, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 describe('Trading Accounts', function () {
   const microservicesUri = Environments['mock'].uri;

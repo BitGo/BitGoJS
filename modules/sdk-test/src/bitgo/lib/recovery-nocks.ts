@@ -1,10 +1,10 @@
 /**
  * @prettier
  */
-import * as nock from 'nock';
-import { Environments } from '@bitgo/sdk-core';
+import nock from 'nock';
+import { Environments } from '../../core/environments';
 
-module.exports.nockXrpRecovery = function nockXrpRecovery() {
+export const nockXrpRecovery = function nockXrpRecovery() {
   nock('https://s.altnet.rippletest.net:51234', { allowUnmocked: false })
     .post('/', {
       method: 'account_info',
@@ -379,7 +379,7 @@ const nockEthData: any[] = [
   },
 ];
 
-module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
+export const nockEthRecovery = function (bitgo, nockData = nockEthData) {
   let apiKey;
   if (Environments[bitgo.getEnv()].etherscanApiToken) {
     apiKey = Environments[bitgo.getEnv()].etherscanApiToken;
@@ -393,7 +393,7 @@ module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
   });
 };
 
-module.exports.nockEtherscanRateLimitError = function () {
+export const nockEtherscanRateLimitError = function () {
   const response = {
     status: '0',
     message: 'NOTOK',
@@ -409,7 +409,7 @@ module.exports.nockEtherscanRateLimitError = function () {
   nock('https://api-goerli.etherscan.io').get('/api').query(params).reply(200, response);
 };
 
-module.exports.nockXlmRecovery = function () {
+export const nockXlmRecovery = function () {
   nock('https://horizon-testnet.stellar.org')
     .get('/accounts/GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL')
     .reply(404, {
@@ -532,7 +532,7 @@ module.exports.nockXlmRecovery = function () {
     });
 };
 
-module.exports.nockTronRecovery = function () {
+export const nockTronRecovery = function () {
   // full node - sendTrx from tronweb, build transaction call
   nock('http://47.252.81.135:8090')
     .post('/wallet/createtransaction')
@@ -600,7 +600,7 @@ module.exports.nockTronRecovery = function () {
     });
 };
 
-module.exports.nockEosRecovery = function () {
+export const nockEosRecovery = function () {
   nock('https://jungle3.cryptolions.io:443').post('*').reply(502);
   nock('https://jungle3.eosdac.io:443')
     .post('/v1/chain/get_info')

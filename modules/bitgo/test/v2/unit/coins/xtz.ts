@@ -2,7 +2,7 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import { Xtz } from '../../../../src/v2/coins/';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import {
   dataToSign,
   fullySignedHex, fullySignedTransactionWithTwoTransfersHex,

@@ -6,7 +6,7 @@ import 'should';
 import * as nock from 'nock';
 import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import * as sinon from 'sinon';
 
 describe('V2 Wallets:', function () {

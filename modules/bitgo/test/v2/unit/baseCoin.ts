@@ -5,7 +5,7 @@
 import 'should';
 import * as nock from 'nock';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Erc20Token } from '../../../src/v2/coins/erc20Token';
 import { StellarToken } from '../../../src/v2/coins/stellarToken';
 import { unsignedTxForExplainTransfer } from '../fixtures/coins/stx';

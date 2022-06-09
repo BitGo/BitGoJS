@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import * as testData from '../../fixtures/coins/stx';
 import * as accountLib from '@bitgo/account-lib';
 import * as should from 'should';

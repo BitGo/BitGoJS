@@ -1,7 +1,7 @@
 import 'should';
 
 import * as nock from 'nock';
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 import { SeedValidator } from '../../../src/v2/internal/seedValidator';
 import { CoinFamily } from '@bitgo/statics';

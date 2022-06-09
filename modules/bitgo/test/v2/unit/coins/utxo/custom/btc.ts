@@ -1,6 +1,6 @@
 import 'should';
 
-import { TestBitGo } from '../../../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Btc } from '../../../../../../src/v2/coins';
 
 describe('BTC:', function () {

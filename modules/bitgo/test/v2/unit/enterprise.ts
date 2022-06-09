@@ -5,7 +5,7 @@
 import * as nock from 'nock';
 import { common, Enterprise } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 describe('Enterprise:', function () {
   let bitgo;

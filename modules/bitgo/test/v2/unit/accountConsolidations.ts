@@ -5,12 +5,11 @@
 import * as sinon from 'sinon';
 require('should-sinon');
 
-import '../lib/asserts';
 import * as nock from 'nock';
 
 import { common, Wallet } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 const algoFixtures = require('../fixtures/coins/algo');
 
 nock.disableNetConnect();

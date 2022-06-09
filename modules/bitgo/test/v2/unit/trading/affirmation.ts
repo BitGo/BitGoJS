@@ -3,7 +3,7 @@ import * as nock from 'nock';
 
 import fixtures from '../../fixtures/trading/affirmation';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
 import { Environments } from '../../../../src';
 

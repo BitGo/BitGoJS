@@ -5,7 +5,7 @@ import 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 import {
   BaseCoin,

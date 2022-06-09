@@ -5,7 +5,7 @@
 //
 
 const Wallet = require('../../src/wallet');
-import { TestBitGo } from '../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import * as _ from 'lodash';
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';

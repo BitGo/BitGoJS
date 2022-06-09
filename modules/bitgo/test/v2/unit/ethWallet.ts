@@ -5,7 +5,7 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import { common, Util } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';

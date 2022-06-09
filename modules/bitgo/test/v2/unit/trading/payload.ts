@@ -9,7 +9,7 @@ import * as bitcoinMessage from 'bitcoinjs-message';
 
 import fixtures from '../../fixtures/trading/payload';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { common, Enterprise, getAddressP2PKH, Wallet } from '@bitgo/sdk-core';
 
 describe('Trade Payloads', function () {

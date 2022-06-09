@@ -8,7 +8,7 @@ import 'should';
 
 import { common } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 describe('Keychains', function v2keychains() {
   describe('Update Password', function updatePassword() {

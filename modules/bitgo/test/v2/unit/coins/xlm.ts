@@ -5,7 +5,7 @@ import * as stellar from 'stellar-sdk';
 import { Environments } from '../../../../src';
 
 import { Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 import * as nock from 'nock';
 nock.enableNetConnect();

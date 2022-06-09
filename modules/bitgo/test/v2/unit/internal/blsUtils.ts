@@ -3,7 +3,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
 

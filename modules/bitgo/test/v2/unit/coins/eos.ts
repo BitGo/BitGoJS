@@ -8,7 +8,7 @@ import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
 import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Wallet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 

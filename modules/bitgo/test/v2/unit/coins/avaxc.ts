@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { AvaxC, TavaxC } from '../../../../src/v2/coins';
 import { getBuilder, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
 import * as secp256k1 from 'secp256k1';

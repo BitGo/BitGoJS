@@ -3,7 +3,7 @@ import * as should from 'should';
 
 import fixtures from '../../fixtures/trading/tradingPartner';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Enterprise, Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide, Wallet } from '@bitgo/sdk-core';
 
 describe('Trading Partners', function () {

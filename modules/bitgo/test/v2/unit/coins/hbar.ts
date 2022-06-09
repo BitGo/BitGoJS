@@ -1,5 +1,5 @@
 import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
 import { Hbar } from '../../../../src/v2/coins/';

@@ -5,7 +5,7 @@
 import * as _ from 'lodash';
 import * as should from 'should';
 import * as bip32 from 'bip32';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';

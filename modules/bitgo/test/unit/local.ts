@@ -6,7 +6,7 @@
 
 import 'should';
 import * as BitGoJS from '../../src';
-import { TestBitGo } from '../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 describe('Constructor', function () {
   it('arguments', function () {

@@ -19,7 +19,7 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as _ from 'lodash';
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 describe('test tss helper functions', function () {
   let mpc: Eddsa;

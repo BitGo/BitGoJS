@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Tcelo } from '../../../../src/v2/coins/tcelo';
 import { Celo } from '../../../../src/v2/coins/celo';
 

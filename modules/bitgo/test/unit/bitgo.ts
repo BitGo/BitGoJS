@@ -7,7 +7,7 @@ import * as should from 'should';
 import * as nock from 'nock';
 
 import * as BitGoJS from '../../src/index';
-import { TestBitGo } from '../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { common } from '@bitgo/sdk-core';
 const rp = require('request-promise');
 import * as _ from 'lodash';

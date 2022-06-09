@@ -5,8 +5,7 @@
 import * as should from 'should';
 import * as nock from 'nock';
 
-import { TestBitGo } from '../../lib/test_bitgo';
-const recoveryNocks = require('../lib/recovery-nocks');
+import { TestBitGo, recoveryNocks } from '@bitgo/sdk-test';
 
 import moment = require('moment');
 import { krsProviders } from '@bitgo/sdk-core';

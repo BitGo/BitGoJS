@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 
 import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
 

@@ -1,5 +1,5 @@
 import 'should';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 
 const PRECISION_2 = '100';
 const PRECISION_6 = '1000000';

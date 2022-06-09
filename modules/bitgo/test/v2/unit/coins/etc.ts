@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Etc } from '../../../../src/v2/coins/etc';
 import { Tetc } from '../../../../src/v2/coins/tetc';
 

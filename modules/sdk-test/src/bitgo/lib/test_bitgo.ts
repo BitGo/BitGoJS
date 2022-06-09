@@ -4,17 +4,16 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { BitGo as BG } from '../../src/bitgo';
 const BigNumber = require('bignumber.js');
 
 import 'should';
 import 'should-http';
 
-import * as nock from 'nock';
+import nock from 'nock';
 import { common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
 nock.enableNetConnect();
 
-const BitGo: any = BG;
+const BitGo: any = BitGoAPI;
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -60,15 +59,16 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
 BitGo.prototype.initializeTestVars = function () {
-
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
     BitGo.TEST_SHARED_KEY_USERID = '54d418de4ea11d050b0006186d08ea5c';
     BitGo.TEST_THIRD_USERID = '57056ad593eae8ca0c51e3cee62022cb';
-    BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcF31yYvTH5DbmabEMXVvx1o1p73sZmvEDHM8bhUiZzNQA4gfyDtKarpGz7NPH6Wub8YCqXnUbP8ZMA3Ad8LfwHsBWhWEeJqu';
+    BitGo.TEST_USER_ECDH_XPUB =
+      'xpub661MyMwAqRbcF31yYvTH5DbmabEMXVvx1o1p73sZmvEDHM8bhUiZzNQA4gfyDtKarpGz7NPH6Wub8YCqXnUbP8ZMA3Ad8LfwHsBWhWEeJqu';
 
     BitGo.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
-    BitGo.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFgsE3Zg66E8prHy7aohb9wSiZRN9vQA4fp6n1dpXDyRLPT4YnhBTPwkhtDGqR3ynB4tJUenw9WTPhRWwZ3cpqkQrGzXTcFM';
+    BitGo.TEST_WALLET1_XPUB =
+      'xpub661MyMwAqRbcFgsE3Zg66E8prHy7aohb9wSiZRN9vQA4fp6n1dpXDyRLPT4YnhBTPwkhtDGqR3ynB4tJUenw9WTPhRWwZ3cpqkQrGzXTcFM';
     BitGo.TEST_WALLET1_ADDRESS = '2N1vk5Qm6vGPB8SAZUjEQ8Gac6v71EmxgaG';
     BitGo.TEST_WALLET1_ADDRESS2 = '2MxCHzAYyK9RgLGUWymw9Jhhtt19VqUtCej';
     BitGo.TEST_WALLET2_PASSCODE = 'j0XVTJiTgsMCogKRoHIDzGbz';
@@ -88,20 +88,22 @@ BitGo.prototype.initializeTestVars = function () {
     BitGo.V2 = {};
     BitGo.V2.TEST_USERID = '585caccd5573b0a8416a745ed58d8cb4';
     BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
-    BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcGicVM5K5UnocWoFt3Yh1RZKzSEHPPARhyMf9w7DVqM3PgBgiVW5NHRp8UteqhMoQb17rCQsLbmGXuPx43MKskyB31R97p3G';
+    BitGo.V2.TEST_WALLET1_XPUB =
+      'xpub661MyMwAqRbcGicVM5K5UnocWoFt3Yh1RZKzSEHPPARhyMf9w7DVqM3PgBgiVW5NHRp8UteqhMoQb17rCQsLbmGXuPx43MKskyB31R97p3G';
     BitGo.V2.TEST_WALLET1_ID = '585cc5335573b0a8416aadb1fce63ce3';
     BitGo.V2.OFC_TEST_WALLET_ID = '5cbe3223311315fc7c96ce087f32dbdd';
 
     BitGo.V2.TEST_RECOVERY_PASSCODE = 'oPXkPN5Q0c8i44i0';
-
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
     BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';
     BitGo.TEST_THIRD_USERID = '57049b9a194a115a06da21fb9731fb71';
-    BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcFkiN8QJXCytQqPyDPW1cfnuG6RGCVFnVyiSQL1b6ZS2iiVJHH7UZYwLbN2ayWsaRVhnBFKYvLz956PTRH2SuuurpEcNGLKv';
+    BitGo.TEST_USER_ECDH_XPUB =
+      'xpub661MyMwAqRbcFkiN8QJXCytQqPyDPW1cfnuG6RGCVFnVyiSQL1b6ZS2iiVJHH7UZYwLbN2ayWsaRVhnBFKYvLz956PTRH2SuuurpEcNGLKv';
 
     BitGo.TEST_WALLET1_PASSCODE = 'test wallet #1 security';
-    BitGo.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f';
+    BitGo.TEST_WALLET1_XPUB =
+      'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f';
     BitGo.TEST_WALLET1_ADDRESS = '2MtepahRn4qTihhTvUuGTYUyUBkQZzaVBG3';
     BitGo.TEST_WALLET1_ADDRESS2 = '2MxKo9RHNZHoPwmvnb5k8ytDJ6Shd1DHnsV';
     BitGo.TEST_WALLET2_PASSCODE = 'test wallet #2 security';
@@ -136,25 +138,29 @@ BitGo.prototype.initializeTestVars = function () {
     BitGo.V2.TEST_USERID = '543c11ed356d00cb7600000b98794503';
 
     BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
-    BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFWFN9gpFpnSVy6bF3kMZAkSXtu3ZYKPgq2KUVo1xEMnMXDcavwDJ4zH57iUHVfEGVK7dEgo7ufKRzTkeWYSBDuye5g7w4pe';
+    BitGo.V2.TEST_WALLET1_XPUB =
+      'xpub661MyMwAqRbcFWFN9gpFpnSVy6bF3kMZAkSXtu3ZYKPgq2KUVo1xEMnMXDcavwDJ4zH57iUHVfEGVK7dEgo7ufKRzTkeWYSBDuye5g7w4pe';
     BitGo.V2.TEST_WALLET1_ID = '593f1ece99d37c23080a557283edcc89';
     BitGo.V2.TEST_WALLET1_ADDRESS = '2N3qLG4VMpkoRZN4Ft9PC5sgpGKvm7AV32A';
 
     // this wallet will do consolidate and fannout together, so the number of unspents can be known
     BitGo.V2.TEST_WALLET2_UNSPENTS_LABEL = 'Test Wallet 2 Unspents';
     BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE = 'NXh65HxeZpzFqzW2n868';
-    BitGo.V2.TEST_WALLET2_UNSPENTS_XPUB = 'xpub661MyMwAqRbcFeeMZtyLiqECMeek7QD6X9NLX2ydBN2DutiBQqLw8nsMnnL9hk3CSWGXZgW1PLV96opu8NzuXwJjK57PuNBqe85jSN6Abm6';
+    BitGo.V2.TEST_WALLET2_UNSPENTS_XPUB =
+      'xpub661MyMwAqRbcFeeMZtyLiqECMeek7QD6X9NLX2ydBN2DutiBQqLw8nsMnnL9hk3CSWGXZgW1PLV96opu8NzuXwJjK57PuNBqe85jSN6Abm6';
     BitGo.V2.TEST_WALLET2_UNSPENTS_ID = '5a1341e7c8421dc90710673b3166bbd5';
 
     BitGo.V2.TEST_SWEEP1_LABEL = 'Sweep 1';
     BitGo.V2.TEST_SWEEP1_PASSCODE = 'T8n6S4AzktsDwCqvaE4692895YkjRT';
-    BitGo.V2.TEST_SWEEP1_XPUB = 'xpub661MyMwAqRbcFWJ1ZxzvmKm4QCkrgYQLbTGzLgxzKFcGkyQfCjugENuamFmF3WwLHRvP8zWQi16kU8SuTqyMYFhvJcg1U1w8AT1AHKa25sY';
+    BitGo.V2.TEST_SWEEP1_XPUB =
+      'xpub661MyMwAqRbcFWJ1ZxzvmKm4QCkrgYQLbTGzLgxzKFcGkyQfCjugENuamFmF3WwLHRvP8zWQi16kU8SuTqyMYFhvJcg1U1w8AT1AHKa25sY';
     BitGo.V2.TEST_SWEEP1_ID = '5a836a7e7cb43ca807371f123ab3a907';
     BitGo.V2.TEST_SWEEP1_ADDRESS = '2N1rGQUpCRV797cSbT3hr34zayyNqS263g9';
 
     BitGo.V2.TEST_SWEEP2_LABEL = 'Sweep 2';
     BitGo.V2.TEST_SWEEP2_PASSCODE = 'bMY8jrF06pV2dxzRK42dGZqrmmURS7';
-    BitGo.V2.TEST_SWEEP2_XPUB = 'xpub661MyMwAqRbcFhBDq1dbwu51qrNQra923FnujGPxCBaHd2geU6AYZhviMo8jWj3cvwM7Aj2T79CtKqErP37K1vwYSAYgMmFaHiVdJgHJ1nk';
+    BitGo.V2.TEST_SWEEP2_XPUB =
+      'xpub661MyMwAqRbcFhBDq1dbwu51qrNQra923FnujGPxCBaHd2geU6AYZhviMo8jWj3cvwM7Aj2T79CtKqErP37K1vwYSAYgMmFaHiVdJgHJ1nk';
     BitGo.V2.TEST_SWEEP2_ID = '5a836b5e1c0d699a07d42029ccd65836';
     BitGo.V2.TEST_SWEEP2_ADDRESS = '2NGV9ChhafuXNK9iFW6L6CKru5bFkMxZjNX';
 
@@ -191,7 +197,6 @@ BitGo.prototype.initializeTestVars = function () {
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
   BitGo.TEST_FEE_SINGLE_KEY_ADDRESS = 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7';
-
 };
 
 //
@@ -213,19 +218,31 @@ BitGo.prototype.authenticateTestUser = async function (otp) {
 };
 
 BitGo.prototype.authenticateSharingTestUser = async function (otp) {
-  const response = await this.authenticate({ username: BitGo.TEST_SHARED_KEY_USER, password: BitGo.TEST_SHARED_KEY_PASSWORD, otp: otp });
+  const response = await this.authenticate({
+    username: BitGo.TEST_SHARED_KEY_USER,
+    password: BitGo.TEST_SHARED_KEY_PASSWORD,
+    otp: otp,
+  });
   response.should.have.property('access_token');
   response.should.have.property('user');
 };
 
 BitGo.prototype.authenticateKnownBalanceTestUser = async function (otp) {
-  const response = await this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+  const response = await this.authenticate({
+    username: BitGo.TEST_KNOWN_BALANCE_USER,
+    password: BitGo.TEST_KNOWN_BALANCE_PASSWORD,
+    otp: otp,
+  });
   response.should.have.property('access_token');
   response.should.have.property('user');
 };
 
 BitGo.prototype.authenticateEnterpriseCreatorTestUser = async function (otp) {
-  const response = await this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp });
+  const response = await this.authenticate({
+    username: BitGo.TEST_ENTERPRISE_CREATION_USER,
+    password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD,
+    otp: otp,
+  });
   response.should.have.property('access_token');
   response.should.have.property('user');
 };
@@ -256,7 +273,11 @@ BitGo.prototype.authenticateChangePWTestUser = async function (otp) {
 };
 
 BitGo.prototype.authenticateOfcTestUser = async function (otp) {
-  const response = await this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp });
+  const response = await this.authenticate({
+    username: BitGo.OFC_TEST_USER,
+    password: BitGo.OFC_TEST_PASSWORD,
+    otp: otp,
+  });
   response.should.have.property('access_token');
   response.should.have.property('user');
 };
@@ -269,12 +290,7 @@ BitGo.prototype.checkFunded = async function () {
   await this.authenticateTestUser(this.testUserOTP());
   const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
 
-  const {
-    gtethWallet,
-    tbtcWallet,
-    unspentWallet,
-    sweep1Wallet,
-  }: any = await promiseProps({
+  const { gtethWallet, tbtcWallet, unspentWallet, sweep1Wallet }: any = await promiseProps({
     gtethWallet: this.coin('gteth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
     unspentWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
@@ -287,7 +303,9 @@ BitGo.prototype.checkFunded = async function () {
 
   // Check our balance is over 60000 (we spend 50000, add some cushion)
   if (balance.lt(60000)) {
-    throw new Error(`The GTETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(
+      `The GTETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`
+    );
   }
 
   // Check we have enough in the wallet to run test suite
@@ -297,7 +315,9 @@ BitGo.prototype.checkFunded = async function () {
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
   let minimumBalance = 0.05 * 1e8;
   if (balance.lt(minimumBalance)) {
-    throw new Error(`The TBTC wallet ${tbtcWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(
+      `The TBTC wallet ${tbtcWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`
+    );
   }
 
   // Check we have enough in the wallet to run test suite
@@ -307,7 +327,9 @@ BitGo.prototype.checkFunded = async function () {
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
   minimumBalance = 0.05 * 1e8;
   if (balance.lt(minimumBalance)) {
-    throw new Error(`The TBTC wallet ${unspentWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(
+      `The TBTC wallet ${unspentWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`
+    );
   }
 
   // Check we have enough in the wallet to run test suite
@@ -318,7 +340,9 @@ BitGo.prototype.checkFunded = async function () {
   minimumBalance = 0.05 * 1e8;
 
   if (balance.lt(minimumBalance)) {
-    throw new Error(`The TBTC wallet ${sweep1Wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(
+      `The TBTC wallet ${sweep1Wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`
+    );
   }
 };
 
@@ -335,11 +359,7 @@ BitGo.prototype.nockEthWallet = function () {
     label: 'my test ether wallet',
     m: 2,
     n: 3,
-    keys: [
-      '598f606cd8fc24710d2ebad89dce86c2',
-      '598f606cc8e43aef09fcb785221d9dd2',
-      '5935d59cf660764331bafcade1855fd7',
-    ],
+    keys: ['598f606cd8fc24710d2ebad89dce86c2', '598f606cc8e43aef09fcb785221d9dd2', '5935d59cf660764331bafcade1855fd7'],
     tags: ['598f606cd8fc24710d2ebadb1d9459bb'],
     disableTransactionNotifications: false,
     freeze: {},
@@ -405,7 +425,8 @@ BitGo.prototype.nockEthWallet = function () {
       users: ['543c11ed356d00cb7600000b98794503'],
       pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
       ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
-      encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+      encryptedPrv:
+        '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
     });
 
   const params: any = {
@@ -431,9 +452,7 @@ BitGo.prototype.nockEthWallet = function () {
 const oldFetchConstants = BitGoAPI.prototype.fetchConstants;
 BitGoAPI.prototype.fetchConstants = function () {
   // @ts-expect-error - no implicit this
-  nock(this._baseUrl)
-    .get('/api/v1/client/constants')
-    .reply(200, { ttl: 3600, constants: {} });
+  nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
   BitGoAPI['_constants'] = undefined;

@@ -2,7 +2,7 @@ import 'should';
 
 import * as _ from 'lodash';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { Wallet } from '@bitgo/sdk-core';
 
 

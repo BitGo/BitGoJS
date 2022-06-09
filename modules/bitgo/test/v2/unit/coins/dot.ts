@@ -1,6 +1,6 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
 

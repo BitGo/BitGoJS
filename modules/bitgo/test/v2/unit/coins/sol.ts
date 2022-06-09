@@ -1,5 +1,5 @@
 import * as sinon from 'sinon';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';

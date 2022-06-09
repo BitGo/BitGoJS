@@ -1,4 +1,4 @@
-import { TestBitGo } from '../../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { VerifyAlgoAddressOptions } from '../../../../../src/v2/coins/algo';
 import { AssertionError } from 'assert';
 const should = require('should');
