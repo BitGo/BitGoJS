@@ -24,6 +24,7 @@ describe('TSS ECDSA key generation', function () {
       keyShares[index].xShare.m.should.not.be.Null;
       keyShares[index].xShare.l.should.not.be.Null;
       keyShares[index].xShare.n.should.not.be.Null;
+      keyShares[index].xShare.chaincode.should.not.be.Null;
 
       keyShares[index].yShares[participantTwo].i.should.equal(participantOne);
       keyShares[index].yShares[participantThree].i.should.equal(participantOne);

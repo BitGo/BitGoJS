@@ -1,5 +1,7 @@
 import * as paillierBigint from 'paillier-bigint';
+import { randomBytes } from 'crypto';
 import { bigIntToHex } from '../../../util/crypto';
+import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
 import { NShare, PShare, KeyShare, KeyCombined } from './types';
@@ -23,6 +25,7 @@ export default class Ecdsa {
     const { publicKey, privateKey } = await paillierBigint.generateRandomKeys(3072, true);
     const u = Ecdsa.curve.scalarRandom();
     const y = Ecdsa.curve.basePointMult(u);
+    const chaincode = randomBytes(32);
     // Compute secret shares of the private key
     const uShares = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
@@ -32,6 +35,7 @@ export default class Ecdsa {
       n: bigIntToHex(publicKey.n),
       y: bigIntToHex(y),
       u: bigIntToHex(uShares[index]),
+      chaincode: chaincode.toString('hex'),
     };
     const keyShare: KeyShare = {
       pShare: currentParticipant,
@@ -47,6 +51,7 @@ export default class Ecdsa {
           n: bigIntToHex(publicKey.n),
           y: bigIntToHex(y),
           u: bigIntToHex(uShares[participantIndex]),
+          chaincode: chaincode.toString('hex'),
         } as NShare;
       }
     }
@@ -67,6 +72,10 @@ export default class Ecdsa {
     // Add secret shares
     const x = allShares.map((participant) => BigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
 
+    // Chaincode will be used in future when we add support for key derivation for ecdsa
+    const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
+    const chaincode = chaincodes.reduce((acc, chaincode) => Ecdsa.curve.scalarReduce(acc + chaincode));
+
     const participants: KeyCombined = {
       xShare: {
         i: pShare.i,
@@ -75,6 +84,7 @@ export default class Ecdsa {
         n: pShare.n,
         y: bigIntToHex(y),
         x: bigIntToHex(x),
+        chaincode: bigIntToBufferBE(chaincode, 32).toString('hex'),
       },
       yShares: {},
     };
