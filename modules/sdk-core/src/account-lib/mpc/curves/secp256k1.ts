@@ -40,6 +40,11 @@ export class Secp256k1Curve implements BaseCurve {
     return bigIntFromU8ABE(pointA.add(pointB).toRawBytes(true));
   }
 
+  pointMultiply(p: bigint, s: bigint): bigint {
+    const pointA = secp.Point.fromHex(bigIntToBufferBE(p));
+    return bigIntFromU8ABE(pointA.multiply(s).toRawBytes(true));
+  }
+
   basePointMult(n: bigint): bigint {
     const point = bigIntToBufferBE(n);
     return bigIntFromU8ABE(secp.getPublicKey(point, true));

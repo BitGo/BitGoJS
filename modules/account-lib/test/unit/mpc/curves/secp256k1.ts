@@ -79,6 +79,13 @@ describe('secp256k1 curve implementation', function () {
     publicKey.should.equal('0x03e2d3ec45106a89f82e7d46400faefc191ed72344caa781bfa97677a999d0828e');
   });
 
+  it('should correctly perform point multiplication', function () {
+    const point = BigInt('0x032a574ea59cae80b09d6ba415746e9b031abfbe83f149b43b37be035b87164872');
+    const scalar = testValue;
+    const result = '0x' + sec256k1.pointMultiply(point, scalar).toString(16);
+    result.should.equal('0x31887d9e82e359036f4e972eadc5635df991bccff35774e28c23b278cf696381e');
+  });
+
   it('should correctly perform base point multiplication', function () {
     const privKey = BigInt('0x79FE45D61339181238E49424E905446A35497A8ADEA8B7D5241A1E7F2C95A04D');
     const publicKey = '0x0' + sec256k1.basePointMult(privKey).toString(16);
