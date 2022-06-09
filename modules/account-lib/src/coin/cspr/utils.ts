@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import * as querystring from 'querystring';
 import * as url from 'url';
 import { createHash } from 'crypto';
 import BigNumber from 'bignumber.js';
@@ -118,7 +117,7 @@ export function isValidAddress(address: string): boolean {
  */
 export function getAddressDetails(address: string): AddressDetails {
   const addressDetails = url.parse(address);
-  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
+  const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
   const baseAddress = <string>addressDetails.pathname;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${address}`);
@@ -131,11 +130,11 @@ export function getAddressDetails(address: string): AddressDetails {
     };
   }
 
-  if (_.isUndefined(queryDetails.transferId)) {
+  if (!queryDetails || _.isNil(queryDetails.get('transferId'))) {
     // if there are more properties, the query details need to contain the transfer id property
     throw new UtilsError(`invalid address with transfer id: ${address}`);
   }
-  const transferId = <string>queryDetails.transferId;
+  const transferId = <string>queryDetails.get('transferId');
   if (isNaN(parseInt(transferId, 10))) {
     throw new UtilsError(`invalid transfer id: ${transferId}`);
   }

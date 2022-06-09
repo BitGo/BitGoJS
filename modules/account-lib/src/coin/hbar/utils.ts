@@ -5,7 +5,6 @@ import * as stellar from 'stellar-sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { AddressDetails } from './ifaces';
 import url from 'url';
-import querystring from 'querystring';
 import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
 export { toHex, toUint8Array };
 
@@ -236,7 +235,7 @@ export function getBaseAddress(address: string): string {
  */
 export function getAddressDetails(rawAddress: string): AddressDetails {
   const addressDetails = url.parse(rawAddress);
-  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
+  const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
   const baseAddress = <string>addressDetails.pathname;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${rawAddress}`);
@@ -249,7 +248,12 @@ export function getAddressDetails(rawAddress: string): AddressDetails {
       memoId: undefined,
     };
   }
-  const memoId = <string>queryDetails.memoId;
+
+  if (!queryDetails || _.isNil(queryDetails.get('memoId'))) {
+    // if there are more properties, the query details need to contain the memo id property
+    throw new UtilsError(`invalid address with memo id: ${rawAddress}`);
+  }
+  const memoId = <string>queryDetails.get('memoId');
   if (!isValidMemo(memoId)) {
     throw new UtilsError(`invalid address: '${rawAddress}', memoId is not valid`);
   }
