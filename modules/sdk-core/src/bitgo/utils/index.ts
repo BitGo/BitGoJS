@@ -7,6 +7,7 @@ export * from './iTssUtils';
 export * from './mpcUtils';
 export * from './opengpgUtils';
 export * from './promise-utils';
+export * from './triple';
 export * from './tssUtils';
 export * from './util';
 

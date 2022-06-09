@@ -8,15 +8,15 @@ import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import * as config from '../../../../../../src/config';
-import { Triple } from '../../../../../../src';
-import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
+import { Triple } from '@bitgo/sdk-core';
 import {
+  AbstractUtxoCoin,
   BitgoPublicApi,
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   getWallet,
-} from '../../../../../../src/v2/coins/utxo/recovery/crossChainRecovery';
+  supportedCrossChainRecoveries,
+} from '@bitgo/abstract-utxo';
 
 import {
   getFixture,
@@ -244,7 +244,7 @@ function run(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin) {
 }
 
 function isSupportedCrossChainRecovery(sourceCoin: AbstractUtxoCoin, recoveryCoin: AbstractUtxoCoin): boolean {
-  return config.supportedCrossChainRecoveries[sourceCoin.getFamily()]?.includes(recoveryCoin.getFamily());
+  return supportedCrossChainRecoveries[sourceCoin.getFamily()]?.includes(recoveryCoin.getFamily());
 }
 
 utxoCoins.forEach((coin) => {

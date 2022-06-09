@@ -16,12 +16,13 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   SignTransactionOptions,
-  VerifyTransactionOptions,
-  TransactionFee,
-  TransactionRecipient as Recipient,
-  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
+  TransactionFee,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient as Recipient,
+  VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+
 import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {

@@ -10,13 +10,13 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { Config } from '../../../../../../src/config';
-import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
 import {
+  AbstractUtxoCoin,
   backupKeyRecovery,
   BackupKeyRecoveryTransansaction,
+  CoingeckoApi,
   FormattedOfflineVaultTxInfo,
-} from '../../../../../../src/v2/coins/utxo/recovery/backupKeyRecovery';
-import { CoingeckoApi } from '../../../../../../src/v2/coins/utxo/recovery/coingeckoApi';
+} from '@bitgo/abstract-utxo';
 
 import {
   defaultBitGo,
@@ -33,8 +33,7 @@ import {
 } from '../util';
 
 import { MockRecoveryProvider } from './mock';
-import { Triple } from '../../../../../../src';
-import { krsProviders } from '@bitgo/sdk-core';
+import { krsProviders, Triple } from '@bitgo/sdk-core';
 
 const config = { krsProviders };
 

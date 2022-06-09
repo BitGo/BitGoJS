@@ -19,6 +19,12 @@
   },
   "references": [
     {
+      "path": "../abstract-eth"
+    },
+    {
+      "path": "../abstract-utxo"
+    },
+    {
       "path": "../sdk-api"
     },
     {

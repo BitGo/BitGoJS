@@ -4,7 +4,7 @@
 import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { UtxoNetwork } from './abstractUtxoCoin';
+import { UtxoNetwork } from '@bitgo/abstract-utxo';
 import { Bch } from './bch';
 
 export class Bsv extends Bch {

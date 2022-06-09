@@ -2,6 +2,12 @@
   "files": [],
   "references": [
     {
+      "path": "./modules/abstract-eth"
+    },
+    {
+      "path": "./modules/abstract-utxo"
+    },
+    {
       "path": "./modules/account-lib"
     },
     {

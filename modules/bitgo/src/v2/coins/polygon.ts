@@ -6,7 +6,7 @@ import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Eth } from './eth';
 import { getBuilder, Polygon as PolygonAccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
-import { ExplainTransactionOptions } from './abstractEthLikeCoin';
+import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
 export class Polygon extends Eth {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {

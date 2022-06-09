@@ -1,4 +1,4 @@
-import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
+import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { Wallet } from '@bitgo/sdk-core';
 import { defaultBitGo } from './utxoCoins';
 
