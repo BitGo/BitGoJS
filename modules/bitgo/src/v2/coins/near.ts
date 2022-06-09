@@ -103,6 +103,10 @@ export class Near extends BaseCoin {
     return true;
   }
 
+  supportsStaking(): boolean {
+    return true;
+  }
+
   getChain(): string {
     return this._staticsCoin.name;
   }

@@ -16,6 +16,7 @@ export * from './keychain';
 export * from './market';
 export * from './pendingApproval';
 export * from './recovery';
+export * from './staking';
 export * from './trading';
 export * from './tss';
 export * from './types';
