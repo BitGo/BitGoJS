@@ -13,6 +13,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { ExplanationResult, UnsignedTransaction } from '../types';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -159,13 +160,39 @@ export class Dot extends BaseCoin {
 
   /**
    * Explain/parse transaction
-   * @param params
-   * @param callback
+   * @param unsignedTransaction
    */
-  explainTransaction(
-    params: ExplainTransactionOptions,
-  ): Promise<never> {
-    throw new MethodNotImplementedError('Dot recovery not implemented');
+  async explainTransaction(
+    unsignedTransaction: UnsignedTransaction,
+  ): Promise<ExplanationResult> {
+    let outputAmount = 0;
+    unsignedTransaction.parsedTx.outputs.forEach((o) => {
+      outputAmount += parseInt(o.valueString, 10);
+    });
+    const explanationResult: ExplanationResult = {
+      displayOrder: [
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'type',
+        'sequenceId',
+        'id',
+        'blockNumber',
+      ],
+      sequenceId: unsignedTransaction.parsedTx.sequenceId,
+      fee: unsignedTransaction.feeInfo?.feeString,
+      id: unsignedTransaction.parsedTx.id,
+      type: unsignedTransaction.parsedTx.type,
+      outputs: unsignedTransaction.parsedTx.outputs,
+      blockNumber: unsignedTransaction.coinSpecific?.blockNumber,
+      outputAmount: outputAmount,
+      changeOutputs: [],
+      changeAmount: '0',
+    };
+
+    return explanationResult;
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
