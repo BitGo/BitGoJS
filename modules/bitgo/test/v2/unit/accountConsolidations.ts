@@ -60,6 +60,23 @@ describe('Account Consolidations:', function () {
 
           scope.isDone().should.be.True();
         });
+
+        it('should throw no consolidations if sub addresses do not have enought amount', async function () {
+          if (coinName === 'talgo') {
+            // GIVEN an ALGO wallet with N receive addresses WITHOUT enough balance to consolidate
+            const scope = nock(bgUrl)
+              .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
+              .query({})
+              .reply(204, {});
+
+            // WHEN call built consolidation for that ALGO wallet
+            const accountConsolidationBuild = await wallet.buildAccountConsolidations();
+
+            // THEN length of built consolidations should be zero since it's a 204 HTTP response without body
+            accountConsolidationBuild.length.should.equal(0);
+            scope.isDone().should.be.True();
+          }
+        });
       });
 
       describe('Sending', function () {
