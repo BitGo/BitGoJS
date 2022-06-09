@@ -4,9 +4,10 @@ import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 export function getReplayProtectionAddresses(network: utxolib.Network): string[] {
   switch (network) {
     case utxolib.networks.bitcoincash:
+    case utxolib.networks.bitcoinsv:
       return ['33p1q7mTGyeM5UnZERGiMcVUkY12SCsatA'];
-    case utxolib.networks.bitcoinsvTestnet:
     case utxolib.networks.bitcoincashTestnet:
+    case utxolib.networks.bitcoinsvTestnet:
       return ['2MuMnPoSDgWEpNWH28X2nLtYMXQJCyT61eY'];
   }
 
