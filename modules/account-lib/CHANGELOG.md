@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.14...@bitgo/account-lib@2.20.0-rc.15) (2022-06-10)
+
+
+### Features
+
+* **account-lib:** add support for chaincode for key derivation in ecdsa ([e8c9faf](https://github.com/BitGo/BitGoJS/commit/e8c9faf5cce270bf36d01a2012941004a06556b2))
+* **account-lib:** add support for point multiplication in secp256k1 curve ([e8e00ab](https://github.com/BitGo/BitGoJS/commit/e8e00ab7ed935353ecaa88e865ba7f0348f40b69))
+
+
+
+
+
 # [2.20.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.13...@bitgo/account-lib@2.20.0-rc.14) (2022-06-07)
 
 

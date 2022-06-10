@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.11...@bitgo/statics@6.18.0-rc.12) (2022-06-10)
+
+
+### Features
+
+* **statics:** add TSS as a coin feature ([f8a274b](https://github.com/BitGo/BitGoJS/commit/f8a274b453da826ce37d0d02fd1ad3d656164d10))
+* **statics:** tokens begin june ([3fda3e3](https://github.com/BitGo/BitGoJS/commit/3fda3e3dabccbe78b29ab92aa9f0288854c99983))
+
+
+
+
+
 # [6.18.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.10...@bitgo/statics@6.18.0-rc.11) (2022-06-07)
 
 
