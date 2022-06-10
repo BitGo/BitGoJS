@@ -1,4 +1,3 @@
-import * as querystring from 'querystring';
 import * as url from 'url';
 import BigNumber from 'bignumber.js';
 import { bufferToHex, stripHexPrefix } from 'ethereumjs-utils-old';
@@ -352,7 +351,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
  */
 export function getAddressDetails(address: string): AddressDetails {
   const addressDetails = url.parse(address);
-  const queryDetails = addressDetails.query ? querystring.parse(addressDetails.query) : {};
+  const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
   const baseAddress = <string>addressDetails.pathname;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${address}`);
@@ -365,11 +364,11 @@ export function getAddressDetails(address: string): AddressDetails {
     };
   }
 
-  if (_.isUndefined(queryDetails.memoId)) {
+  if (!queryDetails || _.isNil(queryDetails.get('memoId'))) {
     // if there are more properties, the query details need to contain the memo id property
     throw new UtilsError(`invalid address with memo id: ${address}`);
   }
-  const memoId = <string>queryDetails.memoId;
+  const memoId = <string>queryDetails.get('memoId');
   const intMemoId = parseInt(memoId, 10);
   if (isNaN(intMemoId) || intMemoId < 0) {
     throw new Error(`invalid memo id: ${memoId}`);
