@@ -7,16 +7,13 @@
     "mocha": true
   },
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "prettier", "import"],
   "globals": {
-    "app": true,        // BitGo side-effect from testutil
-    "ethUtil": true,    // BitGo side-effect from testutil
+    "app": true, // BitGo side-effect from testutil
+    "ethUtil": true, // BitGo side-effect from testutil
     "requireCommon": true
   },
-  "extends": [
-    "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended"
-  ],
+  "extends": ["plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
   "parserOptions": {
     "ecmaVersion": 6
   },
@@ -36,7 +33,7 @@
     "eqeqeq": ["warn", "always"],
     "func-call-spacing": ["error", "never"],
     "func-names": "off",
-    "indent": ["warn", 2, {"SwitchCase": 1, "MemberExpression": 1}],
+    "indent": ["warn", 2, { "SwitchCase": 1, "MemberExpression": 1 }],
     "key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "strict" }],
     "keyword-spacing": ["error"],
     "linebreak-style": ["error", "unix"],
@@ -51,7 +48,7 @@
     "no-fallthrough": "error",
     "no-inner-declarations": "off",
     "no-mixed-spaces-and-tabs": "error",
-    "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
+    "no-multi-spaces": ["error", { "ignoreEOLComments": true }],
     "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }],
     "no-octal": "error",
     "no-path-concat": "off",
@@ -63,10 +60,10 @@
     "no-undef": "error",
     "no-unneeded-ternary": "error",
     "no-unreachable": "error",
-    "@typescript-eslint/no-unused-vars": ["error", {"vars": "all", "args": "none"}],
+    "@typescript-eslint/no-unused-vars": ["error", { "vars": "all", "args": "none" }],
     "no-useless-escape": "off",
     "no-var": "error",
-    "object-curly-spacing": ["error", "always", {"objectsInObjects": true, "arraysInObjects": true}],
+    "object-curly-spacing": ["error", "always", { "objectsInObjects": true, "arraysInObjects": true }],
     "prefer-const": "error",
     "prefer-rest-params": "warn",
     "prefer-spread": "warn",
@@ -78,8 +75,14 @@
     "space-before-blocks": ["error"],
     "space-infix-ops": ["error"],
     "spaced-comment": ["error", "always"],
-    "switch-colon-spacing": ["error", {"before": false, "after": true}],
-    "yield-star-spacing": ["error", {"before": true, "after": false}]
+    "switch-colon-spacing": ["error", { "before": false, "after": true }],
+    "yield-star-spacing": ["error", { "before": true, "after": false }],
+    "import/no-internal-modules": [
+      "error",
+      {
+        "forbid": ["@bitgo/*/**"]
+      }
+    ]
   },
   "overrides": [
     {

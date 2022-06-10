@@ -2,16 +2,12 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  scriptTypeForChain,
-  RootWalletKeys,
-  Unspent,
-  WalletUnspent,
-  ChainCode,
-  chainCodesP2sh,
-  getExternalChainCode,
-  getInternalChainCode,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
+
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type Unspent = utxolib.bitgo.Unspent;
+type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type ChainCode = utxolib.bitgo.ChainCode;
 
 import { getSeed } from '../../../../../lib/keys';
 import { getReplayProtectionAddresses } from '@bitgo/abstract-utxo';

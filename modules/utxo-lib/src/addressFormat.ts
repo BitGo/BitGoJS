@@ -7,7 +7,7 @@
 import { getMainnet, getNetworkName, Network, networks } from './networks';
 import { fromOutputScript, toOutputScript } from './address';
 
-import * as bcashAddress from './bitgo/bitcoincash/address';
+import { bcashAddress } from './bitgo';
 
 export const addressFormats = ['default', 'cashaddr'] as const;
 

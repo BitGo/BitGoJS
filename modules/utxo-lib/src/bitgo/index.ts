@@ -1,12 +1,13 @@
+export * as bcashAddress from './bitcoincash';
 export * as keyutil from './keyutil';
-export * as outputScripts from './outputScripts';
 export * as nonStandardHalfSigned from './nonStandardHalfSigned';
+export * as outputScripts from './outputScripts';
+export * from './dash';
 export * from './signature';
 export * from './transaction';
+export * from './types';
+export * from './Unspent';
 export * from './UtxoTransaction';
 export * from './UtxoTransactionBuilder';
-export * from './Unspent';
-export * from './zcash';
-export * from './dash';
-export * from './types';
 export * from './wallet';
+export * from './zcash';
