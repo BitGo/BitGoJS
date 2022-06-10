@@ -3,10 +3,11 @@
  */
 import * as utxolib from '@bitgo/utxo-lib';
 import * as coins from '../../../../../../src/v2/coins';
+import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { BitGo } from '../../../../../../src';
 import { TestBitGo } from '../../../../../lib/test_bitgo';
 
-const AbstractUtxoCoin = coins.AbstractUtxoCoin as unknown as ObjectConstructor;
+const AbstractUtxoCoinCtor = AbstractUtxoCoin as unknown as ObjectConstructor;
 
 function getPrototypeChain(c: ObjectConstructor): ObjectConstructor[] {
   if (!c) {
@@ -16,18 +17,18 @@ function getPrototypeChain(c: ObjectConstructor): ObjectConstructor[] {
 }
 
 function hasAbstractUtxoCoinPrototype(c: ObjectConstructor): boolean {
-  return getPrototypeChain(c).includes(AbstractUtxoCoin);
+  return getPrototypeChain(c).includes(AbstractUtxoCoinCtor);
 }
 
 export const defaultBitGo = new TestBitGo({ env: 'mock' });
 
-function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
+function getUtxoCoins(bitgo: BitGo = defaultBitGo): AbstractUtxoCoin[] {
   return Object.values(coins)
     .map((c) => c as unknown as ObjectConstructor)
-    .filter((cls) => hasAbstractUtxoCoinPrototype(cls) && cls !== AbstractUtxoCoin)
+    .filter((cls) => hasAbstractUtxoCoinPrototype(cls) && cls !== AbstractUtxoCoinCtor)
     .map((cls) => {
       try {
-        return new cls(bitgo) as coins.AbstractUtxoCoin;
+        return new cls(bitgo) as AbstractUtxoCoin;
       } catch (e) {
         throw new Error(`error creating ${cls.name}: ${e}`);
       }
@@ -37,7 +38,7 @@ function getUtxoCoins(bitgo: BitGo = defaultBitGo): coins.AbstractUtxoCoin[] {
 
 export const utxoCoins = getUtxoCoins();
 
-export function getUtxoCoin(name: string): coins.AbstractUtxoCoin {
+export function getUtxoCoin(name: string): AbstractUtxoCoin {
   for (const c of utxoCoins) {
     if (c.getChain() === name) {
       return c;
@@ -46,7 +47,7 @@ export function getUtxoCoin(name: string): coins.AbstractUtxoCoin {
   throw new Error(`no coin with name ${name}`);
 }
 
-export function getUtxoCoinForNetwork(n: utxolib.Network): coins.AbstractUtxoCoin {
+export function getUtxoCoinForNetwork(n: utxolib.Network): AbstractUtxoCoin {
   for (const c of utxoCoins) {
     if (c.network === n) {
       return c;

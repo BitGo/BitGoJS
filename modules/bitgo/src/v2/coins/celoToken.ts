@@ -1,10 +1,8 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
-
 import { Celo } from './celo';
-import { CoinConstructor } from '../coinFactory';
+import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
 export interface CeloTokenConfig {
@@ -19,14 +17,14 @@ export interface CeloTokenConfig {
 export class CeloToken extends Celo {
   public readonly tokenConfig: CeloTokenConfig;
 
-  constructor(bitgo: BitGo, tokenConfig: CeloTokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: CeloTokenConfig) {
     const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('celo') : coins.get('tcelo');
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
   }
 
   static createTokenConstructor(config: CeloTokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new CeloToken(bitgo, config);
+    return (bitgo: BitGoBase) => new CeloToken(bitgo, config);
   }
 
   get type() {

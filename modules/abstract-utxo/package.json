@@ -1,0 +1,54 @@
+{
+  "name": "@bitgo/abstract-utxo",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for UTXO base implementation",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-utxo"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/blockapis": "^1.0.1-rc.12",
+    "@bitgo/sdk-api": "^1.1.0-rc.10",
+    "@bitgo/sdk-core": "^1.1.0-rc.7",
+    "@bitgo/unspents": "^0.8.0-rc.10",
+    "@bitgo/utxo-lib": "^2.3.0-rc.6",
+    "@types/bluebird": "^3.5.25",
+    "@types/lodash": "^4.14.121",
+    "bip32": "^2.0.6",
+    "bitcoinjs-message": "^2.0.0",
+    "bluebird": "^3.5.3",
+    "lodash": "^4.17.14",
+    "superagent": "^3.8.3"
+  }
+}

@@ -5,11 +5,11 @@
 import BigNumber from 'bignumber.js';
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 import * as base58 from 'bs58';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
+  BitGoBase,
   BaseTransaction,
   KeyPair,
   MethodNotImplementedError,
@@ -77,7 +77,7 @@ const nearUtils = accountLib.Near.Utils.default;
 
 export class Near extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -87,7 +87,7 @@ export class Near extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Near(bitgo, staticsCoin);
   }
 

@@ -908,6 +908,7 @@ describe('SOL:', function () {
           signableHex: 'serializedTxHex',
           derivationPath: 'm/0',
         }],
+        transactions: [],
       };
 
       const stubTssUtils = sandbox.createStubInstance(TssUtils);

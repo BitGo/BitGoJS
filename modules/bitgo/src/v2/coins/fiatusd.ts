@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -15,7 +15,7 @@ import {
 } from '@bitgo/sdk-core';
 
 export class FiatUsd extends BaseCoin {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new FiatUsd(bitgo);
   }
 

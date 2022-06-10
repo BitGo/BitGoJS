@@ -6,6 +6,7 @@ export interface PShare {
   u: string; // shamir share of secret
   n: string; // n => (p . q) where p and q are the two random prime numbers chosen for paillier encryption
   y: string;
+  chaincode: string;
 }
 
 // NShares which is shared to the other participants during key generation
@@ -15,6 +16,7 @@ export interface NShare {
   n: string;
   u: string; // shamir share of secret at j'th index
   y: string;
+  chaincode: string;
 }
 
 export type KeyShare = {
@@ -30,6 +32,7 @@ export interface XShare {
   n: string;
   y: string; // combined public key
   x: string; // combined secret
+  chaincode: string;
 }
 
 // YShares used during signature generation

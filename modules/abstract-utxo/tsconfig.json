@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strictPropertyInitialization": false,
+    "esModuleInterop": false,
+    "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../blockapis"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../utxo-lib"
+    }
+  ]
+}

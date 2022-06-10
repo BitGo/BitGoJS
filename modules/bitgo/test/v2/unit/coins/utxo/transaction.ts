@@ -7,8 +7,7 @@ import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
 
-import { AbstractUtxoCoin } from '../../../../../src/v2/coins';
-import { getReplayProtectionAddresses } from '../../../../../src/v2/coins/utxo/replayProtection';
+import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 
 import {
   utxoCoins,
@@ -24,8 +23,12 @@ import {
   getDefaultWalletKeys,
 } from './util';
 
-import { Triple } from '../../../../../src';
-import { FullySignedTransaction, HalfSignedUtxoTransaction, WalletSignTransactionOptions } from '@bitgo/sdk-core';
+import {
+  FullySignedTransaction,
+  HalfSignedUtxoTransaction,
+  Triple,
+  WalletSignTransactionOptions,
+} from '@bitgo/sdk-core';
 
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {

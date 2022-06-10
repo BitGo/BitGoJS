@@ -279,6 +279,7 @@ describe('TSS Utils:', async function () {
     const txRequestId = 'randomid';
     const txRequest: TxRequest = {
       txRequestId,
+      transactions: [],
       unsignedTxs: [
         {
           serializedTxHex: 'ababfefe',

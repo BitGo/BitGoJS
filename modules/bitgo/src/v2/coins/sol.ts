@@ -7,11 +7,11 @@ import * as base58 from 'bs58';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as accountLib from '@bitgo/account-lib';
-import { BitGo } from '../../bitgo';
 import * as _ from 'lodash';
 import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
 import {
   BaseCoin,
+  BitGoBase,
   BaseTransaction,
   Memo,
   KeyPair,
@@ -87,7 +87,7 @@ const HEX_REGEX = /^[0-9a-fA-F]+$/;
 export class Sol extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -97,7 +97,7 @@ export class Sol extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Sol(bitgo, staticsCoin);
   }
 

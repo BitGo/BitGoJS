@@ -10,6 +10,7 @@ import { networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import {
   BaseCoin,
+  BitGoBase,
   common,
   getBip32Keys,
   getIsKrsRecovery,
@@ -27,8 +28,6 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-
-import { BitGo } from '../../bitgo';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -96,7 +95,7 @@ export interface AccountResponse {
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -127,7 +126,7 @@ export class Trx extends BaseCoin {
     return true;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Trx(bitgo, staticsCoin);
   }
 

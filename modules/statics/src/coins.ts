@@ -38,10 +38,15 @@ const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PA
 );
 const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE];
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
+const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
-const SOL_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE, CoinFeature.SUPPORTS_TOKENS];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES];
+const SOL_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.REQUIRES_RESERVE,
+  CoinFeature.SUPPORTS_TOKENS,
+];
+const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -222,6 +227,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20('alpha', 'Alpha Finance', 18, '0xa1faa113cbe53436df28ff0aee54275c13b40975', UnderlyingAsset.ALPHA),
   erc20('ape', 'ApeCoin', 18, '0x4d224452801aced8b2f0aebe155379bb5d594381', UnderlyingAsset.APE),
+  erc20('api3', 'API3', 18, '0x0b38210ea11411557c13457d4da7dc6ea731b88a', UnderlyingAsset.API3),
   erc20('amn', 'Amon', 18, '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', UnderlyingAsset.AMN),
   erc20('amo', 'AMO Token', 18, '0x38c87aa89b2b8cd9b95b736e1fa7b612ea972169', UnderlyingAsset.AMO),
   erc20('amp', 'AMP Token', 18, '0xff20817765cb7f73d4bde2e66e067e58d11095c2', UnderlyingAsset.AMP),
@@ -375,6 +381,7 @@ export const coins = CoinMap.fromCoins([
   erc20('egl', 'Ethereum Eagle', 18, '0x1e83916ea2ef2d7a6064775662e163b2d4c330a7', UnderlyingAsset.EGL),
   erc20('egld', 'Elrond Gold', 18, '0xe3fb646fc31ca12657b17070bc31a52e323b8543', UnderlyingAsset.EGLD),
   erc20('elf', 'Aelf', 18, '0xbf2179859fc6d5bee9bf9158632dc51678a4100e', UnderlyingAsset.ELF),
+  erc20('erd', 'Elrond', 18, '0xf9986d445ced31882377b5d6a5f58eaea72288c3', UnderlyingAsset.ERD),
   erc20('emx', 'EMX', 18, '0x75a29c405bd5ab2f3b35144af937ee98d390b5ee', UnderlyingAsset.EMX),
   erc20('eng', 'Enigma', 8, '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4', UnderlyingAsset.ENG),
   erc20('enj', 'Enjin Coin', 18, '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c', UnderlyingAsset.ENJ),
@@ -387,6 +394,7 @@ export const coins = CoinMap.fromCoins([
   erc20('eurst', 'EURST', 18, '0xb1abd7aba7d99bbefb33d1dfc66b0dd522335350', UnderlyingAsset.EURST),
   erc20('eurt', 'Tether EUR', 6, '0xc581b735a1688071a1746c968e0798d642ede491', UnderlyingAsset.EURT),
   erc20('eurx', 'eToro Euro', 18, '0x05ac103f68e05da35e78f6165b9082432fe64b58', UnderlyingAsset.EURX),
+  erc20('euroc', 'Euro Coin', 6, '0x1abaea1f7c830bd89acc67ec4af516284b1bc33c', UnderlyingAsset.EUROC),
   erc20('eux', 'EUR Stable Token', 18, '0x1b9064207e8046ec1d8e83de79380ed31283914f', UnderlyingAsset.EUX),
   erc20('evx', 'Everex', 4, '0xf3db5fa2c66b7af3eb0c0b782510816cbe4813b8', UnderlyingAsset.EVX),
   erc20('exe', 'EXE Token', 8, '0x0d9a653f681168f410d14d19b7743c041eafc58a', UnderlyingAsset.EXE),
@@ -779,7 +787,9 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('ofcaxs', 'Axie Infinity Shards', 18, UnderlyingAsset.AXS),
   ofcerc20('ofcaxsv2', 'Axie Infinity Shards V2', 18, UnderlyingAsset.AXSV2),
   ofcerc20('ofcbat', 'Basic Attention Token', 18, UnderlyingAsset.BAT),
+  ofcerc20('ofcbusd', 'Binance USD', 18, UnderlyingAsset.BUSD),
   ofcerc20('ofccomp', 'Compound Token', 18, UnderlyingAsset.COMP),
+  ofcerc20('ofccro', 'Crypto.com Chain', 8, UnderlyingAsset.CRO),
   ofcerc20('ofccrv', 'Curve DAO Token', 18, UnderlyingAsset.CRV),
   ofcerc20('ofccvx', 'Convex Finance', 18, UnderlyingAsset.CVX),
   ofcerc20('ofcdai', 'Dai', 18, UnderlyingAsset.DAI, undefined, undefined, undefined, 'SAI'),
@@ -945,6 +955,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'MCAU'
+  ),
+  algoToken(
+    'algo:438505559',
+    'algo:VCAD-438505559',
+    'VCAD',
+    2,
+    UnderlyingAsset['algo:438505559'],
+    'https://algoexplorer.io/asset/438505559',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VCAD'
   ),
   terc20(
     'fixed',

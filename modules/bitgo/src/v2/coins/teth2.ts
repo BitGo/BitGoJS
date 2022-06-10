@@ -1,9 +1,8 @@
-import { BaseCoin } from '@bitgo/sdk-core';
-import { BitGo } from '../../bitgo';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Eth2 } from './eth2';
 
 export class Teth2 extends Eth2 {
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Teth2(bitgo);
   }
 

@@ -1,19 +1,17 @@
+import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo/abstract-utxo';
+import { BitGoBase, BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-
-import { BitGo } from '../../bitgo';
-import { BaseCoin, VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {
   transactionHex: string,
 }
 
 export class Btc extends AbstractUtxoCoin {
-  constructor(bitgo: BitGo, network?: UtxoNetwork) {
+  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.bitcoin);
   }
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Btc(bitgo);
   }
 

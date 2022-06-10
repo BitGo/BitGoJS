@@ -1,34 +1,40 @@
 /**
  * @prettier
  */
-import { BaseCoin, UnsupportedCoinError } from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
-import { BitGo } from '../bitgo';
+import { CoinFactory } from '@bitgo/sdk-core';
 import {
   Algo,
+  AlgoToken,
   AvaxC,
+  AvaxCToken,
   AvaxP,
   Bch,
   Bsv,
   Btc,
   Btg,
   Celo,
+  CeloToken,
   Cspr,
   Dash,
   Eos,
+  EosToken,
+  Erc20Token,
   Etc,
   Eth,
   Eth2,
-  Hbar,
-  Ltc,
-  Polygon,
-  Ofc,
-  Rbtc,
-  Sol,
-  Stx,
-  Susd,
   FiatEur,
   FiatUsd,
+  Gteth,
+  Hbar,
+  Ltc,
+  Ofc,
+  OfcToken,
+  Polygon,
+  Rbtc,
+  Sol,
+  StellarToken,
+  Stx,
+  Susd,
   Talgo,
   TavaxC,
   TavaxP,
@@ -42,7 +48,8 @@ import {
   Tetc,
   Teth,
   Teth2,
-  Gteth,
+  TfiatEur,
+  TfiatUsd,
   Thbar,
   Tltc,
   Tpolygon,
@@ -51,203 +58,134 @@ import {
   Tsol,
   Tstx,
   Tsusd,
-  TfiatEur,
-  TfiatUsd,
   Ttrx,
-  Xtz,
-  Txtz,
   Txlm,
   Txrp,
+  Txtz,
   Tzec,
   Xlm,
   Xrp,
-  Erc20Token,
-  CeloToken,
-  StellarToken,
-  AlgoToken,
-  OfcToken,
+  Xtz,
   Zec,
-  EosToken,
-  AvaxCToken,
 } from './coins';
-import { tokens } from '../config';
 import { Bcha } from './coins/bcha';
-import { Tbcha } from './coins/tbcha';
 import { Dot } from './coins/dot';
-import { Tdot } from './coins/tdot';
 import { Near } from './coins/near';
+import { Tbcha } from './coins/tbcha';
+import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
+import { tokens } from '../config';
 
-export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
-
-function registerCoinConstructor(map: Map<string, CoinConstructor>, name: string, constructor: CoinConstructor): void {
-  if (map.has(name)) {
-    throw new Error(`coin '${name}' is already defined`);
-  }
-  map.set(name, constructor);
-}
-
-function getCoinConstructors(): Map<string, CoinConstructor> {
-  const m = new Map();
-  registerCoinConstructor(m, 'btc', Btc.createInstance);
-  registerCoinConstructor(m, 'tbtc', Tbtc.createInstance);
-  registerCoinConstructor(m, 'bch', Bch.createInstance);
-  registerCoinConstructor(m, 'tbch', Tbch.createInstance);
-  registerCoinConstructor(m, 'bcha', Bcha.createInstance);
-  registerCoinConstructor(m, 'tbcha', Tbcha.createInstance);
-  registerCoinConstructor(m, 'bsv', Bsv.createInstance);
-  registerCoinConstructor(m, 'tbsv', Tbsv.createInstance);
-  registerCoinConstructor(m, 'btg', Btg.createInstance);
-  registerCoinConstructor(m, 'dot', Dot.createInstance);
-  registerCoinConstructor(m, 'tdot', Tdot.createInstance);
-  registerCoinConstructor(m, 'ltc', Ltc.createInstance);
-  registerCoinConstructor(m, 'tltc', Tltc.createInstance);
-  registerCoinConstructor(m, 'eos', Eos.createInstance);
-  registerCoinConstructor(m, 'teos', Teos.createInstance);
-  registerCoinConstructor(m, 'eth', Eth.createInstance);
-  registerCoinConstructor(m, 'teth', Teth.createInstance);
-  registerCoinConstructor(m, 'gteth', Gteth.createInstance);
-  registerCoinConstructor(m, 'eth2', Eth2.createInstance);
-  registerCoinConstructor(m, 'teth2', Teth2.createInstance);
-  registerCoinConstructor(m, 'etc', Etc.createInstance);
-  registerCoinConstructor(m, 'tetc', Tetc.createInstance);
-  registerCoinConstructor(m, 'rbtc', Rbtc.createInstance);
-  registerCoinConstructor(m, 'trbtc', Trbtc.createInstance);
-  registerCoinConstructor(m, 'celo', Celo.createInstance);
-  registerCoinConstructor(m, 'tcelo', Tcelo.createInstance);
-  registerCoinConstructor(m, 'avaxc', AvaxC.createInstance);
-  registerCoinConstructor(m, 'tavaxc', TavaxC.createInstance);
-  registerCoinConstructor(m, 'avaxp', AvaxP.createInstance);
-  registerCoinConstructor(m, 'tavaxp', TavaxP.createInstance);
-  registerCoinConstructor(m, 'xrp', Xrp.createInstance);
-  registerCoinConstructor(m, 'txrp', Txrp.createInstance);
-  registerCoinConstructor(m, 'xlm', Xlm.createInstance);
-  registerCoinConstructor(m, 'txlm', Txlm.createInstance);
-  registerCoinConstructor(m, 'dash', Dash.createInstance);
-  registerCoinConstructor(m, 'tdash', Tdash.createInstance);
-  registerCoinConstructor(m, 'zec', Zec.createInstance);
-  registerCoinConstructor(m, 'tzec', Tzec.createInstance);
-  registerCoinConstructor(m, 'algo', Algo.createInstance);
-  registerCoinConstructor(m, 'talgo', Talgo.createInstance);
-  registerCoinConstructor(m, 'trx', Trx.createInstance);
-  registerCoinConstructor(m, 'ttrx', Ttrx.createInstance);
-  registerCoinConstructor(m, 'xtz', Xtz.createInstance);
-  registerCoinConstructor(m, 'txtz', Txtz.createInstance);
-  registerCoinConstructor(m, 'hbar', Hbar.createInstance);
-  registerCoinConstructor(m, 'thbar', Thbar.createInstance);
-  registerCoinConstructor(m, 'ofc', Ofc.createInstance);
-  registerCoinConstructor(m, 'susd', Susd.createInstance);
-  registerCoinConstructor(m, 'tsusd', Tsusd.createInstance);
-  registerCoinConstructor(m, 'fiatusd', FiatUsd.createInstance);
-  registerCoinConstructor(m, 'tfiatusd', TfiatUsd.createInstance);
-  registerCoinConstructor(m, 'fiateur', FiatEur.createInstance);
-  registerCoinConstructor(m, 'tfiateur', TfiatEur.createInstance);
-  registerCoinConstructor(m, 'cspr', Cspr.createInstance);
-  registerCoinConstructor(m, 'tcspr', Tcspr.createInstance);
-  registerCoinConstructor(m, 'stx', Stx.createInstance);
-  registerCoinConstructor(m, 'tstx', Tstx.createInstance);
-  registerCoinConstructor(m, 'sol', Sol.createInstance);
-  registerCoinConstructor(m, 'tsol', Tsol.createInstance);
-  registerCoinConstructor(m, 'near', Near.createInstance);
-  registerCoinConstructor(m, 'tnear', TNear.createInstance);
-  registerCoinConstructor(m, 'polygon', Polygon.createInstance);
-  registerCoinConstructor(m, 'tpolygon', Tpolygon.createInstance);
+function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
+  globalCoinFactory.register('algo', Algo.createInstance);
+  globalCoinFactory.register('avaxc', AvaxC.createInstance);
+  globalCoinFactory.register('avaxp', AvaxP.createInstance);
+  globalCoinFactory.register('bch', Bch.createInstance);
+  globalCoinFactory.register('bcha', Bcha.createInstance);
+  globalCoinFactory.register('bsv', Bsv.createInstance);
+  globalCoinFactory.register('btc', Btc.createInstance);
+  globalCoinFactory.register('btg', Btg.createInstance);
+  globalCoinFactory.register('celo', Celo.createInstance);
+  globalCoinFactory.register('cspr', Cspr.createInstance);
+  globalCoinFactory.register('dash', Dash.createInstance);
+  globalCoinFactory.register('dot', Dot.createInstance);
+  globalCoinFactory.register('eos', Eos.createInstance);
+  globalCoinFactory.register('etc', Etc.createInstance);
+  globalCoinFactory.register('eth', Eth.createInstance);
+  globalCoinFactory.register('eth2', Eth2.createInstance);
+  globalCoinFactory.register('fiateur', FiatEur.createInstance);
+  globalCoinFactory.register('fiatusd', FiatUsd.createInstance);
+  globalCoinFactory.register('gteth', Gteth.createInstance);
+  globalCoinFactory.register('hbar', Hbar.createInstance);
+  globalCoinFactory.register('ltc', Ltc.createInstance);
+  globalCoinFactory.register('near', Near.createInstance);
+  globalCoinFactory.register('ofc', Ofc.createInstance);
+  globalCoinFactory.register('polygon', Polygon.createInstance);
+  globalCoinFactory.register('rbtc', Rbtc.createInstance);
+  globalCoinFactory.register('sol', Sol.createInstance);
+  globalCoinFactory.register('stx', Stx.createInstance);
+  globalCoinFactory.register('susd', Susd.createInstance);
+  globalCoinFactory.register('talgo', Talgo.createInstance);
+  globalCoinFactory.register('tavaxc', TavaxC.createInstance);
+  globalCoinFactory.register('tavaxp', TavaxP.createInstance);
+  globalCoinFactory.register('tbch', Tbch.createInstance);
+  globalCoinFactory.register('tbcha', Tbcha.createInstance);
+  globalCoinFactory.register('tbsv', Tbsv.createInstance);
+  globalCoinFactory.register('tbtc', Tbtc.createInstance);
+  globalCoinFactory.register('tcelo', Tcelo.createInstance);
+  globalCoinFactory.register('tcspr', Tcspr.createInstance);
+  globalCoinFactory.register('tdash', Tdash.createInstance);
+  globalCoinFactory.register('tdot', Tdot.createInstance);
+  globalCoinFactory.register('teos', Teos.createInstance);
+  globalCoinFactory.register('tetc', Tetc.createInstance);
+  globalCoinFactory.register('teth', Teth.createInstance);
+  globalCoinFactory.register('teth2', Teth2.createInstance);
+  globalCoinFactory.register('tfiateur', TfiatEur.createInstance);
+  globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
+  globalCoinFactory.register('thbar', Thbar.createInstance);
+  globalCoinFactory.register('tltc', Tltc.createInstance);
+  globalCoinFactory.register('tnear', TNear.createInstance);
+  globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
+  globalCoinFactory.register('trbtc', Trbtc.createInstance);
+  globalCoinFactory.register('trx', Trx.createInstance);
+  globalCoinFactory.register('tsol', Tsol.createInstance);
+  globalCoinFactory.register('tstx', Tstx.createInstance);
+  globalCoinFactory.register('tsusd', Tsusd.createInstance);
+  globalCoinFactory.register('ttrx', Ttrx.createInstance);
+  globalCoinFactory.register('txlm', Txlm.createInstance);
+  globalCoinFactory.register('txrp', Txrp.createInstance);
+  globalCoinFactory.register('txtz', Txtz.createInstance);
+  globalCoinFactory.register('tzec', Tzec.createInstance);
+  globalCoinFactory.register('xlm', Xlm.createInstance);
+  globalCoinFactory.register('xrp', Xrp.createInstance);
+  globalCoinFactory.register('xtz', Xtz.createInstance);
+  globalCoinFactory.register('zec', Zec.createInstance);
 
   for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
     const tokenConstructor = Erc20Token.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
-    registerCoinConstructor(m, token.tokenContractAddress, tokenConstructor);
+    globalCoinFactory.register(token.type, tokenConstructor);
+    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
   }
 
   for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
     const tokenConstructor = StellarToken.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
+    globalCoinFactory.register(token.type, tokenConstructor);
   }
 
   for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.tokens]) {
     const tokenConstructor = OfcToken.createTokenConstructor(ofcToken);
-    registerCoinConstructor(m, ofcToken.type, tokenConstructor);
+    globalCoinFactory.register(ofcToken.type, tokenConstructor);
   }
 
   for (const token of [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]) {
     const tokenConstructor = CeloToken.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
-    registerCoinConstructor(m, token.tokenContractAddress, tokenConstructor);
+    globalCoinFactory.register(token.type, tokenConstructor);
+    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
   }
 
   for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
     const tokenConstructor = EosToken.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
-    registerCoinConstructor(m, token.tokenContractAddress, tokenConstructor);
+    globalCoinFactory.register(token.type, tokenConstructor);
+    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
   }
 
   for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.tokens]) {
     const tokenConstructor = AlgoToken.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
+    globalCoinFactory.register(token.type, tokenConstructor);
     if (token.alias) {
-      registerCoinConstructor(m, token.alias, tokenConstructor);
+      globalCoinFactory.register(token.alias, tokenConstructor);
     }
   }
 
   for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
     const tokenConstructor = AvaxCToken.createTokenConstructor(token);
-    registerCoinConstructor(m, token.type, tokenConstructor);
-    registerCoinConstructor(m, token.tokenContractAddress, tokenConstructor);
-  }
-
-  return m;
-}
-
-export class CoinFactory {
-  private coinConstructors?: Map<string, CoinConstructor>;
-
-  private getCoinConstructor(name: string): CoinConstructor | undefined {
-    if (this.coinConstructors === undefined) {
-      this.coinConstructors = getCoinConstructors();
-    }
-    return this.coinConstructors.get(name);
-  }
-
-  /**
-   *
-   * @param bitgo
-   * @param name
-   * @throws CoinNotDefinedError
-   * @throws UnsupportedCoinError
-   */
-  public getInstance(bitgo: BitGo, name: string): BaseCoin {
-    let staticsCoin;
-    try {
-      staticsCoin = coins.get(name);
-    } catch (e) {
-      if (!(e instanceof CoinNotDefinedError)) {
-        throw e;
-      }
-    }
-
-    const constructor = this.getCoinConstructor(name);
-    if (constructor) {
-      return constructor(bitgo, staticsCoin);
-    }
-
-    const ethConstructor = this.getCoinConstructor('eth');
-    if (ethConstructor) {
-      const ethCoin = ethConstructor(bitgo, staticsCoin);
-      if (ethCoin.isValidAddress(name)) {
-        const unknownTokenConstructor = Erc20Token.createTokenConstructor({
-          type: 'unknown',
-          coin: 'eth',
-          network: 'Mainnet',
-          name: 'Unknown',
-          tokenContractAddress: name,
-          decimalPlaces: 0,
-        });
-        return unknownTokenConstructor(bitgo);
-      }
-    }
-
-    throw new UnsupportedCoinError(name);
+    globalCoinFactory.register(token.type, tokenConstructor);
+    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
   }
 }
 
-export const GlobalCoinFactory: CoinFactory = new CoinFactory();
+const GlobalCoinFactory: CoinFactory = new CoinFactory();
+
+registerCoinConstructors(GlobalCoinFactory);
+
+export default GlobalCoinFactory;

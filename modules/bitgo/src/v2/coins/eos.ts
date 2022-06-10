@@ -12,11 +12,11 @@ import * as querystring from 'querystring';
 import * as request from 'superagent';
 import * as url from 'url';
 
-import { BitGo } from '../../bitgo';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from '../../stringTextDecoder';
 import {
   BaseCoin,
+  BitGoBase,
   checkKrsProvider,
   Environments,
   getBip32Keys,
@@ -203,7 +203,7 @@ export class Eos extends BaseCoin {
   public static VALID_ADDRESS_CHARS = '12345abcdefghijklmnopqrstuvwxyz'.split('');
   public static ADDRESS_LENGTH = 12;
 
-  static createInstance(bitgo: BitGo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Eos(bitgo);
   }
 

@@ -1,7 +1,8 @@
+import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+export { AbstractUtxoCoin };
 import { Xrp, Txrp } from '@bitgo/sdk-coin-xrp';
 export { Xrp, Txrp };
 
-export { AbstractUtxoCoin } from './abstractUtxoCoin';
 export { Algo } from './algo';
 export { AlgoToken } from './algoToken';
 export { Bch } from './bch';

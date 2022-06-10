@@ -5,7 +5,7 @@ import 'should';
 import * as fs from 'fs-extra';
 import * as mpath from 'path';
 
-import { AbstractUtxoCoin } from '../../../../../../src/v2/coins';
+import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 
 async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> {
   const path = `${__dirname}/../fixtures/${name}.json`;

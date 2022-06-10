@@ -5,16 +5,16 @@ import * as bs58 from 'bs58';
 import * as crypto from 'crypto';
 import * as _ from 'lodash';
 import * as openpgp from 'openpgp';
-import { Ed25519BIP32 } from '../../account-lib/mpc/hdTree';
-import Eddsa, { KeyShare, YShare } from '../../account-lib/mpc/tss';
-import { IRequestTracer } from '../../api';
-import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
-import { BitGoBase } from '../bitgoBase';
-import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
-import { IWallet } from '../wallet';
-import { ITssUtils, PrebuildTransactionWithIntentOptions, SignatureShareRecord, TxRequest } from './iTssUtils';
-import { MpcUtils } from './mpcUtils';
-import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
+import { Ed25519BIP32 } from '../../../../account-lib/mpc/hdTree';
+import Eddsa, { KeyShare, YShare } from '../../../../account-lib/mpc/tss';
+import { IRequestTracer } from '../../../../api';
+import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
+import { BitGoBase } from '../../../bitgoBase';
+import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { IWallet } from '../../../wallet';
+import { ITssUtils, PrebuildTransactionWithIntentOptions, SignatureShareRecord, TxRequest } from './types';
+import { MpcUtils } from '../../mpcUtils';
+import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
   createUserSignShare,
   createUserToBitGoGShare,
@@ -23,7 +23,7 @@ import {
   offerUserToBitgoRShare,
   sendUserToBitgoGShare,
   SigningMaterial,
-} from '../tss';
+} from '../../../tss';
 
 /**
  * Utility functions for TSS work flows.

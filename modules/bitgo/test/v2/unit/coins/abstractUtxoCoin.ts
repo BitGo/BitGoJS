@@ -3,14 +3,15 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 import { VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import { BitGo } from '../../../../src';
-import { AbstractUtxoCoin } from '../../../../src/v2/coins';
-import { TestBitGo } from '../../../lib/test_bitgo';
-import * as errors from '../../../../src/errors';
 import {
+  AbstractUtxoCoin,
   Output,
   TransactionExplanation,
   TransactionParams,
-} from '../../../../src/v2/coins/abstractUtxoCoin';
+} from '@bitgo/abstract-utxo';
+import { TestBitGo } from '../../../lib/test_bitgo';
+import * as errors from '../../../../src/errors';
+
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {

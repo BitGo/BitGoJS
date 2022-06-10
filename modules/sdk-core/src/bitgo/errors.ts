@@ -20,7 +20,7 @@ export class NodeEnvironmentError extends BitGoJsError {
 export class UnsupportedCoinError extends BitGoJsError {
   public constructor(coin: string) {
     super(
-      `Coin or token type ${coin} not supported or not compiled. Please be sure that you are using the latest version of BitGoJS.`
+      `Coin or token type ${coin} not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered ${coin} first.`
     );
   }
 }

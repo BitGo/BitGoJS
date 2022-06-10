@@ -1,10 +1,8 @@
 /**
  * @prettier
  */
-import { BitGo } from '../../bitgo';
 import { Algo } from './algo';
-import { CoinConstructor } from '../coinFactory';
-import { BitGoJsError } from '@bitgo/sdk-core';
+import { BitGoBase, BitGoJsError, CoinConstructor } from '@bitgo/sdk-core';
 
 export interface AlgoTokenConfig {
   name: string;
@@ -21,7 +19,7 @@ export class AlgoToken extends Algo {
   public readonly tokenConfig: AlgoTokenConfig;
   private readonly _code: string;
 
-  constructor(bitgo: BitGo, tokenConfig: AlgoTokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: AlgoTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
 
@@ -40,7 +38,7 @@ export class AlgoToken extends Algo {
   }
 
   static createTokenConstructor(config: AlgoTokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new AlgoToken(bitgo, config);
+    return (bitgo: BitGoBase) => new AlgoToken(bitgo, config);
   }
 
   get type(): string {

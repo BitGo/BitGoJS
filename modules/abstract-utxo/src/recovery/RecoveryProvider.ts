@@ -7,8 +7,8 @@ import { ApiNotImplementedError } from './baseApi';
  * An account with bear minimum information required for recoveries.
  */
 export interface RecoveryAccountData {
-  txCount: number,
-  totalBalance: number,
+  txCount: number;
+  totalBalance: number;
 }
 
 /**

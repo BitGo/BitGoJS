@@ -1,8 +1,8 @@
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 import {
   BaseCoin,
+  BitGoBase,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -43,7 +43,7 @@ export class Dot extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   readonly MAX_VALIDITY_DURATION = 2400;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
@@ -53,7 +53,7 @@ export class Dot extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Dot(bitgo, staticsCoin);
   }
 

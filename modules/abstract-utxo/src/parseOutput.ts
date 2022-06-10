@@ -14,7 +14,7 @@ import {
   UnexpectedAddressError,
   VerificationOptions,
 } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin, Output, TransactionParams } from '../coins/abstractUtxoCoin';
+import { AbstractUtxoCoin, Output, TransactionParams } from './abstractUtxoCoin';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 

@@ -13,7 +13,6 @@ import * as rippleAddressCodec from 'ripple-address-codec';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 import * as rippleKeypairs from 'ripple-keypairs';
-
 import {
   BaseCoin,
   BitGoBase,

@@ -2,10 +2,8 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import { BitGo } from '../../bitgo';
 import { Xlm } from './xlm';
-import { CoinConstructor } from '../coinFactory';
-import { BitGoJsError } from '@bitgo/sdk-core';
+import { BitGoBase, BitGoJsError, CoinConstructor } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
 
 export interface StellarTokenConfig {
@@ -22,7 +20,7 @@ export class StellarToken extends Xlm {
   private readonly _code: string;
   private readonly _issuer: string;
 
-  constructor(bitgo: BitGo, tokenConfig: StellarTokenConfig) {
+  constructor(bitgo: BitGoBase, tokenConfig: StellarTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
 
@@ -37,7 +35,7 @@ export class StellarToken extends Xlm {
   }
 
   static createTokenConstructor(config: StellarTokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new StellarToken(bitgo, config);
+    return (bitgo: BitGoBase) => new StellarToken(bitgo, config);
   }
 
   get type() {

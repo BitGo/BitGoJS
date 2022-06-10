@@ -14,7 +14,7 @@ import {
 } from '@bitgo/utxo-lib/dist/src/bitgo';
 
 import { getSeed } from '../../../../../lib/keys';
-import { getReplayProtectionAddresses } from '../../../../../../src/v2/coins/utxo/replayProtection';
+import { getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 

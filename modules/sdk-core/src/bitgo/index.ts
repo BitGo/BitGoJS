@@ -6,6 +6,7 @@ export * from './bip32util';
 export * from './bitcoin';
 export * from './bitgoBase';
 export * from './config';
+export * from './coinFactory';
 export * from './ecdh';
 export * from './enterprise';
 export * from './environments';

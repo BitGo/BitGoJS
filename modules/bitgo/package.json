@@ -45,6 +45,8 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
+    "@bitgo/abstract-utxo": "^1.0.0",
+    "@bitgo/abstract-eth": "^1.0.0",
     "@bitgo/account-lib": "^2.20.0-rc.14",
     "@bitgo/blockapis": "^1.0.1-rc.12",
     "@bitgo/sdk-api": "^1.1.0-rc.10",
