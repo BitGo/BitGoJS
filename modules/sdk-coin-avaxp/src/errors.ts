@@ -1,4 +1,4 @@
-import { BuildTransactionError } from '@bitgo/sdk-core/src/account-lib/baseCoin/errors';
+import { BuildTransactionError } from '@bitgo/sdk-core';
 
 export class AddressValidationError extends BuildTransactionError {
   constructor(malformedAddress: string) {

@@ -1,7 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core/src/account-lib/baseCoin';
-import { BaseKey } from '@bitgo/sdk-core/src/account-lib/baseCoin/iface';
-import { NotImplementedError, SigningError } from '@bitgo/sdk-core/src/account-lib/baseCoin/errors';
+import { BaseKey, NotImplementedError, SigningError, BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { TxData } from './iface';
 import { UnsignedTx } from 'avalanche/dist/apis/platformvm/tx';
