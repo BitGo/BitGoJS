@@ -1,6 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilderFactory } from '@bitgo/sdk-core/src/account-lib/baseCoin';
-import { NotImplementedError } from '@bitgo/sdk-core/src/account-lib/baseCoin/errors';
+import { NotImplementedError, BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { Transaction } from './transaction';
