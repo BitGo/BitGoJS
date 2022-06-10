@@ -235,13 +235,16 @@ export class TssUtils extends MpcUtils implements ITssUtils {
 
     const randomHexString = crypto.randomBytes(12).toString('hex');
 
+    // Allow generating secp256k1 key pairs
+    openpgp.config.rejectCurves = new Set();
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
           name: randomHexString,
-          email: `${randomHexString}@${randomHexString}.com`,
+          email: `user-${randomHexString}@${randomHexString}.com`,
         },
       ],
+      curve: 'secp256k1',
     });
 
     const bitgoKeychain = await this.createBitgoKeychain(userGpgKey, userKeyShare, backupKeyShare, params.enterprise);
