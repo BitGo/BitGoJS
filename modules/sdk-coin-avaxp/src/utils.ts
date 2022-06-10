@@ -1,6 +1,4 @@
-import { BaseUtils } from '@bitgo/sdk-core/src/account-lib/baseCoin';
-import { NotImplementedError } from '@bitgo/sdk-core/src/account-lib/baseCoin/errors';
-import { isValidXprv, isValidXpub } from '@bitgo/sdk-core';
+import { isValidXprv, isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
 import { ec } from 'elliptic';
 
 export class Utils implements BaseUtils {

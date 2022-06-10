@@ -1,9 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey } from '@bitgo/sdk-core/src/account-lib/baseCoin/iface';
-import { NotImplementedError } from '@bitgo/sdk-core/src/account-lib/baseCoin/errors';
+import { BaseKey, NotImplementedError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransactionType } from '@bitgo/sdk-core/src/account-lib/baseCoin';
 
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
