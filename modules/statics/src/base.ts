@@ -144,6 +144,7 @@ export enum CoinFeature {
 export enum UnderlyingAsset {
   ALGO = 'algo',
   APE = 'ape',
+  API3 = 'api3',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
   AXL = 'AXL',
@@ -160,7 +161,9 @@ export enum UnderlyingAsset {
   ETH2 = 'eth2',
   ETC = 'etc',
   EOS = 'eos',
+  ERD = 'erd',
   EUR = 'eur',
+  EUROC = 'euroc',
   GTETH = 'gteth',
   HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
@@ -784,6 +787,7 @@ export enum UnderlyingAsset {
   'algo:31566704' = 'algo:31566704',
   'algo:312769' = 'algo:312769',
   'algo:6547014' = 'algo:6547014',
+  'algo:438505559' = 'algo:438505559',
 
   // Kovan-only ERC20 tokens
   TEST = 'test',
