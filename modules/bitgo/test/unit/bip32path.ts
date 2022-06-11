@@ -4,7 +4,7 @@
 import 'should';
 import * as bip32 from 'bip32';
 import { sanitizeLegacyPath } from '@bitgo/sdk-core';
-import { getSeed } from '../lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 import { HDNode, Derivable, hdPath } from '../../src/legacyBitcoin';
 
 describe('bip32util', function () {

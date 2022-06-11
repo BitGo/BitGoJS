@@ -1,4 +1,5 @@
-import { TestBitGo } from '../../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../../src/bitgo';
 import { VerifyAlgoAddressOptions } from '../../../../../src/v2/coins/algo';
 import { AssertionError } from 'assert';
 const should = require('should');
@@ -8,7 +9,7 @@ describe('Algo class', function () {
   let basecoin;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
   });

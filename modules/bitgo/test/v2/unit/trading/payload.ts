@@ -9,7 +9,8 @@ import * as bitcoinMessage from 'bitcoinjs-message';
 
 import fixtures from '../../fixtures/trading/payload';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { common, Enterprise, getAddressP2PKH, Wallet } from '@bitgo/sdk-core';
 
 describe('Trade Payloads', function () {
@@ -21,7 +22,7 @@ describe('Trade Payloads', function () {
   let bgUrl;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo = decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
@@ -50,7 +51,7 @@ describe('Trade Payloads', function () {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: bitgo.OFC_TEST_PASSWORD }),
       });
 
     const msScope = nock(microservicesUri)
@@ -94,7 +95,7 @@ describe('Trade Payloads', function () {
       }
     }
 
-    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: bitgo.OFC_TEST_PASSWORD });
 
     // signature should be a hex string
     signature.should.match(/^[0-9a-f]+$/);

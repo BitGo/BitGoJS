@@ -1,13 +1,14 @@
 import 'should';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 describe('OFC:', function () {
   let bitgo;
   let ofcCoin;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     ofcCoin = bitgo.coin('ofc');
   });

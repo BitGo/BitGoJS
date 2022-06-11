@@ -5,7 +5,8 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import { common, Util } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
 import { SignTransactionOptions } from '../../../src/v2/coins/eth';
@@ -20,7 +21,7 @@ describe('Sign ETH Transaction', async function () {
   let tx;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
@@ -110,7 +111,7 @@ describe('Ethereum Hop Transactions', function () {
     bitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(txid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     env = 'test';
-    bitgo = new TestBitGo({ env });
+    bitgo = decorate(BitGo, { env });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -199,7 +200,7 @@ describe('Ethereum Hop Transactions', function () {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
-          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
+          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: bitgo.TEST_WALLET1_PASSCODE }),
           path: userKeypair.path + userKeypair.walletSubPath,
         });
     };
@@ -236,7 +237,7 @@ describe('Ethereum Hop Transactions', function () {
           amount: sendAmount,
         }],
         hop: true,
-        walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        walletPassphrase: bitgo.TEST_WALLET1_PASSCODE,
       };
     });
 
@@ -268,7 +269,7 @@ describe('Add final signature to ETH tx from offline vault', function () {
     const vals = fixtures.getHalfSignedTethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     coin = bitgo.coin('teth');
   });
 
@@ -301,7 +302,7 @@ describe('Add signature to EIP1559 tx from offline vault', function () {
     const vals = fixtures.getUnsignedEip1559TethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     coin = bitgo.coin('teth');
   });
 
@@ -321,7 +322,7 @@ describe('prebuildTransaction', function () {
   let gasLimit;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
@@ -359,8 +360,8 @@ describe('prebuildTransaction', function () {
 
 describe('final-sign transaction from WRW', function () {
   it('should add a second signature to unsigned sweep for teth', async function () {
-    const bitgo = new TestBitGo({ env: 'test' });
-    const basecoin = bitgo.coin('teth');
+    const bitgo = decorate(BitGo, { env: 'test' });
+    const basecoin: any = bitgo.coin('teth');
     const gasPrice = 200000000000;
     const gasLimit = 500000;
     const prv = 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'; // placeholder test prv
@@ -399,8 +400,8 @@ describe('final-sign transaction from WRW', function () {
   });
 
   it('should add a second signature to unsigned sweep for erc20 token', async function () {
-    const bitgo = new TestBitGo({ env: 'test' });
-    const basecoin = bitgo.coin('tdai');
+    const bitgo = decorate(BitGo, { env: 'test' });
+    const basecoin: any = bitgo.coin('tdai');
     const gasPrice = 200000000000;
     const gasLimit = 500000;
     const prv = 'xprv9s21ZrQH143K3399QBVvbmhs4RB5QzXD8XiW3NwtaeTem93QGd5VNjukUnwJQ94nUgugHSVzSVVe3RP16Urv1ZyijpYdyDamsxf2Shbq4w1'; // placeholder test prv

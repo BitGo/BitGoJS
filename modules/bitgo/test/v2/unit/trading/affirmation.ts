@@ -3,7 +3,8 @@ import * as nock from 'nock';
 
 import fixtures from '../../fixtures/trading/affirmation';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
 import { Environments } from '../../../../src';
 
@@ -18,7 +19,7 @@ describe('Affirmations', function () {
   let affirmation;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo = decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
@@ -90,11 +91,11 @@ describe('Affirmations', function () {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD }),
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: bitgo.OFC_TEST_PASSWORD }),
       });
 
     const payload = await tradingAccount.buildPayload(fixtures.affirmAffirmationPayloadRequest);
-    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
+    const signature = await tradingAccount.signPayload({ payload, walletPassphrase: bitgo.OFC_TEST_PASSWORD });
 
     await affirmation.affirm(payload, signature);
 

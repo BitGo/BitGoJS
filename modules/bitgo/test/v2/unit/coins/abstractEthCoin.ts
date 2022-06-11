@@ -5,7 +5,8 @@
 import * as _ from 'lodash';
 import * as should from 'should';
 import * as bip32 from 'bip32';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
@@ -136,7 +137,7 @@ describe('ETH-like coins', () => {
       };
 
       before(function () {
-        bitgo = new TestBitGo({ env: 'mock' });
+        bitgo = decorate(BitGo, { env: 'mock' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
         coin = coins.get(coinName);

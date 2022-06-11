@@ -1,5 +1,7 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
-import { Polygon, Tpolygon } from '../../../../src/v2/coins';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
+import { Polygon } from '../../../../src/v2/coins/polygon';
+import { Tpolygon } from '../../../../src/v2/coins/tpolygon';
 import { getBuilder, Polygon as PolygonAccountLib } from '@bitgo/account-lib';
 import * as secp256k1 from 'secp256k1';
 import * as bip32 from 'bip32';
@@ -33,7 +35,7 @@ describe('Polygon', function () {
     hopTxBitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(hopTxid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     const env = 'test';
-    bitgo = new TestBitGo({ env });
+    bitgo = decorate(BitGo, { env });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
   });

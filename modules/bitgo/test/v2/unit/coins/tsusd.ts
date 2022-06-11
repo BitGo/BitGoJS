@@ -1,13 +1,14 @@
 import 'should';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 describe('TSUSD:', function () {
   let bitgo;
   let susdCoin;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     susdCoin = bitgo.coin('tsusd');
   });

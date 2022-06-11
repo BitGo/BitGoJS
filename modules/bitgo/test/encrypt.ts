@@ -5,7 +5,7 @@ import * as should from 'should';
 
 import { randomBytes } from 'crypto';
 import { decrypt, encrypt, bytesToWord } from '@bitgo/sdk-api';
-import { getSeed } from './lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 
 describe('bytesToWord', () => {
   it('should fail if input is not a Uint8Array', () => {

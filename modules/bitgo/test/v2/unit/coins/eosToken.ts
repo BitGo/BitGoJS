@@ -2,7 +2,8 @@ import 'should';
 
 import * as _ from 'lodash';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { Wallet } from '@bitgo/sdk-core';
 
 
@@ -13,7 +14,7 @@ describe('EOS Token:', function () {
   const tokenName = 'teos:CHEX';
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     eosTokenCoin = bitgo.coin(tokenName);
     baseCoin = bitgo.coin('teos');

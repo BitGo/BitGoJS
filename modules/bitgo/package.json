@@ -84,6 +84,7 @@
     "superagent-proxy": "^3.0.0"
   },
   "devDependencies": {
+    "@bitgo/sdk-test": "^1.0.0",
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",
     "@types/jasmine": "^3.5.12",

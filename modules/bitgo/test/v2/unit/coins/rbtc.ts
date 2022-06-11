@@ -1,11 +1,12 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { Rbtc, Trbtc } from '../../../../src/v2/coins';
 
 describe('RSK Smart Bitcoin', function () {
   let bitgo;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
   });
 

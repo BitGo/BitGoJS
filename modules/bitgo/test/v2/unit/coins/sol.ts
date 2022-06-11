@@ -1,5 +1,6 @@
 import * as sinon from 'sinon';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
 // eslint-disable-next-line import/no-internal-modules
@@ -87,7 +88,7 @@ describe('SOL:', function () {
   const validator = resources.validator;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tsol');
     keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);

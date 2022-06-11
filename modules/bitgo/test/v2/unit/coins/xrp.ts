@@ -1,6 +1,7 @@
 import 'should';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { decorate } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 const ripple = require('../../../../../sdk-coin-xrp/src/ripple');
 
@@ -12,7 +13,7 @@ describe('XRP:', function () {
   let basecoin;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txrp');
   });
@@ -124,8 +125,8 @@ describe('XRP:', function () {
 
 
   describe('Fee Management', () => {
-    const nockBitGo = new TestBitGo({ env: 'test' });
-    const nockBasecoin = nockBitGo.coin('txrp');
+    const nockBitGo = decorate(BitGo, { env: 'test' });
+    const nockBasecoin: any = nockBitGo.coin('txrp');
 
     it('Should supplement wallet generation', async function () {
       const details = await nockBasecoin.supplementGenerateWallet({});
