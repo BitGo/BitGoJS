@@ -22,12 +22,12 @@ import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath 
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-import {
+const {
   getExternalChainCode,
   getInternalChainCode,
   isChainCode,
   scriptTypeForChain,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+} = utxolib.bitgo;
 const request = require('superagent');
 
 //

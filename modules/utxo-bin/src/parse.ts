@@ -1,6 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { OutputSpend } from '@bitgo/blockapis';
-import { TransactionStatus } from '@bitgo/blockapis/dist/src/TransactionApi';
+import { OutputSpend, TransactionStatus } from '@bitgo/blockapis';
 
 export type InputFormat = 'asm' | 'parseSignature';
 

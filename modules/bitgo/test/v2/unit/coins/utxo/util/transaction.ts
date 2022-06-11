@@ -2,14 +2,9 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  isWalletUnspent,
-  RootWalletKeys,
-  signInputWithUnspent,
-  Unspent,
-  WalletUnspentSigner,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
-
+const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type Unspent = utxolib.bitgo.Unspent;
 export type TransactionObj = {
   id: string;
   hex: string;
@@ -75,7 +70,7 @@ export function createPrebuildTransaction(
 function createTransactionBuilderWithSignedInputs(
   network: utxolib.Network,
   unspents: Unspent[],
-  signer: WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
   inputTransaction: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransactionBuilder {
   const txBuilder = utxolib.bitgo.createTransactionBuilderFromTransaction(
@@ -94,7 +89,7 @@ export function createHalfSignedTransaction(
   network: utxolib.Network,
   unspents: Unspent[],
   outputAddress: string,
-  signer: WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
   prebuild?: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransaction {
   if (!prebuild) {
@@ -107,7 +102,7 @@ export function createFullSignedTransaction(
   network: utxolib.Network,
   unspents: Unspent[],
   outputAddress: string,
-  signer: WalletUnspentSigner<RootWalletKeys>,
+  signer: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
   halfSigned?: utxolib.bitgo.UtxoTransaction
 ): utxolib.bitgo.UtxoTransaction {
   if (!halfSigned) {
@@ -116,7 +111,7 @@ export function createFullSignedTransaction(
   return createTransactionBuilderWithSignedInputs(
     network,
     unspents,
-    new WalletUnspentSigner(signer.walletKeys, signer.cosigner, signer.signer),
+    new utxolib.bitgo.WalletUnspentSigner(signer.walletKeys, signer.cosigner, signer.signer),
     halfSigned
   ).build();
 }

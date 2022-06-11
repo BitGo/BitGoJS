@@ -3,17 +3,7 @@
  */
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  getExternalChainCode,
-  isChainCode,
-  RootWalletKeys,
-  scriptTypeForChain,
-  outputScripts,
-  toOutput,
-  Unspent,
-  verifySignatureWithUnspent,
-  WalletUnspentSigner,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
@@ -70,6 +60,11 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
+
+const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts, toOutput, verifySignatureWithUnspent } =
+  bitgo;
+type Unspent = bitgo.Unspent;
+type RootWalletKeys = bitgo.RootWalletKeys;
 export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   chain: number;
   index: number;
@@ -1094,7 +1089,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const signedTransaction = signAndVerifyWalletTransaction(
       transaction,
       txPrebuild.txInfo.unspents,
-      new WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
+      new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain),
       { isLastSignature }
     );
 
@@ -1208,7 +1203,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // if keys are provided, prepare the keys for input signature checking
     const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
-    const walletKeys = keys && keys.length === 3 ? new RootWalletKeys(keys as Triple<bip32.BIP32Interface>) : undefined;
+    const walletKeys =
+      keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<bip32.BIP32Interface>) : undefined;
 
     // get the number of signatures per input
     const inputSignatureCounts = transaction.ins.map((input, idx): number => {

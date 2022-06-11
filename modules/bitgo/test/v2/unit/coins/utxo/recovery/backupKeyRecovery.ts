@@ -7,7 +7,10 @@ import * as nock from 'nock';
 import * as bip32 from 'bip32';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { RootWalletKeys, toOutput, outputScripts, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+const { toOutput, outputScripts } = utxolib.bitgo;
+type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 import { Config } from '../../../../../../src/config';
 import {
@@ -93,7 +96,7 @@ function getKeysForFullSignedRecovery(
 
 function run(
   coin: AbstractUtxoCoin,
-  scriptType: outputScripts.ScriptType2Of3,
+  scriptType: ScriptType2Of3,
   walletKeys: RootWalletKeys,
   params: {
     keys: NamedKeys;
@@ -269,10 +272,10 @@ utxoCoins.forEach((coin) => {
 
     {
       const userKeyPath = '99/99';
-      const exoticWalletKeys = new RootWalletKeys(keychains, [
+      const exoticWalletKeys = new utxolib.bitgo.RootWalletKeys(keychains, [
         userKeyPath,
-        RootWalletKeys.defaultPrefix,
-        RootWalletKeys.defaultPrefix,
+        utxolib.bitgo.RootWalletKeys.defaultPrefix,
+        utxolib.bitgo.RootWalletKeys.defaultPrefix,
       ]);
 
       run(

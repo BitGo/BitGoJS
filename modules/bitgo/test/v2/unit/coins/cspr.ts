@@ -2,11 +2,12 @@ import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
-import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
 import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from '../../fixtures/coins/cspr';
 import { TransactionType } from '@bitgo/sdk-core';
+
+type Transaction = CsprAccountLib.Transaction;
 
 describe('Casper', function () {
   const coinName = 'tcspr';

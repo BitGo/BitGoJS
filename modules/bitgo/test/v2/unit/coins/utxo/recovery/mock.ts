@@ -1,10 +1,11 @@
 /**
  * @prettier
  */
-import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
 import { AddressInfo } from '@bitgo/blockapis';
 import { RecoveryProvider } from '@bitgo/abstract-utxo';
 
+type Unspent = bitgo.Unspent;
 export class MockRecoveryProvider implements RecoveryProvider {
   constructor(public unspents: Unspent[]) {}
   async getAddressInfo(address: string): Promise<AddressInfo> {

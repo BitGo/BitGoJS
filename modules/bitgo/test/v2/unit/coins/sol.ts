@@ -2,6 +2,7 @@ import * as sinon from 'sinon';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as testData from '../../fixtures/coins/sol';
 import * as should from 'should';
+// eslint-disable-next-line import/no-internal-modules
 import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 import * as _ from 'lodash';
 import * as accountLib from '@bitgo/account-lib';

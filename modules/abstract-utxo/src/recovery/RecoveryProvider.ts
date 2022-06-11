@@ -1,5 +1,6 @@
 import { AddressInfo, BlockchairApi, BlockstreamApi } from '@bitgo/blockapis';
-import { Unspent } from '@bitgo/utxo-lib/dist/src/bitgo/Unspent';
+import { bitgo } from '@bitgo/utxo-lib';
+type Unspent = bitgo.Unspent;
 
 import { ApiNotImplementedError } from './baseApi';
 

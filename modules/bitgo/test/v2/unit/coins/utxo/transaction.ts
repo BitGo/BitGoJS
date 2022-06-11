@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as assert from 'assert';
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 
@@ -29,6 +29,9 @@ import {
   Triple,
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
+
+type Unspent = bitgo.Unspent;
+type WalletUnspent = bitgo.WalletUnspent;
 
 function run(coin: AbstractUtxoCoin, inputScripts: InputScriptType[]) {
   describe(`Transaction Stages ${coin.getChain()} scripts=${inputScripts.join(',')}`, function () {

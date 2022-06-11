@@ -2,14 +2,10 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  isWalletUnspent,
-  RootWalletKeys,
-  signInputWithUnspent,
-  toOutput,
-  Unspent,
-  WalletUnspentSigner,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
+type Unspent = utxolib.bitgo.Unspent;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+
 import * as debugLib from 'debug';
 
 import { isReplayProtectionUnspent } from './replayProtection';
@@ -48,7 +44,7 @@ export class TransactionSigningError extends Error {
 export function signAndVerifyWalletTransaction(
   transaction: utxolib.bitgo.UtxoTransaction | utxolib.bitgo.UtxoTransactionBuilder,
   unspents: Unspent[],
-  walletSigner: WalletUnspentSigner<RootWalletKeys>,
+  walletSigner: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
   { isLastSignature }: { isLastSignature: boolean }
 ): utxolib.bitgo.UtxoTransaction {
   const network = transaction.network as utxolib.Network;

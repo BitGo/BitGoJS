@@ -1,10 +1,12 @@
-import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
-
+import { bitgo } from '@bitgo/utxo-lib';
 import { BaseHttpClient, HttpClient, Response } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { AddressApi, AddressInfo } from '../AddressApi';
 import { OutputSpend, UtxoApi } from '../UtxoApi';
 import { TransactionStatus } from '../TransactionApi';
+
+type Unspent = bitgo.Unspent;
+const formatOutputId = bitgo.formatOutputId;
 
 type BlockchairResponse<T> = {
   data: T;
