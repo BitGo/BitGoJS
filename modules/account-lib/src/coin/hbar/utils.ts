@@ -7,7 +7,6 @@ import { AddressDetails } from './iface';
 import url from 'url';
 import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
 import { BaseCoin, coins, HederaToken } from '@bitgo/statics';
-
 export { toHex, toUint8Array };
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
@@ -54,7 +53,7 @@ export function isValidTransactionId(txId: string): boolean {
 }
 
 /**
- * Returns whether the string is a valid Hedera public key
+ Returns whether the string is a valid Hedera public key
  *
  * @param {string} key - The public key to be validated
  * @returns {boolean} - The validation result
@@ -136,16 +135,6 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
 }
 
 /**
- * Returns a string representation of an {proto.ITokenID} object
- *
- * @param {proto.ITokenID} - The token id to be cast to string
- * @returns {string} - The string representation of the {proto.ITokenID}
- */
-export function stringifyTokenId({ shardNum, realmNum, tokenNum }: proto.ITokenID): string {
-  return `${shardNum || 0}.${realmNum || 0}.${tokenNum}`;
-}
-
-/**
  * Returns a string representation of an {proto.IAccountID} object
  *
  * @param {proto.IAccountID} accountId - Account id to be cast to string
@@ -153,6 +142,16 @@ export function stringifyTokenId({ shardNum, realmNum, tokenNum }: proto.ITokenI
  */
 export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
   return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
+}
+
+/**
+ * Returns a string representation of an {proto.ITokenID} object
+ *
+ * @param {proto.ITokenID} - token id to be cast to string
+ * @returns {string} - the string representation of the {proto.ITokenID}
+ */
+export function stringifyTokenId({ shardNum, realmNum, tokenNum }: proto.ITokenID): string {
+  return `${shardNum || 0}.${realmNum || 0}.${tokenNum}`;
 }
 
 /**
@@ -305,6 +304,7 @@ export function isValidAddressWithPaymentId(address: string): boolean {
 }
 
 /**
+<<<<<<< HEAD
  * Build hedera {proto.TokenID} object from token ID string
  *
  * @param {string} tokenID - The token ID to build
@@ -378,4 +378,14 @@ export function getHederaTokenNameFromId(tokenId: string): Readonly<BaseCoin> | 
     .map((token) => token); // flatten coin map to array
 
   return tokensArray.length > 0 ? tokensArray[0] : undefined;
+}
+
+/**
+ * Return boolean indicating whether input is a valid token transfer transaction
+ *
+ * @param {proto.ICryptoTransferTransactionBody | null} transferTxBody is a transfer transaction body
+ * @returns {boolean} true is input is a valid token transfer transaction
+ */
+export function isTokenTransfer(transferTxBody: proto.ICryptoTransferTransactionBody | null): boolean {
+  return !!transferTxBody && !!transferTxBody.tokenTransfers && transferTxBody.tokenTransfers.length > 0;
 }

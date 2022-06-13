@@ -6,11 +6,12 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
-import { TransferBuilder } from './transferBuilder';
+import { CoinTransferBuilder } from './coinTransferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidRawTransactionFormat } from './utils';
+import { isTokenTransfer, isValidRawTransactionFormat } from './utils';
 import { TokenAssociateBuilder } from './tokenAssociateBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -23,8 +24,15 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: Transaction): CoinTransferBuilder {
+    return this.initializeBuilder(tx, new CoinTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a funds token transfer transaction
+   */
+  getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
   }
 
   /**
@@ -40,7 +48,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const tx = this.parseRawTransaction(raw);
     switch (tx.type) {
       case TransactionType.Send:
-        return this.getTransferBuilder(tx);
+        return isTokenTransfer(tx.txBody.cryptoTransfer!)
+          ? this.getTokenTransferBuilder(tx)
+          : this.getTransferBuilder(tx);
       case TransactionType.WalletInitialization:
         return this.getWalletInitializationBuilder(tx);
       case TransactionType.AssociatedTokenAccountInitialization:

@@ -1,7 +1,7 @@
 import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
-import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
+import { rawTransactionForExplain, UNSIGNED_TOKEN_TRANSFER } from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
 import { Hbar } from '../../../../src/v2/coins/';
 import * as should from 'should';
@@ -45,6 +45,29 @@ describe('Hedera Hashgraph:', function () {
     explain.outputs[0].amount.should.equal('2200000000');
     explain.outputs[0].address.should.equal('0.0.43283');
     explain.outputs[0].memo.should.equal('1');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
+  it('should explain a token transfer transaction', async function () {
+    const tokenTransferParam = {
+      txHex: UNSIGNED_TOKEN_TRANSFER,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    };
+    const explain = await basecoin.explainTransaction(tokenTransferParam);
+
+    explain.id.should.equal('0.0.81320@1596110493.372646570');
+    explain.outputAmount.should.equal('10');
+    explain.timestamp.should.equal('1596110493.372646570');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('10');
+    explain.outputs[0].address.should.equal('0.0.75861');
+    explain.outputs[0].memo.should.equal('');
+    explain.outputs[0].tokenName.should.equal('thbar:usdc');
     explain.fee.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
