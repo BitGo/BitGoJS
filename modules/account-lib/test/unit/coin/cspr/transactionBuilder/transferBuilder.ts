@@ -74,6 +74,22 @@ describe('Casper Transfer Builder', () => {
         should.equal(txJson.to, ed25519Address);
       });
 
+      it('should build a transaction with transferId of type string', async function () {
+        const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT).transferId('26794144639134510');
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(txJson.transferId, '26794144639134510');
+      });
+
+      it('should build a transaction with large numeric transfer id value', async function () {
+        const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT).transferId(26794144639134510);
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.equal(txJson.transferId, '26794144639134510');
+      });
+
       it('a signed transfer transaction', async () => {
         const builder = initTxTransferBuilder().amount(testData.MIN_MOTES_AMOUNT);
         builder.sign({ key: testData.ACCOUNT_1.privateKey });

@@ -215,7 +215,7 @@ export function isValidDelegateAmount(amount: string): boolean {
  * @param {string} id - the number to validate
  * @returns {boolean} - the validation result
  */
-export function isValidTransferId(id: number): boolean {
+export function isValidTransferId(id: number | string): boolean {
   const bigNumberAmount = new BigNumber(id);
   return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
 }
@@ -277,7 +277,7 @@ export function getTransferAmount(transferTx: DeployUtil.ExecutableDeployItem): 
  * @param {DeployUtil.ExecutableDeployItem} transferTx transfer session
  * @returns {number | undefined} the transferId if exists or undefined
  */
-export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): number | undefined {
+export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): string | undefined {
   const optTransferId = transferTx.getArgByName('id') as CLOption<CLU64>;
 
   // Using U64 as used here:
@@ -287,7 +287,7 @@ export function getTransferId(transferTx: DeployUtil.ExecutableDeployItem): numb
   }
   const transferId = optTransferId.value().unwrap();
   if (transferId.clType().tag === CLTypeTag.U64 && transferId.value()._isBigNumber) {
-    return transferId.value().toNumber();
+    return transferId.value().toString();
   } else {
     throw new InvalidTransactionError('Invalid transferId');
   }
