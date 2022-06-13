@@ -118,7 +118,7 @@ interface HopPrebuild {
   gasPriceMax: number;
 }
 
-interface Recipient {
+export interface Recipient {
   address: string;
   amount: string;
   data?: string;
@@ -249,14 +249,14 @@ interface RecoverTokenOptions {
   prv?: string;
 }
 
-interface GetSendMethodArgsOptions {
+export interface GetSendMethodArgsOptions {
   recipient: Recipient;
   expireTime: number;
   contractSequenceId: number;
   signature: string;
 }
 
-interface SendMethodArgs {
+export interface SendMethodArgs {
   name: string;
   type: string;
   value: any;
