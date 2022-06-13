@@ -119,6 +119,8 @@ export interface TestableBG {
   }>;
 }
 
+const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
+
 /**
  * Decorate a given class with TestableBG utilities.
  * @param _bitgo a given class to be decorated.
@@ -129,7 +131,7 @@ export function decorate<T extends { new (...args: any[]): InstanceType<T> }, U 
   _bitgo: T,
   args?: BitGoAPIOptions
 ): U {
-  const BitGo: U = _bitgo as unknown as U;
+  const BitGo: U = _bitgo as U;
   BitGo.TEST_USER = 'tester@bitgo.com';
 
   if (process.env.BITGOJS_TEST_PASSWORD) {
@@ -608,14 +610,14 @@ export function decorate<T extends { new (...args: any[]): InstanceType<T> }, U 
     }
   };
 
-  const oldFetchConstants = BitGo.prototype.fetchConstants;
-  BitGo.prototype.fetchConstants = function () {
+  BitGoAPI.prototype.fetchConstants = function () {
+    // @ts-expect-error - no implicit this
     nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
 
     // force client constants reload
-    this.constructor['_constants'] = undefined;
+    BitGoAPI['_constants'] = undefined;
 
-    return oldFetchConstants.apply(this, arguments as any);
+    return originalFetchConstants.apply(this, arguments as any);
   };
 
   return new _bitgo(args) as U;
