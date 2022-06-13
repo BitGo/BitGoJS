@@ -311,7 +311,7 @@ describe('Casper', function () {
         output.coin.should.equal(basecoin.getChain());
       });
       explainedTx.outputAmount.should.equal(transferAmount);
-      explainedTx.transferId.should.equal(transferId);
+      explainedTx.transferId.should.equal(transferId.toString());
     });
 
     it('should explain a signed transfer transaction', async () => {
@@ -329,7 +329,7 @@ describe('Casper', function () {
           deployType: 'Send',
           to: '0203bab7708bbee2a8a6ccd2d4f92fe8a90e0730bf174e88404ae3312c68403a0383',
           amount: '2500000000',
-          transferId: 123,
+          transferId: '123',
         },
         feeInfo: {
           gasLimit: '11000',
