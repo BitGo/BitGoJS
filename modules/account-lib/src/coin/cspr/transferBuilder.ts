@@ -22,7 +22,7 @@ import {
 export class TransferBuilder extends TransactionBuilder {
   private _toAddress: string;
   private _amount: string;
-  private _transferId: number;
+  private _transferId: number | string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -38,7 +38,7 @@ export class TransferBuilder extends TransactionBuilder {
     this._session = {
       amount: this._amount,
       target: PublicKey.fromHex(this._toAddress),
-      id: this._transferId,
+      id: this._transferId as string,
       extraArguments: extraArguments,
     };
     this.transaction.setTransactionType(TransactionType.Send);
@@ -100,11 +100,11 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {number} id transfer id
    * @returns {TransferBuilder} the builder with the new parameter set
    */
-  transferId(id: number): this {
+  transferId(id: number | string): this {
     if (!isValidTransferId(id)) {
       throw new InvalidParameterValueError('Invalid transfer id');
     }
-    this._transferId = id;
+    this._transferId = id.toString();
     return this;
   }
 

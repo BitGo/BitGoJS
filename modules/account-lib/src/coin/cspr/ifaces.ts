@@ -14,7 +14,7 @@ export interface CasperTransaction {
   // transfer fields
   to?: string;
   amount?: string; // also used for delegate/undelegate
-  transferId?: number;
+  transferId?: number | string;
   // wallet init fields
   owner1?: string;
   owner2?: string;
@@ -41,7 +41,7 @@ export interface Fee {
 export interface CasperTransferTransaction {
   amount: BigNumberish;
   target: CLPublicKey;
-  id?: number;
+  id?: number | string;
   extraArguments: Map<string, CLValue>;
 }
 
