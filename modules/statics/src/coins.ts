@@ -4,6 +4,7 @@ import {
   erc20,
   erc20CompatibleAccountCoin,
   hederaCoin,
+  hederaToken,
   stellarToken,
   talgoToken,
   avaxErc20,
@@ -40,6 +41,7 @@ const CSPR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RES
 const ALGO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const DOT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS];
 const EOS_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const HBAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -147,22 +149,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CELO,
     ETH_FEATURES
   ),
-  hederaCoin(
-    'hbar',
-    'Mainnet Hedera HBAR',
+  hederaCoin('hbar', 'Mainnet Hedera HBAR', Networks.main.hedera, 8, UnderlyingAsset.HBAR, '0.0.3', HBAR_FEATURES),
+  hederaCoin('thbar', 'Testnet Hedera HBAR', Networks.test.hedera, 8, UnderlyingAsset.HBAR, '0.0.3', HBAR_FEATURES),
+  hederaToken(
+    'hbar:usdc',
+    'Mainnet Hedera USD Coin',
     Networks.main.hedera,
-    8,
-    UnderlyingAsset.HBAR,
+    6,
+    UnderlyingAsset.USDC,
     '0.0.3',
+    '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
   ),
-  hederaCoin(
-    'thbar',
-    'Testnet Hedera HBAR',
+  hederaToken(
+    'thbar:usdc',
+    'Testnet Hedera USD Coin',
     Networks.test.hedera,
-    8,
-    UnderlyingAsset.HBAR,
+    6,
+    UnderlyingAsset.USDC,
     '0.0.3',
+    '0.0.2276691',
     AccountCoin.DEFAULT_FEATURES
   ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),

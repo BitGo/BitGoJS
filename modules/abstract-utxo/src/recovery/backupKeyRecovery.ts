@@ -4,17 +4,19 @@
 
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  ChainCode,
+const {
   getInternalChainCode,
   parseOutputId,
-  RootWalletKeys,
   scriptTypeForChain,
-  WalletUnspent,
   WalletUnspentSigner,
   outputScripts,
   getExternalChainCode,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+} = utxolib.bitgo;
+
+type ChainCode = utxolib.bitgo.ChainCode;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 import { VirtualSizes } from '@bitgo/unspents';
 
@@ -123,7 +125,7 @@ export interface RecoverParams {
   bitgoKey: string;
   recoveryDestination: string;
   krsProvider?: string;
-  ignoreAddressTypes: outputScripts.ScriptType2Of3[];
+  ignoreAddressTypes: ScriptType2Of3[];
   walletPassphrase?: string;
   apiKey?: string;
   userKeyPath?: string;
@@ -258,10 +260,10 @@ export async function backupKeyRecovery(
   if (!isTriple(keys)) {
     throw new Error(`expected key triple`);
   }
-  const walletKeys = new RootWalletKeys(keys, [
-    params.userKeyPath || RootWalletKeys.defaultPrefix,
-    RootWalletKeys.defaultPrefix,
-    RootWalletKeys.defaultPrefix,
+  const walletKeys = new utxolib.bitgo.RootWalletKeys(keys, [
+    params.userKeyPath || utxolib.bitgo.RootWalletKeys.defaultPrefix,
+    utxolib.bitgo.RootWalletKeys.defaultPrefix,
+    utxolib.bitgo.RootWalletKeys.defaultPrefix,
   ]);
 
   const unspents: WalletUnspent[] = (

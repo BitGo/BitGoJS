@@ -7,16 +7,12 @@ import * as Bluebird from 'bluebird';
 
 import * as bip32 from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
-import {
-  RootWalletKeys,
-  Unspent,
-  unspentSum,
-  scriptTypeForChain,
-  outputScripts,
-  WalletUnspent,
-  WalletUnspentLegacy,
-  WalletUnspentSigner,
-} from '@bitgo/utxo-lib/dist/src/bitgo';
+const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type Unspent = utxolib.bitgo.Unspent;
+type WalletUnspent = utxolib.bitgo.WalletUnspent;
+type WalletUnspentLegacy = utxolib.bitgo.WalletUnspentLegacy;
+
 import { Dimensions } from '@bitgo/unspents';
 
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
@@ -153,7 +149,7 @@ async function getWalletKeys(recoveryCoin: AbstractUtxoCoin, wallet: IWallet | W
     xpubs = (wallet as WalletV1).keychains.map((k) => k.xpub) as Triple<string>;
   }
 
-  return new RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<bip32.BIP32Interface>);
+  return new utxolib.bitgo.RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<bip32.BIP32Interface>);
 }
 
 /**
@@ -293,7 +289,7 @@ function createSweepTransaction(
   unspents: WalletUnspent[],
   targetAddress: string,
   feeRateSatVB: number,
-  signer?: WalletUnspentSigner<RootWalletKeys>
+  signer?: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>
 ): utxolib.bitgo.UtxoTransaction {
   const inputValue = unspentSum(unspents);
   const vsize = Dimensions.fromUnspents(unspents)
@@ -408,7 +404,9 @@ export async function recoverCrossChain(
   const walletKeys = await getWalletKeys(params.recoveryCoin, wallet);
   const prv =
     params.xprv || params.walletPassphrase ? await getPrv(params.xprv, params.walletPassphrase, wallet) : undefined;
-  const signer = prv ? new WalletUnspentSigner<RootWalletKeys>(walletKeys, prv, walletKeys.bitgo) : undefined;
+  const signer = prv
+    ? new utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>(walletKeys, prv, walletKeys.bitgo)
+    : undefined;
   const feeRateSatVB = await getFeeRateSatVB(params.sourceCoin);
   const transaction = createSweepTransaction(
     params.sourceCoin.network,

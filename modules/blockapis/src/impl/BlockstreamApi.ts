@@ -1,9 +1,12 @@
-import { formatOutputId, Unspent } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
 import { AddressApi, AddressInfo } from '../AddressApi';
 import { OutputSpend, UtxoApi } from '../UtxoApi';
 import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
 import { TransactionStatus } from '../TransactionApi';
+
+type Unspent = bitgo.Unspent;
+const formatOutputId = bitgo.formatOutputId;
 
 // https://github.com/Blockstream/esplora/blob/master/API.md#get-addressaddress
 type EsploraAddressStats = {

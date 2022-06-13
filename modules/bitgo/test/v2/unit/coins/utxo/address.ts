@@ -4,7 +4,7 @@
 import 'should';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import { chainCodes } from '@bitgo/utxo-lib/dist/src/bitgo';
+const { chainCodes } = utxolib.bitgo;
 
 import { AbstractUtxoCoin, GenerateAddressOptions } from '@bitgo/abstract-utxo';
 

@@ -64,6 +64,11 @@ export interface HederaCoinConstructorOptions extends AccountConstructorOptions 
   nodeAccountId: string;
 }
 
+export interface HederaTokenConstructorOptions extends AccountConstructorOptions {
+  nodeAccountId: string;
+  tokenId: string;
+}
+
 export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
   tokenURL: string;
 }
@@ -204,6 +209,7 @@ export class StellarCoin extends AccountCoinToken {
  * The Hedera coin needs a client set with the node account Id.
  * It's an account based coin that needs the node account ID
  * where the transaction will be sent.
+ *
  */
 export class HederaCoin extends AccountCoinToken {
   public nodeAccountId: string;
@@ -214,6 +220,26 @@ export class HederaCoin extends AccountCoinToken {
     });
 
     this.nodeAccountId = options.nodeAccountId;
+  }
+}
+
+/**
+ * The Hedera network supports tokens.
+ * Hedera tokens work similar to native Hedera coin,
+ * but the token is determined by the tokenId on the node
+ *
+ */
+export class HederaToken extends AccountCoinToken {
+  public nodeAccountId: string;
+  public tokenId: string;
+
+  constructor(options: HederaTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.nodeAccountId = options.nodeAccountId;
+    this.tokenId = options.tokenId;
   }
 }
 
@@ -857,6 +883,52 @@ export function hederaCoin(
       suffix,
       network,
       isToken: false,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for Hedera token instances
+ *
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param nodeAccountId node account Id from which the transaction will be sent
+ * @param tokenId The unique identifier of this token
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Hedera mainnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function hederaToken(
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  nodeAccountId = '0.0.3',
+  tokenId: string,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new HederaToken({
+      name,
+      fullName,
+      decimalPlaces,
+      asset,
+      nodeAccountId,
+      tokenId,
+      features,
+      prefix,
+      suffix,
+      network,
+      isToken: true,
       primaryKeyCurve,
     })
   );

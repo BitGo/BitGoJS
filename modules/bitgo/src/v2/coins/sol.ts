@@ -8,7 +8,7 @@ import * as base58 from 'bs58';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
-import { AtaInitializationBuilder } from '@bitgo/account-lib/dist/src/coin/sol';
+import { Sol as SolLib } from '@bitgo/account-lib';
 import {
   BaseCoin,
   BitGoBase,
@@ -305,7 +305,7 @@ export class Sol extends BaseCoin {
 
     try {
       const transactionBuilder = factory.from(params.txBase64).fee({ amount: params.feeInfo.fee });
-      if (transactionBuilder instanceof AtaInitializationBuilder && params.tokenAccountRentExemptAmount) {
+      if (transactionBuilder instanceof SolLib.AtaInitializationBuilder && params.tokenAccountRentExemptAmount) {
         transactionBuilder.rentExemptAmount(params.tokenAccountRentExemptAmount);
       }
       rebuiltTransaction = await transactionBuilder.build();

@@ -6,8 +6,6 @@ import * as assert from 'assert';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Unspent, WalletUnspent } from '@bitgo/utxo-lib/dist/src/bitgo';
-
 import { Triple } from '@bitgo/sdk-core';
 import {
   AbstractUtxoCoin,
@@ -35,6 +33,9 @@ import { nockBitGo } from '../util/nockBitGo';
 import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
 import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
+
+type Unspent = utxolib.bitgo.Unspent;
+type WalletUnspent = utxolib.bitgo.WalletUnspent;
 
 function getKeyId(k: KeychainBase58): string {
   return getSeed(k.pub).toString('hex');

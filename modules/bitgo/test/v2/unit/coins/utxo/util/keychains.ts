@@ -5,7 +5,9 @@ import * as bip32 from 'bip32';
 import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '../../../../../lib/keys';
-import { RootWalletKeys, WalletUnspentSigner } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
+
+type RootWalletKeys = bitgo.RootWalletKeys;
 
 export type KeychainBase58 = {
   pub: string;
@@ -47,15 +49,15 @@ export const keychains: Triple<bip32.BIP32Interface> = keychainsBase58.map(({ pu
 
 export function getWalletUnspentSignerUserBitGo(
   keys: Triple<bip32.BIP32Interface>
-): WalletUnspentSigner<RootWalletKeys> {
-  return new WalletUnspentSigner(keys, keys[0], keys[2]);
+): bitgo.WalletUnspentSigner<RootWalletKeys> {
+  return new bitgo.WalletUnspentSigner(keys, keys[0], keys[2]);
 }
 
 export function getDefaultWalletKeys(): RootWalletKeys {
-  return new RootWalletKeys(keychains);
+  return new bitgo.RootWalletKeys(keychains);
 }
 
-export function getDefaultWalletUnspentSigner(): WalletUnspentSigner<RootWalletKeys> {
+export function getDefaultWalletUnspentSigner(): bitgo.WalletUnspentSigner<RootWalletKeys> {
   return getWalletUnspentSignerUserBitGo(keychains);
 }
 
@@ -64,7 +66,7 @@ export function encryptKeychain(password: string, keychain: KeychainBase58): str
 }
 
 export function getWalletKeys(seed: string): RootWalletKeys {
-  return new RootWalletKeys(
+  return new bitgo.RootWalletKeys(
     Array.from({ length: 3 }).map((_, i) => bip32.fromSeed(getSeed(`${seed}/${i}`))) as Triple<bip32.BIP32Interface>
   );
 }

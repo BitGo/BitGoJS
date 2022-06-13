@@ -39,6 +39,7 @@ In this directory, you can find examples on how to use the BitGoJS SDK with Type
 * [Account Consolidation Send](./ts/algo/account-consolidation-send.ts)
 * [Disable Token](./ts/algo/disable-token.ts)
 * [Enable Token](./ts/algo/enable-token.ts)
+* [Transaction with emergency param](./ts/algo/transaction-with-emergency-param.ts)
 
 ### Ethereum (ETH)
 

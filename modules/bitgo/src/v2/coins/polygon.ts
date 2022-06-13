@@ -3,14 +3,22 @@
  */
 import { BaseCoin, BitGoBase, TransactionExplanation } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Eth } from './eth';
+import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from './eth';
 import { getBuilder, Polygon as PolygonAccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';
 
 export class Polygon extends Eth {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+
+    this._staticsCoin = staticsCoin;
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
@@ -19,6 +27,14 @@ export class Polygon extends Eth {
 
   getChain(): string {
     return 'polygon';
+  }
+
+  getFamily(): string {
+    return 'polygon';
+  }
+
+  getFullName(): string {
+    return 'Polygon';
   }
 
   /**
@@ -75,5 +91,67 @@ export class Polygon extends Eth {
    */
   protected getTransactionBuilder(): PolygonAccountLib.TransactionBuilder {
     return getBuilder(this.getBaseChain()) as PolygonAccountLib.TransactionBuilder;
+  }
+
+  /**
+   * Get transfer operation for coin
+   * @param recipient recipient info
+   * @param expireTime expiry time
+   * @param contractSequenceId sequence id
+   * @returns {Array} operation array
+   */
+  getOperation(recipient: Recipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
+    return [
+      ['string', 'address', 'uint256', 'bytes', 'uint256', 'uint256'],
+      [
+        'POLYGON',
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
+        recipient.amount,
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        expireTime,
+        contractSequenceId,
+      ],
+    ];
+  }
+
+  /**
+   * Build arguments to call the send method on the wallet contract
+   * @param txInfo
+   */
+  getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
+    // Method signature is
+    // sendMultiSig(address toAddress, uint256 value, bytes data, uint256 expireTime, uint256 sequenceId, bytes signature)
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: txInfo.recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint256',
+        value: txInfo.recipient.amount,
+      },
+      {
+        name: 'data',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.recipient.data || '')),
+      },
+      {
+        name: 'expireTime',
+        type: 'uint256',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint256',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
+      },
+    ];
   }
 }
