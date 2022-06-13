@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.18](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.17...bitgo@14.2.0-rc.18) (2022-06-13)
+
+
+### Bug Fixes
+
+* update cspr unit tests ([cbbaf2c](https://github.com/BitGo/BitGoJS/commit/cbbaf2c731dacedc4200700d145a48669af71c40))
+
+
+### Features
+
+* **bitgo:** add doc for txn with emergency param ([ae6ec8f](https://github.com/BitGo/BitGoJS/commit/ae6ec8f763ab4e0b6def9e1eb517889d216779bf))
+* **bitgo:** implements sign tx for polygon ([f687486](https://github.com/BitGo/BitGoJS/commit/f687486c2d269e6726131edca12895f0d452bba5))
+
+
+
+
+
 # [14.2.0-rc.17](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.16...bitgo@14.2.0-rc.17) (2022-06-10)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.12...@bitgo/statics@6.18.0-rc.13) (2022-06-13)
+
+
+### Features
+
+* **statics:** add hbar token support + added hedera usdc token ([c844536](https://github.com/BitGo/BitGoJS/commit/c84453683cdfa9c412f3825ec104e406db502b63))
+
+
+
+
+
 # [6.18.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.11...@bitgo/statics@6.18.0-rc.12) (2022-06-10)
 
 

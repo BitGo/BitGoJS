@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.15...@bitgo/account-lib@2.20.0-rc.16) (2022-06-13)
+
+
+### Bug Fixes
+
+* allow string and large values for csp transferId ([922915d](https://github.com/BitGo/BitGoJS/commit/922915d1406b5141a2dee8dc67be5c5f44edc34e))
+
+
+
+
+
 # [2.20.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.14...@bitgo/account-lib@2.20.0-rc.15) (2022-06-10)
 
 
