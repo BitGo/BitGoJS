@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 
 import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
-import { decorate } from '@bitgo/sdk-test';
+import { decorate, TestableBG } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
@@ -21,6 +21,7 @@ nock.disableNetConnect();
 describe('V2 Wallet:', function () {
   const reqId = new RequestTracer();
   const bitgo = decorate(BitGo, { env: 'test' });
+  const TestBitGoStatics: TestableBG = BitGo as unknown as TestableBG;
   bitgo.initializeTestVars();
   const basecoin: any = bitgo.coin('tbtc');
   const walletData = {
@@ -285,8 +286,8 @@ describe('V2 Wallet:', function () {
           maxFeePerGas: 10,
         },
         amount: 10,
-        address: bitgo.V2.TEST_WALLET1_ADDRESS,
-        walletPassphrase: bitgo.V2.TEST_WALLET1_PASSCODE,
+        address: TestBitGoStatics.V2.TEST_WALLET1_ADDRESS,
+        walletPassphrase: TestBitGoStatics.V2.TEST_WALLET1_PASSCODE,
       };
       await ethWallet.send(params).should.be.rejected();
     });

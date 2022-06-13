@@ -29,7 +29,7 @@ export interface TestableBG {
   authenticateOfcTestUser: (otp: string) => Promise<void>;
   checkFunded: () => Promise<void>;
   nockEthWallet: () => Wallet;
-  // registerToken: (tokenFamily: string, createTokenConstructor: CoinConstructor) => void;
+  registerToken: (tokenFamily: string, createTokenConstructor: CoinConstructor) => void;
 
   TEST_ACCESSTOKEN: string;
   TEST_ACCESSTOKEN_SHAREDUSER: string;

@@ -5,7 +5,7 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import { common, Util } from '@bitgo/sdk-core';
 
-import { decorate } from '@bitgo/sdk-test';
+import { decorate, TestableBG } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
@@ -89,6 +89,7 @@ describe('Ethereum Hop Transactions', function () {
   let bitgoKeyXprv;
   let bgUrl;
   let env;
+  let TestBitGoStatics: TestableBG;
 
   const userKeypair = {
     xprv: 'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k',
@@ -112,6 +113,7 @@ describe('Ethereum Hop Transactions', function () {
 
     env = 'test';
     bitgo = decorate(BitGo, { env });
+    TestBitGoStatics = BitGo as unknown as TestableBG;
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -200,7 +202,7 @@ describe('Ethereum Hop Transactions', function () {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
-          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: bitgo.TEST_WALLET1_PASSCODE }),
+          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGoStatics.TEST_WALLET1_PASSCODE }),
           path: userKeypair.path + userKeypair.walletSubPath,
         });
     };
@@ -237,7 +239,7 @@ describe('Ethereum Hop Transactions', function () {
           amount: sendAmount,
         }],
         hop: true,
-        walletPassphrase: bitgo.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
       };
     });
 

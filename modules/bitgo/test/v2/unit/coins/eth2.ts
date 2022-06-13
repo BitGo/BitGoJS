@@ -1,16 +1,18 @@
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import { bufferToHex } from 'ethereumjs-util';
 
-import { decorate } from '@bitgo/sdk-test';
+import { decorate, TestableBG } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { Eth2, Teth2 } from '../../../../src/v2/coins';
 
 describe('Ethereum 2.0', function () {
   let bitgo;
   let basecoin;
+  let TestBitGoStatics: TestableBG;
 
   before(async function () {
     bitgo = decorate(BitGo, { env: 'mock' });
+    TestBitGoStatics = BitGo as unknown as TestableBG;
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teth2');
   });
@@ -31,7 +33,7 @@ describe('Ethereum 2.0', function () {
 
   it('validates pre-creation of bitgo key', function () {
     const localBasecoin = bitgo.coin('teth2');
-    const params = { enterprise: bitgo.TEST_ENTERPRISE };
+    const params = { enterprise: TestBitGoStatics.TEST_ENTERPRISE };
     localBasecoin.preCreateBitGo(params);
   });
 
