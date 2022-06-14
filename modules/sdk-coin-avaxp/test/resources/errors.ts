@@ -4,7 +4,7 @@ export const ERROR_NODE_ID_LENGTH = 'Invalid transaction: NodeID has incorrect l
 
 export const ERROR_EMPTY_RAW_TRANSACTION = 'Raw transaction is empty';
 
-export const ERROR_JSON_PARSING = 'There was an error parsing the JSON string';
+export const ERROR_RAW_PARSING = 'Raw transaction is not hex string';
 
 export const ERROR_STAKE_DURATION_SHORT_TIME = 'End date must be greater than or equal to two weeks';
 

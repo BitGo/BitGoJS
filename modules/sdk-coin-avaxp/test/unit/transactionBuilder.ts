@@ -24,8 +24,14 @@ describe('AvaxP Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
-        (e) => e.message === errorMessage.ERROR_JSON_PARSING
+        (e) => e.message === errorMessage.ERROR_RAW_PARSING
       );
+    });
+
+    it('Should validate a correct raw tx', () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.validateRawTransaction(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      // should not throw a error!
     });
 
     it("Shouldn't get a wallet initialization builder", () => {

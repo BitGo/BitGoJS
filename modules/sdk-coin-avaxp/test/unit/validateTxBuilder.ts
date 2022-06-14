@@ -1,25 +1,12 @@
-import * as should from 'should';
 import assert from 'assert';
 import * as testData from '../resources/avaxp';
 import * as errorMessage from '../resources/errors';
 import { register } from '../../src';
-import { KeyPair } from '../../src/keyPair';
 import { TransactionBuilderFactory } from '../../src/transactionBuilderFactory';
 import { DecodedUtxoObj } from '../../src/iface';
 
 describe('AvaxP Validate Tx Builder', () => {
   const factory = register('avaxp', TransactionBuilderFactory);
-  const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.pubkey }).getAddress();
-  // const validator = DELEGATE_VALIDATOR_ACCOUNT;
-  const initValidatorTxBuilder = () => {
-    return factory.getValidatorBuilder();
-  };
-
-  const initUnsignedValidatorTxBuilder = () => {
-    const builder = initValidatorTxBuilder();
-    // builder = addRewardAddressToBuilder(builder, sender);
-    return builder;
-  };
 
   describe('validate txBuilder fields', () => {
     const txBuilder = factory.getValidatorBuilder();
@@ -92,18 +79,6 @@ describe('AvaxP Validate Tx Builder', () => {
   });
 
   describe('should build ', () => {
-    xit('an init valid validator transaction', async () => {
-      const txBuilder = initUnsignedValidatorTxBuilder();
-      txBuilder.sign({ key: testData.ACCOUNT_1.privkey });
-      txBuilder.sign({ key: testData.ACCOUNT_2.privkey });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      // should.deepEqual(txJson.fee, testData.FEE);
-      should.deepEqual(tx.signature.length, 2);
-      should.equal(txJson.from, owner1Address);
-      // tx.type.should.equal(TransactionType.StakingLock);
-    });
-
     it('Should create AddValidator tx for same values', async () => {
       const txBuilder = register('tavaxp', TransactionBuilderFactory)
         .getValidatorBuilder()
@@ -120,14 +95,163 @@ describe('AvaxP Validate Tx Builder', () => {
 
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.tx);
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
     });
 
-    it('Should recover AddValidator tx from raw tx', async () => {
-      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.tx);
+    it('Should create AddValidator tx from raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.tx);
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+    });
+
+    it('Should create half signed AddValidator tx for same values', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory)
+        .getValidatorBuilder()
+        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
+        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
+        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
+        .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
+        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
+        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
+        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+    });
+
+    it('Should create half signed AddValidator from raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+    });
+
+    it('Should half sign a AddValidator tx from unsigned raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+    });
+
+    it('Should create half signed AddValidator from half signed raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+    });
+
+    it('Should create signed AddValidator from signed raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx for same values', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory)
+        .getValidatorBuilder()
+        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
+        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
+        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
+        .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
+        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
+        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
+        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx from half signed raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx from unsigned raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx with recovery key for same values', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory)
+        .getValidatorBuilder()
+        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
+        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
+        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
+        .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
+        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
+        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
+        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+
+      txBuilder.recoverMode().sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
+    });
+
+    it('Should create half sign a AddValidator tx with recovery key from half signed raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(
+        testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
+      );
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx with recovery key from half signed raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(
+        testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
+      );
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
+    });
+
+    it('Should full sign a AddValidator tx with recovery key from unsigned raw tx', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      // txBuilder.recoverMode()
+      txBuilder.recoverMode().sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
+    });
+
+    xit('Compare size and location of signatures in credentials for halfsign', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      // look into credentials make sure that index 0 is signed with user key
+    });
+    xit('Compare size and location of signatures in credentials for full sign', async () => {
+      const txBuilder = register('tavaxp', TransactionBuilderFactory).from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      // look into credentials make sure that index 0 and 2 is signed
     });
   });
 });

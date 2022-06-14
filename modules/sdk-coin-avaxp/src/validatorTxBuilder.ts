@@ -1,7 +1,7 @@
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { BaseCoin } from '@bitgo/statics';
 import { AddValidatorTx, BaseTx } from 'avalanche/dist/apis/platformvm';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import utils from './utils';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
@@ -12,6 +12,14 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    */
   constructor(coinConfig: Readonly<BaseCoin>) {
     super(coinConfig);
+  }
+
+  /**
+   * get transaction type
+   * @protected
+   */
+  protected get transactionType(): TransactionType {
+    return TransactionType.addValidator;
   }
 
   /**
@@ -29,8 +37,10 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @param delegationFeeRate BigInt
    */
   validateDelegationFeeRate(delegationFeeRate: number): void {
-    if (delegationFeeRate < this._network.minDelegationFee) {
-      throw new BuildTransactionError(`Delegation fee cannot be less than ${this._network.minDelegationFee}`);
+    if (delegationFeeRate < this.transaction._network.minDelegationFee) {
+      throw new BuildTransactionError(
+        `Delegation fee cannot be less than ${this.transaction._network.minDelegationFee}`
+      );
     }
   }
 
@@ -39,10 +49,9 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @param tx BaseTx
    * @returns ValidatorTxBuilder
    */
-  initBuilder(tx?: BaseTx): this {
+  initBuilder(tx?: AddValidatorTx): this {
     if (!tx) return this;
-    const vtx = tx as AddValidatorTx;
-    this._delegationFeeRate = vtx.getDelegationFee();
+    this._delegationFeeRate = tx.getDelegationFee();
     return super.initBuilder(tx);
   }
 
@@ -54,11 +63,11 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
     const { inputs, outputs } = this.createInputOutput();
 
     return new AddValidatorTx(
-      this._networkID,
-      this._blockchainID,
+      this.transaction._networkID,
+      this.transaction._blockchainID,
       outputs,
       inputs,
-      this._memo,
+      this.transaction._memo,
       utils.NodeIDStringToBuffer(this._nodeID),
       this._startTime,
       this._endTime,
