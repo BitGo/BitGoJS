@@ -5,7 +5,7 @@
 //
 
 const Wallet = require('../../src/wallet');
-import { decorate, TestableBG } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';
 import * as _ from 'lodash';
 import { common } from '@bitgo/sdk-core';
@@ -22,7 +22,7 @@ nock.disableNetConnect();
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
-  const bitgo = decorate(BitGo, { env: 'test' });
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
   bitgo.initializeTestVars();
 
   const userKeypair = {
@@ -110,7 +110,7 @@ describe('Wallet Prototype Methods', function () {
 
     before(function () {
       nock.pendingMocks().should.be.empty();
-      const prodBitgo = decorate(BitGo, { env: 'prod' });
+      const prodBitgo = TestBitGo.decorate(BitGo, { env: 'prod' });
       prodBitgo.initializeTestVars();
       bgUrl = common.Environments[prodBitgo.getEnv()].uri;
       fakeProdWallet = new Wallet(prodBitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
@@ -507,7 +507,6 @@ describe('Wallet Prototype Methods', function () {
     let bgUrl;
     let explorerUrl;
     let minChangeSize;
-    let TestBitGoStatics: TestableBG;
 
     let parentTxId = '6a74b74df4991d93c32d751336c85b5f2d1ee544a2dfbae2e5f4beb4f914e5e0';
     const outputIdx = 0;
@@ -534,8 +533,7 @@ describe('Wallet Prototype Methods', function () {
     before(function accelerateTxMockedBefore() {
       nock.pendingMocks().should.be.empty();
 
-      bitgo = decorate(BitGo, { env: 'mock' });
-      TestBitGoStatics = BitGo as unknown as TestableBG;
+      bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       bitgo.initializeTestVars();
       bitgo.setValidate(false);
       wallet = new Wallet(bitgo, { id: walletId, private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
@@ -839,7 +837,7 @@ describe('Wallet Prototype Methods', function () {
         nock(bgUrl)
           .post(`/api/v1/keychain/${userKeypair.xpub}`, {})
           .reply(200, {
-            encryptedXprv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGoStatics.TEST_WALLET1_PASSCODE }),
+            encryptedXprv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
             path: userKeypair.path + userKeypair.walletSubPath,
           });
       });
@@ -899,7 +897,7 @@ describe('Wallet Prototype Methods', function () {
         const childTx = await wallet.accelerateTransaction({
           transactionID: parentTxId,
           feeRate,
-          walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
         });
 
         should.exist(childTx);
@@ -999,7 +997,7 @@ describe('Wallet Prototype Methods', function () {
         const childTx = await wallet.accelerateTransaction({
           transactionID: parentTxId,
           feeRate,
-          walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
         });
 
         should.exist(childTx);
@@ -1118,7 +1116,7 @@ describe('Wallet Prototype Methods', function () {
         const childTx = await wallet.accelerateTransaction({
           transactionID: parentTxId,
           feeRate,
-          walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
         });
 
         should.exist(childTx);
@@ -1243,7 +1241,7 @@ describe('Wallet Prototype Methods', function () {
 
         const childTx = await wallet.accelerateTransaction({
           transactionID: parentTxId,
-          walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
           feeRate,
         });
 
@@ -1349,7 +1347,7 @@ describe('Wallet Prototype Methods', function () {
         await wallet.accelerateTransaction({
           transactionID: parentTxId,
           feeRate,
-          walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
         });
         nock.pendingMocks().should.be.empty();
 

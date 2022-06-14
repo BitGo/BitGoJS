@@ -2,7 +2,7 @@ import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import { Xtz } from '../../../../src/v2/coins/';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import {
   dataToSign,
@@ -16,7 +16,7 @@ describe('Tezos:', function () {
   let basecoin;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txtz');
   });

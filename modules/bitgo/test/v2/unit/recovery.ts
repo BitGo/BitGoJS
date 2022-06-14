@@ -5,7 +5,7 @@
 import * as should from 'should';
 import * as nock from 'nock';
 
-import { decorate, TestableBG } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -15,11 +15,9 @@ nock.disableNetConnect();
 
 describe('Recovery:', function () {
   let bitgo;
-  let TestBitGoStatics: TestableBG;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
-    TestBitGoStatics = BitGo as unknown as TestableBG;
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins
@@ -49,7 +47,7 @@ describe('Recovery:', function () {
         userKey: '{"iv":"rU++mEtIHtbp3d4jg5EulA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"ip1rb59uYnM=","ct":"ssmP9abPoVyXkW4Io0SUy+AAS8lr+wgIerTMw+lDYnkUh0sjlI4A6Fpve0q1riQ3Dy/J0bNu7dgoZkO4xs/X6dzwEwlmPhk3pEQ7Yd4CXa1zA01y0Geu900FLe4LdaS8jt6fixui2tTd4Vi3JYglF1/HmCjG1Ug="}',
         backupKey: '{"iv":"uB/BTcn1rXmgYGfncXOowg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"I3WrumxkuMQ=","ct":"sgyDNAzNsBruTRm0d04oBTBf8lheHNKS+dRgl8FeMEhodKsiyjtRVHG0CHPf5rV3g5ixVnZ+iwsSCv3PKyyeoy7RGnT0AG9YYpi0me+OvP8331iO+n5quzstrGbV1j8uEh5IMW78S+YUZKSx6zbbdZ0xNu8D5WM="}',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestBitGoStatics.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
         .then(function (recovery) {
@@ -72,7 +70,7 @@ describe('Recovery:', function () {
         userKey: '{"iv":"rU++mEtIHtbp3d4jg5EulA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"ip1rb59uYnM=","ct":"ssmP9abPoVyXkW4Io0SUy+AAS8lr+wgIerTMw+lDYnkUh0sjlI4A6Fpve0q1riQ3Dy/J0bNu7dgoZkO4xs/X6dzwEwlmPhk3pEQ7Yd4CXa1zA01y0Geu900FLe4LdaS8jt6fixui2tTd4Vi3JYglF1/HmCjG1Ug="}',
         backupKey: 'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestBitGoStatics.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
@@ -95,7 +93,7 @@ describe('Recovery:', function () {
         userKey: 'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
         backupKey: 'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestBitGoStatics.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345',
       })
@@ -137,7 +135,7 @@ describe('Recovery:', function () {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
       };
       const recoveryAmount = 74999500;
@@ -158,7 +156,7 @@ describe('Recovery:', function () {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL',
       };
       const recoveryAmount = 74999500;
@@ -199,7 +197,7 @@ describe('Recovery:', function () {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
         krsProvider: 'keyternal',
       };
@@ -222,7 +220,7 @@ describe('Recovery:', function () {
         userKey: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
         backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
         krsProvider: 'keyternal',
       };
@@ -254,7 +252,7 @@ describe('Recovery:', function () {
         userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
         backupKey: '{"iv":"xbOCFaZVnrQLAYKcgMvdNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"86cZ+hT+S0Y=","ct":"RH7Uks/JjNARX9wuIw6r4Map2C9FtLlWYk4zjLcrjzkBuNTCUNQgxF7kU5/SWzD+tomVBj6P9CLkXYzPlR1NhVi+aT9mTW6LK9nJ+ErpLKXzbIAxBLezDjJ5xqUS5cGkjoHCtANL7qTZcDBvOfejLDrUjQdw2WQ="}',
         bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'TYBTURKpanKxnx91uyfvvtztNeHE3EQf6G',
       });
 
@@ -285,7 +283,7 @@ describe('Recovery:', function () {
         userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
         backupKey: 'xpub661MyMwAqRbcF2zqeVjGdDJgEoZMFi5Vksfk3DtD9v4sBraTdgTzV3rTifJGWWudUxswBza3RotmQGxDCVKLNcRh7nW8ECB3BNSU6Xx91fL',
         bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'TYBTURKpanKxnx91uyfvvtztNeHE3EQf6G',
       });
 
@@ -311,7 +309,7 @@ describe('Recovery:', function () {
       const recoveryTx = await baseCoin.recover({
         userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
         backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         rootAddress: 'kiyjcn1ixftp',
         recoveryDestination: 'jzjkpn1bjnti',
       });
@@ -353,7 +351,7 @@ describe('Recovery:', function () {
       const recoveryTx = await baseCoin.recover({
         userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
         backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         rootAddress: 'kiyjcn1ixftp',
         recoveryDestination: 'jzjkpn1bjnti',
       });
@@ -372,9 +370,9 @@ describe('Recovery:', function () {
 
       // There should be 24 Potatokens stuck in our test wallet (based on nock)
       const tx = await wallet.recoverToken({
-        tokenContractAddress: TestBitGoStatics.V2.TEST_ERC20_TOKEN_ADDRESS,
-        recipient: TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT,
-        walletPassphrase: TestBitGoStatics.V2.TEST_ETH_WALLET_PASSPHRASE,
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recipient: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE,
       });
 
       should.exist(tx);
@@ -391,12 +389,12 @@ describe('Recovery:', function () {
       txInfo.should.have.property('operationHash');
       txInfo.should.have.property('signature');
       txInfo.should.have.property('tokenContractAddress');
-      txInfo.tokenContractAddress.should.equal(TestBitGoStatics.V2.TEST_ERC20_TOKEN_ADDRESS);
+      txInfo.tokenContractAddress.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
       txInfo.should.have.property('walletId');
-      txInfo.walletId.should.equal(TestBitGoStatics.V2.TEST_ETH_WALLET_ID);
+      txInfo.walletId.should.equal(TestBitGo.V2.TEST_ETH_WALLET_ID);
       txInfo.should.have.property('recipient');
       txInfo.recipient.should.have.property('address');
-      txInfo.recipient.address.should.equal(TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      txInfo.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       txInfo.recipient.should.have.property('amount');
       txInfo.recipient.amount.should.equal('2400');
     });
@@ -410,9 +408,9 @@ describe('Recovery:', function () {
       const transaction = await basecoin.recover({
         userKey: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
         backupKey: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
-        walletContractAddress: TestBitGoStatics.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
-        tokenContractAddress: TestBitGoStatics.V2.TEST_ERC20_TOKEN_ADDRESS,
-        recoveryDestination: TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
       });
       should.exist(transaction);
       transaction.should.have.property('tx');
@@ -424,12 +422,12 @@ describe('Recovery:', function () {
       transaction.should.have.property('gasPrice');
       transaction.gasPrice.should.equal('20000000000');
       transaction.should.have.property('tokenContractAddress');
-      transaction.tokenContractAddress.should.equal(TestBitGoStatics.V2.TEST_TDAI_TOKEN_ADDRESS);
+      transaction.tokenContractAddress.should.equal(TestBitGo.V2.TEST_TDAI_TOKEN_ADDRESS);
       transaction.should.have.property('walletContractAddress');
-      transaction.walletContractAddress.should.equal(TestBitGoStatics.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
       transaction.should.have.property('recipient');
       transaction.recipient.should.have.property('address');
-      transaction.recipient.address.should.equal(TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       transaction.recipient.should.have.property('amount');
       transaction.recipient.amount.should.equal('1000000000000000000');
     });
@@ -452,7 +450,7 @@ describe('Recovery:', function () {
           ':"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOto\n' +
           'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
           't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       };
@@ -611,7 +609,7 @@ describe('Recovery:', function () {
         '4Dlij4kQ0E6NyUUs6wo6T2HtPDAPO0hyhPPbh1OAYqIS7VlL9xmJRFC2zPxwRJvzf6OWC/m48HX\n' +
         'vgLoXYgahArhalzJVlRxcXUz4HOhozRWfv/eK3t5HJfm+25+WBOiW8YgSE7hVEYTbeBRD4="}',
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
-        walletPassphrase: TestBitGoStatics.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
       }).should.be.rejectedWith('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     });
@@ -630,8 +628,8 @@ describe('Recovery:', function () {
       const transaction = await basecoin.recover({
         userKey: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
         backupKey: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
-        walletContractAddress: TestBitGoStatics.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
-        recoveryDestination: TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
         gasPrice: '20000000000',
         gasLimit: '500000',
       });
@@ -644,10 +642,10 @@ describe('Recovery:', function () {
       transaction.should.have.property('gasPrice');
       transaction.gasPrice.should.equal('20000000000');
       transaction.should.have.property('walletContractAddress');
-      transaction.walletContractAddress.should.equal(TestBitGoStatics.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
       transaction.should.have.property('recipient');
       transaction.recipient.should.have.property('address');
-      transaction.recipient.address.should.equal(TestBitGoStatics.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       transaction.recipient.should.have.property('amount');
       transaction.recipient.amount.should.equal('9999999999999999928');
     });

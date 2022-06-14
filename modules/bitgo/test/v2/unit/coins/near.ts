@@ -1,6 +1,6 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { randomBytes } from 'crypto';
 import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
@@ -30,7 +30,7 @@ describe('NEAR:', function () {
   };
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tnear');
     newTxPrebuild = () => {

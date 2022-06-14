@@ -1,6 +1,6 @@
 import 'should';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 describe('Avaxc Token:', function () {
@@ -11,7 +11,7 @@ describe('Avaxc Token:', function () {
     const tokenName = 'tavaxc:link';
 
     before(function () {
-      bitgo = decorate(BitGo, { env: 'test' });
+      bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
       bitgo.initializeTestVars();
       avaxcTokenCoin = bitgo.coin(tokenName);
     });
@@ -38,7 +38,7 @@ describe('Avaxc Token:', function () {
   describe('In env prod:', function () {
     const prodTokenName = 'avaxc:png';
     before(function () {
-      bitgo = decorate(BitGo, { env: 'prod' });
+      bitgo = TestBitGo.decorate(BitGo, { env: 'prod' });
       bitgo.initializeTestVars();
       avaxcTokenCoin = bitgo.coin(prodTokenName);
     });

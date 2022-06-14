@@ -4,7 +4,7 @@ import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import {
   common,
@@ -103,7 +103,7 @@ describe('TSS Utils:', async function () {
       .get('/api/v1/client/constants')
       .reply(200, { ttl: 3600, constants });
 
-    const bitgo = decorate(BitGo, { env: 'mock' });
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
 
     const baseCoin = bitgo.coin(coinName);

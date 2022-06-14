@@ -1,4 +1,4 @@
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import * as testData from '../../fixtures/coins/stx';
 import * as accountLib from '@bitgo/account-lib';
@@ -27,7 +27,7 @@ describe('STX:', function () {
   ];
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tstx');
   });

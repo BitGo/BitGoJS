@@ -8,7 +8,7 @@ import * as sinon from 'sinon';
 import { Eos } from '../../../../src/v2/coins';
 import { EosInputs, EosResponses } from '../../fixtures/coins/eos';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { Wallet } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
@@ -18,7 +18,7 @@ describe('EOS:', function () {
   let basecoin;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teos');
   });

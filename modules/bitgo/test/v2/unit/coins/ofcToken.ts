@@ -1,5 +1,5 @@
 import 'should';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 const PRECISION_2 = '100';
@@ -13,7 +13,7 @@ describe('OFC:', function () {
   let otestusdCoin;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     otestusdCoin = bitgo.coin('ofctusd');
   });

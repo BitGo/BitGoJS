@@ -6,7 +6,7 @@
 
 import 'should';
 import * as BitGoJS from '../../src';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';
 
 describe('Constructor', function () {
@@ -32,7 +32,7 @@ describe('Constructor', function () {
   });
 
   it('methods', function () {
-    const bitgo = decorate(BitGo);
+    const bitgo = TestBitGo.decorate(BitGo);
     bitgo.initializeTestVars();
     bitgo.should.have.property('version');
     bitgo.should.have.property('market');

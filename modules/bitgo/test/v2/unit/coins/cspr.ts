@@ -1,5 +1,5 @@
 import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { Cspr, Tcspr } from '../../../../src/v2/coins';
 import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
@@ -16,7 +16,7 @@ describe('Casper', function () {
   let basecoin;
 
   before(function () {
-    bitgo = decorate(BitGo, {
+    bitgo = TestBitGo.decorate(BitGo, {
       env: 'mock',
     });
     bitgo.initializeTestVars();

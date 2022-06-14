@@ -3,13 +3,13 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as openpgp from 'openpgp';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 import assert = require('assert');
 
 describe('BLS Utils:', async function () {
-  const bitgo: any = decorate(BitGo, { env: 'mock' });
+  const bitgo: any = TestBitGo.decorate(BitGo, { env: 'mock' });
   bitgo.initializeTestVars();
   const eth2 = bitgo.coin('eth2');
   let bgUrl: string;

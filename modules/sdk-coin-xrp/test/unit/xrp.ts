@@ -1,6 +1,6 @@
 import 'should';
 
-import { decorate, TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Txrp } from '../../src/txrp';
 const ripple = require('../../src/ripple');
@@ -9,7 +9,7 @@ import * as nock from 'nock';
 
 nock.disableNetConnect();
 
-const bitgo: TestBitGo = decorate(BitGoAPI, { env: 'test' });
+const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 bitgo.safeRegister('txrp', Txrp.createInstance);
 
 describe('XRP:', function () {

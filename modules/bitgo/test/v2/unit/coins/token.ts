@@ -1,14 +1,14 @@
 import 'should';
 import { BaseCoin } from '@bitgo/sdk-core';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 describe('Virtual Token:', function () {
   let bitgo;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
   });
 

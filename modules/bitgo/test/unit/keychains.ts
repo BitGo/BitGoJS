@@ -8,7 +8,7 @@ import 'should';
 
 import { common } from '@bitgo/sdk-core';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';
 
 describe('Keychains', function v2keychains() {
@@ -20,7 +20,7 @@ describe('Keychains', function v2keychains() {
     before(function beforeDescribe() {
       nock.pendingMocks().should.be.empty();
 
-      bitgo = decorate(BitGo, { env: 'mock' });
+      bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       bitgo.initializeTestVars();
       bitgo.setValidate(false);
       keychains = bitgo.keychains();

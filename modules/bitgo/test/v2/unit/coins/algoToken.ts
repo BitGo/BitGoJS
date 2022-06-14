@@ -1,6 +1,6 @@
 import 'should';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 describe('Algo Unison Token:', function () {
@@ -9,7 +9,7 @@ describe('Algo Unison Token:', function () {
   const tokenName = 'talgo:16026728';
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(tokenName);
   });
@@ -33,7 +33,7 @@ describe('Algo USDC Token:', function () {
   const USDCtokenName = 'talgo:10458941';
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(USDCtokenName);
   });
@@ -57,7 +57,7 @@ describe('Algo USDt Token:', function () {
   const USDTtokenName = 'talgo:180447';
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(USDTtokenName);
   });

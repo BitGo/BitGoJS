@@ -1,4 +1,4 @@
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 import * as nock from 'nock';
@@ -36,7 +36,7 @@ describe('ETH:', function () {
     hopTxBitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(hopTxid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     const env = 'test';
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
   });

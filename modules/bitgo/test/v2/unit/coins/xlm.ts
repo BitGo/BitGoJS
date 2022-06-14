@@ -5,7 +5,7 @@ import * as stellar from 'stellar-sdk';
 import { Environments } from '../../../../src';
 
 import { Wallet } from '@bitgo/sdk-core';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 import * as nock from 'nock';
@@ -17,7 +17,7 @@ describe('XLM:', function () {
   let uri;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txlm');
     uri = Environments[bitgo.getEnv()].uri;

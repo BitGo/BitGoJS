@@ -1,4 +1,4 @@
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { Tcelo } from '../../../../src/v2/coins/tcelo';
 import { Celo } from '../../../../src/v2/coins/celo';
@@ -7,7 +7,7 @@ describe('Celo Gold', function () {
   let bitgo;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
   });
 

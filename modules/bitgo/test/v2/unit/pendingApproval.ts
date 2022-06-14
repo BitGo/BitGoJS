@@ -5,7 +5,7 @@ import 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
 
-import { decorate, TestableBG } from '@bitgo/sdk-test';
+import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
 import {
@@ -66,7 +66,7 @@ describe('Pending Approvals:', () => {
   before(async () => {
     nock.disableNetConnect();
     // create wallet
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin(coin);
 

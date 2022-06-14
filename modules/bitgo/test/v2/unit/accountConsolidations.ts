@@ -10,7 +10,7 @@ import * as nock from 'nock';
 
 import { common, Wallet } from '@bitgo/sdk-core';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 const algoFixtures = require('../fixtures/coins/algo');
 
@@ -26,7 +26,7 @@ describe('Account Consolidations:', function () {
   for (const coinName of ['talgo', 'txtz']) {
     describe(coinName + ' Account Consolidations: ', function () {
       before(function () {
-        bitgo = decorate(BitGo, { env: 'test' });
+        bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
 

@@ -1,6 +1,6 @@
 import 'should';
 
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 describe('Celo Token:', function () {
@@ -9,7 +9,7 @@ describe('Celo Token:', function () {
   const tokenName = 'tcusd';
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     celoTokenCoin = bitgo.coin(tokenName);
   });

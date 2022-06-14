@@ -9,7 +9,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { BlsUtils, common, TssUtils } from '@bitgo/sdk-core';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
 describe('V2 Keychains', function () {
@@ -19,7 +19,7 @@ describe('V2 Keychains', function () {
   let bgUrl;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
     basecoin = bitgo.coin('tltc');

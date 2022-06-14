@@ -1,7 +1,7 @@
 import 'should';
 
 import * as nock from 'nock';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
 import { SeedValidator } from '../../../src/v2/internal/seedValidator';
@@ -11,7 +11,7 @@ describe('SeedValidators:', function () {
   let bitgo;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
   });
 

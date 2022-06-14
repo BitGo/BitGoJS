@@ -6,12 +6,12 @@ import 'should';
 import * as nock from 'nock';
 import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import * as sinon from 'sinon';
 
 describe('V2 Wallets:', function () {
-  const bitgo = decorate(BitGo, { env: 'mock' });
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
   let wallets;
   let bgUrl;
 
@@ -70,7 +70,7 @@ describe('V2 Wallets:', function () {
     });
 
     it('creates an eos wallet with custom address', async function () {
-      const eosBitGo = decorate(BitGo, { env: 'mock' });
+      const eosBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       eosBitGo.initializeTestVars();
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';
@@ -100,7 +100,7 @@ describe('V2 Wallets:', function () {
     });
 
     it('creates a wallet with custom gasPrice', async function () {
-      const ethBitGo = decorate(BitGo, { env: 'mock' });
+      const ethBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
@@ -117,7 +117,7 @@ describe('V2 Wallets:', function () {
     });
 
     it('creates a new wallet with walletVersion', async function () {
-      const ethBitGo = decorate(BitGo, { env: 'mock' });
+      const ethBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)

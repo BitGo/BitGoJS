@@ -5,7 +5,7 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import { common, Util } from '@bitgo/sdk-core';
 
-import { decorate, TestableBG } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/coins/eth');
@@ -21,7 +21,7 @@ describe('Sign ETH Transaction', async function () {
   let tx;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
@@ -89,7 +89,6 @@ describe('Ethereum Hop Transactions', function () {
   let bitgoKeyXprv;
   let bgUrl;
   let env;
-  let TestBitGoStatics: TestableBG;
 
   const userKeypair = {
     xprv: 'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k',
@@ -112,8 +111,7 @@ describe('Ethereum Hop Transactions', function () {
     bitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(txid.slice(2), 'hex'), bitgoKey.privateKey).signature).toString('hex');
 
     env = 'test';
-    bitgo = decorate(BitGo, { env });
-    TestBitGoStatics = BitGo as unknown as TestableBG;
+    bitgo = TestBitGo.decorate(BitGo, { env });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -202,7 +200,7 @@ describe('Ethereum Hop Transactions', function () {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
-          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGoStatics.TEST_WALLET1_PASSCODE }),
+          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
           path: userKeypair.path + userKeypair.walletSubPath,
         });
     };
@@ -239,7 +237,7 @@ describe('Ethereum Hop Transactions', function () {
           amount: sendAmount,
         }],
         hop: true,
-        walletPassphrase: TestBitGoStatics.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
       };
     });
 
@@ -271,7 +269,7 @@ describe('Add final signature to ETH tx from offline vault', function () {
     const vals = fixtures.getHalfSignedTethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     coin = bitgo.coin('teth');
   });
 
@@ -304,7 +302,7 @@ describe('Add signature to EIP1559 tx from offline vault', function () {
     const vals = fixtures.getUnsignedEip1559TethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     coin = bitgo.coin('teth');
   });
 
@@ -324,7 +322,7 @@ describe('prebuildTransaction', function () {
   let gasLimit;
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
@@ -362,7 +360,7 @@ describe('prebuildTransaction', function () {
 
 describe('final-sign transaction from WRW', function () {
   it('should add a second signature to unsigned sweep for teth', async function () {
-    const bitgo = decorate(BitGo, { env: 'test' });
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     const basecoin: any = bitgo.coin('teth');
     const gasPrice = 200000000000;
     const gasLimit = 500000;
@@ -402,7 +400,7 @@ describe('final-sign transaction from WRW', function () {
   });
 
   it('should add a second signature to unsigned sweep for erc20 token', async function () {
-    const bitgo = decorate(BitGo, { env: 'test' });
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     const basecoin: any = bitgo.coin('tdai');
     const gasPrice = 200000000000;
     const gasLimit = 500000;

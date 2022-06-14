@@ -1,6 +1,6 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
-import { decorate } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
@@ -12,7 +12,7 @@ describe('DOT:', function () {
 
 
   before(function () {
-    bitgo = decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
     prodCoin = bitgo.coin('dot');
