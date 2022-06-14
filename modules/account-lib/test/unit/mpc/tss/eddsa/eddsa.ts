@@ -232,9 +232,24 @@ describe('TSS EDDSA key generation and signing', function () {
       const message_buffer = Buffer.from(message);
 
       // signing with 3-3 signatures
-      let A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2], A_combine.jShares[3]]);
-      let B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1], B_combine.jShares[3]]);
-      let C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1], C_combine.jShares[2]]);
+      let A_sign_share = MPC.signShare(
+        message_buffer,
+        A_combine.pShare,
+        [A_combine.jShares[2], A_combine.jShares[3]],
+        seed,
+      );
+      let B_sign_share = MPC.signShare(
+        message_buffer,
+        B_combine.pShare,
+        [B_combine.jShares[1], B_combine.jShares[3]],
+        seed,
+      );
+      let C_sign_share = MPC.signShare(
+        message_buffer,
+        C_combine.pShare,
+        [C_combine.jShares[1], C_combine.jShares[2]],
+        seed,
+      );
       let A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1], C_sign_share.rShares[1]]);
       let B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2], C_sign_share.rShares[2]]);
       let C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3], B_sign_share.rShares[3]]);
@@ -243,8 +258,8 @@ describe('TSS EDDSA key generation and signing', function () {
       result.should.equal(true);
 
       // signing with A and B
-      A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]]);
-      B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]]);
+      A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[2]], seed);
+      B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[1]], seed);
       A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [B_sign_share.rShares[1]], [C.yShares[1]]);
       B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [A_sign_share.rShares[2]], [C.yShares[2]]);
       signature = MPC.signCombine([A_sign, B_sign]);
@@ -252,8 +267,8 @@ describe('TSS EDDSA key generation and signing', function () {
       result.should.equal(true);
 
       // signing with A and C
-      A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]]);
-      C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]]);
+      A_sign_share = MPC.signShare(message_buffer, A_combine.pShare, [A_combine.jShares[3]], seed);
+      C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[1]], seed);
       A_sign = MPC.sign(message_buffer, A_sign_share.xShare, [C_sign_share.rShares[1]], [B.yShares[1]]);
       C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [A_sign_share.rShares[3]], [B.yShares[3]]);
       signature = MPC.signCombine([A_sign, C_sign]);
@@ -261,8 +276,8 @@ describe('TSS EDDSA key generation and signing', function () {
       result.should.equal(true);
 
       // signing with B and C
-      B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[3]]);
-      C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[2]]);
+      B_sign_share = MPC.signShare(message_buffer, B_combine.pShare, [B_combine.jShares[3]], seed);
+      C_sign_share = MPC.signShare(message_buffer, C_combine.pShare, [C_combine.jShares[2]], seed);
       B_sign = MPC.sign(message_buffer, B_sign_share.xShare, [C_sign_share.rShares[2]], [A.yShares[2]]);
       C_sign = MPC.sign(message_buffer, C_sign_share.xShare, [B_sign_share.rShares[3]], [A.yShares[3]]);
       signature = MPC.signCombine([B_sign, C_sign]);
@@ -329,6 +344,24 @@ describe('TSS EDDSA key generation and signing', function () {
     it('should fail if seed is not length 64', function () {
       assert.throws(() => MPC.keyShare(1, 2, 3, randomBytes(33)), /Seed must have length 64/);
       assert.throws(() => MPC.keyShare(1, 2, 3, randomBytes(66)), /Seed must have length 64/);
+
+      const fakePShare = {
+        i: 1,
+        t: 3,
+        n: 2,
+        y: 'yString',
+        u: 'uString',
+        prefix: 'prefix',
+        chaincode: 'chaincode',
+      };
+      assert.throws(
+        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, [], randomBytes(33)),
+        /Seed must have length 64/,
+      );
+      assert.throws(
+        () => MPC.signShare(Buffer.from('abcd', 'hex'), fakePShare, [], randomBytes(66)),
+        /Seed must have length 64/,
+      );
     });
   });
 });
