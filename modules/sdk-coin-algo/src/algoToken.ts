@@ -2,7 +2,8 @@
  * @prettier
  */
 import { Algo } from './algo';
-import { BitGoBase, BitGoJsError, CoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { coins, AlgoCoin, NetworkType } from '@bitgo/statics';
 
 export interface AlgoTokenConfig {
   name: string;
@@ -12,6 +13,20 @@ export interface AlgoTokenConfig {
   network: string;
   decimalPlaces: number;
 }
+
+export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
+  if (coin instanceof AlgoCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+      alias: coin.alias,
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
 
 export class AlgoToken extends Algo {
   static readonly tokenNamePattern = /^([^:]+):(?:([^.]+)-)?([0-9]+)$/;
@@ -39,6 +54,17 @@ export class AlgoToken extends Algo {
 
   static createTokenConstructor(config: AlgoTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new AlgoToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    formattedAlgoTokens.forEach((config) => {
+      tokensCtors.push({ name: config.name, coinConstructor: AlgoToken.createTokenConstructor(config) });
+      if (config.alias) {
+        tokensCtors.push({ name: config.alias, coinConstructor: AlgoToken.createTokenConstructor(config) });
+      }
+    });
+    return tokensCtors;
   }
 
   get type(): string {

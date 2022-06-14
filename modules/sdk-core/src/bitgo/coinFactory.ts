@@ -8,6 +8,11 @@ import { UnsupportedCoinError } from './errors';
 
 export type CoinConstructor = (bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
 
+export interface NamedCoinConstructor {
+  name: string;
+  coinConstructor: CoinConstructor;
+}
+
 export class CoinFactory {
   private coinConstructors: Map<string, CoinConstructor>;
 
