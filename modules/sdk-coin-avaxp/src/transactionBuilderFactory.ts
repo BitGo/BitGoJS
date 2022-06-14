@@ -1,9 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { NotImplementedError, BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
-import { WalletInitializationBuilder } from './walletInitializationBuilder';
-import { Transaction } from './transaction';
 import { TransferBuilder } from './transferBuilder';
+import { ValidatorTxBuilder } from './validatorTxBuilder';
+import { BaseTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import utils from './utils';
+import { PlatformVMConstants } from 'avalanche/dist/apis/platformvm/constants';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -11,31 +13,39 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
+  from(raw: string): TransactionBuilder {
+    const tx = new Tx();
+    let utx;
+    try {
+      tx.fromString(raw);
+      utx = tx.getUnsignedTx();
+    } catch (err) {
+      utx = new UnsignedTx();
+      utx.fromBuffer(utils.cb58Decode(raw));
+    }
+    const baseTx = utx.getTransaction();
+    if (baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX) {
+      return this.getValidatorBuilder(baseTx);
+    }
     throw new NotImplementedError('from not implemented');
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
-  }
-
-  /** @inheritdoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: BaseTx): TransferBuilder {
+    return new TransferBuilder(this._coinConfig).initBuilder(tx);
   }
 
   /**
-   * Initialize the builder with the given transaction
+   * Initialize Validator builder
    *
    * @param {Transaction | undefined} tx - the transaction used to initialize the builder
-   * @param {TransactionBuilder} builder - the builder to be initialized
-   * @returns {TransactionBuilder} the builder initialized
+   * @returns {StakingTxBuilder} the builder initialized
    */
-  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    if (tx) {
-      builder.initBuilder(tx);
-    }
-    return builder;
+  getValidatorBuilder(tx?: BaseTx): ValidatorTxBuilder {
+    return new ValidatorTxBuilder(this._coinConfig).initBuilder(tx);
+  }
+
+  getWalletInitializationBuilder(): TransactionBuilder {
+    throw new NotImplementedError('Wallet initialization is not needed');
   }
 }

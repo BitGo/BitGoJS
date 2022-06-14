@@ -1,7 +1,16 @@
-import { isValidXprv, isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
+import { isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
+import { BinTools, Buffer } from 'avalanche';
+import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
 
 export class Utils implements BaseUtils {
+  private binTools = BinTools.getInstance();
+  public cb58Decode = this.binTools.cb58Decode;
+  public cb58Encode = this.binTools.cb58Encode;
+  public stringToBuffer = this.binTools.stringToBuffer;
+  public bufferToString = this.binTools.bufferToString;
+  public NodeIDStringToBuffer = NodeIDStringToBuffer;
+
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
     throw new NotImplementedError('isValidAddress not implemented');
@@ -45,31 +54,27 @@ export class Utils implements BaseUtils {
     }
   }
 
+  parseAddress = (pub: string): Buffer => this.binTools.parseAddress(pub, 'P');
+
   /**
-   * Checks if the string is a valid protocol private key, or extended
+   * Returns whether or not the string is a valid protocol private key, or extended
    * private key.
+   *
+   * The protocol key format is described in the @stacks/transactions npm package, in the
+   * createStacksPrivateKey function:
+   * https://github.com/blockstack/stacks.js/blob/master/packages/transactions/src/keys.ts#L125
    *
    * @param {string} prv - the private key (or extended private key) to be validated
    * @returns {boolean} - the validation result
    */
   isValidPrivateKey(prv: string): boolean {
-    if (isValidXprv(prv)) return true;
+    // if (isValidXprv(prv)) return true;
 
     if (prv.length !== 64 && prv.length !== 66) return false;
 
     if (prv.length === 66 && prv.slice(64) !== '01') return false;
 
     return this.allHexChars(prv);
-  }
-
-  /** @inheritdoc */
-  isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('isValidSignature not implemented');
-  }
-
-  /** @inheritdoc */
-  isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('isValidTransactionId not implemented');
   }
 
   /**
@@ -80,6 +85,16 @@ export class Utils implements BaseUtils {
    */
   allHexChars(maybe: string): boolean {
     return /^([0-9a-f])+$/i.test(maybe);
+  }
+
+  /** @inheritdoc */
+  isValidSignature(signature: string): boolean {
+    throw new NotImplementedError('isValidSignature not implemented');
+  }
+
+  /** @inheritdoc */
+  isValidTransactionId(txId: string): boolean {
+    throw new NotImplementedError('isValidTransactionId not implemented');
   }
 }
 
