@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.8...@bitgo/sdk-coin-avaxp@0.1.0-rc.9) (2022-06-14)
+
+
+### Features
+
+* **sdk-coin-avaxp:** implemented builder for AddValidatorTx ([7cb8b2f](https://github.com/BitGo/BitGoJS/commit/7cb8b2fcaa31ff0dc165abcddd1f8383a7ecef5a))
+
+
+
+
+
 # [0.1.0-rc.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.7...@bitgo/sdk-coin-avaxp@0.1.0-rc.8) (2022-06-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp
