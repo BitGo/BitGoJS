@@ -78,7 +78,6 @@ export default class Eddsa {
     if (seed && seed.length !== 64) {
       throw new Error('Seed must have length 64');
     }
-
     const seedchain = seed ?? randomBytes(64);
     const actualSeed = seedchain.slice(0, 32);
     const chaincode = seedchain.slice(32);
@@ -234,13 +233,17 @@ export default class Eddsa {
     return shares;
   }
 
-  signShare(message: Buffer, pShare: PShare, jShares: JShare[]): SignShare {
+  signShare(message: Buffer, pShare: PShare, jShares: JShare[], seed?: Buffer): SignShare {
+    if (seed && seed.length !== 64) {
+      throw new Error('Seed must have length 64');
+    }
     const indices = [pShare, ...jShares].map(({ i }) => i);
     const split_u = Eddsa.shamir.split(bigIntFromBufferLE(Buffer.from(pShare.u, 'hex')), pShare.t, pShare.n);
 
     // Generate nonce contribution.
     const prefix = Buffer.from(pShare.prefix, 'hex');
-    const randomBuffer = randomBytes(32);
+    const randomBuffer = seed ?? randomBytes(64);
+
     const digest = createHash('sha512')
       .update(Buffer.concat([prefix, message, randomBuffer]))
       .digest();

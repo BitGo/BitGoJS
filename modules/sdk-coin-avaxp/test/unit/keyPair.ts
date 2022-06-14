@@ -1,7 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair } from '../../src';
-import { testnet } from '../../src/constants';
+import { testnet, KeyPair } from '../../src/keyPair';
 import * as testData from '../resources/avaxp';
 // import { ACCOUNT_1, SEED_ACCOUNT } from '../resources/avaxp';
 

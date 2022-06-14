@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey, NotImplementedError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { BaseTx } from 'avalanche/dist/apis/platformvm';
 
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -13,7 +14,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected buildAvaxpTransaction(): Transaction {
+  protected buildAvaxpTransaction(): BaseTx {
     throw new NotImplementedError('buildImplementation not implemented');
   }
 

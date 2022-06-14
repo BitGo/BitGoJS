@@ -14,10 +14,11 @@ import { bech32 } from 'bech32';
 import * as bip32 from 'bip32';
 import { ECPair } from 'bitcoinjs-lib';
 import { randomBytes } from 'crypto';
-import { mainnet } from './constants';
 import utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
+export const testnet = 'fuji';
+export const mainnet = 'avax';
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
@@ -94,8 +95,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @returns {string} The mainnet address derived from the public key
    */
-  getAddress(): string {
-    return this.getAvaxPAddress(mainnet);
+  getAddress(format: string = mainnet): string {
+    return this.getAvaxPAddress(format);
   }
 
   /**
