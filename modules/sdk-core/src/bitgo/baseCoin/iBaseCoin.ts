@@ -4,7 +4,7 @@ import { Keychain, IKeychains } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
-import { ITssUtils } from '../utils';
+import { ITssUtils } from '../tss/utils';
 import { IWallet, IWallets, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';

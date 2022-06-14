@@ -2,13 +2,8 @@ import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } fr
 import { BitGoBase } from './../../bitgoBase';
 import { DecryptableYShare, CombinedKey, SigningMaterial, EncryptedYShare } from './types';
 import { ShareKeyPosition } from './../types';
-import {
-  encryptAndSignText,
-  readSignedMessage,
-  SignatureShareRecord,
-  SignatureShareType,
-  TxRequest,
-} from './../../utils';
+import { SignatureShareRecord, SignatureShareType, TxRequest } from '../utils';
+import { encryptAndSignText, readSignedMessage } from '../../utils';
 import _ = require('lodash');
 
 /**

@@ -13,8 +13,8 @@ import { BitGoBase } from '../../../bitgoBase';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { IWallet } from '../../../wallet';
 import { ITssUtils, PrebuildTransactionWithIntentOptions, SignatureShareRecord, TxRequest } from './types';
-import { MpcUtils } from '../../mpcUtils';
-import { encryptText, getBitgoGpgPubKey } from '../../opengpgUtils';
+import { MpcUtils } from '../../../utils/mpcUtils';
+import { encryptText, getBitgoGpgPubKey } from '../../../utils/opengpgUtils';
 import {
   createUserSignShare,
   createUserToBitGoGShare,
@@ -23,7 +23,7 @@ import {
   offerUserToBitgoRShare,
   sendUserToBitgoGShare,
   SigningMaterial,
-} from '../../../tss';
+} from '../../index';
 
 /**
  * Utility functions for TSS work flows.

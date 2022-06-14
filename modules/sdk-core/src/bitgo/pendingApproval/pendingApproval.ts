@@ -14,7 +14,8 @@ import {
   State,
   Type,
 } from '../pendingApproval';
-import { RequestTracer, TssUtils } from '../utils';
+import { RequestTracer } from '../utils';
+import { TssUtils } from '../tss/utils';
 import { IWallet } from '../wallet';
 
 export class PendingApproval implements IPendingApproval {

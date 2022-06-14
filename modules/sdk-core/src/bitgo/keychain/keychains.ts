@@ -2,7 +2,8 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, RequestTracer, TssUtils } from '../utils';
+import { BlsUtils, RequestTracer } from '../utils';
+import { TssUtils } from '../tss/utils';
 import {
   AddKeychainOptions,
   ChangedKeychains,

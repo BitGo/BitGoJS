@@ -21,7 +21,8 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest, UnsignedTransaction } from '../utils';
+import { inferAddressType, RequestTracer } from '../utils';
+import { ITssUtils, TssUtils, TxRequest, UnsignedTransaction } from '../tss/utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
