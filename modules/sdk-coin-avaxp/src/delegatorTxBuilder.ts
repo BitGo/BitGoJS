@@ -143,18 +143,13 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
   // endregion
 
-  protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('Method not implemented');
-  }
-
-  initBuilder(tx?: BaseTx): this {
+  initBuilder(tx?: AddDelegatorTx): this {
     if (!tx) return this;
-    const vtx = tx as AddDelegatorTx;
-    this._nodeID = vtx.getNodeIDString();
-    this._startTime = vtx.getStartTime();
-    this._endTime = vtx.getEndTime();
-    this._stakeAmount = vtx.getStakeAmount();
-    this._utxos = this.recoverUtxos(vtx.getIns());
+    this._nodeID = tx.getNodeIDString();
+    this._startTime = tx.getStartTime();
+    this._endTime = tx.getEndTime();
+    this._stakeAmount = tx.getStakeAmount();
+    this._utxos = this.recoverUtxos(tx.getIns());
 
     return super.initBuilder(tx);
   }
@@ -215,9 +210,12 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
         const secpTransferInput = new SECPTransferInput(amt);
 
-        // TODO multisigner support
-        secpTransferInput.addSignatureIdx(0, this._fromPubKeys[0]);
-
+        if (this._signer) {
+          //this._signer.getAvaxPAddress(this._network.hrp)
+          // TODO multisigner support
+          secpTransferInput.addSignatureIdx(0, this._fromPubKeys[0]);
+          secpTransferInput.addSignatureIdx(1, this._fromPubKeys[2]);
+        }
         const input: TransferableInput = new TransferableInput(txidBuf, outputidx, this._assetId, secpTransferInput);
         inputs.push(input);
       }

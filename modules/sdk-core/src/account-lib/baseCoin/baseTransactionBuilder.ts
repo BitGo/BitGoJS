@@ -48,7 +48,6 @@ export abstract class BaseTransactionBuilder {
     if (!this.transaction.canSign(key)) {
       throw new SigningError('Private key cannot sign the transaction');
     }
-
     this.transaction = this.signImplementation(key);
   }
 

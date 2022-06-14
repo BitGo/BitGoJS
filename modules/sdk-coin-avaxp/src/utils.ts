@@ -2,6 +2,8 @@ import { isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
 import { BinTools, Buffer } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
+import {BaseTx, SelectCredentialClass, Tx, UnsignedTx} from "avalanche/dist/apis/platformvm";
+import {Credential} from "avalanche/dist/common/credentials";
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -95,6 +97,25 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new NotImplementedError('isValidTransactionId not implemented');
+  }
+  throw(object:any): never {
+    throw object;
+  }
+
+  getCredentials(tx: BaseTx): Credential[] {
+    return tx.getIns().map(ins => SelectCredentialClass(ins.getInput().getCredentialID()));
+  }
+
+  from(raw: string): Tx {
+    const tx = new Tx();
+    try {
+      tx.fromString(raw);
+      return tx;
+    } catch (err) {
+      const utx = new UnsignedTx();
+      utx.fromBuffer(utils.cb58Decode(raw));
+      return new Tx(utx, []);
+    }
   }
 }
 

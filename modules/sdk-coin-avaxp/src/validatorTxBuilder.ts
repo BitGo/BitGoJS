@@ -39,10 +39,9 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
    * @param tx BaseTx
    * @returns ValidatorTxBuilder
    */
-  initBuilder(tx?: BaseTx): this {
+  initBuilder(tx?: AddValidatorTx): this {
     if (!tx) return this;
-    const vtx = tx as AddValidatorTx;
-    this._delegationFeeRate = vtx.getDelegationFee();
+    this._delegationFeeRate = tx.getDelegationFee();
     return super.initBuilder(tx);
   }
 

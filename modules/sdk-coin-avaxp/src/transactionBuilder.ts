@@ -8,7 +8,7 @@ import {
   TransactionType,
   InvalidTransactionError,
   ParseTransactionError,
-  BuildTransactionError,
+  BuildTransactionError, NotSupported, BaseTransaction,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
@@ -25,14 +25,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _assetId: Buffer;
   protected _blockchainID: Buffer;
   protected _memo?: Buffer;
-  protected _signer: KeyPair;
+  protected _signer: BaseKey;
   protected _threshold = 2;
   protected _locktime: BN = new BN(0);
   protected _fromPubKeys: Buffer[] = [];
   protected _utxos: DecodedUtxoObj[] = [];
   protected _txFee: BN;
-
-  private _credentials: Credential[]; // how are we passing in multisig?
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -43,6 +41,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._networkID = this._network.networkID;
     this._txFee = new BN(this._network.txFee.toString());
   }
+
 
   /**
    * commented out check until multisig signing is in effect
@@ -106,24 +105,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  credentials(credentials: Credential[]): this {
+      this.transaction.credentials = credentials;
+      return this;
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    this.validateRawTransaction(rawTransaction);
-    this.buildImplementation();
-    return this.transaction;
+    throw new NotSupported('from raw transaction is not supported. See TransactionBuilderFactory.from method');
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.avaxPTransaction = this.buildAvaxpTransaction();
+
     if (this._signer) {
-      // TODO: sign method in transaction.ts
+      if (!this.transaction.hasCredentials) {
+        this.transaction.credentials = utils.getCredentials(this.transaction.avaxPTransaction);
+      }
       this.transaction.sign(this._signer);
     }
-    // TODO: multisig support addition
-    // if (this._credentials.length > 0) {
-    //   this.transaction.constructSignedPayload(this._credentials[0]);
-    // }
     return this.transaction;
   }
 
@@ -137,6 +138,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  protected signImplementation(key: BaseKey): BaseTransaction {
+    this._signer = key;
+    return this.transaction
   }
 
   protected abstract get transactionType(): TransactionType;
@@ -172,9 +181,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    if (!new KeyPair({ prv: key.key })) {
-      throw new BuildTransactionError('Invalid key');
-    }
+    //if (!new KeyPair({ prv: key.key })) {
+     // throw new BuildTransactionError('Invalid key');
+    //}
   }
 
   /** @inheritdoc */
@@ -211,6 +220,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
     });
   }
+  // region Signer tools
+
 
   // endregion
+
+
 }
