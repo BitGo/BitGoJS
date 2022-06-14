@@ -1,11 +1,12 @@
 import assert from 'assert';
 import should from 'should';
-import { testnet, KeyPair } from '../../src/keyPair';
+import { KeyPair, testnet } from '../../src/keyPair';
 import * as testData from '../resources/avaxp';
 // import { ACCOUNT_1, SEED_ACCOUNT } from '../resources/avaxp';
 
 const pubKey = testData.ACCOUNT_1.pubkey;
 const prvKey = testData.ACCOUNT_1.privkey;
+const prvKey_cb58 = testData.ACCOUNT_1.privkey_cb58;
 
 describe('Avax P Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -41,7 +42,7 @@ describe('Avax P Key Pair', () => {
 
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prvKey });
-      should.equal(keyPair.getKeys().prv, prvKey);
+      should.equal(keyPair.getKeys().prv, prvKey_cb58);
       should.equal(keyPair.getKeys().pub, pubKey);
       should.exists(keyPair.getAddress());
     });

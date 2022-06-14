@@ -84,9 +84,15 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys(): DefaultKeys {
+    const key = this.keyPair?.privateKey;
+    let cb58Key;
+    if (key) {
+      cb58Key = 'PrivateKey-' + utils.cb58Encode(BufferAvax.from(key));
+    }
+    this.getPrivateKey()?.toString('hex');
     return {
       pub: this.getPublicKey({ compressed: true }).toString('hex'),
-      prv: this.getPrivateKey()?.toString('hex'),
+      prv: cb58Key,
     };
   }
 
