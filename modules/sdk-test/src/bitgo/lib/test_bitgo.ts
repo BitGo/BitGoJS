@@ -9,7 +9,7 @@ import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import { common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
+import { CoinConstructor, common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
 
 import { BitGoAPIOptions, BitGoAPI } from '@bitgo/sdk-api';
 
@@ -27,6 +27,7 @@ export interface TestableBG {
   authenticateOfcTestUser: (otp: string) => Promise<void>;
   checkFunded: () => Promise<void>;
   nockEthWallet: () => Wallet;
+  safeRegister: (coin: string, coinConstructor: CoinConstructor) => void;
 
   TEST_ACCESSTOKEN: string;
   TEST_ACCESSTOKEN_SHAREDUSER: string;
@@ -115,6 +116,8 @@ export interface TestableBG {
     TEST_WEBHOOK_TRANSFER_SIMULATION_ID: string;
   }>;
 }
+
+export type TestBitGo = TestableBG & BitGoAPI;
 
 const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
 
@@ -568,6 +571,16 @@ export function decorate<T extends { new (...args: any[]): InstanceType<T> }, U 
       .reply(200, { status: '1', message: 'OK', result: '2400' });
 
     return wallet;
+  };
+
+  BitGo.prototype.safeRegister = function (coin, coinConstructor) {
+    if (this.register) {
+      try {
+        this.register(coin, coinConstructor);
+      } catch (_) {}
+    } else {
+      throw new Error('Function register does not exist');
+    }
   };
 
   BitGoAPI.prototype.fetchConstants = function () {

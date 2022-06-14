@@ -32,9 +32,4 @@ const TestBitGoStatics: TestableBG = BitGoAPI as unknown as Testable;
 // to register a coin with the new factory
 bitgo.register('talgo', Talgo.createInstance);
 const talgo = bitgo.coin('talgo');
-
-// to register tokens with the new factory
-// supported token families: eth, xlm, ofc, celo, eos, algo, and avaxc
-bitgo.registerToken('algo', AlgoToken.createTokenConstructor);
-const algoTokenCoin = bitgo.coin('talgo:16026728');
 ```
