@@ -1,34 +1,23 @@
 /**
- * Testnet Algo
- *
- * @format
+ * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Algo } from './algo';
 
 export class Talgo extends Algo {
-  protected constructor(bitgo: BitGoBase) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo);
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Talgo(bitgo);
   }
-  /**
-   * Identifier for the blockchain which supports this coin
-   */
-  public getChain(): string {
+
+  getChain(): string {
     return 'talgo';
   }
 
-  getFamily(): string {
-    return 'talgo';
-  }
-
-  /**
-   * Complete human-readable name of this coin
-   */
-  public getFullName(): string {
+  getFullName(): string {
     return 'Testnet Algorand';
   }
 }
