@@ -51,6 +51,7 @@
     "@bitgo/blockapis": "^1.0.1",
     "@bitgo/sdk-api": "^1.0.1",
     "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/sdk-coin-algo": "^1.0.0",
     "@bitgo/sdk-coin-xrp": "^1.0.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^6.17.0",
@@ -81,8 +82,7 @@
     "secrets.js-grempe": "^1.1.0",
     "stellar-sdk": "^10.0.1",
     "superagent": "^3.8.3",
-    "superagent-proxy": "^3.0.0",
-    "@bitgo/sdk-coin-algo": "^1.0.0"
+    "superagent-proxy": "^3.0.0"
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^1.0.0",

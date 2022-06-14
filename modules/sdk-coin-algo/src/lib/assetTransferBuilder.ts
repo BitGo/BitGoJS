@@ -65,7 +65,7 @@ export class AssetTransferBuilder extends TransferBuilder {
       this._note,
       this._tokenId,
       this.suggestedParams,
-      this._reKeyTo,
+      this._reKeyTo
     );
   }
 
@@ -92,7 +92,7 @@ export class AssetTransferBuilder extends TransferBuilder {
     const { txn: algoTxn } = Utils.decodeAlgoTxn(rawTransaction);
     if (algoTxn.type !== algosdk.TransactionType.axfer) {
       throw new InvalidTransactionError(
-        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.axfer}`,
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.axfer}`
       );
     }
 

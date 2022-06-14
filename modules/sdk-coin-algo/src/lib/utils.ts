@@ -136,7 +136,7 @@ export class Utils implements BaseUtils {
 
     // Compute checksum
     const checksum = new Uint8Array(
-      sha512.sha512_256.array(decoded.seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
+      sha512.sha512_256.array(decoded.seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH)
     );
 
     // Check if the checksum matches the one from the decoded seed
@@ -154,7 +154,7 @@ export class Utils implements BaseUtils {
     const seed = secretKey.slice(0, SEED_BYTES_LENGTH);
     // compute checksum
     const checksum = Buffer.from(
-      sha512.sha512_256.array(seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH),
+      sha512.sha512_256.array(seed).slice(SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH, SEED_BYTES_LENGTH)
     );
     const encodedSeed = base32.encode(concatArrays(seed, checksum));
 

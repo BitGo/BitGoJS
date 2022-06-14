@@ -38,6 +38,16 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.0.1"
+    "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0",
+    "@bitgo/utxo-lib": "^2.2.2",
+    "@hashgraph/cryptography": "1.1.2",
+    "algosdk": "^1.14.0",
+    "bignumber.js": "^9.0.0",
+    "lodash": "^4.17.14",
+    "hi-base32": "^0.5.1",
+    "js-sha512": "0.8.0",
+    "joi": "^17.4.0",
+    "stellar-sdk": "^10.0.1"
   }
 }

@@ -143,7 +143,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       undefined, // voteFirst param
       undefined, // voteLast param
       undefined, // voteKeyDilution param
-      this.suggestedParams,
+      this.suggestedParams
     );
   }
 
@@ -159,7 +159,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       this.suggestedParams,
       undefined, // reKeyTo param
       undefined, // nonParticipation param
-      this._stateProofKey,
+      this._stateProofKey
     );
   }
 
@@ -174,7 +174,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       undefined, // voteKeyDilution param
       this.suggestedParams,
       this._reKeyTo,
-      true, // nonParticipation param
+      true // nonParticipation param
     );
   }
 
@@ -210,7 +210,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     const algoTxn = decodeTxn.txn;
     if (algoTxn.type !== algosdk.TransactionType.keyreg) {
       throw new InvalidTransactionError(
-        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.keyreg}`,
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.keyreg}`
       );
     }
 
@@ -221,7 +221,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         algoTxn.voteFirst,
         algoTxn.voteLast,
         algoTxn.voteKeyDilution,
-        algoTxn.stateProofKey && algoTxn.stateProofKey.toString('base64'),
+        algoTxn.stateProofKey && algoTxn.stateProofKey.toString('base64')
       );
     }
   }
@@ -279,7 +279,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._voteFirst,
         this._voteLast,
         this._voteKeyDilution,
-        this._stateProofKey,
+        this._stateProofKey
       );
     } else {
       // offline or nonparticipation transaction
@@ -292,7 +292,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
         this._stateProofKey
       ) {
         throw new InvalidTransactionError(
-          'VoteKey, SelectionKey, VoteFirst, VoteLast, VoteKeyDilution, StateProofKey fields cannot be set when offline or nonparticipation is set',
+          'VoteKey, SelectionKey, VoteFirst, VoteLast, VoteKeyDilution, StateProofKey fields cannot be set when offline or nonparticipation is set'
         );
       }
     }
@@ -304,7 +304,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     voteFirst: number,
     voteLast: number,
     voteKeyDilution: number,
-    stateProofKey?: string,
+    stateProofKey?: string
   ): void {
     const validationResult = KeyRegTxnSchema.validate({
       voteKey,

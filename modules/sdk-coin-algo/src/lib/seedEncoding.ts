@@ -33,7 +33,7 @@ export class SeedEncoding {
     // Compute checksum
     const checksum = SeedEncoding.genericHash(decoded.seed).slice(
       SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH,
-      SEED_BYTES_LENGTH,
+      SEED_BYTES_LENGTH
     );
 
     // Check if the checksum and the seed are equal
@@ -74,7 +74,7 @@ export class SeedEncoding {
     // compute checksum
     const checksum = SeedEncoding.genericHash(seed).slice(
       SEED_BYTES_LENGTH - ALGORAND_CHECKSUM_BYTE_LENGTH,
-      SEED_BYTES_LENGTH,
+      SEED_BYTES_LENGTH
     );
     const arraySeed = new Uint8Array(seed.length + checksum.length);
     arraySeed.set(seed);

@@ -4,7 +4,7 @@ import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
 import { EosTokenConfig } from './v2/coins/eosToken';
-import { AlgoTokenConfig } from './v2/coins/algoToken';
+import { AlgoTokenConfig } from '@bitgo/sdk-coin-algo';
 import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
 import {
   coins,

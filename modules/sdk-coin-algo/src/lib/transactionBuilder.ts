@@ -416,7 +416,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._genesisId,
       this._lease,
       this._note,
-      this._reKeyTo,
+      this._reKeyTo
     );
   }
 
@@ -429,7 +429,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     genesisId: string,
     lease: Uint8Array | undefined,
     note: Uint8Array | undefined,
-    reKeyTo: string | undefined,
+    reKeyTo: string | undefined
   ): void {
     const validationResult = BaseTransactionSchema.validate({
       fee,

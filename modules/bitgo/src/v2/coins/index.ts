@@ -3,8 +3,8 @@ export { AbstractUtxoCoin };
 import { Xrp, Txrp } from '@bitgo/sdk-coin-xrp';
 export { Xrp, Txrp };
 
-export { Algo } from './algo';
-export { AlgoToken } from './algoToken';
+import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
+export { Algo, AlgoToken, Talgo };
 export { Bch } from './bch';
 export { Bsv } from './bsv';
 export { Btc } from './btc';
@@ -26,7 +26,6 @@ export { StellarToken } from './stellarToken';
 export { Susd } from './susd';
 export { FiatUsd } from './fiatusd';
 export { FiatEur } from './fiateur';
-export { Talgo } from './talgo';
 export { Tbch } from './tbch';
 export { Tbsv } from './tbsv';
 export { Tbtc } from './tbtc';

@@ -1,16 +1,16 @@
 /**
  * @prettier
  */
-import * as accountLib from '@bitgo/account-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
-import { SeedValidator } from '../internal/seedValidator';
-import { CoinFamily } from '@bitgo/statics';
-
+import { SeedValidator } from './seedValidator';
+import { coins, CoinFamily } from '@bitgo/statics';
+import * as AlgoLib from './lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
   BitGoBase,
+  Ed25519KeyDeriver,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -176,7 +176,7 @@ export class Algo extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new accountLib.Algo.KeyPair({ seed }) : new accountLib.Algo.KeyPair();
+    const keyPair = seed ? new AlgoLib.KeyPair({ seed }) : new AlgoLib.KeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new Error('Missing prv in key generation.');
@@ -184,7 +184,7 @@ export class Algo extends BaseCoin {
 
     return {
       pub: keyPair.getAddress(),
-      prv: accountLib.Algo.algoUtils.encodeSeed(Buffer.from(keyPair.getSigningKey())),
+      prv: AlgoLib.algoUtils.encodeSeed(Buffer.from(keyPair.getSigningKey())),
     };
   }
 
@@ -195,7 +195,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Algo.algoUtils.isValidAddress(pub);
+    return AlgoLib.algoUtils.isValidAddress(pub);
   }
 
   /**
@@ -207,7 +207,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Algo.algoUtils.isValidSeed(prv);
+    return AlgoLib.algoUtils.isValidSeed(prv);
   }
 
   /**
@@ -217,7 +217,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidAddress(address: string): boolean {
-    return accountLib.Algo.algoUtils.isValidAddress(address);
+    return AlgoLib.algoUtils.isValidAddress(address);
   }
 
   /**
@@ -227,7 +227,7 @@ export class Algo extends BaseCoin {
    * @param message
    */
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
-    const algoKeypair = new accountLib.Algo.KeyPair({ prv: key.prv });
+    const algoKeypair = new AlgoLib.KeyPair({ prv: key.prv });
     if (Buffer.isBuffer(message)) {
       message = message.toString('base64');
     }
@@ -251,7 +251,7 @@ export class Algo extends BaseCoin {
       throw new Error('missing explain tx parameters');
     }
 
-    const factory = accountLib.getBuilder(this.getBaseChain()) as unknown as accountLib.Algo.TransactionBuilderFactory;
+    const factory = this.getBuilder();
 
     const txBuilder = factory.from(txHex);
     const tx = await txBuilder.build();
@@ -269,12 +269,7 @@ export class Algo extends BaseCoin {
 
       const isTokenTx = this.isTokenTx(txJson.type);
       if (isTokenTx) {
-        const type = accountLib.Algo.algoUtils.getTokenTxType(
-          txJson.amount,
-          txJson.from,
-          txJson.to,
-          txJson.closeRemainderTo
-        );
+        const type = AlgoLib.algoUtils.getTokenTxType(txJson.amount, txJson.from, txJson.to, txJson.closeRemainderTo);
         operations.push({
           type: type,
           coin: `${this.getChain()}:${txJson.tokenId}`,
@@ -377,7 +372,7 @@ export class Algo extends BaseCoin {
     }
 
     if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
-      return accountLib.Algo.algoUtils.convertFromStellarSeed(seed);
+      return AlgoLib.algoUtils.convertFromStellarSeed(seed);
     }
 
     return null;
@@ -422,8 +417,8 @@ export class Algo extends BaseCoin {
 
     const signers = params.txPrebuild.keys.map((key) => {
       // if we are receiving addresses do not try to convert them
-      if (!accountLib.Algo.algoUtils.isValidAddress(key)) {
-        return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(accountLib.Algo.algoUtils.toUint8Array(key));
+      if (!AlgoLib.algoUtils.isValidAddress(key)) {
+        return AlgoLib.algoUtils.publicKeyToAlgoAddress(AlgoLib.algoUtils.toUint8Array(key));
       }
       return key;
     });
@@ -444,7 +439,7 @@ export class Algo extends BaseCoin {
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, signers, prv, isHalfSigned, numberSigners } = this.verifySignTransactionParams(params);
-    const factory = accountLib.register(this.getChain(), accountLib.Algo.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     const txBuilder = factory.from(txHex);
     txBuilder.numberOfRequiredSigners(numberSigners);
     txBuilder.sign({ key: prv });
@@ -495,7 +490,7 @@ export class Algo extends BaseCoin {
       throw new InvalidKey('invalid public key');
     }
 
-    const rootAddress = accountLib.Algo.algoUtils.multisigAddress(SUPPORTED_ADDRESS_VERSION, MSIG_THRESHOLD, pubKeys);
+    const rootAddress = AlgoLib.algoUtils.multisigAddress(SUPPORTED_ADDRESS_VERSION, MSIG_THRESHOLD, pubKeys);
 
     return rootAddress === address;
   }
@@ -513,8 +508,8 @@ export class Algo extends BaseCoin {
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
     const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
-    const derivedKey = accountLib.Ed25519KeyDeriver.derivePath(derivationPath, key).key;
-    const keypair = new accountLib.Algo.KeyPair({ seed: derivedKey });
+    const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
+    const keypair = new AlgoLib.KeyPair({ seed: derivedKey });
     return {
       key: keypair.getAddress(),
       derivationPath,
@@ -522,11 +517,11 @@ export class Algo extends BaseCoin {
   }
 
   decodeTx(txn: Buffer): unknown {
-    return accountLib.Algo.algoUtils.decodeAlgoTxn(txn);
+    return AlgoLib.algoUtils.decodeAlgoTxn(txn);
   }
 
   getAddressFromPublicKey(pubKey: Uint8Array): string {
-    return accountLib.Algo.algoUtils.publicKeyToAlgoAddress(pubKey);
+    return AlgoLib.algoUtils.publicKeyToAlgoAddress(pubKey);
   }
 
   /**
@@ -551,12 +546,16 @@ export class Algo extends BaseCoin {
 
     // we have a stellar key
     const stellarPub = stellar.StrKey.decodeEd25519PublicKey(addressOrPubKey);
-    const algoAddress = accountLib.Algo.algoUtils.encodeAddress(stellarPub);
+    const algoAddress = AlgoLib.algoUtils.encodeAddress(stellarPub);
 
     if (!this.isValidAddress(algoAddress)) {
       throw new UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via pubkey.');
     }
 
     return algoAddress;
+  }
+
+  private getBuilder(): AlgoLib.TransactionBuilderFactory {
+    return new AlgoLib.TransactionBuilderFactory(coins.get(this.getBaseChain()));
   }
 }

@@ -25,7 +25,7 @@ export class TransferBuilder extends TransactionBuilder {
       this._closeRemainderTo,
       this._note,
       this.suggestedParams,
-      this._reKeyTo,
+      this._reKeyTo
     );
   }
 
@@ -52,7 +52,7 @@ export class TransferBuilder extends TransactionBuilder {
 
     if (algoTxn.type !== algosdk.TransactionType.pay) {
       throw new InvalidTransactionError(
-        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`,
+        `Invalid Transaction Type: ${algoTxn.type}. Expected ${algosdk.TransactionType.pay}`
       );
     }
   }
