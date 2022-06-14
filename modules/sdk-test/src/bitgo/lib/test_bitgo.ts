@@ -9,11 +9,9 @@ import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import { CoinConstructor, common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
+import { common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
 
 import { BitGoAPIOptions, BitGoAPI } from '@bitgo/sdk-api';
-
-import * as config from './config';
 
 nock.enableNetConnect();
 
@@ -29,7 +27,6 @@ export interface TestableBG {
   authenticateOfcTestUser: (otp: string) => Promise<void>;
   checkFunded: () => Promise<void>;
   nockEthWallet: () => Wallet;
-  registerToken: (tokenFamily: string, createTokenConstructor: CoinConstructor) => void;
 
   TEST_ACCESSTOKEN: string;
   TEST_ACCESSTOKEN_SHAREDUSER: string;
@@ -131,7 +128,10 @@ export function decorate<T extends { new (...args: any[]): InstanceType<T> }, U 
   _bitgo: T,
   args?: BitGoAPIOptions
 ): U {
-  const BitGo: U = _bitgo as U;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const BitGo: U = function () {} as unknown as U;
+  BitGo.prototype = _bitgo.prototype;
+
   BitGo.TEST_USER = 'tester@bitgo.com';
 
   if (process.env.BITGOJS_TEST_PASSWORD) {
@@ -568,46 +568,6 @@ export function decorate<T extends { new (...args: any[]): InstanceType<T> }, U 
       .reply(200, { status: '1', message: 'OK', result: '2400' });
 
     return wallet;
-  };
-
-  //
-  // registerToken
-  // Register tokens
-  //
-  BitGo.prototype.registerToken = function (tokenFamily: string, createTokenConstructor: CoinConstructor) {
-    let tokens;
-
-    switch (tokenFamily) {
-      case 'eth':
-        tokens = [...config.tokens.bitcoin.eth.tokens, ...config.tokens.testnet.eth.tokens];
-        break;
-      case 'xlm':
-        tokens = [...config.tokens.bitcoin.xlm.tokens, ...config.tokens.testnet.xlm.tokens];
-        break;
-      case 'ofc':
-        tokens = [...config.tokens.bitcoin.ofc.tokens, ...config.tokens.testnet.ofc.tokens];
-        break;
-      case 'celo':
-        tokens = [...config.tokens.bitcoin.celo.tokens, ...config.tokens.testnet.celo.tokens];
-        break;
-      case 'eos':
-        tokens = [...config.tokens.bitcoin.eos.tokens, ...config.tokens.testnet.eos.tokens];
-        break;
-      case 'algo':
-        tokens = [...config.tokens.bitcoin.algo.tokens, ...config.tokens.testnet.algo.tokens];
-        break;
-      case 'avaxc':
-        tokens = [...config.tokens.bitcoin.avaxc.tokens, ...config.tokens.testnet.avaxc.tokens];
-        break;
-      default:
-        tokens = [];
-    }
-
-    for (const token of tokens) {
-      const tokenConstructor = createTokenConstructor(token);
-      this.safeRegister(token.type, tokenConstructor);
-      this.safeRegister(token.tokenContractAddress, tokenConstructor);
-    }
   };
 
   BitGoAPI.prototype.fetchConstants = function () {
