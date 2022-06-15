@@ -1,42 +1,40 @@
 # Installing
 
 In the BitGoJS/ directory: 
+
 ```bash
 $ yarn install
 ```
 
 # Documentation
+
 API and SDK documentation can be found at: https://app.bitgo.com/docs/.
 
 # Pull Requests
 
-Pull requests from third parties are more than welcome! When creating a pull
-request, a BitGo engineer will be automatically added as a reviewer.
+Pull requests from third parties are more than welcome! When creating a pull request, a BitGo engineer will be automatically added as a reviewer.
 
-If you notice that the integration test job never runs, don't worry - that's
-expected. The integration tests use a secret testing password, and so we can't
-run these tests on untrusted code (PRs from third parties) without reviewing
-first. Once your code is passing unit tests and has an initial review, a BitGo
-engineer will re-create your PR and sign your commits, and link back to the
-original PR.
+If you notice that the integration test job never runs, don't worry - that's expected. The integration tests use a secret testing password, and so we can't run these tests on untrusted code (PRs from third parties) without reviewing first. Once your code is passing unit tests and has an initial review, a BitGo engineer will re-create your PR and sign your commits, and link back to the original PR.
 
 # Things to Avoid
-You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconfig file
-(which informs tsc where to install files) would lead to translation files
-(ending with `d.ts` and `d.ts.map`) installed in an incorrect location.
 
-If this happens, navigate to the BitGoJs directory and run `git clean -f -d` to remove
-any errant files. Avoid using npm commands and stick with yarn.
+You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconfig file (which informs tsc where to install files) would lead to translation files (ending with `d.ts` and `d.ts.map`) installed in an incorrect location.
 
- Instead, you should just run 
-```
+If this happens, navigate to the BitGoJs directory and run `git clean -f -d` to remove any errant files. Avoid using npm commands and stick with yarn.
+
+Instead, you should just run:
+
+```bash
 yarn dev
 ```
-from the root of the repo while developing. This will compile all of the linked TypeScript packages & begin watching for changes. If you want to just do a one time build, then simply running
-```
+
+from the root of the repo while developing. This will compile all of the linked TypeScript packages & begin watching for changes. If you want to just do a one time build, then simply running:
+
+```bash
 yarn
 ```
-from the root of the repo is what you'll want to do.
+
+From the root of the repo is what you'll want to do.
 
 # Commit Messages
 
@@ -54,6 +52,7 @@ $ yarn run unit-test --scope bitgo
 ```
 
 You can also run unit tests for all modules in parallel:
+
 ```bash
 $ yarn run unit-test
 ```
@@ -66,13 +65,13 @@ $ yarn run unit-test-changed
 Or the file that contains a specific string
  - if you are a specific module:
 
-```
+```bash
 $ yarn run unit-test --grep"keyword"
 ```
 
 - if you are in the BitGoJs/ top-level directory
  
-```
+```bash
 $ yarn run unit-test -- -- --grep "keyword"
 ```                                        
 **Note:** Each module's output will be prefixed with it's name, but it may be difficult to unmangle the test output.
@@ -82,7 +81,8 @@ To aid with evaluating test results, and especially test failures, a fancy test 
 The link to this report is output in the "upload reports" stage of each build pipeline.
 
 Here is an example of this output:
-```
+
+```bash
 @bitgo/express: === TEST REPORT UPLOADED SUCCESSFULLY ===
 @bitgo/express: https://bitgo-sdk-test-reports.s3.amazonaws.com/1036/express/unit tests (node:6).html
 ```
@@ -91,23 +91,22 @@ Here is an example of this output:
 
 ## Should I make a new module for my contribution?
 
-This is a question you should ask before making large changes to the SDK. The original goal of modularizing the SDK was
-to allow users to only include support for the features they actually want to use, instead of bringing in hundreds of
-megabytes of dependencies which they won't use.
+This is a question you should ask before making large changes to the SDK. The original goal of modularizing the SDK was to allow users to only include support for the features they actually want to use, instead of bringing in hundreds of megabytes of dependencies which they won't use.
 
-Therefore, if your feature meets the following criteria, then it is a good candidate for being its own module.
-Otherwise, perhaps not.
+Therefore, if your feature meets the following criteria, then it is a good candidate for being its own module. Otherwise, perhaps not.
 
 1. Will this feature require additional dependencies to be added? How heavy are those dependencies?
 1. Is this feature something which would only be used by a small fraction of SDK users?
-1. Is this feature extending existing bitgo functionality, or is it providing entirely new functionality? For example,
-   adding a new coin would be extending existing bitgo functionality.
+1. Is this feature extending existing bitgo functionality, or is it providing entirely new functionality? For example, adding a new coin would be extending existing bitgo functionality.
 
-These recommendations are just that, recommendations. Please use your best judgement when it comes to how your change is
-architected.
+These recommendations are just that, recommendations. Please use your best judgement when it comes to how your change is architected.
 
 ## Module Configuration
+
+If you are implementing a new coin, skip to [Coin Implementation](#coin-implementation-new)
+
 Each module should have the following basic file structure:
+
 ```
 - modules/
   - mymodule/
@@ -122,33 +121,33 @@ Each module should have the following basic file structure:
     - README.md
 ```
 
-## `package.json`
+### `package.json`
 
-* ### `name`
+* #### `name`
 For a binary application module named "fooapp", this should be set to `@bitgo/fooapp`.
 
 For a generic library module named "bar", this should be set to `@bitgo/sdk-lib-bar`.
 
 For a coin library module which supports a coin with ticker "BAZ", this should be set to `@bitgo/sdk-coin-baz`.
 
-* ### `scripts`
+* #### `scripts`
 
 These npm scripts may be run during lifecycle events and by lerna across all modules. If a script is not present in a module, that module will be skipped.
 
-| Name | Description | Required? |
-| --- | --- | --- |
-| `test` / `unit-test` | Run module unit tests | Yes |
-| `integration-test` | Run module integration tests. These are run when a PR is targeted to merge against master. | No |
-| `prepare` / `build` | Compile typescript sources | No |
-| `clean` | Clean up generated build files | No |
-| `audit` | Run a vulnerability against the module dependencies | Yes |
-| `gen-coverage` | Generate a code coverage report | No |
-| `upload-coverage` | Upload a code coverage report | No |
-| `upload-artifacts` | Upload any artifacts produced by the build and test process | No |
+| Name                 | Description                                                                                | Required? |
+|----------------------|--------------------------------------------------------------------------------------------|-----------|
+| `test` / `unit-test` | Run module unit tests                                                                      | Yes       |
+| `integration-test`   | Run module integration tests. These are run when a PR is targeted to merge against master. | No        |
+| `prepare` / `build`  | Compile typescript sources                                                                 | No        |
+| `clean`              | Clean up generated build files                                                             | No        |
+| `audit`              | Run a vulnerability against the module dependencies                                        | Yes       |
+| `gen-coverage`       | Generate a code coverage report                                                            | No        |
+| `upload-coverage`    | Upload a code coverage report                                                              | No        |
+| `upload-artifacts`   | Upload any artifacts produced by the build and test process                                | No        |
 
 Additional scripts which are too large for the package.json file should be placed in `scripts/` and should be plain javascript or bash.
 
-* ### `repository`
+* #### `repository`
 
 This shall always be set for all modules to:
 ```json
@@ -160,23 +159,23 @@ This shall always be set for all modules to:
 }
 ```
 
-* ### `license`
+* #### `license`
 
 License shall be `Apache-2.0`.
 
-* ### `engines`
+* #### `engines`
 
 Engines should be set to the following:
 ```json
 {
   "engines": {
-    "node": ">=6.12.3 <13.0.0",
+    "node": ">=14 <17",
     "npm": ">=3.10.10"
   }
 }
 ```
 
-## `tsconfig.json`
+### `tsconfig.json`
 
 There are a few things each module's `tsconfig.json` must do:
 * Extend the root tsconfig.json
@@ -208,5 +207,39 @@ Here is a template to help get started:</br>
 }
 ```
 
-## `tsconfig.packages.json`
+### `tsconfig.packages.json`
 Each package should also be listed in the root level `tsconfig.packages.json` as well. 
+
+## New Coin Implementation
+
+SDK coins provide a modular approach to a monolithic architecture. This and all BitGoJS SDK coins allow developers to use only the coins needed for a given project.
+
+To implement a new coin for BitGoJS, from the root BitGoJS/ run:
+
+```bash
+npm install -g yo
+```
+
+You can now run the coin generation script:
+
+```bash
+yarn sdk-coin:new
+```
+
+This will prompt you for both the coin's name (mainnet and testnet), symbol, and base factor. A new coin folder will be autogenerated in the `/modules` folder. This new coin folder will follow all the above conventions and set you up with the base implementation to implement coin specific packages with BitGo required classes.
+
+Additional information about coin development can be found in the newly created coin's README.md file.
+
+Due to supporting legacy versions of registering coins to `bitgo`, you will continue to add new coin definitions to `@bitgo/statics` **AND** the coin registration to `bitgo`'s CoinFactory.
+
+### Coin Creation Options
+
+Upon creating coins, you are given different options to choose from to create your boilerplate. This skeleton gives you the base needs for implementing a coin to interact with BitGo services. You will need to install coin specific packages into your newly created and registered bitgo package. You will then need to hook up coin package methods into the boilerplate provided.
+
+> Do not install coin packages in the root of BitGoJS. They must be scoped to their respective package.
+
+| Option | Description |
+|--------|-------------|
+| Account | Used for account based coins. Eth based or "Eth like". |
+| Utxo | Used for utxo based coins. Bitcoin, Litecoin, etc... |
+| Simple | Base implementation extending BaseCoin. |
