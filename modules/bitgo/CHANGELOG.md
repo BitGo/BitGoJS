@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.21](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.20...bitgo@14.2.0-rc.21) (2022-06-15)
+
+
+### Features
+
+* added explainTransaction and unit tests for dot ([e5746f9](https://github.com/BitGo/BitGoJS/commit/e5746f91ac98d4583c6c743a2c3e4a0e26b9df96))
+
+
+
+
+
 # [14.2.0-rc.20](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.19...bitgo@14.2.0-rc.20) (2022-06-14)
 
 
