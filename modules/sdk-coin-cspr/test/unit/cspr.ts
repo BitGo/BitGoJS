@@ -1,25 +1,27 @@
 import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { Cspr, Tcspr } from '../../../../src/v2/coins';
-import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { Cspr, ExplainTransactionOptions, TransactionFee } from '../../src/cspr';
+import { Tcspr } from '../../src/tcspr';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
-import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from '../../fixtures/coins/cspr';
+import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from './fixtures/cspr';
 import { TransactionType } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 type Transaction = CsprAccountLib.Transaction;
 
 describe('Casper', function () {
   const coinName = 'tcspr';
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, {
+    bitgo = TestBitGo.decorate(BitGoAPI, {
       env: 'mock',
     });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('cspr', Cspr.createInstance);
+    bitgo.safeRegister('tcspr', Tcspr.createInstance);
     basecoin = bitgo.coin(coinName);
   });
 
@@ -51,8 +53,12 @@ describe('Casper', function () {
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      keyPair.pub.should.equal('xpub661MyMwAqRbcFnJi3mvSpYNYyXUcjq7spqHg9GhpcWqs3wF4S8forUeJ3K8XfpUumpY4mLhaGPWAxAJETCnJM56w5f25g6kvLh5Bxb3ZEbD');
-      keyPair.prv.should.equal('xprv9s21ZrQH143K3JEEwkPSTQRpRVe8LNQ2TcN5LtJD4BJtB8uutbMZJgKpC3EPHMPGn97Y9aXFYeFegFsPdZXu6BF5XB7yXhZDUE5d6keTHyV');
+      keyPair.pub.should.equal(
+        'xpub661MyMwAqRbcFnJi3mvSpYNYyXUcjq7spqHg9GhpcWqs3wF4S8forUeJ3K8XfpUumpY4mLhaGPWAxAJETCnJM56w5f25g6kvLh5Bxb3ZEbD'
+      );
+      keyPair.prv.should.equal(
+        'xprv9s21ZrQH143K3JEEwkPSTQRpRVe8LNQ2TcN5LtJD4BJtB8uutbMZJgKpC3EPHMPGn97Y9aXFYeFegFsPdZXu6BF5XB7yXhZDUE5d6keTHyV'
+      );
     });
 
     it('should validate a public key', function () {
@@ -118,8 +124,14 @@ describe('Casper', function () {
 
       const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
       halfSignedTx.deploy.approvals.length.should.equals(1);
-      halfSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTx.deploy.approvals[0].signature, halfSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      halfSignedTx.deploy.approvals[0].signer
+        .toUpperCase()
+        .should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        halfSignedTx.deploy.approvals[0].signature,
+        halfSignedTx.deploy.hash,
+        sourceKeyPair.pub
+      ).should.equals(true);
 
       params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = bitgoKeyPair.prv;
@@ -129,11 +141,23 @@ describe('Casper', function () {
 
       const twiceSignedTx = JSON.parse(signedTransaction.txHex);
       twiceSignedTx.deploy.approvals.length.should.equals(2);
-      twiceSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      twiceSignedTx.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTx.deploy.approvals[0].signer
+        .toUpperCase()
+        .should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTx.deploy.approvals[1].signer
+        .toUpperCase()
+        .should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTx.deploy.approvals[0].signature, twiceSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTx.deploy.approvals[1].signature, twiceSignedTx.deploy.hash, bitgoKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        twiceSignedTx.deploy.approvals[0].signature,
+        twiceSignedTx.deploy.hash,
+        sourceKeyPair.pub
+      ).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        twiceSignedTx.deploy.approvals[1].signature,
+        twiceSignedTx.deploy.hash,
+        bitgoKeyPair.pub
+      ).should.equals(true);
     });
 
     it('should be performed with extended keys', async () => {
@@ -164,8 +188,14 @@ describe('Casper', function () {
 
       const halfSignedTx = JSON.parse(signedTransaction.halfSigned.txHex);
       halfSignedTx.deploy.approvals.length.should.equals(1);
-      halfSignedTx.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      CsprAccountLib.Utils.isValidTransactionSignature(halfSignedTx.deploy.approvals[0].signature, halfSignedTx.deploy.hash, sourceKeyPair.pub).should.equals(true);
+      halfSignedTx.deploy.approvals[0].signer
+        .toUpperCase()
+        .should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        halfSignedTx.deploy.approvals[0].signature,
+        halfSignedTx.deploy.hash,
+        sourceKeyPair.pub
+      ).should.equals(true);
 
       params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = extendedBitgoKeyPair.xprv;
@@ -175,11 +205,23 @@ describe('Casper', function () {
 
       const twiceSignedTxHex = JSON.parse(signedTransaction.txHex);
       twiceSignedTxHex.deploy.approvals.length.should.equals(2);
-      twiceSignedTxHex.deploy.approvals[0].signer.toUpperCase().should.equals(sourceKeyPairObject.getAddress().toUpperCase());
-      twiceSignedTxHex.deploy.approvals[1].signer.toUpperCase().should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTxHex.deploy.approvals[0].signer
+        .toUpperCase()
+        .should.equals(sourceKeyPairObject.getAddress().toUpperCase());
+      twiceSignedTxHex.deploy.approvals[1].signer
+        .toUpperCase()
+        .should.equals(bitgoKeyPairObject.getAddress().toUpperCase());
 
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxHex.deploy.approvals[0].signature, twiceSignedTxHex.deploy.hash, sourceKeyPair.pub).should.equals(true);
-      CsprAccountLib.Utils.isValidTransactionSignature(twiceSignedTxHex.deploy.approvals[1].signature, twiceSignedTxHex.deploy.hash, bitgoKeyPair.pub).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        twiceSignedTxHex.deploy.approvals[0].signature,
+        twiceSignedTxHex.deploy.hash,
+        sourceKeyPair.pub
+      ).should.equals(true);
+      CsprAccountLib.Utils.isValidTransactionSignature(
+        twiceSignedTxHex.deploy.approvals[1].signature,
+        twiceSignedTxHex.deploy.hash,
+        bitgoKeyPair.pub
+      ).should.equals(true);
     });
 
     it('should be rejected if invalid key', async () => {
@@ -214,7 +256,7 @@ describe('Casper', function () {
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const signature = await basecoin.signMessage(keyPair, messageToSign);
       CsprAccountLib.Utils.isValidMessageSignature(signature.toString('hex'), messageToSign, keyPair.pub).should.equals(
-        true,
+        true
       );
     });
 
@@ -223,14 +265,19 @@ describe('Casper', function () {
       const keyPairExtendedKeys = keyPairToSign.getExtendedKeys();
       const keyPair = keyPairToSign.getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
-      const signature = await basecoin.signMessage({ pub: keyPairExtendedKeys.xpub, prv: keyPairExtendedKeys.xprv }, messageToSign);
+      const signature = await basecoin.signMessage(
+        { pub: keyPairExtendedKeys.xpub, prv: keyPairExtendedKeys.xprv },
+        messageToSign
+      );
       CsprAccountLib.Utils.isValidMessageSignature(signature.toString('hex'), messageToSign, keyPair.pub).should.equals(
-        true,
+        true
       );
     });
 
     it('should fail with missing private key', async () => {
-      const keyPair = new CsprAccountLib.KeyPair({ pub: '029F697A02355839A02157E87721F7C44EE45DE9B891266BE065FD7F9B4EB31B88' }).getKeys();
+      const keyPair = new CsprAccountLib.KeyPair({
+        pub: '029F697A02355839A02157E87721F7C44EE45DE9B891266BE065FD7F9B4EB31B88',
+      }).getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
     });
@@ -306,7 +353,7 @@ describe('Casper', function () {
       ]);
       explainedTx.fee.should.equal(feeInfo);
       explainedTx.outputs.length.should.equal(1);
-      explainedTx.outputs.forEach(output => {
+      explainedTx.outputs.forEach((output) => {
         output.amount.should.equal(transferAmount);
         output.address.should.equal(targetKeyPairObject.getAddress());
         output.coin.should.equal(basecoin.getChain());
@@ -608,7 +655,8 @@ describe('Casper', function () {
           ethAddress: '0xcfbf38770af3a95da7998537a481434e2cb9b2fa',
           source: 'user',
           type: 'independent',
-          encryptedPrv: '{"iv":"Z2XySTRNipFZ06/EXynwvA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KGRPbZ2jt1g=","ct":"szpCbDLFIlRZvCBV60SWBEMYXvny7YlBtu4ffjlctDQGjR4/+vfCkovgGHs+Xvf/eIlUM3Kicubg+Sdp61MImjMT/umZ3IJT1E2I9mM0QDqpzXlohTGnJ4vgfHgCz3QkB4uYm5mqaD4LtRbvZbGhGrc5jzrLzqQ="}',
+          encryptedPrv:
+            '{"iv":"Z2XySTRNipFZ06/EXynwvA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KGRPbZ2jt1g=","ct":"szpCbDLFIlRZvCBV60SWBEMYXvny7YlBtu4ffjlctDQGjR4/+vfCkovgGHs+Xvf/eIlUM3Kicubg+Sdp61MImjMT/umZ3IJT1E2I9mM0QDqpzXlohTGnJ4vgfHgCz3QkB4uYm5mqaD4LtRbvZbGhGrc5jzrLzqQ="}',
         },
         {
           id: '624f0dcd93cbcc0008d88e0fc4261a38',
@@ -616,7 +664,8 @@ describe('Casper', function () {
           ethAddress: '0xbf37f39208d77e3254b7efbcab1432b9c353e337',
           source: 'backup',
           type: 'independent',
-          encryptedPrv: '{"iv":"T9gdJnSAEWFsLZ4cg9VA8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"FaLlns3mPiI=","ct":"QW5Zq9qJoDxDrK60zTAM6Lg+S4KP9FcEn9AHw5UIyakSBlD0XjVTluZ9PlTABjIlp9cQvMef/SH8Em1d4ash0PACoqBz2IxPwhW9h6uyQBdqk97iPrnM2rOQobsy9p0ILJM10fOgB+EEFYX5yQ5gyfEcK060j/Q="}',
+          encryptedPrv:
+            '{"iv":"T9gdJnSAEWFsLZ4cg9VA8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"FaLlns3mPiI=","ct":"QW5Zq9qJoDxDrK60zTAM6Lg+S4KP9FcEn9AHw5UIyakSBlD0XjVTluZ9PlTABjIlp9cQvMef/SH8Em1d4ash0PACoqBz2IxPwhW9h6uyQBdqk97iPrnM2rOQobsy9p0ILJM10fOgB+EEFYX5yQ5gyfEcK060j/Q="}',
         },
         {
           id: '624f0dce10610a0007fc5282353187ae',
@@ -625,7 +674,8 @@ describe('Casper', function () {
           source: 'bitgo',
           type: 'independent',
           isBitGo: true,
-        }];
+        },
+      ];
 
       const validAddresses = [
         {

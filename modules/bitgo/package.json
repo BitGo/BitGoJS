@@ -52,6 +52,7 @@
     "@bitgo/sdk-api": "^1.0.1",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/sdk-coin-algo": "^1.0.0",
+    "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-xrp": "^1.0.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^6.17.0",

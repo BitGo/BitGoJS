@@ -3,7 +3,6 @@ import { Cspr } from './cspr';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class Tcspr extends Cspr {
-
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
