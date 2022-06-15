@@ -1,15 +1,11 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { register } from '../../../../../src/index';
-import {
-  TransactionBuilderFactory,
-  TransferBuilder,
-  KeyRegistrationBuilder,
-  algoUtils,
-} from '../../../../../src/coin/algo';
-import * as AlgoResources from '../../../../resources/algo';
+import { coins } from '@bitgo/statics';
+
+import { TransactionBuilderFactory, TransferBuilder, KeyRegistrationBuilder, algoUtils } from '../../../../src/lib';
+import * as AlgoResources from '../../../fixtures/resources';
 describe('Algo Transaction Builder Factory', () => {
-  const factory = register('algo', TransactionBuilderFactory);
+  const factory = new TransactionBuilderFactory(coins.get('algo'));
   const { rawTx } = AlgoResources;
 
   it('should parse a key registration txn and return a key registration builder', () => {

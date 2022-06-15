@@ -3,10 +3,10 @@ import algosdk from 'algosdk';
 import assert from 'assert';
 import should from 'should';
 import sinon, { assert as SinonAssert } from 'sinon';
-import { Transaction } from '../../../../../src/coin/algo';
-import { KeyRegistrationBuilder } from '../../../../../src/coin/algo/keyRegistrationBuilder';
+import { Transaction } from '../../../../src/lib';
+import { KeyRegistrationBuilder } from '../../../../src/lib/keyRegistrationBuilder';
 
-import * as AlgoResources from '../../../../resources/algo';
+import * as AlgoResources from '../../../fixtures/resources';
 
 class StubTransactionBuilder extends KeyRegistrationBuilder {
   getTransaction(): Transaction {
@@ -42,7 +42,7 @@ describe('Algo KeyRegistration Builder', () => {
       const spy = sinon.spy(builder, 'validateValue');
       assert.throws(
         () => builder.voteFirst(-1),
-        (e: Error) => e.message === 'Value cannot be less than zero',
+        (e: Error) => e.message === 'Value cannot be less than zero'
       );
       should.doesNotThrow(() => builder.voteFirst(15));
       SinonAssert.calledTwice(spy);
@@ -53,7 +53,7 @@ describe('Algo KeyRegistration Builder', () => {
       builder.voteFirst(1);
       assert.throws(
         () => builder.voteLast(-1),
-        (e: Error) => e.message === 'Value cannot be less than zero',
+        (e: Error) => e.message === 'Value cannot be less than zero'
       );
       should.doesNotThrow(() => builder.voteLast(15));
       SinonAssert.calledThrice(validateValueSpy);

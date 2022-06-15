@@ -4,8 +4,8 @@ import { coins } from '@bitgo/statics';
 import assert from 'assert';
 import should from 'should';
 import sinon, { assert as SinonAssert } from 'sinon';
-import { AddressValidationError, TransferBuilder } from '../../../../../src/coin/algo';
-import * as AlgoResources from '../../../../resources/algo';
+import { AddressValidationError, TransferBuilder } from '../../../../src/lib';
+import * as AlgoResources from '../../../fixtures/resources';
 
 describe('Algo Transfer Builder', () => {
   let builder: TransferBuilder;
@@ -26,7 +26,7 @@ describe('Algo Transfer Builder', () => {
       const spy = sinon.spy(builder, 'validateAddress');
       assert.throws(
         () => builder.to({ address: 'wrong-addr' }),
-        (e: Error) => e.name === AddressValidationError.name,
+        (e: Error) => e.name === AddressValidationError.name
       );
       should.doesNotThrow(() => builder.to({ address: sender.address }));
       SinonAssert.calledTwice(spy);
@@ -36,7 +36,7 @@ describe('Algo Transfer Builder', () => {
       const spy = sinon.spy(builder, 'validateValue');
       assert.throws(
         () => builder.amount(-1),
-        (e: Error) => e.message === 'Value cannot be less than zero',
+        (e: Error) => e.message === 'Value cannot be less than zero'
       );
       should.doesNotThrow(() => builder.amount(1000));
       SinonAssert.calledTwice(spy);

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { Algo } from '../../../../src';
-import * as AlgoResources from '../../../resources/algo';
+import { AlgoLib as Algo } from '../../../src';
+import * as AlgoResources from '../../fixtures/resources';
 
 describe('Algo KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };

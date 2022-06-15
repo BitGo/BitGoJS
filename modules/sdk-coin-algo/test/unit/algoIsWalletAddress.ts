@@ -1,15 +1,17 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src/bitgo';
-import { VerifyAlgoAddressOptions } from '../../../../../src/v2/coins/algo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Talgo, VerifyAlgoAddressOptions } from '../../src';
 import { AssertionError } from 'assert';
+
 const should = require('should');
 
 describe('Algo class', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('talgo', Talgo.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
   });
@@ -25,7 +27,12 @@ describe('Algo class', function () {
       { pub: 'OH3WEL22VP6EAPVIUHUZCKBYZEJFSLZD3K4PK44MZCVSA4RFSB2ZH4SGLQ' }, // '62228ac9c01c5500072dc72f'
     ];
 
-    const makeVerifyAddressOptions = (address: string, rootAddress: string, bitgoPubKey?: string, useKeyChain?: typeof keychains | string): VerifyAlgoAddressOptions => ({
+    const makeVerifyAddressOptions = (
+      address: string,
+      rootAddress: string,
+      bitgoPubKey?: string,
+      useKeyChain?: typeof keychains | string
+    ): VerifyAlgoAddressOptions => ({
       address,
       chain: 0,
       index: 0,
@@ -36,7 +43,7 @@ describe('Algo class', function () {
         bitgoKey: '62228ac8c01c5500072dc71d',
         addressVersion: 1,
         threshold: 2,
-        ...(bitgoPubKey ? { bitgoPubKey } : { }),
+        ...(bitgoPubKey ? { bitgoPubKey } : {}),
       },
       ...(typeof useKeyChain === 'string' ? {} : { keychains }),
     });
@@ -105,7 +112,6 @@ describe('Algo class', function () {
           should(throws).be.undefined();
           // THEN address is validated as expected
           result.should.be.equal(expected);
-
         } catch (e) {
           if (e instanceof AssertionError) {
             // Do not hide other assertions
@@ -113,7 +119,9 @@ describe('Algo class', function () {
           }
           should(throws).be.not.undefined();
           should(expected).be.undefined();
-          (() => { throw e; }).should.throw(throws || 'never reaches here but compiler is unhappy without this');
+          (() => {
+            throw e;
+          }).should.throw(throws || 'never reaches here but compiler is unhappy without this');
         }
       });
     });

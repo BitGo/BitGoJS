@@ -1,48 +1,50 @@
-import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import * as AlgoResources from '../../fixtures/coins/algo';
+import { AlgoLib, Talgo } from '../../src';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
+import { coins } from '@bitgo/statics';
 
 describe('ALGO:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let basecoin;
   const receiver = AlgoResources.accounts.account2;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('talgo', Talgo.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
   });
 
   describe('Should Fail: ', () => {
     it('Does not have a txHex', async () => {
-      await basecoin.explainTransaction({
-        params: {},
-      }).should.be.rejectedWith('missing explain tx parameters');
+      await basecoin
+        .explainTransaction({
+          params: {},
+        })
+        .should.be.rejectedWith('missing explain tx parameters');
     });
 
     it('Does not have a fee', async () => {
-      await basecoin.explainTransaction({
-        params: {
-          txHex: 'Some Valid Hex',
-        },
-      }).should.be.rejectedWith('missing explain tx parameters');
+      await basecoin
+        .explainTransaction({
+          params: {
+            txHex: 'Some Valid Hex',
+          },
+        })
+        .should.be.rejectedWith('missing explain tx parameters');
     });
   });
 
   describe('Transfer Builder: ', () => {
-    const buildBaseTransferTransaction = ({
-      destination,
-      amount = 10000,
-      sender,
-      memo = '',
-    }) => {
-      const factory = accountLib.register('algo', accountLib.Algo.TransactionBuilderFactory);
+    const buildBaseTransferTransaction = ({ destination, amount = 10000, sender, memo = '' }) => {
+      const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
       const txBuilder = factory.getTransferBuilder();
       const lease = new Uint8Array(randomBytes(32));
       const note = new Uint8Array(Buffer.from(memo, 'utf-8'));
-      txBuilder.sender({ address: sender })
+      txBuilder
+        .sender({ address: sender })
         .to({ address: destination })
         .amount(amount)
         .isFlatFee(true)
@@ -58,35 +60,25 @@ describe('ALGO:', function () {
     };
 
     /**
-       * Build an unsigned account-lib single-signature send transaction
-       * @param sender The senders address
-       * @param destination The destination address of the transaction
-       * @param amount The amount to send to the recipient
-       * @param memo Optional note with the transaction
-       */
-    const buildUnsignedTransaction = async function ({
-      sender,
-      destination,
-      amount = 10000,
-      memo = '',
-    }) {
+     * Build an unsigned account-lib single-signature send transaction
+     * @param sender The senders address
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     * @param memo Optional note with the transaction
+     */
+    const buildUnsignedTransaction = async function ({ sender, destination, amount = 10000, memo = '' }) {
       const txBuilder = buildBaseTransferTransaction({ sender, destination, amount, memo });
       return await txBuilder.build();
     };
 
     /**
-       * Build a signed account-lib single-signature send transaction
-       * @param sender The senders address
-       * @param destination The destination address of the transaction
-       * @param amount The amount to send to the recipient
-       * @param memo Optional note with the transaction
-       */
-    const buildSignedTransaction = async function ({
-      sender,
-      destination,
-      amount = 10000,
-      memo = '',
-    }) {
+     * Build a signed account-lib single-signature send transaction
+     * @param sender The senders address
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     * @param memo Optional note with the transaction
+     */
+    const buildSignedTransaction = async function ({ sender, destination, amount = 10000, memo = '' }) {
       const txBuilder = buildBaseTransferTransaction({ sender, destination, amount, memo });
       txBuilder.numberOfSigners(1);
       txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
@@ -94,18 +86,13 @@ describe('ALGO:', function () {
     };
 
     /**
-       * Build a multi-signed account-lib single-signature send transaction
-       * @param senders The list of senders
-       * @param destination The destination address of the transaction
-       * @param amount The amount to send to the recipient
-       * @param memo Optional note with the transaction
-       */
-    const buildMultiSignedTransaction = async function ({
-      senders,
-      destination,
-      amount = 10000,
-      memo = '',
-    }) {
+     * Build a multi-signed account-lib single-signature send transaction
+     * @param senders The list of senders
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     * @param memo Optional note with the transaction
+     */
+    const buildMultiSignedTransaction = async function ({ senders, destination, amount = 10000, memo = '' }) {
       const txBuilder = buildBaseTransferTransaction({ sender: senders[0], destination, amount, memo });
       txBuilder.numberOfSigners(2);
       txBuilder.setSigners(senders);
@@ -233,16 +220,12 @@ describe('ALGO:', function () {
   });
 
   describe('Asset Transfer Builder: ', () => {
-    const buildBaseAssetTransferTransaction = ({
-      destination,
-      amount = 1000,
-      tokenId,
-      sender,
-    }) => {
-      const factory = accountLib.register('algo', accountLib.Algo.TransactionBuilderFactory);
+    const buildBaseAssetTransferTransaction = ({ destination, amount = 1000, tokenId, sender }) => {
+      const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
       const txBuilder = factory.getAssetTransferBuilder();
       const lease = new Uint8Array(randomBytes(32));
-      txBuilder.sender({ address: sender })
+      txBuilder
+        .sender({ address: sender })
         .isFlatFee(true)
         .fee({
           fee: '1000',
@@ -258,35 +241,25 @@ describe('ALGO:', function () {
     };
 
     /**
-       * Build an unsigned account-lib single-signature asset transfer transaction
-       * @param sender The senders address
-       * @param destination The destination address of the transaction
-       * @param amount The amount to send to the recipient
-       * @param tokenId The assetIndex for the token
-       */
-    const buildUnsignedTransaction = async function ({
-      sender,
-      destination,
-      amount = 10000,
-      tokenId,
-    }) {
+     * Build an unsigned account-lib single-signature asset transfer transaction
+     * @param sender The senders address
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     * @param tokenId The assetIndex for the token
+     */
+    const buildUnsignedTransaction = async function ({ sender, destination, amount = 10000, tokenId }) {
       const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
       return await txBuilder.build();
     };
 
     /**
-       * Build a signed account-lib single-signature send transaction
-       * @param sender The senders address
-       * @param destination The destination address of the transaction
-       * @param amount The amount to send to the recipient
-       * @param tokenId The assetIndex for the token
-       */
-    const buildSignedTransaction = async function ({
-      sender,
-      destination,
-      amount = 10000,
-      tokenId,
-    }) {
+     * Build a signed account-lib single-signature send transaction
+     * @param sender The senders address
+     * @param destination The destination address of the transaction
+     * @param amount The amount to send to the recipient
+     * @param tokenId The assetIndex for the token
+     */
+    const buildSignedTransaction = async function ({ sender, destination, amount = 10000, tokenId }) {
       const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount, tokenId });
       txBuilder.numberOfSigners(1);
       txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
@@ -363,15 +336,13 @@ describe('ALGO:', function () {
   });
 
   describe('Wallet Init Builder: ', () => {
-    const buildBaseKeyRegTransaction = ({
-      sender,
-      memo = '',
-    }) => {
-      const factory = accountLib.register('algo', accountLib.Algo.TransactionBuilderFactory);
+    const buildBaseKeyRegTransaction = ({ sender, memo = '' }) => {
+      const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
       const txBuilder = factory.getWalletInitializationBuilder();
       const lease = new Uint8Array(randomBytes(32));
       const note = new Uint8Array(Buffer.from(memo, 'utf-8'));
-      txBuilder.sender({ address: sender.address })
+      txBuilder
+        .sender({ address: sender.address })
         .isFlatFee(true)
         .fee({
           fee: '1000',
@@ -390,27 +361,21 @@ describe('ALGO:', function () {
     };
 
     /**
-       * Build an unsigned account-lib single-signature send transaction
-       * @param sender The senders address
-       * @param memo Optional note with the transaction
-       */
-    const buildUnsignedTransaction = async function ({
-      sender,
-      memo = '',
-    }) {
+     * Build an unsigned account-lib single-signature send transaction
+     * @param sender The senders address
+     * @param memo Optional note with the transaction
+     */
+    const buildUnsignedTransaction = async function ({ sender, memo = '' }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender, memo });
       return await txBuilder.build();
     };
 
     /**
-       * Build a signed account-lib single-signature send transaction
-       * @param sender The senders address
-       * @param memo Optional note with the transaction
-       */
-    const buildSignedTransaction = async function ({
-      sender,
-      memo = '',
-    }) {
+     * Build a signed account-lib single-signature send transaction
+     * @param sender The senders address
+     * @param memo Optional note with the transaction
+     */
+    const buildSignedTransaction = async function ({ sender, memo = '' }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender, memo });
       txBuilder.numberOfSigners(1);
       txBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
@@ -418,14 +383,11 @@ describe('ALGO:', function () {
     };
 
     /**
-       * Build a multi-signed account-lib single-signature send transaction
-       * @param senders The list of senders
-       * @param memo Optional note with the transaction
-       */
-    const buildMultiSignedTransaction = async function ({
-      senders,
-      memo = '',
-    }) {
+     * Build a multi-signed account-lib single-signature send transaction
+     * @param senders The list of senders
+     * @param memo Optional note with the transaction
+     */
+    const buildMultiSignedTransaction = async function ({ senders, memo = '' }) {
       const txBuilder = buildBaseKeyRegTransaction({ sender: senders[0], memo });
       txBuilder.numberOfSigners(2);
       txBuilder.setSigners(senders.map(({ address }) => address));
@@ -563,7 +525,6 @@ describe('ALGO:', function () {
   });
   describe('Sign transaction', () => {
     it('should sign transaction', async function () {
-
       const signed = await basecoin.signTransaction({
         txPrebuild: {
           txHex: AlgoResources.rawTx.transfer.unsigned,
@@ -576,13 +537,15 @@ describe('ALGO:', function () {
     });
 
     it('should sign half signed transaction', async function () {
-
       const signed = await basecoin.signTransaction({
         txPrebuild: {
           halfSigned: {
             txHex: AlgoResources.rawTx.transfer.halfSigned,
           },
-          keys: [AlgoResources.accounts.account1.pubKey.toString('hex'), AlgoResources.accounts.account3.pubKey.toString('hex')],
+          keys: [
+            AlgoResources.accounts.account1.pubKey.toString('hex'),
+            AlgoResources.accounts.account3.pubKey.toString('hex'),
+          ],
           addressVersion: 1,
         },
         prv: AlgoResources.accounts.account3.prvKey,
@@ -605,7 +568,14 @@ describe('ALGO:', function () {
         },
         prv: AlgoResources.accounts.account2.secretKey.toString('hex'),
       });
-      verifiedParams.should.have.properties(['txHex', 'addressVersion', 'signers', 'prv', 'isHalfSigned', 'numberSigners']);
+      verifiedParams.should.have.properties([
+        'txHex',
+        'addressVersion',
+        'signers',
+        'prv',
+        'isHalfSigned',
+        'numberSigners',
+      ]);
       const { txHex, signers, isHalfSigned } = verifiedParams;
       txHex.should.be.equal(AlgoResources.rawTx.transfer.unsigned);
       signers.should.be.deepEqual(keys);
@@ -652,7 +622,10 @@ describe('ALGO:', function () {
     });
 
     it('should deterministically derive keypair with seed', () => {
-      const derivedKeypair = basecoin.deriveKeyWithSeed({ key: 'UBI2KNGT742KGIPHMZDJHHSADIT56HRDPVOOCCRYIETD4BAJLCBMQNSCNE', seed: 'cold derivation seed' });
+      const derivedKeypair = basecoin.deriveKeyWithSeed({
+        key: 'UBI2KNGT742KGIPHMZDJHHSADIT56HRDPVOOCCRYIETD4BAJLCBMQNSCNE',
+        seed: 'cold derivation seed',
+      });
       console.log(JSON.stringify(derivedKeypair));
 
       basecoin.isValidPub(derivedKeypair.key).should.be.true();

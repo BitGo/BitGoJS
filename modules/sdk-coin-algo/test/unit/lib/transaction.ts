@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import * as AlgoResources from '../../../resources/algo';
-import { Transaction } from '../../../../src/coin/algo/transaction';
-import { KeyPair, AssetTransferBuilder, TransactionBuilderFactory } from '../../../../src/coin/algo';
+import * as AlgoResources from '../../fixtures/resources';
+import { Transaction } from '../../../src/lib/transaction';
+import { KeyPair, AssetTransferBuilder, TransactionBuilderFactory } from '../../../src/lib';
 
 describe('Algo Transaction', () => {
   let tx: Transaction;
@@ -42,12 +42,12 @@ describe('Algo Transaction', () => {
     it('should not sign', () => {
       assert.throws(
         () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
-        /Empty transaction/,
+        /Empty transaction/
       );
       tx.setNumberOfRequiredSigners(2);
       assert.throws(
         () => tx.sign([new KeyPair({ prv: AlgoResources.accounts.default.secretKey.toString('hex') })]),
-        /Empty transaction/,
+        /Empty transaction/
       );
     });
   });

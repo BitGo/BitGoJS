@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import algosdk from 'algosdk';
-import utils from '../../../../src/coin/algo/utils';
-import { Algo } from '../../../../src';
-import * as AlgoResources from '../../../resources/algo';
+import utils from '../../../src/lib/utils';
+import { AlgoLib as Algo } from '../../../src';
+import * as AlgoResources from '../../fixtures/resources';
 
 describe('utils', () => {
   const {
@@ -40,7 +40,7 @@ describe('utils', () => {
     const secretKeyInValid = '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$';
     assert.throws(
       () => Algo.algoUtils.secretKeyToMnemonic(Buffer.from(secretKeyInValid, 'hex')),
-      /The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f is invalid/,
+      /The secret key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f is invalid/
     );
   });
 
@@ -57,7 +57,7 @@ describe('utils', () => {
       'crisp hello solution ten remove object watch enhance future rather biology era myth image swap crash coffee scatter buffalo depart day twist advance about unfair';
     assert.throws(
       () => Algo.algoUtils.seedFromMnemonic(mnemonicInValid),
-      new RegExp('the mnemonic contains a word that is not in the wordlist'),
+      new RegExp('the mnemonic contains a word that is not in the wordlist')
     );
   });
 
@@ -74,7 +74,7 @@ describe('utils', () => {
 
   it('it should return error if the seed is invalid', () => {
     const seedInValid = new Uint8Array(
-      Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$', 'hex'),
+      Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f6$', 'hex')
     );
     assert.throws(() => Algo.algoUtils.keyPairFromSeed(seedInValid), /Seed length must be 32/);
   });
@@ -115,11 +115,11 @@ describe('utils', () => {
     const algoAddress = '5PGNX5AMMUAB23UKL4BPC7TWKIKVG6KFMWTXQX5VRUTOLVPGSIZSHUA7H/';
     assert.throws(
       () => Algo.algoUtils.stellarAddressToAlgoAddress(xlmAddress),
-      new RegExp('Neither an Algorand address nor a stellar pubkey'),
+      new RegExp('Neither an Algorand address nor a stellar pubkey')
     );
     assert.throws(
       () => Algo.algoUtils.stellarAddressToAlgoAddress(algoAddress),
-      new RegExp('Neither an Algorand address nor a stellar pubkey'),
+      new RegExp('Neither an Algorand address nor a stellar pubkey')
     );
   });
 

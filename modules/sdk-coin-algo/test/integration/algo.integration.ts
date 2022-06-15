@@ -1,12 +1,13 @@
 import * as should from 'should';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('ALGO:', function () {
   let bitgo;
   let algocoin;
 
   before(function () {
-    bitgo = bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
     algocoin = bitgo.coin('talgo');
   });
 
@@ -21,7 +22,7 @@ describe('ALGO:', function () {
       const preBuiltSignedTx: any = await algoWallet.prebuildAndSignTransaction({
         type: 'keyreg',
         nonParticipation: true,
-        walletPassphrase: TestBitGo.V2.BITGOJS_TEST_PASSWORD,
+        walletPassphrase: TestBitGo.TEST_PASSWORD,
       });
       preBuiltSignedTx.should.have.property('txHex');
       preBuiltSignedTx.should.have.propertyByPath('txInfo', 'type').eql('keyreg');

@@ -10,12 +10,12 @@ import {
   KeyPair,
   TransactionBuilder,
   algoUtils,
-} from '../../../../../src/coin/algo';
-import { Transaction } from '../../../../../src/coin/algo/transaction';
+} from '../../../../src/lib';
+import { Transaction } from '../../../../src/lib/transaction';
 
-import * as AlgoResources from '../../../../resources/algo';
+import * as AlgoResources from '../../../fixtures/resources';
 import { BaseKey, TransactionType } from '@bitgo/sdk-core';
-import { EncodedTx } from '../../../../../src/coin/algo/ifaces';
+import { EncodedTx } from '../../../../src/lib/ifaces';
 
 const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;
 
@@ -110,7 +110,7 @@ describe('Algo Transaction Builder', () => {
 
       assert.throws(
         () => txnBuilder.fee({ fee: '999' }),
-        (e: Error) => e.name === InsufficientFeeError.name,
+        (e: Error) => e.name === InsufficientFeeError.name
       );
       should.doesNotThrow(() => txnBuilder.fee({ fee: '1000' }));
     });
@@ -119,7 +119,7 @@ describe('Algo Transaction Builder', () => {
       const spy = sinon.spy(txnBuilder, 'validateAddress');
       assert.throws(
         () => txnBuilder.sender({ address: 'asdf' }),
-        (e: Error) => e.name === AddressValidationError.name,
+        (e: Error) => e.name === AddressValidationError.name
       );
       should.doesNotThrow(() => txnBuilder.sender({ address: account1.address }));
       SinonAssert.calledTwice(spy);
@@ -205,7 +205,7 @@ describe('Algo Transaction Builder', () => {
         genesisID: testnet.genesisID,
         genesisHash: testnet.genesisHash,
       },
-      reKeyTo,
+      reKeyTo
     );
     algoTxn.fee = fee;
     algoTxn.flatFee = true;
@@ -262,7 +262,7 @@ describe('Algo Transaction Builder', () => {
         };
       });
       should(() => txnBuilder.fromImplementation(algosdk.encodeUnsignedTransaction(algoTxn))).throw(
-        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address",
+        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address"
       );
       sinon.restore();
     });
@@ -274,7 +274,7 @@ describe('Algo Transaction Builder', () => {
 
       assert.throws(
         () => txnBuilder.signImplementation({ key: Buffer.from(account1.prvKey).toString('hex') }),
-        new RegExp('Invalid base32 characters'),
+        new RegExp('Invalid base32 characters')
       );
     });
 
@@ -316,8 +316,8 @@ describe('Algo Transaction Builder', () => {
       assert.throws(
         () => txnBuilder.validateTransaction(txnBuilder.getTransaction()),
         new RegExp(
-          'Transaction validation failed: "value" failed custom validation because lastRound cannot be greater than or equal to firstRound',
-        ),
+          'Transaction validation failed: "value" failed custom validation because lastRound cannot be greater than or equal to firstRound'
+        )
       );
     });
 
@@ -353,9 +353,9 @@ describe('Algo Transaction Builder', () => {
             '7RI43DTCDCQ2HDNEP3IAEMHQLAEBN3ITXIZQHLC55OIRKSEQQAS52OYKJE',
           ])
           .genesisId(testnet.genesisID)
-          .genesisHash(testnet.genesisHash),
+          .genesisHash(testnet.genesisHash)
       ).throw(
-        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address",
+        "The address '25NJQAMCWEFLPVKL73J4SZAHHIHOC4XT3KTCGJNPAINGR5YHKENMEF5AAA' is not a well-formed algorand address"
       );
     });
   });

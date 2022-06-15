@@ -1,15 +1,19 @@
 import 'should';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { AlgoToken } from '../../src';
 
 describe('Algo Unison Token:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let algoTokenCoin;
   const tokenName = 'talgo:16026728';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(tokenName);
   });
@@ -33,7 +37,10 @@ describe('Algo USDC Token:', function () {
   const USDCtokenName = 'talgo:10458941';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(USDCtokenName);
   });
@@ -57,7 +64,10 @@ describe('Algo USDt Token:', function () {
   const USDTtokenName = 'talgo:180447';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     algoTokenCoin = bitgo.coin(USDTtokenName);
   });

@@ -11,7 +11,10 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "precommit": "yarn lint-staged",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -49,5 +52,9 @@
     "js-sha512": "0.8.0",
     "joi": "^17.4.0",
     "stellar-sdk": "^10.0.1"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-test": "^1.0.0",
+    "should": "^13.1.3"
   }
 }

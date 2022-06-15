@@ -1,6 +1,6 @@
 import * as should from 'should';
 import * as nacl from 'tweetnacl';
-import { SeedEncoding } from '../../../../src/coin/algo/seedEncoding';
+import { SeedEncoding } from '../../../src/lib/seedEncoding';
 
 describe('Algo seed encoding', function () {
   describe('#isValid', function () {

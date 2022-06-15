@@ -2,9 +2,9 @@ import { coins } from '@bitgo/statics';
 import assert from 'assert';
 import should from 'should';
 import { test } from 'mocha';
-import { AssetTransferBuilder, TransactionBuilderFactory } from '../../../../../src/coin/algo';
+import { AssetTransferBuilder, TransactionBuilderFactory } from '../../../../src/lib';
 
-import * as AlgoResources from '../../../../resources/algo';
+import * as AlgoResources from '../../../fixtures/resources';
 
 describe('Algo Asset Transfer Transaction Builder', () => {
   let txnBuilder: AssetTransferBuilder;
@@ -112,7 +112,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const tx = await txnBuilder.testnet();
       assert.throws(
         () => tx.sender({ address: wrongAddress }),
-        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address")
       );
     });
 
@@ -121,7 +121,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const tx = await txnBuilder.testnet();
       assert.throws(
         () => tx.closeRemainderTo({ address: wrongAddress }),
-        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address")
       );
     });
 
@@ -130,7 +130,7 @@ describe('Algo Asset Transfer Transaction Builder', () => {
       const tx = await txnBuilder.testnet();
       assert.throws(
         () => tx.to({ address: wrongAddress }),
-        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address"),
+        new RegExp("The address '" + wrongAddress + "' is not a well-formed algorand address")
       );
     });
 
