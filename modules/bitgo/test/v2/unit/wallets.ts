@@ -6,11 +6,12 @@ import 'should';
 import * as nock from 'nock';
 import { BlsUtils, common, TssUtils, Wallets } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 import * as sinon from 'sinon';
 
 describe('V2 Wallets:', function () {
-  const bitgo = new TestBitGo({ env: 'mock' });
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
   let wallets;
   let bgUrl;
 
@@ -69,7 +70,7 @@ describe('V2 Wallets:', function () {
     });
 
     it('creates an eos wallet with custom address', async function () {
-      const eosBitGo = new TestBitGo({ env: 'mock' });
+      const eosBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       eosBitGo.initializeTestVars();
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';
@@ -82,7 +83,7 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      await eosWallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address });
+      await eosWallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address } as any);
     });
 
     it('creates a single custodial wallet', async function () {
@@ -99,7 +100,7 @@ describe('V2 Wallets:', function () {
     });
 
     it('creates a wallet with custom gasPrice', async function () {
-      const ethBitGo = new TestBitGo({ env: 'mock' });
+      const ethBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
@@ -112,11 +113,11 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 });
+      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 } as any);
     });
 
     it('creates a new wallet with walletVersion', async function () {
-      const ethBitGo = new TestBitGo({ env: 'mock' });
+      const ethBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
@@ -129,7 +130,7 @@ describe('V2 Wallets:', function () {
           return true;
         })
         .reply(200, {});
-      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', walletVersion: 1 });
+      await ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', walletVersion: 1 } as any);
     });
   });
 

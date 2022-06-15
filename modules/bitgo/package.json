@@ -84,11 +84,11 @@
     "superagent-proxy": "^3.0.0"
   },
   "devDependencies": {
+    "@bitgo/sdk-test": "^1.0.0",
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",
     "@types/jasmine": "^3.5.12",
     "@types/lodash": "^4.14.121",
-    "@types/nock": "^9.3.1",
     "@types/node": "^11.11.4",
     "@types/secp256k1": "^4.0.1",
     "@types/sinon": "^7.0.6",
@@ -103,7 +103,6 @@
     "karma-mocha": "^2.0.1",
     "karma-typescript": "^5.0.3",
     "minimist": "^1.2.5",
-    "nock": "=9.0.28",
     "nyc": "^15.0.0",
     "process": "^0.11.10",
     "puppeteer": "2.1.1",

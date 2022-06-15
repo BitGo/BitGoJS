@@ -1,6 +1,7 @@
 import 'should';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 describe('Stellar Token:', function () {
   let bitgo;
@@ -8,7 +9,7 @@ describe('Stellar Token:', function () {
   const tokenName = 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L';
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     stellarTokenCoin = bitgo.coin(tokenName);
   });

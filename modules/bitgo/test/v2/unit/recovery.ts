@@ -5,7 +5,8 @@
 import * as should from 'should';
 import * as nock from 'nock';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 
 import moment = require('moment');
@@ -16,7 +17,7 @@ describe('Recovery:', function () {
   let bitgo;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins

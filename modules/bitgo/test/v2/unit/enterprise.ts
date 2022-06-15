@@ -5,7 +5,8 @@
 import * as nock from 'nock';
 import { common, Enterprise } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 
 describe('Enterprise:', function () {
   let bitgo;
@@ -14,7 +15,7 @@ describe('Enterprise:', function () {
   let bgUrl;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     baseCoin = bitgo.coin('tbtc');
     enterprise = new Enterprise(bitgo, baseCoin, { id: '593f1ece99d37c23080a557283edcc89', name: 'Test Enterprise' });

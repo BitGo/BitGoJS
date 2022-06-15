@@ -1,5 +1,6 @@
 import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import * as AlgoResources from '../../fixtures/coins/algo';
 import { randomBytes } from 'crypto';
 
@@ -9,7 +10,7 @@ describe('ALGO:', function () {
   const receiver = AlgoResources.accounts.account2;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
   });

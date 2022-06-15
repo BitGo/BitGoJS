@@ -1,6 +1,7 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { randomBytes } from 'crypto';
 import { rawTx, accounts, validatorContractAddress, blockHash } from '../../fixtures/coins/near';
 import * as _ from 'lodash';
@@ -29,7 +30,7 @@ describe('NEAR:', function () {
   };
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tnear');
     newTxPrebuild = () => {
@@ -568,12 +569,12 @@ describe('NEAR:', function () {
 
     const response2 = {
       address: 'lavenderfive.pool.f863973.m0',
-      amount: TEN_MILLION_NEAR
+      amount: TEN_MILLION_NEAR,
     };
 
     const response3 = {
       address: '61b18c6dc02ddcabdeac56cb4f21a971cc41cc97640f6f85b073480008c53a0d',
-      amount: TEN_MILLION_NEAR
+      amount: TEN_MILLION_NEAR,
     };
 
     it('should parse an unsigned transfer transaction', async function () {
@@ -619,7 +620,7 @@ describe('NEAR:', function () {
           fee: '',
         },
       })
-      .should.be.rejectedWith('Invalid transaction');
+        .should.be.rejectedWith('Invalid transaction');
       stub.restore();
     });
 
@@ -635,10 +636,10 @@ describe('NEAR:', function () {
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
-      const parsedTransaction = await basecoin.parseTransaction({        
+      const parsedTransaction = await basecoin.parseTransaction({
         txPrebuild: {
           txHex: txToBroadcastFormat,
-        }
+        },
       });
 
       parsedTransaction.should.deepEqual({
@@ -659,10 +660,10 @@ describe('NEAR:', function () {
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
-      const parsedTransaction = await basecoin.parseTransaction({        
+      const parsedTransaction = await basecoin.parseTransaction({
         txPrebuild: {
           txHex: txToBroadcastFormat,
-        }
+        },
       });
 
       parsedTransaction.should.deepEqual({
@@ -684,10 +685,10 @@ describe('NEAR:', function () {
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
 
-      const parsedTransaction = await basecoin.parseTransaction({        
+      const parsedTransaction = await basecoin.parseTransaction({
         txPrebuild: {
           txHex: txToBroadcastFormat,
-        }
+        },
       });
 
       parsedTransaction.should.deepEqual({

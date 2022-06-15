@@ -2,14 +2,15 @@ import { Trx } from '../../../../src/v2/coins/';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
 import * as _ from 'lodash';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 describe('TRON:', function () {
   let bitgo;
   let basecoin;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ttrx');
   });

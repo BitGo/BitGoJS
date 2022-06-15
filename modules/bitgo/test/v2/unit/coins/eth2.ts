@@ -1,7 +1,8 @@
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import { bufferToHex } from 'ethereumjs-util';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { Eth2, Teth2 } from '../../../../src/v2/coins';
 
 describe('Ethereum 2.0', function () {
@@ -9,7 +10,7 @@ describe('Ethereum 2.0', function () {
   let basecoin;
 
   before(async function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teth2');
   });

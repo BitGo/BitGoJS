@@ -5,7 +5,8 @@
 import 'should';
 import * as nock from 'nock';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 import { Erc20Token } from '../../../src/v2/coins/erc20Token';
 import { StellarToken } from '../../../src/v2/coins/stellarToken';
 import { unsignedTxForExplainTransfer } from '../fixtures/coins/stx';
@@ -22,7 +23,7 @@ describe('V2 Base Coin:', function () {
   let baseCoinStellarToken;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
     bitgo.initializeTestVars();
     basecoinEth = bitgo.coin('teth');
     basecoinBtc = bitgo.coin('tbtc');

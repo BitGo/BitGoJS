@@ -4,7 +4,7 @@
 import * as bip32 from 'bip32';
 import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
-import { getSeed } from '../../../../../lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 import { bitgo } from '@bitgo/utxo-lib';
 
 type RootWalletKeys = bitgo.RootWalletKeys;

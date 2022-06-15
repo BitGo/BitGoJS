@@ -1,8 +1,10 @@
 import should = require('should');
 import * as accountLib from '@bitgo/account-lib';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { rawTx, accounts } from '../../fixtures/coins/dot';
 import { randomBytes } from 'crypto';
+import * as testData from '../../fixtures/coins/dot';
 
 describe('DOT:', function () {
   let bitgo;
@@ -11,7 +13,7 @@ describe('DOT:', function () {
 
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tdot');
     prodCoin = bitgo.coin('dot');
@@ -145,4 +147,40 @@ describe('DOT:', function () {
       bigUnit.should.equal('0.04');
     });
   });
+
+  describe('Explain Transactions:', () => {
+    it('should explain an unsigned transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction(testData.unsignedTransaction);
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'type',
+          'sequenceId',
+          'id',
+          'blockNumber',
+        ],
+        sequenceId: 0,
+        fee: '10',
+        id: '0x0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8',
+        type: '0',
+        outputs: [
+          {
+            address: '5DkddSfPsWojjfuH9iJEcUV7ZseQ9EJ6RjtNmCR1w3CEb8S9',
+            valueString: '90034235235350',
+            coinName: 'tdot',
+            wallet: '62a1205751675b2f0fe72328',
+          },
+        ],
+        blockNumber: 8619307,
+        outputAmount: 90034235235350,
+        changeOutputs: [],
+        changeAmount: '0',
+      });
+    });
+  });
 });
+
