@@ -3,7 +3,8 @@ import * as nock from 'nock';
 
 import fixtures from '../../fixtures/trading/affirmation';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { AffirmationStatus, common, Enterprise, Wallet } from '@bitgo/sdk-core';
 import { Environments } from '../../../../src';
 
@@ -18,7 +19,7 @@ describe('Affirmations', function () {
   let affirmation;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();

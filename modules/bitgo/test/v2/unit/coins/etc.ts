@@ -1,4 +1,5 @@
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { Etc } from '../../../../src/v2/coins/etc';
 import { Tetc } from '../../../../src/v2/coins/tetc';
 
@@ -6,7 +7,7 @@ describe('Ethereum Classic', function () {
   let bitgo;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
   });
 

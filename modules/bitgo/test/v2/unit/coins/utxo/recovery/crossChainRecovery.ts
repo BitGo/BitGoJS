@@ -28,7 +28,7 @@ import {
   defaultBitGo,
   getUtxoCoin,
 } from '../util';
-import { getSeed } from '../../../../../lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 import { nockBitGo } from '../util/nockBitGo';
 import { nockBitGoPublicAddressUnspents, nockBitGoPublicTransaction } from '../util/nockIndexerAPI';
 import { createFullSignedTransaction } from '../util/transaction';

@@ -9,7 +9,7 @@ type Unspent = utxolib.bitgo.Unspent;
 type WalletUnspent = utxolib.bitgo.WalletUnspent;
 type ChainCode = utxolib.bitgo.ChainCode;
 
-import { getSeed } from '../../../../../lib/keys';
+import { getSeed } from '@bitgo/sdk-test';
 import { getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';

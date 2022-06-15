@@ -2,20 +2,20 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
 import { VerificationOptions, Wallet } from '@bitgo/sdk-core';
-import { BitGo } from '../../../../src';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import {
   AbstractUtxoCoin,
   Output,
   TransactionExplanation,
   TransactionParams,
 } from '@bitgo/abstract-utxo';
-import { TestBitGo } from '../../../lib/test_bitgo';
 import * as errors from '../../../../src/errors';
 
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
-    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
     /*
@@ -92,7 +92,7 @@ describe('Abstract UTXO Coin:', () => {
   });
 
   describe('Custom Change Wallets', () => {
-    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
     const keys = {
@@ -215,7 +215,7 @@ describe('Abstract UTXO Coin:', () => {
   });
 
   describe('Verify Transaction', () => {
-    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
     const userKeychain = coin.keychains().create();

@@ -5,7 +5,8 @@ import 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 
 import {
   BaseCoin,
@@ -22,7 +23,7 @@ import {
 
 describe('Pending Approvals:', () => {
   let sandbox: sinon.SinonSandbox;
-  let bitgo: typeof TestBitGo;
+  let bitgo: TestableBG & BitGo;
   let basecoin: BaseCoin;
   let wallet: Wallet;
   let bgUrl: string;
@@ -65,7 +66,7 @@ describe('Pending Approvals:', () => {
   before(async () => {
     nock.disableNetConnect();
     // create wallet
-    bitgo = new TestBitGo({ env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin(coin);
 

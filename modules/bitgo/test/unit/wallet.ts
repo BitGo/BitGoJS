@@ -5,7 +5,8 @@
 //
 
 const Wallet = require('../../src/wallet');
-import { TestBitGo } from '../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../src/bitgo';
 import * as _ from 'lodash';
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -21,7 +22,7 @@ nock.disableNetConnect();
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
-  const bitgo = new TestBitGo({ env: 'test' });
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
   bitgo.initializeTestVars();
 
   const userKeypair = {
@@ -109,7 +110,7 @@ describe('Wallet Prototype Methods', function () {
 
     before(function () {
       nock.pendingMocks().should.be.empty();
-      const prodBitgo = new TestBitGo({ env: 'prod' });
+      const prodBitgo = TestBitGo.decorate(BitGo, { env: 'prod' });
       prodBitgo.initializeTestVars();
       bgUrl = common.Environments[prodBitgo.getEnv()].uri;
       fakeProdWallet = new Wallet(prodBitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
@@ -532,7 +533,7 @@ describe('Wallet Prototype Methods', function () {
     before(function accelerateTxMockedBefore() {
       nock.pendingMocks().should.be.empty();
 
-      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       bitgo.initializeTestVars();
       bitgo.setValidate(false);
       wallet = new Wallet(bitgo, { id: walletId, private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });

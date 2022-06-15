@@ -2,7 +2,8 @@ import * as should from 'should';
 import * as nock from 'nock';
 
 import { Enterprise, Environments, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 
 describe('Trading Accounts', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -12,7 +13,7 @@ describe('Trading Accounts', function () {
   let tradingAccount;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
 

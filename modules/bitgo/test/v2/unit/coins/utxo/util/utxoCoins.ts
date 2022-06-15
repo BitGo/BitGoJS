@@ -4,8 +4,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as coins from '../../../../../../src/v2/coins';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
-import { BitGo } from '../../../../../../src';
-import { TestBitGo } from '../../../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../../../src/bitgo';
 
 const AbstractUtxoCoinCtor = AbstractUtxoCoin as unknown as ObjectConstructor;
 
@@ -20,7 +20,7 @@ function hasAbstractUtxoCoinPrototype(c: ObjectConstructor): boolean {
   return getPrototypeChain(c).includes(AbstractUtxoCoinCtor);
 }
 
-export const defaultBitGo = new TestBitGo({ env: 'mock' });
+export const defaultBitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
 
 function getUtxoCoins(bitgo: BitGo = defaultBitGo): AbstractUtxoCoin[] {
   return Object.values(coins)

@@ -3,7 +3,8 @@ import * as should from 'should';
 
 import fixtures from '../../fixtures/trading/tradingPartner';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../../src/bitgo';
 import { Enterprise, Environments, TradingPartnerStatus, TradingPartnerType, TradingReferralRequesterSide, Wallet } from '@bitgo/sdk-core';
 
 describe('Trading Partners', function () {
@@ -14,7 +15,7 @@ describe('Trading Partners', function () {
   let tradingAccount;
 
   before(function () {
-    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
+    bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();

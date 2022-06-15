@@ -11,7 +11,8 @@ import * as _ from 'lodash';
 
 import { common, CustomSigningFunction, RequestTracer, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
-import { TestBitGo } from '../../lib/test_bitgo';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGo } from '../../../src/bitgo';
 import { fromSeed } from 'bip32';
 import { randomBytes } from 'crypto';
 
@@ -19,9 +20,9 @@ nock.disableNetConnect();
 
 describe('V2 Wallet:', function () {
   const reqId = new RequestTracer();
-  const bitgo = new TestBitGo({ env: 'test' });
+  const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
   bitgo.initializeTestVars();
-  const basecoin = bitgo.coin('tbtc');
+  const basecoin: any = bitgo.coin('tbtc');
   const walletData = {
     id: '5b34252f1bf349930e34020a00000000',
     coin: 'tbtc',
@@ -654,7 +655,7 @@ describe('V2 Wallet:', function () {
   describe('Solana tests: ', () => {
     let solWallet;
     const passphrase = '#Bondiola1234';
-    const solBitgo = new TestBitGo({ env: 'mock' });
+    const solBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     solBitgo.initializeTestVars();
     const walletData = {
       id: '598f606cd8fc24710d2ebadb1d9459bb',
@@ -1134,7 +1135,7 @@ describe('V2 Wallet:', function () {
 
       const txPrebuild = await ethWallet.prebuildTransaction(txParams);
       txPrebuild.isBatch.should.equal(true);
-      txPrebuild.recipients[0].address.should.equal(bitgo.coin('teth').staticsCoin.network.batcherContractAddress);
+      txPrebuild.recipients[0].address.should.equal((bitgo.coin('teth') as any).staticsCoin.network.batcherContractAddress);
       txPrebuild.recipients[0].amount.should.equal(totalAmount);
     });
 
