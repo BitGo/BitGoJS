@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.22](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.21...bitgo@14.2.0-rc.22) (2022-06-16)
+
+
+### Features
+
+* **sdk-core:** add staking SDK functionality ([20371c9](https://github.com/BitGo/BitGoJS/commit/20371c9e320c6a6f9c929dcdbd3cfa197b960ac9))
+
+
+
+
+
 # [14.2.0-rc.21](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.20...bitgo@14.2.0-rc.21) (2022-06-15)
 
 
