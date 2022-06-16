@@ -1694,6 +1694,10 @@ export class Eth extends BaseCoin {
     return true;
   }
 
+  supportsStaking(): boolean {
+    return true;
+  }
+
   private isETHAddress(address: string): boolean {
     return !!address.match(/0x[a-fA-F0-9]{40}/);
   }

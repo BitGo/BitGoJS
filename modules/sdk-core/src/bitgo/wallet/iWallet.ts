@@ -3,6 +3,7 @@ import { IBaseCoin, SignedTransaction, TransactionPrebuild, VerificationOptions 
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
+import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 
 export interface MaximumSpendableOptions {
@@ -543,6 +544,7 @@ export interface IWallet {
   remove(params?: Record<string, never>): Promise<any>;
   toJSON(): WalletData;
   toTradingAccount(): ITradingAccount;
+  toStakingWallet(): IStakingWallet;
   downloadKeycard(params?: DownloadKeycardOptions): void;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
