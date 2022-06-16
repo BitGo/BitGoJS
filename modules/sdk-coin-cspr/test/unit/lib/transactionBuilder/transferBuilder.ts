@@ -2,15 +2,15 @@ import assert from 'assert';
 import should from 'should';
 import { DeployUtil, CLOption, CLString, CLU512, CLU64, CLValueBuilder } from 'casper-js-sdk';
 import BigNumber from 'bignumber.js';
-import { register } from '../../../../../src';
-import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
-import * as testData from '../../../../resources/cspr/cspr';
-import { Transaction } from '../../../../../src/coin/cspr/transaction';
-import { DEFAULT_CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
+import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
+import * as testData from '../../../fixtures/resources';
+import { Transaction } from '../../../../src/lib/transaction';
+import { DEFAULT_CHAIN_NAMES } from '../../../../src/lib/constants';
+import { coins } from '@bitgo/statics';
 
 describe('Casper Transfer Builder', () => {
-  const factory = register('tcspr', TransactionBuilderFactory);
-  const factoryProd = register('cspr', TransactionBuilderFactory);
+  const factory = new TransactionBuilderFactory(coins.get('tcspr'));
+  const factoryProd = new TransactionBuilderFactory(coins.get('cspr'));
   const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
   const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
 
@@ -55,7 +55,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
@@ -106,7 +106,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
@@ -131,7 +131,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
 
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
@@ -160,7 +160,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
 
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
@@ -189,7 +189,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
 
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
@@ -218,7 +218,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
 
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
@@ -243,7 +243,7 @@ describe('Casper Transfer Builder', () => {
         should.equal(
           tx.casperTx.header.gasPrice.toString(),
           testData.FEE.gasPrice,
-          'Gas price does not match expected',
+          'Gas price does not match expected'
         );
 
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
@@ -267,7 +267,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -282,7 +282,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
@@ -301,7 +301,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -316,14 +316,14 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
             tx2.casperTx.approvals,
             tx.casperTx.approvals,
-            'from implementation from factory should get approvals correctly',
+            'from implementation from factory should get approvals correctly'
           );
         });
 
@@ -340,7 +340,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -355,14 +355,14 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
             tx2.casperTx.approvals,
             tx.casperTx.approvals,
-            'from implementation from factory should get approvals correctly',
+            'from implementation from factory should get approvals correctly'
           );
         });
 
@@ -380,7 +380,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -395,14 +395,14 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
             tx2.casperTx.approvals,
             tx.casperTx.approvals,
-            'from implementation from factory should get approvals correctly',
+            'from implementation from factory should get approvals correctly'
           );
         });
 
@@ -420,7 +420,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -435,14 +435,14 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
             tx2.casperTx.approvals,
             tx.casperTx.approvals,
-            'from implementation from factory should get approvals correctly',
+            'from implementation from factory should get approvals correctly'
           );
         });
 
@@ -460,7 +460,7 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           const builder2 = factory.getTransferBuilder();
@@ -475,14 +475,14 @@ describe('Casper Transfer Builder', () => {
           should.equal(txId2.value().unwrap().value().toNumber(), 255);
           should.equal(
             (tx2.casperTx.session.getArgByName('amount') as CLU512).value().toString(),
-            testData.MIN_MOTES_AMOUNT,
+            testData.MIN_MOTES_AMOUNT
           );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
             tx2.casperTx.approvals,
             tx.casperTx.approvals,
-            'from implementation from factory should get approvals correctly',
+            'from implementation from factory should get approvals correctly'
           );
         });
       });

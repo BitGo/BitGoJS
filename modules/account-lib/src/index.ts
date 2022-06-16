@@ -39,7 +39,7 @@ export { Celo };
 import * as Hbar from './coin/hbar';
 export { Hbar };
 
-import * as Cspr from './coin/cspr';
+import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr };
 
 import * as Xrp from './coin/xrp';

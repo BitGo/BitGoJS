@@ -306,7 +306,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       PublicKey.fromHex(this._source.address),
       this._chainName,
       gasPrice,
-      this._expiration || TRANSACTION_EXPIRATION,
+      this._expiration || TRANSACTION_EXPIRATION
     );
   }
 
@@ -324,7 +324,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           transferSession.amount,
           transferSession.target,
           undefined,
-          transferSession.id,
+          transferSession.id
         );
         break;
       case TransactionType.WalletInitialization:
@@ -333,7 +333,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         const moduleBytesSession = this._session as CasperModuleBytesTransaction;
         session = DeployUtil.ExecutableDeployItem.newModuleBytes(
           moduleBytesSession.moduleBytes,
-          moduleBytesSession.args,
+          moduleBytesSession.args
         );
         break;
       default:

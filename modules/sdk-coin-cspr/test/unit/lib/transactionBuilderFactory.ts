@@ -1,11 +1,11 @@
 import assert from 'assert';
 import should from 'should';
-import { register } from '../../../../src/index';
-import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr/';
-import * as testData from '../../../resources/cspr/cspr';
-import { Transaction } from '../../../../src/coin/cspr/transaction';
+import { KeyPair, TransactionBuilderFactory } from '../../../src/lib';
+import * as testData from '../../fixtures/resources';
+import { Transaction } from '../../../src/lib/transaction';
+import { coins } from '@bitgo/statics';
 
-const factory = register('tcspr', TransactionBuilderFactory);
+const factory = new TransactionBuilderFactory(coins.get('tcspr'));
 const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
 const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
 const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
@@ -59,7 +59,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -77,7 +77,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -96,7 +96,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -115,7 +115,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -134,7 +134,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
   });
@@ -166,7 +166,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -184,7 +184,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -203,7 +203,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -222,7 +222,7 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
 
@@ -241,13 +241,13 @@ describe('should build ', () => {
       should.deepEqual(
         tx2.casperTx.approvals,
         tx.casperTx.approvals,
-        'from implementation from factory should get approvals correctly',
+        'from implementation from factory should get approvals correctly'
       );
     });
   });
 
   describe('should reject signing ', () => {
-    const factory = register('tcspr', TransactionBuilderFactory);
+    const factory = new TransactionBuilderFactory(coins.get('tcspr'));
     it('a wallet init transaction with modified signer', async () => {
       const builder = initTxWalletInitBuilder();
       builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
@@ -262,7 +262,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       assert.throws(
         () => tx2.sign(keypair),
-        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e: Error) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY
       );
     });
 
@@ -280,7 +280,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       assert.throws(
         () => tx2.sign(keypair),
-        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e: Error) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY
       );
     });
 
@@ -298,7 +298,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       assert.throws(
         () => tx2.sign(keypair),
-        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e: Error) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY
       );
     });
 
@@ -316,7 +316,7 @@ describe('should build ', () => {
       const keypair = new KeyPair({ prv: testData.ROOT_ACCOUNT.privateKey });
       assert.throws(
         () => tx2.sign(keypair),
-        (e) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY,
+        (e: Error) => e.message === testData.ERROR_ALREADY_SIGNED_WITH_INVALID_KEY
       );
     });
 
@@ -332,7 +332,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -348,7 +348,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -357,7 +357,7 @@ describe('should build ', () => {
         () => {
           factory.from('{}');
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -366,7 +366,7 @@ describe('should build ', () => {
         () => {
           factory.from(undefined as unknown as string);
         },
-        (e) => e.message.startsWith(testData.INVALID_RAW_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_RAW_TRANSACTION_ERROR)
       );
     });
 
@@ -382,7 +382,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -398,7 +398,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -414,7 +414,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
 
@@ -430,7 +430,7 @@ describe('should build ', () => {
         () => {
           factory.from(JSON.stringify(txJson));
         },
-        (e) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR),
+        (e: Error) => e.message.startsWith(testData.INVALID_TRANSACTION_ERROR)
       );
     });
   });
