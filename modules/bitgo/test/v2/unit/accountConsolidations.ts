@@ -12,7 +12,7 @@ import { common, Wallet } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-const algoFixtures = require('../fixtures/coins/algo');
+const algoFixtures = require('../../../../sdk-coin-algo/test/fixtures/algo');
 
 nock.disableNetConnect();
 

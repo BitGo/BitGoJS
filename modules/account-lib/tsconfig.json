@@ -15,6 +15,9 @@
     },
     {
       "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-coin-algo"
     }
   ]
 }

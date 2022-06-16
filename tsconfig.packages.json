@@ -20,6 +20,9 @@
       "path": "./modules/sdk-api"
     },
     {
+      "path": "./modules/sdk-coin-algo"
+    },
+    {
       "path": "./modules/sdk-coin-avaxp"
     },
     {
