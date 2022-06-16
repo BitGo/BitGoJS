@@ -261,6 +261,7 @@ export interface IBaseCoin {
   transactionDataAllowed(): boolean;
   allowsAccountConsolidations(): boolean;
   supportsTss(): boolean;
+  supportsStaking(): boolean;
   supportsBlsDkg(): boolean;
   getBaseFactor(): number | string;
   baseUnitsToBigUnits(baseUnits: string | number): string;

@@ -18,6 +18,7 @@ module.exports = {
         'BG-',
         'CR-',
         'STLX-',
+        'BOS-',
       ],
     },
   },

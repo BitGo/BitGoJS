@@ -67,6 +67,7 @@ import {
   WalletData,
   WalletSignTransactionOptions,
 } from './iWallet';
+import { StakingWallet } from '../staking/stakingWallet';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2038,6 +2039,16 @@ export class Wallet implements IWallet {
       throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
     }
     return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
+  }
+
+  /**
+   * Create a staking wallet from this wallet
+   */
+  toStakingWallet(): StakingWallet {
+    if (!this.baseCoin.supportsStaking()) {
+      throw new Error(`Staking not supported for ${this.coin()}`);
+    }
+    return new StakingWallet(this);
   }
 
   /**
