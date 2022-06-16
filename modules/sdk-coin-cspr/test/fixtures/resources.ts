@@ -1,4 +1,4 @@
-import { KeyPair } from '../../../src/coin/cspr';
+import { KeyPair } from '../../src/lib/keyPair';
 
 export const ACCOUNT_FROM_SEED = {
   seed: 'cd1eac3bc52716f3177bc7f9c5d7de10b98c74c6c1ace2c874e0e09f47469023',

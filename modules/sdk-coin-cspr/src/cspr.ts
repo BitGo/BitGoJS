@@ -1,11 +1,11 @@
 /**
  * @prettier
  */
-import * as accountLib from '@bitgo/account-lib';
+import * as CsprLib from './lib';
 import { ECPair } from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -114,9 +114,9 @@ export class Cspr extends BaseCoin {
     }
 
     const userPubKey = keychains[KeyIndices.USER].pub;
-    const rootAddress = new accountLib.Cspr.KeyPair({ pub: userPubKey }).getAddress();
+    const rootAddress = new CsprLib.KeyPair({ pub: userPubKey }).getAddress();
 
-    const addressDetails = accountLib.Cspr.Utils.getAddressDetails(address);
+    const addressDetails = CsprLib.Utils.getAddressDetails(address);
     if (addressDetails.address.toLowerCase() !== rootAddress.toLowerCase()) {
       throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddress}`);
     }
@@ -130,7 +130,7 @@ export class Cspr extends BaseCoin {
    * @returns {Object} object with generated xpub and xprv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new accountLib.Cspr.KeyPair({ seed }) : new accountLib.Cspr.KeyPair();
+    const keyPair = seed ? new CsprLib.KeyPair({ seed }) : new CsprLib.KeyPair();
     const keys = keyPair.getExtendedKeys();
 
     if (!keys.xprv) {
@@ -147,7 +147,7 @@ export class Cspr extends BaseCoin {
     // TODO(STLX-1344): Validate using account-lib when available
     //  return accountLib.Cspr.Utils.isValidPublicKey(pub);
     try {
-      new accountLib.Cspr.KeyPair({ pub });
+      new CsprLib.KeyPair({ pub });
       return true;
     } catch (e) {
       return false;
@@ -164,7 +164,7 @@ export class Cspr extends BaseCoin {
     // TODO(STLX-1345): Validate using account-lib when available
     //  return accountLib.Cspr.Utils.isValidPrivateKey(prv);
     try {
-      new accountLib.Cspr.KeyPair({ prv });
+      new CsprLib.KeyPair({ prv });
       return true;
     } catch (e) {
       return false;
@@ -179,8 +179,8 @@ export class Cspr extends BaseCoin {
    */
   isValidAddress(address: string): boolean {
     try {
-      const addressDetails = accountLib.Cspr.Utils.getAddressDetails(address);
-      return address === accountLib.Cspr.Utils.normalizeAddress(addressDetails);
+      const addressDetails = CsprLib.Utils.getAddressDetails(address);
+      return address === CsprLib.Utils.normalizeAddress(addressDetails);
     } catch (e) {
       return false;
     }
@@ -195,7 +195,7 @@ export class Cspr extends BaseCoin {
    * @returns Bluebird<SignedTransaction>
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const txBuilder = accountLib.getBuilder(this.getChain()).from(params.txPrebuild.txHex);
+    const txBuilder = this.getBuilder().from(params.txPrebuild.txHex);
     const key = params.prv;
     txBuilder.sign({ key });
 
@@ -245,9 +245,9 @@ export class Cspr extends BaseCoin {
    * @param message
    */
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
-    const keyPair = new accountLib.Cspr.KeyPair({ prv: key.prv });
+    const keyPair = new CsprLib.KeyPair({ prv: key.prv });
     const messageHex = message instanceof Buffer ? message.toString('hex') : message;
-    const signatureData = accountLib.Cspr.Utils.signMessage(keyPair, messageHex);
+    const signatureData = CsprLib.Utils.signMessage(keyPair, messageHex);
     return Buffer.from(signatureData.signature);
   }
 
@@ -265,22 +265,22 @@ export class Cspr extends BaseCoin {
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
-    const txBuilder = accountLib.getBuilder(this.getChain()).from(txHex);
+    const txBuilder = this.getBuilder().from(txHex);
 
     const tx: any = await txBuilder.build();
     if (!tx) {
       throw new InvalidTransactionError('Error while trying to build transaction');
     }
     const id = Buffer.from(tx.casperTx.hash).toString('hex');
-    const amount = accountLib.Cspr.Utils.getTransferAmount(tx.casperTx.session);
+    const amount = CsprLib.Utils.getTransferAmount(tx.casperTx.session);
     let transferId;
     const outputs: TransactionOutput[] = [];
     const operations: TransactionOperation[] = [];
 
     switch (tx.type) {
       case TransactionType.Send: {
-        transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
-        const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
+        transferId = CsprLib.Utils.getTransferId(tx.casperTx.session);
+        const toAddress = CsprLib.Utils.getTransferDestinationAddress(tx._deploy.session);
         outputs.push({
           address: toAddress,
           amount,
@@ -289,7 +289,7 @@ export class Cspr extends BaseCoin {
         break;
       }
       case TransactionType.StakingLock: {
-        const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+        const validator = CsprLib.Utils.getValidatorAddress(tx._deploy.session);
         operations.push({
           type: TransactionType.StakingLock,
           amount,
@@ -299,7 +299,7 @@ export class Cspr extends BaseCoin {
         break;
       }
       case TransactionType.StakingUnlock: {
-        const validator = accountLib.Cspr.Utils.getValidatorAddress(tx._deploy.session);
+        const validator = CsprLib.Utils.getValidatorAddress(tx._deploy.session);
         operations.push({
           type: TransactionType.StakingUnlock,
           amount,
@@ -342,5 +342,9 @@ export class Cspr extends BaseCoin {
       fee: params.feeInfo,
       operations,
     } as any;
+  }
+
+  private getBuilder(): CsprLib.TransactionBuilderFactory {
+    return new CsprLib.TransactionBuilderFactory(coins.get(this.getChain()));
   }
 }

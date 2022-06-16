@@ -11,9 +11,6 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../account-lib"
-    },
-    {
       "path": "../sdk-core"
     },
     {

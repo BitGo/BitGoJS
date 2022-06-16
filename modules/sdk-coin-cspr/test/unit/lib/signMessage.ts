@@ -1,8 +1,8 @@
 import { randomBytes } from 'crypto';
 import assert from 'assert';
-import { KeyPair } from '../../../../src/coin/cspr/keyPair';
-import { isValidMessageSignature, signMessage } from '../../../../src/coin/cspr/utils';
-import * as testData from '../../../resources/cspr/cspr';
+import { KeyPair } from '../../../src/lib/keyPair';
+import { isValidMessageSignature, signMessage } from '../../../src/lib/utils';
+import * as testData from '../../fixtures/resources';
 
 describe('Sign Message', () => {
   it('should be performed', async () => {
@@ -10,7 +10,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     const { signature } = signMessage(keyPair, messageToSign);
     isValidMessageSignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub).should.equals(
-      true,
+      true
     );
   });
 
@@ -19,7 +19,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     const { signature } = signMessage(keyPair, messageToSign);
     isValidMessageSignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub).should.equals(
-      true,
+      true
     );
   });
 
@@ -28,7 +28,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     assert.throws(
       () => signMessage(keyPair, messageToSign),
-      (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      (e: Error) => e.message === testData.ERROR_MISSING_PRIVATE_KEY
     );
   });
 
@@ -37,7 +37,7 @@ describe('Sign Message', () => {
     const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
     assert.throws(
       () => signMessage(keyPair, messageToSign),
-      (e) => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+      (e: Error) => e.message === testData.ERROR_MISSING_PRIVATE_KEY
     );
   });
 });

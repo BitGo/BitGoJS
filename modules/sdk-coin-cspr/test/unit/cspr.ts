@@ -1,12 +1,13 @@
-import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
+import * as CsprAccountLib from '../../src/lib';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Cspr, ExplainTransactionOptions, TransactionFee } from '../../src/cspr';
 import { Tcspr } from '../../src/tcspr';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
-import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from './fixtures/cspr';
+import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from '../fixtures/cspr';
 import { TransactionType } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { coins } from '@bitgo/statics';
 
 type Transaction = CsprAccountLib.Transaction;
 
@@ -92,7 +93,7 @@ describe('Casper', function () {
   });
 
   describe('Sign Transaction', () => {
-    const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
+    const factory = new CsprAccountLib.TransactionBuilderFactory(coins.get(coinName));
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
     const sourceKeyPair = sourceKeyPairObject.getKeys();
     const targetKeyPairObject = new CsprAccountLib.KeyPair();
@@ -284,7 +285,7 @@ describe('Casper', function () {
   });
 
   describe('Explain Transaction', () => {
-    const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
+    const factory = new CsprAccountLib.TransactionBuilderFactory(coins.get(coinName));
     const sourceKeyPairObject = new CsprAccountLib.KeyPair();
     const sourceKeyPair = sourceKeyPairObject.getKeys();
     const targetKeyPairObject = new CsprAccountLib.KeyPair();

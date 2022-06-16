@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as should from 'should';
-import * as Utils from '../../../../src/coin/cspr/utils';
-import { KeyPair } from '../../../../src/coin/cspr';
+import * as Utils from '../../../src/lib/utils';
+import { KeyPair } from '../../../src/lib/keyPair';
 import { randomBytes } from 'crypto';
 
 describe('CSPR util library', function () {
@@ -108,7 +108,7 @@ describe('CSPR util library', function () {
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       const { signature } = Utils.signMessage(keyPair, messageToSign);
       should.doesNotThrow(() =>
-        Utils.verifySignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub),
+        Utils.verifySignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub)
       );
     });
 

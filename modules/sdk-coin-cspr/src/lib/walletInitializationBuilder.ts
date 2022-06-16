@@ -102,7 +102,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
     if (this._owners.length !== DEFAULT_M) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_M}, found: ${this._owners.length}`,
+        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_M}, found: ${this._owners.length}`
       );
     }
     super.validateMandatoryFields();

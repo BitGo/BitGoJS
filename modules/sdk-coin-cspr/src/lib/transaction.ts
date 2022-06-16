@@ -43,14 +43,14 @@ export class Transaction extends BaseTransaction {
     }
     if (
       this._deploy.approvals.some(
-        (ap) => !ap.signer.startsWith(SECP256K1_PREFIX) || !isValidPublicKey(removeAlgoPrefixFromHexValue(ap.signer)),
+        (ap) => !ap.signer.startsWith(SECP256K1_PREFIX) || !isValidPublicKey(removeAlgoPrefixFromHexValue(ap.signer))
       )
     ) {
       throw new SigningError('Invalid deploy. Already signed with an invalid key');
     }
     const secpKeys = new Keys.Secp256K1(
       Uint8Array.from(Buffer.from(keys.pub, 'hex')),
-      Uint8Array.from(Buffer.from(keys.prv, 'hex')),
+      Uint8Array.from(Buffer.from(keys.prv, 'hex'))
     );
     const signedDeploy = DeployUtil.signDeploy(this._deploy, secpKeys);
     this._signatures.push(signedDeploy.approvals[signedDeploy.approvals.length - 1].signature);
@@ -74,7 +74,7 @@ export class Transaction extends BaseTransaction {
     const signedDeploy = DeployUtil.setSignature(
       this._deploy,
       signatureBuffer,
-      PublicKey.fromSecp256K1(parsedPublicKey),
+      PublicKey.fromSecp256K1(parsedPublicKey)
     );
     const approval = _.last(signedDeploy.approvals) as DeployUtil.Approval;
     if (removeAlgoPrefixFromHexValue(approval.signature) !== signature) {
@@ -188,7 +188,7 @@ export class Transaction extends BaseTransaction {
       [owner0, owner1, owner2].forEach((index) => {
         ownersValues.set(
           OWNER_PREFIX + index,
-          (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLString).value(),
+          (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLString).value()
         );
       });
 

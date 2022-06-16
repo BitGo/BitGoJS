@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
 import assert from 'assert';
 import * as should from 'should';
-import * as testData from '../../../../resources/cspr/cspr';
-import { register } from '../../../../../src';
-import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
-import { Transaction } from '../../../../../src/coin/cspr/transaction';
-import { removeAlgoPrefixFromHexValue } from '../../../../../src/coin/cspr/utils';
-import { DEFAULT_CHAIN_NAMES } from '../../../../../src/coin/cspr/constants';
+import * as testData from '../../../fixtures/resources';
+import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
+import { Transaction } from '../../../../src/lib/transaction';
+import { removeAlgoPrefixFromHexValue } from '../../../../src/lib/utils';
+import { DEFAULT_CHAIN_NAMES } from '../../../../src/lib/constants';
+import { coins } from '@bitgo/statics';
 
 describe('Casper Transaction Builder', () => {
-  const factory = register('tcspr', TransactionBuilderFactory);
+  const factory = new TransactionBuilderFactory(coins.get('tcspr'));
   const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();
   const owner2Address = new KeyPair({ pub: testData.ACCOUNT_2.publicKey }).getAddress();
   const owner3Address = new KeyPair({ pub: testData.ACCOUNT_3.publicKey }).getAddress();
@@ -58,7 +58,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction('');
         },
-        (e) => e.message === testData.ERROR_EMPTY_RAW_TRANSACTION,
+        (e: Error) => e.message === testData.ERROR_EMPTY_RAW_TRANSACTION
       );
     });
 
@@ -68,7 +68,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
-        (e) => e.message === testData.ERROR_JSON_PARSING,
+        (e: Error) => e.message === testData.ERROR_JSON_PARSING
       );
     });
 
@@ -78,7 +78,7 @@ describe('Casper Transaction Builder', () => {
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
         },
-        (e) => e.message === testData.ERROR_JSON_PARSING,
+        (e: Error) => e.message === testData.ERROR_JSON_PARSING
       );
     });
 
@@ -128,7 +128,7 @@ describe('Casper Transaction Builder', () => {
       const builder = initWalletBuilder();
       assert.throws(
         () => builder.expiration(testData.MAX_TRANSACTION_EXPIRATION + 1),
-        (e) => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
+        (e: Error) => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE
       );
     });
 

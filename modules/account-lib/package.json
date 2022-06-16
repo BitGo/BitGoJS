@@ -43,6 +43,7 @@
     "@bitgo/bls-dkg": "^1.0.2",
     "@bitgo/statics": "^6.17.0",
     "@bitgo/sdk-coin-algo": "^1.0.0",
+    "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@celo/contractkit": "^1.2.4",
     "@ethereumjs/common": "^2.4.0",

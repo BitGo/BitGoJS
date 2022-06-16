@@ -11,13 +11,16 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../statics"
+      "path": "../sdk-coin-algo"
+    },
+    {
+      "path": "../sdk-coin-cspr"
     },
     {
       "path": "../sdk-core"
     },
     {
-      "path": "../sdk-coin-algo"
+      "path": "../statics"
     }
   ]
 }
