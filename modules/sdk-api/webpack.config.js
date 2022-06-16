@@ -9,8 +9,7 @@ module.exports = {
   entry: path.join(__dirname, '/dist/src/index.js'),
   output: {
     path: path.resolve(__dirname, 'dist/web'),
-    library: 'BitGoJS',
-    libraryTarget: 'umd',
+    libraryTarget: 'commonjs',
   },
   plugins: [
     new webpack.ProvidePlugin({
