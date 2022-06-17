@@ -1,38 +1,65 @@
 import { BaseCoin as CoinConfig, AvalancheNetwork } from '@bitgo/statics';
 import { BaseKey, SigningError, BaseTransaction, TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { TxData } from './iface';
-import { UnsignedTx, BaseTx, KeyChain } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, TxData } from './iface';
+import { UnsignedTx, BaseTx, KeyPair as KeyPairAvax, Tx } from 'avalanche/dist/apis/platformvm';
+import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
+import * as createHash from 'create-hash';
+import { Credential, Signature } from 'avalanche/dist/common';
 
 export class Transaction extends BaseTransaction {
-  protected _avaxpTransaction!: UnsignedTx;
-  protected _avaxpBaseTransaction!: BaseTx;
-  private _sender!: string;
-  protected _type: TransactionType;
-  protected _chainID: string;
-  protected _hrp: string;
+  protected _avaxpTransaction: UnsignedTx;
+  private _credentials: Credential[] = [];
+  public _type: TransactionType;
+  public _network: AvalancheNetwork;
+  public _networkID: number;
+  public _assetId: BufferAvax;
+  public _blockchainID: BufferAvax;
+  public _memo?: BufferAvax;
+  public _threshold = 2;
+  public _locktime: BN = new BN(0);
+  public _fromPubKeys: BufferAvax[] = [];
+  public _utxos: DecodedUtxoObj[] = [];
+  public _txFee: BN;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    const network = coinConfig.network as AvalancheNetwork;
-    this._chainID = network.alias;
-    this._hrp = network.hrp;
+    this._network = coinConfig.network as AvalancheNetwork;
+    this._assetId = utils.cb58Decode(this._network.avaxAssetID);
+    this._blockchainID = utils.cb58Decode(this._network.blockchainID);
+    this._networkID = this._network.networkID;
+    this._txFee = new BN(this._network.txFee.toString());
   }
 
   get avaxPTransaction(): BaseTx {
-    return this._avaxpBaseTransaction;
+    return this._avaxpTransaction.getTransaction();
   }
 
   set avaxPTransaction(tx: BaseTx) {
-    this._avaxpBaseTransaction = tx;
+    this._avaxpTransaction = new UnsignedTx(tx);
+  }
+
+  set credentials(credentials: Credential[]) {
+    this._credentials = credentials;
+  }
+
+  get credentials(): Credential[] {
+    return this._credentials;
+  }
+
+  get hasCredentials(): boolean {
+    return this._credentials !== undefined && this._credentials.length > 0;
   }
 
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
     try {
-      new KeyPair({ prv: key.key });
-      return true;
+      const kp = new KeyPair({ prv: key });
+      const privateKey = kp.getPrivateKey();
+      if (!privateKey) return false;
+      const address = utils.parseAddress(kp.getAddress(this._network.hrp));
+      return this._fromPubKeys.find((a) => address.equals(a)) !== undefined;
     } catch {
       return false;
     }
@@ -48,20 +75,18 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair
    */
   sign(keyPair: KeyPair): void {
-    const keys = keyPair.getKeys();
-    if (!keys.prv) {
+    const prv = keyPair.getPrivateKey();
+    if (!prv) {
       throw new SigningError('Missing private key');
     }
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-    const pKeychain = new KeyChain(this._hrp, this._chainID);
-    this._avaxpTransaction = new UnsignedTx(this._avaxpBaseTransaction);
-    this._avaxpTransaction.sign(pKeychain);
-  }
-
-  sender(sender: string): void {
-    this._sender = sender;
+    if (!this.hasCredentials) {
+      throw new InvalidTransactionError('empty credentials to sign');
+    }
+    const signature = this.createSignature(prv);
+    this._credentials.forEach((credential) => credential.addSignature(signature));
   }
 
   /** @inheritdoc */
@@ -72,8 +97,9 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    const un = new UnsignedTx(this._avaxpBaseTransaction);
-    const buffer = un.toBuffer(); // this._avaxpBaseTransaction.toBuffer();
+    const buffer = this.hasCredentials
+      ? new Tx(this._avaxpTransaction, this._credentials).toBuffer()
+      : this._avaxpTransaction.toBuffer();
     const txSerialized = utils.cb58Encode(buffer).toString();
     return txSerialized;
   }
@@ -84,12 +110,12 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction data');
     }
     return {
-      blockchain_id: utils.cb58Encode(this._avaxpBaseTransaction.getBlockchainID()),
-      network_id: this._avaxpBaseTransaction.getNetworkID(),
-      inputs: this._avaxpBaseTransaction.getIns(),
-      outputs: this._avaxpBaseTransaction.getOuts(),
-      memo: utils.bufferToString(this._avaxpBaseTransaction.getMemo()),
-      typeID: this._avaxpBaseTransaction.getTxType(),
+      blockchain_id: utils.cb58Encode(this.avaxPTransaction.getBlockchainID()),
+      network_id: this.avaxPTransaction.getNetworkID(),
+      inputs: this.avaxPTransaction.getIns(),
+      outputs: this.avaxPTransaction.getOuts(),
+      memo: utils.bufferToString(this.avaxPTransaction.getMemo()),
+      typeID: this.avaxPTransaction.getTxType(),
     };
   }
 
@@ -104,5 +130,27 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionType(transactionType: TransactionType): void {
     this._type = transactionType;
+  }
+
+  /**
+   * Returns the portion of the transaction that needs to be signed in Buffer format.
+   * Only needed for coins that support adding signatures directly (e.g. TSS).
+   */
+  get signablePayload(): Buffer {
+    const txbuff = this._avaxpTransaction.toBuffer();
+    return createHash.default('sha256').update(txbuff).digest();
+  }
+
+  /**
+   * Avax wrapper to create signature and return it for credentials
+   * @param prv
+   */
+  createSignature(prv: Buffer): Signature {
+    const ky = new KeyPairAvax(this._network.hrp, this._network.networkID.toString());
+    ky.importKey(BufferAvax.from(prv));
+    const signval = ky.sign(BufferAvax.from(this.signablePayload));
+    const sig = new Signature();
+    sig.fromBuffer(signval);
+    return sig;
   }
 }

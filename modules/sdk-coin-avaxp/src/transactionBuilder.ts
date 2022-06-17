@@ -1,4 +1,4 @@
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import {
   NotImplementedError,
@@ -9,10 +9,12 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
   BuildTransactionError,
+  NotSupported,
+  BaseTransaction,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { BN, Buffer } from 'avalanche';
+import { BN } from 'avalanche';
 import { BaseTx } from 'avalanche/dist/apis/platformvm/basetx';
 import { Credential } from 'avalanche/dist/common';
 import utils from './utils';
@@ -20,28 +22,22 @@ import { DecodedUtxoObj } from './iface';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
-  protected _network: AvalancheNetwork;
-  protected _networkID: number;
-  protected _assetId: Buffer;
-  protected _blockchainID: Buffer;
-  protected _memo?: Buffer;
-  protected _signer: KeyPair;
-  protected _threshold = 2;
-  protected _locktime: BN = new BN(0);
-  protected _fromPubKeys: Buffer[] = [];
-  protected _utxos: DecodedUtxoObj[] = [];
-  protected _txFee: BN;
+  public _signer: KeyPair[] = [];
+  protected recoverSigner = false;
 
-  private _credentials: Credential[]; // how are we passing in multisig?
+  /**
+   * When using recovery key must be set here
+   * TODO: STLX-17317 recovery key signing
+   * @param recoverSigner
+   */
+  public recoverMode(recoverSigner = true): this {
+    this.recoverSigner = recoverSigner;
+    return this;
+  }
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
-    this._network = _coinConfig.network as AvalancheNetwork;
-    this._assetId = utils.cb58Decode(this._network.avaxAssetID);
-    this._blockchainID = utils.cb58Decode(this._network.blockchainID);
-    this._networkID = this._network.networkID;
-    this._txFee = new BN(this._network.txFee.toString());
   }
 
   /**
@@ -52,25 +48,25 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   threshold(value: number): this {
     // this.validateThreshold(value);
-    this._threshold = value;
+    this._transaction._threshold = value;
     return this;
   }
 
   locktime(value: string | number): this {
     this.validateLocktime(new BN(value));
-    this._locktime = new BN(value);
+    this._transaction._locktime = new BN(value);
     return this;
   }
 
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
-    this._fromPubKeys = pubKeys.map(utils.parseAddress);
+    this._transaction._fromPubKeys = pubKeys.map(utils.parseAddress);
     return this;
   }
 
   utxos(value: DecodedUtxoObj[]): this {
     this.validateUtxos(value);
-    this._utxos = value;
+    this._transaction._utxos = value;
     return this;
   }
   /**
@@ -80,7 +76,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * set using Buffer.from("message")
    */
   memo(value: string): this {
-    this._memo = utils.stringToBuffer(value);
+    this._transaction._memo = utils.stringToBuffer(value);
     return this;
   }
 
@@ -91,40 +87,52 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx?: BaseTx): this {
     if (!tx) return this;
-    if (tx.getNetworkID() !== this._networkID || !tx.getBlockchainID().equals(this._blockchainID)) {
+    if (
+      tx.getNetworkID() !== this._transaction._networkID ||
+      !tx.getBlockchainID().equals(this._transaction._blockchainID)
+    ) {
       throw new Error('Network or blockchain is not equals');
     }
-    this._memo = tx.getMemo();
+    this._transaction._memo = tx.getMemo();
     const out = tx.getOuts()[0];
-    if (!out.getAssetID().equals(this._assetId)) {
+    if (!out.getAssetID().equals(this._transaction._assetId)) {
       throw new Error('AssetID are not equals');
     }
     const secpOut = out.getOutput();
-    this._locktime = secpOut.getLocktime();
-    this._threshold = secpOut.getThreshold();
-    this._fromPubKeys = secpOut.getAddresses();
+    this._transaction._locktime = secpOut.getLocktime();
+    this._transaction._threshold = secpOut.getThreshold();
+    this._transaction._fromPubKeys = secpOut.getAddresses();
     this._transaction.avaxPTransaction = tx;
+    return this;
+  }
+
+  credentials(credentials: Credential[]): this {
+    this.transaction.credentials = credentials;
     return this;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    this.validateRawTransaction(rawTransaction);
-    this.buildImplementation();
-    return this.transaction;
+    throw new NotSupported('from raw transaction is not supported. See TransactionBuilderFactory.from method');
   }
 
+  get hasSigner(): boolean {
+    return this._signer !== undefined && this._signer.length > 0;
+  }
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.avaxPTransaction = this.buildAvaxpTransaction();
-    if (this._signer) {
-      // TODO: sign method in transaction.ts
-      this.transaction.sign(this._signer);
-    }
-    // TODO: multisig support addition STLX-17077
-    // if (this._credentials.length > 0) {
-    //   this.transaction.constructSignedPayload(this._credentials[0]);
+    // TODO: STLX-17317: sign with recovery key
+    // if (this.hasSigner) {
+    //    this.recoverSigner = this._fromPubKeys[1].equals(utils.parseAddress(this._signer[0].getAddress()));
     // }
+    this.transaction.avaxPTransaction = this.buildAvaxpTransaction();
+    if (this.hasSigner) {
+      if (!this.transaction.hasCredentials) {
+        this.transaction.credentials = utils.getCredentials(this.transaction.avaxPTransaction);
+      }
+      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+    }
+    this.transaction.setTransactionType(this.transactionType);
     return this.transaction;
   }
 
@@ -138,6 +146,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  protected signImplementation({ key }: BaseKey): BaseTransaction {
+    this._signer.push(new KeyPair({ prv: key }));
+    return this.transaction;
   }
 
   protected abstract get transactionType(): TransactionType;
@@ -172,8 +188,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateKey(key: BaseKey): void {
-    if (!new KeyPair({ prv: key.key })) {
+  validateKey({ key }: BaseKey): void {
+    if (!new KeyPair({ prv: key })) {
       throw new BuildTransactionError('Invalid key');
     }
   }
@@ -183,7 +199,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    if (utils.allHexChars(rawTransaction)) {
+    try {
+      utils.cb58Decode(rawTransaction);
+    } catch (e) {
       throw new ParseTransactionError('Raw transaction is not hex string');
     }
   }

@@ -1,38 +1,35 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { NotImplementedError, BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
-import { BaseTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';
 import { PlatformVMConstants } from 'avalanche/dist/apis/platformvm/constants';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
+  protected recoverSigner = false;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
-    const tx = new Tx();
-    let utx;
-    try {
-      tx.fromString(raw);
-      utx = tx.getUnsignedTx();
-    } catch (err) {
-      utx = new UnsignedTx();
-      utx.fromBuffer(utils.cb58Decode(raw));
-    }
-    const baseTx = utx.getTransaction();
+    const tx = utils.from(raw);
+    const baseTx = tx.getUnsignedTx().getTransaction();
+    let transactionBuilder: TransactionBuilder;
     if (baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX) {
-      return this.getValidatorBuilder(baseTx);
+      transactionBuilder = this.getValidatorBuilder();
+    } else {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-    throw new NotImplementedError('from not implemented');
+
+    transactionBuilder.initBuilder(baseTx).credentials(tx.getCredentials());
+    return transactionBuilder;
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: BaseTx): TransferBuilder {
-    return new TransferBuilder(this._coinConfig).initBuilder(tx);
+  getTransferBuilder(): TransferBuilder {
+    return new TransferBuilder(this._coinConfig);
   }
 
   /**
@@ -41,11 +38,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {Transaction | undefined} tx - the transaction used to initialize the builder
    * @returns {StakingTxBuilder} the builder initialized
    */
-  getValidatorBuilder(tx?: BaseTx): ValidatorTxBuilder {
-    return new ValidatorTxBuilder(this._coinConfig).initBuilder(tx);
+  getValidatorBuilder(): ValidatorTxBuilder {
+    return new ValidatorTxBuilder(this._coinConfig);
   }
 
   getWalletInitializationBuilder(): TransactionBuilder {
-    throw new NotImplementedError('Wallet initialization is not needed');
+    throw new NotSupported('Wallet initialization is not needed');
   }
 }
