@@ -8,19 +8,18 @@ type KeyShare = ECDSA.KeyShare;
  * Combines NShares to combine the final TSS key
  * This can only be used to create the User or Backup key since it requires the common keychain from BitGo first
  *
- * @param params.keyShare - TSS key share
- * @param params.encryptedNShares - encrypted NShares with information on how to decrypt
- * @param params.commonKeychain - expected common keychain of the combined key
+ * @param keyShare - TSS key share
+ * @param encryptedNShares - encrypted NShares with information on how to decrypt
+ * @param commonKeychain - expected common keychain of the combined key
  * @returns {CombinedKey} combined TSS key
  */
-export async function createCombinedKey(params: {
-  keyShare: KeyShare;
-  encryptedNShares: DecryptableNShare[];
-  commonKeychain: string;
-}): Promise<CombinedKey> {
+export async function createCombinedKey(
+  keyShare: KeyShare,
+  encryptedNShares: DecryptableNShare[],
+  commonKeychain: string
+): Promise<CombinedKey> {
   const MPC = new Ecdsa();
 
-  const { keyShare, encryptedNShares, commonKeychain } = params;
   const nShares: NShare[] = [];
 
   let bitgoNShare: NShare | undefined;
@@ -37,10 +36,10 @@ export async function createCombinedKey(params: {
     const nShare: NShare = {
       i: encryptedNShare.nShare.i,
       j: encryptedNShare.nShare.j,
-      y: encryptedNShare.nShare.publicShare,
-      u: privateShare,
-      n: encryptedNShare.nShare.n,
-      chaincode: encryptedNShare.nShare.chaincode,
+      y: encryptedNShare.nShare.publicShare.slice(0, 64),
+      u: privateShare.slice(0, 64),
+      n: privateShare.slice(64),
+      chaincode: encryptedNShare.nShare.publicShare.slice(64),
     };
 
     switch (encryptedNShare.nShare.j) {
@@ -86,36 +85,32 @@ export async function createCombinedKey(params: {
  * Prepares a NShare to be exchanged with other key holders.
  * Output is in a format that is usable within BitGo's ecosystem.
  *
- * @param params.keyShare - TSS key share of the party preparing exchange materials
- * @param params.recipientIndex - index of the recipient (1, 2, or 3)
- * @param params.recipientGpgPublicArmor - recipient's public gpg key in armor format
- * @param params.senderGpgPrivateArmor - sender's private gpg key in armor format
+ * @param keyShare - TSS key share of the party preparing exchange materials
+ * @param recipientIndex - index of the recipient (1, 2, or 3)
+ * @param recipientGpgPublicArmor - recipient's public gpg key in armor format
+ * @param senderGpgPrivateArmor - sender's private gpg key in armor format
  * @returns { EncryptedNShare } encrypted Y Share
  */
-export async function encryptNShare(params: {
-  keyShare: KeyShare;
-  recipientIndex: number;
-  recipientGpgPublicArmor: string;
-  senderGpgPrivateArmor: string;
-}): Promise<EncryptedNShare> {
-  const { keyShare, recipientIndex, recipientGpgPublicArmor, senderGpgPrivateArmor } = params;
-
+export async function encryptNShare(
+  keyShare: KeyShare,
+  recipientIndex: number,
+  recipientGpgPublicArmor: string,
+  senderGpgPrivateArmor: string
+): Promise<EncryptedNShare> {
   const nShare = keyShare.nShares[recipientIndex];
   if (!nShare) {
     throw new Error('Invalid recipient');
   }
 
-  const publicShare = keyShare.pShare.y;
-  const privateShare = nShare.u;
+  const publicShare = keyShare.pShare.y + nShare.chaincode;
+  const privateShare = nShare.u + nShare.n;
 
   const encryptedPrivateShare = await encryptAndSignText(privateShare, recipientGpgPublicArmor, senderGpgPrivateArmor);
 
   return {
     i: nShare.i,
     j: nShare.j,
-    n: nShare.n,
     publicShare,
     encryptedPrivateShare,
-    chaincode: nShare.chaincode,
   };
 }

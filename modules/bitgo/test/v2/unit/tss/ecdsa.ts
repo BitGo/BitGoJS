@@ -35,6 +35,7 @@ describe('test tss helper functions', function () {
   before(async function () {
     mpc = new Ecdsa();
     this.timeout(100000);
+    // const keychain = ECDSAUtil.
 
     userKeyShare = await mpc.keyShare(1, 2, 3);
     backupKeyShare = await mpc.keyShare(2, 2, 3);
@@ -71,12 +72,7 @@ describe('test tss helper functions', function () {
   describe('encryptNShare', function () {
     it('should encrypt n share', async function () {
       for (let i = 2; i <= 3; i++) {
-        const encryptedNShare = await ECDSAMethods.encryptNShare({
-          keyShare: userKeyShare,
-          recipientIndex: i,
-          senderGpgPrivateArmor: userGpgKeypair.privateKey,
-          recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
-        });
+        const encryptedNShare = await ECDSAMethods.encryptNShare(userKeyShare, i, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey);
         const decryptedMessage = await readSignedMessage(encryptedNShare.encryptedPrivateShare, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey);
         decryptedMessage.should.equal(userKeyShare.nShares[i].u);
         const publicKey = userKeyShare.pShare.y;
@@ -87,45 +83,22 @@ describe('test tss helper functions', function () {
     });
 
     it('should error for invalid recipient', async function () {
-      await encryptNShare({
-        keyShare: userKeyShare,
-        recipientIndex: 1,
-        senderGpgPrivateArmor: userGpgKeypair.privateKey,
-        recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
-      }).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare({
-        keyShare: backupKeyShare,
-        recipientIndex: 2,
-        senderGpgPrivateArmor: userGpgKeypair.privateKey,
-        recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
-      }).should.be.rejectedWith('Invalid recipient');
-      await encryptNShare({
-        keyShare: bitgoKeyShare,
-        recipientIndex: 3,
-        senderGpgPrivateArmor: userGpgKeypair.privateKey,
-        recipientGpgPublicArmor: bitgoGpgKeypair.publicKey,
-      }).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(userKeyShare, 1, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(backupKeyShare, 2, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey ).should.be.rejectedWith('Invalid recipient');
+      await encryptNShare(bitgoKeyShare, 3, userGpgKeypair.privateKey, bitgoGpgKeypair.publicKey ).should.be.rejectedWith('Invalid recipient');
     });
   });
 
   describe('createCombinedKey', function () {
     it('should create combined user key', async function () {
-      const bitgoToUserShare = await encryptNShare({
-        keyShare: bitgoKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: bitgoGpgKeypair.privateKey,
-      });
-      const backupToUserShare = await encryptNShare({
-        keyShare: backupKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: backupGpgKeypair.privateKey,
-      });
-      const combinedUserKey = await createCombinedKey({
-        keyShare: userKeyShare,
-        commonKeychain,
-        encryptedNShares: [{
+      const bitgoToUserShare = await encryptNShare(bitgoKeyShare, 1, userGpgKeypair.publicKey, bitgoGpgKeypair.privateKey,);
+      const backupToUserShare = await encryptNShare(backupKeyShare, 1,
+        userGpgKeypair.publicKey,
+        backupGpgKeypair.privateKey,
+      );
+      const combinedUserKey = await createCombinedKey(
+        userKeyShare,
+        [{
           nShare: bitgoToUserShare,
           recipientPrivateArmor: userGpgKeypair.privateKey,
           senderPublicArmor: bitgoGpgKeypair.publicKey,
@@ -134,7 +107,8 @@ describe('test tss helper functions', function () {
           recipientPrivateArmor: userGpgKeypair.privateKey,
           senderPublicArmor: backupGpgKeypair.publicKey,
         }],
-      });
+        commonKeychain,
+      );
 
       combinedUserKey.commonKeychain.should.equal(commonKeychain);
       combinedUserKey.signingMaterial.pShare.should.deepEqual(userKeyShare.pShare);
@@ -145,24 +119,23 @@ describe('test tss helper functions', function () {
     });
 
     it('should create combined backup key', async function () {
-      const bitgoToBackupShare = await encryptNShare({
-        keyShare: bitgoKeyShare,
-        recipientIndex: 2,
-        recipientGpgPublicArmor: backupGpgKeypair.publicKey,
-        senderGpgPrivateArmor: bitgoGpgKeypair.privateKey,
-      });
+      const bitgoToBackupShare = await encryptNShare(
+        bitgoKeyShare,
+        2,
+        backupGpgKeypair.publicKey,
+        bitgoGpgKeypair.privateKey,
+      );
 
-      const userToBackupShare = await encryptNShare({
-        keyShare: userKeyShare,
-        recipientIndex: 2,
-        recipientGpgPublicArmor: backupGpgKeypair.publicKey,
-        senderGpgPrivateArmor: userGpgKeypair.privateKey,
-      });
+      const userToBackupShare = await encryptNShare(
+        userKeyShare,
+        2,
+        backupGpgKeypair.publicKey,
+        userGpgKeypair.privateKey,
+      );
 
-      const combinedBackupKey = await createCombinedKey({
-        keyShare: backupKeyShare,
-        commonKeychain,
-        encryptedNShares: [{
+      const combinedBackupKey = await createCombinedKey(
+        backupKeyShare,
+        [{
           nShare: bitgoToBackupShare,
           recipientPrivateArmor: backupGpgKeypair.privateKey,
           senderPublicArmor: bitgoGpgKeypair.publicKey,
@@ -171,7 +144,8 @@ describe('test tss helper functions', function () {
           recipientPrivateArmor: backupGpgKeypair.privateKey,
           senderPublicArmor: userGpgKeypair.publicKey,
         }],
-      });
+        commonKeychain,
+      );
 
       combinedBackupKey.commonKeychain.should.equal(commonKeychain);
       combinedBackupKey.signingMaterial.pShare.should.deepEqual(backupKeyShare.pShare);
@@ -182,23 +156,22 @@ describe('test tss helper functions', function () {
     });
 
     it('should fail if common keychains do not match', async function () {
-      const bitgoToUserShare = await encryptNShare({
-        keyShare: bitgoKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: bitgoGpgKeypair.privateKey,
-      });
-      const backupToUserShare = await encryptNShare({
-        keyShare: backupKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: backupGpgKeypair.privateKey,
-      });
+      const bitgoToUserShare = await encryptNShare(
+        bitgoKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        bitgoGpgKeypair.privateKey,
+      );
+      const backupToUserShare = await encryptNShare(
+        backupKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        backupGpgKeypair.privateKey,
+      );
 
-      await createCombinedKey({
-        keyShare: userKeyShare,
-        commonKeychain: 'nottherightkeychain',
-        encryptedNShares: [{
+      await createCombinedKey(
+        userKeyShare,
+        [{
           nShare: bitgoToUserShare,
           recipientPrivateArmor: userGpgKeypair.privateKey,
           senderPublicArmor: bitgoGpgKeypair.publicKey,
@@ -207,27 +180,27 @@ describe('test tss helper functions', function () {
           recipientPrivateArmor: userGpgKeypair.privateKey,
           senderPublicArmor: backupGpgKeypair.publicKey,
         }],
-      }).should.be.rejectedWith('Common keychains do not match');
+        'nottherightkeychain',
+      ).should.be.rejectedWith('Common keychains do not match');
     });
 
     it('should fail if gpg keys are mismatched', async function () {
-      const bitgoToUserShare = await encryptNShare({
-        keyShare: bitgoKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: bitgoGpgKeypair.privateKey,
-      });
-      const backupToUserShare = await encryptNShare({
-        keyShare: backupKeyShare,
-        recipientIndex: 1,
-        recipientGpgPublicArmor: userGpgKeypair.publicKey,
-        senderGpgPrivateArmor: backupGpgKeypair.privateKey,
-      });
+      const bitgoToUserShare = await encryptNShare(
+        bitgoKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        bitgoGpgKeypair.privateKey,
+      );
+      const backupToUserShare = await encryptNShare(
+        backupKeyShare,
+        1,
+        userGpgKeypair.publicKey,
+        backupGpgKeypair.privateKey,
+      );
 
-      await createCombinedKey({
-        keyShare: userKeyShare,
-        commonKeychain: 'nottherightkeychain',
-        encryptedNShares: [{
+      await createCombinedKey(
+        userKeyShare,
+        [{
           nShare: bitgoToUserShare,
           recipientPrivateArmor: backupGpgKeypair.privateKey,
           senderPublicArmor: bitgoGpgKeypair.publicKey,
@@ -236,7 +209,8 @@ describe('test tss helper functions', function () {
           recipientPrivateArmor: userGpgKeypair.privateKey,
           senderPublicArmor: backupGpgKeypair.publicKey,
         }],
-      }).should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
+        'nottherightkeychain',
+      ).should.be.rejectedWith('Error decrypting message: Session key decryption failed.');
     });
   });
 });
