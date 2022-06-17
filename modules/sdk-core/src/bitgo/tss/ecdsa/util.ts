@@ -1,4 +1,4 @@
-import { Ecdsa, ECDSA } from 'modules/sdk-core/src/account-lib/mpc/tss';
+import { Ecdsa, ECDSA } from '../../../account-lib/mpc/tss';
 import { SerializedKeyPair } from 'openpgp';
 import { AddKeychainOptions, Keychain, KeyType } from '../../keychain';
 import { MpcUtils } from '../../utils/mpcUtils';
