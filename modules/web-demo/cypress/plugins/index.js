@@ -1,3 +1,4 @@
+const path = require('path');
 const {
   aliasItems,
   devRules,
@@ -19,7 +20,11 @@ module.exports = (on, config) => {
           },
           resolve: {
             extensions: ['.tsx', '.ts', '.js'],
-            alias: aliasItems,
+            alias: {
+              ...aliasItems,
+              // use the default version here since we're webpacking ourselves
+              '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
+            },
           },
           plugins: devPlugins,
         },
