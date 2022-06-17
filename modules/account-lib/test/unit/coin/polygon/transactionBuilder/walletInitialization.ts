@@ -18,20 +18,15 @@ describe('Polygon wallet initialization', function () {
   describe('should build', () => {
     it('an init transaction', async () => {
       initTxBuilder();
-      console.log('txBuilder', txBuilder);
       txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
       txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
       txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
-      console.log('txBuilder2', txBuilder);
 
       const tx = await txBuilder.build();
-      console.log('txtxtx', tx);
 
       tx.type.should.equal(TransactionType.WalletInitialization);
       const txJson = tx.toJson();
-      console.log('txJson', txJson);
-      console.log('tx.toBroadcastFormat()', tx.toBroadcastFormat());
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 1);
