@@ -50,6 +50,8 @@ module.exports = {
     alias: {
       '@hashgraph/sdk': path.resolve('../../node_modules/@hashgraph/sdk/src/browser.js'),
       '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
+      '@bitgo/sdk-core': path.resolve('../sdk-core/dist/src/index.js'),
+      '@bitgo/utxo-lib': path.resolve('../utxo-lib/dist/src/index.js'),
     },
     fallback: {
       constants: false,
