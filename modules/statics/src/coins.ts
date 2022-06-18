@@ -1534,6 +1534,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLND,
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'sol:gmt',
+    'GMT',
+    9,
+    '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx', // https://explorer.solana.com/address/7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx
+    UnderlyingAsset.GMT,
+    AccountCoin.DEFAULT_FEATURES
+  ),
   tsolToken(
     'tsol:srm',
     'Serum',
@@ -1580,6 +1588,14 @@ export const coins = CoinMap.fromCoins([
     9,
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset.SLND,
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  tsolToken(
+    'tsol:gmt',
+    'GMT',
+    9,
+    '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
+    UnderlyingAsset.GMT,
     AccountCoin.DEFAULT_FEATURES
   ),
   fiat('fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),

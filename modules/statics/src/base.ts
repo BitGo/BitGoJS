@@ -384,6 +384,7 @@ export enum UnderlyingAsset {
   GIGDROP = 'gigdrop',
   GLDX = 'gldx',
   GLM = 'glm',
+  GMT = 'gmt',
   GNO = 'gno',
   GNT = 'gnt',
   GODS = 'gods',
