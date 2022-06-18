@@ -4,6 +4,10 @@
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "exports": {
+    "node": "./dist/src/index.js",
+    "default": "./dist/web/main.js"
+  },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
@@ -11,7 +15,9 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "precommit": "yarn lint-staged",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "webpack-prod": "yarn webpack --mode=production --node-env=production",
+    "prepublishOnly": "yarn webpack-prod"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",

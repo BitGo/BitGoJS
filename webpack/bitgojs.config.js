@@ -1,7 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
-// The following configuration is required in order to run BitGoJS in the browser
+// The following configuration is required in order to run BitGoJS in the browser.
+// This file is assumed to be loaded by a package within the modules directory
 module.exports = {
   resolve: {
     alias: {

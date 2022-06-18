@@ -3,6 +3,10 @@
   "version": "2.3.0-dev.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./dist/src/index.js",
+  "exports": {
+    "node": "./dist/src/index.js",
+    "default": "./dist/web/main.js"
+  },
   "engines": {
     "node": ">=10.22.0 <17",
     "npm": ">=3.10.10"
@@ -27,7 +31,9 @@
     "unit-test": "mocha",
     "lint": "eslint --quiet .",
     "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
-    "precommit": "yarn lint-staged"
+    "precommit": "yarn lint-staged",
+    "webpack-prod": "yarn webpack --mode=production --node-env=production",
+    "prepublishOnly": "yarn webpack-prod"
   },
   "nyc": {
     "include": [

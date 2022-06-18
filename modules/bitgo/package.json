@@ -92,10 +92,7 @@
     "@types/secp256k1": "^4.0.1",
     "@types/sinon": "^7.0.6",
     "cross-env": "^7.0.3",
-    "crypto-browserify": "^3.12.0",
     "glob": "^7.1.3",
-    "html-webpack-plugin": "^5.5.0",
-    "https-browserify": "^1.0.0",
     "karma": "^5.1.1",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.0",
@@ -113,12 +110,8 @@
     "should-sinon": "^0.0.6",
     "sinon": "^6.3.5",
     "sjcl": "^1.0.8",
-    "stream-http": "^3.2.0",
     "supertest": "^3.0.0",
-    "terser": "^3.16.1",
-    "url": "^0.11.0",
-    "webpack": "5.66.0",
-    "webpack-cli": "4.9.1"
+    "terser": "^3.16.1"
   },
   "optionalDependencies": {
     "@ethereumjs/common": "^2.4.0",
