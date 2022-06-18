@@ -13,6 +13,11 @@ module.exports = mergeWith(
       path: path.resolve(__dirname, 'dist/web'),
       libraryTarget: 'commonjs',
     },
+    resolve: {
+      alias: {
+        '@bitgo/utxo-lib': path.resolve('../utxo-lib/dist/src/index.js'),
+      },
+    },
   },
   bitgoConfig,
   mergeCustomizer
