@@ -1,7 +1,9 @@
 const path = require('path');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
-// The following configuration is required in order to run BitGoJS in the browser
+// The following configuration is required in order to run BitGoJS in the browser.
+// This file is assumed to be loaded by a package within the modules directory
 module.exports = {
   resolve: {
     alias: {
@@ -9,6 +11,7 @@ module.exports = {
       '@hashgraph/sdk': path.resolve(
         '../../node_modules/@hashgraph/sdk/src/browser.js',
       ),
+      'superagent-proxy': false,
     },
     fallback: {
       constants: false,
@@ -37,5 +40,19 @@ module.exports = {
   ],
   node: {
     global: true,
+  },
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        terserOptions: {
+          ecma: 6,
+          warnings: true,
+          mangle: false,
+          keep_classnames: true,
+          keep_fnames: true,
+        },
+      }),
+    ],
   },
 };

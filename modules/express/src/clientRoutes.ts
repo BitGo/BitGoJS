@@ -2,6 +2,7 @@
  * @prettier
  */
 import { CoinFamily } from '@bitgo/statics';
+import { RequestTracer } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, Errors, SignedTransaction } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
@@ -10,10 +11,6 @@ import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as superagent from 'superagent';
-
-// RequestTracer should be extracted into a separate npm package (along with
-// the rest of the BitGoJS HTTP request machinery)
-import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
 import { ApiResponseError } from './errors';
