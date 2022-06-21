@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.14...@bitgo/statics@6.18.0-rc.15) (2022-06-21)
+
+**Note:** Version bump only for package @bitgo/statics
+
+
+
+
+
 # [6.18.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.13...@bitgo/statics@6.18.0-rc.14) (2022-06-14)
 
 

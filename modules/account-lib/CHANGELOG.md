@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.19...@bitgo/account-lib@2.20.0-rc.20) (2022-06-21)
+
+
+### Bug Fixes
+
+* **account-lib:** change etheremjs-utils-old alias ([a692047](https://github.com/BitGo/BitGoJS/commit/a69204787e9815d0f53ff44c781039e1b5ebc378))
+
+
+
+
+
 # [2.20.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.18...@bitgo/account-lib@2.20.0-rc.19) (2022-06-16)
 
 **Note:** Version bump only for package @bitgo/account-lib

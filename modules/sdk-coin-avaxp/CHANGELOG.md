@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.10...@bitgo/sdk-coin-avaxp@0.1.0-rc.11) (2022-06-21)
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement account lib ([b16c596](https://github.com/BitGo/BitGoJS/commit/b16c5961ba850afd41024ff20117fad7d701eee5))
+
+
+
+
+
 # [0.1.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.9...@bitgo/sdk-coin-avaxp@0.1.0-rc.10) (2022-06-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp
