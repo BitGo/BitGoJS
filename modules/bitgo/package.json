@@ -20,9 +20,9 @@
     "npm": ">=3.10.10"
   },
   "scripts": {
-    "compile": "npm run webpack-prod",
-    "compile-dbg": "npm run webpack-dev",
-    "compile-test": "npm run webpack-dev",
+    "compile": "yarn webpack-prod",
+    "compile-dbg": "yarn webpack-dev",
+    "compile-test": "yarn webpack-dev",
     "webpack-dev": "cross-env NODE_ENV=development webpack",
     "webpack-prod": "cross-env NODE_ENV=production webpack",
     "test": "npm run coverage",
@@ -82,8 +82,7 @@
     "secp256k1": "^4.0.2",
     "secrets.js-grempe": "^1.1.0",
     "stellar-sdk": "^10.0.1",
-    "superagent": "^3.8.3",
-    "superagent-proxy": "^3.0.0"
+    "superagent": "^3.8.3"
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^1.0.0",
@@ -93,16 +92,12 @@
     "@types/lodash": "^4.14.121",
     "@types/secp256k1": "^4.0.1",
     "aws-sdk": "^2.1155.0",
-    "html-webpack-plugin": "^5.5.0",
-    "https-browserify": "^1.0.0",
     "karma": "^5.1.1",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.0",
     "karma-mocha": "^2.0.1",
     "karma-typescript": "^5.0.3",
     "minimist": "^1.2.5",
-    "nyc": "^15.0.0",
-    "process": "^0.11.10",
     "puppeteer": "2.1.1",
     "q": "^1.1.2",
     "request": "^2.88.0",

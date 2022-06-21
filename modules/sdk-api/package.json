@@ -3,8 +3,17 @@
   "version": "1.0.1",
   "description": "REST wrapper for BitGoJS",
   "main": "./dist/src/index.js",
-  "web": "./dist/web/main.js",
   "types": "./dist/src/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "node": "./dist/src/index.js",
+      "default": "./dist/web/main.js"
+    }
+  },
+  "browser": {
+    "superagent-proxy": false
+  },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
@@ -13,9 +22,9 @@
     "lint": "eslint --quiet .",
     "precommit": "yarn lint-staged",
     "prepare": "npm run build",
-    "webpack-dev": "webpack",
-    "webpack-prod": "webpack --mode=production --node-env=production",
-    "prepublishOnly": "npm run webpack-prod"
+    "webpack-dev": "yarn webpack",
+    "webpack-prod": "yarn webpack --mode=production --node-env=production",
+    "prepublishOnly": "yarn webpack-prod"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -45,6 +54,7 @@
     "@types/superagent": "4.1.15",
     "bip32": "^2.0.6",
     "bitcoinjs-message": "^2.0.0",
+    "browser-or-node": "2.0.0",
     "bs58": "^2.0.1",
     "debug": "3.1.0",
     "eol": "^0.5.0",
@@ -53,16 +63,5 @@
     "secp256k1": "^4.0.2",
     "superagent": "3.8.3",
     "superagent-proxy": "3.0.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.17.8",
-    "@babel/preset-env": "^7.16.11",
-    "@types/lodash": "^4.14.151",
-    "@webpack-cli/generators": "^2.4.2",
-    "babel-loader": "^8.2.4",
-    "html-webpack-plugin": "^5.5.0",
-    "process": "^0.11.10",
-    "webpack": "5.66.0",
-    "webpack-cli": "4.9.1"
   }
 }

@@ -7,10 +7,10 @@ const {
   outputConfig,
   devRules,
   devPlugins,
-  mergeCustomizer,
 } = require('./base.config');
 const { mergeWith } = require('lodash');
-const bitgoConfig = require('./bitgojs.config');
+const bitgoConfig = require('../../../webpack/bitgojs.config');
+const { mergeCustomizer } = require('../../../webpack/mergeCustomizer');
 
 module.exports = (env, options) => {
   return mergeWith(
