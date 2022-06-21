@@ -4,7 +4,7 @@ import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
 import { CeloTokenConfig } from './v2/coins/celoToken';
 import { EosTokenConfig } from './v2/coins/eosToken';
-import { AlgoTokenConfig } from './v2/coins/algoToken';
+import { AlgoTokenConfig, formattedAlgoTokens } from '@bitgo/sdk-coin-algo';
 import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
 import {
   coins,
@@ -16,7 +16,6 @@ import {
   NetworkType,
   EosCoin,
   Networks,
-  AlgoCoin,
   AvaxERC20Token,
 } from '@bitgo/statics';
 import { EnvironmentName, Environments, KrsProvider } from '@bitgo/sdk-core';
@@ -115,21 +114,6 @@ const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) =>
     acc.push({
       type: coin.name,
       coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
-
-// Get the list of Stellar tokens from statics and format it properly
-const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
-  if (coin instanceof AlgoCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
-      alias: coin.alias,
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       decimalPlaces: coin.decimalPlaces,

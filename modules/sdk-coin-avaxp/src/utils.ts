@@ -2,6 +2,8 @@ import { isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
 import { BinTools, Buffer } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
+import { BaseTx, SelectCredentialClass, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { Credential } from 'avalanche/dist/common/credentials';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -10,7 +12,11 @@ export class Utils implements BaseUtils {
   public stringToBuffer = this.binTools.stringToBuffer;
   public bufferToString = this.binTools.bufferToString;
   public NodeIDStringToBuffer = NodeIDStringToBuffer;
+  public addressToString = this.binTools.addressToString;
 
+  public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
+    return walletAddresses.map((a) => otxoOutputAddresses.includes(a)).reduce((a, b) => a && b, true);
+  }
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
     throw new NotImplementedError('isValidAddress not implemented');
@@ -53,8 +59,7 @@ export class Utils implements BaseUtils {
       return false;
     }
   }
-
-  parseAddress = (pub: string): Buffer => this.binTools.parseAddress(pub, 'P');
+  public parseAddress = (pub: string): Buffer => this.binTools.parseAddress(pub, 'P');
 
   /**
    * Returns whether or not the string is a valid protocol private key, or extended
@@ -95,6 +100,22 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new NotImplementedError('isValidTransactionId not implemented');
+  }
+
+  getCredentials(tx: BaseTx): Credential[] {
+    return tx.getIns().map((ins) => SelectCredentialClass(ins.getInput().getCredentialID()));
+  }
+
+  from(raw: string): Tx {
+    const tx = new Tx();
+    try {
+      tx.fromString(raw);
+      return tx;
+    } catch (err) {
+      const utx = new UnsignedTx();
+      utx.fromBuffer(utils.cb58Decode(raw));
+      return new Tx(utx, []);
+    }
   }
 }
 

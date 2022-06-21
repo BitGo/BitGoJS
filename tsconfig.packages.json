@@ -20,7 +20,13 @@
       "path": "./modules/sdk-api"
     },
     {
+      "path": "./modules/sdk-coin-algo"
+    },
+    {
       "path": "./modules/sdk-coin-avaxp"
+    },
+    {
+      "path": "./modules/sdk-coin-cspr"
     },
     {
       "path": "./modules/sdk-coin-xrp"

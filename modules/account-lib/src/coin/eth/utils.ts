@@ -9,7 +9,7 @@ import {
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
-} from 'ethereumjs-utils-old';
+} from '@bitgo/ethereumjs-utils-old';
 import { generateAddress2 } from 'ethereumjs-util';
 import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';

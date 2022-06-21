@@ -1,6 +1,6 @@
 'use strict';
 
 module.exports = {
-  timeout: '5000',
+  timeout: '20000',
   exit: true,
 }

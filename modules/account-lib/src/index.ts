@@ -39,7 +39,7 @@ export { Celo };
 import * as Hbar from './coin/hbar';
 export { Hbar };
 
-import * as Cspr from './coin/cspr';
+import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr };
 
 import * as Xrp from './coin/xrp';
@@ -48,7 +48,7 @@ export { Xrp };
 import * as Stx from './coin/stx';
 export { Stx };
 
-import * as Algo from './coin/algo';
+import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
 export { Algo };
 
 import * as Sol from './coin/sol';

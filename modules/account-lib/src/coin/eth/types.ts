@@ -7,7 +7,7 @@ import {
   AccessListEIP2930Transaction,
 } from '@ethereumjs/tx';
 import EthereumCommon from '@ethereumjs/common';
-import { bufferToHex, bufferToInt } from 'ethereumjs-utils-old';
+import { bufferToHex, bufferToInt } from '@bitgo/ethereumjs-utils-old';
 import { toBuffer, addHexPrefix } from 'ethereumjs-util';
 import { BaseTxData, EIP1559TxData, EthLikeTransactionData, LegacyTxData, ETHTransactionType, TxData } from './iface';
 import { KeyPair } from './keyPair';

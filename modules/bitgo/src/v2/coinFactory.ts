@@ -2,9 +2,9 @@
  * @prettier
  */
 import { CoinFactory } from '@bitgo/sdk-core';
+import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import {
   Algo,
-  AlgoToken,
   AvaxC,
   AvaxCToken,
   AvaxP,
@@ -169,13 +169,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
   }
 
-  for (const token of [...tokens.bitcoin.algo.tokens, ...tokens.testnet.algo.tokens]) {
-    const tokenConstructor = AlgoToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    if (token.alias) {
-      globalCoinFactory.register(token.alias, tokenConstructor);
-    }
-  }
+  AlgoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
     const tokenConstructor = AvaxCToken.createTokenConstructor(token);

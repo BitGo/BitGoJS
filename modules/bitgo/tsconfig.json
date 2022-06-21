@@ -36,6 +36,12 @@
       "path": "../sdk-api"
     },
     {
+      "path": "../sdk-coin-algo"
+    },
+    {
+      "path": "../sdk-coin-cspr"
+    },
+    {
       "path": "../sdk-coin-xrp"
     },
     {
