@@ -3,6 +3,8 @@ import * as yargs from 'yargs';
 import * as fs from 'fs';
 import * as process from 'process';
 
+const stdin: any = process.stdin;
+
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { Parser, ParserArgs } from './parse';
@@ -72,7 +74,7 @@ export const cmdParse = {
         throw new Error(`conflicting arguments`);
       }
       console.log('reading from stdin');
-      data = fs.readFileSync(process.stdin.fd, 'utf8');
+      data = fs.readFileSync(stdin.fd, 'utf8');
     } else if (argv.path) {
       if (data) {
         throw new Error(`conflicting arguments`);

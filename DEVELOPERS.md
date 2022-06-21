@@ -210,6 +210,32 @@ Here is a template to help get started:</br>
 ### `tsconfig.packages.json`
 Each package should also be listed in the root level `tsconfig.packages.json` as well. 
 
+## Package Installation
+
+As a result of BitGoJS running a monolithic code base with multiple packages supported by Lerna, we take advantage of Lerna's hoisting features. This allows us to maintain consistent version support between various packages and keep development bundle sizing down. There are a few simple rules for package installation.
+
+### Dev Dependencies
+
+- If your module consumes a library not specific to any given coin and is shared among multiple modules as a `devDependency`, it is recommended to be installed at the root of BitGoJS.
+- If your module `devDependency` is specific to your module and/or module `dependencies` within the module, it may be appropriate to leave it in the module (pending a pull request review).
+
+### Dependencies
+
+- Most dependencies found in the `dependencies` object are required in order for a package to run and/or compile. You should not run into issues where a dependency needs to be hoisted to the root level `package.json` file.
+- Please move dependencies that are not needed for build/run-time to the `devDependencies` object. From there further evaluate if they belong in a given module or at the root level.
+
+### Tests
+
+- Testing libraries should be unified, installed, and ran from the root level of BitGoJS. Since development, ci/cd, publishing, etc... on BitGoJS requires installing from the root, all testing libraries should be in the root `devDependencies` object. They will then be consumed in respective module testing suites.
+
+### Exceptions
+
+- Standalone packages that do not rely on direct SDK development but rather depend on SDK modules as installed from `npm` should keep all used dependencies within their module. They should not depend on any single dependency as defined at the root `package.json` or `node_modules`.
+
+Examples of exceptions include:
+- `express`
+- `web-demo`
+
 ## New Coin Implementation
 
 SDK coins provide a modular approach to a monolithic architecture. This and all BitGoJS SDK coins allow developers to use only the coins needed for a given project.

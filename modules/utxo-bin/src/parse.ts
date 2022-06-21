@@ -33,7 +33,7 @@ export type ChainInfo = {
 
 function toBufferUInt32BE(n: number): Buffer {
   const buf = Buffer.alloc(4);
-  buf.writeUInt32LE(n);
+  buf.writeUInt32LE(n, 0);
   return buf;
 }
 

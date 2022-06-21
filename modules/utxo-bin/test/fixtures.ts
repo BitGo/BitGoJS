@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import * as fs from 'fs/promises';
+import { promises as fs } from 'fs';
 
 export type Fixture = {
   transaction: { hex: string };
