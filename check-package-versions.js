@@ -29,8 +29,8 @@ function getLernaRunner(lernaPath) {
  * @returns {Promise<{path: *, name: *, deps: *, version: *}[]>}
  */
 async function getLernaManagedModules(lerna) {
-  const depGraph = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--graph', '--all']));
-  const managedModules = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
+  const depGraph = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--graph']));
+  const managedModules = JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json']));
   const managedModuleNames = managedModules.map(({ name }) => name);
   return Object.entries(depGraph).map(([name, deps]) => {
     const mod = managedModules.find((mod) => mod.name === name);
