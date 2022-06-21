@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import * as ethUtil from 'ethereumjs-utils-old';
+import * as ethUtil from '@bitgo/ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Celo } from '../../../../../src';

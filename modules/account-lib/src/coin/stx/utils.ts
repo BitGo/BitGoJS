@@ -1,6 +1,6 @@
 import * as url from 'url';
 import BigNumber from 'bignumber.js';
-import { bufferToHex, stripHexPrefix } from 'ethereumjs-utils-old';
+import { bufferToHex, stripHexPrefix } from '@bitgo/ethereumjs-utils-old';
 import {
   addressFromPublicKeys,
   addressFromVersionHash,
