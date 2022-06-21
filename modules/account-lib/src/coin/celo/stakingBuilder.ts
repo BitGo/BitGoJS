@@ -1,4 +1,4 @@
-import ethUtil from 'ethereumjs-utils-old';
+import ethUtil from '@bitgo/ethereumjs-utils-old';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
 import {
