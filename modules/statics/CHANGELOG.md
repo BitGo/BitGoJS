@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.15...@bitgo/statics@6.18.0-rc.16) (2022-06-22)
+
+
+### Features
+
+* **bitgo:** change the names from algo tokens ([8925d4e](https://github.com/BitGo/BitGoJS/commit/8925d4e15cd973e86bc3f78ade3fa863adfde656))
+* onboard solana GMT token ([e0d0e56](https://github.com/BitGo/BitGoJS/commit/e0d0e563246e7b3c339ee3121aa58f09d07750b6))
+
+
+
+
+
 # [6.18.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.14...@bitgo/statics@6.18.0-rc.15) (2022-06-21)
 
 **Note:** Version bump only for package @bitgo/statics

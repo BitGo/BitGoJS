@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.24](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.23...bitgo@14.2.0-rc.24) (2022-06-22)
+
+
+### Bug Fixes
+
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+### Features
+
+* **bitgo:** change the names from algo tokens ([8925d4e](https://github.com/BitGo/BitGoJS/commit/8925d4e15cd973e86bc3f78ade3fa863adfde656))
+
+
+
+
+
 # [14.2.0-rc.23](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.22...bitgo@14.2.0-rc.23) (2022-06-21)
 
 **Note:** Version bump only for package bitgo

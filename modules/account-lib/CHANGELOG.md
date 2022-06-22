@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.20...@bitgo/account-lib@2.20.0-rc.21) (2022-06-22)
+
+
+### Bug Fixes
+
+* **account-lib:** fix chaincode to use correct modulo ([33db7a3](https://github.com/BitGo/BitGoJS/commit/33db7a3446d3d4b2d9d21ee5d88d3d6ff19e4ed0))
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+
+
+
 # [2.20.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.19...@bitgo/account-lib@2.20.0-rc.20) (2022-06-21)
 
 

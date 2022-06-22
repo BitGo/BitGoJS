@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.11...@bitgo/sdk-coin-avaxp@0.1.0-rc.12) (2022-06-22)
+
+
+### Bug Fixes
+
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+
+
+
 # [0.1.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.10...@bitgo/sdk-coin-avaxp@0.1.0-rc.11) (2022-06-21)
 
 

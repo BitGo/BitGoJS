@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.1.0-rc.6...@bitgo/web-demo@1.1.0-rc.7) (2022-06-22)
+
+
+### Bug Fixes
+
+* add dependency check to fix current and future dependency resolutions ([3074335](https://github.com/BitGo/BitGoJS/commit/30743356cff4ebb6d9e185f1a493b187614a1ea9))
+
+
+
+
+
 # [1.1.0-rc.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.1.0-rc.5...@bitgo/web-demo@1.1.0-rc.6) (2022-06-21)
 
 **Note:** Version bump only for package @bitgo/web-demo
