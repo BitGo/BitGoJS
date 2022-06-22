@@ -1,4 +1,4 @@
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -8,11 +8,15 @@ import {
   SignTransactionOptions,
   SignedTransaction,
   ParseTransactionOptions,
-  TransactionExplanation,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
+  MethodNotImplementedError,
+  BaseTransaction,
+  InvalidTransactionError,
+  FeeEstimateOptions,
+  SigningError,
 } from '@bitgo/sdk-core';
-import { MethodNotImplementedError } from '../../errors';
+import * as AvaxpLib from './lib';
 
 export interface ExplainTransactionOptions {
   txHex?: string;
@@ -38,6 +42,9 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txInfo: TxInfo;
   source: string;
 }
+
+export type TransactionFee = AvaxpLib.TransactionFee;
+export type TransactionExplanation = AvaxpLib.TransactionExplanation;
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -69,6 +76,10 @@ export class AvaxP extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  supportsStaking(): boolean {
+    return true;
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new MethodNotImplementedError('verifyTransaction method not implemented');
   }
@@ -92,7 +103,17 @@ export class AvaxP extends BaseCoin {
    * @returns {Object} object with generated pub and prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new MethodNotImplementedError('generateKeyPair method not implemented');
+    const keyPair = seed ? new AvaxpLib.KeyPair({ seed }) : new AvaxpLib.KeyPair();
+    const keys = keyPair.getKeys();
+
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 
   /**
@@ -102,7 +123,12 @@ export class AvaxP extends BaseCoin {
    * @returns is it valid?
    */
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError('isValidPub method not implemented');
+    try {
+      new AvaxpLib.KeyPair({ pub });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
@@ -112,22 +138,42 @@ export class AvaxP extends BaseCoin {
    * @returns is it valid?
    */
   isValidPrv(prv: string): boolean {
-    throw new MethodNotImplementedError('isValidPrv method not implemented');
+    try {
+      new AvaxpLib.KeyPair({ prv });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   isValidAddress(address: string): boolean {
-    throw new MethodNotImplementedError('isValidAddress method not implemented');
+    return AvaxpLib.Utils.isValidAddress(address);
   }
 
   /**
    * Signs Avaxp transaction
-
    */
-  signTransaction(params: AvaxpSignTransactionOptions): Promise<SignedTransaction> {
-    throw new MethodNotImplementedError('signTransaction method not implemented');
+  async signTransaction(params: AvaxpSignTransactionOptions): Promise<SignedTransaction> {
+    const txBuilder = this.getBuilder().from(params.txPrebuild.txHex);
+    const key = params.prv;
+    txBuilder.sign({ key });
+
+    const transaction: BaseTransaction = await txBuilder.build();
+    if (!transaction) {
+      throw new InvalidTransactionError('Error while trying to build transaction');
+    }
+    const response = {
+      txHex: transaction.toBroadcastFormat(),
+    };
+
+    return transaction.signature.length >= 2 ? response : { halfSigned: response };
   }
 
-  parseTransaction(params: any): Promise<ParseTransactionOptions> {
+  async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {
+    return { fee: (this._staticsCoin.network as AvalancheNetwork).txFee.toString() };
+  }
+
+  parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {
     throw new MethodNotImplementedError('parseTransaction method not implemented');
   }
 
@@ -138,5 +184,20 @@ export class AvaxP extends BaseCoin {
    */
   explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     throw new MethodNotImplementedError('explainTransaction method not implemented');
+  }
+
+  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
+    const prv = new AvaxpLib.KeyPair(key).getPrivateKey();
+    if (!prv) {
+      throw new SigningError('Invalid key pair options');
+    }
+    if (typeof message === 'string') {
+      message = Buffer.from(message, 'hex');
+    }
+    return AvaxpLib.Utils.createSignature(this._staticsCoin.network as AvalancheNetwork, message, prv);
+  }
+
+  private getBuilder(): AvaxpLib.TransactionBuilderFactory {
+    return new AvaxpLib.TransactionBuilderFactory(coins.get(this.getChain()));
   }
 }

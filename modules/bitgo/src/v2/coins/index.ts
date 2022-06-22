@@ -4,6 +4,8 @@ import { Xrp, Txrp } from '@bitgo/sdk-coin-xrp';
 export { Xrp, Txrp };
 import { Cspr, Tcspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr, Tcspr };
+import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
+export { AvaxP, TavaxP };
 
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 export { Algo, AlgoToken, Talgo };
@@ -60,7 +62,5 @@ export { TavaxC } from './tavaxc';
 export { AvaxCToken } from './avaxcToken';
 export { Sol } from './sol';
 export { Tsol } from './tsol';
-export { AvaxP } from './avaxp';
-export { TavaxP } from './tavaxp';
 export { Polygon } from './polygon';
 export { Tpolygon } from './tpolygon';
