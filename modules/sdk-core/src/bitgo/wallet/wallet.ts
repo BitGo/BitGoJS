@@ -1781,10 +1781,11 @@ export class Wallet implements IWallet {
       {
         address: params.address,
         amount: params.amount,
-        tokenName: params.tokenName,
       },
     ];
-
+    if (params.tokenName) {
+      recipients[0].tokenName = params.tokenName;
+    }
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
     }
