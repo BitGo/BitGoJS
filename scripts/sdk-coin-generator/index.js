@@ -120,8 +120,8 @@ module.exports = class extends Generator {
       this.destinationPath('.gitignore')
     );
     this.fs.copyTpl(
-      this.templatePath('./base/.mocharc.js'),
-      this.destinationPath('.mocharc.js')
+      this.templatePath('./base/.mocharc.yml'),
+      this.destinationPath('.mocharc.yml')
     );
     this.fs.copyTpl(
       this.templatePath('./base/.npmignore'),

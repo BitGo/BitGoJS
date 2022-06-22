@@ -256,7 +256,12 @@ This will prompt you for both the coin's name (mainnet and testnet), symbol, and
 
 Additional information about coin development can be found in the newly created coin's README.md file.
 
-Due to supporting legacy versions of registering coins to `bitgo`, you will continue to add new coin definitions to `@bitgo/statics` **AND** the coin registration to `bitgo`'s CoinFactory.
+Due to supporting legacy versions of registering coins to `bitgo`, you will continue to add new coin definitions to:
+| Module        | Notes                                                                                                                |
+|---------------|----------------------------------------------------------------------------------------------------------------------|
+| `statics`     |                                                                                                                      |
+| `bitgo`       | Coin registration in the `CoinFactory` class                                                                               |
+| `account-lib` | For account based coins that are converting from `account-lib`, the import/export at `account-lib`'s root `index.ts` |
 
 ### Coin Creation Options
 
@@ -264,8 +269,9 @@ Upon creating coins, you are given different options to choose from to create yo
 
 > Do not install coin packages in the root of BitGoJS. They must be scoped to their respective package.
 
-| Option | Description |
-|--------|-------------|
+| Option  | Description                                            |
+|---------|--------------------------------------------------------|
 | Account | Used for account based coins. Eth based or "Eth like". |
-| Utxo | Used for utxo based coins. Bitcoin, Litecoin, etc... |
-| Simple | Base implementation extending BaseCoin. |
+| Utxo    | Used for utxo based coins. Bitcoin, Litecoin, etc...   |
+| Simple  | Base implementation extending BaseCoin.                |
+
