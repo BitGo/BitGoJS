@@ -74,7 +74,10 @@ export default class Ecdsa {
 
     // Chaincode will be used in future when we add support for key derivation for ecdsa
     const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
-    const chaincode = chaincodes.reduce((acc, chaincode) => Ecdsa.curve.scalarReduce(acc + chaincode));
+    const chaincode = chaincodes.reduce(
+      (acc, chaincode) =>
+        (acc + chaincode) % BigInt('0x010000000000000000000000000000000000000000000000000000000000000000') // 2^256
+    );
 
     const participants: KeyCombined = {
       xShare: {

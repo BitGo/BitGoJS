@@ -1781,10 +1781,11 @@ export class Wallet implements IWallet {
       {
         address: params.address,
         amount: params.amount,
-        tokenName: params.tokenName,
       },
     ];
-
+    if (params.tokenName) {
+      recipients[0].tokenName = params.tokenName;
+    }
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
     }
@@ -2297,7 +2298,8 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
           },
-          apiVersion
+          apiVersion,
+          params.preview
         );
         break;
       case 'enabletoken':
@@ -2309,7 +2311,8 @@ export class Wallet implements IWallet {
             tokenName: params.tokenName,
             memo: params.memo,
           },
-          apiVersion
+          apiVersion,
+          params.preview
         );
         break;
       default:

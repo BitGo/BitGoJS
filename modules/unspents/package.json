@@ -39,8 +39,10 @@
   },
   "dependencies": {
     "@bitgo/utxo-lib": "^2.3.0-rc.8",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "lodash": "~4.17.21",
-    "tcomb": "~3.2.29"
+    "tcomb": "~3.2.29",
+    "varuint-bitcoin": "^1.0.4"
   },
   "lint-staged": {
     "*.{js,ts}": [

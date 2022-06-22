@@ -1,7 +1,7 @@
 import { URL } from 'url';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import * as fs from 'fs/promises';
+import { promises as fs } from 'fs';
 
 import { BaseHttpClient, HttpClient, Response } from '../src';
 

@@ -7,7 +7,7 @@ import { AlgoToken } from '../../src';
 describe('Algo Unison Token:', function () {
   let bitgo: TestBitGoAPI;
   let algoTokenCoin;
-  const tokenName = 'talgo:16026728';
+  const tokenName = 'talgo:USON-16026728';
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -19,7 +19,7 @@ describe('Algo Unison Token:', function () {
   });
 
   it('should return constants', function () {
-    algoTokenCoin.getChain().should.equal('talgo:16026728');
+    algoTokenCoin.getChain().should.equal(tokenName);
     algoTokenCoin.getBaseChain().should.equal('talgo');
     algoTokenCoin.getFullName().should.equal('Algo Token');
     algoTokenCoin.getBaseFactor().should.equal(1e2);
@@ -34,7 +34,7 @@ describe('Algo Unison Token:', function () {
 describe('Algo USDC Token:', function () {
   let bitgo;
   let algoTokenCoin;
-  const USDCtokenName = 'talgo:10458941';
+  const USDCtokenName = 'talgo:USDC-10458941';
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -61,7 +61,7 @@ describe('Algo USDC Token:', function () {
 describe('Algo USDt Token:', function () {
   let bitgo;
   let algoTokenCoin;
-  const USDTtokenName = 'talgo:180447';
+  const USDTtokenName = 'talgo:USDt-180447';
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });

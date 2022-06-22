@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as fs from 'fs/promises';
+import { promises as fs } from 'fs';
 
 export async function getFixtureString(path: string, defaultValue?: string): Promise<string> {
   try {

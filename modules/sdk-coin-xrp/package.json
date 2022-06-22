@@ -53,7 +53,6 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^1.0.1-rc.2",
-    "@types/lodash": "^4.14.151"
+    "@bitgo/sdk-test": "^1.0.1-rc.2"
   }
 }

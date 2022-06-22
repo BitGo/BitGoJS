@@ -48,6 +48,7 @@
     "bip32": "^2.0.6",
     "bitcoinjs-message": "^2.0.0",
     "bluebird": "^3.5.3",
+    "debug": "^3.1.0",
     "lodash": "^4.17.14",
     "superagent": "^3.8.3"
   }
