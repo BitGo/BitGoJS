@@ -164,6 +164,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
   sequenceId: number;
   gasLimit: number;
   gasPrice: number;
+  custodianTransactionId?: string;
 }
 
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
