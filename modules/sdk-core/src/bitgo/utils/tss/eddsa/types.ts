@@ -87,7 +87,11 @@ export interface ITssUtils {
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet>;
   signTxRequest(params: { txRequest: string | TxRequest; prv: string; reqId: IRequestTracer }): Promise<TxRequest>;
-  prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion?: TxRequestVersion): Promise<TxRequest>;
+  prebuildTxWithIntent(
+    params: PrebuildTransactionWithIntentOptions,
+    apiVersion?: TxRequestVersion,
+    preview?: boolean
+  ): Promise<TxRequest>;
   deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]>;
   sendTxRequest(txRequestId: string): Promise<any>;
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;

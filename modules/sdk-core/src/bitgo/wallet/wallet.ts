@@ -2298,7 +2298,8 @@ export class Wallet implements IWallet {
             memo: params.memo,
             nonce: params.nonce,
           },
-          apiVersion
+          apiVersion,
+          params.preview
         );
         break;
       case 'enabletoken':
@@ -2310,7 +2311,8 @@ export class Wallet implements IWallet {
             tokenName: params.tokenName,
             memo: params.memo,
           },
-          apiVersion
+          apiVersion,
+          params.preview
         );
         break;
       default:
