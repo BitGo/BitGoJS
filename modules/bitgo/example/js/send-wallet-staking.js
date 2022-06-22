@@ -30,15 +30,11 @@ async function send() {
 
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 
-  //  const newReceiveAddress1 = await walletInstance.createAddress();
-  //  const newReceiveAddress2 = yield walletInstance.createAddress();
-  //  const newReceiveAddress1 = yield walletInstance.createAddress();
-
   const transaction = await walletInstance.sendMany({
     recipients: [
       {
-        amount: '12341234',
-        address: 'btdev.testnet',
+        amount: '1000000000000000000000',
+        address: 'legends.pool.f863973.m0',
       },
     ],
     type: 'stake',

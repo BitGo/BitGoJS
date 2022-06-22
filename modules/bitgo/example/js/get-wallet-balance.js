@@ -16,11 +16,12 @@ const bitgo = new BitGoJS.BitGo({
 
 // TODO: set your access token here
 // You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = 'v2x9010d135117a5809bef5606064b77b17d11f6fad890c987887c4caf826a2df7a'
+// const accessToken = 'v2x9010d135117a5809bef5606064b77b17d11f6fad890c987887c4caf826a2df7a'
+const accessToken = 'v2x1108fe1d46407e6b372b49191df29fb323a13e10c68fccbe3790548a30ad88c7';
 
 
 // TODO: get the wallet with this id
-const walletId = '626159e47e5d8000070893e3583f1bc6'
+const walletId = '62ac9906fb94cd0007f1bb3b29395c32';
 
 const coin = 'tnear';
 const basecoin = bitgo.coin(coin);

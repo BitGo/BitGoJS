@@ -17,6 +17,7 @@ export interface PrebuildTransactionWithIntentOptions {
   memo?: Memo;
   tokenName?: string;
   nonce?: string;
+  stakingRequestId?: string;
 }
 
 export type TxRequestVersion = 'full' | 'lite';

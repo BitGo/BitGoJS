@@ -357,6 +357,7 @@ export class TssUtils extends MpcUtils implements ITssUtils {
     const whitelistedParams = {
       intent: {
         intentType: params.intentType,
+        stakingRequestId: params.stakingRequestId,
         sequenceId: params.sequenceId,
         comment: params.comment,
         recipients: intentRecipients,
