@@ -352,7 +352,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
 export function getAddressDetails(address: string): AddressDetails {
   const addressDetails = url.parse(address);
   const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
-  const baseAddress = <string>addressDetails.pathname;
+  const baseAddress = addressDetails.pathname as string;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${address}`);
   }
@@ -368,7 +368,7 @@ export function getAddressDetails(address: string): AddressDetails {
     // if there are more properties, the query details need to contain the memo id property
     throw new UtilsError(`invalid address with memo id: ${address}`);
   }
-  const memoId = <string>queryDetails.get('memoId');
+  const memoId = queryDetails.get('memoId') as string;
   const intMemoId = parseInt(memoId, 10);
   if (isNaN(intMemoId) || intMemoId < 0) {
     throw new Error(`invalid memo id: ${memoId}`);

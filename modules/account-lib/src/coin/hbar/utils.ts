@@ -247,7 +247,7 @@ export function getBaseAddress(address: string): string {
 export function getAddressDetails(rawAddress: string): AddressDetails {
   const addressDetails = url.parse(rawAddress);
   const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
-  const baseAddress = <string>addressDetails.pathname;
+  const baseAddress = addressDetails.pathname as string;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${rawAddress}`);
   }
@@ -264,7 +264,7 @@ export function getAddressDetails(rawAddress: string): AddressDetails {
     // if there are more properties, the query details need to contain the memo id property
     throw new UtilsError(`invalid address with memo id: ${rawAddress}`);
   }
-  const memoId = <string>queryDetails.get('memoId');
+  const memoId = queryDetails.get('memoId') as string;
   if (!isValidMemo(memoId)) {
     throw new UtilsError(`invalid address: '${rawAddress}', memoId is not valid`);
   }
