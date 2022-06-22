@@ -77,6 +77,7 @@ export interface PrebuildTransactionOptions {
   [index: string]: unknown;
   tokenName?: string;
   nonce?: string;
+  preview?: boolean;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {

@@ -344,10 +344,15 @@ export class TssUtils extends MpcUtils implements ITssUtils {
    * Builds a tx request from params and verify it
    *
    * @param {PrebuildTransactionWithIntentOptions} params - parameters to build the tx
-   * @param apiVersion
+   * @param apiVersion lite or full
+   * @param preview boolean indicating if this is to preview a tx request, which will not initiate policy checks or pending approvals
    * @returns {Promise<TxRequest>} - a built tx request
    */
-  async prebuildTxWithIntent(params: PrebuildTransactionWithIntentOptions, apiVersion = 'lite'): Promise<TxRequest> {
+  async prebuildTxWithIntent(
+    params: PrebuildTransactionWithIntentOptions,
+    apiVersion = 'lite',
+    preview?: boolean
+  ): Promise<TxRequest> {
     const chain = this.baseCoin.getChain();
     const intentRecipients = params.recipients.map((recipient) => ({
       address: { address: recipient.address },
@@ -365,6 +370,7 @@ export class TssUtils extends MpcUtils implements ITssUtils {
         nonce: params.nonce,
       },
       apiVersion: apiVersion,
+      preview,
     };
 
     const unsignedTx = (await this.bitgo
