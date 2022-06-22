@@ -66,6 +66,10 @@ jobs:
         if: ${{ startsWith(matrix.node-version, '14') }}
         run: yarn run check-fmt
 
+      - name: Check Package Dependencies
+        if: ${{ startsWith(matrix.node-version, '14') }}
+        run: yarn run check-deps
+
       - name: Unit Test
         run: yarn run unit-test-changed
         env:
