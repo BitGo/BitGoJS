@@ -61,8 +61,7 @@
     "@types/fs-extra": "^9.0.12",
     "axios": "^0.21.1",
     "debug": "^3.1.0",
-    "fs-extra": "^9.1.0",
-    "nyc": "^15.1.0"
+    "fs-extra": "^9.1.0"
   },
   "lint-staged": {
     "*.{js,ts}": [

@@ -5,13 +5,8 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "webpack-dev": "cross-env NODE_ENV=development webpack",
-    "webpack-prod": "cross-env NODE_ENV=production webpack",
     "build": "npm run prepare",
     "clean": "rm -rf dist/*",
-    "compile": "npm run webpack-prod",
-    "compile-dev": "npm run webpack-dev",
-    "compile-test": "npm run webpack-dev",
     "coverage": "npm run gen-coverage && npm run upload-coverage",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
@@ -20,7 +15,6 @@
     "lint": "eslint --quiet 'src/**/*.ts' 'test/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "precommit": "yarn lint-staged",
-    "prepublishOnly": "npm run compile",
     "prepare": "npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && npm run build-ts && cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
     "unit-test": "nyc -- mocha",
@@ -91,8 +85,7 @@
   "devDependencies": {
     "@types/bs58": "^4.0.1",
     "@types/elliptic": "^6.4.12",
-    "@types/libsodium-wrappers": "^0.7.7",
-    "process": "^0.11.10"
+    "@types/libsodium-wrappers": "^0.7.7"
   },
   "nyc": {
     "extension": [
