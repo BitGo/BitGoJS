@@ -406,7 +406,7 @@ describe('SOL:', function () {
       });
     });
 
-    it('should parse an unsigned transfer transaction', async function () {
+    it('should parse an unsigned wallet init transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txBase64: testData.rawTransactions.walletInit.unsigned,
         feeInfo: {
@@ -428,9 +428,9 @@ describe('SOL:', function () {
       });
     });
 
-    it('should parse a signed transfer transaction', async function () {
+    it('should parse a signed wallet init transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
-        txBase64: testData.rawTransactions.walletInit.unsigned,
+        txBase64: testData.rawTransactions.walletInit.signed,
         feeInfo: {
           fee: '5000',
         },
@@ -445,6 +445,52 @@ describe('SOL:', function () {
           {
             address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
             amount: '300000',
+          },
+        ],
+      });
+    });
+
+    it('should parse an unsigned transfer token transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txBase64: testData.rawTransactions.transferToken.unsigned,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [{
+          address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+          amount: 5000,
+        }],
+        outputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: '2',
+            tokenName: 'tsol:mnde',
+          },
+        ],
+      });
+    });
+
+    it('should parse a signed transfer token transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txBase64: testData.rawTransactions.transferToken.signed,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: [{
+          address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+          amount: 5000,
+        }],
+        outputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: '2',
+            tokenName: 'tsol:mnde',
           },
         ],
       });
@@ -615,6 +661,90 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+      });
+    });
+
+    it('should explain an unsigned token transfer transaction', async function() {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.transferToken.unsigned,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: 'UNAVAILABLE',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: '2',
+            tokenName: 'tsol:mnde',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: '9qanCxWtF5KaxWTZV8Xj1RJKTeBXeEB2FhhuZBVqbnHE',
+        durableNonce: undefined,
+      });
+    });
+
+    it('should explain a signed token transfer transaction', async function () {
+      const explainedTransaction = await basecoin.explainTransaction({
+        txBase64: testData.rawTransactions.transferToken.signed,
+        feeInfo: {
+          fee: '5000',
+        },
+      });
+      explainedTransaction.should.deepEqual({
+        displayOrder: [
+          'id',
+          'type',
+          'blockhash',
+          'durableNonce',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+        ],
+        id: '2CHaadAc1v9Z2rgeWbQBXsSiANmZeyzzTTfozGvzoWiTkTzNPFpXcqb9htL87Tok2u32hAT58KWXDHBshq5YQ4aR',
+        type: 'Send',
+        changeOutputs: [],
+        changeAmount: '0',
+        outputAmount: '0',
+        outputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: '2',
+            tokenName: 'tsol:mnde',
+          },
+        ],
+        fee: {
+          fee: '5000',
+          feeRate: 5000,
+        },
+        memo: undefined,
+        blockhash: 'FweXfZMDBPNFinGjcEDsw7ktw5BcDdzYBkqLUfJc554u',
+        durableNonce: undefined,
       });
     });
 
