@@ -39,6 +39,9 @@
       "path": "../sdk-coin-algo"
     },
     {
+      "path": "../sdk-coin-avaxp"
+    },
+    {
       "path": "../sdk-coin-cspr"
     },
     {

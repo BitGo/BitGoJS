@@ -1,5 +1,6 @@
 import { TransferableInput, TransferableOutput } from 'avalanche/dist/apis/platformvm';
 import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
+export { TransactionFee } from '@bitgo/sdk-core';
 
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'bond' for the staking transaction

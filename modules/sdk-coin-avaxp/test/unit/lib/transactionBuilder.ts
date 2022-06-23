@@ -1,8 +1,7 @@
 import assert from 'assert';
-import * as testData from '../resources/avaxp';
-import * as errorMessage from '../resources/errors';
-import { register } from '../../src';
-import { TransactionBuilderFactory } from '../../src/transactionBuilderFactory';
+import * as testData from '../../resources/avaxp';
+import * as errorMessage from '../../resources/errors';
+import { register, TransactionBuilderFactory } from '../../../src/lib';
 
 describe('AvaxP Transaction Builder', () => {
   const factory = register('tavaxp', TransactionBuilderFactory);

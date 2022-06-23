@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig, AvalancheNetwork } from '@bitgo/statics';
 import { BaseKey, SigningError, BaseTransaction, TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { DecodedUtxoObj, TxData } from './iface';
-import { UnsignedTx, BaseTx, KeyPair as KeyPairAvax, Tx } from 'avalanche/dist/apis/platformvm';
+import { UnsignedTx, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import * as createHash from 'create-hash';
@@ -38,6 +38,14 @@ export class Transaction extends BaseTransaction {
 
   set avaxPTransaction(tx: BaseTx) {
     this._avaxpTransaction = new UnsignedTx(tx);
+  }
+
+  get signature(): string[] {
+    if (this.credentials.length == 1) {
+      return [];
+    }
+    const obj: any = this.credentials[0].serialize();
+    return obj.sigArray;
   }
 
   set credentials(credentials: Credential[]) {
@@ -146,9 +154,11 @@ export class Transaction extends BaseTransaction {
    * @param prv
    */
   createSignature(prv: Buffer): Signature {
-    const ky = new KeyPairAvax(this._network.hrp, this._network.networkID.toString());
-    ky.importKey(BufferAvax.from(prv));
-    const signval = ky.sign(BufferAvax.from(this.signablePayload));
+    const signval = utils.createSignatureAvaxBuffer(
+      this._network,
+      BufferAvax.from(this.signablePayload),
+      BufferAvax.from(prv)
+    );
     const sig = new Signature();
     sig.fromBuffer(signval);
     return sig;
