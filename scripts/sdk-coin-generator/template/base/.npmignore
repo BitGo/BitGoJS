@@ -1,4 +1,6 @@
 !dist/
+dist/test/
+dist/tsconfig.tsbuildinfo
 .idea/
 .prettierrc.yml
 tsconfig.json

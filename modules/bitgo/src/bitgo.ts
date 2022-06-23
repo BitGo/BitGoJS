@@ -3,8 +3,6 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-
-import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import bitcoinMessage = require('bitcoinjs-message');
@@ -14,8 +12,6 @@ import pjson = require('../package.json');
 
 import * as _ from 'lodash';
 import * as config from './config';
-
-import * as debugLib from 'debug';
 
 const TransactionBuilder = require('./transactionBuilder');
 const Blockchain = require('./blockchain');
@@ -30,13 +26,6 @@ import {
   BitGoAPI,
   BitGoAPIOptions,
 } from '@bitgo/sdk-api';
-
-const debug = debugLib('bitgo:index');
-
-if (!(process as any).browser) {
-  debug('enabling superagent-proxy wrapper');
-  require('superagent-proxy')(superagent);
-}
 
 export type BitGoOptions = BitGoAPIOptions;
 

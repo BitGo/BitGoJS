@@ -1,8 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair, addressFormat } from '../../src/keyPair';
-import * as testData from '../resources/avaxp';
-// import { ACCOUNT_1, SEED_ACCOUNT } from '../resources/avaxp';
+import { KeyPair, addressFormat } from '../../../src/lib/keyPair';
+import * as testData from '../../resources/avaxp';
 
 const pubKey = testData.ACCOUNT_1.pubkey;
 const prvKey = testData.ACCOUNT_1.privkey;
@@ -19,6 +18,21 @@ describe('Avax P Key Pair', () => {
     it('from a seed', () => {
       const seed = testData.SEED_ACCOUNT.seed;
       const keyPairObj = new KeyPair({ seed: Buffer.from(seed, 'hex') });
+      const keys = keyPairObj.getKeys();
+      should.exists(keys.prv);
+      should.exists(keys.pub);
+      should.equal(keys.prv!, testData.SEED_ACCOUNT.privateKeyAvax);
+      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKeyCb58);
+
+      const extendedKeys = keyPairObj.getExtendedKeys();
+      should.exists(extendedKeys.xprv);
+      should.exists(extendedKeys.xpub);
+      should.equal(extendedKeys.xprv, testData.SEED_ACCOUNT.xPrivateKey);
+      should.equal(extendedKeys.xpub, testData.SEED_ACCOUNT.xPublicKey);
+    });
+
+    it('from a xprv', () => {
+      const keyPairObj = new KeyPair({ prv: testData.SEED_ACCOUNT.xPrivateKey });
       const keys = keyPairObj.getKeys();
       should.exists(keys.prv);
       should.exists(keys.pub);

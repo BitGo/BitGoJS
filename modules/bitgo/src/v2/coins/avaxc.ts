@@ -171,6 +171,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
 export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TxPreBuild;
   prv: string;
+  custodianTransactionId?: string;
 }
 
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
@@ -516,6 +517,7 @@ export class AvaxC extends BaseCoin {
       recipients: recipients,
       expiration: params.txPrebuild.expireTime,
       hopTransaction: params.txPrebuild.hopTransaction,
+      custodianTransactionId: params.custodianTransactionId,
     };
 
     return { halfSigned: txParams };

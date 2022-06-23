@@ -58,10 +58,10 @@ import {
 } from './types';
 import pjson = require('../package.json');
 import { decrypt, encrypt } from './encrypt';
-
+import { isBrowser, isWebWorker } from 'browser-or-node';
 const debug = debugLib('bitgo:api');
 
-if (!(process as any)?.browser) {
+if (!isBrowser && !isWebWorker) {
   debug('enabling superagent-proxy wrapper');
   require('superagent-proxy')(superagent);
 }

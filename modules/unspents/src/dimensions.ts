@@ -1,5 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { ChainCode, isChainCode, scriptTypeForChain } from '@bitgo/utxo-lib/dist/src/bitgo';
+import { bitgo } from '@bitgo/utxo-lib';
+const { isChainCode, scriptTypeForChain } = bitgo;
+type ChainCode = bitgo.ChainCode;
 
 import { compactSize } from './scriptSizes';
 import { PositiveInteger } from './types';

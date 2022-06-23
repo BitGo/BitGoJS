@@ -1,9 +1,11 @@
-import { isValidXpub, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
-import { BinTools, Buffer } from 'avalanche';
+import { isValidXpub, isValidXprv, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
+import { BinTools, Buffer as BufferAvax } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
 import { BaseTx, SelectCredentialClass, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common/credentials';
+import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
+import { AvalancheNetwork } from '@bitgo/statics';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -52,14 +54,14 @@ export class Utils implements BaseUtils {
     // validate the public key
     const secp256k1 = new ec('secp256k1');
     try {
-      const keyPair = secp256k1.keyFromPublic(Buffer.from(pub, 'hex'));
+      const keyPair = secp256k1.keyFromPublic(BufferAvax.from(pub, 'hex'));
       const { result } = keyPair.validate();
       return result;
     } catch (e) {
       return false;
     }
   }
-  public parseAddress = (pub: string): Buffer => this.binTools.parseAddress(pub, 'P');
+  public parseAddress = (pub: string): BufferAvax => this.binTools.parseAddress(pub, 'P');
 
   /**
    * Returns whether or not the string is a valid protocol private key, or extended
@@ -73,7 +75,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - the validation result
    */
   isValidPrivateKey(prv: string): boolean {
-    // if (isValidXprv(prv)) return true;
+    if (isValidXprv(prv)) return true;
 
     if (prv.length !== 64 && prv.length !== 66) return false;
 
@@ -116,6 +118,66 @@ export class Utils implements BaseUtils {
       utx.fromBuffer(utils.cb58Decode(raw));
       return new Tx(utx, []);
     }
+  }
+
+  /**
+   * Avaxp wrapper to create signature and return it for credentials using Avalanche's buffer
+   * @param network
+   * @param message
+   * @param prv
+   * @return signature
+   */
+  createSignatureAvaxBuffer(network: AvalancheNetwork, message: BufferAvax, prv: BufferAvax): BufferAvax {
+    const ky = new KeyPairAvax(network.hrp, network.networkID.toString());
+    ky.importKey(prv);
+    return ky.sign(message);
+  }
+
+  /**
+   * Avaxp wrapper to create signature and return it for credentials
+   * @param network
+   * @param message
+   * @param prv
+   * @return signature
+   */
+  createSignature(network: AvalancheNetwork, message: Buffer, prv: Buffer): Buffer {
+    return Buffer.from(this.createSignatureAvaxBuffer(network, BufferAvax.from(message), BufferAvax.from(prv)));
+  }
+
+  /**
+   * Avaxp wrapper to verify signature using Avalanche's buffer
+   * @param network
+   * @param message
+   * @param signature
+   * @param prv
+   * @return true if it's verify successful
+   */
+  verifySignatureAvaxBuffer(
+    network: AvalancheNetwork,
+    message: BufferAvax,
+    signature: BufferAvax,
+    prv: BufferAvax
+  ): boolean {
+    const ky = new KeyPairAvax(network.hrp, network.networkID.toString());
+    ky.importKey(prv);
+    return ky.verify(message, signature);
+  }
+
+  /**
+   * Avaxp wrapper to verify signature
+   * @param network
+   * @param message
+   * @param signature
+   * @param prv
+   * @return true if it's verify successful
+   */
+  verifySignature(network: AvalancheNetwork, message: Buffer, signature: Buffer, prv: Buffer): boolean {
+    return this.verifySignatureAvaxBuffer(
+      network,
+      BufferAvax.from(message),
+      BufferAvax.from(signature),
+      BufferAvax.from(prv)
+    );
   }
 }
 

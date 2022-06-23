@@ -3,7 +3,7 @@ import bitgo from '@bitgo/utxo-lib';
 
 const { networks, UtxoTransaction } = bitgo
 
-// Add networks.<%= symbol => and networks.<%= symbol %>Test to @bitgo/utxo-lib
+// Add networks.<%= symbol %> and networks.<%= symbol %>Test to @bitgo/utxo-lib
 export type <%= constructor %>Network = typeof networks.<%= symbol %> | typeof networks.<%= symbol %>Test;
 
 export class UnsupportedTransactionError extends Error {

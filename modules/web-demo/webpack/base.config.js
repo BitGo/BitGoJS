@@ -152,12 +152,6 @@ const prodPlugins = [
   }),
 ];
 
-const mergeCustomizer = (objValue, srcValue) => {
-  if (Array.isArray(objValue)) {
-    return objValue.concat(srcValue);
-  }
-};
-
 module.exports = {
   aliasItems,
   copyPluginPatterns,
@@ -171,5 +165,4 @@ module.exports = {
   prodRules,
   devPlugins,
   prodPlugins,
-  mergeCustomizer,
 };
