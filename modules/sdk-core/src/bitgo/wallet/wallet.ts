@@ -1526,6 +1526,7 @@ export class Wallet implements IWallet {
     if (_.isFunction(params.customSigningFunction)) {
       return params.customSigningFunction(signTransactionParams);
     }
+
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: this.getUserPrv(presign as GetUserPrvOptions),
@@ -1757,37 +1758,39 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async send(params: SendOptions = {}): Promise<any> {
-    common.validateParams(params, ['address'], ['message', 'data']);
-
-    if (_.isUndefined(params.amount)) {
-      throw new Error('missing required parameter amount');
-    }
-
-    if (_.isUndefined(params.address)) {
-      throw new Error('missing required parameter address');
-    }
-
     const coin = this.baseCoin;
+    // Note: address and amount not required for enable token
+    if (params.type !== 'enabletoken') {
+      if (_.isUndefined(params.amount)) {
+        throw new Error('missing required parameter amount');
+      }
 
-    const amount = new BigNumber(params.amount);
-    if (amount.isNegative()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      if (_.isUndefined(params.address)) {
+        throw new Error('missing required parameter address');
+      }
+
+      const amount = new BigNumber(params.amount);
+      if (amount.isNegative()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
+
+      if (!coin.valuelessTransferAllowed() && amount.isZero()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
     }
 
-    if (!coin.valuelessTransferAllowed() && amount.isZero()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-    }
-    const recipients: SendManyOptions['recipients'] = [
-      {
+    const recipients: SendManyOptions['recipients'] = [];
+    if (params.address) {
+      recipients.push({
         address: params.address,
-        amount: params.amount,
-      },
-    ];
-    if (params.tokenName) {
-      recipients[0].tokenName = params.tokenName;
-    }
-    if (params.data && coin.transactionDataAllowed()) {
-      recipients[0].data = params.data;
+        amount: params.amount || 0,
+      });
+      if (params.tokenName) {
+        recipients[0].tokenName = params.tokenName;
+      }
+      if (params.data && coin.transactionDataAllowed()) {
+        recipients[0].data = params.data;
+      }
     }
     const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
     return this.sendMany(sendManyOptions);
