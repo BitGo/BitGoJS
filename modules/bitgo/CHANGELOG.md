@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.25](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.24...bitgo@14.2.0-rc.25) (2022-06-23)
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement generateKeyPair and signTransaction ([52b03d2](https://github.com/BitGo/BitGoJS/commit/52b03d2a8583e1da24789c4cdd30924416e28ec2))
+
+
+
+
+
 # [14.2.0-rc.24](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.23...bitgo@14.2.0-rc.24) (2022-06-22)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.12...@bitgo/sdk-coin-avaxp@0.1.0-rc.13) (2022-06-23)
+
+
+### Features
+
+* **sdk-coin-avaxp:** implement generateKeyPair and signTransaction ([52b03d2](https://github.com/BitGo/BitGoJS/commit/52b03d2a8583e1da24789c4cdd30924416e28ec2))
+
+
+
+
+
 # [0.1.0-rc.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.11...@bitgo/sdk-coin-avaxp@0.1.0-rc.12) (2022-06-22)
 
 

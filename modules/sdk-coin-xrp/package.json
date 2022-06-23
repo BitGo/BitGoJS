@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-xrp",
-  "version": "1.1.0-rc.7",
+  "version": "1.1.0-rc.8",
   "description": "BitGo SDK coin library for Ripple",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,8 +41,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.1.0-rc.14",
-    "@bitgo/utxo-lib": "^2.3.0-rc.9",
+    "@bitgo/sdk-core": "^1.1.0-rc.15",
+    "@bitgo/utxo-lib": "^2.3.0-rc.10",
     "bignumber.js": "^8.0.1",
     "bip32": "^2.0.6",
     "lodash": "^4.17.14",
@@ -52,6 +52,6 @@
     "ripple-lib": "~1.4.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^1.0.1-rc.3"
+    "@bitgo/sdk-test": "^1.0.1-rc.4"
   }
 }
