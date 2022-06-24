@@ -61,6 +61,15 @@ import { decrypt, encrypt } from './encrypt';
 import { isBrowser, isWebWorker } from 'browser-or-node';
 const debug = debugLib('bitgo:api');
 
+const Blockchain = require('./v1/blockchain');
+const Keychains = require('./v1/keychains');
+import Wallet = require('./v1/wallet');
+const Wallets = require('./v1/wallets');
+const Markets = require('./v1/markets');
+const PendingApprovals = require('./v1/pendingapprovals');
+const TravelRule = require('./v1/travelRule');
+const TransactionBuilder = require('./v1/transactionBuilder');
+
 if (!isBrowser && !isWebWorker) {
   debug('enabling superagent-proxy wrapper');
   require('superagent-proxy')(superagent);
@@ -69,6 +78,14 @@ if (!isBrowser && !isWebWorker) {
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
 
 export class BitGoAPI implements BitGoBase {
+  // v1 types
+  protected _keychains: any;
+  protected _wallets: any;
+  protected _markets?: any;
+  protected _blockchain?: any;
+  protected _travelRule?: any;
+  protected _pendingApprovals?: any;
+
   protected static _constants: any;
   protected static _constantsExpire: any;
   protected static _testnetWarningMessage = false;
@@ -195,6 +212,8 @@ export class BitGoAPI implements BitGoBase {
     this._refreshToken = params.refreshToken;
     this._clientId = params.clientId;
     this._clientSecret = params.clientSecret;
+    this._keychains = null;
+    this._wallets = null;
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -230,10 +249,6 @@ export class BitGoAPI implements BitGoBase {
         debug(e.stack);
       }
     });
-  }
-
-  wallets(): any {
-    throw new Error('Method not implemented.');
   }
 
   /**
@@ -1176,5 +1191,119 @@ export class BitGoAPI implements BitGoBase {
    */
   public register(name: string, coin: CoinConstructor): void {
     GlobalCoinFactory.register(name, coin);
+  }
+
+  /**
+   * Get bitcoin market data
+   *
+   * @deprecated
+   */
+  markets(): any {
+    if (!this._markets) {
+      this._markets = new Markets(this);
+    }
+    return this._markets;
+  }
+
+  /**
+   * Get the latest bitcoin prices
+   * (Deprecated: Will be removed in the future) use `bitgo.markets().latest()`
+   * @deprecated
+   */
+  // cb-compat
+  async market(): Promise<any> {
+    return this.get(this.url('/market/latest')).result();
+  }
+
+  /**
+   * Get market data from yesterday
+   * (Deprecated: Will be removed in the future) use bitgo.markets().yesterday()
+   * @deprecated
+   */
+  async yesterday(): Promise<any> {
+    return this.get(this.url('/market/yesterday')).result();
+  }
+
+  /**
+   * Get the blockchain object.
+   * @deprecated
+   */
+  blockchain(): any {
+    if (!this._blockchain) {
+      this._blockchain = new Blockchain(this);
+    }
+    return this._blockchain;
+  }
+
+  /**
+   * Get the user's keychains object.
+   * @deprecated
+   */
+  keychains(): any {
+    if (!this._keychains) {
+      this._keychains = new Keychains(this);
+    }
+    return this._keychains;
+  }
+
+  /**
+   * Get the travel rule object
+   * @deprecated
+   */
+  travelRule(): any {
+    if (!this._travelRule) {
+      this._travelRule = new TravelRule(this);
+    }
+    return this._travelRule;
+  }
+
+  /**
+   * Get the user's wallets object.
+   * @deprecated
+   */
+  wallets(): any {
+    if (!this._wallets) {
+      this._wallets = new Wallets(this);
+    }
+    return this._wallets;
+  }
+
+  /**
+   * Get pending approvals that can be approved/ or rejected
+   * @deprecated
+   */
+  pendingApprovals(): any {
+    if (!this._pendingApprovals) {
+      this._pendingApprovals = new PendingApprovals(this);
+    }
+    return this._pendingApprovals;
+  }
+
+  /**
+   * A factory method to create a new Wallet object, initialized with the wallet params
+   * Can be used to reconstitute a wallet from cached data
+   * @param walletParams
+   * @deprecated
+   */
+  newWalletObject(walletParams): any {
+    return new Wallet(this, walletParams);
+  }
+
+  /**
+   * V1 method for calculating miner fee amounts, given the number and
+   * type of transaction inputs, along with a fee rate in satoshis per vkB.
+   *
+   * This method should not be used for new code.
+   *
+   * @deprecated
+   * @param params
+   * @return {any}
+   */
+  async calculateMinerFeeInfo(params: any): Promise<any> {
+    return TransactionBuilder.calculateMinerFeeInfo(params);
+  }
+
+  getConstants(): any {
+    return BitGoAPI._constants;
   }
 }

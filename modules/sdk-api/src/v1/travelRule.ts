@@ -52,23 +52,20 @@ TravelRule.prototype.url = function (extra) {
   return this.bitgo.url('/travel/' + extra);
 };
 
-
 /**
-  * Get available travel-rule info recipients for a transaction
-  * @param params
-  *  txid: transaction id
-  * @param callback
-  * @returns {*}
-  */
+ * Get available travel-rule info recipients for a transaction
+ * @param params
+ *  txid: transaction id
+ * @param callback
+ * @returns {*}
+ */
 TravelRule.prototype.getRecipients = function (params, callback) {
   params = params || {};
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid'], [], callback);
 
   const url = this.url(params.txid + '/recipients');
-  return Bluebird.resolve(
-    this.bitgo.get(url).result('recipients')
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result('recipients')).nodeify(callback);
 };
 
 TravelRule.prototype.validateTravelInfo = function (info) {
@@ -92,7 +89,7 @@ TravelRule.prototype.validateTravelInfo = function (info) {
         throw new Error('missing required field ' + fieldName + ' in travel info');
       }
     }
-    if (info[fieldName] && typeof(info[fieldName]) !== field.type) {
+    if (info[fieldName] && typeof info[fieldName] !== field.type) {
       throw new Error('incorrect type for field ' + fieldName + ' in travel info, expected ' + field.type);
     }
   });
@@ -208,14 +205,22 @@ TravelRule.prototype.prepareParams = function (params) {
 TravelRule.prototype.send = function (params, callback) {
   params = params || {};
   params.txid = params.txid || params.hash;
-  common.validateParams(params, ['txid', 'toPubKey', 'encryptedTravelInfo'], ['fromPubKey', 'fromPrivateInfo'], callback);
+  common.validateParams(
+    params,
+    ['txid', 'toPubKey', 'encryptedTravelInfo'],
+    ['fromPubKey', 'fromPrivateInfo'],
+    callback
+  );
 
   if (!_.isNumber(params.outputIndex)) {
     throw new Error('invalid outputIndex');
   }
 
   return Bluebird.resolve(
-    this.bitgo.post(this.url(params.txid + '/' + params.outputIndex)).send(params).result()
+    this.bitgo
+      .post(this.url(params.txid + '/' + params.outputIndex))
+      .send(params)
+      .result()
   ).nodeify(callback);
 };
 
@@ -258,33 +263,31 @@ TravelRule.prototype.sendMany = function (params, callback) {
     })
     .value();
 
-  return self.getRecipients({ txid: params.txid })
-    .then(function (recipients) {
+  return self.getRecipients({ txid: params.txid }).then(function (recipients) {
+    // Build up data to post
+    const sendParamsList: any[] = [];
+    // don't regenerate a new random key for each recipient
+    const fromKey = params.fromKey || makeRandomKey().toWIF();
 
-      // Build up data to post
-      const sendParamsList: any[] = [];
-      // don't regenerate a new random key for each recipient
-      const fromKey = params.fromKey || makeRandomKey().toWIF();
-
-      recipients.forEach(function (recipient) {
-        const outputIndex = recipient.outputIndex;
-        const info = travelInfoMap[outputIndex];
-        if (info) {
-          if (info.amount && info.amount !== recipient.amount) {
-            throw new Error('amount did not match for output index ' + outputIndex);
-          }
-          const sendParams = self.prepareParams({
-            txid: params.txid,
-            recipient: recipient,
-            travelInfo: info,
-            fromKey: fromKey,
-            noValidate: true, // don't re-validate
-          });
-          sendParamsList.push(sendParams);
+    recipients.forEach(function (recipient) {
+      const outputIndex = recipient.outputIndex;
+      const info = travelInfoMap[outputIndex];
+      if (info) {
+        if (info.amount && info.amount !== recipient.amount) {
+          throw new Error('amount did not match for output index ' + outputIndex);
         }
-      });
+        const sendParams = self.prepareParams({
+          txid: params.txid,
+          recipient: recipient,
+          travelInfo: info,
+          fromKey: fromKey,
+          noValidate: true, // don't re-validate
+        });
+        sendParamsList.push(sendParams);
+      }
+    });
 
-      const result: {
+    const result: {
       matched: number;
       results: {
         result?: any;
@@ -295,24 +298,25 @@ TravelRule.prototype.sendMany = function (params, callback) {
       results: [],
     };
 
-      const sendSerial = function () {
-        const sendParams = sendParamsList.shift();
-        if (!sendParams) {
-          return result;
-        }
-        return self.send(sendParams)
-          .then(function (res) {
-            result.results.push({ result: res });
-            return sendSerial();
-          })
-          .catch(function (err) {
-            result.results.push({ error: err.toString() });
-            return sendSerial();
-          });
-      };
+    const sendSerial = function () {
+      const sendParams = sendParamsList.shift();
+      if (!sendParams) {
+        return result;
+      }
+      return self
+        .send(sendParams)
+        .then(function (res) {
+          result.results.push({ result: res });
+          return sendSerial();
+        })
+        .catch(function (err) {
+          result.results.push({ error: err.toString() });
+          return sendSerial();
+        });
+    };
 
-      return sendSerial();
-    });
+    return sendSerial();
+  });
 };
 
 module.exports = TravelRule;

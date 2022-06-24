@@ -44,5 +44,10 @@
     "@bitgo/abstract-utxo": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/utxo-lib": "^2.2.2"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.0.1",
+    "@bitgo/sdk-test": "^1.0.0",
+    "assert": "^2.0.0"
   }
 }

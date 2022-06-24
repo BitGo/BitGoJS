@@ -6,20 +6,12 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bip32 from 'bip32';
 import bitcoinMessage = require('bitcoinjs-message');
-const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
 
 import * as _ from 'lodash';
 import * as config from './config';
 
-const TransactionBuilder = require('./transactionBuilder');
-const Blockchain = require('./blockchain');
-const Keychains = require('./keychains');
-const TravelRule = require('./travelRule');
-import Wallet = require('./wallet');
-const Wallets = require('./wallets');
-const Markets = require('./markets');
 import GlobalCoinFactory from './v2/coinFactory';
 import { BaseCoin, common, getSharedSecret } from '@bitgo/sdk-core';
 import {
@@ -128,13 +120,6 @@ export interface RegisterPushTokenOptions {
 }
 
 export class BitGo extends BitGoAPI {
-  private _keychains: any;
-  private _wallets: any;
-  private _markets?: any;
-  private _blockchain?: any;
-  private _travelRule?: any;
-  private _pendingApprovals?: any;
-
   /**
    * Constructor for BitGo Object
    */
@@ -150,8 +135,6 @@ export class BitGo extends BitGoAPI {
     }
 
     this._version = pjson.version;
-    this._keychains = null;
-    this._wallets = null;
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
   }
 
@@ -360,37 +343,6 @@ export class BitGo extends BitGoAPI {
   }
 
   /**
-   * Get bitcoin market data
-   *
-   * @deprecated
-   */
-  markets(): any {
-    if (!this._markets) {
-      this._markets = new Markets(this);
-    }
-    return this._markets;
-  }
-
-  /**
-   * Get the latest bitcoin prices
-   * (Deprecated: Will be removed in the future) use `bitgo.markets().latest()`
-   * @deprecated
-   */
-  // cb-compat
-  async market(): Promise<any> {
-    return this.get(this.url('/market/latest')).result();
-  }
-
-  /**
-   * Get market data from yesterday
-   * (Deprecated: Will be removed in the future) use bitgo.markets().yesterday()
-   * @deprecated
-   */
-  async yesterday(): Promise<any> {
-    return this.get(this.url('/market/yesterday')).result();
-  }
-
-  /**
    * @param params
    * - operatingSystem: one of ios, android
    * - pushToken: hex-formatted token for the respective native push notification service
@@ -519,70 +471,6 @@ export class BitGo extends BitGoAPI {
     return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
   }
 
-  /**
-   * Get the blockchain object.
-   * @deprecated
-   */
-  blockchain(): any {
-    if (!this._blockchain) {
-      this._blockchain = new Blockchain(this);
-    }
-    return this._blockchain;
-  }
-
-  /**
-   * Get the user's keychains object.
-   * @deprecated
-   */
-  keychains(): any {
-    if (!this._keychains) {
-      this._keychains = new Keychains(this);
-    }
-    return this._keychains;
-  }
-
-  /**
-   * Get the user's wallets object.
-   * @deprecated
-   */
-  wallets(): any {
-    if (!this._wallets) {
-      this._wallets = new Wallets(this);
-    }
-    return this._wallets;
-  }
-
-  /**
-   * Get the travel rule object
-   * @deprecated
-   */
-  travelRule(): any {
-    if (!this._travelRule) {
-      this._travelRule = new TravelRule(this);
-    }
-    return this._travelRule;
-  }
-
-  /**
-   * Get pending approvals that can be approved/ or rejected
-   * @deprecated
-   */
-  pendingApprovals(): any {
-    if (!this._pendingApprovals) {
-      this._pendingApprovals = new PendingApprovals(this);
-    }
-    return this._pendingApprovals;
-  }
-
-  /**
-   * A factory method to create a new Wallet object, initialized with the wallet params
-   * Can be used to reconstitute a wallet from cached data
-   * @param walletParams
-   * @deprecated
-   */
-  newWalletObject(walletParams): any {
-    return new Wallet(this, walletParams);
-  }
 
   /**
    * Get all the address labels on all of the user's wallets
@@ -799,19 +687,4 @@ export class BitGo extends BitGoAPI {
     // use defaultConstants as the backup for keys that are not set in this._constants
     return _.merge({}, config.defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
   }
-
-  /**
-   * V1 method for calculating miner fee amounts, given the number and
-   * type of transaction inputs, along with a fee rate in satoshis per vkB.
-   *
-   * This method should not be used for new code.
-   *
-   * @deprecated
-   * @param params
-   * @return {any}
-   */
-  async calculateMinerFeeInfo(params: any): Promise<any> {
-    return TransactionBuilder.calculateMinerFeeInfo(params);
-  }
-
 }

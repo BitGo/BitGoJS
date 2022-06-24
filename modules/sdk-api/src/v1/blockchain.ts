@@ -37,9 +37,7 @@ Blockchain.prototype.getAddress = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/address/' + params.address)).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/address/' + params.address)).result()).nodeify(callback);
 };
 
 //
@@ -53,9 +51,9 @@ Blockchain.prototype.getAddressTransactions = function (params, callback) {
   common.validateParams(params, ['address'], [], callback);
 
   // TODO: support start and limit params
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/address/' + params.address + '/tx')).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/address/' + params.address + '/tx')).result()).nodeify(
+    callback
+  );
 };
 
 //
@@ -74,14 +72,14 @@ Blockchain.prototype.getAddressUnspents = function (params, callback) {
     if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit - number expected');
     }
-    url += '?limit=' + (params.limit * 1e8);
+    url += '?limit=' + params.limit * 1e8;
   }
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result()
-  ).then(function (body) {
-    return body.unspents;
-  }).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result())
+    .then(function (body) {
+      return body.unspents;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -95,9 +93,7 @@ Blockchain.prototype.getTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/tx/' + params.id)).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/tx/' + params.id)).result()).nodeify(callback);
 };
 
 //
@@ -130,9 +126,7 @@ Blockchain.prototype.getBlock = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/block/' + params.id)).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/block/' + params.id)).result()).nodeify(callback);
 };
 
 module.exports = Blockchain;
