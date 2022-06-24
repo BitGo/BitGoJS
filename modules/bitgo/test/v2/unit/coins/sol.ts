@@ -8,7 +8,7 @@ import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
 import * as _ from 'lodash';
 import * as accountLib from '@bitgo/account-lib';
 import { Sol, Tsol } from '../../../../src/v2/coins/';
-import { TssUtils, Wallet } from '@bitgo/sdk-core';
+import { TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 
 describe('SOL:', function () {
   let bitgo;
@@ -903,7 +903,7 @@ describe('SOL:', function () {
     });
 
     it('should rebuild tx request for hot wallets', async () => {
-      const rebuiltTx = {
+      const rebuiltTx: TxRequest = {
         txRequestId,
         unsignedTxs: [{
           serializedTxHex: 'deadbeef',
@@ -911,6 +911,17 @@ describe('SOL:', function () {
           derivationPath: 'm/0',
         }],
         transactions: [],
+        date: new Date().toISOString(),
+        intent: {
+          intentType: 'payment',
+        },
+        latest: true,
+        state: 'pendingUserSignature',
+        walletType: 'hot',
+        walletId: 'walletId',
+        policiesChecked: true,
+        version: 1,
+        userId: 'userId',
       };
 
       const stubTssUtils = sandbox.createStubInstance(TssUtils);

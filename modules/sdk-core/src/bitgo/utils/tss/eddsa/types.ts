@@ -4,6 +4,7 @@ import { IRequestTracer } from '../../../../api';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { Keychain } from '../../../keychain';
 import { Memo } from '../../../wallet';
+import { WalletType } from '../../../wallet/iWallet';
 
 export interface PrebuildTransactionWithIntentOptions {
   reqId: IRequestTracer;
@@ -31,21 +32,51 @@ export type UnsignedTransaction = {
   derivationPath: string;
 };
 
-// complete with more props if neccesary
-export interface TxRequest {
+export type TxRequestState =
+  | 'pendingApproval'
+  | 'canceled'
+  | 'rejected'
+  | 'initialized'
+  | 'pendingDelivery'
+  | 'delivered'
+  | 'pendingUserSignature'
+  | 'signed';
+
+export type TransactionState =
+  | 'initialized'
+  | 'pendingSignature'
+  | 'signed'
+  | 'held'
+  | 'delivered'
+  | 'invalidSignature'
+  | 'rejected';
+
+export type TxRequest = {
   txRequestId: string;
+  walletId: string;
+  walletType: WalletType;
+  version: number;
+  enterpriseId?: string;
+  state: TxRequestState;
+  date: string;
+  userId: string;
+  intent: any;
+  pendingApprovalId?: string;
+  policiesChecked: boolean;
+  signatureShares?: SignatureShareRecord[];
+  pendingTxHashes?: string[];
+  txHashes?: string[];
   // Only available in 'lite' version
   unsignedTxs: UnsignedTransaction[];
-  signatureShares?: SignatureShareRecord[];
   // Only available in 'full' version
   transactions: {
-    state: string;
+    state: TransactionState;
     unsignedTx: UnsignedTransaction;
-    privateSignatureShares: SignatureShareRecord[];
     signatureShares: SignatureShareRecord[];
   }[];
   apiVersion?: TxRequestVersion;
-}
+  latest: boolean;
+};
 
 export enum SignatureShareType {
   USER = 'user',

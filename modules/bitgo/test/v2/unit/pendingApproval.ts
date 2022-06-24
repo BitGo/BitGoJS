@@ -17,6 +17,7 @@ import {
   SignatureShareType,
   State,
   TssUtils,
+  TxRequest,
   Type,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -120,7 +121,7 @@ describe('Pending Approvals:', () => {
     const walletPassphrase = 'test';
     const decryptedPrvResponse = 'decryptedPrv';
     const params = { txRequestId, walletPassphrase };
-    const txRequest = {
+    const txRequest: TxRequest = {
       txRequestId: txRequestId,
       unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
       signatureShares: [
@@ -131,6 +132,17 @@ describe('Pending Approvals:', () => {
         },
       ],
       transactions: [],
+      userId: 'userId',
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+      },
+      latest: true,
+      walletId: 'walletId',
+      version: 1,
+      policiesChecked: false,
+      walletType: 'hot',
+      state: 'pendingUserSignature',
     };
 
     const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');

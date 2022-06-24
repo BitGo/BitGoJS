@@ -22,6 +22,7 @@ export enum Type {
   TRANSACTION_REQUEST = 'transactionRequest',
   POLICY_RULE_REQUEST = 'policyRuleRequest',
   UPDATE_APPROVALS_REQUIRED_REQUEST = 'updateApprovalsRequiredRequest',
+  TRANSACTION_REQUEST_FULL = 'transactionRequestFull',
 }
 
 export interface ApproveOptions {

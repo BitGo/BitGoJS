@@ -288,6 +288,17 @@ describe('TSS Utils:', async function () {
           derivationPath: 'm/0/1/2',
         },
       ],
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+      },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
     };
 
     beforeEach(async function () {
