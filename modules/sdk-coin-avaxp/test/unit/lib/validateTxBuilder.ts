@@ -1,5 +1,6 @@
 import assert from 'assert';
 import 'should';
+import utils from '../../../src/lib/utils';
 import * as testData from '../../resources/avaxp';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
@@ -75,6 +76,24 @@ describe('AvaxP Validate Tx Builder', () => {
         },
         (e) => e.message === errorMessage.ERROR_UTXOS_AMOUNT
       );
+    });
+  });
+
+  describe('Utils tests', () => {
+    it('should fail address is invalid', () => {
+      utils.isValidAddress(testData.INVALID_ADDRESS).should.be.false();
+    });
+    it('should fail blockId is invalid', () => {
+      utils.isValidBlockId(testData.INVALID_BLOCK_ID).should.be.false();
+    });
+    it('should fail blockId length is invalid', () => {
+      utils.isValidBlockId(testData.INVALID_BLOCK_ID_LENGTH).should.be.false();
+    });
+    it('should pass blockId is valid', () => {
+      utils.isValidBlockId(testData.VALID_BLOCK_ID).should.be.true();
+    });
+    it('should pass address is valid', () => {
+      utils.isValidAddress(testData.VALID_ADDRESS).should.be.true();
     });
   });
 

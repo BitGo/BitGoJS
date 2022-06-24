@@ -19,14 +19,30 @@ export class Utils implements BaseUtils {
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
     return walletAddresses.map((a) => otxoOutputAddresses.includes(a)).reduce((a, b) => a && b, true);
   }
+
+  /**
+   * Checks if it is a valid address no illegal characters
+   *
+   * @param {string} address - address to be validated
+   * @returns {boolean} - the validation result
+   */
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new NotImplementedError('isValidAddress not implemented');
+    return (address as string).match(/^[a-zA-Z0-9]+$/) !== null;
   }
 
+  /**
+   * Checks if it is a valid blockId with length 66 including 0x
+   *
+   * @param {string} hash - blockId to be validated
+   * @returns {boolean} - the validation result
+   */
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new NotImplementedError('isValidBlockId not implemented');
+    if (hash.length !== 66 || hash.slice(0, 2) !== '0x') {
+      return false;
+    }
+    return (hash as string).match(/^[a-zA-Z0-9]+$/) !== null;
   }
 
   /**
