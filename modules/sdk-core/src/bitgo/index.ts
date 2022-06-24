@@ -1,4 +1,5 @@
 import * as bitcoinUtil from './bitcoin';
+import * as staking from './staking';
 import * as tss from './tss';
 
 export * from './baseCoin';
@@ -24,4 +25,5 @@ export * from './utils';
 export * from './wallet';
 export * from './webhook';
 export { bitcoinUtil };
+export { staking };
 export { tss };
