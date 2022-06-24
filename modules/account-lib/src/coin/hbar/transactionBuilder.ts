@@ -1,6 +1,8 @@
-import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import * as Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
+import * as proto from '@hashgraph/proto';
 import {
   BaseAddress,
   BaseFee,
@@ -11,11 +13,10 @@ import {
   ParseTransactionError,
   SigningError,
 } from '@bitgo/sdk-core';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
-import { SignatureData, HederaNode } from './ifaces';
+import { SignatureData, HederaNode } from './iface';
 
 export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -26,11 +27,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memo: string;
   protected _txBody: proto.TransactionBody;
   protected _node: HederaNode = { nodeId: '0.0.4' };
-  protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
+  protected _duration: proto.Duration = new proto.Duration({ seconds: Long.fromNumber(120) });
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._txBody = new proto.TransactionBody();
     this._txBody.transactionValidDuration = this._duration;
@@ -42,7 +43,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber();
+    this._txBody.transactionFee = Long.fromString(this._fee.fee);
     this._txBody.transactionID = this.buildTxId();
     this._txBody.memo = this._memo;
     const accountId = AccountId.fromString(this._node.nodeId);
@@ -91,7 +92,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
-   * @param {Transaction} tx the transaction data
+   * @param {Transaction} tx - the transaction data
    */
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
@@ -108,9 +109,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Creates an Hedera TransactionID
+   * Creates a Hedera TransactionID
    *
-   * @returns {proto.TransactionID} - created TransactionID
+   * @returns {proto} - Created TransactionID
    */
   protected buildTxId(): proto.TransactionID {
     const accountId = AccountId.fromString(this._source.address);
@@ -125,8 +126,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    *  Set the memo
    *
-   * @param {string} memo A hedera memo, can be a maximum of 100 bytes
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {string} memo - A hedera memo, can be a maximum of 100 bytes
+   * @returns {TransactionBuilder} - This transaction builder
    */
   memo(memo: string): this {
     if (Buffer.from(memo).length > 100) {
@@ -139,8 +140,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    *  Set the node, it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`
    *
-   * @param {HederaNode} node A hedera node address
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {HederaNode} node - A hedera node address
+   * @returns {TransactionBuilder} - This transaction builder
    */
   node(node: HederaNode): this {
     if (!isValidAddress(node.nodeId)) {
@@ -153,20 +154,20 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set the transaction valid duration
    *
-   * @param {number} validDuration the transaction valid duration in seconds
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {number} validDuration - The transaction valid duration in seconds
+   * @returns {TransactionBuilder} - This transaction builder
    */
   validDuration(validDuration: number): this {
     this.validateValue(new BigNumber(validDuration));
-    this._duration = new proto.Duration({ seconds: validDuration });
+    this._duration = new proto.Duration({ seconds: Long.fromNumber(validDuration) });
     return this;
   }
 
   /**
    * Set the transaction fees
    *
-   * @param {BaseFee} fee The maximum gas to pay
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {BaseFee} fee - The maximum gas to pay
+   * @returns {TransactionBuilder} - This transaction builder
    */
   fee(fee: BaseFee): this {
     this.validateValue(new BigNumber(fee.fee));
@@ -177,8 +178,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set the transaction source
    *
-   * @param {BaseAddress} address The source account
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {BaseAddress} address - The source account
+   * @returns {TransactionBuilder} - This transaction builder
    */
   source(address: BaseAddress): this {
     this.validateAddress(address);
@@ -189,9 +190,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set an external transaction signature
    *
-   * @param signature Hex encoded signature string
-   * @param keyPair The public key keypair that was used to create the signature
-   * @returns This transaction builder
+   * @param {string} signature - Hex encoded signature string
+   * @param {KeyPair} keyPair - The public key keypair that was used to create the signature
+   * @returns {TransactionBuilder} - Transaction builder
    */
   signature(signature: string, keyPair: KeyPair): this {
     // if we already have a signature for this key pair, just update it
@@ -210,15 +211,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set the start time
    *
-   * @param {string} time string value of the time to set with format <seconds>.<nanos>
-   * @returns {TransactionBuilder} this
+   * @param {string} time - String value of the time to set with format <seconds>.<nanos>
+   * @returns {TransactionBuilder} - this
    */
   startTime(time: string): this {
     if (!isValidTimeString(time)) {
       throw new InvalidParameterValueError('Invalid value for time parameter');
     }
     const timeParts = time.split('.').map((v) => new BigNumber(v).toNumber());
-    this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
+    this._startTime = { seconds: Long.fromNumber(timeParts[0]), nanos: timeParts[1] };
     return this;
   }
   // endregion
@@ -290,7 +291,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {BaseKey} key - The key to check
    */
-  private checkDuplicatedKeys(key: BaseKey) {
+  private checkDuplicatedKeys(key: BaseKey): void {
     this._multiSignerKeyPairs.forEach((_sourceKeyPair) => {
       if (_sourceKeyPair.getKeys().prv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
