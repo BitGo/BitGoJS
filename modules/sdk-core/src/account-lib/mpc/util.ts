@@ -1,3 +1,4 @@
+import * as paillierBigint from 'paillier-bigint';
 export function bigIntFromBufferLE(buf: Buffer): bigint {
   return BigInt('0x' + Buffer.from(buf).reverse().toString('hex'));
 }
@@ -34,4 +35,13 @@ export function clamp(u: bigint): bigint {
   u &= BigInt('0x7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8');
   u |= BigInt('0x4000000000000000000000000000000000000000000000000000000000000000');
   return u;
+}
+
+/**
+ * Function get pallier public key simple varient
+ * @param {bigint} n
+ * @returns {bigint}
+ */
+export function getPaillierPublicKey(n: bigint): paillierBigint.PublicKey {
+  return new paillierBigint.PublicKey(n, n + BigInt(1));
 }
