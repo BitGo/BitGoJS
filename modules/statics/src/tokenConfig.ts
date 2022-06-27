@@ -1,4 +1,3 @@
-import _ = require('lodash');
 import { Erc20Coin, StellarCoin, CeloCoin, EosCoin, AvaxERC20Token, AlgoCoin, SolCoin } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
@@ -295,7 +294,7 @@ export const tokens: Tokens = {
  */
 const verifyTokens = function (tokens: BaseTokenConfig[]) {
   const verifiedTokens: Record<string, boolean> = {};
-  _.forEach(tokens, function (token) {
+  tokens.forEach((token) => {
     if (verifiedTokens[token.type]) {
       throw new Error('token : ' + token.type + ' duplicated.');
     }
@@ -304,20 +303,21 @@ const verifyTokens = function (tokens: BaseTokenConfig[]) {
     if (
       (token as BaseContractAddressConfig).tokenContractAddress &&
       (token as BaseContractAddressConfig).tokenContractAddress !==
-        _.toLower((token as BaseContractAddressConfig).tokenContractAddress)
+        (token as BaseContractAddressConfig).tokenContractAddress.toLocaleLowerCase()
     ) {
       throw new Error(
         'token contract: ' + token.type + ' is not all lower case: ' + (token as BaseContractAddressConfig)
       );
     }
   });
+
   return verifiedTokens;
 };
 
 const mainnetErc20Tokens = verifyTokens(tokens.bitcoin.eth.tokens);
 const mainnetStellarTokens = verifyTokens(tokens.bitcoin.xlm.tokens);
-export const mainnetTokens = _.assign({}, mainnetErc20Tokens, mainnetStellarTokens);
+export const mainnetTokens = { ...mainnetErc20Tokens, ...mainnetStellarTokens };
 
 const testnetErc20Tokens = verifyTokens(tokens.testnet.eth.tokens);
 const testnetStellarTokens = verifyTokens(tokens.testnet.xlm.tokens);
-export const testnetTokens = _.assign({}, testnetErc20Tokens, testnetStellarTokens);
+export const testnetTokens = { ...testnetErc20Tokens, ...testnetStellarTokens };
