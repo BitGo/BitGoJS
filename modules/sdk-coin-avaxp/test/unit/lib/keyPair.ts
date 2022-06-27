@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { KeyPair, addressFormat } from '../../../src/lib/keyPair';
+import { KeyPair } from '../../../src/lib/keyPair';
 import * as testData from '../../resources/avaxp';
 
 const pubKey = testData.ACCOUNT_1.pubkey;
@@ -63,14 +63,14 @@ describe('Avax P Key Pair', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_3.privkey });
       should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkey);
       should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkey);
-      should.equal(keyPair.getAddress(addressFormat.testnet), testData.ACCOUNT_3.address);
+      should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_3.address);
     });
 
     it('Should get same address key for account 4 private key ', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_4.privkey });
       should.equal(keyPair.getKeys().prv, testData.ACCOUNT_4.privkey);
       should.equal(keyPair.getKeys().pub, testData.ACCOUNT_4.pubkey);
-      should.equal(keyPair.getAddress(addressFormat.testnet), testData.ACCOUNT_4.address);
+      should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_4.address);
     });
 
     describe('getAddress', function () {
@@ -131,12 +131,12 @@ describe('Avax P Key Pair', () => {
     it('should get and match testnet address', () => {
       const seed = testData.SEED_ACCOUNT.seed;
       const keyPair = new KeyPair({ seed: Buffer.from(seed, 'hex') });
-      const address = keyPair.getAddress(addressFormat.testnet);
+      const address = keyPair.getAddress('testnet');
       address.should.equal(testData.SEED_ACCOUNT.addressTestnet);
 
       const prv = testData.ACCOUNT_1.privkey;
       const keyPair2 = new KeyPair({ prv: prv });
-      const address2 = keyPair2.getAddress(addressFormat.testnet);
+      const address2 = keyPair2.getAddress('testnet');
       address2.should.equal(testData.ACCOUNT_1.addressTestnet);
     });
   });

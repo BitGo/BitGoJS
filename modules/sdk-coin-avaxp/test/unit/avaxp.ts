@@ -155,7 +155,7 @@ describe('Avaxp', function () {
     });
 
     it('should fail when a tx is not passed as parameter', async () => {
-      await basecoin.explainTransaction({}).should.be.rejectedWith('missing explain tx parameters');
+      await basecoin.explainTransaction({}).should.be.rejectedWith('missing transaction hex');
     });
   });
 

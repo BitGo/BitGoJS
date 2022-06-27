@@ -1,10 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
-import { TransferBuilder } from './transferBuilder';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
+import { Tx } from 'avalanche/dist/apis/platformvm';
+import { Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { PlatformVMConstants } from 'avalanche/dist/apis/platformvm/constants';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -14,22 +14,22 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
-    const tx = utils.from(raw);
-    const baseTx = tx.getUnsignedTx().getTransaction();
+    utils.validateRawTransaction(raw);
+    const tx = new Tx();
+    tx.fromBuffer(BufferAvax.from(raw, 'hex'));
     let transactionBuilder: TransactionBuilder;
-    if (baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX) {
+    if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
       transactionBuilder = this.getValidatorBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-
-    transactionBuilder.initBuilder(baseTx).credentials(tx.getCredentials());
+    transactionBuilder.initBuilder(tx);
     return transactionBuilder;
   }
 
   /** @inheritdoc */
-  getTransferBuilder(): TransferBuilder {
-    return new TransferBuilder(this._coinConfig);
+  getTransferBuilder(): TransactionBuilder {
+    throw new NotSupported('Transfer is not supported in P Chain');
   }
 
   /**

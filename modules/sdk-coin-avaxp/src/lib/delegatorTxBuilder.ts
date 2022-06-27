@@ -1,19 +1,24 @@
-import { BaseAddress, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import {
   AddDelegatorTx,
   BaseTx,
   ParseableOutput,
+  PlatformVMConstants,
   SECPOwnerOutput,
   SECPTransferInput,
   SECPTransferOutput,
+  SelectCredentialClass,
   TransferableInput,
   TransferableOutput,
+  Tx,
+  UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BN } from 'avalanche';
 import { DecodedUtxoObj } from './iface';
 import utils from './utils';
+import { Credential } from 'avalanche/dist/common';
 
 export class DelegatorTxBuilder extends TransactionBuilder {
   protected _nodeID: string;
@@ -142,36 +147,53 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
   // endregion
 
-  initBuilder(tx?: AddDelegatorTx): this {
-    if (!tx) return this;
+  initBuilder(tx: Tx): this {
     super.initBuilder(tx);
-    this._nodeID = tx.getNodeIDString();
-    this._startTime = tx.getStartTime();
-    this._endTime = tx.getEndTime();
-    this._stakeAmount = tx.getStakeAmount();
-    this.transaction._utxos = this.recoverUtxos(tx.getIns());
-
+    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    if (!this.verifyTxType(baseTx)) {
+      throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
+    }
+    this._nodeID = baseTx.getNodeIDString();
+    this._startTime = baseTx.getStartTime();
+    this._endTime = baseTx.getEndTime();
+    this._stakeAmount = baseTx.getStakeAmount();
+    this.transaction._utxos = this.recoverUtxos(baseTx.getIns());
     return this;
+  }
+
+  static verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+    return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
+  }
+
+  verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+    return DelegatorTxBuilder.verifyTxType(baseTx);
   }
 
   /**
    *
    * @protected
    */
-  protected buildAvaxpTransaction(): BaseTx {
-    const { inputs, outputs } = this.createInputOutput();
-    return new AddDelegatorTx(
-      this.transaction._networkID,
-      this.transaction._blockchainID,
-      outputs,
-      inputs,
-      this.transaction._memo,
-      utils.NodeIDStringToBuffer(this._nodeID),
-      this._startTime,
-      this._endTime,
-      this._stakeAmount,
-      [this.stakeTransferOut()],
-      this.rewardOwnersOutput()
+  protected buildAvaxpTransaction(): void {
+    const { inputs, outputs, credentials } = this.createInputOutput();
+    this.transaction.setTransaction(
+      new Tx(
+        new UnsignedTx(
+          new AddDelegatorTx(
+            this.transaction._networkID,
+            this.transaction._blockchainID,
+            outputs,
+            inputs,
+            this.transaction._memo,
+            utils.NodeIDStringToBuffer(this._nodeID),
+            this._startTime,
+            this._endTime,
+            this._stakeAmount,
+            [this.stakeTransferOut()],
+            this.rewardOwnersOutput()
+          )
+        ),
+        credentials
+      )
     );
   }
 
@@ -204,27 +226,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return inputs.map((input) => {
       const secpInput: SECPTransferInput = input.getInput() as SECPTransferInput;
       // Order Addresses as output was defined.
-      const addressesIndx: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-      addressesIndx.push([0, 1, 2].filter((i) => !addressesIndx.includes(i))[0]);
-      const addresses: string[] = [];
-      // first index address is user
-      addresses[addressesIndx[0]] = utils.addressToString(
-        this.transaction._network.hrp,
-        this.transaction._network.alias,
-        this.transaction._fromAddresses[0]
-      );
-      // second index address is bigto
-      addresses[addressesIndx[1]] = utils.addressToString(
-        this.transaction._network.hrp,
-        this.transaction._network.alias,
-        this.transaction._fromAddresses[2]
-      );
-      // Unindex address is recovery
-      addresses[addressesIndx[2]] = utils.addressToString(
-        this.transaction._network.hrp,
-        this.transaction._network.alias,
-        this.transaction._fromAddresses[1]
-      );
+      const addressesIndex: number[] = secpInput.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
 
       return {
         outputID: 7,
@@ -232,7 +234,8 @@ export class DelegatorTxBuilder extends TransactionBuilder {
         txid: utils.cb58Encode(input.getTxID()),
         amount: secpInput.getAmount().toString(),
         threshold: this.transaction._threshold,
-        addresses,
+        addresses: [],
+        addressesIndex,
       };
     });
   }
@@ -243,7 +246,11 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * 0: user key, 1: recovery key, 2: hsm key
    * @protected
    */
-  protected createInputOutput(): { inputs: TransferableInput[]; outputs: TransferableOutput[] } {
+  protected createInputOutput(): {
+    inputs: TransferableInput[];
+    outputs: TransferableOutput[];
+    credentials: Credential[];
+  } {
     const inputs: TransferableInput[] = [];
     const outputs: TransferableOutput[] = [];
     const addresses = this.transaction._fromAddresses.map((b) =>
@@ -251,33 +258,61 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     );
     let total: BN = new BN(0);
     const totalTarget = this._stakeAmount.clone().add(this.transaction._txFee);
+    const credentials: Credential[] = [];
+
+    this.transaction._utxos.forEach((outputs) => {
+      if (!outputs.addressesIndex || outputs.addressesIndex.length == 0) {
+        outputs.addressesIndex = addresses.map((a) => outputs.addresses.indexOf(a));
+      }
+    });
+
     this.transaction._utxos
       .filter(
-        (output) => output.threshold === this.transaction._threshold && utils.includeIn(addresses, output.addresses)
+        (output) =>
+          output.threshold === this.transaction._threshold &&
+          (output.addressesIndex?.length == 3 || !output.addressesIndex?.includes(-1))
       )
       .forEach((output, i) => {
         if (output.outputID === 7 && total.lte(totalTarget)) {
           const txidBuf = utils.cb58Decode(output.txid);
           const amt: BN = new BN(output.amount);
           const outputidx = utils.cb58Decode(output.outputidx);
+          const addressesIndex = output.addressesIndex ?? [];
+          const isRawUtxos = output.addresses.length == 0;
+          const firstIndex = this.recoverSigner ? 1 : 0;
           total = total.add(amt);
 
           const secpTransferInput = new SECPTransferInput(amt);
-          if (this.recoverSigner) {
-            secpTransferInput.addSignatureIdx(
-              output.addresses.findIndex((a) => a === addresses[1]),
-              this.transaction._fromAddresses[1]
-            );
+
+          if (isRawUtxos) {
+            addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
           } else {
-            secpTransferInput.addSignatureIdx(
-              output.addresses.findIndex((a) => a === addresses[0]),
-              this.transaction._fromAddresses[0]
-            );
+            if (addressesIndex[firstIndex] > addressesIndex[2]) {
+              secpTransferInput.addSignatureIdx(addressesIndex[2], this.transaction._fromAddresses[2]);
+              secpTransferInput.addSignatureIdx(
+                addressesIndex[firstIndex],
+                this.transaction._fromAddresses[firstIndex]
+              );
+              credentials.push(
+                SelectCredentialClass(
+                  secpTransferInput.getCredentialID(),
+                  ['', this.transaction._fromAddresses[firstIndex].toString('hex')].map(utils.createSig)
+                )
+              );
+            } else {
+              secpTransferInput.addSignatureIdx(
+                addressesIndex[firstIndex],
+                this.transaction._fromAddresses[firstIndex]
+              );
+              secpTransferInput.addSignatureIdx(addressesIndex[2], this.transaction._fromAddresses[2]);
+              credentials.push(
+                SelectCredentialClass(
+                  secpTransferInput.getCredentialID(),
+                  [this.transaction._fromAddresses[firstIndex].toString('hex'), ''].map(utils.createSig)
+                )
+              );
+            }
           }
-          secpTransferInput.addSignatureIdx(
-            output.addresses.findIndex((a) => a === addresses[2]),
-            this.transaction._fromAddresses[2]
-          );
 
           const input: TransferableInput = new TransferableInput(
             txidBuf,
@@ -302,7 +337,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
         )
       )
     );
-
-    return { inputs, outputs };
+    return { inputs, outputs, credentials: credentials.length == 0 ? this.transaction.credentials : credentials };
   }
 }

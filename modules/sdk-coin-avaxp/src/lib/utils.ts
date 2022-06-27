@@ -1,4 +1,11 @@
-import { isValidXpub, isValidXprv, NotImplementedError, BaseUtils } from '@bitgo/sdk-core';
+import {
+  isValidXpub,
+  isValidXprv,
+  NotImplementedError,
+  BaseUtils,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '@bitgo/sdk-core';
 import { BinTools, Buffer as BufferAvax } from 'avalanche';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import { ec } from 'elliptic';
@@ -6,6 +13,7 @@ import { BaseTx, SelectCredentialClass, Tx, UnsignedTx } from 'avalanche/dist/ap
 import { Credential } from 'avalanche/dist/common/credentials';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
+import { Signature } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
 
 export class Utils implements BaseUtils {
@@ -197,6 +205,12 @@ export class Utils implements BaseUtils {
     );
   }
 
+  createSig(sigHex: string): Signature {
+    const sig = new Signature();
+    sig.fromBuffer(BufferAvax.from(sigHex.padStart(130, '0'), 'hex'));
+    return sig;
+  }
+
   /**
    * Avaxp wrapper to recovery signature using Avalanche's buffer
    * @param network
@@ -222,6 +236,21 @@ export class Utils implements BaseUtils {
 
   sha256(buf: Uint8Array): Buffer {
     return createHash.default('sha256').update(buf).digest();
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   * It's to reuse in TransactionBuilder and TransactionBuilderFactory
+   *
+   * @param rawTransaction Transaction as hex string
+   */
+  validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    if (!utils.allHexChars(rawTransaction)) {
+      throw new ParseTransactionError('Raw transaction is not hex string');
+    }
   }
 }
 
