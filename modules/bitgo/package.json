@@ -51,6 +51,7 @@
     "@bitgo/blockapis": "^1.0.1-rc.16",
     "@bitgo/sdk-api": "^1.1.0-rc.19",
     "@bitgo/sdk-coin-algo": "^1.1.0-rc.2",
+    "@bitgo/sdk-coin-avaxp": "^0.1.0-rc.14",
     "@bitgo/sdk-coin-cspr": "^1.0.1-rc.3",
     "@bitgo/sdk-coin-xrp": "^1.1.0-rc.9",
     "@bitgo/sdk-core": "^1.1.0-rc.16",
