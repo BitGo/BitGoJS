@@ -41,7 +41,17 @@ jobs:
         run: |
           git fetch origin $GITHUB_BASE_REF
 
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@v3
+        with:
+          path:  |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
       - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true'
         run: yarn install --with-frozen-lockfile
 
       - name: Lint Commit Messages
