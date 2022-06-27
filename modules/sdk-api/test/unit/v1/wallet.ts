@@ -20,7 +20,16 @@ nock.disableNetConnect();
 const TestBitGo = {
   TEST_WALLET1_PASSCODE: 'iVWeATjqLS1jJShrPpETti0b',
 };
+const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
+BitGoAPI.prototype.fetchConstants = function () {
+  // @ts-expect-error - no implicit this
+  nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
 
+  // force client constants reload
+  BitGoAPI['_constants'] = undefined;
+
+  return originalFetchConstants.apply(this, arguments as any);
+};
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
@@ -1357,13 +1366,13 @@ describe('Wallet Prototype Methods', function () {
           .reply(200);
 
         // monkey patch the bitgo getConstants() function
-        // const oldGetConstants = bitgo.__proto__.getConstants;
-        // bitgo.__proto__.getConstants = () => ({
-        //   // child fee rate in this test is 31378 sat/kb
-        //   // so set the max fee rate just below that limit,
-        //   // but above the combined fee rate of 20000
-        //   maxFeeRate: 30000,
-        // });
+        const oldGetConstants = (bitgo as any).__proto__.getConstants;
+        (bitgo as any).__proto__.getConstants = () => ({
+          // child fee rate in this test is 31378 sat/kb
+          // so set the max fee rate just below that limit,
+          // but above the combined fee rate of 20000
+          maxFeeRate: 30000,
+        });
 
         await wallet.accelerateTransaction({
           transactionID: parentTxId,
@@ -1372,7 +1381,7 @@ describe('Wallet Prototype Methods', function () {
         });
         nock.pendingMocks().should.be.empty();
 
-        // bitgo.__proto__.getConstants = oldGetConstants;
+        (bitgo as any).__proto__.getConstants = oldGetConstants;
       });
     });
   });

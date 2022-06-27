@@ -15,15 +15,8 @@ import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
-let ethereumUtil;
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-
-try {
-  ethereumUtil = require('ethereumjs-util');
-} catch (e) {
-  // ethereum currently not supported
-}
 
 //
 // Constructor
@@ -40,13 +33,6 @@ const Keychains = function (bitgo) {
 Keychains.prototype.isValid = function (params) {
   params = params || {};
   common.validateParams(params, [], []);
-
-  if (params.ethAddress) {
-    if (!_.isString(params.ethAddress)) {
-      throw new Error('ethAddress must be a string');
-    }
-    return ethereumUtil.isValidAddress(params.ethAddress);
-  }
 
   if (!_.isString(params.key) && !_.isObject(params.key)) {
     throw new Error('key must be a string or object');
