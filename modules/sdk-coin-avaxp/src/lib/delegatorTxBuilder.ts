@@ -180,7 +180,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
       this.transaction._assetId,
       new SECPTransferOutput(
         this._stakeAmount,
-        this.transaction._fromPubKeys,
+        this.transaction._fromAddresses,
         this.transaction._locktime,
         this.transaction._threshold
       )
@@ -189,7 +189,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
   protected rewardOwnersOutput(): ParseableOutput {
     return new ParseableOutput(
-      new SECPOwnerOutput(this.transaction._fromPubKeys, this.transaction._locktime, this.transaction._threshold)
+      new SECPOwnerOutput(this.transaction._fromAddresses, this.transaction._locktime, this.transaction._threshold)
     );
   }
 
@@ -211,19 +211,19 @@ export class DelegatorTxBuilder extends TransactionBuilder {
       addresses[addressesIndx[0]] = utils.addressToString(
         this.transaction._network.hrp,
         this.transaction._network.alias,
-        this.transaction._fromPubKeys[0]
+        this.transaction._fromAddresses[0]
       );
       // second index address is bigto
       addresses[addressesIndx[1]] = utils.addressToString(
         this.transaction._network.hrp,
         this.transaction._network.alias,
-        this.transaction._fromPubKeys[2]
+        this.transaction._fromAddresses[2]
       );
       // Unindex address is recovery
       addresses[addressesIndx[2]] = utils.addressToString(
         this.transaction._network.hrp,
         this.transaction._network.alias,
-        this.transaction._fromPubKeys[1]
+        this.transaction._fromAddresses[1]
       );
 
       return {
@@ -246,7 +246,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   protected createInputOutput(): { inputs: TransferableInput[]; outputs: TransferableOutput[] } {
     const inputs: TransferableInput[] = [];
     const outputs: TransferableOutput[] = [];
-    const addresses = this.transaction._fromPubKeys.map((b) =>
+    const addresses = this.transaction._fromAddresses.map((b) =>
       utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
     );
     let total: BN = new BN(0);
@@ -266,17 +266,17 @@ export class DelegatorTxBuilder extends TransactionBuilder {
           if (this.recoverSigner) {
             secpTransferInput.addSignatureIdx(
               output.addresses.findIndex((a) => a === addresses[1]),
-              this.transaction._fromPubKeys[1]
+              this.transaction._fromAddresses[1]
             );
           } else {
             secpTransferInput.addSignatureIdx(
               output.addresses.findIndex((a) => a === addresses[0]),
-              this.transaction._fromPubKeys[0]
+              this.transaction._fromAddresses[0]
             );
           }
           secpTransferInput.addSignatureIdx(
             output.addresses.findIndex((a) => a === addresses[2]),
-            this.transaction._fromPubKeys[2]
+            this.transaction._fromAddresses[2]
           );
 
           const input: TransferableInput = new TransferableInput(
@@ -296,7 +296,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
         this.transaction._assetId,
         new SECPTransferOutput(
           total.sub(totalTarget),
-          this.transaction._fromPubKeys,
+          this.transaction._fromAddresses,
           this.transaction._locktime,
           this.transaction._threshold
         )

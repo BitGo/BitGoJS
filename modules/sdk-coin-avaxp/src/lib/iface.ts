@@ -1,6 +1,8 @@
-import { TransferableInput, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
-export { TransactionFee } from '@bitgo/sdk-core';
+import { Entry, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
+
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: TransactionType;
+}
 
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'bond' for the staking transaction
@@ -14,40 +16,14 @@ export enum MethodNames {
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface TxData {
-  // mandatory base Tx
-  typeID: number;
-  network_id: number;
-  blockchain_id: string;
-  outputs: TransferableOutput[];
-  inputs: TransferableInput[];
+  id: string;
+  type: TransactionType;
+  fromAddresses: string[];
+  threshold: number;
+  locktime: string;
   memo: string;
-  // TODO(STLX-16570): [avax-lib] explainTransaction
-  // addDelegator extends BaseTx
-  // validator?: {
-  //   nodeID: string;
-  //   startTime: number; // unix time
-  //   endTime: number; // unix time
-  //   weight: number; // amount delegator stakes
-  // };
-  // stake?: {
-  //   lockedOuts: TransferableOutput[]; // array of transferable outputs that are locked during staking period
-  // };
-  // rewards_owner?: SECPOwnerOutput;
-  // // addValidator extends BaseTx, validator, stake, rewards_owner
-  // shares?: number; // 10,000 x percentage of reward taken from delegators
-}
-
-export enum TransactionTypes {
-  addDelegator = 'addDelegator',
-  addValidator = 'addValidator',
-}
-
-export interface TransactionExplanation extends BaseTransactionExplanation {
-  type_id: number;
-  input: TransferableInput;
-  output: TransferableOutput;
-  blockchain_id: string;
-  memo?: string;
+  signatures: string[];
+  outputs: Entry[];
 }
 
 /**
