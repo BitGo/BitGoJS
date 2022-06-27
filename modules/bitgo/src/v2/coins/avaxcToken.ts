@@ -3,16 +3,9 @@
  */
 import { AvaxC, TransactionPrebuild } from './avaxc';
 import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { AvaxcTokenConfig, coins } from '@bitgo/statics';
 
-export interface AvaxcTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  tokenContractAddress: string;
-  decimalPlaces: number;
-}
+export { AvaxcTokenConfig };
 
 export class AvaxCToken extends AvaxC {
   public readonly tokenConfig: AvaxcTokenConfig;

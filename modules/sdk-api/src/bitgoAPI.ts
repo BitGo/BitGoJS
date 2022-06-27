@@ -23,6 +23,7 @@ import {
   CoinConstructor,
   common,
   DecryptOptions,
+  defaultConstants,
   EncryptOptions,
   EnvironmentName,
   GetSharingKeyOptions,
@@ -1304,6 +1305,6 @@ export class BitGoAPI implements BitGoBase {
   }
 
   getConstants(): any {
-    return BitGoAPI._constants;
+    return BitGoAPI._constants || defaultConstants;
   }
 }

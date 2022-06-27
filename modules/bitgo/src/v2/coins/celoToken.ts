@@ -3,16 +3,9 @@
  */
 import { Celo } from './celo';
 import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { CeloTokenConfig, coins } from '@bitgo/statics';
 
-export interface CeloTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  tokenContractAddress: string;
-  decimalPlaces: number;
-}
+export { CeloTokenConfig };
 
 export class CeloToken extends Celo {
   public readonly tokenConfig: CeloTokenConfig;

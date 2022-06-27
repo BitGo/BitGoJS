@@ -5,15 +5,7 @@ import { isString } from 'lodash';
 import { Ofc } from './ofc';
 import { BitGoBase, CoinConstructor, SignTransactionOptions as BaseSignTransactionOptions } from '@bitgo/sdk-core';
 import { SignedTransaction } from './eth';
-
-export interface OfcTokenConfig {
-  type: string;
-  coin: string;
-  decimalPlaces: number;
-  name: string;
-  backingCoin: string;
-  isFiat: boolean;
-}
+import { OfcTokenConfig } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: {
@@ -21,6 +13,8 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
   };
   prv: string;
 }
+
+export { OfcTokenConfig };
 
 const publicIdRegex = /^[a-f\d]{32}$/i;
 export class OfcToken extends Ofc {
