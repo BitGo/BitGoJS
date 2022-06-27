@@ -56,7 +56,7 @@ jobs:
 
       - name: Dependency Audit
         if: ${{ startsWith(matrix.node-version, '14') }}
-        run: yarn run audit
+        run: yarn run improved-yarn-audit --min-severity high
 
       - name: Lint Source Code
         if: ${{ startsWith(matrix.node-version, '14') }}
