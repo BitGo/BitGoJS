@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.17...@bitgo/statics@6.18.0-rc.18) (2022-06-27)
+
+
+### Features
+
+* **statics:** tokens june pt2 ([e98a176](https://github.com/BitGo/BitGoJS/commit/e98a176b8081ac512d27530e8cf4c0200b5884d2))
+
+
+
+
+
 # [6.18.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.16...@bitgo/statics@6.18.0-rc.17) (2022-06-23)
 
 **Note:** Version bump only for package @bitgo/statics
