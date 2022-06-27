@@ -16,7 +16,7 @@ export abstract class BaseTransactionBuilderFactory {
   }
 
   /**
-   * Returns an specific builder to create a wallet initialization transaction
+   * Returns a specific builder to create a wallet initialization transaction
    */
   public abstract getWalletInitializationBuilder();
 

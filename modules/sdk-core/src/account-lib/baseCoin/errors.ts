@@ -63,7 +63,7 @@ export class InvalidSignatureError extends ExtendableError {
 }
 
 /**
- * Error for an method that needs to be implemented
+ * Error for a method that needs to be implemented
  */
 export class NotImplementedError extends ExtendableError {
   constructor(message: string) {
