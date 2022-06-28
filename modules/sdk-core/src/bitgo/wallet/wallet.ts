@@ -2382,6 +2382,17 @@ export class Wallet implements IWallet {
       throw new Error('txRequestId missing from signed transaction');
     }
 
+    // TODO: BG-51122 Remove conditional when moved to txRequestFull for everything
+    if (this._wallet.type === 'custodial') {
+      await this.bitgo
+        .post(
+          this.bitgo.url(
+            '/wallet/' + this._wallet.id + '/txrequests/' + signedTransaction.txRequestId + '/transfers',
+            2
+          )
+        )
+        .send();
+    }
     return this.tssUtils.sendTxRequest(signedTransaction.txRequestId);
   }
 }
