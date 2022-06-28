@@ -4,18 +4,21 @@
 import * as should from 'should';
 import 'should-http';
 
-import { TestBitGo } from '../../../lib/test_bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { Tbch } from '../../src/tbch';
 import * as nock from 'nock';
 
 nock.restore();
 
 describe('BCH:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let wallet;
 
   before(async function () {
-    bitgo = new TestBitGo({ env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('tbch', Tbch.createInstance);
 
     await bitgo.authenticateTestUser(bitgo.testUserOTP());
     wallet = await bitgo.coin('tbch').wallets().getWallet({ id: TestBitGo.V2.TEST_BCH_WALLET_ID });

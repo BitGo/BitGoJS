@@ -42,6 +42,9 @@
       "path": "../sdk-coin-avaxp"
     },
     {
+      "path": "../sdk-coin-bch"
+    },
+    {
       "path": "../sdk-coin-btc"
     },
     {

@@ -1,12 +1,19 @@
 /**
  * @prettier
  */
-
-import { getUtxoCoin } from '../util';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { Bch } from '../../src/bch';
+import { Tbch } from '../../src/tbch';
 
 describe('Custom BCH Tests', function () {
-  const bch = getUtxoCoin('bch');
-  const tbch = getUtxoCoin('tbch');
+  const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+  bitgo.initializeTestVars();
+  bitgo.safeRegister('bch', Bch.createInstance);
+  bitgo.safeRegister('tbch', Tbch.createInstance);
+
+  const bch = bitgo.coin('bch') as Bch;
+  const tbch = bitgo.coin('tbch') as Tbch;
 
   // we use mainnet bch so we can reuse the mainnet address examples
   it('should correctly convert addresses', function () {

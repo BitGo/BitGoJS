@@ -52,6 +52,7 @@
     "@bitgo/sdk-api": "^1.0.1",
     "@bitgo/sdk-coin-algo": "^1.0.0",
     "@bitgo/sdk-coin-avaxp": "^1.0.0",
+    "@bitgo/sdk-coin-bch": "^1.0.0",
     "@bitgo/sdk-coin-btc": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-dash": "^1.0.0",
