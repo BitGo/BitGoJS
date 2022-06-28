@@ -1923,12 +1923,13 @@ export class Wallet implements IWallet {
    * Change the fee on the pending transaction that corresponds to the given txid to the given new fee
    * @param params
    * @param {String} params.txid The transaction Id corresponding to the transaction whose fee is to be changed
-   * @param {String} params.fee The new fee to apply to the denoted transaction
+   * @param {String} [params.fee] Optional - The new fee to apply to the denoted transaction
+   * @param {Object} [params.eip1559] Optional - the eip1559 values to apply to the denoted transaction
    * @returns {String} The transaction ID of the new transaction that contains the new fee rate
    */
   async changeFee(params: ChangeFeeOptions = {}): Promise<any> {
-    common.validateParams(params, ['txid', 'fee'], []);
-
+    if (params.fee) common.validateParams(params, ['txid', 'fee'], []);
+    if (params.eip1559) common.validateParams(params.eip1559, ['maxFeePerGas', 'maxPriorityFeePerGas']);
     return await this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
       .send(params)

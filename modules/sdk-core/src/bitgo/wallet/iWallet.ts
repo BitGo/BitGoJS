@@ -443,9 +443,15 @@ export interface RecoverTokenOptions {
   prv?: string;
 }
 
+interface EIP1559 {
+  maxPriorityFeePerGas: string;
+  maxFeePerGas: string;
+}
+
 export interface ChangeFeeOptions {
   txid?: string;
   fee?: string;
+  eip1559?: EIP1559;
 }
 
 export interface CreatePolicyRuleOptions {
