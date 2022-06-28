@@ -241,11 +241,6 @@ export class Algo extends BaseCoin {
     return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
   }
 
-  getTokenNameById(tokenId: number | string): string {
-    const tokenNames = coins.filter((coin) => coin.family === 'algo' && coin.isToken).map(({ name }) => name!);
-    return tokenNames.find((tokenName) => tokenName.split('-')[1] === `${tokenId}`) || 'AlgoToken unknown';
-  }
-
   /**
    * Explain/parse transaction
    * @param params
@@ -277,7 +272,7 @@ export class Algo extends BaseCoin {
         const type = AlgoLib.algoUtils.getTokenTxType(txJson.amount, txJson.from, txJson.to, txJson.closeRemainderTo);
         operations.push({
           type: type,
-          coin: this.getTokenNameById(txJson.tokenId),
+          coin: `${this.getChain()}:${txJson.tokenId}`,
         });
       }
 
