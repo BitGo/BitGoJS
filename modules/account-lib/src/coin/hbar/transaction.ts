@@ -5,8 +5,8 @@ import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import * as Long from 'long';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { TxData } from './ifaces';
+import * as proto from '@hashgraph/proto';
+import { TxData } from './iface';
 import { stringifyAccountId, stringifyTxTime } from './utils';
 import { KeyPair } from './';
 
@@ -37,8 +37,8 @@ export class Transaction extends BaseTransaction {
   /**
    * Add a signature to this transaction
    *
-   * @param {string} signature The signature to add, in string hex format
-   * @param {KeyPair} key The key of the key that created the signature
+   * @param {string} signature - The signature to add, in string hex format
+   * @param {KeyPair} key - The key of the key that created the signature
    */
   addSignature(signature: string, key: KeyPair): void {
     const sigPair = new proto.SignaturePair();
@@ -53,7 +53,8 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    return toHex(this.encode(this._hederaTx));
+    const encoder = proto.Transaction;
+    return toHex(this.encode(this._hederaTx, encoder));
   }
 
   /** @inheritdoc */
@@ -83,7 +84,7 @@ export class Transaction extends BaseTransaction {
    * Get the recipient account and the amount
    * transferred on this transaction
    *
-   * @returns {[string, string]} first element is the recipient, second element is the amount
+   * @returns {[string, string]} - First element is the recipient, second element is the amount
    */
   private getTransferData(): [string, string] {
     let transferData;
@@ -109,9 +110,9 @@ export class Transaction extends BaseTransaction {
   /**
    * Sets this transaction body components
    *
-   * @param {proto.Transaction} tx body transaction
+   * @param {proto.Transaction} tx - Body Transaction
    */
-  body(tx: proto.Transaction) {
+  body(tx: proto.Transaction): void {
     this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
     this._hederaTx = tx;
     // this.loadPreviousSignatures();
@@ -121,7 +122,7 @@ export class Transaction extends BaseTransaction {
   /**
    * Set the transaction type
    *
-   * @param {TransactionType} transactionType The transaction type to be set
+   * @param {TransactionType} transactionType - The transaction type to be set
    */
   setTransactionType(transactionType: TransactionType): void {
     this._type = transactionType;
@@ -172,9 +173,9 @@ export class Transaction extends BaseTransaction {
   /**
    * Sets this transaction body components
    *
-   * @param {Uint8Array} bytes encoded body transaction
+   * @param {Uint8Array} bytes - Encoded body transaction
    */
-  bodyBytes(bytes: Uint8Array) {
+  bodyBytes(bytes: Uint8Array): void {
     this.body(proto.Transaction.decode(bytes));
   }
   // endregion
@@ -183,7 +184,7 @@ export class Transaction extends BaseTransaction {
   /**
    * Returns this hedera transaction id components in a readable format
    *
-   * @returns {[string, string]} - transaction id parts [<account id>, <startTime in seconds>]
+   * @returns {[string, string]} - Transaction id parts [<account id>, <startTime in seconds>]
    */
   getTxIdParts(): [string, string] {
     if (
@@ -212,44 +213,32 @@ export class Transaction extends BaseTransaction {
     const _signedTx = new proto.SignedTransaction();
     _signedTx.sigMap = this._hederaTx.sigMap;
     _signedTx.bodyBytes = this._hederaTx.bodyBytes;
-    return this.getHashOf(_signedTx);
+
+    const encoder = proto.SignedTransaction;
+    return this.sha(this.encode(_signedTx, encoder));
   }
 
   /**
    * Encode an object using the given encoder class
    *
-   * @param {proto} obj - the object to be encoded, it must be an proto namespace object
+   * @param {proto} obj - The object to be encoded, must be in proto namespace
    * @param encoder - Object encoder
-   * @returns {Uint8Array} - encoded object byte array
+   * @returns {Uint8Array} - Encoded object byte array
    */
   private encode<CtorFn extends { new (): T }, T extends { constructor: CtorFn }>(
     obj: T,
-    encoder?: { encode(arg: T): Writer },
+    encoder: { encode(arg: T): Writer },
   ): Uint8Array {
-    if (encoder) {
-      return encoder.encode(obj).finish();
-    }
-    return this.encode(obj, proto[obj.constructor.name]);
+    return encoder.encode(obj).finish();
   }
 
   /**
-   * Returns an sha-384 hash
+   * Returns a sha-384 hash
    *
-   * @param {Uint8Array} bytes - bytes to be hashed
-   * @returns {string} - the resulting hash string
+   * @param {Uint8Array} bytes - Bytes to be hashed
+   * @returns {string} - The resulting hash string
    */
   sha(bytes: Uint8Array): string {
     return toHex(hash(bytes));
   }
-
-  /**
-   * Returns a hash of the given proto object.
-   *
-   * @param {proto} obj - The object to be hashed, it must be an proto namespace object
-   * @returns {string} - the resulting hash string
-   */
-  private getHashOf<T>(obj: T): string {
-    return this.sha(this.encode(obj));
-  }
-  // endregion
 }

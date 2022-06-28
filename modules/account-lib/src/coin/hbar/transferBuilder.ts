@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
+import * as proto from '@hashgraph/proto';
 import {
   BaseKey,
   BuildTransactionError,
@@ -14,7 +14,7 @@ import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
-  private _txBodyData: proto.CryptoTransferTransactionBody;
+  private readonly _txBodyData: proto.CryptoTransferTransactionBody;
   private _toAddress: string;
   private _amount: string;
 
@@ -34,13 +34,16 @@ export class TransferBuilder extends TransactionBuilder {
   private buildTransferData(): proto.ITransferList {
     return {
       accountAmounts: [
-        { accountID: this.buildAccountData(this._source.address), amount: Long.fromString(this._amount).negate() }, // sender
-        { accountID: this.buildAccountData(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
+        {
+          accountID: TransferBuilder.buildAccountData(this._source.address),
+          amount: Long.fromString(this._amount).negate(),
+        }, // sender
+        { accountID: TransferBuilder.buildAccountData(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
       ],
     };
   }
 
-  private buildAccountData(address: string): proto.AccountID {
+  static buildAccountData(address: string): proto.AccountID {
     const accountData = AccountId.fromString(address);
     return new proto.AccountID({
       accountNum: accountData.num,
@@ -62,9 +65,9 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Initialize the transfer specific data, getting the recipient account
    * represented by the element with a positive amount on the transfer element.
-   * The negative amount represents the source account so it's ignored.
+   * The negative amount represents the source account, so it's ignored.
    *
-   * @param {proto.IAccountAmount[]} transfers array of objects which contains accountID and transferred amount
+   * @param {proto} transfers - Array of objects which contains accountID and transferred amount
    */
   protected initTransfers(transfers: proto.IAccountAmount[]): void {
     transfers.forEach((transferData) => {
@@ -89,8 +92,8 @@ export class TransferBuilder extends TransactionBuilder {
    * Set the destination address where the funds will be sent,
    * it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`
    *
-   * @param {string} address the address to transfer funds to
-   * @returns {TransferBuilder} the builder with the new parameter set
+   * @param {string} address - The address to transfer funds to
+   * @returns {TransferBuilder} - The builder with the new parameter set
    */
   to(address: string): this {
     if (!isValidAddress(address)) {
@@ -103,8 +106,8 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Set the amount to be transferred
    *
-   * @param {string} amount amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
-   * @returns {TransferBuilder} the builder with the new parameter set
+   * @param {string} amount - Amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
+   * @returns {TransferBuilder} - The builder with the new parameter set
    */
   amount(amount: string): this {
     if (!isValidAmount(amount)) {

@@ -8,5 +8,3 @@ mochawesome-report/
 package/
 .idea/
 coverage.lcov
-/resources/hbar/protobuf/hedera.d.ts
-/resources/hbar/protobuf/hedera.js

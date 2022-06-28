@@ -56,7 +56,7 @@ jobs:
 
       - name: Dependency Audit
         if: ${{ startsWith(matrix.node-version, '14') }}
-        run: yarn run audit
+        run: yarn run improved-yarn-audit --min-severity high
 
       - name: Lint Source Code
         if: ${{ startsWith(matrix.node-version, '14') }}
@@ -75,13 +75,13 @@ jobs:
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
-      - name: Upload Code Coverage
-        run: |
-          yarn run gen-coverage-changed
-          yarn run coverage
-        env:
-          CODECOV_FLAG: unit
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      # - name: Upload Code Coverage
+      #   run: |
+      #     yarn run gen-coverage-changed
+      #     yarn run coverage
+      #   env:
+      #     CODECOV_FLAG: unit
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   browser-test:
     runs-on: ubuntu-latest

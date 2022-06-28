@@ -6,6 +6,7 @@ import * as should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('Avaxp', function () {
   const coinName = 'avaxp';
@@ -136,24 +137,25 @@ describe('Avaxp', function () {
     });
   });
 
-  // TODO(STLX-16570): explainTransaction
-  xdescribe('Explain Transaction', () => {
-    it('should explain a half signed AddValidator transaction', () => {
-      // TODO(STLX-16570): explainTransaction
+  describe('Explain Transaction', () => {
+    it('should explain a half signed AddValidator transaction', async () => {
+      const txExplain = await basecoin.explainTransaction({
+        halfSigned: { txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex },
+      });
+      txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.addValidator);
+      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
     });
 
-    it('should explain a signed AddValidator transaction', () => {
-      // TODO(STLX-16570): explainTransaction
+    it('should explain a signed AddValidator transaction', async () => {
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.ADDVALIDATOR_SAMPLES.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.addValidator);
+      txExplain.outputs[0].address.should.equal(testData.ADDVALIDATOR_SAMPLES.nodeID);
     });
 
     it('should fail when a tx is not passed as parameter', async () => {
-      const explainTxParams = {
-        fee: {
-          gasLimit: '1',
-          gasPrice: '11000',
-        },
-      };
-      await basecoin.explainTransaction(explainTxParams).should.be.rejectedWith('missing explain tx parameters');
+      await basecoin.explainTransaction({}).should.be.rejectedWith('missing explain tx parameters');
     });
   });
 

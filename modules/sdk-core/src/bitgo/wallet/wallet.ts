@@ -2171,18 +2171,12 @@ export class Wallet implements IWallet {
     // this could return 100 build transactions
     const buildResponse = (await this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.id() + '/consolidateAccount/build'))
-      .send(whitelistedParams)) as any;
-
-    const consolidations: PrebuildTransactionResult[] = [];
-    // When call '/consolidateAccount/build' endpoint and all receive addresses
-    // do not have spendable balance to consolidate this endpoint will return
-    // 204 HTTP response since it isn't an error that there isn't any amount to consolidate
-    if (buildResponse.status === 204) {
-      return consolidations;
-    }
+      .send(whitelistedParams)
+      .result()) as any;
 
     // we need to step over each prebuild now - should be in an array in the body
-    for (const consolidateAccountBuild of buildResponse.body) {
+    const consolidations: PrebuildTransactionResult[] = [];
+    for (const consolidateAccountBuild of buildResponse) {
       let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
         Object.assign(consolidateAccountBuild, { wallet: this, buildParams: whitelistedParams })
       )) as PrebuildTransactionResult;
@@ -2388,6 +2382,17 @@ export class Wallet implements IWallet {
       throw new Error('txRequestId missing from signed transaction');
     }
 
+    // TODO: BG-51122 Remove conditional when moved to txRequestFull for everything
+    if (this._wallet.type === 'custodial') {
+      await this.bitgo
+        .post(
+          this.bitgo.url(
+            '/wallet/' + this._wallet.id + '/txrequests/' + signedTransaction.txRequestId + '/transfers',
+            2
+          )
+        )
+        .send();
+    }
     return this.tssUtils.sendTxRequest(signedTransaction.txRequestId);
   }
 }
