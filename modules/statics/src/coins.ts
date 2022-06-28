@@ -946,7 +946,7 @@ export const coins = CoinMap.fromCoins([
   tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TXWkP3jLBqRGojUih1ShzNyDaN5Csnebok', UnderlyingAsset.WETH),
   algoToken(
     'algo:USDC-31566704',
-    undefined,
+    'algo:USDC-31566704',
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
@@ -957,7 +957,7 @@ export const coins = CoinMap.fromCoins([
   ),
   algoToken(
     'algo:USDt-312769',
-    undefined,
+    'algo:USDt-312769',
     'Tether USDt',
     6,
     UnderlyingAsset['algo:USDt-312769'],
@@ -968,7 +968,7 @@ export const coins = CoinMap.fromCoins([
   ),
   algoToken(
     'algo:MCAU-6547014',
-    undefined,
+    'algo:MCAU-6547014',
     'MCAU',
     5,
     UnderlyingAsset['algo:MCAU-6547014'],
@@ -979,7 +979,7 @@ export const coins = CoinMap.fromCoins([
   ),
   algoToken(
     'algo:VCAD-438505559',
-    undefined,
+    'algo:VCAD-438505559',
     'VCAD',
     2,
     UnderlyingAsset['algo:VCAD-438505559'],
@@ -1421,7 +1421,7 @@ export const coins = CoinMap.fromCoins([
   ttronToken('ttrx:weth', 'Test Tron Wrapped Ether', 18, 'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g', UnderlyingAsset.WETH),
   talgoToken(
     'talgo:USDC-10458941',
-    undefined,
+    'talgo:USDC-10458941',
     'USDC',
     6,
     UnderlyingAsset['talgo:USDC-10458941'],
@@ -1432,7 +1432,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:USDt-180447',
-    undefined,
+    'talgo:USDt-180447',
     'USDt',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
@@ -1443,7 +1443,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:USON-16026728',
-    undefined,
+    'talgo:USON-16026728',
     'Unison',
     2,
     UnderlyingAsset['talgo:USON-16026728'],
@@ -1454,7 +1454,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:SPRW-16026732',
-    undefined,
+    'talgo:SPRW-16026732',
     'Sparrow',
     4,
     UnderlyingAsset['talgo:SPRW-16026732'],
@@ -1465,7 +1465,7 @@ export const coins = CoinMap.fromCoins([
   ),
   talgoToken(
     'talgo:KAL-16026733',
-    undefined,
+    'talgo:KAL-16026733',
     'Kalki',
     8,
     UnderlyingAsset['talgo:KAL-16026733'],
