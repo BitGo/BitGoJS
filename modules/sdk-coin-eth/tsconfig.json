@@ -14,7 +14,10 @@
       "path": "../sdk-core"
     },
     {
-      "path": "../sdk-test"
+      "path": "../statics"
     },
+    {
+      "path": "../sdk-test"
+    }
   ]
 }

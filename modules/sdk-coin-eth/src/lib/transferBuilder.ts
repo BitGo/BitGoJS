@@ -101,7 +101,7 @@ export class TransferBuilder {
           this._tokenContractAddress,
           this._expirationTime,
           this._sequenceId,
-          this.getSignature(),
+          this.getSignature()
         );
       } else {
         return sendMultiSigData(
@@ -110,12 +110,12 @@ export class TransferBuilder {
           this._data,
           this._expirationTime,
           this._sequenceId,
-          this.getSignature(),
+          this.getSignature()
         );
       }
     }
     throw new BuildTransactionError(
-      'Missing transfer mandatory fields. Amount, destination (to) address and sequenceID are mandatory',
+      'Missing transfer mandatory fields. Amount, destination (to) address and sequenceID are mandatory'
     );
   }
 
@@ -208,7 +208,7 @@ export class TransferBuilder {
     const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
       Buffer.from(ethUtil.stripHexPrefix(data), 'hex'),
-      Buffer.from(this._signKey, 'hex'),
+      Buffer.from(this._signKey, 'hex')
     );
 
     // Assemble strings from r, s and v

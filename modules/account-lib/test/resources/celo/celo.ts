@@ -1,5 +1,4 @@
-import { KeyPair } from '../../../src/coin/eth';
-import { ETHTransactionType, LegacyTxData } from '../../../src/coin/eth/iface';
+import { ETHTransactionType, KeyPair, LegacyTxData } from '@bitgo/sdk-coin-eth';
 
 // Staking Builder Errors
 export const INVALID_INDEX_ERROR = 'Invalid index for staking transaction';

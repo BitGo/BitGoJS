@@ -1,4 +1,4 @@
-import { TransferBuilder as EthTransferBuilder } from '../eth';
+import { TransferBuilder as EthTransferBuilder } from '@bitgo/sdk-coin-eth';
 
 /** POLYGON transfer builder */
 export class TransferBuilder extends EthTransferBuilder {

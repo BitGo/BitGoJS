@@ -16,11 +16,14 @@ import {
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { Transaction, TransferBuilder, Utils } from '../eth';
+
 import { KeyPair } from './keyPair';
 import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
+  classifyTransaction,
+  decodeFlushTokensData,
+  decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
   getAddressInitializationData,
@@ -33,6 +36,8 @@ import * as ethUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { ERC1155TransferBuilder } from './transferBuilder/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilder/transferBuilderERC721';
+import { Transaction } from './transaction';
+import { TransferBuilder } from './transferBuilder';
 
 const DEFAULT_M = 3;
 
@@ -144,7 +149,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {TxData} transactionJson the deserialized transaction json
    */
   protected loadBuilderInput(transactionJson: TxData): void {
-    const decodedType = Utils.classifyTransaction(transactionJson.data);
+    const decodedType = classifyTransaction(transactionJson.data);
     this.type(decodedType);
     this.counter(transactionJson.nonce);
     this.value(transactionJson.value);
@@ -175,14 +180,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected setTransactionTypeFields(decodedType: TransactionType, transactionJson: TxData): void {
     switch (decodedType) {
       case TransactionType.WalletInitialization:
-        const owners = Utils.decodeWalletCreationData(transactionJson.data);
+        const owners = decodeWalletCreationData(transactionJson.data);
         owners.forEach((element) => {
           this.owner(element);
         });
         break;
       case TransactionType.FlushTokens:
         this.setContract(transactionJson.to);
-        const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
+        const { forwarderAddress, tokenAddress } = decodeFlushTokensData(transactionJson.data);
         this.forwarderAddress(forwarderAddress);
         this.tokenAddress(tokenAddress);
         break;
@@ -351,7 +356,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
     if (this._walletOwnerAddresses.length !== 3) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`,
+        `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`
       );
     }
   }

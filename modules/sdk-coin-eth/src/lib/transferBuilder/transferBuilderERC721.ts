@@ -48,13 +48,13 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
         this._data,
         this._expirationTime,
         this._sequenceId,
-        this.getSignature(),
+        this.getSignature()
       );
     }
 
     throw new BuildTransactionError(
       `Missing transfer mandatory fields. 
-       Destination (to) address, Source (from) address, sequenceID, the token contract address and tokenID are mandatory`,
+       Destination (to) address, Source (from) address, sequenceID, the token contract address and tokenID are mandatory`
     );
   }
 

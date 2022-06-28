@@ -65,12 +65,12 @@ export class EthTransactionData implements EthLikeTransactionData {
           r: tx.r,
           s: tx.s,
         },
-        { common: common },
+        { common: common }
       ),
       {
         deployedAddress: tx.deployedAddress,
         chainId: addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)),
-      },
+      }
     );
   }
 
@@ -82,7 +82,7 @@ export class EthTransactionData implements EthLikeTransactionData {
    */
   public static fromSerialized(tx: string, common: EthereumCommon): EthTransactionData {
     return new EthTransactionData(
-      TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(tx)), { common: common }),
+      TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(tx)), { common: common })
     );
   }
 

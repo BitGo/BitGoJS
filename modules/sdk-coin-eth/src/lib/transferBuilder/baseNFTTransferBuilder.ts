@@ -114,7 +114,7 @@ export abstract class BaseNFTTransferBuilder {
         this._data,
         this._expirationTime,
         this._sequenceId,
-      ],
+      ]
     );
     return hash;
   }

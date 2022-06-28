@@ -12,8 +12,7 @@ import {
 } from '@bitgo/ethereumjs-utils-old';
 import { unpad } from 'ethereumjs-util';
 import { CeloTx, EncodedTransaction } from '@celo/connect';
-import { EthLikeTransactionData, ETHTransactionType, LegacyTxData } from '../eth/iface';
-import { KeyPair } from '../eth';
+import { EthLikeTransactionData, ETHTransactionType, KeyPair, LegacyTxData } from '@bitgo/sdk-coin-eth';
 
 export class CeloTransaction {
   private raw: Buffer[];

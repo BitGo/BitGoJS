@@ -1,4 +1,4 @@
-import { ContractCall } from '../eth/contractCall';
+import { ContractCall } from '@bitgo/sdk-coin-eth';
 
 export class StakingCall extends ContractCall {
   public amount: string;

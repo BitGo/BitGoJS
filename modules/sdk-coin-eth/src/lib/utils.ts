@@ -16,15 +16,18 @@ import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
 import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
-import { BuildTransactionError, SigningError, TransactionType } from '@bitgo/sdk-core';
 import {
   ActivateMethodId,
+  BuildTransactionError,
   LockMethodId,
+  SigningError,
+  TransactionType,
   UnlockMethodId,
   UnvoteMethodId,
   VoteMethodId,
   WithdrawMethodId,
-} from '../celo/stakingUtils';
+} from '@bitgo/sdk-core';
+
 import {
   ERC1155TransferData,
   ERC721TransferData,
@@ -70,7 +73,7 @@ export function getCommon(network: EthereumNetwork): EthereumCommon {
       networkId: network.chainId,
       chainId: network.chainId,
     },
-    'london',
+    'london'
   );
 }
 
@@ -86,7 +89,7 @@ export function getCommon(network: EthereumNetwork): EthereumCommon {
 export async function signInternal(
   transactionData: TxData,
   keyPair: KeyPair,
-  customCommon: EthereumCommon,
+  customCommon: EthereumCommon
 ): Promise<string> {
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
@@ -124,7 +127,7 @@ export function sendMultiSigData(
   data: string,
   expireTime: number,
   sequenceId: number,
-  signature: string,
+  signature: string
 ): string {
   const params = [to, value, toBuffer(data), expireTime, sequenceId, toBuffer(signature)];
   const method = EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
@@ -149,7 +152,7 @@ export function sendMultiSigTokenData(
   tokenContractAddress: string,
   expireTime: number,
   sequenceId: number,
-  signature: string,
+  signature: string
 ): string {
   const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
 
@@ -273,7 +276,7 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
 
   const [to, amount, tokenContractAddress, expireTime, sequenceId, signature] = getRawDecoded(
     sendMultiSigTokenTypes,
-    getBufferedByteCode(sendMultisigTokenMethodId, data),
+    getBufferedByteCode(sendMultisigTokenMethodId, data)
   );
 
   return {
@@ -293,7 +296,7 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
 
   const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
     sendMultiSigTypes,
-    getBufferedByteCode(sendMultisigMethodId, data),
+    getBufferedByteCode(sendMultisigMethodId, data)
   );
 
   const internalDataHex = bufferToHex(internalData);
@@ -303,7 +306,7 @@ export function decodeERC721TransferData(data: string): ERC721TransferData {
 
   const [from, receiver, tokenId, userSentData] = getRawDecoded(
     ERC721SafeTransferTypes,
-    getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex),
+    getBufferedByteCode(ERC721SafeTransferTypeMethodId, internalDataHex)
   );
 
   return {
@@ -330,7 +333,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
 
   const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
     sendMultiSigTypes,
-    getBufferedByteCode(sendMultisigMethodId, data),
+    getBufferedByteCode(sendMultisigMethodId, data)
   );
 
   const internalDataHex = bufferToHex(internalData);
@@ -340,7 +343,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
 
     [from, receiver, tokenId, value, userSentData] = getRawDecoded(
       ERC1155SafeTransferTypes,
-      getBufferedByteCode(ERC1155SafeTransferTypeMethodId, internalDataHex),
+      getBufferedByteCode(ERC1155SafeTransferTypeMethodId, internalDataHex)
     );
 
     tokenIds = [new BigNumber(bufferToHex(tokenId)).toFixed()];
@@ -349,7 +352,7 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
     let tempTokenIds, tempValues;
     [from, receiver, tempTokenIds, tempValues, userSentData] = getRawDecoded(
       ERC1155BatchTransferTypes,
-      getBufferedByteCode(ERC1155BatchTransferTypeMethodId, internalDataHex),
+      getBufferedByteCode(ERC1155BatchTransferTypeMethodId, internalDataHex)
     );
     tokenIds = tempTokenIds.map((x) => new BigNumber(bufferToHex(x)).toFixed());
     values = tempValues.map((x) => new BigNumber(bufferToHex(x)).toFixed());
@@ -384,7 +387,7 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
 
   const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
     sendMultiSigTypes,
-    getBufferedByteCode(sendMultisigMethodId, data),
+    getBufferedByteCode(sendMultisigMethodId, data)
   );
 
   return {
@@ -410,7 +413,7 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
 
   const [forwarderAddress, tokenAddress] = getRawDecoded(
     flushTokensTypes,
-    getBufferedByteCode(flushForwarderTokensMethodId, data),
+    getBufferedByteCode(flushForwarderTokensMethodId, data)
   );
 
   return {
@@ -504,7 +507,7 @@ export function calculateForwarderV1Address(creatorAddress: string, salt: string
   const forwarderV1Address = generateAddress2(
     Buffer.from(stripHexPrefix(creatorAddress), 'hex'),
     Buffer.from(stripHexPrefix(salt), 'hex'),
-    Buffer.from(stripHexPrefix(initcode), 'hex'),
+    Buffer.from(stripHexPrefix(initcode), 'hex')
   );
   return addHexPrefix(forwarderV1Address.toString('hex'));
 }

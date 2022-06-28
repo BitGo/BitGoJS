@@ -1,11 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
-import * as Eth from '../eth';
-import { LegacyTxData } from '../eth/iface';
+import { Transaction as EthTransaction, LegacyTxData } from '@bitgo/sdk-coin-eth';
 import { CeloTransactionData } from './types';
 import * as Utils from './utils';
 
-export class Transaction extends Eth.Transaction {
+export class Transaction extends EthTransaction {
   setTransactionData(txData: LegacyTxData): void {
     this._transactionData = CeloTransactionData.fromJson(txData);
     this.updateFields();
