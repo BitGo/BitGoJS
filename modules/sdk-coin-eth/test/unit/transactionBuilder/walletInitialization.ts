@@ -1,10 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Eth } from '../../../../../src';
-import * as testData from '../../../../resources/eth/eth';
-import { Transaction } from '../../../../../src/coin/eth';
-import { ETHTransactionType, Fee } from '../../../../../src/coin/eth/iface';
+import { Transaction, KeyPair, ETHTransactionType, Fee, TransactionBuilder } from '../../../src';
+import * as testData from '../../resources/eth';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth Transaction builder wallet initialization', function () {
   const sourcePrv =
@@ -13,7 +12,7 @@ describe('Eth Transaction builder wallet initialization', function () {
     'xpub661MyMwAqRbcGpyL5QvWah4XZYHuTK21mSQ4NVwYaX67A35Kzb42nmTdf2WArW4tettXrWpfpwFbEFdEVqcSvnHLB8F6p1D41ssmbnRMXpc';
   const pub2 =
     'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn';
-  const defaultKeyPair = new Eth.KeyPair({
+  const defaultKeyPair = new KeyPair({
     prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
   });
 
@@ -56,11 +55,11 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '1000',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
+          new KeyPair({ prv: sourcePrv }).getAddress(),
+          new KeyPair({ pub: pub1 }).getAddress(),
+          new KeyPair({ pub: pub2 }).getAddress(),
         ],
         counter: 1,
       });
@@ -83,9 +82,9 @@ describe('Eth Transaction builder wallet initialization', function () {
           gasLimit: '1000',
         },
         owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
+          new KeyPair({ prv: sourcePrv }).getAddress(),
+          new KeyPair({ pub: pub1 }).getAddress(),
+          new KeyPair({ pub: pub2 }).getAddress(),
         ],
         counter: 0,
       });
@@ -171,7 +170,7 @@ describe('Eth Transaction builder wallet initialization', function () {
     });
 
     it('correct transaction id', async () => {
-      const newTxBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+      const newTxBuilder = getBuilder('eth') as TransactionBuilder;
       newTxBuilder.from(testData.WALLET_INITIALIZATION);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toJson().id, '0xc65f9802df3b559b297779ec06d3e71ba7f5b1b47cc961ad2efba54d82347bec');
@@ -186,14 +185,14 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '10',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         counter: 0,
       }).should.be.rejectedWith('Unsupported transaction type');
     });
 
     it('a transaction without fee', async () => {
       await buildTransaction({
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: missing fee');
     });
@@ -205,8 +204,8 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '10',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-        owners: [new Eth.KeyPair({ pub: pub1 }).getAddress(), new Eth.KeyPair({ pub: pub2 }).getAddress()],
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
+        owners: [new KeyPair({ pub: pub1 }).getAddress(), new KeyPair({ pub: pub2 }).getAddress()],
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
 
@@ -216,15 +215,15 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '10',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
+          new KeyPair({ prv: sourcePrv }).getAddress(),
+          new KeyPair({ pub: pub1 }).getAddress(),
+          new KeyPair({ pub: pub1 }).getAddress(),
+          new KeyPair({ pub: pub2 }).getAddress(),
         ],
         counter: 0,
-      }).should.be.rejectedWith('Repeated owner address: ' + new Eth.KeyPair({ pub: pub1 }).getAddress());
+      }).should.be.rejectedWith('Repeated owner address: ' + new KeyPair({ pub: pub1 }).getAddress());
 
       await buildTransaction({
         type: TransactionType.WalletInitialization,
@@ -232,7 +231,7 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '10',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [],
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 0');
@@ -244,12 +243,12 @@ describe('Eth Transaction builder wallet initialization', function () {
           fee: '10',
           gasLimit: '10',
         },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        source: new KeyPair({ prv: sourcePrv }).getAddress(),
         counter: -1,
         owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
+          new KeyPair({ prv: sourcePrv }).getAddress(),
+          new KeyPair({ pub: pub1 }).getAddress(),
+          new KeyPair({ pub: pub2 }).getAddress(),
         ],
       }).should.be.rejectedWith('Invalid counter: -1');
     });
@@ -275,13 +274,13 @@ describe('Eth Transaction builder wallet initialization', function () {
         gasLimit: '1000',
       });
       txBuilder.counter(1);
-      txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-      txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
-      txBuilder.owner(new Eth.KeyPair({ prv: sourcePrv }).getAddress());
+      txBuilder.owner(new KeyPair({ pub: pub1 }).getAddress());
+      txBuilder.owner(new KeyPair({ pub: pub2 }).getAddress());
+      txBuilder.owner(new KeyPair({ prv: sourcePrv }).getAddress());
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       assert.throws(
         () => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }),
-        new RegExp('Cannot sign multiple times a non send-type transaction'),
+        new RegExp('Cannot sign multiple times a non send-type transaction')
       );
     });
   });
@@ -292,7 +291,7 @@ describe('Eth Transaction builder wallet initialization', function () {
       txBuilder.validateAddress(testData.VALID_ADDRESS);
       assert.throws(
         () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
-        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address),
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address)
       );
     });
 
@@ -333,15 +332,15 @@ describe('Eth Transaction builder wallet initialization', function () {
       const source = {
         prv: sourcePrv,
       };
-      const sourceKeyPair = new Eth.KeyPair(source);
+      const sourceKeyPair = new KeyPair(source);
       assert.throws(() => txBuilder.validateTransaction(), /Invalid transaction: missing address counter/);
       txBuilder.counter(1);
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 0/);
       txBuilder.owner(sourceKeyPair.getAddress());
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 1/);
-      txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
+      txBuilder.owner(new KeyPair({ pub: pub1 }).getAddress());
       assert.throws(() => txBuilder.validateTransaction(), /wrong number of owners -- required: 3, found: 2/);
-      txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
+      txBuilder.owner(new KeyPair({ pub: pub2 }).getAddress());
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });
   });
@@ -350,10 +349,10 @@ describe('Eth Transaction builder wallet initialization', function () {
     it('should be wallet initializaion', () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.Send);
-      const sourceKeyPair = new Eth.KeyPair({ prv: sourcePrv });
+      const sourceKeyPair = new KeyPair({ prv: sourcePrv });
       assert.throws(
         () => txBuilder.owner(sourceKeyPair.getAddress()),
-        new RegExp('Multisig wallet owner can only be set for initialization transactions'),
+        new RegExp('Multisig wallet owner can only be set for initialization transactions')
       );
     });
 
@@ -364,14 +363,14 @@ describe('Eth Transaction builder wallet initialization', function () {
         fee: '10',
         gasLimit: '1000',
       });
-      const sourceKeyPair = new Eth.KeyPair({ prv: sourcePrv });
+      const sourceKeyPair = new KeyPair({ prv: sourcePrv });
       txBuilder.counter(1);
       txBuilder.owner(sourceKeyPair.getAddress());
       txBuilder.owner('0x7325A3F7d4f9E86AE62Cf742426078C3755730d5');
       txBuilder.owner('0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7');
       assert.throws(
         () => txBuilder.owner('0x1A88Ee4Bc80BE080fC91AC472Af2F59260695060'),
-        new RegExp('A maximum of 3 owners can be set for a multisig wallet'),
+        new RegExp('A maximum of 3 owners can be set for a multisig wallet')
       );
     });
 
@@ -395,9 +394,9 @@ describe('Eth Transaction builder wallet initialization', function () {
     });
     txBuilder.counter(1);
     txBuilder.type(TransactionType.WalletInitialization);
-    txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-    txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
-    txBuilder.owner(new Eth.KeyPair({ prv: sourcePrv }).getAddress());
+    txBuilder.owner(new KeyPair({ pub: pub1 }).getAddress());
+    txBuilder.owner(new KeyPair({ pub: pub2 }).getAddress());
+    txBuilder.owner(new KeyPair({ prv: sourcePrv }).getAddress());
     txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
     const tx = await txBuilder.build();
     const txBuiderFromRaw: any = getBuilder('eth');

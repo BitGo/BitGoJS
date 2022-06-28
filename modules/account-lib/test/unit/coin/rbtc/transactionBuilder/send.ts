@@ -4,7 +4,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Rbtc } from '../../../../../src';
 import * as testData from '../../../../resources/rbtc/rbtc';
-import { decodeTransferData } from '../../../../../src/coin/eth/utils';
+import { decodeTransferData } from '@bitgo/sdk-coin-eth';
 
 describe('Rbtc send transaction', function () {
   let txBuilder: Rbtc.TransactionBuilder;

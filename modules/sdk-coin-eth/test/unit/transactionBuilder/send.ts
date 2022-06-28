@@ -2,16 +2,17 @@ import assert from 'assert';
 import should from 'should';
 import { coins, EthereumNetwork } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Eth } from '../../../../../src';
-import * as testData from '../../../../resources/eth/eth';
-import { decodeTransferData, getCommon } from '../../../../../src/coin/eth/utils';
+
+import * as testData from '../../resources/eth';
+import { decodeTransferData, getCommon, Transaction, TransactionBuilder, TransferBuilder } from '../../../src';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth transaction builder send', () => {
   it('should validate a send type transaction', () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     const coinConfig = coins.get('eth');
     const common = getCommon(coinConfig.network as EthereumNetwork);
-    const tx = new Eth.Transaction(coinConfig, common);
+    const tx = new Transaction(coinConfig, common);
     txBuilder.counter(1);
     txBuilder.type(TransactionType.Send);
     assert.throws(() => txBuilder.validateTransaction(tx), /Invalid transaction: missing fee/);
@@ -30,7 +31,7 @@ describe('Eth transaction builder send', () => {
 
     beforeEach(() => {
       contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
-      txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+      txBuilder = getBuilder('teth') as TransactionBuilder;
       key = testData.KEYPAIR_PRV.getKeys().prv as string;
       txBuilder.fee({
         fee: '1000000000',
@@ -94,7 +95,7 @@ describe('Eth transaction builder send', () => {
     });
 
     it('Goerli chain id should be correct', async () => {
-      const txBuilder = getBuilder('gteth') as Eth.TransactionBuilder;
+      const txBuilder = getBuilder('gteth') as TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
@@ -102,7 +103,7 @@ describe('Eth transaction builder send', () => {
       txBuilder.counter(2);
       txBuilder.type(TransactionType.Send);
       txBuilder.contract(contractAddress);
-      const transferBuilder = txBuilder.transfer() as Eth.TransferBuilder;
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
       transferBuilder
         .amount('0')
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
@@ -124,7 +125,7 @@ describe('Eth transaction builder send', () => {
 
       testParams.map(([txnType, txnHex]) => {
         it(`should be able to create a send transaction from serialized ${txnType} tx hex`, async () => {
-          const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+          const txBuilder = getBuilder('teth') as TransactionBuilder;
           txBuilder.from(txnHex);
           const signedTx = await txBuilder.build();
           should.equal(signedTx.toBroadcastFormat(), txnHex);
@@ -133,7 +134,7 @@ describe('Eth transaction builder send', () => {
     }
 
     it('a send funds transaction with amount 0 from serialized', async () => {
-      const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+      const txBuilder = getBuilder('teth') as TransactionBuilder;
       txBuilder.from(testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
       const signedTx = await txBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

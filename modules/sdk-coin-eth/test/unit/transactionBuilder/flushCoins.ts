@@ -1,12 +1,10 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Eth } from '../../../../../src';
-import { Transaction, TransactionBuilder } from '../../../../../src/coin/eth';
-import { ETHTransactionType, Fee } from '../../../../../src/coin/eth/iface';
-import { flushCoinsMethodId } from '../../../../../src/coin/eth/walletUtil';
+import { ETHTransactionType, Fee, flushCoinsMethodId, KeyPair, Transaction, TransactionBuilder } from '../../../src';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth Transaction builder flush native coins', function () {
-  const defaultKeyPair = new Eth.KeyPair({
+  const defaultKeyPair = new KeyPair({
     prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
   });
 
@@ -14,7 +12,7 @@ describe('Eth Transaction builder flush native coins', function () {
     contractAddress?: string;
     counter?: number;
     fee?: Fee;
-    key?: Eth.KeyPair;
+    key?: KeyPair;
   }
 
   const buildTransaction = async function (details: FlushCoinsDetails): Promise<Transaction> {

@@ -1,11 +1,12 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Eth } from '../../../../../src';
-import * as testData from '../../../../resources/eth/eth';
+import { TransactionBuilder } from '../../../src';
+import * as testData from '../../resources/eth';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth address initialization', () => {
   it('should fail if there is no contract address', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
@@ -16,7 +17,7 @@ describe('Eth address initialization', () => {
   });
 
   it('should not fail if there is no contract counter', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
@@ -30,7 +31,7 @@ describe('Eth address initialization', () => {
   });
 
   it('should build properly from serialized', async () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('eth') as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.from(testData.UNSIGNED_ADDRESS_INIT);
     const tx = await txBuilder.build();
@@ -39,7 +40,7 @@ describe('Eth address initialization', () => {
   });
 
   it('should build properly from signed serialized', async () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('eth') as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.from(testData.SIGNED_ADDRESS_INIT);
     const tx = await txBuilder.build();
@@ -49,7 +50,7 @@ describe('Eth address initialization', () => {
   });
 
   it('should build properly and return a correct address', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',

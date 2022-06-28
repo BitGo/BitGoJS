@@ -1,17 +1,17 @@
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Eth } from '../../../../../src';
-import * as testData from '../../../../resources/eth/eth';
+import { ERC1155TransferBuilder, ERC721TransferBuilder, TransactionBuilder } from '../../../src';
+import * as testData from '../../resources/eth';
 import { ethers } from 'ethers';
-import { ERC1155TransferBuilder, ERC721TransferBuilder } from '../../../../../src/coin/eth';
 import should from 'should';
-import { ERC1155ABI } from '../../../../resources/eth/erc1155Abi';
-import { walletSimpleABI } from '../../../../resources/eth/walletSimpleAbi';
-import { erc721ABI } from '../../../../resources/eth/erc721Abi';
+import { ERC1155ABI } from '../../resources/erc1155Abi';
+import { walletSimpleABI } from '../../resources/walletSimpleAbi';
+import { erc721ABI } from '../../resources/erc721Abi';
 import {
   erc1155BatchTransferEncoding,
   erc1155SafeTransferEncoding,
   erc721Encoding,
-} from '../../../../resources/eth/nftEncodings';
+} from '../../resources/nftEncodings';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth transaction builder sendNFT', () => {
   // dummy addresses
@@ -30,7 +30,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign ERC721 properly', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -59,7 +59,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC721 transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -95,7 +95,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC721 transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -119,7 +119,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 single transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -159,7 +159,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 single transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -186,7 +186,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 batch transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -222,16 +222,16 @@ describe('Eth transaction builder sendNFT', () => {
     should.equal(decodedSafeTransferFromCallData.args[1].toLowerCase(), recipient.toLowerCase());
     should.deepEqual(
       decodedSafeTransferFromCallData.args[2].map((x) => x.toNumber()),
-      tokenIds,
+      tokenIds
     );
     should.deepEqual(
       decodedSafeTransferFromCallData.args[3].map((x) => x.toNumber()),
-      values,
+      values
     );
   });
 
   it('should sign and build ERC1155 batch transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -255,11 +255,11 @@ describe('Eth transaction builder sendNFT', () => {
     should.equal(decodedSafeTransferFromCallData.args[1].toLowerCase(), recipient.toLowerCase());
     should.deepEqual(
       decodedSafeTransferFromCallData.args[2].map((x) => x.toNumber()),
-      tokenIds,
+      tokenIds
     );
     should.deepEqual(
       decodedSafeTransferFromCallData.args[3].map((x) => x.toNumber()),
-      values,
+      values
     );
   });
 });

@@ -1,10 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import { coins, EthereumNetwork } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/eth';
-import * as testData from '../../../resources/eth/eth';
-import { getCommon } from '../../../../src/coin/eth/utils';
-import { TxData } from '../../../../src/coin/eth/iface';
+import { getCommon, Transaction, TxData } from '../../src';
+import * as testData from '../resources/eth';
 import { test } from 'mocha';
 
 describe('ETH Transaction', () => {

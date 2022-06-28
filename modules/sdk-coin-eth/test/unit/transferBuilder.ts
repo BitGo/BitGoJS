@@ -1,14 +1,14 @@
 import assert from 'assert';
 import should from 'should';
-import { TransferBuilder } from '../../../../src/coin/eth';
-import { Eth } from '../../../../src';
-import * as testData from '../../../resources/eth/eth';
+import { KeyPair, TransferBuilder } from '../../src';
+
+import * as testData from '../resources/eth';
 
 describe('Eth send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
-  const key = new Eth.KeyPair({ prv: xprv }).getKeys().prv as string;
+  const key = new KeyPair({ prv: xprv }).getKeys().prv as string;
   const amount = '100000000000000000'; // equivalent to 0.1 ether
 
   describe('should build', () => {

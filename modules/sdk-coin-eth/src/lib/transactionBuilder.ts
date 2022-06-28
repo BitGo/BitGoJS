@@ -34,8 +34,8 @@ import {
 import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 import * as ethUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
-import { ERC1155TransferBuilder } from './transferBuilder/transferBuilderERC1155';
-import { ERC721TransferBuilder } from './transferBuilder/transferBuilderERC721';
+import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
+import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
 import { Transaction } from './transaction';
 import { TransferBuilder } from './transferBuilder';
 

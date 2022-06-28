@@ -6,9 +6,9 @@ import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
   getProxyInitcode,
-} from '../../../../src/coin/eth/utils';
-import * as testData from '../../../resources/eth/eth';
-import * as walletUtilConstants from '../../../../src/coin/eth/walletUtil';
+} from '../../src';
+import * as testData from '../resources/eth';
+import * as walletUtilConstants from '../../src/lib/walletUtil';
 import { bufferToHex, setLengthLeft } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 
@@ -46,11 +46,11 @@ describe('ETH util library', function () {
 
     // Hash the wallet base address with the given salt, so the address directly relies on the base address
     const calculationSalt = bufferToHex(
-      EthereumAbi.soliditySHA3(['address', 'bytes32'], [testData.BASE_ADDRESS, saltBuffer]),
+      EthereumAbi.soliditySHA3(['address', 'bytes32'], [testData.BASE_ADDRESS, saltBuffer])
     );
     should.equal(
       calculateForwarderV1Address(testData.FORWARDER_FACTORY_ADDRESS, calculationSalt, initCode),
-      '0x7cdc37afc70221410bea40ce3b62c2f7bf383890',
+      '0x7cdc37afc70221410bea40ce3b62c2f7bf383890'
     );
   });
 });

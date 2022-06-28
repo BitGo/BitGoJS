@@ -4,6 +4,7 @@ export * from './keyPair';
 export * from './transaction';
 export * from './transactionBuilder';
 export * from './transferBuilder';
+export * from './transferBuilders';
 export * from './transferBuilder';
 export * from './types';
 export * from './utils';

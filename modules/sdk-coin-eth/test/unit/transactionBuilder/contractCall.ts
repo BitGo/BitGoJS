@@ -1,7 +1,8 @@
 import should from 'should';
-import { Eth, getBuilder } from '../../../../../src';
+import { TransactionBuilder } from '../../../src';
 import { TransactionType } from '@bitgo/sdk-core';
-import * as testData from '../../../../resources/eth/eth';
+import * as testData from '../../resources/eth';
+import { getBuilder } from '../getBuilder';
 
 describe('Eth contract call transaction builder', () => {
   let txBuilder;
@@ -12,7 +13,7 @@ describe('Eth contract call transaction builder', () => {
   beforeEach(() => {
     contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
     // testData.KEYPAIR_PRV.getKeys().prv as string;
-    txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    txBuilder = getBuilder('teth') as TransactionBuilder;
     txBuilder.type(TransactionType.ContractCall);
     txBuilder.fee({
       fee: '30000000000',
@@ -41,7 +42,7 @@ describe('Eth contract call transaction builder', () => {
     txBuilder.data('0x2bf90baacecf367fdc11132a0ccfeb91692cb31ff126083c353459e0572a0b34c48e9523');
     const txUnsigned = await txBuilder.build();
 
-    const builderFrom = getBuilder('teth') as Eth.TransactionBuilder;
+    const builderFrom = getBuilder('teth') as TransactionBuilder;
     builderFrom.from(txUnsigned.toBroadcastFormat());
     builderFrom.sign({ key: '064A3BF8B08A3426E8A719AE5E4115228A75E7A1449CB1B734E51C7DC8A867BE' });
     const tx = await builderFrom.build();
