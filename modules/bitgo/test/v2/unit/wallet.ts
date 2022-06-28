@@ -1622,6 +1622,29 @@ describe('V2 Wallet:', function () {
         sendMany.should.deepEqual('sendTxResponse');
       });
 
+      it('should send many and call create transfer api', async function () {
+        const signedTransaction = {
+          txRequestId: 'txRequestId',
+        };
+
+        const prebuildAndSignTransaction = sandbox.stub(custodialTssWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+        prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+        const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+        sendTxRequest.resolves('sendTxResponse');
+        sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+        const createTransferNock = nock(bgUrl)
+          .persist()
+          .post(`/api/v2/wallet/${walletData.id}/txrequests/${signedTransaction.txRequestId}/transfers`)
+          .reply(200);
+
+        const sendMany = await custodialTssWallet.sendMany(sendManyInput);
+        sendMany.should.deepEqual('sendTxResponse');
+        createTransferNock.isDone().should.be.true();
+      });
+
       it('should fail if txRequestId is missing from prebuild', async function () {
         const signedTransaction = {
           txHex: 'deadbeef',
