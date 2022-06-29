@@ -42,6 +42,9 @@
       "path": "../sdk-coin-avaxp"
     },
     {
+      "path": "../sdk-coin-bsv"
+    },
+    {
       "path": "../sdk-coin-cspr"
     },
     {
