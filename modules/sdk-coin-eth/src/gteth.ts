@@ -1,35 +1,24 @@
-/**
- * Testnet Eth
- *
- * @format
- */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Eth } from './eth';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class Gteth extends Eth {
-  protected constructor(bitgo: BitGoBase) {
-    super(bitgo);
+  protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
+
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo, staticsCoin);
+    this.sendMethodName = 'sendMultiSig';
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Gteth(bitgo);
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Gteth(bitgo, staticsCoin);
   }
 
-  /**
-   * Identifier for the blockchain which supports this coin
-   */
-  public getChain(): string {
+  getChain() {
     return 'gteth';
   }
 
-  getFamily(): string {
-    return 'gteth';
-  }
-
-  /**
-   * Complete human-readable name of this coin
-   */
-  public getFullName(): string {
-    return 'Testnet Ethereum';
+  getFullName() {
+    return 'Goerli Testnet Ethereum';
   }
 }

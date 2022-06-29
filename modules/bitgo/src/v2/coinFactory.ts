@@ -141,11 +141,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('xtz', Xtz.createInstance);
   globalCoinFactory.register('zec', Zec.createInstance);
 
-  for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
-    const tokenConstructor = Erc20Token.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
-  }
+  Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
     const tokenConstructor = StellarToken.createTokenConstructor(token);

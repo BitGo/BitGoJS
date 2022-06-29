@@ -8,8 +8,9 @@ import {
   checkKrsProvider,
   getIsKrsRecovery,
   getIsUnsignedSweep,
+  NamedCoinConstructor,
 } from '@bitgo/sdk-core';
-import { Erc20TokenConfig } from '@bitgo/statics';
+import { Erc20TokenConfig, tokens } from '@bitgo/statics';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
@@ -27,6 +28,16 @@ export class Erc20Token extends Eth {
 
   static createTokenConstructor(config: Erc20TokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new Erc20Token(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
+      const tokenConstructor = Erc20Token.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get type() {
