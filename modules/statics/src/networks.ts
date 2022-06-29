@@ -18,6 +18,17 @@ export interface UtxoNetwork extends BaseNetwork {
   utxolibName: string;
 }
 
+export interface AdaNetwork extends BaseNetwork {
+  // Network name as defined in @bitgo/utxo-lib networks.ts
+  // maybe add network identifier / magic network number
+  utxolibName: string;
+  poolDeposit: number;
+  stakeKeyDeposit: number;
+  maxValueSize: number;
+  maxTransactionSize: number;
+  coinsPerUtxoWord: number;
+}
+
 export interface AvalancheNetwork extends BaseNetwork {
   readonly alias: string;
   readonly blockchainID: string;
@@ -103,6 +114,30 @@ class AlgorandTestnet extends Testnet implements AccountNetwork {
   name = 'AlgorandTestnet';
   family = CoinFamily.ALGO;
   explorerUrl = 'https://testnet.algoexplorer.io/tx/';
+}
+
+class Ada extends Mainnet implements AdaNetwork {
+  name = 'AdaCardano';
+  family = CoinFamily.ADA;
+  utxolibName = 'cardano';
+  poolDeposit = 500000000;
+  stakeKeyDeposit = 2000000;
+  explorerUrl = 'https://explorer.cardano.org/en';
+  coinsPerUtxoWord = 34482;
+  maxTransactionSize = 8000;
+  maxValueSize = 4000;
+}
+
+class AdaTestnet extends Testnet implements AdaNetwork {
+  name = 'AdaCardanoTestnet';
+  family = CoinFamily.ADA;
+  utxolibName = 'cardanoTestnet';
+  explorerUrl = 'https://explorer.cardano-testnet.iohkdev.io/en';
+  coinsPerUtxoWord = 34482;
+  maxTransactionSize = 8000;
+  maxValueSize = 4000;
+  poolDeposit = 500000000;
+  stakeKeyDeposit = 2000000;
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
@@ -613,6 +648,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
 
 export const Networks = {
   main: {
+    ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
     avalancheC: Object.freeze(new AvalancheC()),
     avalancheP: Object.freeze(new AvalancheP()),
@@ -647,6 +683,7 @@ export const Networks = {
     zCash: Object.freeze(new ZCash()),
   },
   test: {
+    ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     avalancheP: Object.freeze(new AvalanchePTestnet()),

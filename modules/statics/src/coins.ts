@@ -1,28 +1,28 @@
 import {
   account,
+  AccountCoin,
+  algoToken,
+  avaxErc20,
   celoToken,
+  eosToken,
   erc20,
   erc20CompatibleAccountCoin,
-  hederaCoin,
-  hederaToken,
-  stellarToken,
-  talgoToken,
-  avaxErc20,
-  tavaxErc20,
-  tceloToken,
-  terc20,
-  tronToken,
-  tstellarToken,
-  ttronToken,
-  AccountCoin,
-  teosToken,
-  eosToken,
-  algoToken,
-  solToken,
-  tsolToken,
-  terc721,
   erc721,
   fiat,
+  hederaCoin,
+  hederaToken,
+  solToken,
+  stellarToken,
+  talgoToken,
+  tavaxErc20,
+  tceloToken,
+  teosToken,
+  terc20,
+  terc721,
+  tronToken,
+  tsolToken,
+  tstellarToken,
+  ttronToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -30,6 +30,7 @@ import { Networks } from './networks';
 import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 import { avaxp } from './avaxp';
+import { ada } from './ada';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -71,6 +72,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tdoge', 'Testnet Dogecoin', Networks.test.dogecoin, UnderlyingAsset.DOGE),
   avaxp('avaxp', 'Avalanche P-Chain', Networks.main.avalancheP, UnderlyingAsset.AVAXP),
   avaxp('tavaxp', 'Testnet Avalanche P-Chain', Networks.test.avalancheP, UnderlyingAsset.AVAXP),
+  ada('ada', 'Ada', Networks.main.ada, UnderlyingAsset.ADA),
+  ada('tada', 'tAda', Networks.test.ada, UnderlyingAsset.ADA),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, ALGO_FEATURES, KeyCurve.Ed25519),
   account(
     'talgo',
