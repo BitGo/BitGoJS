@@ -1,11 +1,17 @@
-import { BaseCoin as CoinConfig, AvalancheNetwork } from '@bitgo/statics';
-import { BaseKey, SigningError, BaseTransaction, TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  BaseKey,
+  BaseTransaction,
+  Entry,
+  InvalidTransactionError,
+  SigningError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import { DecodedUtxoObj, TxData } from './iface';
-import { UnsignedTx, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
+import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
+import { AddValidatorTx, AmountOutput, BaseTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import * as createHash from 'create-hash';
 import { Credential, Signature } from 'avalanche/dist/common';
 
 export class Transaction extends BaseTransaction {
@@ -19,7 +25,7 @@ export class Transaction extends BaseTransaction {
   public _memo?: BufferAvax;
   public _threshold = 2;
   public _locktime: BN = new BN(0);
-  public _fromPubKeys: BufferAvax[] = [];
+  public _fromAddresses: BufferAvax[] = [];
   public _utxos: DecodedUtxoObj[] = [];
   public _txFee: BN;
 
@@ -41,11 +47,11 @@ export class Transaction extends BaseTransaction {
   }
 
   get signature(): string[] {
-    if (this.credentials.length == 1) {
+    if (this.credentials.length == 0) {
       return [];
     }
     const obj: any = this.credentials[0].serialize();
-    return obj.sigArray;
+    return obj.sigArray.map((s) => s.bytes);
   }
 
   set credentials(credentials: Credential[]) {
@@ -67,7 +73,7 @@ export class Transaction extends BaseTransaction {
       const privateKey = kp.getPrivateKey();
       if (!privateKey) return false;
       const address = utils.parseAddress(kp.getAddress(this._network.hrp));
-      return this._fromPubKeys.find((a) => address.equals(a)) !== undefined;
+      return this._fromAddresses.find((a) => address.equals(a)) !== undefined;
     } catch {
       return false;
     }
@@ -117,13 +123,16 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
+
     return {
-      blockchain_id: utils.cb58Encode(this.avaxPTransaction.getBlockchainID()),
-      network_id: this.avaxPTransaction.getNetworkID(),
-      inputs: this.avaxPTransaction.getIns(),
-      outputs: this.avaxPTransaction.getOuts(),
+      id: this.id,
+      fromAddresses: this.fromAddresses,
+      threshold: this._threshold,
+      locktime: this._locktime.toString(),
+      type: this.type,
       memo: utils.bufferToString(this.avaxPTransaction.getMemo()),
-      typeID: this.avaxPTransaction.getTxType(),
+      signatures: this.signature,
+      outputs: this.outputs,
     };
   }
 
@@ -146,7 +155,41 @@ export class Transaction extends BaseTransaction {
    */
   get signablePayload(): Buffer {
     const txbuff = this._avaxpTransaction.toBuffer();
-    return createHash.default('sha256').update(txbuff).digest();
+    return utils.sha256(txbuff);
+  }
+
+  get id(): string {
+    return utils.cb58Encode(BufferAvax.from(utils.sha256(utils.cb58Decode(this.toBroadcastFormat()))));
+  }
+
+  get fromAddresses(): string[] {
+    return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+  }
+  /**
+   * Get the list of outputs. Amounts are expressed in absolute value.
+   */
+  get outputs(): Entry[] {
+    if (this.type === TransactionType.addValidator) {
+      const addValidatorTx = this.avaxPTransaction as AddValidatorTx;
+      return [
+        {
+          address: addValidatorTx.getNodeIDString(),
+          value: addValidatorTx.getStakeAmount().toString(),
+        },
+      ];
+    }
+    // general support any transaction type, but it's scoped yet
+    return this.avaxPTransaction.getOuts().map((output) => {
+      const amountOutput = output.getOutput() as any as AmountOutput;
+      const address = amountOutput
+        .getAddresses()
+        .map((a) => utils.addressToString(this._network.hrp, this._network.alias, a))
+        .join(', ');
+      return {
+        value: amountOutput.getAmount().toString(),
+        address,
+      };
+    });
   }
 
   /**
@@ -162,5 +205,21 @@ export class Transaction extends BaseTransaction {
     const sig = new Signature();
     sig.fromBuffer(signval);
     return sig;
+  }
+
+  /** @inheritdoc */
+  explainTransaction(): TransactionExplanation {
+    const txJson = this.toJson();
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    return {
+      displayOrder,
+      id: txJson.id,
+      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.value, memo: txJson.memo })),
+      outputAmount: txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString(),
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
+      fee: { fee: this._txFee.toString() },
+      type: txJson.type,
+    };
   }
 }

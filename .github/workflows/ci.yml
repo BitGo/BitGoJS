@@ -41,8 +41,22 @@ jobs:
         run: |
           git fetch origin $GITHUB_BASE_REF
 
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@v3
+        with:
+          path:  |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
       - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true'
         run: yarn install --with-frozen-lockfile
+      
+      - name: build packages
+        if: steps.lerna-cache.outputs.cache-hit == 'true'
+        run: yarn run postinstall
 
       - name: Lint Commit Messages
         if: ${{ startsWith(matrix.node-version, '14') }}
@@ -56,7 +70,7 @@ jobs:
 
       - name: Dependency Audit
         if: ${{ startsWith(matrix.node-version, '14') }}
-        run: yarn run audit
+        run: yarn run improved-yarn-audit --min-severity high
 
       - name: Lint Source Code
         if: ${{ startsWith(matrix.node-version, '14') }}
@@ -149,8 +163,23 @@ jobs:
             xdg-utils \
             wget
 
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@v3
+        with:
+          path:  |
+            node_modules
+            modules/*/node_modules
+            /home/runner/.cache/Cypress
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
       - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true'
         run: yarn install --with-frozen-lockfile
+
+      - name: build packages
+        if: steps.lerna-cache.outputs.cache-hit == 'true'
+        run: yarn run postinstall
 
       - name: Browser Tests
         run: yarn run browser-tests

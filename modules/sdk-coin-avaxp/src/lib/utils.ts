@@ -6,6 +6,7 @@ import { BaseTx, SelectCredentialClass, Tx, UnsignedTx } from 'avalanche/dist/ap
 import { Credential } from 'avalanche/dist/common/credentials';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
+import * as createHash from 'create-hash';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -194,6 +195,33 @@ export class Utils implements BaseUtils {
       BufferAvax.from(signature),
       BufferAvax.from(prv)
     );
+  }
+
+  /**
+   * Avaxp wrapper to recovery signature using Avalanche's buffer
+   * @param network
+   * @param message
+   * @param signature
+   * @return
+   */
+  recoverySignatureAvaxBuffer(network: AvalancheNetwork, message: BufferAvax, signature: BufferAvax): BufferAvax {
+    const ky = new KeyPairAvax(network.hrp, network.networkID.toString());
+    return ky.recover(message, signature);
+  }
+
+  /**
+   * Avaxp wrapper to verify signature
+   * @param network
+   * @param message
+   * @param signature
+   * @return true if it's verify successful
+   */
+  recoverySignature(network: AvalancheNetwork, message: Buffer, signature: Buffer): Buffer {
+    return Buffer.from(this.recoverySignatureAvaxBuffer(network, BufferAvax.from(message), BufferAvax.from(signature)));
+  }
+
+  sha256(buf: Uint8Array): Buffer {
+    return createHash.default('sha256').update(buf).digest();
   }
 }
 

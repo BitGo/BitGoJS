@@ -5,11 +5,8 @@ import {
   KeyPair,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  SignTransactionOptions,
   SignedTransaction,
   ParseTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient,
   MethodNotImplementedError,
   BaseTransaction,
   InvalidTransactionError,
@@ -17,34 +14,7 @@ import {
   SigningError,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
-
-export interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
-  publicKeys?: string[];
-}
-
-export interface TxInfo {
-  recipients: TransactionRecipient[];
-  from: string;
-  txid: string;
-}
-
-export interface AvaxpSignTransactionOptions extends SignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string | string[];
-  pubKeys?: string[];
-}
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
-  txInfo: TxInfo;
-  source: string;
-}
-
-export type TransactionFee = AvaxpLib.TransactionFee;
-export type TransactionExplanation = AvaxpLib.TransactionExplanation;
+import { AvaxpSignTransactionOptions, TransactionFee, ExplainTransactionOptions } from './iface';
 
 export class AvaxP extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -182,8 +152,18 @@ export class AvaxP extends BaseCoin {
    * @param params
    * @param callback
    */
-  explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
-    throw new MethodNotImplementedError('explainTransaction method not implemented');
+  async explainTransaction(params: ExplainTransactionOptions): Promise<AvaxpLib.TransactionExplanation> {
+    const txHex = params.txHex ?? params?.halfSigned?.txHex;
+    if (!txHex) {
+      throw new Error('missing transaction hex');
+    }
+    try {
+      const txBuilder = this.getBuilder().from(txHex);
+      const tx = await txBuilder.build();
+      return tx.explainTransaction();
+    } catch (e) {
+      throw new Error(`Invalid transaction: ${e.message}`);
+    }
   }
 
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {

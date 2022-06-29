@@ -60,7 +60,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
-    this._transaction._fromPubKeys = pubKeys.map(utils.parseAddress);
+    this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
     return this;
   }
 
@@ -101,7 +101,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const secpOut = out.getOutput();
     this._transaction._locktime = secpOut.getLocktime();
     this._transaction._threshold = secpOut.getThreshold();
-    this._transaction._fromPubKeys = secpOut.getAddresses();
+    this._transaction._fromAddresses = secpOut.getAddresses();
     this._transaction.avaxPTransaction = tx;
     return this;
   }

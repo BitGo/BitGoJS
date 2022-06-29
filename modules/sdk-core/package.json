@@ -38,7 +38,7 @@
     "@bitgo/bls-dkg": "^1.1.0-rc.1",
     "@bitgo/statics": "^6.18.0-rc.18",
     "@bitgo/utxo-lib": "^2.3.0-rc.10",
-    "@noble/secp256k1": "git+https://github.com/brandonblack/noble-secp256k1.git#856129c06436fb696bab7d827edad5effdffaee2",
+    "@noble/secp256k1": "1.6.0",
     "@stablelib/hex": "^1.0.0",
     "big.js": "^3.1.3",
     "bignumber.js": "^9.0.0",

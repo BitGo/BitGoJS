@@ -75,6 +75,7 @@ import { Tbcha } from './coins/tbcha';
 import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
 import { tokens } from '../config';
+import { SolToken } from './coins/solToken';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('algo', Algo.createInstance);
@@ -177,6 +178,11 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     const tokenConstructor = AvaxCToken.createTokenConstructor(token);
     globalCoinFactory.register(token.type, tokenConstructor);
     globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
+  }
+
+  for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
+    const tokenConstructor = SolToken.createTokenConstructor(token);
+    globalCoinFactory.register(token.type, tokenConstructor);
   }
 }
 
