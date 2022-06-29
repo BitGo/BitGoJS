@@ -2713,9 +2713,14 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.0.0.tgz#d5e38bfbdaba174805a4e649f13be9a9ed3351ae"
   integrity sha512-DZVbtY62kc3kkBtMHqwCOfXrT/hnoORy5BJ4+HU1IR59X0KWAOqsfzQPcUl/lQLlG7qXbe/fZ3r/emxtAl+sqg==
 
-"@noble/secp256k1@1.5.5", "@noble/secp256k1@git+https://github.com/brandonblack/noble-secp256k1.git#856129c06436fb696bab7d827edad5effdffaee2":
+"@noble/secp256k1@1.5.5":
   version "1.5.5"
   resolved "git+https://github.com/brandonblack/noble-secp256k1.git#856129c06436fb696bab7d827edad5effdffaee2"
+
+"@noble/secp256k1@1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-1.6.0.tgz#602afbbfcfb7e169210469b697365ef740d7e930"
+  integrity sha512-DWSsg8zMHOYMYBqIQi96BQuthZrp98LCeMNcUOaffCIVYQ5yxDbNikLF+H7jEnmNNmXbtVic46iCuVWzar+MgA==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

@@ -8,17 +8,19 @@ import { AlgoTokenConfig, formattedAlgoTokens } from '@bitgo/sdk-coin-algo';
 import { AvaxcTokenConfig } from './v2/coins/avaxcToken';
 import {
   coins,
-  Erc20Coin,
-  StellarCoin,
-  OfcCoin,
+  AvaxERC20Token,
   CeloCoin,
   CoinKind,
-  NetworkType,
   EosCoin,
+  Erc20Coin,
   Networks,
-  AvaxERC20Token,
+  NetworkType,
+  OfcCoin,
+  SolCoin,
+  StellarCoin,
 } from '@bitgo/statics';
 import { EnvironmentName, Environments, KrsProvider } from '@bitgo/sdk-core';
+import { SolTokenConfig } from './v2/coins/solToken';
 
 export interface Tokens {
   bitcoin: {
@@ -43,6 +45,9 @@ export interface Tokens {
     avaxc: {
       tokens: AvaxcTokenConfig[];
     };
+    sol: {
+      tokens: SolTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -65,6 +70,9 @@ export interface Tokens {
     };
     avaxc: {
       tokens: AvaxcTokenConfig[];
+    };
+    sol: {
+      tokens: SolTokenConfig[];
     };
   };
 }
@@ -179,6 +187,20 @@ const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
+  if (coin instanceof SolCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenAddress: coin.tokenAddress,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -203,6 +225,9 @@ export const tokens: Tokens = {
     avaxc: {
       tokens: formattedAvaxCTokens.filter(token => token.network === 'Mainnet'),
     },
+    sol: {
+      tokens: formattedSolTokens.filter(token => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -226,6 +251,9 @@ export const tokens: Tokens = {
     },
     avaxc: {
       tokens: formattedAvaxCTokens.filter(token => token.network === 'Testnet'),
+    },
+    sol: {
+      tokens: formattedSolTokens.filter(token => token.network === 'Testnet'),
     },
   },
 };
