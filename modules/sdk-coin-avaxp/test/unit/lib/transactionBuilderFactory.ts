@@ -5,33 +5,30 @@ import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 
-describe('AvaxP Transaction Builder', () => {
+describe('AvaxP Transaction Builder Factory', () => {
   const factory = new TransactionBuilderFactory(coins.get('tavaxp'));
 
   describe('should validate', () => {
     it('an empty raw transaction', () => {
-      const txBuilder = factory.getTransferBuilder();
       assert.throws(
         () => {
-          txBuilder.validateRawTransaction('');
+          factory.from('');
         },
         (e) => e.message === errorMessage.ERROR_EMPTY_RAW_TRANSACTION
       );
     });
 
     it('an invalid raw transfer transaction', () => {
-      const txBuilder = factory.getTransferBuilder();
       assert.throws(
         () => {
-          txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
+          factory.from(testData.INVALID_RAW_TRANSACTION);
         },
         (e) => e.message === errorMessage.ERROR_RAW_PARSING
       );
     });
 
     it('Should validate a correct raw tx', () => {
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.validateRawTransaction(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      factory.from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
       // should not throw a error!
     });
 
@@ -49,7 +46,7 @@ describe('AvaxP Transaction Builder', () => {
     let tx: BaseTransaction;
     before(async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
-        testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
+        testData.ADD_VALIDATOR_ID_SAMPLE.fullsigntxHex
       );
       tx = await txBuilder.build();
     });

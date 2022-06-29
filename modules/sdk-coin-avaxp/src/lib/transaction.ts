@@ -9,14 +9,53 @@ import {
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
-import { AddValidatorTx, AmountOutput, BaseTx, Tx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { AddValidatorTx, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { Credential, Signature } from 'avalanche/dist/common';
+import * as createHash from 'create-hash';
+import { Credential } from 'avalanche/dist/common';
+
+// region utils to sign
+interface signatureSerialized {
+  bytes: string;
+}
+interface CheckSignature {
+  (sigature: signatureSerialized, addressHex: string): boolean;
+}
+
+function isEmptySignature(s: string): boolean {
+  return !!s && s.startsWith(''.padStart(90, '0'));
+}
+
+/**
+ * Signatures are prestore as empty buffer for hsm and address of signar for first signature.
+ * When sign is required, this method return the function that identify a signature to be replaced.
+ * @param signatures any signatures as samples to identify which signature required replace.
+ */
+function generateSelectorSignature(signatures: signatureSerialized[]): CheckSignature {
+  if (signatures.every((sig) => isEmptySignature(sig.bytes))) {
+    // Look for address.
+    return function (sig, address): boolean {
+      try {
+        if (!isEmptySignature(sig.bytes)) return false;
+        const pub = sig.bytes.substring(90);
+        return pub === address;
+      } catch (e) {
+        return false;
+      }
+    };
+  } else {
+    // Look for empty string
+    return function (sig, address): boolean {
+      if (isEmptySignature(sig.bytes)) return true;
+      return false;
+    };
+  }
+}
+// end region utils for sign
 
 export class Transaction extends BaseTransaction {
-  protected _avaxpTransaction: UnsignedTx;
-  private _credentials: Credential[] = [];
+  protected _avaxpTransaction: Tx;
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
@@ -39,31 +78,23 @@ export class Transaction extends BaseTransaction {
   }
 
   get avaxPTransaction(): BaseTx {
-    return this._avaxpTransaction.getTransaction();
-  }
-
-  set avaxPTransaction(tx: BaseTx) {
-    this._avaxpTransaction = new UnsignedTx(tx);
+    return this._avaxpTransaction.getUnsignedTx().getTransaction();
   }
 
   get signature(): string[] {
-    if (this.credentials.length == 0) {
+    if (this.credentials.length === 0) {
       return [];
     }
     const obj: any = this.credentials[0].serialize();
-    return obj.sigArray.map((s) => s.bytes);
-  }
-
-  set credentials(credentials: Credential[]) {
-    this._credentials = credentials;
+    return obj.sigArray.map((s) => s.bytes).filter((s) => !isEmptySignature(s));
   }
 
   get credentials(): Credential[] {
-    return this._credentials;
+    return this._avaxpTransaction.getCredentials();
   }
 
   get hasCredentials(): boolean {
-    return this._credentials !== undefined && this._credentials.length > 0;
+    return this.credentials !== undefined && this.credentials.length > 0;
   }
 
   /** @inheritdoc */
@@ -72,7 +103,7 @@ export class Transaction extends BaseTransaction {
       const kp = new KeyPair({ prv: key });
       const privateKey = kp.getPrivateKey();
       if (!privateKey) return false;
-      const address = utils.parseAddress(kp.getAddress(this._network.hrp));
+      const address = utils.parseAddress(kp.getAvaxPAddress(this._network.hrp));
       return this._fromAddresses.find((a) => address.equals(a)) !== undefined;
     } catch {
       return false;
@@ -90,6 +121,7 @@ export class Transaction extends BaseTransaction {
    */
   sign(keyPair: KeyPair): void {
     const prv = keyPair.getPrivateKey();
+    const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
       throw new SigningError('Missing private key');
     }
@@ -100,7 +132,19 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('empty credentials to sign');
     }
     const signature = this.createSignature(prv);
-    this._credentials.forEach((credential) => credential.addSignature(signature));
+    let checkSign: CheckSignature | undefined = undefined;
+    this.credentials.forEach((c) => {
+      const cs: any = c.serialize();
+      if (checkSign === undefined) {
+        checkSign = generateSelectorSignature(cs.sigArray);
+      }
+      cs.sigArray.forEach((sig) => {
+        if (checkSign && checkSign(sig, addressHex)) {
+          sig.bytes = signature;
+        }
+      });
+      c.deserialize(cs);
+    });
   }
 
   /** @inheritdoc */
@@ -111,11 +155,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    const buffer = this.hasCredentials
-      ? new Tx(this._avaxpTransaction, this._credentials).toBuffer()
-      : this._avaxpTransaction.toBuffer();
-    const txSerialized = utils.cb58Encode(buffer).toString();
-    return txSerialized;
+    return this._avaxpTransaction.toBuffer().toString('hex');
   }
 
   // types - stakingTransaction, import, export
@@ -123,7 +163,6 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-
     return {
       id: this.id,
       fromAddresses: this.fromAddresses,
@@ -136,7 +175,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  setTransaction(tx: UnsignedTx): void {
+  setTransaction(tx: Tx): void {
     this._avaxpTransaction = tx;
   }
 
@@ -154,12 +193,12 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    const txbuff = this._avaxpTransaction.toBuffer();
-    return utils.sha256(txbuff);
+    const txbuff = this._avaxpTransaction.getUnsignedTx().toBuffer();
+    return createHash.default('sha256').update(txbuff).digest();
   }
 
   get id(): string {
-    return utils.cb58Encode(BufferAvax.from(utils.sha256(utils.cb58Decode(this.toBroadcastFormat()))));
+    return utils.cb58Encode(BufferAvax.from(utils.sha256(BufferAvax.from(this.toBroadcastFormat(), 'hex'))));
   }
 
   get fromAddresses(): string[] {
@@ -195,16 +234,15 @@ export class Transaction extends BaseTransaction {
   /**
    * Avax wrapper to create signature and return it for credentials
    * @param prv
+   * @return hexstring
    */
-  createSignature(prv: Buffer): Signature {
+  createSignature(prv: Buffer): string {
     const signval = utils.createSignatureAvaxBuffer(
       this._network,
       BufferAvax.from(this.signablePayload),
       BufferAvax.from(prv)
     );
-    const sig = new Signature();
-    sig.fromBuffer(signval);
-    return sig;
+    return signval.toString('hex');
   }
 
   /** @inheritdoc */

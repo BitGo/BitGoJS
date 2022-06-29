@@ -99,9 +99,29 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} format - avalanche hrp - select Mainnet(avax) or Testnet(fuji) for the address
    * @returns {string} The mainnet address derived from the public key
    */
-  getAddress(format: string = addressFormat.mainnet): string {
+  getAddress(format = 'mainnet'): string {
+    return this.getAvaxPAddress(addressFormat[format]);
+  }
+  /**
+   * Get a public address of public key.
+   *
+   * @param {string} hrp - select Mainnet(avax) or Testnet(fuji) for the address
+   * @returns {string} The address derived from the public key and hrp
+   */
+  getAvaxPAddress(hrp: string): string {
     const publicKey = BufferAvax.from(this.keyPair.publicKey);
     const addrressBuffer: BufferAvax = SECP256k1KeyPair.addressFromPublicKey(publicKey);
-    return utils.addressToString(format, 'P', addrressBuffer);
+    return utils.addressToString(hrp, 'P', addrressBuffer);
+  }
+
+  /**
+   * Get an Avalanche P-Chain public mainnet address
+   *
+   * @param {string} format - avalanche hrp - select Mainnet(avax) or Testnet(fuji) for the address
+   * @returns {string} The mainnet address derived from the public key
+   */
+  getAddressBuffer(): Buffer {
+    const publicKey = BufferAvax.from(this.keyPair.publicKey);
+    return Buffer.from(SECP256k1KeyPair.addressFromPublicKey(publicKey));
   }
 }
