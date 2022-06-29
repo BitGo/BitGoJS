@@ -9,7 +9,7 @@ describe('TSS ECDSA TESTS', function () {
   let keyShares: ECDSA.KeyCombined[];
   let commonPublicKey: string;
   before(async () => {
-    this.timeout(50000);
+    this.timeout(100000);
     const [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
     const A_combine = MPC.keyCombine(A.pShare, [B.nShares[1], C.nShares[1]]);
@@ -20,7 +20,7 @@ describe('TSS ECDSA TESTS', function () {
   });
 
   it('should generate keys with correct threshold and share number', async function () {
-    this.timeout(50000);
+    this.timeout(500000);
     for (let index = 0; index < 3; index++) {
       const participantOne = (index % 3) + 1;
       const participantTwo = ((index + 1) % 3) + 1;
