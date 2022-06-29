@@ -23,7 +23,7 @@ export interface PrebuildTransactionWithIntentOptions {
 
 export type TxRequestVersion = 'full' | 'lite';
 
-export type UnsignedTransaction = {
+export type EddsaUnsignedTransaction = {
   serializedTxHex: string;
   signableHex: string;
   feeInfo?: {
@@ -68,11 +68,11 @@ export type TxRequest = {
   pendingTxHashes?: string[];
   txHashes?: string[];
   // Only available in 'lite' version
-  unsignedTxs: UnsignedTransaction[];
+  unsignedTxs: EddsaUnsignedTransaction[];
   // Only available in 'full' version
   transactions: {
     state: TransactionState;
-    unsignedTx: UnsignedTransaction;
+    unsignedTx: EddsaUnsignedTransaction;
     signatureShares: SignatureShareRecord[];
   }[];
   apiVersion?: TxRequestVersion;

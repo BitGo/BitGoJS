@@ -26,14 +26,15 @@ import {
   defaultConstants,
   EncryptOptions,
   EnvironmentName,
+  getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
   GlobalCoinFactory,
   IBaseCoin,
   IRequestTracer,
+  makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
-import { getAddressP2PKH, makeRandomKey } from './util';
 import * as sjcl from '@bitgo/sjcl';
 import {
   AccessTokenOptions,

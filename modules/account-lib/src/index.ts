@@ -1,5 +1,7 @@
 import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
+  acountLibCrypto,
+  accountLibBaseCoin,
   BaseBuilder,
   BaseTransactionBuilderFactory,
   BuildTransactionError,
@@ -9,7 +11,19 @@ import {
 } from '@bitgo/sdk-core';
 export { Eddsa, Ed25519BIP32 };
 
+/**
+ * Deprecated after version 2.19.0
+ * Retained for short term backwards compatibility - migrate to: @bitgo/sdk-api and @bitgo/sdk-core
+ */
+export const crypto = acountLibCrypto;
+
 export { Ed25519KeyDeriver };
+
+/**
+ * Deprecated after version 2.19.0
+ * Retained for short term backwards compatibility - migrate to: @bitgo/sdk-api and @bitgo/sdk-core
+ */
+export const BaseCoin = accountLibBaseCoin;
 
 // coins
 import * as Trx from './coin/trx';
@@ -56,6 +70,7 @@ export { AvaxP };
 
 import * as Sol from './coin/sol';
 export { Sol };
+
 import * as Dot from './coin/dot';
 export { Dot };
 

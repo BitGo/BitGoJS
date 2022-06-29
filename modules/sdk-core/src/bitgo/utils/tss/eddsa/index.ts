@@ -10,5 +10,5 @@ export {
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
-  UnsignedTransaction,
+  EddsaUnsignedTransaction,
 } from './types';

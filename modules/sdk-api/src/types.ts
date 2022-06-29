@@ -1,4 +1,4 @@
-import { BitGoJsError, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
+import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPair } from '@bitgo/utxo-lib';
 
 export interface BitGoAPIOptions {
@@ -96,29 +96,6 @@ export interface ProcessedAuthenticationOptions {
   extensible?: boolean;
   extensionAddress?: string;
   forceV1Auth?: boolean;
-}
-
-export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
-  message: string;
-  status: number;
-  result?: ResponseBodyType;
-  invalidToken?: boolean;
-  needsOTP?: boolean;
-
-  public constructor(
-    message: string,
-    status: number,
-    result?: ResponseBodyType,
-    invalidToken?: boolean,
-    needsOTP?: boolean
-  ) {
-    super(message);
-    this.message = message;
-    this.status = status;
-    this.result = result;
-    this.invalidToken = invalidToken;
-    this.needsOTP = needsOTP;
-  }
 }
 
 export interface User {
