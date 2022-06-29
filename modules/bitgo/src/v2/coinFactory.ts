@@ -9,6 +9,7 @@ import {
   AvaxCToken,
   AvaxP,
   Bch,
+  Bcha,
   Bsv,
   Btc,
   Btg,
@@ -39,6 +40,7 @@ import {
   TavaxC,
   TavaxP,
   Tbch,
+  Tbcha,
   Tbsv,
   Tbtc,
   Tcelo,
@@ -68,10 +70,8 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Bcha } from './coins/bcha';
 import { Dot } from './coins/dot';
 import { Near } from './coins/near';
-import { Tbcha } from './coins/tbcha';
 import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
 import { tokens } from '../config';

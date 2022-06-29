@@ -6,6 +6,8 @@ import { Cspr, Tcspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr, Tcspr };
 import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP, TavaxP };
+import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+export { Bcha, Tbcha };
 
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 export { Algo, AlgoToken, Talgo };

@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
-import { Bch } from './bch';
+import { Bch } from '@bitgo/sdk-coin-bch';
 
 export class Bcha extends Bch {
   static createInstance(bitgo: BitGoBase): BaseCoin {
