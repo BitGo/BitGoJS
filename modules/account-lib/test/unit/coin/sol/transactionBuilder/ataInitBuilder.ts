@@ -5,16 +5,20 @@ import * as testData from '../../../../resources/sol/sol';
 import { BaseTransaction } from '@bitgo/sdk-core';
 
 describe('Sol Associated Token Account Builder', () => {
-  function verifyInputOutputAndRawTransaction(tx: BaseTransaction, rawTx: string) {
+  function verifyInputOutputAndRawTransaction(
+    tx: BaseTransaction,
+    rawTx: string,
+    owner: { pubkey: string; ataPubkey: string } = sender,
+  ) {
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
-      address: account.pub,
+      address: owner.pubkey,
       value: rentAmount,
       coin: mint,
     });
     tx.outputs.length.should.equal(1);
     tx.outputs[0].should.deepEqual({
-      address: ataPubkey,
+      address: owner.ataPubkey,
       value: rentAmount,
       coin: mint,
     });
@@ -34,11 +38,21 @@ describe('Sol Associated Token Account Builder', () => {
   };
 
   const account = new KeyPair(testData.associatedTokenAccounts.accounts[0]).getKeys();
-  const ataPubkey = testData.associatedTokenAccounts.accounts[0].ata;
+  const sender = {
+    pubkey: account.pub,
+    ataPubkey: testData.associatedTokenAccounts.accounts[0].ata,
+  };
   const wrongAccount = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
   const mint = testData.associatedTokenAccounts.mint;
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const rentAmount = '30000';
+
+  // for diff owner case
+  const accountOwner = new KeyPair(testData.associatedTokenAccounts.accounts[1]).getKeys();
+  const ownerPubkeys = {
+    pubkey: accountOwner.pub,
+    ataPubkey: testData.associatedTokenAccounts.accounts[1].ata,
+  };
 
   describe('Build and sign', () => {
     describe('Succeed', () => {
@@ -82,6 +96,52 @@ describe('Sol Associated Token Account Builder', () => {
 
         verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_WITH_MEMO);
+      });
+    });
+
+    describe('ATA creation for different owner', () => {
+      it('build an associated token account init for diff owner tx unsigned', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.owner(accountOwner.pub);
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_UNSIGNED_DIFF_OWNER_TX);
+      });
+
+      it('build an associated token account init for diff owner tx unsigned with memo', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.owner(accountOwner.pub);
+        txBuilder.memo('test memo please ignore');
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_UNSIGNED_DIFF_OWNER_TX_WITH_MEMO);
+      });
+
+      it('build an associated token account init for diff owner tx signed', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.owner(accountOwner.pub);
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_DIFF_OWNER_TX);
+      });
+
+      it('build an associated token account init for diff owner tx with memo signed', async () => {
+        const txBuilder = ataInitBuilder();
+        txBuilder.owner(accountOwner.pub);
+        txBuilder.memo('test memo please ignore');
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_DIFF_OWNER_TX_WITH_MEMO);
       });
     });
 
@@ -136,6 +196,13 @@ describe('Sol Associated Token Account Builder', () => {
         );
       });
 
+      it('build when owner is invalid', async () => {
+        const txBuilder = ataInitBuilder();
+        should(() => txBuilder.owner('invalid owner')).throwError(
+          'Invalid transaction: invalid owner, got: invalid owner',
+        );
+      });
+
       it('to sign twice with the same key', () => {
         const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_TX);
         txBuilder.sign({ key: account.prv });
@@ -166,6 +233,28 @@ describe('Sol Associated Token Account Builder', () => {
 
         verifyInputOutputAndRawTransaction(tx, rawTx);
         should.equal(rawTx, testData.ATA_INIT_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('build from a unsigned ATA init with diff owner and sign it', async () => {
+        const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_DIFF_OWNER_TX);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_DIFF_OWNER_TX);
+      });
+
+      it('build from a unsigned ATA init with diff owner with memo and sign it', async () => {
+        const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_DIFF_OWNER_TX_WITH_MEMO);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        verifyInputOutputAndRawTransaction(tx, rawTx, ownerPubkeys);
+        should.equal(rawTx, testData.ATA_INIT_SIGNED_DIFF_OWNER_TX_WITH_MEMO);
       });
     });
 

@@ -4,12 +4,19 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { AtaInit } from './iface';
 import { InstructionBuilderTypes } from './constants';
-import { getAssociatedTokenAccountAddress, getSolTokenFromTokenName, isValidAmount, isValidPublicKey } from './utils';
+import {
+  getAssociatedTokenAccountAddress,
+  getSolTokenFromTokenName,
+  isValidAddress,
+  isValidAmount,
+  isValidPublicKey,
+} from './utils';
 import assert from 'assert';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
 export class AtaInitializationBuilder extends TransactionBuilder {
   private _mint: string;
+  private _owner: string;
   private _rentExemptAmount: string;
   protected _transaction: AtaInitializationTransaction;
 
@@ -32,7 +39,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
 
         this._mint = ataInitInstruction.params.mintAddress;
         this.validateMintOrThrow();
-        this.sender(ataInitInstruction.params.ownerAddress);
+        this.owner(ataInitInstruction.params.ownerAddress);
       }
     }
   }
@@ -54,6 +61,23 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   private validateMintOrThrow() {
     if (!this._mint || !isValidPublicKey(this._mint)) {
       throw new BuildTransactionError('Invalid transaction: invalid or missing mint, got: ' + this._mint);
+    }
+  }
+
+  /**
+   * Sets the owner address of the associated token account
+   *
+   * @param owner owner address of associated token account
+   */
+  owner(owner: string): this {
+    this._owner = owner;
+    this.validateOwnerOrThrow();
+    return this;
+  }
+
+  private validateOwnerOrThrow() {
+    if (!this._owner || !isValidAddress(this._owner)) {
+      throw new BuildTransactionError('Invalid transaction: invalid owner, got: ' + this._owner);
     }
   }
 
@@ -86,14 +110,16 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     assert(this._mint, 'Mint must be set before building the transaction');
+    this._owner = this._owner || this._sender;
+    assert(this._owner, 'Owner must be set before building the transaction');
 
-    const ataPk = await getAssociatedTokenAccountAddress(this._mint, this._sender);
+    const ataPk = await getAssociatedTokenAccountAddress(this._mint, this._owner);
     const ataInitData: AtaInit = {
       type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
       params: {
         mintAddress: this._mint,
         ataAddress: ataPk,
-        ownerAddress: this._sender,
+        ownerAddress: this._owner,
         payerAddress: this._sender,
       },
     };
