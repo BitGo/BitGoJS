@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.14...@bitgo/sdk-coin-avaxp@0.1.0-rc.15) (2022-06-29)
+
+
+### Features
+
+* **sdk-coin-avaxp:** explainTransaction ([fd76a24](https://github.com/BitGo/BitGoJS/commit/fd76a24823bab926dca859e488938778500fde6c))
+
+
+
+
+
 # [0.1.0-rc.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.13...@bitgo/sdk-coin-avaxp@0.1.0-rc.14) (2022-06-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

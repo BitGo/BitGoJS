@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.28](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.27...bitgo@14.2.0-rc.28) (2022-06-29)
+
+
+### Bug Fixes
+
+* register solana tokens ([26baa35](https://github.com/BitGo/BitGoJS/commit/26baa35b3b4d9275c85fd49490e810a517860396))
+
+
+### Reverts
+
+* Revert "feat(bitgo): change the names from algo tokens" ([81e794b](https://github.com/BitGo/BitGoJS/commit/81e794bba02f050055452481e0b87b58e68928de))
+
+
+
+
+
 # [14.2.0-rc.27](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.26...bitgo@14.2.0-rc.27) (2022-06-27)
 
 **Note:** Version bump only for package bitgo
