@@ -18,6 +18,7 @@ describe('V2 Base Coin:', function () {
   let basecoinEth;
   let basecoinBtc;
   let basecoinXlm;
+  let basecoinNear;
   let basecoinErc20TokenWithName;
   let basecoinErc20TokenWithContractHash;
   let baseCoinStellarToken;
@@ -28,6 +29,7 @@ describe('V2 Base Coin:', function () {
     basecoinEth = bitgo.coin('teth');
     basecoinBtc = bitgo.coin('tbtc');
     basecoinXlm = bitgo.coin('txlm');
+    basecoinNear = bitgo.coin('tnear');
     basecoinEth.keychains();
     basecoinErc20TokenWithName = bitgo.coin('terc');
     basecoinErc20TokenWithContractHash = bitgo.coin('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
@@ -69,6 +71,17 @@ describe('V2 Base Coin:', function () {
       // others
       basecoinXlm.baseUnitsToBigUnits('10000001').should.equal('1.0000001');
     });
+
+    it('should convert amounts to NEAR', function () {
+
+      basecoinNear.baseUnitsToBigUnits('5348162392287187499999010').should.equal('5.34816239228718749999901');
+
+      basecoinNear.baseUnitsToBigUnits('5555555555555555555555550').should.equal('5.55555555555555555555555');
+
+      basecoinNear.baseUnitsToBigUnits('197895229538867437499999802').should.equal('197.895229538867437499999802');
+
+    });
+
   });
 
   describe('supportsBlockTarget', function () {
