@@ -6,19 +6,15 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   TransactionType,
-  InvalidTransactionError,
-  ParseTransactionError,
   BuildTransactionError,
-  NotSupported,
   BaseTransaction,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { BN } from 'avalanche';
-import { BaseTx } from 'avalanche/dist/apis/platformvm/basetx';
-import { Credential } from 'avalanche/dist/common';
+import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { DecodedUtxoObj } from './iface';
+import { Tx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -47,7 +43,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
 
   threshold(value: number): this {
-    // this.validateThreshold(value);
+    this.validateThreshold(value);
     this._transaction._threshold = value;
     return this;
   }
@@ -85,16 +81,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {Transaction} tx the transaction data
    */
-  initBuilder(tx?: BaseTx): this {
-    if (!tx) return this;
+  initBuilder(tx: Tx): this {
+    const baseTx = tx.getUnsignedTx().getTransaction();
     if (
-      tx.getNetworkID() !== this._transaction._networkID ||
-      !tx.getBlockchainID().equals(this._transaction._blockchainID)
+      baseTx.getNetworkID() !== this._transaction._networkID ||
+      !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
     ) {
       throw new Error('Network or blockchain is not equals');
     }
-    this._transaction._memo = tx.getMemo();
-    const out = tx.getOuts()[0];
+    this._transaction._memo = baseTx.getMemo();
+    const out = baseTx.getOuts()[0];
     if (!out.getAssetID().equals(this._transaction._assetId)) {
       throw new Error('AssetID are not equals');
     }
@@ -102,18 +98,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction._locktime = secpOut.getLocktime();
     this._transaction._threshold = secpOut.getThreshold();
     this._transaction._fromAddresses = secpOut.getAddresses();
-    this._transaction.avaxPTransaction = tx;
-    return this;
-  }
-
-  credentials(credentials: Credential[]): this {
-    this.transaction.credentials = credentials;
+    this._transaction.setTransaction(tx);
     return this;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    throw new NotSupported('from raw transaction is not supported. See TransactionBuilderFactory.from method');
+    const tx = new Tx();
+    tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
+    this.initBuilder(tx);
+    return this.transaction;
   }
 
   get hasSigner(): boolean {
@@ -121,26 +115,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    // TODO: STLX-17317: sign with recovery key
-    // if (this.hasSigner) {
-    //    this.recoverSigner = this._fromPubKeys[1].equals(utils.parseAddress(this._signer[0].getAddress()));
-    // }
-    this.transaction.avaxPTransaction = this.buildAvaxpTransaction();
+    this.buildAvaxpTransaction();
+    this.transaction.setTransactionType(this.transactionType);
     if (this.hasSigner) {
-      if (!this.transaction.hasCredentials) {
-        this.transaction.credentials = utils.getCredentials(this.transaction.avaxPTransaction);
-      }
       this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
     }
-    this.transaction.setTransactionType(this.transactionType);
     return this.transaction;
   }
 
   /**
-   * Builds the avaxp transaction
-   * @return {Transaction} avaxp sdk transaction
+   * Builds the avaxp transaction. transaction field is changed.
    */
-  protected abstract buildAvaxpTransaction(): BaseTx;
+  protected abstract buildAvaxpTransaction(): void;
 
   // region Getters and Setters
   /** @inheritdoc */
@@ -194,16 +180,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /** @inheritdoc */
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   * It overrides abstract method from BaseTransactionBuilder
+   *
+   * @param rawTransaction Transaction in any format
+   */
   validateRawTransaction(rawTransaction: string): void {
-    if (!rawTransaction) {
-      throw new InvalidTransactionError('Raw transaction is empty');
-    }
-    try {
-      utils.cb58Decode(rawTransaction);
-    } catch (e) {
-      throw new ParseTransactionError('Raw transaction is not hex string');
-    }
+    utils.validateRawTransaction(rawTransaction);
   }
 
   /** @inheritdoc */

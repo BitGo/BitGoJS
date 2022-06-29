@@ -41,4 +41,5 @@ export type DecodedUtxoObj = {
   outputidx: string;
   threshold: number;
   addresses: string[];
+  addressesIndex?: number[];
 };

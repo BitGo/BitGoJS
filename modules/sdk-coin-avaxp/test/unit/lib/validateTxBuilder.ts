@@ -117,7 +117,7 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
     });
 
-    it('Should create AddValidator tx from raw tx', async () => {
+    it('Should recover AddValidator tx from raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
       );
@@ -146,7 +146,7 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
     });
 
-    it('Should create half signed AddValidator from raw tx', async () => {
+    it('Should recover half signed AddValidator from raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
       );
@@ -165,7 +165,7 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
     });
 
-    it('Should create half signed AddValidator from half signed raw tx', async () => {
+    it('Should recover half signed AddValidator from half signed raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
       );
@@ -174,7 +174,7 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
     });
 
-    it('Should create signed AddValidator from signed raw tx', async () => {
+    it('Should recover signed AddValidator from signed raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.fullsigntxHex
       );
@@ -237,16 +237,17 @@ describe('AvaxP Validate Tx Builder', () => {
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
         .memo(testData.ADDVALIDATOR_SAMPLES.memo)
-        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
+        .recoverMode();
 
-      txBuilder.recoverMode().sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
     });
 
-    it('Should create half sign a AddValidator tx with recovery key from half signed raw tx', async () => {
+    it('Should recover half sign a AddValidator tx with recovery key from half signed raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
       );
@@ -267,10 +268,10 @@ describe('AvaxP Validate Tx Builder', () => {
 
     it('Should full sign a AddValidator tx with recovery key from unsigned raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
-        testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
+        testData.ADDVALIDATOR_SAMPLES.recoveryUnsignedTxHex
       );
       // txBuilder.recoverMode()
-      txBuilder.recoverMode().sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv3 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();

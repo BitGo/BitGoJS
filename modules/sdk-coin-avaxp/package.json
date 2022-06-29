@@ -14,7 +14,10 @@
     "prepare": "npm run build",
     "scriptsComment": {
       "build": "Need to re-add unit-test: 'nyc -- mocha' and test 'npm run unit-test', removed to green build and will add tests as implemented"
-    }
+    },
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
   },
   "repository": {
     "type": "git",

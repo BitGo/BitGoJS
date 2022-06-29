@@ -51,11 +51,13 @@ export class AvaxP extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new MethodNotImplementedError('verifyTransaction method not implemented');
+    // TODO(STLX-16574): verifyTransaction
+    return true;
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError('verifyAddress method not implemented');
+    // TODO(STLX-16574): verifyTransaction
+    return true;
   }
 
   /**
