@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.23...@bitgo/account-lib@2.20.0-rc.25) (2022-06-29)
+
+
+### Features
+
+* **account-lib:** add support for ecdsa sigining and verification tss ([8600501](https://github.com/BitGo/BitGoJS/commit/8600501320f09df21d63f9c01341844cb9a01fe1))
+* **account-lib:** sol create ata for diff owner ([6b5e3a8](https://github.com/BitGo/BitGoJS/commit/6b5e3a8323fc9d8e242eebc0b3814042cb24cb7c))
+
+
+
+
+
 # [2.20.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.23...@bitgo/account-lib@2.20.0-rc.24) (2022-06-29)
 
 

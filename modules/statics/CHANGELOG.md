@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.18...@bitgo/statics@6.18.0-rc.20) (2022-06-29)
+
+
+### Reverts
+
+* Revert "feat(bitgo): change the names from algo tokens" ([81e794b](https://github.com/BitGo/BitGoJS/commit/81e794bba02f050055452481e0b87b58e68928de))
+
+
+
+
+
 # [6.18.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.18...@bitgo/statics@6.18.0-rc.19) (2022-06-29)
 
 

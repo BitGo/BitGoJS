@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.14...@bitgo/sdk-coin-avaxp@0.1.0-rc.16) (2022-06-29)
+
+
+### Features
+
+* **sdk-coin-avaxp:** adapts to new signing strategy ([9d6de16](https://github.com/BitGo/BitGoJS/commit/9d6de166ed47f6cf1491b694c79115454fee57e1))
+* **sdk-coin-avaxp:** explainTransaction ([fd76a24](https://github.com/BitGo/BitGoJS/commit/fd76a24823bab926dca859e488938778500fde6c))
+
+
+
+
+
 # [0.1.0-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.14...@bitgo/sdk-coin-avaxp@0.1.0-rc.15) (2022-06-29)
 
 
