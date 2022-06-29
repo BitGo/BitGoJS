@@ -14,7 +14,7 @@ import { WalletCoinSpecific } from '../../../src/v2/wallet';
 const bitgo = new BitGo({ env: 'test' });
    
 // change this to 'algo:16026733' when you are ready for production
-const coin = 'talgo:KAL-16026733';
+const coin = 'talgo:16026733';
    
 // this can be found on test.bitgo.com in the URL after clicking on a wallet
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
