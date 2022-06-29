@@ -53,11 +53,18 @@ export enum TransactionType {
 export enum AddressFormat {
   hex = 'hex',
   base58 = 'base58',
-  // format for westend addresses
-  substrate = 'substrate',
-  // format for polkadot mainnet addresses
-  polkadot = 'polkadot',
 }
+
+// TODO(): create union type of all address formats enums
+// list of ss58 format encoding types for Dot ecosystem
+export enum DotAddressFormat {
+  // format for westend (generic substrate) addresses
+  substrate = 42,
+  // format for polkadot mainnet addresses
+  polkadot = 0,
+}
+
+export type DotAssetTypes = 'dot' | 'tdot';
 
 export enum StakingOperationTypes {
   LOCK,

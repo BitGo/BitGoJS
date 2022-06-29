@@ -1,5 +1,5 @@
 import { PrivateKey, PublicKey } from '@hashgraph/sdk';
-import { DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions, NotSupported } from '@bitgo/sdk-core';
+import { AddressFormat, DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions, NotSupported } from '@bitgo/sdk-core';
 import { removePrefix } from './utils';
 
 const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
@@ -35,7 +35,7 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /** @inheritdoc */
-  getAddress(format?: string): string {
+  getAddress(format?: AddressFormat): string {
     throw new NotSupported('Address derivation is not supported in Hedera');
   }
 

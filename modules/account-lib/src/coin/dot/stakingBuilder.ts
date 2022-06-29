@@ -3,7 +3,7 @@ import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@su
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { MethodNames, StakeArgs, StakeArgsPayee, StakeArgsPayeeRaw } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -110,11 +110,21 @@ export class StakingBuilder extends TransactionBuilder {
     if (this._method?.name === MethodNames.Bond) {
       const txMethod = this._method.args as StakeArgs;
       this.amount(txMethod.value);
-      this.owner({ address: utils.decodeDotAddress(txMethod.controller.id) });
+      this.owner({
+        address: utils.decodeDotAddress(
+          txMethod.controller.id,
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes),
+        ),
+      });
 
       const payee = txMethod.payee as StakeArgsPayeeRaw;
       if (payee.account) {
-        this.payee({ Account: utils.decodeDotAddress(payee.account) });
+        this.payee({
+          Account: utils.decodeDotAddress(
+            payee.account,
+            utils.getAddressFormat(this._coinConfig.name as DotAssetTypes),
+          ),
+        });
       } else {
         const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as StakeArgsPayee;
         this.payee(payeeType);

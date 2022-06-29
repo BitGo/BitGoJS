@@ -3,11 +3,11 @@ import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@su
 import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
-import { BaseKey, Eddsa, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder, Transaction, KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/dot';
+import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { KeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from '../../../../../src/coin/dot';
 import { Material } from '../../../../../src/coin/dot/iface';
 import utils from '../../../../../src/coin/dot/utils';
-import { rawTx, accounts, specName, specVersion, genesisHash, chainName } from '../../../../resources/dot';
+import { accounts, chainName, genesisHash, rawTx, specName, specVersion } from '../../../../resources/dot';
 import { register } from '../../../../../src';
 
 export interface TestDotNetwork extends DotNetwork {
@@ -193,7 +193,7 @@ describe('Dot Transfer Builder', () => {
 
       const commonPub = A_combine.pShare.y;
       const dotKeyPair = new KeyPair({ pub: commonPub });
-      const sender = dotKeyPair.getAddress();
+      const sender = dotKeyPair.getAddress(DotAddressFormat.substrate);
 
       let transferBuilder = factory
         .getTransferBuilder()
