@@ -9,7 +9,7 @@ import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate
 import { construct } from '@substrate/txwrapper-polkadot';
 import base32 from 'hi-base32';
 import { KeyPair } from '.';
-import { BaseUtils, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
+import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
 import { HexString, Material, ProxyArgs, ProxyCallArgs, TransferArgs, TxMethod } from './iface';
 import nacl from 'tweetnacl';
 import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
@@ -17,6 +17,12 @@ import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayloa
 import bs58 from 'bs58';
 
 const PROXY_METHOD_ARG = 2;
+// map to retrieve the address encoding format when the key is the asset name
+const coinToAddressMap = new Map<DotAssetTypes, DotAddressFormat>([
+  ['dot', DotAddressFormat.polkadot],
+  ['tdot', DotAddressFormat.substrate],
+]);
+
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
@@ -202,9 +208,9 @@ export class Utils implements BaseUtils {
    * @param {number} [ss58Format]
    * @returns {string}
    */
-  decodeDotAddress(address: string, ss58Format?: number): string {
+  decodeDotAddress(address: string, ss58Format: number): string {
     const keypair = new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
-    return keypair.getAddress();
+    return keypair.getAddress(ss58Format);
   }
 
   /**
@@ -292,6 +298,16 @@ export class Utils implements BaseUtils {
    */
   isZeroHex(hexValue: string): boolean {
     return hexValue === '0x00';
+  }
+
+  /**
+   * Takes an asset name and returns the respective address to format to
+   * since polkadot addresses differ depending on the network
+   * ref: https://wiki.polkadot.network/docs/learn-accounts
+   * @param networkCoinName
+   */
+  getAddressFormat(networkCoinName: DotAssetTypes): DotAddressFormat {
+    return coinToAddressMap.get(networkCoinName) as DotAddressFormat;
   }
 }
 
