@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import bip32 from 'bip32';
+import * as bip32 from 'bip32';
 import { BigNumber } from 'bignumber.js';
 import { randomBytes } from 'crypto';
 import debugLib from 'debug';
