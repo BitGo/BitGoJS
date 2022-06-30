@@ -4,6 +4,7 @@ import {
   isPublicKey,
   isSeed,
   isValidXprv,
+  isValidXpub,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
@@ -73,10 +74,19 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    */
   recordKeysFromPublicKey(pub: string): void {
     try {
-      this.keyPair = ECPair.fromPublicKey(Buffer.from(utils.cb58Decode(pub)));
+      if (isValidXpub(pub)) {
+        this.hdNode = bip32.fromBase58(pub);
+      } else {
+        this.keyPair = ECPair.fromPublicKey(Buffer.from(pub, 'hex'));
+      }
       return;
     } catch (e) {
-      throw new Error('Unsupported public key');
+      try {
+        this.keyPair = ECPair.fromPublicKey(Buffer.from(utils.cb58Decode(pub)));
+        return;
+      } catch (e) {
+        throw new Error('Unsupported public key');
+      }
     }
   }
 
@@ -86,10 +96,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns { DefaultKeys } The keys in the defined format
    */
   getKeys(): DefaultKeys {
-    const key = this.keyPair?.privateKey;
     return {
-      pub: utils.cb58Encode(BufferAvax.from(this.keyPair.publicKey)),
-      prv: key && 'PrivateKey-' + utils.cb58Encode(BufferAvax.from(key)),
+      pub: this.getPublicKey({ compressed: true }).toString('hex'),
+      prv: this.getPrivateKey()?.toString('hex'),
     };
   }
 

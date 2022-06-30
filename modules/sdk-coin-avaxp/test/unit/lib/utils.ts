@@ -16,4 +16,10 @@ describe('Avax P Util', () => {
       Utils.recoverySignature(network, message, signautre).should.deepEqual(pub);
     });
   });
+
+  it('should a public key be valided', () => {
+    Utils.isValidPublicKey(testData.SEED_ACCOUNT.publicKeyCb58).should.be.true();
+    Utils.isValidPublicKey(testData.SEED_ACCOUNT.publicKey).should.be.true();
+    Utils.isValidPublicKey(testData.SEED_ACCOUNT.xPublicKey).should.be.true();
+  });
 });

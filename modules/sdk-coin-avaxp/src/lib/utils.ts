@@ -64,22 +64,32 @@ export class Utils implements BaseUtils {
   isValidPublicKey(pub: string): boolean {
     if (isValidXpub(pub)) return true;
 
-    if (pub.length !== 66 && pub.length !== 130) return false;
+    let pubBuf;
+    if (pub.length === 50) {
+      try {
+        pubBuf = utils.cb58Decode(pub);
+      } catch {
+        return false;
+      }
+    } else {
+      if (pub.length !== 66 && pub.length !== 130) return false;
 
-    const firstByte = pub.slice(0, 2);
+      const firstByte = pub.slice(0, 2);
 
-    // uncompressed public key
-    if (pub.length === 130 && firstByte !== '04') return false;
+      // uncompressed public key
+      if (pub.length === 130 && firstByte !== '04') return false;
 
-    // compressed public key
-    if (pub.length === 66 && firstByte !== '02' && firstByte !== '03') return false;
+      // compressed public key
+      if (pub.length === 66 && firstByte !== '02' && firstByte !== '03') return false;
 
-    if (!this.allHexChars(pub)) return false;
+      if (!this.allHexChars(pub)) return false;
 
+      pubBuf = BufferAvax.from(pub, 'hex');
+    }
     // validate the public key
     const secp256k1 = new ec('secp256k1');
     try {
-      const keyPair = secp256k1.keyFromPublic(BufferAvax.from(pub, 'hex'));
+      const keyPair = secp256k1.keyFromPublic(pubBuf);
       const { result } = keyPair.validate();
       return result;
     } catch (e) {
