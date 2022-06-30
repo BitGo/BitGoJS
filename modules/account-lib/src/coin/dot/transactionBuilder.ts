@@ -9,6 +9,7 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
+  DotAssetTypes,
   FeeOptions,
   InvalidTransactionError,
   isValidEd25519Seed,
@@ -195,7 +196,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
       const keypair = utils.decodeDotAddressToKeyPair(decodedTxn.address);
-      this.sender({ address: keypair.getAddress() });
+      this.sender({ address: keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)) });
       const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
       this.addSignature(keypair.getKeys(), Buffer.from(edSignature, 'hex'));
     }

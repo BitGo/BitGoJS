@@ -4,7 +4,7 @@ import { Dot } from '../../../../src';
 import { accounts } from '../../../resources/dot';
 import bs58 from 'bs58';
 import utils from '../../../../src/coin/dot/utils';
-import { AddressFormat } from '@bitgo/sdk-core';
+import { DotAddressFormat } from '@bitgo/sdk-core';
 
 describe('Dot KeyPair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };
@@ -53,7 +53,7 @@ describe('Dot KeyPair', () => {
       const derivedKeyPair = new Dot.KeyPair({
         prv: derived.prv || '',
       });
-      should.exists(derivedKeyPair.getAddress());
+      should.exists(derivedKeyPair.getAddress(DotAddressFormat.substrate));
       should.exists(derivedKeyPair.getKeys().prv);
       should.exists(derivedKeyPair.getKeys().pub);
       should.equal(derivedKeyPair.getKeys().prv?.length, 64);
@@ -90,24 +90,24 @@ describe('Dot KeyPair', () => {
   describe('getAddress', () => {
     it('should get an address', () => {
       let keyPair = new Dot.KeyPair(defaultSeed);
-      let address = keyPair.getAddress();
+      let address = keyPair.getAddress(DotAddressFormat.substrate);
       address.should.equal(defaultAccount.address);
 
       keyPair = new Dot.KeyPair({ prv: account2.secretKey });
-      address = keyPair.getAddress();
+      address = keyPair.getAddress(DotAddressFormat.substrate);
       address.should.equal(account2.address);
     });
 
     it('should get an address with bs58 pub key', () => {
       const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
-      const address = keyPair.getAddress();
+      const address = keyPair.getAddress(DotAddressFormat.substrate);
       address.should.equal(bs58Account.address);
       utils.isValidAddress(address).should.equal(true);
     });
 
     it('should get a polkadot network address', () => {
       const keyPair = new Dot.KeyPair({ pub: bs58Account.publicKey });
-      const address = keyPair.getAddress(AddressFormat.polkadot);
+      const address = keyPair.getAddress(DotAddressFormat.polkadot);
       address.should.equal(bs58Account.polkadotAddress);
       utils.isValidAddress(address).should.equal(true);
     });
@@ -116,7 +116,7 @@ describe('Dot KeyPair', () => {
   describe('getSigningKeyPair', () => {
     it('should create a signing keypair', () => {
       const keyPair = new Dot.KeyPair({ prv: account1.secretKey });
-      const address = keyPair.getAddress();
+      const address = keyPair.getAddress(DotAddressFormat.substrate);
       address.should.equal(account1.address);
     });
   });

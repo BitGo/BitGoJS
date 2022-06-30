@@ -179,6 +179,7 @@ export abstract class BaseCoin implements IBaseCoin {
    * to big units (btc, eth, xrp, xlm)
    */
   baseUnitsToBigUnits(baseUnits: string | number): string {
+    BigNumber.set({ DECIMAL_PLACES: 24 });
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts

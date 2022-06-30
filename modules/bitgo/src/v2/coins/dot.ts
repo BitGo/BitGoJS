@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import {
   BaseCoin,
   BitGoBase,
+  DotAssetTypes,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -275,6 +276,7 @@ export class Dot extends BaseCoin {
   }
 
   getAddressFromPublicKey(Pubkey: string): string {
-    return new accountLib.Dot.KeyPair({ pub: Pubkey }).getAddress();
+    return new accountLib.Dot.KeyPair({ pub: Pubkey }).getAddress(
+      accountLib.Dot.Utils.default.getAddressFormat(this.getChain() as DotAssetTypes));
   }
 }

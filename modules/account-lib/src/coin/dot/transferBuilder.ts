@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
@@ -148,10 +148,17 @@ export class TransferBuilder extends TransactionBuilder {
     if (this._method?.name === MethodNames.TransferKeepAlive) {
       const txMethod = this._method.args as TransferArgs;
       this.amount(txMethod.value);
-      this.to({ address: utils.decodeDotAddress(txMethod.dest.id) });
+      this.to({
+        address: utils.decodeDotAddress(
+          txMethod.dest.id,
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes),
+        ),
+      });
     } else if (this._method?.name === MethodNames.Proxy) {
       const txMethod = this._method.args as ProxyArgs;
-      this.owner({ address: utils.decodeDotAddress(txMethod.real) });
+      this.owner({
+        address: utils.decodeDotAddress(txMethod.real, utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)),
+      });
       this.forceProxyType(txMethod.forceProxyType);
       const decodedCall = utils.decodeCallMethod(rawTransaction, {
         registry: SingletonRegistry.getInstance(this._material),
@@ -163,7 +170,12 @@ export class TransferBuilder extends TransactionBuilder {
         );
       }
       this.amount(`${decodedCall.value}`);
-      this.to({ address: utils.decodeDotAddress(decodedCall.dest.id) });
+      this.to({
+        address: utils.decodeDotAddress(
+          decodedCall.dest.id,
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes),
+        ),
+      });
     } else {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${this._method?.name}. Expected a transferKeepAlive or a proxy transferKeepAlive transaction`,

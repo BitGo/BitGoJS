@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { ClaimArgs, MethodNames } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -90,7 +90,12 @@ export class ClaimBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
     if (this._method?.name === MethodNames.PayoutStakers) {
       const txMethod = this._method.args as ClaimArgs;
-      this.validatorStash({ address: utils.decodeDotAddress(txMethod.validatorStash) });
+      this.validatorStash({
+        address: utils.decodeDotAddress(
+          txMethod.validatorStash,
+          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes),
+        ),
+      });
       this.claimEra(txMethod.era);
     } else {
       throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected payoutStakers`);

@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseKey,
   BaseTransaction,
+  DotAssetTypes,
   InvalidTransactionError,
   ParseTransactionError,
   SigningError,
@@ -17,15 +18,15 @@ import {
   AddAnonymousProxyArgs,
   AddProxyArgs,
   BatchArgs,
+  ClaimArgs,
   DecodedTx,
+  HexString,
   StakeArgs,
   StakeArgsPayeeRaw,
   TransactionExplanation,
-  HexString,
   TxData,
   UnstakeArgs,
   WithdrawUnstakedArgs,
-  ClaimArgs,
 } from './iface';
 import utils from './utils';
 import { u8aToBuffer } from '@polkadot/util';
@@ -44,7 +45,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
     const kp = new KeyPair({ prv: key });
-    const addr = kp.getAddress();
+    const addr = kp.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
     return addr === this._sender;
   }
 
@@ -153,7 +154,7 @@ export class Transaction extends BaseTransaction {
         const keypairReal = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
         });
-        result.owner = keypairReal.getAddress();
+        result.owner = keypairReal.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         result.forceProxyType = txMethod.forceProxyType;
         const decodedCall = utils.decodeCallMethod(this._dotTransaction, {
           metadataRpc: this._dotTransaction.metadataRpc,
@@ -162,13 +163,13 @@ export class Transaction extends BaseTransaction {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(decodedCall.dest.id)).toString('hex'),
         });
-        result.to = keypairDest.getAddress();
+        result.to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         result.amount = decodedCall.value;
       } else if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
-        result.to = keypairDest.getAddress();
+        result.to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         result.amount = txMethod.value;
       } else {
         throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
@@ -181,7 +182,7 @@ export class Transaction extends BaseTransaction {
         pub: Buffer.from(decodeAddress(txMethod.controller.id, false, this._registry.chainSS58)).toString('hex'),
       });
 
-      result.controller = keypair.getAddress();
+      result.controller = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       result.amount = txMethod.value;
 
       const payee = txMethod.payee as StakeArgsPayeeRaw;
@@ -189,7 +190,7 @@ export class Transaction extends BaseTransaction {
         const keypair = new KeyPair({
           pub: Buffer.from(decodeAddress(payee.account, false, this._registry.chainSS58)).toString('hex'),
         });
-        result.payee = keypair.getAddress();
+        result.payee = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       } else {
         const payeeType = utils.capitalizeFirstLetter(Object.keys(payee)[0]) as string;
         result.payee = payeeType;
@@ -203,7 +204,7 @@ export class Transaction extends BaseTransaction {
         const keypair = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.delegate, false, this._registry.chainSS58)).toString('hex'),
         });
-        result.owner = keypair.getAddress();
+        result.owner = keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       } else {
         txMethod = decodedTx.method.args as AddAnonymousProxyArgs;
         result.index = txMethod.index;
@@ -354,14 +355,14 @@ export class Transaction extends BaseTransaction {
         const keypairFrom = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.real)).toString('hex'),
         });
-        to = keypairDest.getAddress();
+        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         value = `${decodedCall.value}`;
-        from = keypairFrom.getAddress();
+        from = keypairFrom.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
       } else if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
         });
-        to = keypairDest.getAddress();
+        to = keypairDest.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes));
         value = txMethod.value;
         from = decodedTx.address;
       } else {

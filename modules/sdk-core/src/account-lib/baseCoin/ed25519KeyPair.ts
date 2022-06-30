@@ -8,7 +8,7 @@ import {
 } from '../util/crypto';
 import { Ed25519KeyDeriver } from '../util/ed25519KeyDeriver';
 import { BaseKeyPair } from './baseKeyPair';
-import { AddressFormat } from './enum';
+import { AddressFormat, DotAddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
 
 const DEFAULT_SEED_SIZE_BYTES = 32;
@@ -80,7 +80,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
   abstract recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys;
 
   /** @inheritdoc */
-  abstract getAddress(format?: AddressFormat): string;
+  abstract getAddress(format?: AddressFormat | DotAddressFormat): string;
 
   /** @inheritdoc */
   abstract getKeys(): any;

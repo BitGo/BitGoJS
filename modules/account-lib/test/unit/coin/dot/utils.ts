@@ -4,6 +4,7 @@ import { accounts, blockHash, signatures, txIds, rawTx } from '../../../resource
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import * as material from '../../../resources/dot/materialData.json';
 import { SingletonRegistry } from '../../../../src/coin/dot';
+import { DotAddressFormat } from '@bitgo/sdk-core';
 
 describe('utils', () => {
   const registry: TypeRegistry = SingletonRegistry.getInstance(material);
@@ -77,11 +78,17 @@ describe('utils', () => {
   });
 
   it('should decode DOT address correctly', () => {
-    should.equal(utils.decodeDotAddress(accounts.account1.address), '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr');
+    should.equal(
+      utils.decodeDotAddress(accounts.account1.address, DotAddressFormat.substrate),
+      '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr',
+    );
   });
 
   it('should encode DOT address correctly', () => {
-    should.equal(utils.encodeDotAddress(accounts.account1.address), '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr');
+    should.equal(
+      utils.encodeDotAddress(accounts.account1.address, DotAddressFormat.substrate),
+      '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr',
+    );
   });
 
   it('should recover signature from raw tx correctly', () => {

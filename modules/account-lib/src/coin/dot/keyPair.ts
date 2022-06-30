@@ -1,12 +1,11 @@
 import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { DefaultKeys, KeyPairOptions, AddressFormat, Ed25519KeyPair, toHex, isBase58 } from '@bitgo/sdk-core';
+import { DotAddressFormat, DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex } from '@bitgo/sdk-core';
 import utils from './utils';
 import bs58 from 'bs58';
 
 const TYPE = 'ed25519';
-const MAINNET_FORMAT = 0;
 const keyring = new Keyring({ type: TYPE });
 
 export class KeyPair extends Ed25519KeyPair {
@@ -37,14 +36,11 @@ export class KeyPair extends Ed25519KeyPair {
    * Returns the address in either mainnet polkadot format (starts with 1)
    * or substrate format used for westend (starts with 5)
    */
-  getAddress(format?: AddressFormat): string {
-    const substrateAddress = this.createPolkadotPair().address;
-    // generate polkadot (mainnet) address format
-    if (format && format === AddressFormat.polkadot) {
-      return keyring.encodeAddress(substrateAddress, MAINNET_FORMAT);
-    }
+  getAddress(format: DotAddressFormat): string {
+    let encodedAddress = this.createPolkadotPair().address;
+    encodedAddress = keyring.encodeAddress(encodedAddress, format as number);
 
-    return substrateAddress;
+    return encodedAddress;
   }
 
   /** @inheritdoc */
