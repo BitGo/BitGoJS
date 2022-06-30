@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.25...@bitgo/account-lib@2.20.0-rc.26) (2022-06-30)
+
+
+### Bug Fixes
+
+* use correct address encoding when decoding polkadot txn ([99d4bdc](https://github.com/BitGo/BitGoJS/commit/99d4bdc237fcf126238455f7201ae51696e77566))
+
+
+
+
+
 # [2.20.0-rc.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.23...@bitgo/account-lib@2.20.0-rc.25) (2022-06-29)
 
 
