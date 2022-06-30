@@ -1,4 +1,4 @@
-import * as paillierBigint from 'paillier-bigint';
+import { PublicKey } from 'paillier-bigint';
 export function bigIntFromBufferLE(buf: Buffer): bigint {
   return BigInt('0x' + Buffer.from(buf).reverse().toString('hex'));
 }
@@ -42,6 +42,6 @@ export function clamp(u: bigint): bigint {
  * @param {bigint} n
  * @returns {bigint}
  */
-export function getPaillierPublicKey(n: bigint): paillierBigint.PublicKey {
-  return new paillierBigint.PublicKey(n, n + BigInt(1));
+export function getPaillierPublicKey(n: bigint): PublicKey {
+  return new PublicKey(n, n + BigInt(1));
 }
