@@ -22,12 +22,7 @@ import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath 
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-const {
-  getExternalChainCode,
-  getInternalChainCode,
-  isChainCode,
-  scriptTypeForChain,
-} = utxolib.bitgo;
+const { getExternalChainCode, getInternalChainCode, isChainCode, scriptTypeForChain } = utxolib.bitgo;
 const request = require('superagent');
 
 //
@@ -172,7 +167,8 @@ Wallet.prototype.get = function (params, callback): Bluebird<any> {
   const self = this;
 
   return Bluebird.resolve(
-    this.bitgo.get(this.url())
+    this.bitgo
+      .get(this.url())
       .result()
       .then(function (res) {
         self.wallet = res;
@@ -190,9 +186,10 @@ Wallet.prototype.get = function (params, callback): Bluebird<any> {
 Wallet.prototype.updateApprovalsRequired = function (params, callback): Bluebird<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  if (params.approvalsRequired === undefined ||
-  !_.isInteger(params.approvalsRequired) ||
-  params.approvalsRequired < 1
+  if (
+    params.approvalsRequired === undefined ||
+    !_.isInteger(params.approvalsRequired) ||
+    params.approvalsRequired < 1
   ) {
     throw new Error('invalid approvalsRequired: must be a nonzero positive number');
   }
@@ -203,15 +200,10 @@ Wallet.prototype.updateApprovalsRequired = function (params, callback): Bluebird
     // no-op, just return the current wallet
     return Bluebird.try(function () {
       return self.wallet;
-    })
-      .nodeify(callback);
+    }).nodeify(callback);
   }
 
-  return Bluebird.resolve(
-    this.bitgo.put(this.url())
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(this.url()).send(params).result()).nodeify(callback);
 };
 
 /**
@@ -247,7 +239,7 @@ Wallet.prototype.createAddress = function (params, callback) {
 
   const allowExisting = params.allowExisting;
   if (typeof allowExisting !== 'boolean') {
-    params.allowExisting = (allowExisting === 'true');
+    params.allowExisting = allowExisting === 'true';
   }
 
   const isSegwit = this.bitgo.getConstants().enableSegwit;
@@ -258,7 +250,8 @@ Wallet.prototype.createAddress = function (params, callback) {
     chain = defaultChain;
   }
   return Bluebird.resolve(
-    this.bitgo.post(this.url('/address/' + chain))
+    this.bitgo
+      .post(this.url('/address/' + chain))
       .send(params)
       .result()
       .then(function (addr) {
@@ -393,11 +386,7 @@ Wallet.prototype.addresses = function (params, callback) {
   }
 
   const url = this.url('/addresses');
-  return Bluebird.resolve(
-    this.bitgo.get(url)
-      .query(query)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).query(query).result()).nodeify(callback);
 };
 
 Wallet.prototype.stats = function (params, callback) {
@@ -417,9 +406,7 @@ Wallet.prototype.stats = function (params, callback) {
 
   const url = this.url('/stats' + query);
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
 };
 
 /**
@@ -428,7 +415,7 @@ Wallet.prototype.stats = function (params, callback) {
  * @returns {Wallet}
  */
 Wallet.prototype.refresh = function (params, callback) {
-  return co(function *() {
+  return co(function* () {
     // when set to true, gpk returns the private data of safe wallets
     const query = _.extend({}, _.pick(params, ['gpk']));
     // @ts-expect-error - no implicit this
@@ -437,7 +424,9 @@ Wallet.prototype.refresh = function (params, callback) {
     this.wallet = res;
     // @ts-expect-error - no implicit this
     return this;
-  }).call(this).asCallback(callback);
+  })
+    .call(this)
+    .asCallback(callback);
 };
 
 //
@@ -453,10 +442,7 @@ Wallet.prototype.address = function (params, callback) {
 
   const url = this.url('/addresses/' + params.address);
 
-  return Bluebird.resolve(
-    this.bitgo.get(url)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
 };
 
 /**
@@ -473,11 +459,7 @@ Wallet.prototype.freeze = function (params, callback) {
     }
   }
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.url('/freeze'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.url('/freeze')).send(params).result()).nodeify(callback);
 };
 
 //
@@ -488,9 +470,7 @@ Wallet.prototype.delete = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.del(this.url()).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.del(this.url()).result()).nodeify(callback);
 };
 
 //
@@ -503,9 +483,7 @@ Wallet.prototype.labels = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id());
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result('labels')
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result('labels')).nodeify(callback);
 };
 
 /**
@@ -520,11 +498,7 @@ Wallet.prototype.setWalletName = function (params, callback) {
   common.validateParams(params, ['label'], [], callback);
 
   const url = this.bitgo.url('/wallet/' + this.id());
-  return Bluebird.resolve(
-    this.bitgo.put(url)
-      .send({ label: params.label })
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(url).send({ label: params.label }).result()).nodeify(callback);
 };
 
 //
@@ -543,11 +517,7 @@ Wallet.prototype.setLabel = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
-  return Bluebird.resolve(
-    this.bitgo.put(url)
-      .send({ label: params.label })
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(url).send({ label: params.label }).result()).nodeify(callback);
 };
 
 //
@@ -566,9 +536,7 @@ Wallet.prototype.deleteLabel = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
-  return Bluebird.resolve(
-    this.bitgo.del(url).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.del(url).result()).nodeify(callback);
 };
 
 //
@@ -590,7 +558,6 @@ Wallet.prototype.unspents = function (params, callback) {
   const self = this;
 
   const getUnspentsBatch = function (skip, limit?) {
-
     const queryObject = _.cloneDeep(params);
     if (skip > 0) {
       queryObject.skip = skip;
@@ -599,41 +566,39 @@ Wallet.prototype.unspents = function (params, callback) {
       queryObject.limit = limit;
     }
 
-    return self.unspentsPaged(queryObject)
-      .then(function (result) {
+    return self.unspentsPaged(queryObject).then(function (result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
-        for (let i = 0; i < result.unspents.length; i++) {
-          const unspent = result.unspents[i];
-          allUnspents.push(unspent);
-        }
+      for (let i = 0; i < result.unspents.length; i++) {
+        const unspent = result.unspents[i];
+        allUnspents.push(unspent);
+      }
 
-        // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
-        // limit, we hit it precisely
-        if (allUnspents.length >= params.limit) {
-          return allUnspents; // we aren't interested in any further unspents
-        }
+      // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
+      // limit, we hit it precisely
+      if (allUnspents.length >= params.limit) {
+        return allUnspents; // we aren't interested in any further unspents
+      }
 
-        const totalUnspentCount = result.total;
-        // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
-        if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
+      const totalUnspentCount = result.total;
+      // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
+      if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
-          const newSkip = skip + result.count;
-          let newLimit: number | undefined;
-          if (limit > 0) {
+        const newSkip = skip + result.count;
+        let newLimit: number | undefined;
+        if (limit > 0) {
           // we set the new limit to be precisely the number of missing unspents to hit our own limit
-            newLimit = limit - allUnspents.length;
-          }
-          return getUnspentsBatch(newSkip, newLimit);
+          newLimit = limit - allUnspents.length;
         }
+        return getUnspentsBatch(newSkip, newLimit);
+      }
 
-        return allUnspents;
-      });
+      return allUnspents;
+    });
   };
 
-  return getUnspentsBatch(0, params.limit)
-    .nodeify(callback);
+  return getUnspentsBatch(0, params.limit).nodeify(callback);
 };
 
 /**
@@ -707,9 +672,7 @@ Wallet.prototype.unspentsPaged = function (params, callback) {
     queryObject.allowLedgerSegwit = params.allowLedgerSegwit;
   }
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.url('/unspents')).query(queryObject).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url('/unspents')).query(queryObject).result()).nodeify(callback);
 };
 
 //
@@ -765,9 +728,7 @@ Wallet.prototype.transactions = function (params, callback) {
 
   const url = this.url('/tx' + query);
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
 };
 
 //
@@ -779,9 +740,7 @@ Wallet.prototype.getTransaction = function (params, callback) {
 
   const url = this.url('/tx/' + params.id);
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
 };
 
 //
@@ -807,7 +766,8 @@ Wallet.prototype.pollForTransaction = function (params, callback) {
   const start = new Date();
 
   const doNextPoll = function () {
-    return self.getTransaction(params)
+    return self
+      .getTransaction(params)
       .then(function (res) {
         return res;
       })
@@ -815,10 +775,9 @@ Wallet.prototype.pollForTransaction = function (params, callback) {
         if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
           throw err;
         }
-        return Bluebird.delay(params.delay)
-          .then(function () {
-            return doNextPoll();
-          });
+        return Bluebird.delay(params.delay).then(function () {
+          return doNextPoll();
+        });
       });
   };
 
@@ -834,9 +793,7 @@ Wallet.prototype.getWalletTransactionBySequenceId = function (params, callback) 
 
   const url = this.url('/tx/sequence/' + params.sequenceId);
 
-  return Bluebird.resolve(
-    this.bitgo.get(url).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
 };
 
 //
@@ -845,13 +802,13 @@ Wallet.prototype.getWalletTransactionBySequenceId = function (params, callback) 
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
 // Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
 Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
-  return co(function *() {
+  return co(function* () {
     params = params || {};
     common.validateParams(params, [], [], callback);
     // @ts-expect-error - no implicit this
     const self = this;
 
-    const tryKeyChain = co(function *(index) {
+    const tryKeyChain = co(function* (index) {
       if (!self.keychains || index >= self.keychains.length) {
         const error: any = new Error('No encrypted keychains on this wallet.');
         error.code = 'no_encrypted_keychain_on_wallet';
@@ -870,7 +827,9 @@ Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
     });
 
     return tryKeyChain(0);
-  }).call(this).asCallback(callback);
+  })
+    .call(this)
+    .asCallback(callback);
 };
 
 //
@@ -891,13 +850,15 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, [], [], callback);
 
-  if ((!_.isNumber(params.fee) && !_.isUndefined(params.fee)) ||
-  (!_.isNumber(params.feeRate) && !_.isUndefined(params.feeRate)) ||
-  (!_.isNumber(params.minConfirms) && !_.isUndefined(params.minConfirms)) ||
-  (!_.isBoolean(params.forceChangeAtEnd) && !_.isUndefined(params.forceChangeAtEnd)) ||
-  (!_.isString(params.changeAddress) && !_.isUndefined(params.changeAddress)) ||
-  (!_.isBoolean(params.validate) && !_.isUndefined(params.validate)) ||
-  (!_.isBoolean(params.instant) && !_.isUndefined(params.instant))) {
+  if (
+    (!_.isNumber(params.fee) && !_.isUndefined(params.fee)) ||
+    (!_.isNumber(params.feeRate) && !_.isUndefined(params.feeRate)) ||
+    (!_.isNumber(params.minConfirms) && !_.isUndefined(params.minConfirms)) ||
+    (!_.isBoolean(params.forceChangeAtEnd) && !_.isUndefined(params.forceChangeAtEnd)) ||
+    (!_.isString(params.changeAddress) && !_.isUndefined(params.changeAddress)) ||
+    (!_.isBoolean(params.validate) && !_.isUndefined(params.validate)) ||
+    (!_.isBoolean(params.instant) && !_.isUndefined(params.instant))
+  ) {
     throw new Error('invalid argument');
   }
 
@@ -908,10 +869,8 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
 
-  return TransactionBuilder.createTransaction(params)
-    .nodeify(callback);
+  return TransactionBuilder.createTransaction(params).nodeify(callback);
 };
-
 
 //
 // signTransaction
@@ -964,25 +923,24 @@ Wallet.prototype.sendTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.bitgo.url('/tx/send')).send(params).result()
-  ).then(function (body) {
-    if (body.pendingApproval) {
-      return _.extend(body, { status: 'pendingApproval' });
-    }
+  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/tx/send')).send(params).result())
+    .then(function (body) {
+      if (body.pendingApproval) {
+        return _.extend(body, { status: 'pendingApproval' });
+      }
 
-    if (body.otp) {
-      return _.extend(body, { status: 'otp' });
-    }
+      if (body.otp) {
+        return _.extend(body, { status: 'otp' });
+      }
 
-    return {
-      status: 'accepted',
-      tx: body.transaction,
-      hash: body.transactionHash,
-      instant: body.instant,
-      instantId: body.instantId,
-    };
-  })
+      return {
+        status: 'accepted',
+        tx: body.transaction,
+        hash: body.transactionHash,
+        instant: body.instant,
+        instantId: body.instantId,
+      };
+    })
     .nodeify(callback);
 };
 
@@ -998,14 +956,18 @@ Wallet.prototype.createShare = function (params, callback) {
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
   if (params.keychain && !_.isEmpty(params.keychain)) {
-    if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey || !params.keychain.toPubKey || !params.keychain.path) {
+    if (
+      !params.keychain.xpub ||
+      !params.keychain.encryptedXprv ||
+      !params.keychain.fromPubKey ||
+      !params.keychain.toPubKey ||
+      !params.keychain.path
+    ) {
       throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
     }
   }
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.url('/share')).send(params).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.url('/share')).send(params).result()).nodeify(callback);
 };
 
 //
@@ -1029,9 +991,7 @@ Wallet.prototype.createInvite = function (params, callback) {
     options.message = params.message;
   }
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.url('/invite')).send(options).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.url('/invite')).send(options).result()).nodeify(callback);
 };
 
 //
@@ -1048,7 +1008,9 @@ Wallet.prototype.confirmInviteAndShareWallet = function (params, callback) {
   common.validateParams(params, ['walletInviteId'], ['walletPassphrase'], callback);
 
   const self = this;
-  return this.bitgo.wallets().listInvites()
+  return this.bitgo
+    .wallets()
+    .listInvites()
     .then(function (invites) {
       const outgoing = invites.outgoing;
       const invite = _.find(outgoing, function (out) {
@@ -1103,8 +1065,7 @@ Wallet.prototype.sendCoins = function (params, callback) {
   params.recipients = {};
   params.recipients[params.address] = params.amount;
 
-  return this.sendMany(params)
-    .nodeify(callback);
+  return this.sendMany(params).nodeify(callback);
 };
 
 //
@@ -1150,16 +1111,23 @@ Wallet.prototype.sendMany = function (params, callback) {
   let unspentsUsed;
 
   const acceptedBuildParams = [
-    'numBlocks', 'feeRate', 'minConfirms', 'enforceMinConfirmsForChange',
-    'targetWalletUnspents', 'message', 'minValue', 'maxValue',
-    'noSplitChange', 'comment',
+    'numBlocks',
+    'feeRate',
+    'minConfirms',
+    'enforceMinConfirmsForChange',
+    'targetWalletUnspents',
+    'message',
+    'minValue',
+    'maxValue',
+    'noSplitChange',
+    'comment',
   ];
   const preservedBuildParams = _.pick(params, acceptedBuildParams);
 
   // Get the user keychain
   const retPromise = this.createAndSignTransaction(params)
     .then(function (transaction) {
-    // Send the transaction
+      // Send the transaction
       bitgoFee = transaction.bitgoFee;
       travelInfos = transaction.travelInfos;
       unspentsUsed = transaction.unspents;
@@ -1182,8 +1150,7 @@ Wallet.prototype.sendMany = function (params, callback) {
       if (isNaN(feeUsed)) {
         throw new Error('invalid feeUsed');
       }
-      result.fee = feeUsed,
-      result.feeRate = feeUsed * 1000 / tx.virtualSize();
+      (result.fee = feeUsed), (result.feeRate = (feeUsed * 1000) / tx.virtualSize());
       result.travelInfos = travelInfos;
       if (bitgoFee) {
         result.bitgoFee = bitgoFee;
@@ -1194,7 +1161,8 @@ Wallet.prototype.sendMany = function (params, callback) {
       // Error or result (with possible sub-errors) will be provided in travelResult
       if (travelInfos && travelInfos.length) {
         try {
-          return self.pollForTransaction({ id: result.hash })
+          return self
+            .pollForTransaction({ id: result.hash })
             .then(function () {
               return self.bitgo.travelRule().sendMany(result);
             })
@@ -1206,7 +1174,7 @@ Wallet.prototype.sendMany = function (params, callback) {
               finalResult.travelResult = { error: err.message };
             });
         } catch (err) {
-        // catch synchronous errors
+          // catch synchronous errors
           finalResult.travelResult = { error: err.message };
         }
       }
@@ -1232,7 +1200,6 @@ Wallet.prototype.sendMany = function (params, callback) {
  * @returns Result of sendTransaction() on the child transaction
  */
 Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, callback) {
-
   const self = this;
   /**
    * Helper function to estimate a transactions size in virtual bytes.
@@ -1272,11 +1239,11 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
   const estimateChildFee = ({ inputs, parentFee, parentVSize, feeRate }) => {
     // calculate how much more we *should* have paid in parent fees,
     // had the parent been originally sent with the new fee rate
-    const additionalParentFee = _.ceil(parentVSize * feeRate / 1000) - parentFee;
+    const additionalParentFee = _.ceil((parentVSize * feeRate) / 1000) - parentFee;
 
     // calculate how much we would pay in fees for the child,
     // if it were only paying for itself at the new fee rate
-    const childFee = estimateTxVSize(inputs) * feeRate / 1000;
+    const childFee = (estimateTxVSize(inputs) * feeRate) / 1000;
 
     return _.ceil(childFee + additionalParentFee);
   };
@@ -1295,8 +1262,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    *          the child tx, and the updated inputs for the child tx.
    */
   const findAdditionalUnspents = ({ inputs, parentOutputValue, parentFee, parentVSize, maxUnspents }) => {
-    return co(function *coFindAdditionalUnspents() {
-
+    return co(function* coFindAdditionalUnspents() {
       const additionalUnspents: any[] = [];
 
       // ask the server for enough unspents to cover the child fee, assuming
@@ -1373,7 +1339,9 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const result = await request.get(`${explorerBaseUrl}/tx/${parentTxId}/hex`);
 
     if (!result.text || !/([a-f0-9]{2})+/.test(result.text)) {
-      throw new Error(`Did not successfully receive parent tx hex. Received '${_.truncate(result.text, { length: 100 })}' instead.`);
+      throw new Error(
+        `Did not successfully receive parent tx hex. Received '${_.truncate(result.text, { length: 100 })}' instead.`
+      );
     }
 
     return result.text;
@@ -1415,10 +1383,10 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const chain = getChain(outputOrUnspent);
     if (isChainCode(chain) && scriptTypeForChain(chain) === 'p2shP2wsh') {
       // VirtualSizes.txP2shP2wshInputSize is in bytes, so we need to convert to kB
-      return outputOrUnspent.value - (VirtualSizes.txP2shP2wshInputSize * params.feeRate / 1000);
+      return outputOrUnspent.value - (VirtualSizes.txP2shP2wshInputSize * params.feeRate) / 1000;
     }
     // VirtualSizes.txP2shInputSize is in bytes, so we need to convert to kB
-    return outputOrUnspent.value - (VirtualSizes.txP2shInputSize * params.feeRate / 1000);
+    return outputOrUnspent.value - (VirtualSizes.txP2shInputSize * params.feeRate) / 1000;
   };
 
   /**
@@ -1434,7 +1402,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    *    (and, if necessary, additional wallet unspents) as inputs
    * 7) Broadcast the new child transaction
    */
-  return co(function *coAccelerateTransaction(): any {
+  return co(function* coAccelerateTransaction(): any {
     params = params || {};
     common.validateParams(params, ['transactionID'], [], callback);
 
@@ -1466,7 +1434,9 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const walletOutputs = _.filter(parentTx.outputs, (output) => output.isMine);
 
     if (walletOutputs.length === 0) {
-      throw new Error(`Transaction ${params.transactionID} contains no outputs to this wallet, and thus cannot be accelerated`);
+      throw new Error(
+        `Transaction ${params.transactionID} contains no outputs to this wallet, and thus cannot be accelerated`
+      );
     }
 
     // use an output from the parent with largest effective value,
@@ -1513,19 +1483,23 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     // this should catch problems emanating from the use of an external service
     // for getting the complete parent tx hex
     if (decodedParent.getId() !== params.transactionID) {
-      throw new Error(`Decoded transaction id is ${decodedParent.getId()}, which does not match given txid ${params.transactionID}`);
+      throw new Error(
+        `Decoded transaction id is ${decodedParent.getId()}, which does not match given txid ${params.transactionID}`
+      );
     }
 
     // make sure new fee rate is greater than the parent's current fee rate
     // virtualSize is returned in vbytes, so we need to convert to kvB
-    const parentRate = 1000 * parentTx.fee / parentVSize;
+    const parentRate = (1000 * parentTx.fee) / parentVSize;
     if (params.feeRate <= parentRate) {
-      throw new Error(`Cannot lower fee rate! (Parent tx fee rate is ${parentRate} sat/kB, and requested fee rate was ${params.feeRate} sat/kB)`);
+      throw new Error(
+        `Cannot lower fee rate! (Parent tx fee rate is ${parentRate} sat/kB, and requested fee rate was ${params.feeRate} sat/kB)`
+      );
     }
 
     // determine if parent output can cover child fee
     const isParentOutputSegwit =
-        isChainCode(outputToUse.chain) && scriptTypeForChain(outputToUse.chain) === 'p2shP2wsh';
+      isChainCode(outputToUse.chain) && scriptTypeForChain(outputToUse.chain) === 'p2shP2wsh';
 
     let childInputs = {
       segwit: isParentOutputSegwit ? 1 : 0,
@@ -1558,7 +1532,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       });
       childFee = newChildFee;
       childInputs = newInputs;
-      unspentsToUse.push(... additional);
+      unspentsToUse.push(...additional);
     }
 
     // sanity check the fee rate we're paying for the combined tx
@@ -1570,10 +1544,12 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const combinedVSize = childVSize + parentVSize;
     const combinedFee = parentTx.fee + childFee;
     // combined fee rate must be in sat/kB, so we need to convert
-    const combinedFeeRate = 1000 * combinedFee / combinedVSize;
+    const combinedFeeRate = (1000 * combinedFee) / combinedVSize;
 
     if (combinedFeeRate > maxFeeRate) {
-      throw new Error(`Transaction cannot be accelerated. Combined fee rate of ${combinedFeeRate} sat/kB exceeds maximum fee rate of ${maxFeeRate} sat/kB`);
+      throw new Error(
+        `Transaction cannot be accelerated. Combined fee rate of ${combinedFeeRate} sat/kB exceeds maximum fee rate of ${maxFeeRate} sat/kB`
+      );
     }
 
     // create a new change address and determine change amount.
@@ -1590,10 +1566,12 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     // @ts-expect-error - no implicit this
     const tx = yield this.createAndSignTransaction({
       unspents: unspentsToUse,
-      recipients: [{
-        address: changeAddress.address,
-        amount: changeAmount,
-      }],
+      recipients: [
+        {
+          address: changeAddress.address,
+          amount: changeAmount,
+        },
+      ],
       fee: childFee,
       bitgoFee: {
         amount: 0,
@@ -1603,9 +1581,8 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       walletPassphrase: params.walletPassphrase,
     });
 
-
     // child fee rate must be in sat/kB, so we need to convert
-    const childFeeRate = 1000 * childFee / childVSize;
+    const childFeeRate = (1000 * childFee) / childVSize;
     if (childFeeRate > maxFeeRate) {
       // combined tx is within max fee rate limits, but the child tx is not.
       // in this case, we need to use the ignoreMaxFeeRate flag to get the child tx to be accepted
@@ -1614,7 +1591,9 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // @ts-expect-error - no implicit this
     return this.sendTransaction(tx);
-  }).call(this).asCallback(callback);
+  })
+    .call(this)
+    .asCallback(callback);
 };
 
 //
@@ -1628,7 +1607,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 // Returns:
 //
 Wallet.prototype.createAndSignTransaction = function (params, callback) {
-  return co(function *() {
+  return co(function* () {
     params = params || {};
     common.validateParams(params, [], [], callback);
 
@@ -1695,7 +1674,9 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       estimatedSize,
       unspents,
     });
-  }).call(this).asCallback(callback);
+  })
+    .call(this)
+    .asCallback(callback);
 };
 
 //
@@ -1731,16 +1712,15 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
 
   // Caller provided a wallet passphrase
   if (params.walletPassphrase) {
-    return self.getEncryptedUserKeychain()
-      .then(function (keychain) {
+    return self.getEncryptedUserKeychain().then(function (keychain) {
       // Decrypt the user key with a passphrase
-        try {
-          keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-        } catch (e) {
-          throw new Error('Unable to decrypt user keychain');
-        }
-        return keychain;
-      });
+      try {
+        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+      } catch (e) {
+        throw new Error('Unable to decrypt user keychain');
+      }
+      return keychain;
+    });
   }
 
   // Caller provided an xprv - validate and construct keychain object
@@ -1761,7 +1741,9 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
   }
 
   // get the keychain object from bitgo to find the path and (potential) wallet structure
-  return self.bitgo.keychains().get({ xpub: xpub })
+  return self.bitgo
+    .keychains()
+    .get({ xpub: xpub })
     .then(function (keychain) {
       keychain.xprv = params.xprv;
       return keychain;
@@ -1780,7 +1762,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
  */
 Wallet.prototype.fanOutUnspents = function (params, callback) {
   const self = this;
-  return Bluebird.coroutine(function *() {
+  return Bluebird.coroutine(function* () {
     // maximum number of inputs for fanout transaction
     // (when fanning out, we take all the unspents and make a bigger number of outputs)
     const MAX_FANOUT_INPUT_COUNT = 80;
@@ -1792,7 +1774,7 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
 
     const target = params.target;
     // the target must be defined, be a number, be at least two, and be a natural number
-    if (!_.isNumber(target) || target < 2 || (target % 1) !== 0) {
+    if (!_.isNumber(target) || target < 2 || target % 1 !== 0) {
       throw new Error('Target needs to be a positive integer');
     }
     if (target > MAX_FANOUT_OUTPUT_COUNT) {
@@ -1859,8 +1841,9 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
     txParams.recipients = {};
 
     // create target amount of new addresses for this wallet
-    const newAddressPromises = _.range(target)
-      .map(() => self.createAddress({ chain: self.getChangeChain(params), validate: validate }));
+    const newAddressPromises = _.range(target).map(() =>
+      self.createAddress({ chain: self.getChangeChain(params), validate: validate })
+    );
     const newAddresses = yield Bluebird.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
@@ -1925,7 +1908,7 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
 Wallet.prototype.regroupUnspents = function (params, callback) {
   params = params || {};
   const target = params.target;
-  if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
+  if (!_.isNumber(target) || target < 1 || target % 1 !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
@@ -1934,21 +1917,20 @@ Wallet.prototype.regroupUnspents = function (params, callback) {
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
-  if ((!_.isNumber(minConfirms) || minConfirms < 0)) {
+  if (!_.isNumber(minConfirms) || minConfirms < 0) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
   }
 
   const self = this;
-  return self.unspents({ minConfirms: minConfirms })
-    .then(function (unspents) {
-      if (unspents.length === target) {
-        return unspents;
-      } else if (unspents.length > target) {
-        return self.consolidateUnspents(params, callback);
-      } else if (unspents.length < target) {
-        return self.fanOutUnspents(params, callback);
-      }
-    });
+  return self.unspents({ minConfirms: minConfirms }).then(function (unspents) {
+    if (unspents.length === target) {
+      return unspents;
+    } else if (unspents.length > target) {
+      return self.consolidateUnspents(params, callback);
+    } else if (unspents.length < target) {
+      return self.fanOutUnspents(params, callback);
+    }
+  });
 };
 
 /**
@@ -1971,7 +1953,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
   let target = params.target;
   if (target === undefined) {
     target = 1;
-  } else if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
+  } else if (!_.isNumber(target) || target < 1 || target % 1 !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
@@ -1987,17 +1969,21 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
   // maximum number of inputs per transaction for consolidation
   const MAX_INPUT_COUNT = 200;
   let maxInputCount = params.maxInputCountPerConsolidation;
-  if (maxInputCount === undefined) { // null or unidentified, because equality to zero returns true in if(! clause
+  if (maxInputCount === undefined) {
+    // null or unidentified, because equality to zero returns true in if(! clause
     maxInputCount = MAX_INPUT_COUNT;
   }
-  if (typeof (maxInputCount) !== 'number' || maxInputCount < 2 || (maxInputCount % 1) !== 0) {
+  if (typeof maxInputCount !== 'number' || maxInputCount < 2 || maxInputCount % 1 !== 0) {
     throw new Error('Maximum consolidation input count needs to be an integer equal to or bigger than 2');
   } else if (maxInputCount > MAX_INPUT_COUNT) {
     throw new Error('Maximum consolidation input count cannot be bigger than ' + MAX_INPUT_COUNT);
   }
 
   const maxIterationCount = params.maxIterationCount || -1;
-  if (params.maxIterationCount && (!_.isNumber(maxIterationCount) || maxIterationCount < 1) || (maxIterationCount % 1) !== 0) {
+  if (
+    (params.maxIterationCount && (!_.isNumber(maxIterationCount) || maxIterationCount < 1)) ||
+    maxIterationCount % 1 !== 0
+  ) {
     throw new Error('Maximum iteration count needs to be an integer equal to or bigger than 1');
   }
 
@@ -2005,14 +1991,14 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
-  if ((!_.isNumber(minConfirms) || minConfirms < 0)) {
+  if (!_.isNumber(minConfirms) || minConfirms < 0) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
   }
 
   let minSize = params.minSize || 0;
   if (params.feeRate) {
     // fee rate is in satoshis per kB, input size in bytes
-    const feeBasedMinSize = Math.ceil(VirtualSizes.txP2shInputSize * params.feeRate / 1000);
+    const feeBasedMinSize = Math.ceil((VirtualSizes.txP2shInputSize * params.feeRate) / 1000);
     if (params.minSize && minSize < feeBasedMinSize) {
       throw new Error('provided minSize too low due to too high fee rate');
     }
@@ -2020,7 +2006,11 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
 
     if (!params.minSize) {
       // fee rate-based min size needs no logging if it was set explicitly
-      console.log('Only consolidating unspents larger than ' + minSize + ' satoshis to avoid wasting money on fees. To consolidate smaller unspents, use a lower fee rate.');
+      console.log(
+        'Only consolidating unspents larger than ' +
+          minSize +
+          ' satoshis to avoid wasting money on fees. To consolidate smaller unspents, use a lower fee rate.'
+      );
     }
   }
 
@@ -2033,7 +2023,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
    * Consolidate one batch of up to MAX_INPUT_COUNT unspents.
    * @returns {*}
    */
-  const runNextConsolidation = co(function *() {
+  const runNextConsolidation = co(function* () {
     const consolidationTransactions: any[] = [];
     let isFinalConsolidation = false;
     iterationCount++;
@@ -2081,7 +2071,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
 
     // if either the number of inputs left to coalesce equals the number we will coalesce in this iteration
     // or if the number of iterations matches the maximum permitted number
-    isFinalConsolidation = (inputCount === targetInputCount || iterationCount === maxIterationCount);
+    isFinalConsolidation = inputCount === targetInputCount || iterationCount === maxIterationCount;
 
     const currentChunk = allUnspents.splice(0, inputCount);
     const changeChain = self.getChangeChain(params);
@@ -2195,64 +2185,64 @@ Wallet.prototype.shareWallet = function (params, callback) {
   const self = this;
   let sharing;
   let sharedKeychain;
-  return this.bitgo.getSharingKey({ email: params.email.toLowerCase() })
+  return this.bitgo
+    .getSharingKey({ email: params.email.toLowerCase() })
     .then(function (result) {
       sharing = result;
 
       if (needsKeychain) {
-        return self.getEncryptedUserKeychain({})
-          .then(function (keychain) {
-            // Decrypt the user key with a passphrase
-            if (keychain.encryptedXprv) {
-              if (!params.walletPassphrase) {
-                throw new Error('Missing walletPassphrase argument');
-              }
-              try {
-                keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-              } catch (e) {
-                throw new Error('Unable to decrypt user keychain');
-              }
-
-              const eckey = makeRandomKey();
-              const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
-              const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
-
-              sharedKeychain = {
-                xpub: keychain.xpub,
-                encryptedXprv: newEncryptedXprv,
-                fromPubKey: eckey.publicKey.toString('hex'),
-                toPubKey: sharing.pubkey,
-                path: sharing.path,
-              };
+        return self.getEncryptedUserKeychain({}).then(function (keychain) {
+          // Decrypt the user key with a passphrase
+          if (keychain.encryptedXprv) {
+            if (!params.walletPassphrase) {
+              throw new Error('Missing walletPassphrase argument');
             }
-          });
+            try {
+              keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+            } catch (e) {
+              throw new Error('Unable to decrypt user keychain');
+            }
+
+            const eckey = makeRandomKey();
+            const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
+            const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+
+            sharedKeychain = {
+              xpub: keychain.xpub,
+              encryptedXprv: newEncryptedXprv,
+              fromPubKey: eckey.publicKey.toString('hex'),
+              toPubKey: sharing.pubkey,
+              path: sharing.path,
+            };
+          }
+        });
       }
     })
     .then(function () {
-    interface Options {
-      user: any;
-      permissions: string;
-      reshare: boolean;
-      message: string;
-      disableEmail: any;
-      keychain?: any;
-      skipKeychain?: boolean
-    }
+      interface Options {
+        user: any;
+        permissions: string;
+        reshare: boolean;
+        message: string;
+        disableEmail: any;
+        keychain?: any;
+        skipKeychain?: boolean;
+      }
 
-    const options: Options = {
-      user: sharing.userId,
-      permissions: params.permissions,
-      reshare: params.reshare,
-      message: params.message,
-      disableEmail: params.disableEmail,
-    };
-    if (sharedKeychain) {
-      options.keychain = sharedKeychain;
-    } else if (params.skipKeychain) {
-      options.keychain = {};
-    }
+      const options: Options = {
+        user: sharing.userId,
+        permissions: params.permissions,
+        reshare: params.reshare,
+        message: params.message,
+        disableEmail: params.disableEmail,
+      };
+      if (sharedKeychain) {
+        options.keychain = sharedKeychain;
+      } else if (params.skipKeychain) {
+        options.keychain = {};
+      }
 
-    return self.createShare(options);
+      return self.createShare(options);
     })
     .nodeify(callback);
 };
@@ -2262,7 +2252,8 @@ Wallet.prototype.removeUser = function (params, callback) {
   common.validateParams(params, ['user'], [], callback);
 
   return Bluebird.resolve(
-    this.bitgo.del(this.url('/user/' + params.user))
+    this.bitgo
+      .del(this.url('/user/' + params.user))
       .send()
       .result()
   ).nodeify(callback);
@@ -2272,22 +2263,14 @@ Wallet.prototype.getPolicy = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.url('/policy'))
-      .send()
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url('/policy')).send().result()).nodeify(callback);
 };
 
 Wallet.prototype.getPolicyStatus = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.url('/policy/status'))
-      .send()
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url('/policy/status')).send().result()).nodeify(callback);
 };
 
 Wallet.prototype.setPolicyRule = function (params, callback) {
@@ -2302,33 +2285,21 @@ Wallet.prototype.setPolicyRule = function (params, callback) {
     throw new Error('missing parameter: action object');
   }
 
-  return Bluebird.resolve(
-    this.bitgo.put(this.url('/policy/rule'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result()).nodeify(callback);
 };
 
 Wallet.prototype.removePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], ['message'], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.del(this.url('/policy/rule'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result()).nodeify(callback);
 };
 
 Wallet.prototype.listWebhooks = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.url('/webhooks'))
-      .send()
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url('/webhooks')).send().result()).nodeify(callback);
 };
 
 /**
@@ -2359,7 +2330,8 @@ Wallet.prototype.simulateWebhook = function (params, callback) {
 
   const webhookId = params.webhookId;
   return Bluebird.resolve(
-    this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
+    this.bitgo
+      .post(this.url('/webhooks/' + webhookId + '/simulate'))
       .send(filteredParams)
       .result()
   ).nodeify(callback);
@@ -2369,22 +2341,14 @@ Wallet.prototype.addWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.url('/webhooks'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.url('/webhooks')).send(params).result()).nodeify(callback);
 };
 
 Wallet.prototype.removeWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.del(this.url('/webhooks'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.del(this.url('/webhooks')).send(params).result()).nodeify(callback);
 };
 
 Wallet.prototype.estimateFee = function (params, callback) {
@@ -2414,14 +2378,13 @@ Wallet.prototype.estimateFee = function (params, callback) {
   transactionParams.amount = undefined;
   transactionParams.recipients = recipients;
 
-  return this.createTransaction(transactionParams)
-    .then(function (tx) {
-      return {
-        estimatedSize: tx.estimatedSize,
-        fee: tx.fee,
-        feeRate: tx.feeRate,
-      };
-    });
+  return this.createTransaction(transactionParams).then(function (tx) {
+    return {
+      estimatedSize: tx.estimatedSize,
+      fee: tx.fee,
+      feeRate: tx.feeRate,
+    };
+  });
 };
 
 // Not fully implemented / released on SDK. Testing for now.
@@ -2429,22 +2392,14 @@ Wallet.prototype.updatePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id', 'type'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.put(this.url('/policy/rule'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result()).nodeify(callback);
 };
 
 Wallet.prototype.deletePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.del(this.url('/policy/rule'))
-      .send(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result()).nodeify(callback);
 };
 
 //
@@ -2460,11 +2415,7 @@ Wallet.prototype.getBitGoFee = function (params, callback) {
   if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant argument');
   }
-  return Bluebird.resolve(
-    this.bitgo.get(this.url('/billing/fee'))
-      .query(params)
-      .result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url('/billing/fee')).query(params).result()).nodeify(callback);
 };
 
 export = Wallet;

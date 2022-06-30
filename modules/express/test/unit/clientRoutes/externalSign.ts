@@ -10,8 +10,7 @@ import '../../lib/asserts';
 import * as express from 'express';
 import { handleV2Sign } from '../../../src/clientRoutes';
 import * as fs from 'fs';
-import { Btc } from 'bitgo/dist/src/v2/coins/btc';
-import { BitGo } from 'bitgo';
+import { Coin, BitGo, SignedTransaction } from 'bitgo';
 
 describe('External signer', () => {
   it('should read an encrypted prv from signerFileSystemPath and pass it to coin.signTransaction', async () => {
@@ -21,7 +20,9 @@ describe('External signer', () => {
     const envStub = sinon
       .stub(process, 'env')
       .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: 'wDX058%c4plL1@pP' });
-    const signTransactionStub = sinon.stub(Btc.prototype, 'signTransaction').resolves('signedTx');
+    const signTransactionStub = sinon
+      .stub(Coin.Btc.prototype, 'signTransaction')
+      .resolves({ txHex: 'signedTx', txRequestId: '' } as SignedTransaction);
 
     const req = {
       bitgo: new BitGo({ env: 'test' }),

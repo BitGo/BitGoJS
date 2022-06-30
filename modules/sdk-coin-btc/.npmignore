@@ -13,4 +13,3 @@ CODEOWNERS
 node_modules/
 .prettierignore
 .mocharc.js
-webpack.config.js

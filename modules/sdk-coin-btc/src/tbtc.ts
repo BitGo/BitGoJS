@@ -6,7 +6,7 @@ import { Btc } from './btc';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export class Tbtc extends Btc {
-  constructor(bitgo) {
+  constructor(bitgo: BitGoBase) {
     super(bitgo, utxolib.networks.testnet);
   }
 

@@ -134,12 +134,12 @@ PendingApproval.prototype.get = function (params, callback) {
   common.validateParams(params, [], [], callback);
 
   const self = this;
-  return Bluebird.resolve(
-    this.bitgo.get(this.url()).result()
-  ).then(function (res) {
-    self.pendingApproval = res;
-    return self;
-  }).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.url()).result())
+    .then(function (res) {
+      self.pendingApproval = res;
+      return self;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -148,7 +148,9 @@ PendingApproval.prototype.get = function (params, callback) {
 PendingApproval.prototype.populateWallet = function () {
   const self = this;
   if (!self.wallet) {
-    return self.bitgo.wallets().get({ id: self.info().transactionRequest.sourceWallet })
+    return self.bitgo
+      .wallets()
+      .get({ id: self.info().transactionRequest.sourceWallet })
       .then(function (wallet) {
         if (!wallet) {
           throw new Error('unexpected - unable to get wallet using sourcewallet');
@@ -201,21 +203,19 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
 
     // This looks like a sendmany
     // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
-    return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 })
-      .then(function (result) {
-        const changeAddresses = _.keyBy(result.addresses, 'address');
-        transaction.outs.forEach(function (out) {
-          const outAddress = utxolib.address.fromOutputScript(out.script, network);
-          if (!changeAddresses[outAddress]) {
+    return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 }).then(function (result) {
+      const changeAddresses = _.keyBy(result.addresses, 'address');
+      transaction.outs.forEach(function (out) {
+        const outAddress = utxolib.address.fromOutputScript(out.script, network);
+        if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
-            params.recipients[outAddress] = out.value;
-          }
-        });
+          params.recipients[outAddress] = out.value;
+        }
       });
-  })
-    .then(function () {
-      return self.wallet.createAndSignTransaction(params);
     });
+  }).then(function () {
+    return self.wallet.createAndSignTransaction(params);
+  });
 };
 
 //
@@ -246,10 +246,9 @@ PendingApproval.prototype.constructApprovalTx = function (params, callback) {
       if (params.useOriginalFee) {
         extendParams.fee = self.info().transactionRequest.fee;
       }
-      return self.populateWallet()
-        .then(function () {
-          return self.recreateAndSignTransaction(_.extend(params, extendParams));
-        });
+      return self.populateWallet().then(function () {
+        return self.recreateAndSignTransaction(_.extend(params, extendParams));
+      });
     }
   });
 };
@@ -297,17 +296,21 @@ PendingApproval.prototype.approve = function (params, callback) {
         };
       }
 
-      return self.populateWallet()
-        .then(function () {
-          const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
-          // delete the old build params because we want 'recreateAndSign' to recreate the transaction
-          delete recreationParams.fee;
-          delete recreationParams.unspents;
-          delete recreationParams.txInfo;
-          delete recreationParams.estimatedSize;
-          delete recreationParams.changeAddresses;
-          return self.recreateAndSignTransaction(recreationParams);
-        });
+      return self.populateWallet().then(function () {
+        const recreationParams = _.extend(
+          {},
+          params,
+          { txHex: self.info().transactionRequest.transaction },
+          self.info().transactionRequest.buildParams
+        );
+        // delete the old build params because we want 'recreateAndSign' to recreate the transaction
+        delete recreationParams.fee;
+        delete recreationParams.unspents;
+        delete recreationParams.txInfo;
+        delete recreationParams.estimatedSize;
+        delete recreationParams.changeAddresses;
+        return self.recreateAndSignTransaction(recreationParams);
+      });
     }
   })
     .then(function (transaction) {
@@ -315,21 +318,22 @@ PendingApproval.prototype.approve = function (params, callback) {
       if (transaction) {
         approvalParams.tx = transaction.tx;
       }
-      return Bluebird.resolve(
-        self.bitgo.put(self.url()).send(approvalParams).result()
-      ).nodeify(callback);
+      return Bluebird.resolve(self.bitgo.put(self.url()).send(approvalParams).result()).nodeify(callback);
     })
     .catch(function (error) {
-      if (!canRecreateTransaction &&
-    (
-      error.message.indexOf('could not find unspent output for input') !== -1 ||
-      error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
+      if (
+        !canRecreateTransaction &&
+        (error.message.indexOf('could not find unspent output for input') !== -1 ||
+          error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
       ) {
         throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
       }
-      if (_.isUndefined(params.forceRecreate) && error.message.indexOf('could not find unspent output for input') !== -1 ) {
-      // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
-      // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
+      if (
+        _.isUndefined(params.forceRecreate) &&
+        error.message.indexOf('could not find unspent output for input') !== -1
+      ) {
+        // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
+        // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
         delete params.tx;
         params.forceRecreate = true;
         self.approve(params, callback);
@@ -347,9 +351,7 @@ PendingApproval.prototype.reject = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.put(this.url()).send({ state: 'rejected' }).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result()).nodeify(callback);
 };
 
 //

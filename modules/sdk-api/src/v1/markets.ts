@@ -34,9 +34,7 @@ Markets.prototype.latest = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/market/latest')).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/market/latest')).result()).nodeify(callback);
 };
 
 /**
@@ -50,9 +48,7 @@ Markets.prototype.yesterday = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/market/yesterday')).result()
-  ).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/market/yesterday')).result()).nodeify(callback);
 };
 
 /**

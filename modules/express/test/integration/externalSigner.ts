@@ -8,8 +8,7 @@ import * as sinon from 'sinon';
 import * as request from 'supertest';
 import { app as expressApp } from '../../src/expressApp';
 import * as nock from 'nock';
-import { Environments } from 'bitgo';
-import { Btc } from 'bitgo/dist/src/v2/coins/btc';
+import { Coin, Environments } from 'bitgo';
 
 describe('Custom signing function', () => {
   let agent: request.SuperAgentTest;
@@ -61,8 +60,8 @@ describe('Custom signing function', () => {
       .reply(200, { wpBuild: 'WP build response' });
     const wpSendnock = nock(bgUrl).post('/api/v2/btc/wallet/fakeid/tx/send').reply(200, { wpSend: 'WP send response' });
 
-    const postProcessPrebuildStub = sinon.stub(Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
-    const verifyTransactionStub = sinon.stub(Btc.prototype, 'verifyTransaction').resolves(true);
+    const postProcessPrebuildStub = sinon.stub(Coin.Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
+    const verifyTransactionStub = sinon.stub(Coin.Btc.prototype, 'verifyTransaction').resolves(true);
 
     // make request to express application to initiate send
     const result = await agent
@@ -110,8 +109,8 @@ describe('Custom signing function', () => {
       .post('/api/v2/btc/wallet/fakeid/tx/build')
       .reply(200, { wpBuild: 'WP build response' });
 
-    const postProcessPrebuildStub = sinon.stub(Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
-    const verifyTransactionStub = sinon.stub(Btc.prototype, 'verifyTransaction').resolves(true);
+    const postProcessPrebuildStub = sinon.stub(Coin.Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
+    const verifyTransactionStub = sinon.stub(Coin.Btc.prototype, 'verifyTransaction').resolves(true);
 
     const clock = sinon.useFakeTimers();
 
@@ -168,8 +167,8 @@ describe('Custom signing function', () => {
       .post('/api/v2/btc/wallet/fakeid/tx/build')
       .reply(200, { wpBuild: 'WP build response' });
 
-    const postProcessPrebuildStub = sinon.stub(Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
-    const verifyTransactionStub = sinon.stub(Btc.prototype, 'verifyTransaction').resolves(true);
+    const postProcessPrebuildStub = sinon.stub(Coin.Btc.prototype, 'postProcessPrebuild').resolvesArg(0);
+    const verifyTransactionStub = sinon.stub(Coin.Btc.prototype, 'verifyTransaction').resolves(true);
 
     // check to make sure request to external signer is not attempted a second time
     nock.emitter.on('no match', (req) => {

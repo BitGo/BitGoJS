@@ -5,14 +5,9 @@ import * as _ from 'lodash';
 import { Xlm } from './xlm';
 import { BitGoBase, BitGoJsError, CoinConstructor } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
+import { StellarTokenConfig } from '@bitgo/statics';
 
-export interface StellarTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  decimalPlaces: number;
-}
+export { StellarTokenConfig };
 
 export class StellarToken extends Xlm {
   static readonly tokenPattern: RegExp = /[A-Z]{1,12}-G[A-Z0-9]{55}/;

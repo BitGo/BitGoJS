@@ -1,6 +1,6 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Btc } from './btc';
+import { Btc } from '@bitgo/sdk-coin-btc';
 
 export class Btg extends Btc {
   constructor(bitgo: BitGoBase, network?: any) {

@@ -1,4 +1,5 @@
 import { BitGoJsError, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
+import { ECPair } from '@bitgo/utxo-lib';
 
 export interface BitGoAPIOptions {
   accessToken?: string;
@@ -170,4 +171,100 @@ export interface UnlockOptions {
 }
 export interface ExtendTokenOptions {
   duration?: string;
+}
+
+/**
+ * @deprecated
+ */
+export interface DeprecatedVerifyAddressOptions {
+  address?: string;
+}
+
+export interface SplitSecretOptions {
+  seed: string;
+  passwords: string[];
+  m: number;
+}
+
+export interface SplitSecret {
+  xpub: string;
+  m: number;
+  n: number;
+  seedShares: any;
+}
+
+export interface ReconstituteSecretOptions {
+  shards: string[];
+  passwords: string[];
+}
+
+export interface ReconstitutedSecret {
+  xpub: string;
+  xprv: string;
+  seed: string;
+}
+
+export interface VerifyShardsOptions {
+  shards: string[];
+  passwords: string[];
+  m: number;
+  xpub: string;
+}
+
+export interface GetEcdhSecretOptions {
+  otherPubKeyHex: string;
+  eckey: ECPair.ECPairInterface;
+}
+
+export interface ChangePasswordOptions {
+  oldPassword: string;
+  newPassword: string;
+}
+
+/**
+ * @deprecated
+ */
+export interface EstimateFeeOptions {
+  numBlocks?: number;
+  maxFee?: number;
+  inputs?: string[];
+  txSize?: number;
+  cpfpAware?: boolean;
+}
+
+/**
+ * @deprecated
+ */
+export interface WebhookOptions {
+  url: string;
+  type: string;
+}
+
+export interface ListWebhookNotificationsOptions {
+  prevId?: string;
+  limit?: number;
+}
+
+export interface BitGoSimulateWebhookOptions {
+  webhookId: string;
+  blockId: string;
+}
+
+export interface AuthenticateWithAuthCodeOptions {
+  authCode: string;
+}
+
+/**
+ * @deprecated
+ */
+export interface VerifyPushTokenOptions {
+  pushVerificationToken: string;
+}
+
+/**
+ * @deprecated
+ */
+export interface RegisterPushTokenOptions {
+  pushToken: unknown;
+  operatingSystem: unknown;
 }

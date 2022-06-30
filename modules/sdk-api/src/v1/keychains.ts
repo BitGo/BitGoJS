@@ -15,15 +15,8 @@ import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
-let ethereumUtil;
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-
-try {
-  ethereumUtil = require('ethereumjs-util');
-} catch (e) {
-  // ethereum currently not supported
-}
 
 //
 // Constructor
@@ -40,13 +33,6 @@ const Keychains = function (bitgo) {
 Keychains.prototype.isValid = function (params) {
   params = params || {};
   common.validateParams(params, [], []);
-
-  if (params.ethAddress) {
-    if (!_.isString(params.ethAddress)) {
-      throw new Error('ethAddress must be a string');
-    }
-    return ethereumUtil.isValidAddress(params.ethAddress);
-  }
 
   if (!_.isString(params.key) && !_.isObject(params.key)) {
     throw new Error('key must be a string or object');
@@ -164,16 +150,21 @@ Keychains.prototype.list = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/keychain')).result('keychains')
-  ).then(function (keychains) {
-    keychains.map(function (keychain) {
-      if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-        throw new Error('ethAddress and xpub do not match');
-      }
-    });
-    return keychains;
-  }).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/keychain')).result('keychains'))
+    .then(function (keychains) {
+      keychains.map(function (keychain) {
+        if (
+          keychain.xpub &&
+          keychain.ethAddress &&
+          Util.xpubToEthAddress &&
+          keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+        ) {
+          throw new Error('ethAddress and xpub do not match');
+        }
+      });
+      return keychains;
+    })
+    .nodeify(callback);
 };
 
 /**
@@ -191,7 +182,7 @@ Keychains.prototype.list = function (params, callback) {
  *  @returns result.version {Number}
  */
 Keychains.prototype.updatePassword = function (params, callback) {
-  return co(function *coUpdatePassword() {
+  return co(function* coUpdatePassword() {
     common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
     // @ts-expect-error - no implicit this
     const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
@@ -209,7 +200,9 @@ Keychains.prototype.updatePassword = function (params, callback) {
       }
     });
     return { keychains: newKeychains, version: (encrypted as any).version };
-  }).call(this).asCallback(callback);
+  })
+    .call(this)
+    .asCallback(callback);
 };
 
 //
@@ -221,7 +214,8 @@ Keychains.prototype.add = function (params, callback) {
   common.validateParams(params, ['xpub'], ['encryptedXprv', 'type', 'isLedger'], callback);
 
   return Bluebird.resolve(
-    this.bitgo.post(this.bitgo.url('/keychain'))
+    this.bitgo
+      .post(this.bitgo.url('/keychain'))
       .send({
         xpub: params.xpub,
         encryptedXprv: params.encryptedXprv,
@@ -230,12 +224,19 @@ Keychains.prototype.add = function (params, callback) {
         isLedger: params.isLedger,
       })
       .result()
-  ).then(function (keychain) {
-    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-      throw new Error('ethAddress and xpub do not match');
-    }
-    return keychain;
-  }).nodeify(callback);
+  )
+    .then(function (keychain) {
+      if (
+        keychain.xpub &&
+        keychain.ethAddress &&
+        Util.xpubToEthAddress &&
+        keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+      ) {
+        throw new Error('ethAddress and xpub do not match');
+      }
+      return keychain;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -246,14 +247,19 @@ Keychains.prototype.createBitGo = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result()
-  ).then(function (keychain) {
-    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-      throw new Error('ethAddress and xpub do not match');
-    }
-    return keychain;
-  }).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result())
+    .then(function (keychain) {
+      if (
+        keychain.xpub &&
+        keychain.ethAddress &&
+        Util.xpubToEthAddress &&
+        keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+      ) {
+        throw new Error('ethAddress and xpub do not match');
+      }
+      return keychain;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -264,15 +270,20 @@ Keychains.prototype.createBackup = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['provider'], [], callback);
 
-  return Bluebird.resolve(
-    this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result()
-  ).then(function (keychain) {
-    // not all keychains have an xpub
-    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-      throw new Error('ethAddress and xpub do not match');
-    }
-    return keychain;
-  }).nodeify(callback);
+  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result())
+    .then(function (keychain) {
+      // not all keychains have an xpub
+      if (
+        keychain.xpub &&
+        keychain.ethAddress &&
+        Util.xpubToEthAddress &&
+        keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+      ) {
+        throw new Error('ethAddress and xpub do not match');
+      }
+      return keychain;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -291,13 +302,23 @@ Keychains.prototype.get = function (params, callback) {
 
   const id = params.xpub || params.ethAddress;
   return Bluebird.resolve(
-    this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id))).send({}).result()
-  ).then(function (keychain) {
-    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-      throw new Error('ethAddress and xpub do not match');
-    }
-    return keychain;
-  }).nodeify(callback);
+    this.bitgo
+      .post(this.bitgo.url('/keychain/' + encodeURIComponent(id)))
+      .send({})
+      .result()
+  )
+    .then(function (keychain) {
+      if (
+        keychain.xpub &&
+        keychain.ethAddress &&
+        Util.xpubToEthAddress &&
+        keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+      ) {
+        throw new Error('ethAddress and xpub do not match');
+      }
+      return keychain;
+    })
+    .nodeify(callback);
 };
 
 //
@@ -311,17 +332,25 @@ Keychains.prototype.update = function (params, callback) {
   common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
   return Bluebird.resolve(
-    this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
+    this.bitgo
+      .put(this.bitgo.url('/keychain/' + params.xpub))
       .send({
         encryptedXprv: params.encryptedXprv,
       })
       .result()
-  ).then(function (keychain) {
-    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
-      throw new Error('ethAddress and xpub do not match');
-    }
-    return keychain;
-  }).nodeify(callback);
+  )
+    .then(function (keychain) {
+      if (
+        keychain.xpub &&
+        keychain.ethAddress &&
+        Util.xpubToEthAddress &&
+        keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)
+      ) {
+        throw new Error('ethAddress and xpub do not match');
+      }
+      return keychain;
+    })
+    .nodeify(callback);
 };
 
 module.exports = Keychains;
