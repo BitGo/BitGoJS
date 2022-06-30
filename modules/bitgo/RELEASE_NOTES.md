@@ -585,7 +585,6 @@ To switch to another bitcoin network, a new bitgo object should be constructed i
 ### Other Changes
 * Overhaul how coins are loaded, in anticipation of a pluggable coin system in a future version of `bitgo`.
 * Rework CI system to reduce test runtimes by running tests for each module in parallel
-* Create and upload mochawesome report after each test run. [Here's an example](https://bitgo-sdk-test-reports.s3.amazonaws.com/1166/core/integration%20tests%20\(node:lts\).html).
 * Remove coin instantiation logic from BaseCoin and move methods to prototype instead of attaching to coin object instances.
 
 ## 5.4.0

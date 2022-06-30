@@ -94,4 +94,3 @@ dist/browserify/
 
 !dist/browser/BitGoJS.min.js
 
-mochawesome-report/

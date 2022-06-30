@@ -4,7 +4,6 @@ node_modules/
 lerna-debug.log
 npm-debug.log
 .nyc_output
-mochawesome-report/
 coverage.lcov
 package-lock.json
 # Sandbox folder for testing
