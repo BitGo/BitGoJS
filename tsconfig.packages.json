@@ -32,6 +32,9 @@
       "path": "./modules/sdk-coin-bch"
     },
     {
+      "path": "./modules/sdk-coin-btg"
+    },
+    {
       "path": "./modules/sdk-coin-cspr"
     },
     {

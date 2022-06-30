@@ -48,6 +48,9 @@
       "path": "../sdk-coin-btc"
     },
     {
+      "path": "../sdk-coin-btg"
+    },
+    {
       "path": "../sdk-coin-cspr"
     },
     {

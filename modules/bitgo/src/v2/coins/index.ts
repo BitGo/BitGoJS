@@ -8,6 +8,8 @@ import { Bch, Tbch } from '@bitgo/sdk-coin-bch';
 export { Bch, Tbch };
 import { Btc, Tbtc } from '@bitgo/sdk-coin-btc';
 export { Btc, Tbtc };
+import { Btg } from '@bitgo/sdk-coin-btg';
+export { Btg };
 import { Cspr, Tcspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr, Tcspr };
 import { Dash, Tdash } from '@bitgo/sdk-coin-dash';
@@ -18,7 +20,6 @@ import { Zec, Tzec } from '@bitgo/sdk-coin-zec';
 export { Zec, Tzec };
 
 export { Bsv } from './bsv';
-export { Btg } from './btg';
 export { Celo } from './celo';
 export { CeloToken } from './celoToken';
 export { Eos } from './eos';
