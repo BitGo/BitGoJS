@@ -12,6 +12,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 export interface ITransactionRecipient {
   address: string;
   amount: string | number;
+  tokenName?: string;
   memo?: string;
 }
 

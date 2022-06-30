@@ -3,7 +3,6 @@
 .prettierrc.yml
 tsconfig.json
 src/
-mochawesome-report/
 test/
 scripts/
 .nyc_output

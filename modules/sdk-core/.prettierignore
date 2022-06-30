@@ -1,4 +1,2 @@
 .nyc_output/
 dist/
-mochawesome-report/
-CHANGELOG.md

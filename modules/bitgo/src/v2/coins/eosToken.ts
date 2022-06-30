@@ -3,15 +3,9 @@
  */
 import { Eos } from './eos';
 import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
+import { EosTokenConfig } from '@bitgo/statics';
 
-export interface EosTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  tokenContractAddress: string;
-  decimalPlaces: number;
-}
+export { EosTokenConfig };
 
 export class EosToken extends Eos {
   public readonly tokenConfig: EosTokenConfig;

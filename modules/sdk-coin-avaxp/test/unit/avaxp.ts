@@ -51,9 +51,8 @@ describe('Avaxp', function () {
       const seedText = testData.SEED_ACCOUNT.seed;
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
-
-      keyPair.pub.should.equal(testData.SEED_ACCOUNT.publicKeyCb58);
-      keyPair.prv.should.equal(testData.SEED_ACCOUNT.privateKeyAvax);
+      keyPair.pub.should.equal(testData.SEED_ACCOUNT.publicKey);
+      keyPair.prv.should.equal(testData.SEED_ACCOUNT.privateKey);
     });
 
     it('should validate a public key', function () {

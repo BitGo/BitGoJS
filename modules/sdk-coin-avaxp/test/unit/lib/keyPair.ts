@@ -21,8 +21,8 @@ describe('Avax P Key Pair', () => {
       const keys = keyPairObj.getKeys();
       should.exists(keys.prv);
       should.exists(keys.pub);
-      should.equal(keys.prv!, testData.SEED_ACCOUNT.privateKeyAvax);
-      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKeyCb58);
+      should.equal(keys.prv!, testData.SEED_ACCOUNT.privateKey);
+      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKey);
 
       const extendedKeys = keyPairObj.getExtendedKeys();
       should.exists(extendedKeys.xprv);
@@ -36,8 +36,8 @@ describe('Avax P Key Pair', () => {
       const keys = keyPairObj.getKeys();
       should.exists(keys.prv);
       should.exists(keys.pub);
-      should.equal(keys.prv!, testData.SEED_ACCOUNT.privateKeyAvax);
-      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKeyCb58);
+      should.equal(keys.prv!, testData.SEED_ACCOUNT.privateKey);
+      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKey);
 
       const extendedKeys = keyPairObj.getExtendedKeys();
       should.exists(extendedKeys.xprv);
@@ -46,33 +46,72 @@ describe('Avax P Key Pair', () => {
       should.equal(extendedKeys.xpub, testData.SEED_ACCOUNT.xPublicKey);
     });
 
+    it('from a xpub', () => {
+      const keyPairObj = new KeyPair({ pub: testData.SEED_ACCOUNT.xPublicKey });
+      const keys = keyPairObj.getKeys();
+      should.not.exists(keys.prv);
+      should.exists(keys.pub);
+      should.equal(keys.pub, testData.SEED_ACCOUNT.publicKey);
+
+      const extendedKeys = keyPairObj.getExtendedKeys();
+      should.not.exists(extendedKeys.xprv);
+      should.exists(extendedKeys.xpub);
+      should.equal(extendedKeys.xpub, testData.SEED_ACCOUNT.xPublicKey);
+    });
+
     it('from a public key', () => {
       const keyPair = new KeyPair({ pub: testData.ACCOUNT_3.pubkey });
-      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkey);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
+      should.exists(keyPair.getAddress());
+    });
+
+    it('from a public ke hex', () => {
+      const keyPair = new KeyPair({ pub: testData.ACCOUNT_3.pubkeyHex });
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
       should.exists(keyPair.getAddress());
     });
 
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_3.privkey });
-      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkey);
-      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkey);
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
+      should.exists(keyPair.getAddress());
+    });
+
+    it('from a private key Hex', () => {
+      const keyPair = new KeyPair({ prv: testData.ACCOUNT_3.privkeyHex });
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
       should.exists(keyPair.getAddress());
     });
 
     it('Should get same address key for account 3 private key ', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_3.privkey });
-      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkey);
-      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkey);
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
+      should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_3.address);
+    });
+
+    it('Should get same address key for account 3 private key hex ', () => {
+      const keyPair = new KeyPair({ prv: testData.ACCOUNT_3.privkeyHex });
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_3.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_3.pubkeyHex);
       should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_3.address);
     });
 
     it('Should get same address key for account 4 private key ', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_4.privkey });
-      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_4.privkey);
-      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_4.pubkey);
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_4.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_4.pubkeyHex);
       should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_4.address);
     });
 
+    it('Should get same address key for account 4 private key hex ', () => {
+      const keyPair = new KeyPair({ prv: testData.ACCOUNT_4.privkeyHex });
+      should.equal(keyPair.getKeys().prv, testData.ACCOUNT_4.privkeyHex);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_4.pubkeyHex);
+      should.equal(keyPair.getAddress('testnet'), testData.ACCOUNT_4.address);
+    });
     describe('getAddress', function () {
       it('should get an address', () => {
         const seed = testData.SEED_ACCOUNT.seed;

@@ -1,21 +1,23 @@
 import 'should';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../../src/bitgo';
-import { Btc } from '../../../../../../src/v2/coins';
+import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
+
+import { Tbtc } from '../../src';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('BTC:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('tbtc', Tbtc.createInstance);
     bitgo.initializeTestVars();
   });
 
   describe('Address validation:', () => {
-    let coin: Btc;
+    let coin: Tbtc;
     before(() => {
-      coin = bitgo.coin('tbtc');
+      coin = bitgo.coin('tbtc') as Tbtc;
     });
 
     it('should validate a base58 address', () => {

@@ -9,20 +9,12 @@ import {
   getIsKrsRecovery,
   getIsUnsignedSweep,
 } from '@bitgo/sdk-core';
+import { Erc20TokenConfig } from '@bitgo/statics';
 import * as bip32 from 'bip32';
 import * as _ from 'lodash';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';
-
-export interface Erc20TokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  tokenContractAddress: string;
-  decimalPlaces: number;
-}
-
+export { Erc20TokenConfig };
 export class Erc20Token extends Eth {
   public readonly tokenConfig: Erc20TokenConfig;
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';

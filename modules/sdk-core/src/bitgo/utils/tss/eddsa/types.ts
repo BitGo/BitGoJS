@@ -12,6 +12,7 @@ export interface PrebuildTransactionWithIntentOptions {
   recipients: {
     address: string;
     amount: string | number;
+    tokenName?: string;
   }[];
   comment?: string;
   memo?: Memo;

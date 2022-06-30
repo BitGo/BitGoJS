@@ -33,13 +33,17 @@ export const ACCOUNT_2 = {
 
 export const ACCOUNT_3 = {
   privkey: 'PrivateKey-e2PZP3FYBU3G3gkRXXZkYPtye2ZqFrbSA13uDiutLK5ercixX',
+  privkeyHex: '5411413624d3f73603758c1931f41bafac4431da835d897a426d127a827d4e93',
   pubkey: '7BTbkCREwhkwow9qB4ncVZDk674XjS3zAcFbbpYrFfAe9JtGhu',
+  pubkeyHex: '032dec92a0329f10731b06d05dfd439b3c0147e4be3c63501e8bc26486ef404d63',
   address: 'P-fuji103cmntssp6qnucejahddy42wcy4qty0uj42822',
 };
 
 export const ACCOUNT_4 = {
   privkey: 'PrivateKey-NvmH6ywEhRDocnFnGGQ8qs1PVaTBhRYy7M9Xu1MkvZVCk4paj',
+  privkeyHex: '31c9af84056952693e2db5ca1ddbdad62f0e40d5cac51b29a7e2fba52ae72677',
   pubkey: '5jtw1Bs3E2vGYKQ4DSZ8CB4b15itTKGtR2GuRwW4EEnP5T9akE',
+  pubkeyHex: '02702efd41be3bcff312c813750306e1d2b1cdaa49b1dd5323a319161c6374d828',
   address: 'P-fuji1yzpfsdalhfwkq2ceewgs9wv7k0uft40ydpuj59',
 };
 

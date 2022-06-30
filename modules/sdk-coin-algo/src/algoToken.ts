@@ -3,30 +3,7 @@
  */
 import { Algo } from './algo';
 import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, AlgoCoin, NetworkType } from '@bitgo/statics';
-
-export interface AlgoTokenConfig {
-  name: string;
-  alias?: string;
-  type: string;
-  coin: string;
-  network: string;
-  decimalPlaces: number;
-}
-
-export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
-  if (coin instanceof AlgoCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
-      alias: coin.alias,
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+import { AlgoTokenConfig, formattedAlgoTokens } from '@bitgo/statics';
 
 export class AlgoToken extends Algo {
   static readonly tokenNamePattern = /^([^:]+):(?:([^.]+)-)?([0-9]+)$/;

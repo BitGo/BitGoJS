@@ -26,6 +26,9 @@
       "path": "./modules/sdk-coin-avaxp"
     },
     {
+      "path": "./modules/sdk-coin-btc"
+    },
+    {
       "path": "./modules/sdk-coin-cspr"
     },
     {
