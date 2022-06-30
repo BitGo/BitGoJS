@@ -65,6 +65,7 @@ export interface SolVerifyTransactionOptions extends VerifyTransactionOptions {
 interface TransactionOutput {
   address: string;
   amount: number | string;
+  tokenName?: string;
 }
 type TransactionInput = TransactionOutput;
 
@@ -123,7 +124,8 @@ export class Sol extends BaseCoin {
   }
 
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<any> {
-    let totalAmount = new BigNumber(0);
+    // asset name to transfer amount map
+    const totalAmount: Record<string, BigNumber> = {};
     const coinConfig = coins.get(this.getChain());
     const { txParams: txParams, txPrebuild: txPrebuild, memo: memo, durableNonce: durableNonce } = params;
     const transaction = new accountLib.Sol.Transaction(coinConfig);
@@ -161,10 +163,23 @@ export class Sol extends BaseCoin {
     }
     if (txParams.recipients) {
       for (const recipients of txParams.recipients) {
-        totalAmount = totalAmount.plus(recipients.amount);
+        // totalAmount based on each token
+        const assetName = recipients.tokenName || this.getChain();
+        const amount = totalAmount[assetName] || new BigNumber(0);
+        totalAmount[assetName] = amount.plus(recipients.amount);
       }
 
-      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+      // total output amount from explainedTx
+      const explainedTxTotal: Record<string, BigNumber> = {};
+
+      for (const output of explainedTx.outputs) {
+        // total output amount based on each token
+        const assetName = output.tokenName || this.getChain();
+        const amount = explainedTxTotal[assetName] || new BigNumber(0);
+        explainedTxTotal[assetName] = amount.plus(output.amount);
+      }
+
+      if (!_.isEqual(explainedTxTotal, totalAmount)) {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
     }
@@ -282,11 +297,12 @@ export class Sol extends BaseCoin {
       },
     ];
 
-    const outputs: TransactionOutput[] = solTransaction.outputs.map((output) => {
-      return {
-        address: output.address,
-        amount: output.amount,
-      };
+    const outputs: TransactionOutput[] = solTransaction.outputs.map(({ address, amount, tokenName }) => {
+      const output: TransactionOutput = { address, amount };
+      if (tokenName) {
+        output.tokenName = tokenName;
+      }
+      return output;
     });
 
     return {
