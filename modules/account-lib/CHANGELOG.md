@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.26...@bitgo/account-lib@2.20.0-rc.27) (2022-06-30)
+
+
+### Bug Fixes
+
+* **account-lib:** fix ecdsa tests timeout issues ([12c86b2](https://github.com/BitGo/BitGoJS/commit/12c86b2dcbc24331ad47668829ec9f8eb131861f))
+
+
+
+
+
 # [2.20.0-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.25...@bitgo/account-lib@2.20.0-rc.26) (2022-06-30)
 
 

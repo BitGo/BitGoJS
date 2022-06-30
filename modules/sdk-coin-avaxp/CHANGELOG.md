@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.17...@bitgo/sdk-coin-avaxp@0.1.0-rc.18) (2022-06-30)
+
+
+### Features
+
+* **sdk-coin-avaxp:** keypair default encoder is hex ([605e32d](https://github.com/BitGo/BitGoJS/commit/605e32d362d9a141c241b198f76b5f1ec9c38cba))
+
+
+
+
+
 # [0.1.0-rc.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.16...@bitgo/sdk-coin-avaxp@0.1.0-rc.17) (2022-06-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

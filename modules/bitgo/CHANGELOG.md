@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.31](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.30...bitgo@14.2.0-rc.31) (2022-06-30)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix sol send token sdk ([d5c697b](https://github.com/BitGo/BitGoJS/commit/d5c697b4f0b2e6a95eaf7a1f6e70db063f2877d2))
+
+
+
+
+
 # [14.2.0-rc.30](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.29...bitgo@14.2.0-rc.30) (2022-06-30)
 
 
