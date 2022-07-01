@@ -3,17 +3,14 @@
  */
 import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import { <%= constructor %> } from './<%= symbol %>';
+import * as utxolib from '@bitgo/utxo-lib';
 
 export class <%= testnetConstructor %> extends <%= constructor %> {
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new <%= testnetConstructor %>(bitgo);
+  constructor(bitgo: BitGoBase) {
+    super(bitgo, utxolib.networks.<%= coinLowerCase %>Test);
   }
 
   getChain(): string {
-    return '<%= testnetSymbol %>';
-  }
-
-  getFamily(): string {
     return '<%= testnetSymbol %>';
   }
 

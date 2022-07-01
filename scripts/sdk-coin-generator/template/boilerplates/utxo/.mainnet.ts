@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 export class <%= constructor %> extends AbstractUtxoCoin {
   protected constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.bitcoincash);
+    super(bitgo, network || utxolib.networks.<%= coinLowerCase %>);
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {
