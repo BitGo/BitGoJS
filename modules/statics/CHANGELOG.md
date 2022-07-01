@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.21...@bitgo/statics@6.18.0-rc.22) (2022-07-01)
+
+
+### Features
+
+* **statics:** add cardano ada statics ([12c7785](https://github.com/BitGo/BitGoJS/commit/12c7785ff0986edecd4055f8ed277f3fc9d1186e))
+
+
+
+
+
 # [6.18.0-rc.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.20...@bitgo/statics@6.18.0-rc.21) (2022-06-30)
 
 **Note:** Version bump only for package @bitgo/statics

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0-rc.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.18...@bitgo/sdk-coin-avaxp@0.1.0-rc.19) (2022-07-01)
+
+
+### Features
+
+* **sdk-coin-avaxp:** add into accountLib umbrella ([9f0914d](https://github.com/BitGo/BitGoJS/commit/9f0914d6c3473f77e74c6b56345c3470a5cbb16c))
+
+
+
+
+
 # [0.1.0-rc.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@0.1.0-rc.17...@bitgo/sdk-coin-avaxp@0.1.0-rc.18) (2022-06-30)
 
 

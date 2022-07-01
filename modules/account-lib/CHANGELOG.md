@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.27...@bitgo/account-lib@2.20.0-rc.28) (2022-07-01)
+
+
+### Bug Fixes
+
+* **sdk-core:** fix ecdsa signing timeouts ([8ecd859](https://github.com/BitGo/BitGoJS/commit/8ecd859019effd29e0c25601110139cbe6eb8668))
+
+
+### Features
+
+* **sdk-coin-avaxp:** add into accountLib umbrella ([9f0914d](https://github.com/BitGo/BitGoJS/commit/9f0914d6c3473f77e74c6b56345c3470a5cbb16c))
+
+
+
+
+
 # [2.20.0-rc.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.26...@bitgo/account-lib@2.20.0-rc.27) (2022-06-30)
 
 

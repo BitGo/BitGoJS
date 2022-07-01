@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.32](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.31...bitgo@14.2.0-rc.32) (2022-07-01)
+
+
+### Features
+
+* **sdk-coin-zec:** refactor zec to its own module ([0d429c6](https://github.com/BitGo/BitGoJS/commit/0d429c60eb4d66de8c512ae5fdec8b0ceb067e2f))
+* **sdk-core:** update validation to include eip1559 ([4775a84](https://github.com/BitGo/BitGoJS/commit/4775a84de1e4ba18dcbc7cd8cbfa0a40c4625e46))
+
+
+
+
+
 # [14.2.0-rc.31](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.30...bitgo@14.2.0-rc.31) (2022-06-30)
 
 
