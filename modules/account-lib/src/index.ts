@@ -51,6 +51,9 @@ export { Stx };
 import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
 export { Algo };
 
+import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
+export { AvaxP };
+
 import * as Sol from './coin/sol';
 export { Sol };
 import * as Dot from './coin/dot';
@@ -78,6 +81,8 @@ const coinBuilderMap = {
   tcelo: Celo.TransactionBuilder,
   avaxc: AvaxC.TransactionBuilder,
   tavaxc: AvaxC.TransactionBuilder,
+  avaxp: AvaxP.TransactionBuilderFactory,
+  tavaxp: AvaxP.TransactionBuilderFactory,
   hbar: Hbar.TransactionBuilderFactory,
   thbar: Hbar.TransactionBuilderFactory,
   cspr: Cspr.TransactionBuilderFactory,

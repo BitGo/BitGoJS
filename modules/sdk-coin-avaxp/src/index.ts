@@ -1,4 +1,4 @@
 export * from './avaxp';
 export * from './tavaxp';
-export * from './lib';
+export * as AvaxpLib from './lib';
 export * from './iface';
