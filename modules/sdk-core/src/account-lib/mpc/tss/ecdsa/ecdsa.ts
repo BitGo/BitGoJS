@@ -1,7 +1,7 @@
 import * as paillierBigint from 'paillier-bigint';
 import * as secp from '@noble/secp256k1';
 import { randomBytes, createHash } from 'crypto';
-import { bigIntToHex } from '../../../util/crypto';
+import { hexToBigInt } from '../../../util/crypto';
 import { bigIntFromBufferBE, bigIntToBufferBE, bigIntFromU8ABE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import Shamir from '../../shamir';
@@ -56,11 +56,11 @@ export default class Ecdsa {
     const uShares = Ecdsa.shamir.split(u, threshold, numShares);
     const currentParticipant: PShare = {
       i: index,
-      l: bigIntToHex(privateKey.lambda),
-      m: bigIntToHex(privateKey.mu),
-      n: bigIntToHex(publicKey.n),
-      y: bigIntToHex(y),
-      u: bigIntToHex(uShares[index]),
+      l: privateKey.lambda.toString(16),
+      m: privateKey.mu.toString(16),
+      n: publicKey.n.toString(16),
+      y: y.toString(16),
+      u: uShares[index].toString(16),
       chaincode: chaincode.toString('hex'),
     };
     const keyShare: KeyShare = {
@@ -74,9 +74,9 @@ export default class Ecdsa {
         keyShare.nShares[participantIndex] = {
           i: participantIndex,
           j: currentParticipant['i'],
-          n: bigIntToHex(publicKey.n),
-          y: bigIntToHex(y),
-          u: bigIntToHex(uShares[participantIndex]),
+          n: publicKey.n.toString(16),
+          y: y.toString(16),
+          u: uShares[participantIndex].toString(16),
           chaincode: chaincode.toString('hex'),
         } as NShare;
       }
@@ -94,9 +94,9 @@ export default class Ecdsa {
   keyCombine(pShare: PShare, nShares: NShare[]): KeyCombined {
     const allShares = [pShare, ...nShares];
     // Compute the public key.
-    const y = allShares.map((participant) => BigInt(participant['y'])).reduce(Ecdsa.curve.pointAdd);
+    const y = allShares.map((participant) => hexToBigInt(participant['y'])).reduce(Ecdsa.curve.pointAdd);
     // Add secret shares
-    const x = allShares.map((participant) => BigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
+    const x = allShares.map((participant) => hexToBigInt(participant['u'])).reduce(Ecdsa.curve.scalarAdd);
 
     // Chaincode will be used in future when we add support for key derivation for ecdsa
     const chaincodes = [pShare, ...nShares].map(({ chaincode }) => bigIntFromBufferBE(Buffer.from(chaincode, 'hex')));
@@ -111,8 +111,8 @@ export default class Ecdsa {
         l: pShare.l,
         m: pShare.m,
         n: pShare.n,
-        y: bigIntToHex(y),
-        x: bigIntToHex(x),
+        y: y.toString(16),
+        x: x.toString(16),
         chaincode: bigIntToBufferBE(chaincode, 32).toString('hex'),
       },
       yShares: {},
@@ -137,7 +137,7 @@ export default class Ecdsa {
    * and k-share to be distributed to other participant signer
    */
   signShare(xShare: XShare, yShare: YShare): SignShareRT {
-    const pk = getPaillierPublicKey(BigInt(xShare.n));
+    const pk = getPaillierPublicKey(hexToBigInt(xShare.n));
 
     const k = Ecdsa.curve.scalarRandom();
     const gamma = Ecdsa.curve.scalarRandom();
@@ -146,7 +146,7 @@ export default class Ecdsa {
 
     const w = [
       Ecdsa.curve.scalarMult(BigInt(yShare.j), BigInt(xShare.i)),
-      BigInt(xShare['x']),
+      hexToBigInt(xShare['x']),
       Ecdsa.curve.scalarInvert(d),
     ].reduce(Ecdsa.curve.scalarMult);
 
@@ -157,9 +157,9 @@ export default class Ecdsa {
         m: xShare.m,
         n: xShare.n,
         y: xShare.y,
-        k: bigIntToHex(k),
-        w: bigIntToHex(w),
-        gamma: bigIntToHex(gamma),
+        k: k.toString(16),
+        w: w.toString(16),
+        gamma: gamma.toString(16),
       },
       kShare: {} as KShare,
     };
@@ -167,8 +167,8 @@ export default class Ecdsa {
     signers.kShare = {
       i: yShare.j,
       j: xShare.i,
-      n: bigIntToHex(pk.n),
-      k: bigIntToHex(pk.encrypt(k)),
+      n: pk.n.toString(16),
+      k: pk.encrypt(k).toString(16),
     };
 
     return signers;
@@ -200,42 +200,42 @@ export default class Ecdsa {
       throw new Error('Shares from same participant');
     }
     if (shareToBeSend['alpha']) {
-      const pk = getPaillierPublicKey(BigInt(shareParticipant.n));
+      const pk = getPaillierPublicKey(hexToBigInt(shareParticipant.n));
       const sk = new paillierBigint.PrivateKey(
-        BigInt(shareParticipant.l as string),
-        BigInt(shareParticipant.m as string),
+        hexToBigInt(shareParticipant.l as string),
+        hexToBigInt(shareParticipant.m as string),
         pk
       );
-      const alpha = sk.decrypt(BigInt(shareToBeSend.alpha));
-      shareParticipant['alpha'] = bigIntToHex(Ecdsa.curve.scalarReduce(alpha));
-      const mu = sk.decrypt(BigInt(shareToBeSend.mu as string)); // recheck encrypted number
-      shareParticipant['mu'] = bigIntToHex(Ecdsa.curve.scalarReduce(mu));
+      const alpha = sk.decrypt(hexToBigInt(shareToBeSend.alpha));
+      shareParticipant['alpha'] = Ecdsa.curve.scalarReduce(alpha).toString(16);
+      const mu = sk.decrypt(hexToBigInt(shareToBeSend.mu as string)); // recheck encrypted number
+      shareParticipant['mu'] = Ecdsa.curve.scalarReduce(mu).toString(16);
       delete shareParticipant['l'];
       delete shareParticipant['m'];
       delete shareToBeSend['alpha'];
       delete shareToBeSend['mu'];
     }
     if (shareToBeSend['k']) {
-      const n = BigInt(shareToBeSend['n']); // Pallier pub from other signer
+      const n = hexToBigInt(shareToBeSend['n']); // Pallier pub from other signer
       let pk = getPaillierPublicKey(n);
-      const k = BigInt(shareToBeSend['k']);
+      const k = hexToBigInt(shareToBeSend['k']);
 
       const beta0 = Ecdsa.curve.scalarRandom();
-      shareParticipant.beta = bigIntToHex(Ecdsa.curve.scalarNegate(beta0));
-      const alpha = pk.addition(pk.multiply(k, BigInt(shareParticipant.gamma)), pk.encrypt(beta0));
-      shareToBeSend.alpha = bigIntToHex(alpha);
+      shareParticipant.beta = Ecdsa.curve.scalarNegate(beta0).toString(16);
+      const alpha = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.gamma)), pk.encrypt(beta0));
+      shareToBeSend.alpha = alpha.toString(16);
 
       const nu0 = Ecdsa.curve.scalarRandom();
-      shareParticipant.nu = bigIntToHex(Ecdsa.curve.scalarNegate(nu0));
-      const mu = pk.addition(pk.multiply(k, BigInt(shareParticipant.w)), pk.encrypt(nu0));
-      shareToBeSend.mu = bigIntToHex(mu);
+      shareParticipant.nu = Ecdsa.curve.scalarNegate(nu0).toString(16);
+      const mu = pk.addition(pk.multiply(k, hexToBigInt(shareParticipant.w)), pk.encrypt(nu0));
+      shareToBeSend.mu = mu.toString(16);
       if (shareParticipant['alpha']) {
         delete shareToBeSend['n'];
         delete shareToBeSend['k'];
       } else {
-        pk = getPaillierPublicKey(BigInt(shareParticipant.n));
-        shareToBeSend['n'] = bigIntToHex(pk.n);
-        shareToBeSend['k'] = bigIntToHex(pk.encrypt(BigInt(shareParticipant.k)));
+        pk = getPaillierPublicKey(hexToBigInt(shareParticipant.n));
+        shareToBeSend['n'] = pk.n.toString(16);
+        shareToBeSend['k'] = pk.encrypt(hexToBigInt(shareParticipant.k)).toString(16);
       }
     }
     if (!('alpha' in shareToBeSend) && !('k' in shareToBeSend)) {
@@ -265,13 +265,13 @@ export default class Ecdsa {
   signCombine(shares: SignCombine): SignCombineRT {
     const gShare = shares.gShares;
     const S = shares.signIndex;
-    const gamma = BigInt(gShare.gamma);
-    const alpha = BigInt(gShare.alpha);
-    const beta = BigInt(gShare.beta);
-    const mu = BigInt(gShare.mu);
-    const nu = BigInt(gShare.nu);
-    const k = BigInt(gShare.k);
-    const w = BigInt(gShare.w);
+    const gamma = hexToBigInt(gShare.gamma);
+    const alpha = hexToBigInt(gShare.alpha);
+    const beta = hexToBigInt(gShare.beta);
+    const mu = hexToBigInt(gShare.mu);
+    const nu = hexToBigInt(gShare.nu);
+    const k = hexToBigInt(gShare.k);
+    const w = hexToBigInt(gShare.w);
 
     const delta = Ecdsa.curve.scalarAdd(Ecdsa.curve.scalarMult(k, gamma), Ecdsa.curve.scalarAdd(alpha, beta));
     const omicron = Ecdsa.curve.scalarAdd(Ecdsa.curve.scalarMult(k, w), Ecdsa.curve.scalarAdd(mu, nu));
@@ -281,16 +281,16 @@ export default class Ecdsa {
       oShare: {
         i: gShare.i,
         y: gShare.y,
-        k: bigIntToHex(k),
-        omicron: bigIntToHex(omicron),
-        delta: bigIntToHex(delta),
-        Gamma: bigIntToHex(Gamma),
+        k: k.toString(16),
+        omicron: omicron.toString(16),
+        delta: delta.toString(16),
+        Gamma: Gamma.toString(16),
       },
       dShare: {
         i: S.i,
         j: gShare.i,
-        delta: bigIntToHex(delta),
-        Gamma: bigIntToHex(Gamma),
+        delta: delta.toString(16),
+        Gamma: Gamma.toString(16),
       },
     };
   }
@@ -305,24 +305,24 @@ export default class Ecdsa {
   sign(M: Buffer, oShare: OShare, dShare: DShare): SignRT {
     const m = createHash('sha256').update(M).digest();
 
-    const delta = Ecdsa.curve.scalarAdd(BigInt(oShare.delta), BigInt(dShare.delta));
+    const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
 
     const R = Ecdsa.curve.pointMultiply(
-      Ecdsa.curve.pointAdd(BigInt(oShare.Gamma), BigInt(dShare.Gamma)),
+      Ecdsa.curve.pointAdd(hexToBigInt(oShare.Gamma), hexToBigInt(dShare.Gamma)),
       Ecdsa.curve.scalarInvert(delta)
     );
     const pointR = secp.Point.fromHex(bigIntToBufferBE(R));
     const r = pointR.x;
 
     const s = Ecdsa.curve.scalarAdd(
-      Ecdsa.curve.scalarMult(bigIntFromU8ABE(m), BigInt(oShare.k)),
-      Ecdsa.curve.scalarMult(r, BigInt(oShare.omicron))
+      Ecdsa.curve.scalarMult(bigIntFromU8ABE(m), hexToBigInt(oShare.k)),
+      Ecdsa.curve.scalarMult(r, hexToBigInt(oShare.omicron))
     );
     return {
       i: oShare.i,
       y: oShare.y,
-      r: bigIntToHex(r),
-      s: bigIntToHex(s),
+      r: r.toString(16),
+      s: s.toString(16),
     };
   }
 
@@ -339,14 +339,14 @@ export default class Ecdsa {
       throw new Error('r value should be consistent across all shares');
     }
 
-    let s = shares.map((share) => BigInt(share['s'])).reduce(Ecdsa.curve.scalarAdd);
+    let s = shares.map((share) => hexToBigInt(share['s'])).reduce(Ecdsa.curve.scalarAdd);
 
     // Normalize s.
     s = s > Ecdsa.curve.order() / BigInt(2) ? Ecdsa.curve.order() - s : s;
     return {
       y: shares[0]['y'],
       r: r,
-      s: bigIntToHex(s),
+      s: s.toString(16),
     };
   }
 
@@ -359,8 +359,11 @@ export default class Ecdsa {
   verify(message: Buffer, signature: Signature): boolean {
     return Ecdsa.curve.verify(
       createHash('sha256').update(message).digest(),
-      Buffer.concat([bigIntToBufferBE(BigInt(signature['r']), 32), bigIntToBufferBE(BigInt(signature['s']), 32)]),
-      BigInt(signature['y'])
+      Buffer.concat([
+        bigIntToBufferBE(hexToBigInt(signature['r']), 32),
+        bigIntToBufferBE(hexToBigInt(signature['s']), 32),
+      ]),
+      hexToBigInt(signature['y'])
     );
   }
 }

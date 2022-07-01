@@ -210,6 +210,24 @@ export function bigIntToHex(bigint: bigint): string {
 }
 
 /**
+ * Returns a BigInt value from hex
+ *
+ * @param {string} hex - hex value to be converted to bigint
+ * @returns {bigint} - bigint representation of the hex value
+ */
+export function hexToBigInt(hex: string): bigint {
+  // Strangely bigint.toString(16) gives a hex string without 0x
+  // but it won't accept the same string without 0x to convert
+  // to a bigint (BigInt(hex string)). So have to introduce this
+  // check to convert to add 0x in case if hex string
+  // doesn't have it.
+  if (hex.slice(0, 2) === '0x') {
+    return BigInt(hex);
+  }
+  return BigInt('0x' + hex);
+}
+
+/**
  * Check if base58 decoded string is equale to length
  *
  * @param {string} value - string to be checked
