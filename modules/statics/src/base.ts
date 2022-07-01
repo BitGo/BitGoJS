@@ -15,6 +15,7 @@ export enum CoinKind {
  * For example, the coins `btc` and `tbtc` both belong to the same family, `btc`.
  */
 export enum CoinFamily {
+  ADA = 'ada',
   ALGO = 'algo',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
@@ -142,6 +143,7 @@ export enum CoinFeature {
  * asset for which the coin is a unit of account.
  */
 export enum UnderlyingAsset {
+  ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',
   API3 = 'api3',

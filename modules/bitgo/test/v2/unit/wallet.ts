@@ -325,6 +325,29 @@ describe('V2 Wallet:', function () {
       scope.isDone().should.be.True();
     });
 
+    it('should try to change the fee correctly using eip1559', async function () {
+      const params = {
+        txid: '0xffffffff',
+        eip1559: {
+          maxPriorityFeePerGas: '1000000000',
+          maxFeePerGas: '25000000000',
+        },
+      };
+
+      const scope =
+        nock(bgUrl)
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params)
+          .reply(200);
+
+      try {
+        await wallet.changeFee(params);
+        throw '';
+      } catch (error) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      scope.isDone().should.be.True();
+    });
+
     it('should pass data parameter and amount: 0 when using sendTransaction', async function () {
       const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';

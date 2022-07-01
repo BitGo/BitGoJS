@@ -55,6 +55,7 @@
     "@bitgo/sdk-coin-btc": "^1.0.1-rc.0",
     "@bitgo/sdk-coin-cspr": "^1.0.1-rc.7",
     "@bitgo/sdk-coin-xrp": "^1.1.0-rc.13",
+    "@bitgo/sdk-coin-zec": "^1.0.0",
     "@bitgo/sdk-core": "^1.1.0-rc.20",
     "@bitgo/sjcl": "^1.0.1-rc.3",
     "@bitgo/statics": "^6.18.0-rc.21",

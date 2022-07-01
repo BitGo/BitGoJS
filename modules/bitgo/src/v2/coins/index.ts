@@ -8,6 +8,8 @@ import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP, TavaxP };
 import { Btc, Tbtc } from '@bitgo/sdk-coin-btc';
 export { Btc, Tbtc };
+import { Zec, Tzec } from '@bitgo/sdk-coin-zec';
+export { Zec, Tzec };
 
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 export { Algo, AlgoToken, Talgo };
@@ -52,9 +54,7 @@ export { Thbar } from './thbar';
 export { Xtz } from './xtz';
 export { Txtz } from './txtz';
 export { Txlm } from './txlm';
-export { Tzec } from './tzec';
 export { Xlm } from './xlm';
-export { Zec } from './zec';
 export { Stx } from './stx';
 export { Tstx } from './tstx';
 export { AvaxC } from './avaxc';

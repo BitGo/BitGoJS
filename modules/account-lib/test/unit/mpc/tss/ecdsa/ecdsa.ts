@@ -78,101 +78,107 @@ describe('TSS ECDSA TESTS', function () {
     }
   });
 
-  it('should properly sign the message', async function () {
-    const [A, B, C] = keyShares;
+  describe('ECDSA Signing', async function () {
+    let config: { signerOne: ECDSA.KeyCombined; signerTwo: ECDSA.KeyCombined }[];
 
-    const config = [
-      { signerOne: A, signerTwo: B },
-      { signerOne: B, signerTwo: C },
-      { signerOne: C, signerTwo: A },
-    ];
+    before(async () => {
+      const [A, B, C] = keyShares;
 
-    for (let index = 0; index < config.length; index++) {
-      // Step One
-      // signerOne, signerTwo have decided to sign the message
-      const signerOne = config[index].signerOne;
-      const signerOneIndex = config[index].signerOne.xShare.i;
-      const signerTwo = config[index].signerTwo;
-      const signerTwoIndex = config[index].signerTwo.xShare.i;
-
-      // Step Two
-      // Sign Shares are created by one of the participants (signerOne)
-      // with its private XShare and YShare corresponding to the other participant (signerTwo)
-      // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
-      const signShares: ECDSA.SignShareRT = MPC.signShare(signerOne.xShare, signerOne.yShares[signerTwoIndex]);
-
-      // Step Three
-      // signerTwo receives the KShare from signerOne and uses it produce private
-      // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
-      // which is sent to signerOne
-      let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
-        xShare: signerTwo.xShare,
-        yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
-        kShare: signShares.kShare,
-      });
-
-      // Step Four
-      // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
-      // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
-      // is sent to signerTwo to produce its Gamma Share
-      const signConvertS12: ECDSA.SignConvertRT = MPC.signConvert({
-        aShare: signConvertS21.aShare,
-        wShare: signShares.wShare,
-      });
-
-      // Step Five
-      // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
-      // uses it produce private GShare (Gamma Share)
-
-      signConvertS21 = MPC.signConvert({
-        muShare: signConvertS12.muShare,
-        bShare: signConvertS21.bShare,
-      });
-
-      // Step Six
-      // signerOne and signerTwo both have successfully generated GShares and they use
-      // the sign combine function to generate their private omicron shares and
-      // delta shares which they share to each other
-
-      const [signCombineOne, signCombineTwo] = [
-        MPC.signCombine({
-          gShares: signConvertS12.gShare as ECDSA.GShare,
-          signIndex: {
-            i: (signConvertS12.muShare as ECDSA.MUShare).i,
-            j: (signConvertS12.muShare as ECDSA.MUShare).j,
-          },
-        }),
-        MPC.signCombine({
-          gShares: signConvertS21.gShare as ECDSA.GShare,
-          signIndex: {
-            i: (signConvertS21.muShare as ECDSA.MUShare).i,
-            j: (signConvertS21.muShare as ECDSA.MUShare).j,
-          },
-        }),
+      config = [
+        { signerOne: A, signerTwo: B },
+        { signerOne: B, signerTwo: C },
+        { signerOne: C, signerTwo: A },
       ];
+    });
 
-      const MESSAGE = Buffer.from('TOO MANY SECRETS');
+    for (let index = 0; index < 3; index++) {
+      it(`should properly sign the message case ${index}`, async function () {
+        // Step One
+        // signerOne, signerTwo have decided to sign the message
+        const signerOne = config[index].signerOne;
+        const signerOneIndex = config[index].signerOne.xShare.i;
+        const signerTwo = config[index].signerTwo;
+        const signerTwoIndex = config[index].signerTwo.xShare.i;
 
-      // Step Seven
-      // signerOne and signerTwo shares the delta share from each other
-      // and finally signs the message using their private OShare
-      // and delta share received from the other signer
+        // Step Two
+        // Sign Shares are created by one of the participants (signerOne)
+        // with its private XShare and YShare corresponding to the other participant (signerTwo)
+        // This step produces a private WShare which signerOne saves and KShare which signerOne sends to signerTwo
+        const signShares: ECDSA.SignShareRT = MPC.signShare(signerOne.xShare, signerOne.yShares[signerTwoIndex]);
 
-      const [signA, signB] = [
-        MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
-        MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
-      ];
+        // Step Three
+        // signerTwo receives the KShare from signerOne and uses it produce private
+        // BShare (Beta Share) which signerTwo saves and AShare (Alpha Share)
+        // which is sent to signerOne
+        let signConvertS21: ECDSA.SignConvertRT = MPC.signConvert({
+          xShare: signerTwo.xShare,
+          yShare: signerTwo.yShares[signerOneIndex], // YShare corresponding to the other participant signerOne
+          kShare: signShares.kShare,
+        });
 
-      // Step Eight
-      // Construct the final signature
+        // Step Four
+        // signerOne receives the AShare from signerTwo and signerOne using the private WShare from step two
+        // uses it produce private GShare (Gamma Share) and MUShare (Mu Share) which
+        // is sent to signerTwo to produce its Gamma Share
+        const signConvertS12: ECDSA.SignConvertRT = MPC.signConvert({
+          aShare: signConvertS21.aShare,
+          wShare: signShares.wShare,
+        });
 
-      const signature = MPC.constructSignature([signA, signB]);
+        // Step Five
+        // signerTwo receives the MUShare from signerOne and signerOne using the private BShare from step three
+        // uses it produce private GShare (Gamma Share)
 
-      // Step Nine
-      // Verify signature
+        signConvertS21 = MPC.signConvert({
+          muShare: signConvertS12.muShare,
+          bShare: signConvertS21.bShare,
+        });
 
-      const isValid = MPC.verify(MESSAGE, signature);
-      isValid.should.equal(true);
+        // Step Six
+        // signerOne and signerTwo both have successfully generated GShares and they use
+        // the sign combine function to generate their private omicron shares and
+        // delta shares which they share to each other
+
+        const [signCombineOne, signCombineTwo] = [
+          MPC.signCombine({
+            gShares: signConvertS12.gShare as ECDSA.GShare,
+            signIndex: {
+              i: (signConvertS12.muShare as ECDSA.MUShare).i,
+              j: (signConvertS12.muShare as ECDSA.MUShare).j,
+            },
+          }),
+          MPC.signCombine({
+            gShares: signConvertS21.gShare as ECDSA.GShare,
+            signIndex: {
+              i: (signConvertS21.muShare as ECDSA.MUShare).i,
+              j: (signConvertS21.muShare as ECDSA.MUShare).j,
+            },
+          }),
+        ];
+
+        const MESSAGE = Buffer.from('TOO MANY SECRETS');
+
+        // Step Seven
+        // signerOne and signerTwo shares the delta share from each other
+        // and finally signs the message using their private OShare
+        // and delta share received from the other signer
+
+        const [signA, signB] = [
+          MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare),
+          MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare),
+        ];
+
+        // Step Eight
+        // Construct the final signature
+
+        const signature = MPC.constructSignature([signA, signB]);
+
+        // Step Nine
+        // Verify signature
+
+        const isValid = MPC.verify(MESSAGE, signature);
+        isValid.should.equal(true);
+      });
     }
   });
 });

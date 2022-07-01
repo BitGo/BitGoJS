@@ -43,6 +43,9 @@
       "path": "../sdk-coin-xrp"
     },
     {
+      "path": "../sdk-coin-zec"
+    },
+    {
       "path": "../sdk-core"
     },
     {
