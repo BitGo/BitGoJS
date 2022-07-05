@@ -12,7 +12,7 @@ import {
 import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { toOutputScript } from './address';
 
-export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransaction> {
+export class ZcashTransactionBuilder extends UtxoTransactionBuilder<number, ZcashTransaction> {
   constructor(network: ZcashNetwork) {
     super(network);
   }
@@ -21,7 +21,7 @@ export class ZcashTransactionBuilder extends UtxoTransactionBuilder<ZcashTransac
     return new ZcashTransaction(network as ZcashNetwork, tx as ZcashTransaction);
   }
 
-  static fromTransaction(
+  static fromTransactionZcash(
     transaction: ZcashTransaction,
     network?: bitcoinjs.Network,
     prevOutput?: bitcoinjs.TxOutput[]

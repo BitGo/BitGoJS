@@ -63,7 +63,7 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
         },
         fixtureName
       );
-      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, {
+      parsedTx = createTransactionFromBuffer(Buffer.from(fixture.transaction.hex, 'hex'), protocol.network, 'number', {
         version: protocol.version,
       });
     });
@@ -121,7 +121,7 @@ function runTestParse(protocol: Protocol, txType: FixtureTxType, scriptType: Scr
         txbUnsigned.addOutput(Buffer.from(o.scriptPubKey.hex, 'hex'), o.value * 1e8);
       });
 
-      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network, {
+      const tx = createTransactionFromBuffer(txbUnsigned.buildIncomplete().toBuffer(), protocol.network, 'number', {
         version: protocol.version,
       });
       const txb = createTransactionBuilderFromTransaction(tx, getPrevOutputs());

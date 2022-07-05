@@ -40,8 +40,8 @@ export class DashTransaction extends UtxoTransaction {
     return new DashTransaction(tx.network, tx);
   }
 
-  static fromBuffer(buffer: Buffer, noStrict: boolean, network: Network): DashTransaction {
-    const baseTx = UtxoTransaction.fromBuffer(buffer, true, network);
+  static fromBufferDash(buffer: Buffer, noStrict: boolean, network: Network): DashTransaction {
+    const baseTx = UtxoTransaction.fromBuffer(buffer, true, 'number', network);
     const tx = new DashTransaction(network, baseTx);
     tx.version = baseTx.version & 0xffff;
     tx.type = baseTx.version >> 16;

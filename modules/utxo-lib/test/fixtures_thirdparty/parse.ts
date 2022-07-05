@@ -24,7 +24,7 @@ describe('Third-Party Fixtures', function () {
           let transaction, signatureHash;
           if (isZcash(network)) {
             [, /* branchId ,*/ signatureHash] = rest as [number, string];
-            transaction = ZcashTransaction.fromBuffer(buffer, false, network as ZcashNetwork);
+            transaction = ZcashTransaction.fromBufferZcash(buffer, false, network as ZcashNetwork);
           } else {
             [signatureHash] = rest as [string];
             transaction = parseTransactionRoundTrip(buffer, network);

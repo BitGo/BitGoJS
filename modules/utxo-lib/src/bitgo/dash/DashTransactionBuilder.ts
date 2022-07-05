@@ -4,7 +4,7 @@ import { UtxoTransactionBuilder } from '../UtxoTransactionBuilder';
 import { DashTransaction } from './DashTransaction';
 import { UtxoTransaction } from '../UtxoTransaction';
 
-export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransaction> {
+export class DashTransactionBuilder extends UtxoTransactionBuilder<number, DashTransaction> {
   constructor(network: Network, txb?: UtxoTransactionBuilder) {
     super(network, txb);
   }
@@ -21,7 +21,7 @@ export class DashTransactionBuilder extends UtxoTransactionBuilder<DashTransacti
     this.tx.extraPayload = extraPayload;
   }
 
-  static fromTransaction(
+  static fromTransactionDash(
     tx: DashTransaction,
     network?: bitcoinjs.Network,
     prevOutput?: bitcoinjs.TxOutput[]

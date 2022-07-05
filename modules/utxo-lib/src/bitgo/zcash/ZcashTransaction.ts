@@ -94,7 +94,7 @@ export class ZcashTransaction extends UtxoTransaction {
     this.consensusBranchId = consensusBranchId ?? getDefaultConsensusBranchIdForVersion(network, this.version);
   }
 
-  static fromBuffer(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
+  static fromBufferZcash(buffer: Buffer, __noStrict: boolean, network?: ZcashNetwork): ZcashTransaction {
     /* istanbul ignore next */
     if (!network) {
       throw new Error(`must provide network`);
@@ -130,7 +130,7 @@ export class ZcashTransaction extends UtxoTransaction {
   }
 
   static fromBufferWithVersion(buf: Buffer, network: ZcashNetwork, version?: number): ZcashTransaction {
-    const tx = ZcashTransaction.fromBuffer(buf, false, network);
+    const tx = ZcashTransaction.fromBufferZcash(buf, false, network);
     if (version) {
       tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
     }

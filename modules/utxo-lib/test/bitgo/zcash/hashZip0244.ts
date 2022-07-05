@@ -43,7 +43,7 @@ function runVector(v: Vector, i: number) {
     let tx: ZcashTransaction;
     before('parse', function () {
       try {
-        tx = ZcashTransaction.fromBuffer(Buffer.from(txHex, 'hex'), false, networks.zcash);
+        tx = ZcashTransaction.fromBufferZcash(Buffer.from(txHex, 'hex'), false, networks.zcash);
       } catch (e) {
         if (e instanceof UnsupportedTransactionError) {
           this.skip();
