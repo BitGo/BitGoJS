@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import { Bsv } from './bsv';
 import * as utxolib from '@bitgo/utxo-lib';
 
@@ -14,15 +14,15 @@ export class Tbsv extends Bsv {
     return new Tbsv(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'tbsv';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Testnet Bitcoin SV';
   }
 
-  getAddressPrefix() {
+  getAddressPrefix(): string {
     return 'bchtest';
   }
 }

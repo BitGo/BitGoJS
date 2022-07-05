@@ -181,6 +181,12 @@ module.exports = class extends Generator {
       this.destinationPath(`./src/${this.answers.symbol}.ts`),
       { ...this.answers }
     );
+    
+    this.fs.copyTpl(
+      this.templatePath(`${templatePath}/.tsconfig.json`),
+      this.destinationPath(`./tsconfig.json`),
+      { ...this.answers }
+    );
 
     if (this.answers.testnetSymbol) {
       this.fs.copyTpl(

@@ -48,6 +48,9 @@
       "path": "../sdk-coin-bcha"
     },
     {
+      "path": "../sdk-coin-bsv"
+    },
+    {
       "path": "../sdk-coin-btc"
     },
     {
