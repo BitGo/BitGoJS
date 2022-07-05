@@ -3,7 +3,7 @@ import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export class <%= constructor %> extends AbstractUtxoCoin {
-  protected constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
+  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.<%= coinLowerCase %>);
   }
 
@@ -11,15 +11,15 @@ export class <%= constructor %> extends AbstractUtxoCoin {
     return new <%= constructor %>(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return '<%= symbol %>';
   }
 
-  getFamily() {
+  getFamily(): string {
     return '<%= symbol %>';
   }
 
-  getFullName() {
+  getFullName(): string {
     return '<%= coin %>';
   }
 }
