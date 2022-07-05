@@ -3,6 +3,7 @@
  */
 import { CoinFactory } from '@bitgo/sdk-core';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
+import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import {
   Algo,
   AvaxC,
@@ -68,10 +69,8 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Bcha } from './coins/bcha';
 import { Dot } from './coins/dot';
 import { Near } from './coins/near';
-import { Tbcha } from './coins/tbcha';
 import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
 import { tokens } from '../config';
