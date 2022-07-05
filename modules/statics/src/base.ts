@@ -732,7 +732,7 @@ export enum UnderlyingAsset {
   USDX = 'usdx',
   USG = 'usg',
   USPX = 'uspx',
-  UST = 'ust',
+  USTC = 'ustc',
   USX = 'usx',
   UTK = 'utk',
   UTK1 = 'utk1',
