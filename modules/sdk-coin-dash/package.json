@@ -1,7 +1,7 @@
 {
-  "name": "@bitgo/sdk-coin-avaxp",
+  "name": "@bitgo/sdk-coin-dash",
   "version": "1.0.0",
-  "description": "BitGo's SDK coin library for avaxp coin",
+  "description": "BitGo SDK coin library for Dash",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -12,22 +12,19 @@
     "lint": "eslint --quiet .",
     "precommit": "yarn lint-staged",
     "prepare": "npm run build",
-    "scriptsComment": {
-      "build": "Need to re-add unit-test: 'nyc -- mocha' and test 'npm run unit-test', removed to green build and will add tests as implemented"
-    },
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
     "unit-test": "mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-coin-avaxp"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "engines": {
     "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-dash"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -43,19 +40,13 @@
       ".ts"
     ]
   },
-  "devDependencies": {
-    "@types/elliptic": "^6.4.12"
-  },
   "dependencies": {
+    "@bitgo/abstract-utxo": "^1.0.1-rc.13",
     "@bitgo/sdk-core": "^1.1.0-rc.21",
-    "@bitgo/statics": "^6.18.0-rc.22",
-    "avalanche": "3.13.3",
-    "bech32": "2.0.0",
-    "bignumber.js": "^9.0.0",
-    "bip32": "^2.0.6",
-    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
-    "create-hash": "^1.2.0",
-    "elliptic": "^6.5.2",
-    "secp256k1": "^4.0.2"
+    "@bitgo/utxo-lib": "^2.3.0-rc.10"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.0-rc.24",
+    "@bitgo/sdk-test": "^1.0.1-rc.10"
   }
 }

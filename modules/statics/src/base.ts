@@ -798,10 +798,10 @@ export enum UnderlyingAsset {
   'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA' = 'xlm:AQUA-GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA',
 
   // Algorand mainnet tokens
-  'algo:31566704' = 'algo:31566704',
-  'algo:312769' = 'algo:312769',
-  'algo:6547014' = 'algo:6547014',
-  'algo:438505559' = 'algo:438505559',
+  'algo:USDC-31566704' = 'algo:USDC-31566704',
+  'algo:USDt-312769' = 'algo:USDt-312769',
+  'algo:MCAU-6547014' = 'algo:MCAU-6547014',
+  'algo:VCAD-438505559' = 'algo:VCAD-438505559',
 
   // Kovan-only ERC20 tokens
   TEST = 'test',
@@ -813,11 +813,11 @@ export enum UnderlyingAsset {
   'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' = 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
 
   // Algorand testnet tokens
-  'talgo:16026728' = 'talgo:16026728',
-  'talgo:16026732' = 'talgo:16026732',
-  'talgo:16026733' = 'talgo:16026733',
-  'talgo:10458941' = 'talgo:10458941',
-  'talgo:180447' = 'talgo:180447',
+  'talgo:USON-16026728' = 'talgo:USON-16026728',
+  'talgo:SPRW-16026732' = 'talgo:SPRW-16026732',
+  'talgo:KAL-16026733' = 'talgo:KAL-16026733',
+  'talgo:USDC-10458941' = 'talgo:USDC-10458941',
+  'talgo:USDt-180447' = 'talgo:USDt-180447',
 
   // EOS tokens
   CHEX = 'chex',

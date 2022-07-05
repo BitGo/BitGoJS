@@ -12,7 +12,7 @@ describe('Algo Transaction', () => {
 
   beforeEach(() => {
     const config = coins.get('algo');
-    const tokenConfig = coins.get('talgo:16026728');
+    const tokenConfig = coins.get('talgo:USON-16026728');
     const firstRound = 167;
     const lastRound = 1167;
     const fee = 1000;
