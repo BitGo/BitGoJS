@@ -1,13 +1,13 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo/abstract-utxo';
+import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Btc } from '@bitgo/sdk-coin-btc';
 
-export class Btg extends Btc {
-  constructor(bitgo: BitGoBase, network?: any) {
+export class Btg extends AbstractUtxoCoin {
+  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
     super(bitgo, network || utxolib.networks.bitcoingold);
   }
 
-  static createInstance(bitgo): BaseCoin {
+  static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Btg(bitgo);
   }
 
