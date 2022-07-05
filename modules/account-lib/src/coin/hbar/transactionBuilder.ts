@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import * as Long from 'long';
-import { AccountId } from '@hashgraph/sdk';
 import * as proto from '@hashgraph/proto';
 import {
   BaseAddress,
@@ -14,11 +13,16 @@ import {
   SigningError,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
+import {
+  buildHederaAccountID,
+  getCurrentTime,
+  isValidAddress,
+  isValidRawTransactionFormat,
+  isValidTimeString,
+} from './utils';
 import { KeyPair } from './keyPair';
-import { SignatureData, HederaNode } from './iface';
+import { HederaNode, SignatureData } from './iface';
 
-export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   private _transaction: Transaction;
@@ -43,15 +47,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this._txBody.nodeAccountID = buildHederaAccountID(this._node.nodeId);
     this._txBody.transactionFee = Long.fromString(this._fee.fee);
     this._txBody.transactionID = this.buildTxId();
     this._txBody.memo = this._memo;
-    const accountId = AccountId.fromString(this._node.nodeId);
-    this._txBody.nodeAccountID = new proto.AccountID({
-      shardNum: accountId.shard,
-      realmNum: accountId.realm,
-      accountNum: accountId.num,
-    });
     const hTransaction = this.transaction.hederaTx || new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
     this.transaction.body(hTransaction);
@@ -67,13 +66,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    let buffer;
-    if (typeof rawTransaction === 'string') {
-      buffer = toUint8Array(rawTransaction);
-    } else {
-      buffer = rawTransaction;
-    }
-    tx.bodyBytes(buffer);
+    this.validateRawTransaction(rawTransaction);
+    tx.fromRawTransaction(rawTransaction);
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -111,13 +105,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Creates a Hedera TransactionID
    *
-   * @returns {proto} - Created TransactionID
+   * @returns {proto.TransactionID} - Created TransactionID
    */
   protected buildTxId(): proto.TransactionID {
-    const accountId = AccountId.fromString(this._source.address);
     return new proto.TransactionID({
       transactionValidStart: this.validStart,
-      accountID: { shardNum: accountId.shard, realmNum: accountId.realm, accountNum: accountId.num },
+      accountID: buildHederaAccountID(this._source.address),
     });
   }
   // endregion

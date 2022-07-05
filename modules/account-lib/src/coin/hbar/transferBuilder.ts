@@ -1,6 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
-import { AccountId } from '@hashgraph/sdk';
 import * as proto from '@hashgraph/proto';
 import {
   BaseKey,
@@ -9,9 +8,10 @@ import {
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
+import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
+import { buildHederaAccountID, isValidAddress, isValidAmount, stringifyAccountId } from './utils';
+import { DEFAULT_SIGNER_NUMBER } from './constants';
 
 export class TransferBuilder extends TransactionBuilder {
   private readonly _txBodyData: proto.CryptoTransferTransactionBody;
@@ -35,27 +35,17 @@ export class TransferBuilder extends TransactionBuilder {
     return {
       accountAmounts: [
         {
-          accountID: TransferBuilder.buildAccountData(this._source.address),
+          accountID: buildHederaAccountID(this._source.address),
           amount: Long.fromString(this._amount).negate(),
         }, // sender
-        { accountID: TransferBuilder.buildAccountData(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
+        { accountID: buildHederaAccountID(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
       ],
     };
-  }
-
-  static buildAccountData(address: string): proto.AccountID {
-    const accountData = AccountId.fromString(address);
-    return new proto.AccountID({
-      accountNum: accountData.num,
-      realmNum: accountData.realm,
-      shardNum: accountData.shard,
-    });
   }
 
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    this.transaction.setTransactionType(TransactionType.Send);
     const transferData = tx.txBody.cryptoTransfer;
     if (transferData && transferData.transfers && transferData.transfers.accountAmounts) {
       this.initTransfers(transferData.transfers.accountAmounts);
@@ -67,7 +57,7 @@ export class TransferBuilder extends TransactionBuilder {
    * represented by the element with a positive amount on the transfer element.
    * The negative amount represents the source account, so it's ignored.
    *
-   * @param {proto} transfers - Array of objects which contains accountID and transferred amount
+   * @param {proto.IAccountAmount[]} transfers - Array of objects which contains accountID and transferred amount
    */
   protected initTransfers(transfers: proto.IAccountAmount[]): void {
     transfers.forEach((transferData) => {
@@ -81,8 +71,8 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    if (this._multiSignerKeyPairs.length >= DEFAULT_M) {
-      throw new SigningError('A maximum of ' + DEFAULT_M + ' can sign the transaction.');
+    if (this._multiSignerKeyPairs.length >= DEFAULT_SIGNER_NUMBER) {
+      throw new SigningError('A maximum of ' + DEFAULT_SIGNER_NUMBER + ' can sign the transaction.');
     }
     return super.signImplementation(key);
   }

@@ -2,10 +2,11 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as Long from 'long';
 import * as proto from '@hashgraph/proto';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
+import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidPublicKey, toUint8Array, toHex } from './utils';
+import { isValidPublicKey, toHex, toUint8Array } from './utils';
 import { KeyPair } from './';
+import { DEFAULT_SIGNER_NUMBER } from './constants';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private readonly _txBodyData: proto.CryptoCreateTransactionBody;
@@ -30,7 +31,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /**
    *
    * @param {boolean} rawKeys - Defines if the owners keys are obtained in raw or protocol default format
-   * @returns {proto} - The wallet threshold keys
+   * @returns {proto.ThresholdKey} - The wallet threshold keys
    */
   private buildOwnersKeys(rawKeys = true): proto.ThresholdKey {
     return this._owners.reduce((tKeys, key) => {
@@ -46,7 +47,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    this.transaction.setTransactionType(TransactionType.WalletInitialization);
     const createAcc = tx.txBody.cryptoCreateAccount;
     if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
       this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);
@@ -70,8 +70,10 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @returns {WalletInitializationBuilder} - This wallet initialization builder
    */
   owner(address: string): this {
-    if (this._owners.length >= DEFAULT_M) {
-      throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
+    if (this._owners.length >= DEFAULT_SIGNER_NUMBER) {
+      throw new BuildTransactionError(
+        'A maximum of ' + DEFAULT_SIGNER_NUMBER + ' owners can be set for a multisig wallet',
+      );
     }
     if (!isValidPublicKey(address)) {
       throw new BuildTransactionError('Invalid address: ' + address);
@@ -90,9 +92,9 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Invalid transaction: missing wallet owners');
     }
 
-    if (this._owners.length !== DEFAULT_M) {
+    if (this._owners.length !== DEFAULT_SIGNER_NUMBER) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_M}, found: ${this._owners.length}`,
+        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_SIGNER_NUMBER}, found: ${this._owners.length}`,
       );
     }
     super.validateMandatoryFields();

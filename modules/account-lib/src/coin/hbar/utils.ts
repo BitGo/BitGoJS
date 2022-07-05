@@ -1,11 +1,13 @@
 import * as _ from 'lodash';
-import { TransactionId, AccountId, PublicKey, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, PublicKey, TokenId, TransactionId } from '@hashgraph/sdk';
 import * as proto from '@hashgraph/proto';
 import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { AddressDetails } from './iface';
 import url from 'url';
 import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
+import { BaseCoin, coins, HederaToken } from '@bitgo/statics';
+
 export { toHex, toUint8Array };
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
@@ -134,9 +136,19 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
 }
 
 /**
+ * Returns a string representation of an {proto.ITokenID} object
+ *
+ * @param {proto.ITokenID} - The token id to be cast to string
+ * @returns {string} - The string representation of the {proto.ITokenID}
+ */
+export function stringifyTokenId({ shardNum, realmNum, tokenNum }: proto.ITokenID): string {
+  return `${shardNum || 0}.${realmNum || 0}.${tokenNum}`;
+}
+
+/**
  * Returns a string representation of an {proto.IAccountID} object
  *
- * @param {proto} accountId - Account id to be cast to string
+ * @param {proto.IAccountID} accountId - Account id to be cast to string
  * @returns {string} - The string representation of the {proto.IAccountID}
  */
 export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
@@ -146,7 +158,7 @@ export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAc
 /**
  * Returns a string representation of an {proto.ITimestamp} object
  *
- * @param {proto} timestamp - Timestamp to be cast to string
+ * @param {proto.ITimestamp} timestamp - Timestamp to be cast to string
  * @returns {string} - The string representation of the {proto.ITimestamp}
  */
 export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp): string {
@@ -290,4 +302,80 @@ export function isValidAddressWithPaymentId(address: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Build hedera {proto.TokenID} object from token ID string
+ *
+ * @param {string} tokenID - The token ID to build
+ * @returns {proto.TokenID} - The resulting proto TokenID object
+ */
+export function buildHederaTokenID(tokenID: string): proto.TokenID {
+  const tokenData = TokenId.fromString(tokenID);
+  return new proto.TokenID({
+    tokenNum: tokenData.num,
+    realmNum: tokenData.realm,
+    shardNum: tokenData.shard,
+  });
+}
+
+/**
+ * Build hedera {proto.AccountID} object from account ID string
+ *
+ * @param {string} accountID - The account ID to build
+ * @returns {proto} - The resulting proto AccountID object
+ */
+export function buildHederaAccountID(accountID: string): proto.AccountID {
+  const accountId = AccountId.fromString(accountID);
+  return new proto.AccountID({
+    shardNum: accountId.shard,
+    realmNum: accountId.realm,
+    accountNum: accountId.num,
+  });
+}
+
+/**
+ * Check if Hedera token ID is valid and supported
+ *
+ * @param {string} tokenId - The token ID to validate
+ * @returns {boolean} - True if tokenId is valid and supported
+ */
+export function isValidHederaTokenID(tokenId: string): boolean {
+  const isFormatValid = !_.isEmpty(tokenId) && !!tokenId.match(/^\d+(?:(?=\.)(\.\d+){2}|(?!\.))$/);
+  const isTokenSupported = getHederaTokenNameFromId(tokenId) !== undefined;
+
+  return isFormatValid && isTokenSupported;
+}
+
+/**
+ * Get the associated hedera token ID from token name, if supported
+ *
+ * @param {string} tokenName - The hedera token name
+ * @returns {boolean} - The associated token ID or undefined if not supported
+ */
+export function getHederaTokenIdFromName(tokenName: string): string | undefined {
+  if (coins.has(tokenName)) {
+    const token = coins.get(tokenName);
+    if (token.isToken && token instanceof HederaToken) {
+      return token.tokenId;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Get the associated hedera token from token ID, if supported
+ *
+ * @param tokenId - The token address
+ * @returns {BaseCoin} - BaseCoin object for the matching token
+ */
+export function getHederaTokenNameFromId(tokenId: string): Readonly<BaseCoin> | undefined {
+  const tokensArray = coins
+    .filter((coin) => {
+      return coin instanceof HederaToken && coin.tokenId === tokenId;
+    })
+    .map((token) => token); // flatten coin map to array
+
+  return tokensArray.length > 0 ? tokensArray[0] : undefined;
 }

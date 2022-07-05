@@ -9,6 +9,7 @@ import * as proto from '@hashgraph/proto';
 import { TxData } from './iface';
 import { stringifyAccountId, stringifyTxTime } from './utils';
 import { KeyPair } from './';
+import { HederaTransactionTypes } from './constants';
 
 export class Transaction extends BaseTransaction {
   private _hederaTx: proto.Transaction;
@@ -57,6 +58,27 @@ export class Transaction extends BaseTransaction {
     return toHex(this.encode(this._hederaTx, encoder));
   }
 
+  /**
+   * Sets this transaction payload
+   *
+   * @param rawTransaction
+   */
+  fromRawTransaction(rawTransaction: Uint8Array | string): void {
+    const buffer = typeof rawTransaction === 'string' ? toUint8Array(rawTransaction) : rawTransaction;
+    this.bodyBytes(buffer);
+    switch (this.txBody.data) {
+      case HederaTransactionTypes.Transfer:
+        this.setTransactionType(TransactionType.Send);
+        break;
+      case HederaTransactionTypes.CreateAccount:
+        this.setTransactionType(TransactionType.WalletInitialization);
+        break;
+      case HederaTransactionTypes.TokenAssociateToAccount:
+        this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
+        break;
+    }
+  }
+
   /** @inheritdoc */
   toJson(): TxData {
     const [acc, time] = this.getTxIdParts();
@@ -72,7 +94,7 @@ export class Transaction extends BaseTransaction {
       memo: this._txBody.memo,
     };
 
-    if (this._txBody.data === 'cryptoTransfer') {
+    if (this._txBody.data === HederaTransactionTypes.Transfer) {
       const [recipient, amount] = this.getTransferData();
       result.amount = amount;
       result.to = recipient;
@@ -115,7 +137,6 @@ export class Transaction extends BaseTransaction {
   body(tx: proto.Transaction): void {
     this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
     this._hederaTx = tx;
-    // this.loadPreviousSignatures();
     this.loadInputsAndOutputs();
   }
 
