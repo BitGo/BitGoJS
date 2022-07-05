@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { xpubToUncompressedPub, xprvToRawPrv, rawPrvToExtendedKeys } from '@bitgo/sdk-core';
+import { xpubToUncompressedPub, xprvToRawPrv, rawPrvToExtendedKeys, hexToBigInt } from '@bitgo/sdk-core';
 import should from 'should';
 
 describe('Crypto utils', function () {
@@ -49,6 +49,18 @@ describe('Crypto utils', function () {
 
     it('to get a valid extended keys from an invalid raw private key', () => {
       assert.throws(() => rawPrvToExtendedKeys('ABCD'));
+    });
+  });
+
+  describe('hexToBigInt utility', () => {
+    const hex = '36119d';
+    const number = 3543453;
+    it('should convert hex to BigInt', function () {
+      hexToBigInt(hex).should.equal(BigInt(number));
+      hexToBigInt('0x' + hex).should.equal(BigInt(number));
+    });
+    it('should throw error converting hex to BigInt', function () {
+      assert.throws(() => hexToBigInt('op'));
     });
   });
 });
