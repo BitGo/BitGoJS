@@ -405,7 +405,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   [index: string]: unknown;
 }
 
-type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
+export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
 
 export interface WalletData {
   id: string;

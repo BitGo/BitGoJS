@@ -1361,6 +1361,17 @@ describe('V2 Wallet:', function () {
     const txRequest: TxRequest = {
       txRequestId: 'id',
       transactions: [],
+      intent: {
+        intentType: 'payment',
+      },
+      date: new Date().toISOString(),
+      latest: true,
+      state: 'pendingUserSignature',
+      userId: 'userId',
+      walletType: 'hot',
+      policiesChecked: false,
+      version: 1,
+      walletId: 'walletId',
       unsignedTxs: [
         {
           serializedTxHex: 'ababcdcd',
@@ -1376,6 +1387,18 @@ describe('V2 Wallet:', function () {
 
     const txRequestFull: TxRequest = {
       txRequestId: 'id',
+      intent: {
+        intentType: 'payment',
+      },
+      date: new Date().toISOString(),
+      latest: true,
+      state: 'pendingUserSignature',
+      userId: 'userId',
+      walletId: 'walletId',
+      signatureShares: [],
+      version: 1,
+      policiesChecked: false,
+      walletType: 'hot',
       transactions: [{
         state: 'pendingSignature',
         unsignedTx: {
@@ -1387,7 +1410,6 @@ describe('V2 Wallet:', function () {
           },
           derivationPath: 'm/0',
         },
-        privateSignatureShares: [],
         signatureShares: [],
       }],
       unsignedTxs: [],
