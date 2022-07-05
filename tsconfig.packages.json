@@ -26,10 +26,13 @@
       "path": "./modules/sdk-coin-avaxp"
     },
     {
-      "path": "./modules/sdk-coin-btc"
+      "path": "./modules/sdk-coin-bch"
     },
     {
-      "path": "./modules/sdk-coin-bch"
+      "path": "./modules/sdk-coin-bcha"
+    },
+    {
+      "path": "./modules/sdk-coin-btc"
     },
     {
       "path": "./modules/sdk-coin-btg"

@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
 import { Bch } from '@bitgo/sdk-coin-bch';
 
