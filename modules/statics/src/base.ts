@@ -663,6 +663,7 @@ export enum UnderlyingAsset {
   TEN = 'ten',
   TENX = 'tenx',
   TERC = 'terc',
+  TEUROC = 'teuroc',
   TERC2DP = 'terc2dp',
   TERC6DP = 'terc6dp',
   TERC18DP = 'terc18DP',

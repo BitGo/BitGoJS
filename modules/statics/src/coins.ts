@@ -1014,6 +1014,17 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    'teuroc',
+    'Test Euro Coin',
+    6,
+    '0xa683d909e996052955500ddc45ca13e25c76e286',
+    UnderlyingAsset.TEUROC,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     'ghdo',
     'Himalayan Dollar',
     18,
