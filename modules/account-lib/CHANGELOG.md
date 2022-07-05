@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.28...@bitgo/account-lib@2.20.0-rc.29) (2022-07-05)
+
+
+### Bug Fixes
+
+* **account-lib:** upgrading celo contractkit to v2 ([fe267aa](https://github.com/BitGo/BitGoJS/commit/fe267aa66e75bc38dad0426c1392dc5472ed7eae))
+
+
+
+
+
 # [2.20.0-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.27...@bitgo/account-lib@2.20.0-rc.28) (2022-07-01)
 
 
