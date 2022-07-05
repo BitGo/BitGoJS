@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash } from '../../src/networks';
+import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash, isDogecoin } from '../../src/networks';
 import {
   sigHashTestFile,
   SigHashTestVector,
@@ -24,7 +24,15 @@ describe('Third-Party Fixtures', function () {
           let transaction, signatureHash;
           if (isZcash(network)) {
             [, /* branchId ,*/ signatureHash] = rest as [number, string];
-            transaction = ZcashTransaction.fromBuffer(buffer, false, network as ZcashNetwork);
+            transaction = ZcashTransaction.fromBuffer(buffer, false, 'number', network as ZcashNetwork);
+          } else if (isDogecoin(network)) {
+            [signatureHash] = rest as [string];
+            transaction = parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(
+              buffer,
+              network,
+              undefined,
+              'bigint'
+            );
           } else {
             [signatureHash] = rest as [string];
             transaction = parseTransactionRoundTrip(buffer, network);
@@ -39,7 +47,8 @@ describe('Third-Party Fixtures', function () {
           const isSegwit = transaction.ins[inputIndex].witness?.length > 0;
           let hash;
           if (isSegwit) {
-            hash = transaction.hashForWitnessV0(inputIndex, Buffer.from(script, 'hex'), 0, hashType);
+            const amount = isDogecoin(network) ? BigInt(0) : 0;
+            hash = transaction.hashForWitnessV0(inputIndex, Buffer.from(script, 'hex'), amount, hashType);
           } else {
             (transaction.ins[inputIndex] as any).value = 0;
             hash = transaction.hashForSignature(inputIndex, Buffer.from(script, 'hex'), hashType);
@@ -61,7 +70,16 @@ describe('Third-Party Fixtures', function () {
         testFixtureArray(network, txValidTestFile, function (vectors: TxValidVector[]) {
           vectors.forEach((v: TxValidVector, i) => {
             const [, /* inputs , */ txHex] = v;
-            parseTransactionRoundTrip(Buffer.from(txHex, 'hex'), network);
+            if (isDogecoin(network)) {
+              parseTransactionRoundTrip<bigint, UtxoTransaction<bigint>>(
+                Buffer.from(txHex, 'hex'),
+                network,
+                undefined,
+                'bigint'
+              );
+            } else {
+              parseTransactionRoundTrip(Buffer.from(txHex, 'hex'), network);
+            }
           });
         });
       });
