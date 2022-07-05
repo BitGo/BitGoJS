@@ -57,6 +57,9 @@
       "path": "../sdk-coin-dash"
     },
     {
+      "path": "../sdk-coin-ltc"
+    },
+    {
       "path": "../sdk-coin-xrp"
     },
     {

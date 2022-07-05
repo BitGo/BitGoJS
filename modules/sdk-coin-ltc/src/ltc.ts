@@ -1,8 +1,5 @@
-/**
- * @prettier
- */
 import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo/abstract-utxo';
-import { BaseCoin, BitGoBase, InvalidAddressError } from '@bitgo/sdk-core';
+import { BitGoBase, BaseCoin, InvalidAddressError } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export class Ltc extends AbstractUtxoCoin {
@@ -44,7 +41,6 @@ export class Ltc extends AbstractUtxoCoin {
     if (!this.isValidAddress(address, true)) {
       throw new InvalidAddressError();
     }
-
     try {
       // try deserializing as bech32
       utxolib.address.fromBech32(address);
@@ -53,13 +49,11 @@ export class Ltc extends AbstractUtxoCoin {
     } catch (e) {
       // not a valid bech32, try to decode as base58
     }
-
     const addressDetails = utxolib.address.fromBase58Check(address, this.network);
     if (addressDetails.version === this.network.pubKeyHash) {
       // the pub keys never changed
       return address;
     }
-
     if ([1, 2].indexOf(scriptHashVersion) === -1) {
       throw new Error('scriptHashVersion needs to be either 1 or 2');
     }

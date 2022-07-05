@@ -41,6 +41,9 @@
       "path": "./modules/sdk-coin-dash"
     },
     {
+      "path": "./modules/sdk-coin-ltc"
+    },
+    {
       "path": "./modules/sdk-coin-xrp"
     },
     {
