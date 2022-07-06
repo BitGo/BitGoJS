@@ -1,5 +1,4 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as Long from 'long';
 import * as proto from '@hashgraph/proto';
 import {
   BaseKey,
@@ -8,65 +7,27 @@ import {
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { Recipient } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { buildHederaAccountID, isValidAddress, isValidAmount, stringifyAccountId } from './utils';
+import { isValidAddress, isValidAmount } from './utils';
 import { DEFAULT_SIGNER_NUMBER } from './constants';
 
 export class TransferBuilder extends TransactionBuilder {
-  private readonly _txBodyData: proto.CryptoTransferTransactionBody;
-  private _toAddress: string;
-  private _amount: string;
+  protected readonly _txBodyData: proto.CryptoTransferTransactionBody;
+  protected _recipients: Recipient[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._txBodyData = new proto.CryptoTransferTransactionBody();
     this._txBody.cryptoTransfer = this._txBodyData;
+    this._recipients = [];
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._txBodyData.transfers = this.buildTransferData();
     this.transaction.setTransactionType(TransactionType.Send);
     return await super.buildImplementation();
-  }
-
-  private buildTransferData(): proto.ITransferList {
-    return {
-      accountAmounts: [
-        {
-          accountID: buildHederaAccountID(this._source.address),
-          amount: Long.fromString(this._amount).negate(),
-        }, // sender
-        { accountID: buildHederaAccountID(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
-      ],
-    };
-  }
-
-  /** @inheritdoc */
-  initBuilder(tx: Transaction): void {
-    super.initBuilder(tx);
-    const transferData = tx.txBody.cryptoTransfer;
-    if (transferData && transferData.transfers && transferData.transfers.accountAmounts) {
-      this.initTransfers(transferData.transfers.accountAmounts);
-    }
-  }
-
-  /**
-   * Initialize the transfer specific data, getting the recipient account
-   * represented by the element with a positive amount on the transfer element.
-   * The negative amount represents the source account, so it's ignored.
-   *
-   * @param {proto.IAccountAmount[]} transfers - Array of objects which contains accountID and transferred amount
-   */
-  protected initTransfers(transfers: proto.IAccountAmount[]): void {
-    transfers.forEach((transferData) => {
-      const amount = Long.fromValue(transferData.amount!);
-      if (amount.isPositive()) {
-        this.to(stringifyAccountId(transferData.accountID!));
-        this.amount(amount.toString());
-      }
-    });
   }
 
   /** @inheritdoc */
@@ -79,43 +40,27 @@ export class TransferBuilder extends TransactionBuilder {
 
   // region Transfer fields
   /**
-   * Set the destination address where the funds will be sent,
-   * it may take the format `'<shard>.<realm>.<account>'` or `'<account>'`
+   * Set the recipient to be transferred
    *
-   * @param {string} address - The address to transfer funds to
+   * @param {Recipient} recipient - recipient to transfer consisting destination address and amount
    * @returns {TransferBuilder} - The builder with the new parameter set
    */
-  to(address: string): this {
-    if (!isValidAddress(address)) {
+  send(recipient: Recipient): this {
+    if (!isValidAddress(recipient.address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
-    this._toAddress = address;
-    return this;
-  }
-
-  /**
-   * Set the amount to be transferred
-   *
-   * @param {string} amount - Amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
-   * @returns {TransferBuilder} - The builder with the new parameter set
-   */
-  amount(amount: string): this {
-    if (!isValidAmount(amount)) {
+    if (!isValidAmount(recipient.amount)) {
       throw new InvalidParameterValueError('Invalid amount');
     }
-    this._amount = amount;
+    this._recipients.push(recipient);
     return this;
   }
-
   // endregion
 
   // region Validators
   validateMandatoryFields(): void {
-    if (this._toAddress === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing to');
-    }
-    if (this._amount === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing amount');
+    if (this._recipients.length === 0) {
+      throw new BuildTransactionError('Invalid transaction: missing recipients');
     }
     super.validateMandatoryFields();
   }

@@ -6,8 +6,8 @@ import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import * as Long from 'long';
 import * as proto from '@hashgraph/proto';
-import { TxData } from './iface';
-import { stringifyAccountId, stringifyTxTime } from './utils';
+import { TxData, Recipient } from './iface';
+import { stringifyAccountId, stringifyTxTime, stringifyTokenId, getHederaTokenNameFromId } from './utils';
 import { KeyPair } from './';
 import { HederaTransactionTypes } from './constants';
 
@@ -95,9 +95,12 @@ export class Transaction extends BaseTransaction {
     };
 
     if (this._txBody.data === HederaTransactionTypes.Transfer) {
-      const [recipient, amount] = this.getTransferData();
+      const { address, amount, tokenName } = this.getTransferData();
       result.amount = amount;
-      result.to = recipient;
+      result.to = address;
+      if (tokenName) {
+        result.tokenName = tokenName;
+      }
     }
     return result;
   }
@@ -106,14 +109,28 @@ export class Transaction extends BaseTransaction {
    * Get the recipient account and the amount
    * transferred on this transaction
    *
-   * @returns {[string, string]} - First element is the recipient, second element is the amount
+   * @returns {Recipient} consisting
+   *  the recipient, the transfer amount, and the token name for token transfer
    */
-  private getTransferData(): [string, string] {
+  private getTransferData(): Recipient {
     let transferData;
-    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach((transfer) => {
+    const tokenTransfers: proto.ITokenTransferList[] = this._txBody.cryptoTransfer?.tokenTransfers || [];
+    const transfers: proto.IAccountAmount[] =
+      tokenTransfers[0]?.transfers || this._txBody.cryptoTransfer?.transfers?.accountAmounts || [];
+    const tokenName = tokenTransfers.length
+      ? getHederaTokenNameFromId(stringifyTokenId(tokenTransfers[0].token!))?.name
+      : undefined;
+
+    transfers.forEach((transfer) => {
       const amount = Long.fromValue(transfer.amount!);
       if (amount.isPositive()) {
-        transferData = [stringifyAccountId(transfer.accountID!), amount.toString()];
+        transferData = {
+          address: stringifyAccountId(transfer.accountID!),
+          amount: amount.toString(),
+          ...(tokenTransfers.length && {
+            tokenName: tokenName,
+          }),
+        };
       }
     });
 
@@ -177,7 +194,7 @@ export class Transaction extends BaseTransaction {
         {
           address: txJson.to,
           value: txJson.amount,
-          coin: this._coinConfig.name,
+          coin: txJson.tokenName || this._coinConfig.name,
         },
       ];
 
@@ -185,7 +202,7 @@ export class Transaction extends BaseTransaction {
         {
           address: txJson.from,
           value: txJson.amount,
-          coin: this._coinConfig.name,
+          coin: txJson.tokenName || this._coinConfig.name,
         },
       ];
     }
