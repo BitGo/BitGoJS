@@ -5,7 +5,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { BitGo } from '../../../../../src/bitgo';
 import {
   common,
   createUserSignShare,

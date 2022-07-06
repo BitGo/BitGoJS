@@ -4,11 +4,9 @@ import { ECDSA } from './../../../account-lib/mpc/tss';
 export type EncryptedNShare = {
   i: number;
   j: number;
-  n: string;
   publicShare: string;
   // signed and encrypted gpg armor
   encryptedPrivateShare: string;
-  chaincode: string;
 };
 
 // NShare with information needed to decrypt and verify a GPG mesasge
