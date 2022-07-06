@@ -548,7 +548,7 @@ export class Eth extends BaseCoin {
         'ETHER',
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(optionalDeps.ethUtil.padToEven(recipient.data || '')), 'hex'),
         expireTime,
         contractSequenceId,
       ],
@@ -722,6 +722,10 @@ export class Eth extends BaseCoin {
     // if no recipients in either params or txPrebuild, then throw an error
     if (!params.recipients || !Array.isArray(params.recipients)) {
       throw new Error('recipients missing or not array');
+    }
+
+    if (params.recipients.length == 0) {
+      throw new Error('recipients empty');
     }
 
     // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
@@ -1384,7 +1388,10 @@ export class Eth extends BaseCoin {
     const serverXpub = common.Environments[this.bitgo.getEnv()].hsmXpub;
     const serverPubkeyBuffer: Buffer = bip32.fromBase58(serverXpub).publicKey;
     const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
-    const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
+    const messageBuffer: Buffer = Buffer.from(
+      optionalDeps.ethUtil.padToEven(optionalDeps.ethUtil.stripHexPrefix(id)),
+      'hex'
+    );
 
     const sig = new Uint8Array(signatureBuffer.slice(1));
     const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
@@ -1549,6 +1556,8 @@ export class Eth extends BaseCoin {
    * @returns {Boolean} True iff address is a wallet address
    */
   isWalletAddress(params: VerifyEthAddressOptions): boolean {
+    const ethUtil = optionalDeps.ethUtil;
+
     let expectedAddress;
     let actualAddress;
 
@@ -1577,7 +1586,10 @@ export class Eth extends BaseCoin {
       const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
 
       const initcode = getProxyInitcode(forwarderImplementationAddress);
-      const saltBuffer = optionalDeps.ethUtil.setLengthLeft(coinSpecific.salt, 32);
+      const saltBuffer = ethUtil.setLengthLeft(
+        Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(coinSpecific.salt || '')), 'hex'),
+        32
+      );
 
       // Hash the wallet base address with the given salt, so the address directly relies on the base address
       const calculationSalt = optionalDeps.ethUtil.bufferToHex(

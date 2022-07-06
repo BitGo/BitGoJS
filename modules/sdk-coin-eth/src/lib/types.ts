@@ -1,3 +1,4 @@
+import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import {
   TransactionFactory,
@@ -7,8 +8,7 @@ import {
   AccessListEIP2930Transaction,
 } from '@ethereumjs/tx';
 import EthereumCommon from '@ethereumjs/common';
-import { bufferToHex, bufferToInt } from '@bitgo/ethereumjs-utils-old';
-import { toBuffer, addHexPrefix } from 'ethereumjs-util';
+import { bufferToHex, bufferToInt, toBuffer, toUnsigned, addHexPrefix } from 'ethereumjs-util';
 import { BaseTxData, EIP1559TxData, EthLikeTransactionData, LegacyTxData, ETHTransactionType, TxData } from './iface';
 import { KeyPair } from './keyPair';
 
@@ -94,8 +94,8 @@ export class EthTransactionData implements EthLikeTransactionData {
   /** @inheritdoc */
   toJson(): TxData {
     const result: BaseTxData = {
-      nonce: bufferToInt(this.tx.nonce),
-      gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),
+      nonce: bufferToInt(toUnsigned(this.tx.nonce)),
+      gasLimit: new BigNumber(bufferToHex(toUnsigned(this.tx.gasLimit)), 16).toString(10),
       value: this.tx.value.toString(10),
       data: bufferToHex(this.tx.data),
     };
@@ -112,11 +112,13 @@ export class EthTransactionData implements EthLikeTransactionData {
 
     if (this.tx.verifySignature()) {
       result.from = bufferToHex(this.tx.getSenderAddress().toBuffer());
-      result.r = bufferToHex(this.tx.r);
-      result.s = bufferToHex(this.tx.s);
+      assert(this.tx.r != undefined);
+      result.r = bufferToHex(toUnsigned(this.tx.r));
+      assert(this.tx.s != undefined);
+      result.s = bufferToHex(toUnsigned(this.tx.s));
     }
     if (this.tx.v) {
-      result.v = bufferToHex(this.tx.v);
+      result.v = bufferToHex(toUnsigned(this.tx.v));
     }
     result.chainId = addHexPrefix(this.tx.common.chainIdBN().toString(16));
 
@@ -125,7 +127,7 @@ export class EthTransactionData implements EthLikeTransactionData {
     }
 
     if (this.tx instanceof LegacyTransaction) {
-      const gasPrice = new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10);
+      const gasPrice = new BigNumber(bufferToHex(toUnsigned(this.tx.gasPrice)), 16).toString(10);
 
       return {
         ...result,
@@ -133,8 +135,10 @@ export class EthTransactionData implements EthLikeTransactionData {
         gasPrice,
       };
     } else if (this.tx instanceof FeeMarketEIP1559Transaction) {
-      const maxFeePerGas = new BigNumber(bufferToHex(this.tx.maxFeePerGas), 16).toString(10);
-      const maxPriorityFeePerGas = new BigNumber(bufferToHex(this.tx.maxPriorityFeePerGas), 16).toString(10);
+      const maxFeePerGas = new BigNumber(bufferToHex(toUnsigned(this.tx.maxFeePerGas)), 16).toString(10);
+      const maxPriorityFeePerGas = new BigNumber(bufferToHex(toUnsigned(this.tx.maxPriorityFeePerGas)), 16).toString(
+        10
+      );
 
       return {
         ...result,

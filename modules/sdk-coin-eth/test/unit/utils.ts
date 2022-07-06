@@ -42,7 +42,7 @@ describe('ETH util library', function () {
 
   it('should generate a proper forwarder version 1 address', function () {
     const initCode = getProxyInitcode(testData.FORWARDER_IMPLEMENTATION_ADDRESS);
-    const saltBuffer = setLengthLeft('0x02', 32);
+    const saltBuffer = setLengthLeft(Buffer.from('02', 'hex'), 32);
 
     // Hash the wallet base address with the given salt, so the address directly relies on the base address
     const calculationSalt = bufferToHex(

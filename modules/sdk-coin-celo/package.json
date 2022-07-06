@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@bitgo/abstract-eth": "^1.0.0",
-    "@bitgo/ethereumjs-utils-old": "npm:ethereumjs-util@5.2.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/statics": "^6.17.0",
@@ -52,7 +51,7 @@
     "@ethereumjs/common": "^2.4.0",
     "bignumber.js": "^9.0.0",
     "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "6.2.1",
+    "ethereumjs-util": "7.1.5",
     "ethers": "^5.1.3"
   },
   "devDependencies": {
