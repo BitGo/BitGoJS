@@ -86,7 +86,7 @@
     "eosjs-ecc": "^4.0.4",
     "keccak": "^3.0.2",
     "lodash": "^4.17.14",
-    "moment": "^2.20.1",
+    "moment": "^2.29.4",
     "openpgp": "5.1.0",
     "sanitize-html": "^1.27.5",
     "secp256k1": "^4.0.2",
