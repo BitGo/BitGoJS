@@ -47,6 +47,9 @@
       "path": "./modules/sdk-coin-dash"
     },
     {
+      "path": "./modules/sdk-coin-eth"
+    },
+    {
       "path": "./modules/sdk-coin-ltc"
     },
     {

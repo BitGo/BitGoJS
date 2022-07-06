@@ -33,7 +33,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 
-import { optionalDeps } from './eth';
+import { optionalDeps } from '@bitgo/sdk-coin-eth';
 
 // For precreateBitgo
 interface PrecreateBitGoOptions {

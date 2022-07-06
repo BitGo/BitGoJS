@@ -5,7 +5,7 @@ import assert from 'assert';
 import { register } from '../../../src/keyPair';
 import * as coinModules from '../../../src';
 import { coins } from '@bitgo/statics';
-import { KeyPair as EthKeyPair } from '../../../src/coin/eth';
+import { KeyPair as EthKeyPair } from '@bitgo/sdk-coin-eth';
 import { KeyPair as Eth2KeyPair } from '../../../src/coin/eth2';
 import { Ed25519KeyPair } from '@bitgo/sdk-core';
 

@@ -4,7 +4,7 @@
 import { isString } from 'lodash';
 import { Ofc } from './ofc';
 import { BitGoBase, CoinConstructor, SignTransactionOptions as BaseSignTransactionOptions } from '@bitgo/sdk-core';
-import { SignedTransaction } from './eth';
+import { SignedTransaction } from '@bitgo/sdk-coin-eth';
 import { OfcTokenConfig } from '@bitgo/statics';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {

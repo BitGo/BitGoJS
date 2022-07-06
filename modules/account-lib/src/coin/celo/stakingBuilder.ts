@@ -1,21 +1,25 @@
 import ethUtil from '@bitgo/ethereumjs-utils-old';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
 import {
+  isValidAmount,
+  isValidEthAddress,
+  getRawDecoded,
+  getBufferedByteCode,
+  hexStringToNumber,
+} from '@bitgo/sdk-coin-eth';
+import {
+  ActivateMethodId,
   BuildTransactionError,
+  getOperationConfig,
   InvalidParameterValueError,
   InvalidTransactionError,
   StakingOperationTypes,
+  UnlockMethodId,
+  UnvoteMethodId,
+  VoteMethodId,
+  WithdrawMethodId,
 } from '@bitgo/sdk-core';
 import { StakingCall } from './stakingCall';
-import {
-  getOperationConfig,
-  VoteMethodId,
-  UnvoteMethodId,
-  ActivateMethodId,
-  UnlockMethodId,
-  WithdrawMethodId,
-} from './stakingUtils';
 
 export class StakingBuilder {
   private readonly DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000';

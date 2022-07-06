@@ -5,7 +5,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Celo } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
-import { decodeTransferData } from '../../../../../src/coin/eth/utils';
+import { decodeTransferData } from '@bitgo/sdk-coin-eth';
 
 describe('Send transaction', function () {
   let txBuilder: Celo.TransactionBuilder;
