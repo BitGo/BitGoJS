@@ -2,6 +2,7 @@
   "version": "independent",
   "npmClient": "yarn",
   "useWorkspaces": true,
+  "useNx": true,
   "command": {
     "version": {
       "message": "chore(release): publish modules"
