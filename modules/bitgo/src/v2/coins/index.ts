@@ -2,6 +2,8 @@ import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 export { AbstractUtxoCoin };
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 export { Algo, AlgoToken, Talgo };
+import { Ada, Tada } from '@bitgo/sdk-coin-ada';
+export { Ada, Tada };
 import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP, TavaxP };
 import { Bch, Tbch } from '@bitgo/sdk-coin-bch';
