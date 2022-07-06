@@ -45,7 +45,7 @@ export { Cspr };
 import * as Xrp from './coin/xrp';
 export { Xrp };
 
-import * as Stx from './coin/stx';
+import { StxLib as Stx } from '@bitgo/sdk-coin-stx';
 export { Stx };
 
 import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';

@@ -2,37 +2,25 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./",
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "resources/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../sdk-coin-algo"
-    },
-    {
-      "path": "../sdk-coin-avaxp"
-    },
-    {
-      "path": "../sdk-coin-cspr"
-    },
-    {
-      "path": "../sdk-coin-eth"
-    },
-    {
-      "path": "../sdk-coin-stx"
-    },
-    {
-      "path": "../sdk-coin-xtz"
+      "path": "../sdk-api"
     },
     {
       "path": "../sdk-core"
     },
     {
       "path": "../statics"
+    },
+    {
+      "path": "../sdk-test"
     }
   ]
 }

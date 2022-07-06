@@ -1,10 +1,11 @@
 import assert from 'assert';
 import should from 'should';
 import { AddressVersion, ClarityType, IntCV, NoneCV, SomeCV, UIntCV, ListCV } from '@stacks/transactions';
-import * as testData from '../../../resources/stx/stx';
-import * as Utils from '../../../../src/coin/stx/utils';
-import { Stx } from '../../../../src';
 import BigNum from 'bn.js';
+import * as testData from './resources';
+import { StxLib } from '../../src';
+
+const { KeyPair, Utils } = StxLib;
 
 describe('Stx util library', function () {
   describe('address', function () {
@@ -53,10 +54,10 @@ describe('Stx util library', function () {
       address.hash160.should.equal('789b2f7afa939c5577909402e07a07f7e6249668');
 
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SN1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0A9GGMZ',
+        'SN1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0A9GGMZ'
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SM1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0AN9KDG',
+        'SM1W9PBVTZA9SRNBQJ2A05R3T0ZVYC94PD0AN9KDG'
       );
     });
 
@@ -69,10 +70,10 @@ describe('Stx util library', function () {
 
       Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SM2TF8C003JE5YA8B43C2ZAY0K95QFVJNV86FCCQ4');
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SN2TF8C003JE5YA8B43C2ZAY0K95QFVJNV90P7YGS',
+        'SN2TF8C003JE5YA8B43C2ZAY0K95QFVJNV90P7YGS'
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SM2TF8C003JE5YA8B43C2ZAY0K95QFVJNV86FCCQ4',
+        'SM2TF8C003JE5YA8B43C2ZAY0K95QFVJNV86FCCQ4'
       );
     });
 
@@ -85,10 +86,10 @@ describe('Stx util library', function () {
 
       Utils.getSTXAddressFromPubKeys(pubKeys).address.should.equal('SME8PKRHSCB699FEK59F7T7CBB225KH1MCKM67EV');
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.TestnetMultiSig).address.should.equal(
-        'SNE8PKRHSCB699FEK59F7T7CBB225KH1MDPBVKF9',
+        'SNE8PKRHSCB699FEK59F7T7CBB225KH1MDPBVKF9'
       );
       Utils.getSTXAddressFromPubKeys(pubKeys, AddressVersion.MainnetMultiSig).address.should.equal(
-        'SME8PKRHSCB699FEK59F7T7CBB225KH1MCKM67EV',
+        'SME8PKRHSCB699FEK59F7T7CBB225KH1MCKM67EV'
       );
     });
 
@@ -101,7 +102,7 @@ describe('Stx util library', function () {
             '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0',
             'badkey',
           ]),
-        /Invalid public key/,
+        /Invalid public key/
       );
     });
   });
@@ -217,72 +218,60 @@ describe('Stx util library', function () {
   });
 
   describe('sign and verify', function () {
-    const keyPair1 = new Stx.KeyPair({ prv: testData.secretKey1 });
-    const keyPair2 = new Stx.KeyPair({ prv: testData.secretKey2 });
+    const keyPair1 = new KeyPair({ prv: testData.secretKey1 });
+    const keyPair2 = new KeyPair({ prv: testData.secretKey2 });
 
     it('sign a message', function () {
-      should.equal(Stx.Utils.signMessage(keyPair1, testData.message1), testData.expectedSignature1);
-      should.equal(Stx.Utils.signMessage(keyPair2, testData.message2), testData.expectedSignature2);
+      should.equal(Utils.signMessage(keyPair1, testData.message1), testData.expectedSignature1);
+      should.equal(Utils.signMessage(keyPair2, testData.message2), testData.expectedSignature2);
     });
 
     it('verify a signature', function () {
-      Stx.Utils.verifySignature(
-        testData.message1,
-        testData.expectedSignature1,
-        keyPair1.getKeys().pub,
-      ).should.be.true();
+      Utils.verifySignature(testData.message1, testData.expectedSignature1, keyPair1.getKeys().pub).should.be.true();
 
       // handle compressed and uncompressed public keys properly
-      Stx.Utils.verifySignature(
+      Utils.verifySignature(
         testData.message2,
         testData.expectedSignature2,
-        keyPair2.getKeys(false).pub,
+        keyPair2.getKeys(false).pub
       ).should.be.true();
 
-      Stx.Utils.verifySignature(
+      Utils.verifySignature(
         testData.message2,
         testData.expectedSignature2,
-        keyPair2.getKeys(true).pub,
+        keyPair2.getKeys(true).pub
       ).should.be.true();
     });
 
     it('should not verify signatures', function () {
       // empty message
       assert.throws(
-        () => Stx.Utils.verifySignature('', testData.expectedSignature1, keyPair1.getKeys().pub),
-        new RegExp('Cannot verify empty messages'),
+        () => Utils.verifySignature('', testData.expectedSignature1, keyPair1.getKeys().pub),
+        new RegExp('Cannot verify empty messages')
       );
 
       // wrong public key
-      Stx.Utils.verifySignature(
-        testData.message1,
-        testData.expectedSignature1,
-        keyPair2.getKeys().pub,
-      ).should.be.false();
+      Utils.verifySignature(testData.message1, testData.expectedSignature1, keyPair2.getKeys().pub).should.be.false();
 
       // wrong signature
-      Stx.Utils.verifySignature(
-        testData.message2,
-        testData.expectedSignature1,
-        keyPair2.getKeys().pub,
-      ).should.be.false();
+      Utils.verifySignature(testData.message2, testData.expectedSignature1, keyPair2.getKeys().pub).should.be.false();
     });
   });
 
   describe('stringifyCv', function () {
     it('Int type', function () {
       const input: IntCV = { type: ClarityType.Int, value: BigInt('100000') };
-      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 0, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: 0, value: '100000' });
     });
 
     it('UInt type', function () {
       const input: UIntCV = { type: ClarityType.UInt, value: BigInt('100000') };
-      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 1, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: 1, value: '100000' });
     });
 
     it('OptionalNone type', function () {
       const input: NoneCV = { type: ClarityType.OptionalNone };
-      Stx.Utils.stringifyCv(input).should.deepEqual(input);
+      Utils.stringifyCv(input).should.deepEqual(input);
     });
 
     it('OptionalSome type with uint value', function () {
@@ -290,7 +279,7 @@ describe('Stx util library', function () {
         type: ClarityType.OptionalSome,
         value: { type: ClarityType.UInt, value: BigInt('100000') },
       };
-      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 10, value: { type: 1, value: '100000' } });
+      Utils.stringifyCv(input).should.deepEqual({ type: 10, value: { type: 1, value: '100000' } });
     });
 
     it('OptionalSome type with tuple value', function () {
@@ -304,46 +293,46 @@ describe('Stx util library', function () {
           },
         },
       };
-      Stx.Utils.stringifyCv(input).should.deepEqual(input);
+      Utils.stringifyCv(input).should.deepEqual(input);
     });
 
     it('List type', function () {
       const input: ListCV = { type: ClarityType.List, list: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
-      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [{ type: 1, value: '100000' }] });
+      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [{ type: 1, value: '100000' }] });
     });
 
     it('List type with empty list', function () {
       const input: ListCV = { type: ClarityType.List, list: [] };
-      Stx.Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
+      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
     });
   });
 
   describe('getAddressVersion', function () {
     it('should succeed to for valid addresses', function () {
       // Mainnet single sig
-      Stx.Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ').should.equal(22);
+      Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ').should.equal(22);
       // Mainnet multi sig
-      Stx.Utils.getAddressVersion('SM468VETKA5DB15HWG2QM7Y04EFQKV44R9D6D0QC').should.equal(20);
+      Utils.getAddressVersion('SM468VETKA5DB15HWG2QM7Y04EFQKV44R9D6D0QC').should.equal(20);
       // Testnet single sig
-      Stx.Utils.getAddressVersion('ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0').should.equal(26);
+      Utils.getAddressVersion('ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0').should.equal(26);
       // Testnet multi sig
-      Stx.Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX').should.equal(21);
+      Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX').should.equal(21);
       // With Memo Id
-      Stx.Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ?memoId=0').should.equal(22);
-      Stx.Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255').should.equal(21);
+      Utils.getAddressVersion('SP1DN2NGRB2R3W75ST0GAA7DBV1VEBBWYZ1D33DEQ?memoId=0').should.equal(22);
+      Utils.getAddressVersion('SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255').should.equal(21);
     });
   });
 
   describe('xpubToSTXPubkey', function () {
     it('should succeed to convert for valid xpubs', function () {
-      Stx.Utils.xpubToSTXPubkey(
-        'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS',
+      Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS'
       ).should.equal('03f0f3581a4256797fa8478cb6b1da6588f4c4bedc80ab2601e3a1572cf57b6156');
-      Stx.Utils.xpubToSTXPubkey(
-        'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj',
+      Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj'
       ).should.equal('0262b7e86c1e36e45d451263b54a1c3d740abeab61d221d1175fc3fdad752853ab');
-      Stx.Utils.xpubToSTXPubkey(
-        'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf',
+      Utils.xpubToSTXPubkey(
+        'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf'
       ).should.equal('036529a0e41cfd1a9d265b74f8d0002c92c5aec10d4239000260a25cfd54e4726c');
     });
   });
@@ -352,8 +341,8 @@ describe('Stx util library', function () {
     it('should return the base address', async function () {
       const addressWithMemo = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      Stx.Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
-      Stx.Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
+      Utils.getBaseAddress(addressWithMemo).should.equal(baseAddress);
+      Utils.getBaseAddress(baseAddress).should.equal(baseAddress);
     });
   });
 
@@ -361,25 +350,25 @@ describe('Stx util library', function () {
     it('should validate if base address match', async function () {
       const address = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      Stx.Utils.isSameBaseAddress(address, baseAddress).should.true();
+      Utils.isSameBaseAddress(address, baseAddress).should.true();
 
       const address2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
       const baseAddress2 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
-      Stx.Utils.isSameBaseAddress(address2, baseAddress2).should.true();
+      Utils.isSameBaseAddress(address2, baseAddress2).should.true();
 
       const address3 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX?memoId=255';
       const baseAddress3 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
-      Stx.Utils.isSameBaseAddress(address3, baseAddress3).should.false();
+      Utils.isSameBaseAddress(address3, baseAddress3).should.false();
 
       const address4 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDX';
       const baseAddress4 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
-      Stx.Utils.isSameBaseAddress(address4, baseAddress4).should.false();
+      Utils.isSameBaseAddress(address4, baseAddress4).should.false();
 
       const address5 = 'SN237KBNCA2CZZ32CWMNTF74DFAYCPNJ3MNN6ANDF';
       const baseAddress5 = 'ST1SRCA93CE1WD8TEG28BSWBFR68J24ZTAB2FAJ0';
       assert.throws(
         () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
-        new RegExp(`invalid address: ${address5}`),
+        new RegExp(`invalid address: ${address5}`)
       );
     });
   });

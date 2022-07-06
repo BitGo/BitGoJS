@@ -1,9 +1,10 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/stx/transaction';
-import * as testData from '../../../resources/stx/stx';
-import { KeyPair } from '../../../../src/coin/stx/keyPair';
+import { StxLib } from '../../src';
+import * as testData from './resources';
+
+const { Transaction, KeyPair } = StxLib;
 
 describe('Stx Transaction', () => {
   const coin = coins.get('tstx');

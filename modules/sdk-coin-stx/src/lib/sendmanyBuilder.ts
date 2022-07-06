@@ -52,8 +52,8 @@ export class SendmanyBuilder extends AbstractContractBuilder {
           to: standardPrincipalCV(recipient.address),
           ustx: uintCV(recipient.amount),
           memo: bufferCVFromString(recipient.memo || ''),
-        }),
-      ),
+        })
+      )
     ),
   ];
 
@@ -67,10 +67,10 @@ export class SendmanyBuilder extends AbstractContractBuilder {
             ? AddressVersion.MainnetMultiSig
             : AddressVersion.TestnetMultiSig,
           this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
-          this._numberSignatures,
+          this._numberSignatures
         ).address,
         FungibleConditionCode.Equal,
-        sum,
+        sum
       ),
     ];
   }

@@ -1,59 +1,16 @@
-/**
- * @prettier
- */
-import * as accountLib from '@bitgo/account-lib';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-
 import {
   BaseCoin,
   BitGoBase,
   KeyPair,
   SignedTransaction,
-  SignTransactionOptions,
-  TransactionExplanation,
-  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   TransactionType,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface SupplementGenerateWalletOptions {
-  rootPrivateKey?: string;
-}
-
-export interface TransactionFee {
-  fee: string;
-}
-export interface StxTransactionExplanation extends TransactionExplanation {
-  memo?: string;
-  type?: number;
-  contractAddress?: string;
-  contractName?: string;
-  contractFunction?: string;
-  contractFunctionArgs?: { type: string; value: string }[];
-}
-
-export interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
-  publicKeys?: string[];
-  feeInfo: TransactionFee;
-}
-
-export interface StxSignTransactionOptions extends SignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string | string[];
-  pubKeys?: string[];
-  numberSignature?: number;
-}
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
-  source: string;
-}
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExplanation } from './types';
+import { StxLib } from '.';
 
 export class Stx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -75,12 +32,15 @@ export class Stx extends BaseCoin {
   getChain(): string {
     return this._staticsCoin.name;
   }
+
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
+
   getFullName(): string {
     return this._staticsCoin.fullName;
   }
+
   getBaseFactor(): string | number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
@@ -102,10 +62,10 @@ export class Stx extends BaseCoin {
     if (!keychains || keychains.length !== 3) {
       throw new Error('Invalid keychains');
     }
-    const pubs = keychains.map((keychain) => accountLib.Stx.Utils.xpubToSTXPubkey(keychain.pub));
-    const addressVersion = accountLib.Stx.Utils.getAddressVersion(address);
-    const baseAddress = accountLib.Stx.Utils.getSTXAddressFromPubKeys(pubs, addressVersion).address;
-    return accountLib.Stx.Utils.isSameBaseAddress(address, baseAddress);
+    const pubs = keychains.map((keychain) => StxLib.Utils.xpubToSTXPubkey(keychain.pub));
+    const addressVersion = StxLib.Utils.getAddressVersion(address);
+    const baseAddress = StxLib.Utils.getSTXAddressFromPubKeys(pubs, addressVersion).address;
+    return StxLib.Utils.isSameBaseAddress(address, baseAddress);
   }
 
   /**
@@ -115,7 +75,7 @@ export class Stx extends BaseCoin {
    * @returns {Object} object with generated pub and prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new accountLib.Stx.KeyPair({ seed }) : new accountLib.Stx.KeyPair();
+    const keyPair = seed ? new StxLib.KeyPair({ seed }) : new StxLib.KeyPair();
     const keys = keyPair.getExtendedKeys();
 
     if (!keys.xprv) {
@@ -136,7 +96,7 @@ export class Stx extends BaseCoin {
    */
   isValidPub(pub: string): boolean {
     try {
-      return accountLib.Stx.Utils.isValidPublicKey(pub);
+      return StxLib.Utils.isValidPublicKey(pub);
     } catch (e) {
       return false;
     }
@@ -150,7 +110,7 @@ export class Stx extends BaseCoin {
    */
   isValidPrv(prv: string): boolean {
     try {
-      return accountLib.Stx.Utils.isValidPrivateKey(prv);
+      return StxLib.Utils.isValidPrivateKey(prv);
     } catch (e) {
       return false;
     }
@@ -158,7 +118,7 @@ export class Stx extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     try {
-      return accountLib.Stx.Utils.isValidAddressWithPaymentId(address);
+      return StxLib.Utils.isValidAddressWithPaymentId(address);
     } catch (e) {
       return false;
     }
@@ -169,7 +129,7 @@ export class Stx extends BaseCoin {
    * @param params
    */
   async signTransaction(params: StxSignTransactionOptions): Promise<SignedTransaction> {
-    const factory = accountLib.register(this.getChain(), accountLib.Stx.TransactionBuilderFactory);
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory.from(params.txPrebuild.txHex);
     const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
     prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
@@ -200,7 +160,7 @@ export class Stx extends BaseCoin {
       throw new Error('missing explain tx parameters');
     }
 
-    const factory = accountLib.getBuilder(this.getChain()) as accountLib.Stx.TransactionBuilderFactory;
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory.from(txHex);
 
     if (params.publicKeys !== undefined) {

@@ -72,6 +72,9 @@
       "path": "../sdk-coin-ltc"
     },
     {
+      "path": "../sdk-coin-stx"
+    },
+    {
       "path": "../sdk-coin-xrp"
     },
     {

@@ -91,7 +91,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
             new BigNum(this._fee.fee),
             new BigNum(this._nonce),
             PubKeyEncoding.Compressed, // useless param as Compressed is hardcoded in stacks lib
-            signature,
+            signature
           );
           sigHash = nextVerify.nextSigHash;
           this._signatures.push({ ...signature, index, sigHash });
@@ -108,7 +108,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
     const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')),
+      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex'))
     );
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
