@@ -548,7 +548,7 @@ export class Eth extends BaseCoin {
         'ETHER',
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data || ''), 'hex'),
         expireTime,
         contractSequenceId,
       ],
@@ -1581,7 +1581,7 @@ export class Eth extends BaseCoin {
       const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
 
       const initcode = getProxyInitcode(forwarderImplementationAddress);
-      const saltBuffer = optionalDeps.ethUtil.setLengthLeft(coinSpecific.salt, 32);
+      const saltBuffer = optionalDeps.ethUtil.setLengthLeft(Buffer.from(coinSpecific.salt || '', 'hex'), 32);
 
       // Hash the wallet base address with the given salt, so the address directly relies on the base address
       const calculationSalt = optionalDeps.ethUtil.bufferToHex(

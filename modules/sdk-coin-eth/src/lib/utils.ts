@@ -569,7 +569,15 @@ export function hasSignature(txData: TxData): boolean {
  * @returns {Buffer[]} the decoded raw
  */
 export function getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[] {
-  return EthereumAbi.rawDecode(types, serializedArgs);
+  return EthereumAbi.rawDecode(types, serializedArgs).map((v) => {
+    // rawDecode is untyped, and does not always return `Buffer`, so we convert to
+    // it if we need to
+    if (typeof v === 'string') {
+      return toBuffer(addHexPrefix(v));
+    } else {
+      return v;
+    }
+  });
 }
 
 /**
