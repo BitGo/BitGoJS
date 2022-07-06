@@ -9,8 +9,8 @@ import {
   rlphash,
   ecrecover,
   publicToAddress,
-} from '@bitgo/ethereumjs-utils-old';
-import { unpad } from 'ethereumjs-util';
+  unpadBuffer,
+} from 'ethereumjs-util';
 import { CeloTx, EncodedTransaction } from '@celo/connect';
 import { EthLikeTransactionData, ETHTransactionType, KeyPair, LegacyTxData } from '@bitgo/sdk-coin-eth';
 
@@ -49,7 +49,7 @@ export class CeloTransaction {
   }
 
   constructor(tx: LegacyTxData) {
-    this.nonce = unpad(toBuffer(tx.nonce));
+    this.nonce = unpadBuffer(toBuffer(tx.nonce));
     this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
     this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
     this.data = toBuffer(tx.data);
@@ -94,7 +94,9 @@ export class CeloTransaction {
     if (includeSignature) {
       items = this.raw;
     } else {
-      items = this.raw.slice(0, 9).concat([toBuffer(this.getChainId()), unpad(toBuffer(0)), unpad(toBuffer(0))]);
+      items = this.raw
+        .slice(0, 9)
+        .concat([toBuffer(this.getChainId()), unpadBuffer(toBuffer(0)), unpadBuffer(toBuffer(0))]);
     }
     return rlphash(items);
   }
