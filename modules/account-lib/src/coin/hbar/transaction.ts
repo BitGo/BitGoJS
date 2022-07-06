@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BaseTransaction, SigningError, toHex, toUint8Array, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, Entry, SigningError, toHex, toUint8Array, TransactionType } from '@bitgo/sdk-core';
 import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
@@ -94,14 +94,24 @@ export class Transaction extends BaseTransaction {
       memo: this._txBody.memo,
     };
 
-    if (this._txBody.data === HederaTransactionTypes.Transfer) {
-      const { address, amount, tokenName } = this.getTransferData();
-      result.amount = amount;
-      result.to = address;
-      if (tokenName) {
-        result.tokenName = tokenName;
-      }
+    switch (this._txBody.data) {
+      case HederaTransactionTypes.Transfer:
+        const transferData = this.getTransferData();
+        result.instructionsData = {
+          type: HederaTransactionTypes.Transfer,
+          params: transferData,
+        };
+        result.to = result.instructionsData.params.recipients[0].address;
+        result.amount = result.instructionsData.params.recipients[0].amount;
+        break;
+      case HederaTransactionTypes.TokenAssociateToAccount:
+        result.instructionsData = {
+          type: HederaTransactionTypes.TokenAssociateToAccount,
+          params: this.getAccountAssociateData(),
+        };
+        break;
     }
+
     return result;
   }
 
@@ -109,11 +119,12 @@ export class Transaction extends BaseTransaction {
    * Get the recipient account and the amount
    * transferred on this transaction
    *
-   * @returns {Recipient} consisting
-   *  the recipient, the transfer amount, and the token name for token transfer
+   * @returns { tokenName, Recipient[]} is object consisting of tokenName if it's a token transfer and recipients consisting
+   *  the recipient address, the transfer amount, and the token name for token transfer
    */
-  private getTransferData(): Recipient {
-    let transferData;
+  private getTransferData(): { tokenName?: string; recipients: Recipient[] } {
+    const [acc] = this.getTxIdParts();
+    const transferData: Recipient[] = [];
     const tokenTransfers: proto.ITokenTransferList[] = this._txBody.cryptoTransfer?.tokenTransfers || [];
     const transfers: proto.IAccountAmount[] =
       tokenTransfers[0]?.transfers || this._txBody.cryptoTransfer?.transfers?.accountAmounts || [];
@@ -123,18 +134,38 @@ export class Transaction extends BaseTransaction {
 
     transfers.forEach((transfer) => {
       const amount = Long.fromValue(transfer.amount!);
-      if (amount.isPositive()) {
-        transferData = {
+      if (amount.isPositive() && stringifyAccountId(transfer.accountID!) !== acc) {
+        transferData.push({
           address: stringifyAccountId(transfer.accountID!),
           amount: amount.toString(),
           ...(tokenTransfers.length && {
             tokenName: tokenName,
           }),
-        };
+        });
       }
     });
 
-    return transferData;
+    return {
+      ...(tokenTransfers.length && {
+        tokenName: tokenName,
+      }),
+      recipients: transferData,
+    };
+  }
+
+  /**
+   * Get the recipient account and the amount
+   * transferred on this transaction
+   *
+   * @returns { accountId: string; tokenNames[]} is an object consisting of accountId for the token owner
+   *  and list of tokenNames that will be enabled
+   */
+  private getAccountAssociateData(): { accountId: string; tokenNames: string[] } {
+    const tokens: proto.ITokenID[] = this._txBody.tokenAssociate!.tokens || [];
+    return {
+      accountId: stringifyAccountId(this._txBody.tokenAssociate!.account!),
+      tokenNames: tokens.map((token: proto.ITokenID) => getHederaTokenNameFromId(stringifyTokenId(token))!.name),
+    };
   }
 
   // region getters & setters
@@ -189,23 +220,42 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
-    if (txJson.to && txJson.amount) {
-      this._outputs = [
-        {
-          address: txJson.to,
-          value: txJson.amount,
-          coin: txJson.tokenName || this._coinConfig.name,
-        },
-      ];
+    const instruction = txJson.instructionsData;
+    const outputs: Entry[] = [];
+    const inputs: Entry[] = [];
 
-      this._inputs = [
-        {
+    switch (instruction?.type) {
+      case HederaTransactionTypes.Transfer:
+        let totalAmount = new BigNumber(0);
+        instruction.params.recipients.forEach((recipient) => {
+          totalAmount = totalAmount.plus(recipient.amount);
+          outputs.push({
+            address: recipient.address,
+            value: recipient.amount,
+            coin: recipient.tokenName || this._coinConfig.name,
+          });
+        });
+        inputs.push({
           address: txJson.from,
-          value: txJson.amount,
-          coin: txJson.tokenName || this._coinConfig.name,
-        },
-      ];
+          value: totalAmount.toString(),
+          coin: instruction.params.tokenName || this._coinConfig.name,
+        });
+        break;
+
+      case HederaTransactionTypes.TokenAssociateToAccount:
+        instruction.params.tokenNames.forEach((tokenName) => {
+          const tokenEntry: Entry = {
+            address: instruction.params.accountId,
+            value: '0',
+            coin: tokenName,
+          };
+          inputs.push(tokenEntry);
+          outputs.push(tokenEntry);
+        });
+        break;
     }
+    this._inputs = inputs;
+    this._outputs = outputs;
   }
 
   /**

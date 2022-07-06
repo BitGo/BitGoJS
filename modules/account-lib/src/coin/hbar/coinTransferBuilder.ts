@@ -36,7 +36,7 @@ export class CoinTransferBuilder extends TransferBuilder {
       }, // sender
     ];
     // add recipients and update send amount
-    this._recipients.map((recipient) => {
+    this._recipients.forEach((recipient) => {
       accountAmounts.push(
         { accountID: buildHederaAccountID(recipient.address), amount: Long.fromString(recipient.amount) }, // recipient
       );

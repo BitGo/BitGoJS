@@ -304,7 +304,6 @@ export function isValidAddressWithPaymentId(address: string): boolean {
 }
 
 /**
-<<<<<<< HEAD
  * Build hedera {proto.TokenID} object from token ID string
  *
  * @param {string} tokenID - The token ID to build
