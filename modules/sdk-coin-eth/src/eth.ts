@@ -724,6 +724,10 @@ export class Eth extends BaseCoin {
       throw new Error('recipients missing or not array');
     }
 
+    if (params.recipients.length == 0) {
+      throw new Error('recipients empty');
+    }
+
     // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
     if (params.isLastSignature) {
       // In this case when we're doing the second (final) signature, the logic is different.
