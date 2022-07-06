@@ -1,5 +1,6 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
+import BN from 'bn.js';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
@@ -141,9 +142,9 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           this.getTokenOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -153,7 +154,7 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
           Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
           this._expirationTime,
