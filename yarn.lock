@@ -987,21 +987,6 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
-"@bitgo/blake2b-wasm@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/blake2b-wasm/-/blake2b-wasm-3.0.2.tgz#838db5836cfaa61274ee7a0656c5b8fb136b2497"
-  integrity sha512-gEcOoLDy6rh7raZITrnuoPqTjD3dcBrTCI/kmYyR9VMRt0xjB9HLoPeVoisdrdsRey1YvPXyLm2Prr+zRBFTEA==
-  dependencies:
-    nanoassert "^1.0.0"
-
-"@bitgo/blake2b@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/blake2b/-/blake2b-3.0.2.tgz#a75f7710ccd125030dcb20e028903946d0279adb"
-  integrity sha512-6WLZjM885COVZi8xUhOJxamY+nWNgfcsCRNTJ6cUeaV1pkaIh9LKmZs1gugvLg6ceLLZA5R2A9dEV/2Vs623lQ==
-  dependencies:
-    "@bitgo/blake2b-wasm" "^3.0.2"
-    nanoassert "^2.0.0"
-
 "@bitgo/bls@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@bitgo/bls/-/bls-0.1.0.tgz#8fb1ecaeeeb776a6678d3e58067f83ef7a29aad7"
@@ -1046,29 +1031,6 @@
     create-hash "^1.2.0"
     elliptic "^6.5.2"
     secp256k1 "^4.0.2"
-
-"@bitgo/unspents@^0.8.0":
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.8.2.tgz#d9c62f65d6f28db1b3118de19bd8c6ea8f5f0438"
-  integrity sha512-nqtnRPXOiGI0rJuJdBQ9MP7GfdsiXE3P3MFLgr+UVcuL6KTIelwGDUhvB6gxVAZDUSQ/j8Rtx7G0rZsK1jIvCw==
-  dependencies:
-    "@bitgo/utxo-lib" "^2.4.0"
-    lodash "~4.17.21"
-    tcomb "~3.2.29"
-
-"@bitgo/utxo-lib@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-2.4.0.tgz#0eb644c1252a0d4a3ad73d0d9b292352c3326725"
-  integrity sha512-UTFGy9B1PNO874Ugd8AkkTsYR59w5fLaq1FV5njgOCOxyPM1Rpi796mOwJpxKrL/5aZBgWRoKHKYzM3U2ZaEiw==
-  dependencies:
-    "@bitgo/blake2b" "^3.0.2"
-    assert "^2.0.0"
-    bitcoin-ops "^1.3.0"
-    bitcoinjs-lib "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3"
-    bs58check "^2.0.0"
-    cashaddress "^1.1.0"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
 
 "@celo/base@2.0.0":
   version "2.0.0"
