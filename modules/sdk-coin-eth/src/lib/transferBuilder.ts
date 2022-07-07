@@ -137,14 +137,16 @@ export class TransferBuilder {
 
   protected getOperationData(): (string | Buffer)[][] {
     let operationData;
+
+    // Note: `_somProperty` being of `string` type is a lie, so we `|| ''` it 🤷
     if (this._tokenContractAddress !== undefined) {
       operationData = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           this.getTokenOperationHashPrefix(),
-          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress || ''), 16),
           this._amount,
-          new BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._tokenContractAddress || ''), 16),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -154,9 +156,9 @@ export class TransferBuilder {
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          new BN(ethUtil.stripHexPrefix(this._toAddress || ''), 16),
           this._amount,
-          Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
+          Buffer.from(ethUtil.stripHexPrefix(this._data || ''), 'hex'),
           this._expirationTime,
           this._sequenceId,
         ],
