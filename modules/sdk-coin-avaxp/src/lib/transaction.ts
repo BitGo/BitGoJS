@@ -10,7 +10,7 @@ import {
 import { KeyPair } from './keyPair';
 import { DecodedUtxoObj, TransactionExplanation, TxData } from './iface';
 import { AddValidatorTx, AmountOutput, BaseTx, Tx } from 'avalanche/dist/apis/platformvm';
-import { BN, Buffer as BufferAvax } from 'avalanche';
+import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import * as createHash from 'create-hash';
 import { Credential } from 'avalanche/dist/common';
@@ -155,7 +155,8 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this._avaxpTransaction.toBuffer().toString('hex');
+    const bintools = BinTools.getInstance();
+    return bintools.addChecksum(this._avaxpTransaction.toBuffer()).toString('hex');
   }
 
   // types - stakingTransaction, import, export
