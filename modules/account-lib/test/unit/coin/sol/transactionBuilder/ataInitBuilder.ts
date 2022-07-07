@@ -14,14 +14,24 @@ describe('Sol Associated Token Account Builder', () => {
     tx.inputs[0].should.deepEqual({
       address: owner.pubkey,
       value: rentAmount,
-      coin: mint,
+      coin: 'sol',
     });
     tx.outputs.length.should.equal(1);
     tx.outputs[0].should.deepEqual({
       address: owner.ataPubkey,
       value: rentAmount,
-      coin: mint,
+      coin: 'sol',
     });
+    const instructions = tx.toJson().instructionsData;
+    let ataInitInstruction;
+    for (const instruction of instructions) {
+      if (instruction.type === 'CreateAssociatedTokenAccount') {
+        ataInitInstruction = instruction;
+        break;
+      }
+    }
+    should.exist(ataInitInstruction);
+    ataInitInstruction.params.tokenName.should.equal(mint);
 
     should.equal(Utils.isValidRawTransaction(rawTx), true);
   }
@@ -148,7 +158,9 @@ describe('Sol Associated Token Account Builder', () => {
     describe('Fail', () => {
       it('build an associated token account init tx when mint is invalid', () => {
         const txBuilder = ataInitBuilder();
-        should(() => txBuilder.mint('invalidToken')).throwError('Invalid transaction: invalid mint, got: invalidToken');
+        should(() => txBuilder.mint('invalidToken')).throwError(
+          'Invalid transaction: invalid token name, got: invalidToken',
+        );
       });
 
       it('build a wallet init tx and sign with an incorrect account', async () => {
@@ -185,7 +197,7 @@ describe('Sol Associated Token Account Builder', () => {
       it('build when mint is invalid', async () => {
         const txBuilder = factory.getAtaInitializationBuilder();
         should(() => txBuilder.mint('sol:invalid mint')).throwError(
-          'Invalid transaction: invalid mint, got: sol:invalid mint',
+          'Invalid transaction: invalid token name, got: sol:invalid mint',
         );
       });
 

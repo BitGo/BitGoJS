@@ -44,12 +44,12 @@ export class AtaInitializationTransaction extends Transaction {
         inputs.push({
           address: instruction.params.ownerAddress,
           value: this.tokenAccountRentExemptAmount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
-          coin: token.name,
+          coin: this._coinConfig.name,
         });
         outputs.push({
           address: instruction.params.ataAddress,
           value: this.tokenAccountRentExemptAmount || TRANSFER_AMOUNT_UNKNOWN_TEXT,
-          coin: token.name,
+          coin: this._coinConfig.name,
         });
       }
     }
