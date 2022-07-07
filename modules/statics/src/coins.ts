@@ -473,6 +473,13 @@ export const coins = CoinMap.fromCoins([
   erc20('hyb', 'Hybrid Block', 18, '0x6059f55751603ead7dc6d280ad83a7b33d837c90', UnderlyingAsset.HYB),
   erc20('hydro', 'Hydro', 18, '0xebbdf302c940c6bfd49c6b165f457fdb324649bc', UnderlyingAsset.HYDRO),
   erc20('i8', 'i8 Exchange Token', 18, '0xb61bb66bf9caba531e6bb2fb75dec389a1664dfd', UnderlyingAsset.I8),
+  erc20(
+    'iceth',
+    'Interest Compounding ETH Index',
+    18,
+    '0x7c07f7abe10ce8e33dc6c5ad68fe033085256a84',
+    UnderlyingAsset.ICETH
+  ),
   erc20('idex', 'IDEX', 18, '0xb705268213d593b8fd88d3fdeff93aff5cbdcfae', UnderlyingAsset.IDEX),
   erc20('idrc', 'Rupiah Coin', 18, '0x569f2241551011d5710c40fc61e0b3906c780b2f', UnderlyingAsset.IDRC),
   erc20('idrt', 'Rupiah Token', 2, '0x998ffe1e43facffb941dc337dd0468d52ba5b48a', UnderlyingAsset.IDRT),
@@ -771,6 +778,7 @@ export const coins = CoinMap.fromCoins([
   erc20('wild', 'Wilder World', 18, '0x2a3bff78b79a009976eea096a51a948a3dc00e34', UnderlyingAsset.WILD),
   erc20('wnxm', 'Wrapped NXM', 18, '0x0d438f3b5175bebc262bf23753c1e53d03432bde', UnderlyingAsset.WNXM),
   erc20('wluna', 'Wrapped Luna', 18, '0xd2877702675e6ceb975b4a1dff9fb7baf4c91ea9', UnderlyingAsset.WLUNA),
+  erc20('wlxt', 'Wallex Token', 18, '0x1fd389ac8e6c958b0f01067540fdff8a11488201', UnderlyingAsset.WLXT),
   erc20('wsteth', 'Wrapped stETH', 18, '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', UnderlyingAsset.WSTETH),
   erc20('wpx', 'WalletPlusX', 18, '0x4bb0a085db8cedf43344bd2fbec83c2c79c4e76b', UnderlyingAsset.WPX),
   erc20('wtc', 'Walton Token', 18, '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74', UnderlyingAsset.WTC),
