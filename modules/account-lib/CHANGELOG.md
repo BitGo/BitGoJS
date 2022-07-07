@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.29...@bitgo/account-lib@2.20.0-rc.30) (2022-07-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** make hex representation consistent ([ba493e9](https://github.com/BitGo/BitGoJS/commit/ba493e9a7d286197790c4d7e878aca83cf61d2fa))
+
+
+### Features
+
+* **account-lib:** hbar token transfer builder and serialization ([0bc7287](https://github.com/BitGo/BitGoJS/commit/0bc72870b02a29e67df134022bde2c3750107a9b))
+* **account-lib:** token associate transaction builder for hedera accounts ([417c720](https://github.com/BitGo/BitGoJS/commit/417c7201b55c1fc546d52d5fd4daaf9390a3c480))
+
+
+
+
+
 # [2.20.0-rc.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.28...@bitgo/account-lib@2.20.0-rc.29) (2022-07-05)
 
 

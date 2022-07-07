@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.18.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.23...@bitgo/statics@6.18.0-rc.24) (2022-07-07)
+
+
+### Features
+
+* **account-lib:** token associate transaction builder for hedera accounts ([417c720](https://github.com/BitGo/BitGoJS/commit/417c7201b55c1fc546d52d5fd4daaf9390a3c480))
+* **statics:** add euroc test token ([ad64797](https://github.com/BitGo/BitGoJS/commit/ad64797757fdbda2d9816bb43fe97398476b3f53))
+* **statics:** add polygon testnet contract address ([61edfa8](https://github.com/BitGo/BitGoJS/commit/61edfa8de1b883be805c4d9686716d97480c8aa2))
+* **statics:** add tokens iceth and wlxt ([d2ed8dc](https://github.com/BitGo/BitGoJS/commit/d2ed8dc9ff6ba9fa14fc77132e5f887fe7006b16))
+* **statics:** update prime trading tokens ([eca20c1](https://github.com/BitGo/BitGoJS/commit/eca20c119529c48620438014071d52638e5724ea))
+
+
+
+
+
 # [6.18.0-rc.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.22...@bitgo/statics@6.18.0-rc.23) (2022-07-05)
 
 

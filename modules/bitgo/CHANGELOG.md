@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0-rc.34](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.33...bitgo@14.2.0-rc.34) (2022-07-07)
+
+
+### Features
+
+* **account-lib:** cardano ada coin skeleton ([68f7fe7](https://github.com/BitGo/BitGoJS/commit/68f7fe708d27dba55885da32e4be07aa1e1bbf00))
+* **account-lib:** hbar token transfer builder and serialization ([0bc7287](https://github.com/BitGo/BitGoJS/commit/0bc72870b02a29e67df134022bde2c3750107a9b))
+* **sdk-coin-bcha:** refactor bcha to its own module ([6fb1a70](https://github.com/BitGo/BitGoJS/commit/6fb1a704d2365cc7e212860a81dbd47b70f59d6f))
+* **sdk-coin-bch:** refactor bch to its own module ([3d3c2ed](https://github.com/BitGo/BitGoJS/commit/3d3c2eda2115fe136050f06a02c6c12cb1827707))
+* **sdk-coin-bsv:** refactor bsv to its own module ([9f6b6e8](https://github.com/BitGo/BitGoJS/commit/9f6b6e8bc0aeba956646bd7be0466e934d477b26))
+* **sdk-coin-btg:** refactor btg to its own module ([ebebe70](https://github.com/BitGo/BitGoJS/commit/ebebe70f8c103f7ddddcc878204e686eb04d786a))
+* **sdk-coin-ltc:** refactor ltc to its own module ([7bb56a4](https://github.com/BitGo/BitGoJS/commit/7bb56a44f4099d6caf853d1eeccfa6cd501a9f5e))
+* **sdk-core:** tss ecdsa utility to create keychains ([0a1ab71](https://github.com/BitGo/BitGoJS/commit/0a1ab71ea981fe8bd833f1b25cc3c90e6cb89565))
+
+
+
+
+
 # [14.2.0-rc.33](https://github.com/BitGo/BitGoJS/compare/bitgo@14.2.0-rc.32...bitgo@14.2.0-rc.33) (2022-07-05)
 
 
