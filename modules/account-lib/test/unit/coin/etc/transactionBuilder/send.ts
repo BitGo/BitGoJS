@@ -2,7 +2,7 @@ import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { getBuilder, Etc } from '../../../../../src';
 import * as testData from '../../../../resources/etc/etc';
-import { decodeTransferData } from '../../../../../src/coin/eth/utils';
+import { decodeTransferData } from '@bitgo/sdk-coin-eth';
 
 describe('Etc send transaction', function () {
   let txBuilder: Etc.TransactionBuilder;

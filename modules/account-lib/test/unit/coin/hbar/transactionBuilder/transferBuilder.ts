@@ -242,7 +242,7 @@ describe('HBAR Transfer Builder', () => {
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.source({ address: testData.ACCOUNT_1.accountId });
       txBuilder.amount('10');
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing to');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing recipients');
     });
 
     it('a transfer transaction without amount', async () => {
@@ -250,7 +250,7 @@ describe('HBAR Transfer Builder', () => {
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.source({ address: testData.ACCOUNT_1.accountId });
       txBuilder.to(testData.ACCOUNT_2.accountId);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing amount');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing recipients');
     });
 
     it('a transfer transaction with invalid start time', () => {

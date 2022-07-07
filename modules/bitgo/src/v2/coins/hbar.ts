@@ -249,6 +249,7 @@ export class Hbar extends BaseCoin {
         amount: txJson.amount.toString(),
         address: txJson.to,
         memo,
+        tokenName: txJson.tokenName,
       },
     ];
 

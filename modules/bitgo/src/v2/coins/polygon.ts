@@ -3,7 +3,7 @@
  */
 import { BaseCoin, BitGoBase, TransactionExplanation } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from './eth';
+import { Eth, Recipient, GetSendMethodArgsOptions, SendMethodArgs, optionalDeps } from '@bitgo/sdk-coin-eth';
 import { getBuilder, Polygon as PolygonAccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
 import { ExplainTransactionOptions } from '@bitgo/abstract-eth';

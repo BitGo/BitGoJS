@@ -3,7 +3,7 @@ import should from 'should';
 import { AvaxC, getBuilder } from '../../../../../src';
 import { TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../../../resources/avaxc/avaxc';
-import { ETHTransactionType, TxData } from '../../../../../src/coin/eth/iface';
+import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
 import { TransactionBuilder } from '../../../../../src/coin/avaxc';
 
 describe('AvaxC Wallet Initialization Builder', function () {

@@ -1,6 +1,25 @@
 const Generator = require('yeoman-generator');
 const fs = require('fs');
 
+const UTXO_DEPENDENCIES = [
+  'abstract-utxo',
+  'sdk-core',
+  'utxo-lib',
+];
+const ACCOUNT_DEPENDENCIES = [
+  'abstract-eth',
+  'sdk-core',
+  'statics',
+];
+const SIMPLE_DEPENDENCIES = [
+  'sdk-core',
+];
+
+const DEV_DEPENDENCIES = [
+  'sdk-api',
+  'sdk-test',
+];
+
 require('yeoman-generator/lib/actions/install');
 
 module.exports = class extends Generator {
@@ -81,6 +100,7 @@ module.exports = class extends Generator {
       },
     ]);
 
+    answers.coinLowerCase = answers.coin.toLowerCase();
     answers.symbol.toLowerCase();
     if (answers.testnetSymbol) {
       answers.testnetSymbol.toLowerCase();
@@ -161,6 +181,12 @@ module.exports = class extends Generator {
       this.destinationPath(`./src/${this.answers.symbol}.ts`),
       { ...this.answers }
     );
+    
+    this.fs.copyTpl(
+      this.templatePath(`${templatePath}/.tsconfig.json`),
+      this.destinationPath(`./tsconfig.json`),
+      { ...this.answers }
+    );
 
     if (this.answers.testnetSymbol) {
       this.fs.copyTpl(
@@ -174,15 +200,39 @@ module.exports = class extends Generator {
     addNewCoinToBitgo(this.contextRoot, this.answers);
     addNewCoinToBitgoTsConfig(this.contextRoot, this.answers);
 
-    await this.addDependencies({
-      '@bitgo/sdk-core': '^1.0.1',
-    });
+    switch (this.answers.boilerplate) {
+      case 'utxo': {
+        const dependencies = getDependencies(this.contextRoot, UTXO_DEPENDENCIES);
+        await this.addDependencies(dependencies);
+        break;
+      }
+      case 'account': {
+        const dependencies = getDependencies(this.contextRoot, ACCOUNT_DEPENDENCIES);
+        await this.addDependencies(dependencies);
+        break;
+      }
+      default: {
+        const dependencies = getDependencies(this.contextRoot, SIMPLE_DEPENDENCIES);
+        await this.addDependencies(dependencies);
+        break;
+      }
+    }
 
-    await this.addDevDependencies({
-      '@bitgo/sdk-test': '^1.0.0',
-    });
+    const devDependencies = getDependencies(this.contextRoot, DEV_DEPENDENCIES);
+    await this.addDevDependencies(devDependencies);
   }
 };
+
+function getDependencies(contextRoot, depArr) {
+  const dependencies = {};
+  depArr.forEach(dependency => {
+    const file = `${contextRoot}/modules/${dependency}/package.json`;
+    const rawData = fs.readFileSync(file);
+    const data = JSON.parse(rawData);
+    dependencies[data.name] = `^${data.version}`;
+  });
+  return dependencies;
+}
 
 function addNewCoinToTsConfig(contextRoot, answers) {
   const file = `${contextRoot}/tsconfig.packages.json`;

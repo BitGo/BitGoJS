@@ -1,10 +1,17 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilderFactory, InvalidTransactionError, ParseTransactionError } from '@bitgo/sdk-core';
+import {
+  BaseTransactionBuilderFactory,
+  InvalidTransactionError,
+  ParseTransactionError,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
-import { TransferBuilder } from './transferBuilder';
+import { CoinTransferBuilder } from './coinTransferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidRawTransactionFormat, toUint8Array } from './utils';
+import { isTokenTransfer, isValidRawTransactionFormat } from './utils';
+import { TokenAssociateBuilder } from './tokenAssociateBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -17,19 +24,37 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: Transaction): CoinTransferBuilder {
+    return this.initializeBuilder(tx, new CoinTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a funds token transfer transaction
+   */
+  getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a builder to create a token association transaction
+   */
+  getTokenAssociateBuilder(tx?: Transaction): TokenAssociateBuilder {
+    return this.initializeBuilder(tx, new TokenAssociateBuilder(this._coinConfig));
   }
 
   /** @inheritDoc */
   from(raw: Uint8Array | string): TransactionBuilder {
     this.validateRawTransaction(raw);
-    const tx = this.parseTransaction(raw);
-    switch (tx.txBody.data) {
-      case 'cryptoTransfer':
-        return this.getTransferBuilder(tx);
-      case 'cryptoCreateAccount':
+    const tx = this.parseRawTransaction(raw);
+    switch (tx.type) {
+      case TransactionType.Send:
+        return isTokenTransfer(tx.txBody.cryptoTransfer!)
+          ? this.getTokenTransferBuilder(tx)
+          : this.getTransferBuilder(tx);
+      case TransactionType.WalletInitialization:
         return this.getWalletInitializationBuilder(tx);
+      case TransactionType.AssociatedTokenAccountInitialization:
+        return this.getTokenAssociateBuilder(tx);
       default:
         throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
     }
@@ -55,15 +80,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {Uint8Array | string} rawTransaction - encoded transaction
    * @returns {Transaction} the parsed transaction instance
    */
-  private parseTransaction(rawTransaction: Uint8Array | string): Transaction {
+  private parseRawTransaction(rawTransaction: Uint8Array | string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    let buffer;
-    if (typeof rawTransaction === 'string') {
-      buffer = toUint8Array(rawTransaction);
-    } else {
-      buffer = rawTransaction;
-    }
-    tx.bodyBytes(buffer);
+    tx.fromRawTransaction(rawTransaction);
     return tx;
   }
 
@@ -72,7 +91,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    *
    * @param {any} rawTransaction - Transaction in any format
    */
-  private validateRawTransaction(rawTransaction: any) {
+  private validateRawTransaction(rawTransaction: Uint8Array | string) {
     if (!isValidRawTransactionFormat(rawTransaction)) {
       throw new ParseTransactionError('Invalid raw transaction');
     }

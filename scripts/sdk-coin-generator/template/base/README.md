@@ -12,21 +12,15 @@ In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-<%= symbol %>
 npm i @bitgo/sdk-api @bitgo/sdk-coin-<%= symbol %>
 ```
 
-Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of via `bitgo`.
+Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of `bitgo`.
 
 ```javascript
-import { BitGo } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { <%= constructor %> } from '@bitgo/sdk-coin-<%= symbol %>';
 
-async function init() {
-  const <%= symbol %> = await import('@bitgo/sdk-coin-<%= symbol %>');
-  BitGo.register(<%= coin %>, <%= symbol %>);
-  return new BitGo()
-}
+const sdk = new BitGoAPI();
 
-async function main() {
-  (await init()).coin('<%= symbol %>');
-}
-
+sdk.register(<%= symbol %>, <%= constructor %>.createInstance);
 ```
 
 ## Development

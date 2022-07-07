@@ -22,10 +22,6 @@ export class <%= testnetConstructor %> extends <%= constructor %> {
     return '<%= testnetSymbol %>';
   }
 
-  getFamily(): string {
-    return '<%= testnetSymbol %>';
-  }
-
   /**
    * Complete human-readable name of this coin
    */

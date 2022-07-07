@@ -29,7 +29,7 @@
     "https-browserify": "^1.0.0",
     "husky": "^8.0.1",
     "improved-yarn-audit": "^3.0.0",
-    "lerna": "^4.0.0",
+    "lerna": "^5.1.7",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
     "mocha": "^9.2.0",
@@ -56,7 +56,8 @@
     "minimist": "1.2.6",
     "eventsource": "2.0.2",
     "@types/react": "17.0.24",
-    "@types/react-dom": "17.0.16"
+    "@types/react-dom": "17.0.16",
+    "parse-url": "6.0.2"
   },
   "workspaces": [
     "modules/*"

@@ -36,19 +36,40 @@
       "path": "../sdk-api"
     },
     {
+      "path": "../sdk-coin-ada"
+    },
+    {
       "path": "../sdk-coin-algo"
     },
     {
       "path": "../sdk-coin-avaxp"
     },
     {
+      "path": "../sdk-coin-bch"
+    },
+    {
+      "path": "../sdk-coin-bcha"
+    },
+    {
+      "path": "../sdk-coin-bsv"
+    },
+    {
       "path": "../sdk-coin-btc"
+    },
+    {
+      "path": "../sdk-coin-btg"
     },
     {
       "path": "../sdk-coin-cspr"
     },
     {
       "path": "../sdk-coin-dash"
+    },
+    {
+      "path": "../sdk-coin-eth"
+    },
+    {
+      "path": "../sdk-coin-ltc"
     },
     {
       "path": "../sdk-coin-xrp"

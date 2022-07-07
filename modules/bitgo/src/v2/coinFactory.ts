@@ -3,7 +3,9 @@
  */
 import { CoinFactory } from '@bitgo/sdk-core';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
+import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import {
+  Ada,
   Algo,
   AvaxC,
   AvaxCToken,
@@ -35,6 +37,7 @@ import {
   StellarToken,
   Stx,
   Susd,
+  Tada,
   Talgo,
   TavaxC,
   TavaxP,
@@ -68,16 +71,15 @@ import {
   Xtz,
   Zec,
 } from './coins';
-import { Bcha } from './coins/bcha';
 import { Dot } from './coins/dot';
 import { Near } from './coins/near';
-import { Tbcha } from './coins/tbcha';
 import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
 import { tokens } from '../config';
 import { SolToken } from './coins/solToken';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
+  globalCoinFactory.register('ada', Ada.createInstance);
   globalCoinFactory.register('algo', Algo.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
@@ -106,6 +108,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
+  globalCoinFactory.register('tada', Tada.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
   globalCoinFactory.register('tavaxc', TavaxC.createInstance);
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);
@@ -142,11 +145,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('xtz', Xtz.createInstance);
   globalCoinFactory.register('zec', Zec.createInstance);
 
-  for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
-    const tokenConstructor = Erc20Token.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
-  }
+  Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
     const tokenConstructor = StellarToken.createTokenConstructor(token);

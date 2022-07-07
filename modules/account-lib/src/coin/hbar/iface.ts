@@ -12,6 +12,7 @@ export interface TxData {
   memo?: string;
   to?: string;
   amount?: string;
+  tokenName?: string;
 }
 
 export interface HederaNode {
@@ -26,4 +27,10 @@ export interface SignatureData {
 export interface AddressDetails {
   address: string;
   memoId?: string;
+}
+
+export interface Recipient {
+  address: string; // The address to transfer funds to
+  amount: string; // Amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
+  tokenName?: string; // token name if it's a token transfer
 }

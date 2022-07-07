@@ -644,6 +644,8 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://mumbai.polygonscan.com/tx/';
   accountExplorerUrl = 'https://mumbai.polygonscan.com/address/';
   chainId = 80001;
+  forwarderFactoryAddress = '0x7d10cfdcb763375fb5f0a0e9101f490f0bf1b43a';
+  forwarderImplementationAddress = '0xaa2216d72d7c149dfe4c3dd2154cd00994216506';
 }
 
 export const Networks = {

@@ -15,5 +15,6 @@ export {
   AlgoCoin,
   AvaxERC20Token,
   SolCoin,
+  HederaToken,
 } from './account';
 export { CoinMap } from './map';

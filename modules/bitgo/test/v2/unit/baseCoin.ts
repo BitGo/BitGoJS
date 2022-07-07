@@ -7,7 +7,7 @@ import * as nock from 'nock';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import { Erc20Token } from '../../../src/v2/coins/erc20Token';
+import { Erc20Token } from '@bitgo/sdk-coin-eth';
 import { StellarToken } from '../../../src/v2/coins/stellarToken';
 import { unsignedTxForExplainTransfer } from '../fixtures/coins/stx';
 
