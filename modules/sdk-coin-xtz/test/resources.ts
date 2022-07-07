@@ -1,10 +1,10 @@
-import { Xtz } from '../../../src';
+import { XtzLib } from '../src';
 
-export const defaultKeyPairFromPrv = new Xtz.KeyPair({
+export const defaultKeyPairFromPrv = new XtzLib.KeyPair({
   prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
 });
 
-export const defaultKeyPairFromPub = new Xtz.KeyPair({
+export const defaultKeyPairFromPub = new XtzLib.KeyPair({
   pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
 });
 export const defaultDataToSign =

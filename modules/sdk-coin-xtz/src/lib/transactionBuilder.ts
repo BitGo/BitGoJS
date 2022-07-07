@@ -1,7 +1,9 @@
-import BigNumber from 'bignumber.js';
-
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey, BuildTransactionError, SigningError, BaseTransactionBuilder, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import { Address } from './address';
+import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';
+import { KeyPair } from './keyPair';
 import {
   forwarderOriginationOperation,
   genericMultisigOriginationOperation,
@@ -9,10 +11,8 @@ import {
   revealOperation,
   singlesigTransactionOperation,
 } from './multisigUtils';
-import { Address } from './address';
 import { Transaction } from './transaction';
-import { KeyPair } from './keyPair';
-import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';
+import { TransferBuilder } from './transferBuilder';
 import {
   DEFAULT_GAS_LIMIT,
   DEFAULT_STORAGE_LIMIT,
@@ -22,7 +22,6 @@ import {
   isValidPublicKey,
   sign,
 } from './utils';
-import { TransferBuilder } from './transferBuilder';
 
 const DEFAULT_M = 3;
 
@@ -115,7 +114,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       // TODO: support a combination of keys with and without custom index
       if (key.index && key.index >= DEFAULT_M) {
         throw new BuildTransactionError(
-          'Custom index cannot be greater than the wallet total number of signers (owners)',
+          'Custom index cannot be greater than the wallet total number of signers (owners)'
         );
       }
       // Make sure either all keys passed have a custom index or none of them have
@@ -380,7 +379,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
       this._initialBalance || '0',
       this._walletOwnerPublicKeys,
-      this._initialDelegate,
+      this._initialDelegate
     );
     this._counter = this._counter.plus(1);
     return originationOp;
@@ -465,7 +464,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           signatures,
           transfer.fee.fee,
           transfer.fee.gasLimit,
-          transfer.fee.storageLimit,
+          transfer.fee.storageLimit
         );
       } else {
         transactionOp = singlesigTransactionOperation(
@@ -475,7 +474,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           transfer.to,
           transfer.fee.fee,
           transfer.fee.gasLimit,
-          transfer.fee.storageLimit,
+          transfer.fee.storageLimit
         );
       }
       contents.push(transactionOp);
@@ -499,7 +498,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       this._fee.fee,
       this._fee.gasLimit || DEFAULT_GAS_LIMIT.ORIGINATION.toString(),
       this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
-      this._initialBalance || '0',
+      this._initialBalance || '0'
     );
     this._counter = this._counter.plus(1);
     return operation;

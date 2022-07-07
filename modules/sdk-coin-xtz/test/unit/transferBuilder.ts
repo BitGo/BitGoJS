@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 
-import { TransferBuilder } from '../../../../src/coin/xtz/transferBuilder';
+import { TransferBuilder } from '../../src/lib/transferBuilder';
 
 describe('Tezos Transfer builder', function () {
   describe('should build', () => {

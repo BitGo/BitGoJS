@@ -1,11 +1,11 @@
-import * as base58check from 'bs58check';
-import sodium from 'libsodium-wrappers';
-import { InMemorySigner } from '@taquito/signer';
-import { ec as EC } from 'elliptic';
 import { isValidXpub, SigningError } from '@bitgo/sdk-core';
-import { genericMultisigDataToSign } from './multisigUtils';
+import { InMemorySigner } from '@taquito/signer';
+import * as base58check from 'bs58check';
+import { ec as EC } from 'elliptic';
+import sodium from 'libsodium-wrappers';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
+import { genericMultisigDataToSign } from './multisigUtils';
 
 // By default, use the transactions prefix
 export const DEFAULT_WATERMARK = new Uint8Array([3]);
@@ -77,7 +77,7 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
 export async function sign(
   keyPair: KeyPair,
   data: string,
-  watermark: Uint8Array = DEFAULT_WATERMARK,
+  watermark: Uint8Array = DEFAULT_WATERMARK
 ): Promise<SignResponse> {
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
@@ -99,7 +99,7 @@ export async function verifySignature(
   message: string,
   publicKey: string,
   signature: string,
-  watermark: Uint8Array = DEFAULT_WATERMARK,
+  watermark: Uint8Array = DEFAULT_WATERMARK
 ): Promise<boolean> {
   const rawPublicKey = decodeKey(publicKey, hashTypes.sppk);
   const ec = new EC('secp256k1');
@@ -131,7 +131,7 @@ export function generateDataToSign(
   contractAddress: string,
   destinationAddress: string,
   amount: string,
-  contractCounter: string,
+  contractCounter: string
 ): any {
   if (!isValidOriginatedAddress(contractAddress)) {
     throw new Error('Invalid contract address ' + contractAddress + '. An originated account address was expected');

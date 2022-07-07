@@ -1,13 +1,12 @@
 /**
- * @prettier
+ * Testnet Xtz
+ *
+ * @format
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Xtz } from './xtz';
 
-/**
- * Tezos testnet.
- */
 export class Txtz extends Xtz {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);

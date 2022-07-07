@@ -59,6 +59,9 @@
       "path": "./modules/sdk-coin-xrp"
     },
     {
+      "path": "./modules/sdk-coin-xtz"
+    },
+    {
       "path": "./modules/sdk-coin-zec"
     },
     {

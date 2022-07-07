@@ -104,7 +104,7 @@ export function singlesigTransactionOperation(
   destination: string,
   fee: string = DEFAULT_FEE.TRANSFER.toString(),
   gasLimit: string = DEFAULT_GAS_LIMIT.TRANSFER.toString(),
-  storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
+  storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString()
 ): TransactionOp {
   return {
     kind: 'transaction',
@@ -150,7 +150,7 @@ export function multisigTransactionOperation(
   fee: string = DEFAULT_FEE.TRANSFER.toString(),
   gasLimit: string = DEFAULT_GAS_LIMIT.TRANSFER.toString(),
   storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
-  m: number = DEFAULT_M,
+  m: number = DEFAULT_M
 ): TransactionOp {
   return {
     kind: 'transaction',
@@ -180,7 +180,7 @@ function genericMultisigTransferParams(
   amount: string,
   contractCounter: string,
   signatures: IndexedSignature[],
-  m: number,
+  m: number
 ) {
   const transactionSignatures: any[] = buildSignatures(signatures);
   return {
@@ -280,7 +280,7 @@ export function genericMultisigDataToSign(
   contractAddress: string,
   destinationAddress: string,
   amount: string,
-  contractCounter: string,
+  contractCounter: string
 ) {
   const data = {
     prim: 'Pair',
@@ -436,7 +436,7 @@ export function revealOperation(
   pubKey: string,
   fee: string = DEFAULT_FEE.REVEAL.toString(),
   gasLimit: string = DEFAULT_GAS_LIMIT.REVEAL.toString(),
-  storageLimit: string = DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
+  storageLimit: string = DEFAULT_STORAGE_LIMIT.REVEAL.toString()
 ): RevealOp {
   return {
     kind: 'reveal',
@@ -473,7 +473,7 @@ export function genericMultisigOriginationOperation(
   balance: string,
   pubKeys: string[],
   delegate?: string,
-  threshold: number = DEFAULT_N,
+  threshold: number = DEFAULT_N
 ): OriginationOp {
   const walletPublicKeys: any[] = [];
   pubKeys.forEach((pk) => walletPublicKeys.push({ string: pk }));
@@ -1208,7 +1208,7 @@ export function forwarderOriginationOperation(
   fee: string,
   gasLimit: string,
   storageLimit: string,
-  balance: string,
+  balance: string
 ): OriginationOp {
   return {
     kind: 'origination',

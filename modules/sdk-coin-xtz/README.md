@@ -1,4 +1,4 @@
-# BitGo sdk-coin-<%= symbol %>
+# BitGo sdk-coin-xtz
 
 SDK coins provide a modular approach to a monolithic architecture. This and all BitGoJS SDK coins allow developers to use only the coins needed for a given project.
 
@@ -6,21 +6,21 @@ SDK coins provide a modular approach to a monolithic architecture. This and all 
 
 All coins are loaded traditionally through the `bitgo` package. If you are using coins individually, you will be accessing the coin via the `@bitgo/sdk-api` package.
 
-In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-<%= symbol %>`.
+In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-xtz`.
 
 ```shell
-npm i @bitgo/sdk-api @bitgo/sdk-coin-<%= symbol %>
+npm i @bitgo/sdk-api @bitgo/sdk-coin-xtz
 ```
 
 Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of `bitgo`.
 
 ```javascript
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { <%= constructor %> } from '@bitgo/sdk-coin-<%= symbol %>';
+import { Xtz } from '@bitgo/sdk-coin-xtz';
 
 const sdk = new BitGoAPI();
 
-sdk.register('<%= symbol %>', <%= constructor %>.createInstance);
+sdk.register('xtz', Xtz.createInstance);
 ```
 
 ## Development
