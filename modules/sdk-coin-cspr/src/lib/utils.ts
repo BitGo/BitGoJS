@@ -118,7 +118,7 @@ export function isValidAddress(address: string): boolean {
 export function getAddressDetails(address: string): AddressDetails {
   const addressDetails = url.parse(address);
   const queryDetails = addressDetails.query ? new URLSearchParams(addressDetails.query) : undefined;
-  const baseAddress = <string>addressDetails.pathname;
+  const baseAddress = addressDetails.pathname as string;
   if (!isValidAddress(baseAddress)) {
     throw new UtilsError(`invalid address: ${address}`);
   }
@@ -134,7 +134,7 @@ export function getAddressDetails(address: string): AddressDetails {
     // if there are more properties, the query details need to contain the transfer id property
     throw new UtilsError(`invalid address with transfer id: ${address}`);
   }
-  const transferId = <string>queryDetails.get('transferId');
+  const transferId = queryDetails.get('transferId') as string;
   if (isNaN(parseInt(transferId, 10))) {
     throw new UtilsError(`invalid transfer id: ${transferId}`);
   }

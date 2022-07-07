@@ -477,7 +477,7 @@ export class AvaxC extends BaseCoin {
       const originalAmount = new BigNumber(recipients[0].amount);
       const originalDestination: string = recipients[0].address;
 
-      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(<Buffer>builtHopTx.value));
+      const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value as Buffer));
       if (!builtHopTx.to) {
         throw new Error(`Transaction does not have a destination address`);
       }
