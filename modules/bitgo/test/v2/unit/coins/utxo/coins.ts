@@ -43,6 +43,8 @@ describe('utxoCoins', function () {
       ['bitcoinsvTestnet', 'tbsv'],
       ['dash', 'dash'],
       ['dashTest', 'tdash'],
+      ['dogecoin', undefined],
+      ['dogecoinTest', undefined],
       ['litecoin', 'ltc'],
       ['litecoinTest', 'tltc'],
       ['zcash', 'zec'],

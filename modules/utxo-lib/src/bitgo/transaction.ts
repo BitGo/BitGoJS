@@ -20,6 +20,7 @@ export function createTransactionFromBuffer(
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.litecoin:
+    case networks.dogecoin:
       return UtxoTransaction.fromBuffer(buf, false, network);
     case networks.dash:
       return DashTransaction.fromBuffer(buf, false, network);
@@ -83,7 +84,8 @@ export function createTransactionBuilderForNetwork(
     case networks.bitcoincash:
     case networks.bitcoinsv:
     case networks.bitcoingold:
-    case networks.litecoin: {
+    case networks.litecoin:
+    case networks.dogecoin: {
       txb = new UtxoTransactionBuilder(network);
       break;
     }
@@ -113,6 +115,7 @@ export function createTransactionBuilderFromTransaction(
     case networks.bitcoinsv:
     case networks.bitcoingold:
     case networks.litecoin:
+    case networks.dogecoin:
       return UtxoTransactionBuilder.fromTransaction(tx, undefined, prevOutputs);
     case networks.dash:
       return DashTransactionBuilder.fromTransaction(tx as DashTransaction, undefined, prevOutputs);
