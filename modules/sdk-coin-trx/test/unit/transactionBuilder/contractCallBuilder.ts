@@ -1,11 +1,11 @@
 import assert from 'assert';
 import should from 'should';
-import { coins, TronNetwork } from '@bitgo/statics/';
+import { BaseBuilder, TransactionType } from '@bitgo/sdk-core';
+import { coins, TronNetwork } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 
-import { Transaction, WrappedBuilder } from '../../../../../src/coin/trx';
-import { getBuilder } from '../../../../../src/index';
-import { TransactionType } from '@bitgo/sdk-core';
+import { Transaction, WrappedBuilder } from '../../../src/lib';
+import { getBuilder } from '../getBuilder';
 import {
   PARTICIPANTS,
   CONTRACTS,
@@ -15,7 +15,7 @@ import {
   BLOCK_NUMBER,
   EXPIRATION,
   TX_CONTRACT,
-} from '../../../../resources/trx/trx';
+} from '../../resources';
 
 describe('Trx Contract call Builder', () => {
   const initTxBuilder = () => {
@@ -54,7 +54,7 @@ describe('Trx Contract call Builder', () => {
           should.deepEqual(rawData.contract, TX_CONTRACT);
           should.equal(txJson.signature.length, 0);
 
-          const txBuilder2 = getBuilder('ttrx').from(tx.toJson());
+          const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toJson());
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
           const tx2 = await txBuilder2.build();
 
@@ -63,7 +63,7 @@ describe('Trx Contract call Builder', () => {
           should.deepEqual(rawData.contract, TX_CONTRACT);
           should.equal(txJson.signature.length, 1);
 
-          const txBuilder3 = getBuilder('ttrx').from(tx2.toJson());
+          const txBuilder3 = (getBuilder('ttrx') as WrappedBuilder).from(tx2.toJson());
           txBuilder3.sign({ key: PARTICIPANTS.from.pk });
           const tx3 = await txBuilder3.build();
 
@@ -72,7 +72,7 @@ describe('Trx Contract call Builder', () => {
           should.deepEqual(rawData.contract, TX_CONTRACT);
           should.equal(txJson.signature.length, 2);
 
-          const txBuilder4 = getBuilder('ttrx').from(tx3.toJson());
+          const txBuilder4 = (getBuilder('ttrx') as WrappedBuilder as BaseBuilder).from(tx3.toJson());
           txBuilder4.sign({ key: PARTICIPANTS.multisig.pk });
           const tx4 = await txBuilder4.build();
 
@@ -105,11 +105,11 @@ describe('Trx Contract call Builder', () => {
           txBuilder.expiration(timestamp + 40000);
           const tx = await txBuilder.build();
 
-          const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+          const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toBroadcastFormat());
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
           const tx2 = await txBuilder2.build();
 
-          const txBuilder3 = getBuilder('ttrx').from(tx.toJson());
+          const txBuilder3 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toJson());
           txBuilder3.sign({ key: PARTICIPANTS.custodian.pk });
           const tx3 = await txBuilder3.build();
 
@@ -126,7 +126,7 @@ describe('Trx Contract call Builder', () => {
           txBuilder.expiration(expiration);
           const tx = await txBuilder.build();
 
-          const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+          const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder as BaseBuilder).from(tx.toBroadcastFormat());
           txBuilder2.extendValidTo(extension);
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
           const tx2 = await txBuilder2.build();
@@ -178,7 +178,7 @@ describe('Trx Contract call Builder', () => {
           () => {
             txBuilder.data('addMintRequest()');
           },
-          (e) => e.message === 'addMintRequest() is not a valid hex string.',
+          (e) => e.message === 'addMintRequest() is not a valid hex string.'
         );
       });
 
@@ -190,11 +190,11 @@ describe('Trx Contract call Builder', () => {
           () => {
             txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
           },
-          (e) => e.message === 'Duplicated key',
+          (e) => e.message === 'Duplicated key'
         );
         const tx = await txBuilder.build();
 
-        const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+        const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toBroadcastFormat());
         txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
         txBuilder2.build().should.be.rejectedWith('Transaction signing did not return an additional signature.');
       });
@@ -202,9 +202,9 @@ describe('Trx Contract call Builder', () => {
       it('an invalid raw transaction', () => {
         assert.throws(
           () => {
-            getBuilder('ttrx').from('an invalid raw transaction');
+            (getBuilder('ttrx') as WrappedBuilder).from('an invalid raw transaction');
           },
-          (e) => e.message === 'There was error in parsing the JSON string',
+          (e) => e.message === 'There was error in parsing the JSON string'
         );
       });
     });
@@ -233,7 +233,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now + 31536000001);
         },
-        (e) => e.message === 'Expiration must not be greater than one year',
+        (e) => e.message === 'Expiration must not be greater than one year'
       );
     });
 
@@ -246,7 +246,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now - 1000);
         },
-        (e) => e.message === 'Expiration must be greater than current time',
+        (e) => e.message === 'Expiration must be greater than current time'
       );
     });
 
@@ -259,7 +259,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now + 1000);
         },
-        (e) => e.message === 'Expiration must be greater than timestamp',
+        (e) => e.message === 'Expiration must be greater than timestamp'
       );
     });
 
@@ -273,7 +273,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(expiration);
         },
-        (e) => e.message === 'Expiration is already set, it can only be extended',
+        (e) => e.message === 'Expiration is already set, it can only be extended'
       );
     });
 
@@ -283,12 +283,12 @@ describe('Trx Contract call Builder', () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
       const tx = await txBuilder.build();
-      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder as BaseBuilder).from(tx.toBroadcastFormat());
       assert.throws(
         () => {
           txBuilder2.expiration(expiration);
         },
-        (e) => e.message === 'Expiration is already set, it can only be extended',
+        (e) => e.message === 'Expiration is already set, it can only be extended'
       );
     });
 
@@ -299,7 +299,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.extendValidTo(20000);
         },
-        (e) => e.message === 'There is not expiration to extend',
+        (e) => e.message === 'There is not expiration to extend'
       );
     });
 
@@ -310,12 +310,12 @@ describe('Trx Contract call Builder', () => {
       txBuilder.expiration(expiration);
       const tx = await txBuilder.build();
 
-      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toBroadcastFormat());
       assert.throws(
         () => {
           txBuilder2.extendValidTo(0);
         },
-        (e) => e.message === 'Value cannot be below zero',
+        (e) => e.message === 'Value cannot be below zero'
       );
     });
 
@@ -326,12 +326,12 @@ describe('Trx Contract call Builder', () => {
       txBuilder.expiration(expiration);
       const tx = await txBuilder.build();
 
-      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toBroadcastFormat());
       assert.throws(
         () => {
           txBuilder2.extendValidTo(31536000001);
         },
-        (e) => e.message === 'The expiration cannot be extended more than one year',
+        (e) => e.message === 'The expiration cannot be extended more than one year'
       );
     });
 
@@ -341,12 +341,12 @@ describe('Trx Contract call Builder', () => {
       txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
       const tx = await txBuilder.build();
 
-      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const txBuilder2 = (getBuilder('ttrx') as WrappedBuilder).from(tx.toBroadcastFormat());
       assert.throws(
         () => {
           txBuilder2.extendValidTo(20000);
         },
-        (e) => e.message === 'Cannot extend a signed transaction',
+        (e) => e.message === 'Cannot extend a signed transaction'
       );
     });
 
@@ -357,14 +357,14 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.fee({ feeLimit: 'not a number' });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
 
       assert.throws(
         () => {
           txBuilder.fee({ feeLimit: '-15000' });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
 
       assert.throws(
@@ -372,12 +372,12 @@ describe('Trx Contract call Builder', () => {
           const tronNetwork = coins.get('ttrx').network as TronNetwork;
           txBuilder.fee({ feeLimit: new BigNumber(tronNetwork.maxFeeLimit).plus(1).toString() });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
     });
 
     it('transaction mandatory fields', async () => {
-      const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getContractCallBuilder();
+      const txBuilder = (getBuilder('ttrx') as WrappedBuilder as WrappedBuilder).getContractCallBuilder();
       await txBuilder.build().should.be.rejectedWith('Missing parameter: data');
 
       txBuilder.data(MINT_CONFIRM_DATA);

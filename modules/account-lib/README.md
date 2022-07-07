@@ -135,7 +135,6 @@ const tx = await txBuilder.build();
 
 More examples:
 
-- [Tron transaction building examples](https://github.com/BitGo/bitgo-account-lib/blob/master/test/unit/coin/trx/transactionBuilder.ts)
 - [Tezos transaction building examples](https://github.com/BitGo/bitgo-account-lib/blob/master/test/unit/coin/xtz/transactionBuilder.ts)
 
 ## Developers

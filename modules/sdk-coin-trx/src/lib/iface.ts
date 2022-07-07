@@ -1,4 +1,11 @@
-import { Entry } from '@bitgo/sdk-core';
+import {
+  Entry,
+  SignTransactionOptions,
+  TransactionExplanation,
+  TransactionFee,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient as Recipient,
+} from '@bitgo/sdk-core';
 import { ContractType, PermissionType } from './enum';
 
 export interface Account {
@@ -106,4 +113,65 @@ export interface Fee {
 export interface ContractEntry extends Entry {
   data?: string;
   contractAddress?: string;
+}
+
+export interface TronSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+
+export interface TxInfo {
+  recipients: Recipient[];
+  from: string;
+  txid: string;
+}
+
+export interface TronTransactionExplanation extends TransactionExplanation {
+  expiration: number;
+  timestamp: number;
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: TxInfo;
+  feeInfo: TransactionFee;
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string; // txHex is poorly named here; it is just a wrapped JSON object
+  halfSigned?: {
+    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
+  };
+  feeInfo: TransactionFee;
+}
+
+export interface RecoveryOptions {
+  userKey: string; // Box A
+  backupKey: string; // Box B
+  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
+  recoveryDestination: string; // base58 address
+  krsProvider?: string;
+  walletPassphrase?: string;
+}
+
+export interface RecoveryTransaction {
+  tx: TransactionPrebuild;
+  recoveryAmount: number;
+}
+
+export enum NodeTypes {
+  Full,
+  Solidity,
+}
+
+/**
+ * This structure is not a complete model of the AccountResponse from a node.
+ */
+export interface AccountResponse {
+  address: string;
+  balance: number;
+  owner_permission: {
+    keys: [PermissionKey];
+  };
+  active_permission: [{ keys: [PermissionKey] }];
 }

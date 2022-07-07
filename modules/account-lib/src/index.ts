@@ -26,7 +26,7 @@ export { Ed25519KeyDeriver };
 export const BaseCoin = accountLibBaseCoin;
 
 // coins
-import * as Trx from './coin/trx';
+import * as Trx from '@bitgo/sdk-coin-trx';
 export { Trx };
 
 import { XtzLib as Xtz } from '@bitgo/sdk-coin-xtz';

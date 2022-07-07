@@ -1,7 +1,5 @@
 /**
- * Testnet TRX - Shasta network
- *
- * @format
+ * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';

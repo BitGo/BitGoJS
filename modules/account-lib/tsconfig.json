@@ -32,6 +32,9 @@
       "path": "../sdk-coin-stx"
     },
     {
+      "path": "../sdk-coin-trx"
+    },
+    {
       "path": "../sdk-coin-xtz"
     },
     {

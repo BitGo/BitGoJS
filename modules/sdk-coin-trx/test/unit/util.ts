@@ -1,9 +1,8 @@
 import assert from 'assert';
 import should from 'should';
-import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
-import { Utils } from '../../../../src/coin/trx/index';
-
-import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
+import { Utils } from '../../src';
+import { TransferContract, AccountPermissionUpdateContract } from '../../src/lib/iface';
+import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../resources';
 
 describe('Util library should', function () {
   // arbitrary text
@@ -39,18 +38,21 @@ describe('Util library should', function () {
 
   it('get a pub from a prv', () => {
     const derivedPub = Utils.getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
+
     const derivedPubHex = Utils.getHexAddressFromByteArray(derivedPub);
     should.equal(derivedPubHex, pub);
   });
 
   it('get an hex address from a prv', () => {
     const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+
     const hexAddr = Utils.getHexAddressFromByteArray(addr);
     should.equal(hexAddr, addressHex);
   });
 
   it('get an base58 address', () => {
     const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+
     const addr58 = Utils.getBase58AddressFromByteArray(addr);
     should.equal(addr58, base58);
   });
@@ -79,6 +81,7 @@ describe('Util library should', function () {
 
   it('sign a string', () => {
     const hexText = Buffer.from(txt).toString('hex');
+
     const signed = Utils.signString(hexText, prv);
 
     should.equal(signedString, signed);
@@ -86,12 +89,14 @@ describe('Util library should', function () {
 
   it('should calculate an address from a pub', () => {
     const pubBytes = Utils.getByteArrayFromHexAddress(pub);
+
     const bytes = Utils.getRawAddressFromPubKey(pubBytes);
     should.deepEqual(bytes, addrBytes);
   });
 
   it('should verify a signed message', () => {
     const hexEncodedMessage = Buffer.from(txt).toString('hex');
+
     Utils.verifySignature(hexEncodedMessage, base58, signedString, true).should.be.true();
   });
 
@@ -101,11 +106,13 @@ describe('Util library should', function () {
 
   it('should fail to verify a signed message if the address is not in base58', () => {
     const hexEncodedString = Buffer.from(txt).toString('hex');
+
     assert.throws(() => Utils.verifySignature(hexEncodedString, addressHex, signedString, true));
   });
 
   it('should fail to verify a signed message if the signature is not in hex', () => {
     const hexEncodedString = Buffer.from(txt).toString('hex');
+
     assert.throws(() => Utils.verifySignature(hexEncodedString, base58, 'abc', true));
   });
 
@@ -118,11 +125,14 @@ describe('Util library should', function () {
 
   it('should decode a transfer contract', () => {
     const tx = UnsignedTransferContractTx.tx;
+
     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
     const value = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value;
+
     const parsedContract = Utils.decodeTransferContract(rawTx.contracts[0].parameter.value) as TransferContract[];
 
     const toAddress = Utils.getBase58AddressFromHex(value.to_address);
+
     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
     const amount = value.amount;
 
@@ -134,10 +144,13 @@ describe('Util library should', function () {
   it('should decode an AccountPermissionUpdate Contract', () => {
     const tx = SignedAccountPermissionUpdateContractTx;
     const value = tx.raw_data.contract[0].parameter.value;
+
     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
+
     const parsedTx = Utils.decodeAccountPermissionUpdateContract(
-      rawTx.contracts[0].parameter.value,
+      rawTx.contracts[0].parameter.value
     ) as AccountPermissionUpdateContract;
+
     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
     should.equal(parsedTx.ownerAddress, ownerAddress);
     should.equal(parsedTx.owner.type, 0);

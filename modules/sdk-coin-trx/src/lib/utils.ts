@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as hex from '@stablelib/hex';
 import * as tronweb from 'tronweb';
-import { protocol } from '../../../resources/trx/protobuf/tron';
+import { protocol } from '../../resources/protobuf/tron';
 
 import { UtilsError } from '@bitgo/sdk-core';
 import {
@@ -51,7 +51,7 @@ export function verifySignature(
   messageToVerify: string,
   base58Address: string,
   sigHex: string,
-  useTronHeader = true,
+  useTronHeader = true
 ): boolean {
   if (!isValidHex(sigHex)) {
     throw new UtilsError('signature is not in a valid format, needs to be hexadecimal');
@@ -247,10 +247,10 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
 
   // deserialize attributes
   const owner_address = getBase58AddressFromByteArray(
-    getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')),
+    getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex'))
   );
   const to_address = getBase58AddressFromByteArray(
-    getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')),
+    getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex'))
   );
   const amount = transferContract.amount;
 
@@ -295,10 +295,10 @@ export function decodeTriggerSmartContract(base64: string): TriggerSmartContract
 
   // deserialize attributes
   const owner_address = getBase58AddressFromByteArray(
-    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.ownerAddress, 'base64').toString('hex')),
+    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.ownerAddress, 'base64').toString('hex'))
   );
   const contract_address = getBase58AddressFromByteArray(
-    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.contractAddress, 'base64').toString('hex')),
+    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.contractAddress, 'base64').toString('hex'))
   );
   const data = contractCallDecoded.data;
   return [
@@ -328,7 +328,7 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   assert(accountUpdateContract.hasOwnProperty('actives'));
 
   const ownerAddress = getBase58AddressFromByteArray(
-    getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')),
+    getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex'))
   );
   const owner: Permission = createPermission(accountUpdateContract.owner);
   let witness: Permission | undefined = undefined;

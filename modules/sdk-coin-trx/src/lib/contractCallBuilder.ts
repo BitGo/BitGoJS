@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import { BaseCoin as CoinConfig, TronNetwork } from '@bitgo/statics/';
 import BigNumber from 'bignumber.js';
-import { protocol } from '../../../resources/trx/protobuf/tron';
+import { protocol } from '../../resources/protobuf/tron';
 import {
   BaseKey,
   BuildTransactionError,

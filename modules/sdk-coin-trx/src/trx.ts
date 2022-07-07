@@ -1,14 +1,5 @@
-/**
- * @prettier
- */
-import * as bip32 from 'bip32';
-import * as secp256k1 from 'secp256k1';
-import { randomBytes } from 'crypto';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import * as bitgoAccountLib from '@bitgo/account-lib';
-import { networks } from '@bitgo/utxo-lib';
-import * as request from 'superagent';
 import {
+  BaseBuilder,
   BaseCoin,
   BitGoBase,
   common,
@@ -20,77 +11,28 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
-  SignTransactionOptions,
-  TransactionExplanation,
-  TransactionFee,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient as Recipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { networks } from '@bitgo/utxo-lib';
+import * as bip32 from 'bip32';
+import { randomBytes } from 'crypto';
+import * as secp256k1 from 'secp256k1';
+import * as request from 'superagent';
+import { Utils, WrappedBuilder } from './lib';
+import {
+  AccountResponse,
+  ExplainTransactionOptions,
+  NodeTypes,
+  RecoveryOptions,
+  RecoveryTransaction,
+  TransactionReceipt,
+  TronSignTransactionOptions,
+  TronTransactionExplanation,
+} from './lib/iface';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
-
-export interface TronSignTransactionOptions extends SignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string;
-}
-
-export interface TxInfo {
-  recipients: Recipient[];
-  from: string;
-  txid: string;
-}
-
-export interface TronTransactionExplanation extends TransactionExplanation {
-  expiration: number;
-  timestamp: number;
-}
-
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
-  txInfo: TxInfo;
-  feeInfo: TransactionFee;
-}
-
-export interface ExplainTransactionOptions {
-  txHex?: string; // txHex is poorly named here; it is just a wrapped JSON object
-  halfSigned?: {
-    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
-  };
-  feeInfo: TransactionFee;
-}
-
-export interface RecoveryOptions {
-  userKey: string; // Box A
-  backupKey: string; // Box B
-  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
-  recoveryDestination: string; // base58 address
-  krsProvider?: string;
-  walletPassphrase?: string;
-}
-
-export interface RecoveryTransaction {
-  tx: TransactionPrebuild;
-  recoveryAmount: number;
-}
-
-export enum NodeTypes {
-  Full,
-  Solidity,
-}
-
-/**
- * This structure is not a complete model of the AccountResponse from a node.
- */
-export interface AccountResponse {
-  address: string;
-  balance: number;
-  owner_permission: {
-    keys: [bitgoAccountLib.Trx.Interface.PermissionKey];
-  };
-  active_permission: [{ keys: [bitgoAccountLib.Trx.Interface.PermissionKey] }];
-}
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -146,7 +88,7 @@ export class Trx extends BaseCoin {
     if (!address) {
       return false;
     }
-    return this.isValidHexAddress(address) || bitgoAccountLib.Trx.Utils.isBase58Address(address);
+    return this.isValidHexAddress(address) || Utils.isBase58Address(address);
   }
 
   /**
@@ -215,7 +157,7 @@ export class Trx extends BaseCoin {
    * @returns Bluebird<SignedTransaction>
    */
   async signTransaction(params: TronSignTransactionOptions): Promise<SignedTransaction> {
-    const txBuilder = bitgoAccountLib.getBuilder(this.getChain()).from(params.txPrebuild.txHex);
+    const txBuilder = new WrappedBuilder(coins.get(this.getChain())).from(params.txPrebuild.txHex);
     txBuilder.sign({ key: params.prv });
     const transaction = await txBuilder.build();
     const response = {
@@ -276,7 +218,7 @@ export class Trx extends BaseCoin {
     if (!prv) {
       throw new Error('no privateKey');
     }
-    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
+    let sig = Utils.signString(toSign, prv, true);
 
     // remove the preceding 0x
     sig = sig.replace(/^0x/, '');
@@ -308,9 +250,9 @@ export class Trx extends BaseCoin {
   }
 
   pubToHexAddress(pub: string): string {
-    const byteArrayAddr = bitgoAccountLib.Trx.Utils.getByteArrayFromHexAddress(pub);
-    const rawAddress = bitgoAccountLib.Trx.Utils.getRawAddressFromPubKey(byteArrayAddr);
-    return bitgoAccountLib.Trx.Utils.getHexAddressFromByteArray(rawAddress);
+    const byteArrayAddr = Utils.getByteArrayFromHexAddress(pub);
+    const rawAddress = Utils.getRawAddressFromPubKey(byteArrayAddr);
+    return Utils.getHexAddressFromByteArray(rawAddress);
   }
 
   xprvToCompressedPrv(xprv: string): string {
@@ -375,11 +317,7 @@ export class Trx extends BaseCoin {
    * @param fromAddr hex-encoded address
    * @param amount
    */
-  private async getBuildTransaction(
-    toAddr: string,
-    fromAddr: string,
-    amount: number
-  ): Promise<bitgoAccountLib.Trx.Interface.TransactionReceipt> {
+  private async getBuildTransaction(toAddr: string, fromAddr: string, amount: number): Promise<TransactionReceipt> {
     // our addresses should be base58, we'll have to encode to hex
     return await this.recoveryPost({
       path: '/wallet/createtransaction',
@@ -433,7 +371,7 @@ export class Trx extends BaseCoin {
 
     // we need to decode our bitgoKey to a base58 address
     const bitgoHexAddr = this.pubToHexAddress(this.xpubToUncompressedPub(params.bitgoKey));
-    const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
+    const recoveryAddressHex = Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
     // call the node to get our account balance
     const account = await this.getAccountFromNode(bitgoHexAddr);
@@ -463,7 +401,7 @@ export class Trx extends BaseCoin {
     this.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
 
     // construct our tx
-    const txBuilder = (bitgoAccountLib.getBuilder(this.getChain()) as bitgoAccountLib.Trx.WrappedBuilder).from(buildTx);
+    const txBuilder = (new WrappedBuilder(coins.get(this.getChain())) as WrappedBuilder).from(buildTx);
 
     // this tx should be enough to drop into a node
     if (isUnsignedSweep) {
@@ -500,7 +438,7 @@ export class Trx extends BaseCoin {
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
-    const txBuilder = bitgoAccountLib.getBuilder(this.getChain()).from(txHex);
+    const txBuilder = (new WrappedBuilder(coins.get(this.getChain())) as BaseBuilder).from(txHex);
     const tx = await txBuilder.build();
     const outputs = [
       {

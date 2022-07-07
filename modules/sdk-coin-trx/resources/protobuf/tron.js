@@ -1,7 +1,3 @@
-// bitgoAloe 5/12/22 - this file causes name collisions with other protobufs 
-// when generated at build time. The solution is to not inherit $root from
-// $protobuf.roots["default"], and instead just assign $root to its own object.
-// https://github.com/protobufjs/protobuf.js/issues/1477
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 "use strict";
 
@@ -11,7 +7,7 @@ var $protobuf = require("protobufjs/minimal");
 var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = {};
+var $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
 $root.protocol = (function() {
 
