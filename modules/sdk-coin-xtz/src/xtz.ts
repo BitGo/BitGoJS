@@ -1,68 +1,20 @@
-/**
- * @prettier
- */
-import * as bip32 from 'bip32';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import * as bitgoAccountLib from '@bitgo/account-lib';
-
-import BigNumber from 'bignumber.js';
 import {
   BaseCoin,
   BitGoBase,
   BaseTransactionBuilder,
-  KeyPair,
+  KeyPair as SdkCoreKeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
-  SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionFee,
-  TransactionRecipient as Recipient,
-  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
-
-export interface XtzSignTransactionOptions extends SignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string;
-}
-
-export interface TxInfo {
-  recipients: Recipient[];
-  from: string;
-  txid: string;
-}
-
-export interface AddressInfo {
-  address: string;
-  chain: number;
-  index: number;
-}
-
-export interface TransactionPrebuild extends BaseTransactionPrebuild {
-  txHex: string;
-  txInfo: TxInfo;
-  addressInfo: AddressInfo;
-  feeInfo: XtzTransactionFee;
-  source: string;
-  dataToSign: string;
-}
-
-export interface XtzTransactionFee {
-  fee: string;
-  gasLimit?: string;
-  storageLimit?: string;
-}
-
-export interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string;
-  };
-  feeInfo: TransactionFee;
-}
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import * as bip32 from 'bip32';
+import { Interface, Utils, KeyPair, TransactionBuilder } from './lib';
 
 export class Xtz extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -77,7 +29,11 @@ export class Xtz extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  getChain() {
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Xtz(bitgo, staticsCoin);
+  }
+
+  getChain(): string {
     return this._staticsCoin.name;
   }
 
@@ -85,16 +41,12 @@ export class Xtz extends BaseCoin {
     return this._staticsCoin.family;
   }
 
-  getFullName() {
+  getFullName(): string {
     return this._staticsCoin.fullName;
   }
 
   getBaseFactor() {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
-  }
-
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Xtz(bitgo, staticsCoin);
   }
 
   /**
@@ -120,7 +72,7 @@ export class Xtz extends BaseCoin {
     if (!address) {
       return false;
     }
-    return bitgoAccountLib.Xtz.Utils.isValidAddress(address);
+    return Utils.isValidAddress(address);
   }
 
   /**
@@ -129,8 +81,8 @@ export class Xtz extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated xpub, xprv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new bitgoAccountLib.Xtz.KeyPair({ seed }) : new bitgoAccountLib.Xtz.KeyPair();
+  generateKeyPair(seed?: Buffer): SdkCoreKeyPair {
+    const keyPair = seed ? new KeyPair({ seed }) : new KeyPair();
     const keys = keyPair.getExtendedKeys();
 
     if (!keys.xprv) {
@@ -176,8 +128,8 @@ export class Xtz extends BaseCoin {
    * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
    * @returns Bluebird<SignedTransaction>
    */
-  async signTransaction(params: XtzSignTransactionOptions): Promise<SignedTransaction> {
-    const txBuilder: any = bitgoAccountLib.getBuilder(this.getChain());
+  async signTransaction(params: Interface.XtzSignTransactionOptions): Promise<SignedTransaction> {
+    const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.source(params.txPrebuild.source);
     if (params.txPrebuild.dataToSign) {
@@ -211,10 +163,10 @@ export class Xtz extends BaseCoin {
    * @param key
    * @param message
    */
-  async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
-    const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
+  async signMessage(key: SdkCoreKeyPair, message: string | Buffer): Promise<Buffer> {
+    const keyPair = new KeyPair({ prv: key.prv });
     const messageHex = message instanceof Buffer ? message.toString('hex') : Buffer.from(message).toString('hex');
-    const signatureData = await bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex);
+    const signatureData = await Utils.sign(keyPair, messageHex);
     return Buffer.from(signatureData.sig);
   }
 
@@ -234,12 +186,12 @@ export class Xtz extends BaseCoin {
    * Explain a Tezos transaction from txHex
    * @param params
    */
-  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+  async explainTransaction(params: Interface.ExplainTransactionOptions): Promise<TransactionExplanation> {
     const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
-    const txBuilder = bitgoAccountLib.getBuilder(this.getChain());
+    const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
     // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
     if (!(txBuilder instanceof BaseTransactionBuilder)) {
       throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
@@ -263,6 +215,6 @@ export class Xtz extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    return bitgoAccountLib.Xtz.Utils.isValidPublicKey(pub);
+    return Utils.isValidPublicKey(pub);
   }
 }

@@ -1,4 +1,51 @@
-import { BaseFee, BaseKey } from '@bitgo/sdk-core';
+import {
+  BaseFee,
+  BaseKey,
+  SignTransactionOptions,
+  TransactionFee,
+  TransactionRecipient as Recipient,
+  TransactionPrebuild as BaseTransactionPrebuild,
+} from '@bitgo/sdk-core';
+
+export interface XtzSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+
+export interface TxInfo {
+  recipients: Recipient[];
+  from: string;
+  txid: string;
+}
+
+export interface AddressInfo {
+  address: string;
+  chain: number;
+  index: number;
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: TxInfo;
+  addressInfo: AddressInfo;
+  feeInfo: XtzTransactionFee;
+  source: string;
+  dataToSign: string;
+}
+
+export interface XtzTransactionFee {
+  fee: string;
+  gasLimit?: string;
+  storageLimit?: string;
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string;
+  halfSigned?: {
+    txHex: string;
+  };
+  feeInfo: TransactionFee;
+}
 
 export interface HashType {
   prefix: Buffer;

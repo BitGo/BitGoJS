@@ -15,7 +15,7 @@ export { Ed25519KeyDeriver };
 import * as Trx from './coin/trx';
 export { Trx };
 
-import * as Xtz from './coin/xtz';
+import { XtzLib as Xtz } from '@bitgo/sdk-coin-xtz';
 export { Xtz };
 
 import * as Eth from '@bitgo/sdk-coin-eth';

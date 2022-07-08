@@ -63,6 +63,7 @@
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/sdk-coin-ltc": "^1.0.0",
     "@bitgo/sdk-coin-xrp": "^1.0.0",
+    "@bitgo/sdk-coin-xtz": "^1.0.0",
     "@bitgo/sdk-coin-zec": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/sjcl": "^1.0.1",

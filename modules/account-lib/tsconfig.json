@@ -23,6 +23,9 @@
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-xtz"
+    },
+    {
       "path": "../sdk-core"
     },
     {

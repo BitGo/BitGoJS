@@ -38,6 +38,7 @@
     "@bitgo/sdk-coin-avaxp": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^1.0.0",
+    "@bitgo/sdk-coin-xtz": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/statics": "^6.17.0",
     "@celo/contractkit": "^2.0.0",

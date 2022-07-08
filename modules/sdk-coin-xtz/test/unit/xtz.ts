@@ -1,22 +1,24 @@
-import * as bitgoAccountLib from '@bitgo/account-lib';
-
-import { Xtz } from '../../../../src/v2/coins/';
-
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Xtz, Txtz, XtzLib } from '../../src';
 import {
   dataToSign,
-  fullySignedHex, fullySignedTransactionWithTwoTransfersHex,
-  oneSignatureHex, twoSignatureHex, unsignedHex,
+  fullySignedHex,
+  fullySignedTransactionWithTwoTransfersHex,
+  oneSignatureHex,
+  twoSignatureHex,
+  unsignedHex,
   unsignedTransactionWithTwoTransfersHex,
-} from '../../fixtures/coins/xtz';
+} from '../fixtures';
+
+const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+bitgo.safeRegister('xtz', Xtz.createInstance);
+bitgo.safeRegister('txtz', Txtz.createInstance);
 
 describe('Tezos:', function () {
-  let bitgo;
   let basecoin;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txtz');
   });
@@ -118,11 +120,27 @@ describe('Tezos:', function () {
   });
 
   it('should check valid addresses', function () {
-    const badAddresses = ['', null, 'xxxx', 'YZ09fd-', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ'];
-    const goodAddresses = ['tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A', 'tz29yN7c5zrmK9ZhA1VjYwVokN9ZBn8YbCuE', 'KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL'];
+    const badAddresses = [
+      '',
+      null,
+      'xxxx',
+      'YZ09fd-',
+      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772',
+      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80',
+      'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ',
+    ];
+    const goodAddresses = [
+      'tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A',
+      'tz29yN7c5zrmK9ZhA1VjYwVokN9ZBn8YbCuE',
+      'KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL',
+    ];
 
-    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
-    goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
+    badAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(false);
+    });
+    goodAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(true);
+    });
   });
 
   it('should throw if the params object is missing parameters', async function () {
@@ -142,11 +160,16 @@ describe('Tezos:', function () {
     });
 
     it('should generate a keypair from a seed', function () {
-      const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
+      const seedText =
+        '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
-      keyPair.pub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
-      keyPair.prv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+      keyPair.pub.should.equal(
+        'xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws'
+      );
+      keyPair.prv.should.equal(
+        'xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK'
+      );
     });
   });
 
@@ -158,8 +181,8 @@ describe('Tezos:', function () {
 
       const messageHex = Buffer.from(message).toString('hex');
       const sig = Buffer.from(signature, 'hex').toString();
-      const publicKey = new bitgoAccountLib.Xtz.KeyPair({ pub: keyPair.pub });
-      const isValid = await bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
+      const publicKey = new XtzLib.KeyPair({ pub: keyPair.pub });
+      const isValid = await XtzLib.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
       isValid.should.equal(true);
     });
 
@@ -171,8 +194,8 @@ describe('Tezos:', function () {
       const messageHex = Buffer.from(message).toString('hex');
 
       const sig = Buffer.from(signature, 'hex').toString();
-      const publicKey = new bitgoAccountLib.Xtz.KeyPair();
-      const isValid = await bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
+      const publicKey = new XtzLib.KeyPair();
+      const isValid = await XtzLib.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
       isValid.should.equal(false);
     });
   });

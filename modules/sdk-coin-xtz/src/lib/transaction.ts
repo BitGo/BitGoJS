@@ -1,6 +1,3 @@
-import { CODEC, localForger } from '@taquito/local-forging';
-import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseKey,
   BaseTransaction,
@@ -8,6 +5,11 @@ import {
   ParseTransactionError,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { CODEC, localForger } from '@taquito/local-forging';
+import BigNumber from 'bignumber.js';
+import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
+import { KeyPair } from './keyPair';
 import {
   getMultisigTransferDataFromOperation,
   getMultisigTransferSignatures,
@@ -15,8 +17,6 @@ import {
   getOwnersPublicKeys,
   updateMultisigTransferSignatures,
 } from './multisigUtils';
-import { KeyPair } from './keyPair';
-import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
 
 /**
@@ -90,7 +90,7 @@ export class Transaction extends BaseTransaction {
     for (const operation of parsedTransaction.contents) {
       if (this._source && this._source !== operation.source) {
         throw new InvalidTransactionError(
-          'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source,
+          'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source
         );
       } else {
         this._source = operation.source;
