@@ -13,7 +13,7 @@ import {
   BaseTransaction,
   KeyPair,
   MethodNotImplementedError,
-  ParsedTransaction as BaseParsedTransaction,
+  ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
@@ -63,7 +63,7 @@ interface TransactionOutput {
 
 type TransactionInput = TransactionOutput;
 
-export interface NearParsedTransaction extends BaseParsedTransaction {
+export interface NearParsedTransaction extends ParsedTransaction {
   // total assets being moved, including fees
   inputs: TransactionInput[];
 

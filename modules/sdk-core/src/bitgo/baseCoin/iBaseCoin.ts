@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
 import { Keychain, IKeychains } from '../keychain';
@@ -8,6 +9,58 @@ import { ITssUtils } from '../utils';
 import { IWallet, IWallets, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
+
+export interface Output extends ITransactionRecipient {
+  address: string;
+  // of form coin:token
+  coinName?: string;
+  isPayGo?: boolean;
+  value?: number;
+  wallet?: string; // Types.ObjectId;
+  walletV1?: string; // Types.ObjectId;
+  baseAddress?: string;
+  enterprise?: string; // Types.ObjectId;
+  valueString: string;
+  data?: string;
+  // "change" is a utxo-specific concept and this property should
+  // be removed once it it's usage is refactored out of base coin logic
+  change?: boolean;
+}
+
+export type Input = {
+  derivationIndex?: number;
+  value: number;
+  address?: string;
+  valueString: string;
+  // the properties below are utxo-related but are currently used in abstractBaseCoin
+  // these should be removed once their usage is removed from the base coin class
+  chain?: number;
+  index?: number;
+};
+
+export type UnsignedTransaction = {
+  // unsigned transaction in broadcast format
+  serializedTxHex: string;
+  // portion of a transaction used to generate a signature
+  signableHex: string;
+  // transaction fees
+  feeInfo?: {
+    fee: number | BigNumber;
+    feeString: string;
+  };
+  // derivation path of the signer
+  derivationPath: string;
+  coinSpecific?: Record<string, unknown>;
+  entryValues: any;
+  parsedTx: UnsignedParsedTransaction;
+};
+
+export interface ExplanationResult extends ITransactionExplanation {
+  sequenceId: number;
+  type?: string;
+  outputs: Output[];
+  blockNumber: number | unknown;
+}
 
 export interface ITransactionRecipient {
   address: string;
@@ -149,6 +202,19 @@ export interface ParseTransactionOptions {
 export interface ParsedTransaction {
   [index: string]: unknown;
 }
+
+// TODO (SDKT-9): reverse engineer and add options
+export type UnsignedParsedTransaction = {
+  inputs: Input[];
+  minerFee: number | string;
+  outputs: Output[];
+  spendAmount: number | string;
+  hasUnvalidatedData?: boolean;
+  payGoFee?: number;
+  type?: string;
+  sequenceId: number;
+  id: string;
+};
 
 // TODO (SDKT-9): reverse engineer and add options
 export interface SignTransactionOptions {

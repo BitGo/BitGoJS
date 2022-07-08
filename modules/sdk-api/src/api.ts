@@ -9,9 +9,9 @@ import * as superagent from 'superagent';
 import * as urlLib from 'url';
 import * as querystring from 'querystring';
 
-import { BitGoRequest } from '@bitgo/sdk-core';
+import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
 
-import { ApiResponseError, VerifyResponseOptions } from './types';
+import { VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';
 
 const debug = Debug('bitgo:api');

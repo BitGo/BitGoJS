@@ -4,17 +4,18 @@ import {
   BaseCoin,
   BitGoBase,
   DotAssetTypes,
+  ExplanationResult,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
+  UnsignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { ExplanationResult, UnsignedTransaction } from '../types';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;

@@ -21,7 +21,7 @@ import { drawKeycard } from '../internal/keycard';
 import { Keychain } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
-import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest, UnsignedTransaction } from '../utils';
+import { inferAddressType, ITssUtils, RequestTracer, TssUtils, TxRequest, EddsaUnsignedTransaction } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
@@ -2314,7 +2314,7 @@ export class Wallet implements IWallet {
         throw new Error(`transaction type not supported: ${params.type}`);
     }
 
-    let unsignedTx: UnsignedTransaction;
+    let unsignedTx: EddsaUnsignedTransaction;
 
     if (txRequest.apiVersion === 'full') {
       if (txRequest.transactions.length !== 1) {
