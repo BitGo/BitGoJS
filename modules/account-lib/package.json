@@ -35,6 +35,7 @@
     "@bitgo/bls-dkg": "^1.0.2",
     "@bitgo/ethereumjs-utils-old": "npm:ethereumjs-util@5.2.0",
     "@bitgo/sdk-coin-algo": "^1.0.0",
+    "@bitgo/sdk-coin-avaxc": "^1.0.0",
     "@bitgo/sdk-coin-avaxp": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
