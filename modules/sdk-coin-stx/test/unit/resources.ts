@@ -1,5 +1,4 @@
-import { Stx } from '../../../src';
-import { KeyPair } from '../../../src/coin/stx/keyPair';
+import { StxLib } from '../../src';
 
 /*
  * keys and addresses are from:
@@ -54,11 +53,11 @@ export const RECIPIENT_1 = {
   address: 'SP3FGQ8Z7JY9BWYZ5WM53E0M9NK7WHJF0691NZ159',
 };
 
-export const defaultKeyPairFromPrv = new Stx.KeyPair({
+export const defaultKeyPairFromPrv = new StxLib.KeyPair({
   prv: secretKey1,
 });
 
-export const defaultKeyPairFromPub = new Stx.KeyPair({
+export const defaultKeyPairFromPub = new StxLib.KeyPair({
   pub: pubKey2,
 });
 
@@ -83,7 +82,7 @@ export const defaultSeedAddressUncompressedTestnet = 'ST21X8PMH8T4MVX8Z75JZPYEVA
 export const defaultSeedAddressCompressedMainnet = 'SP31MBRF9J8W22W3044MEAZDXFMM85699653ZKR7Q';
 export const defaultSeedAddressCompressedTestnet = 'ST31MBRF9J8W22W3044MEAZDXFMM8569967TF1R41';
 
-export const INVALID_KEYPAIR_PRV = new KeyPair({
+export const INVALID_KEYPAIR_PRV = new StxLib.KeyPair({
   prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
 });
 

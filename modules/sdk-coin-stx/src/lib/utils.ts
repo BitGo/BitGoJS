@@ -65,7 +65,7 @@ export function removeHexPrefix(hex: string): string {
 function getAddressFromPublicKeyHash(
   publicKeyHash: Buffer,
   hashMode: AddressHashMode,
-  transactionVersion: TransactionVersion,
+  transactionVersion: TransactionVersion
 ): string {
   if (publicKeyHash.length !== 20) {
     throw new Error('expected 20-byte pubkeyhash');
@@ -86,7 +86,7 @@ export function getTxSenderAddress(tx: StacksTransaction): string {
     const txSender = getAddressFromPublicKeyHash(
       Buffer.from(spendingCondition.signer, 'hex'),
       spendingCondition.hashMode as number,
-      tx.version,
+      tx.version
     );
     return txSender;
   } else throw new Error('spendingCondition should not be null');
@@ -282,7 +282,7 @@ export function getSTXAddressFromPubKeys(
   pubKeys: string[],
   addressVersion: AddressVersion = AddressVersion.MainnetMultiSig,
   addressHashMode: AddressHashMode = AddressHashMode.SerializeP2SH,
-  signaturesRequired = 2,
+  signaturesRequired = 2
 ): { address: string; hash160: string } {
   if (pubKeys.length === 0) {
     throw new Error('Invalid number of public keys');

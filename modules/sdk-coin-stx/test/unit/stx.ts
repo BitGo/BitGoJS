@@ -1,12 +1,16 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import * as testData from '../../fixtures/coins/stx';
-import * as accountLib from '@bitgo/account-lib';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { coins } from '@bitgo/statics';
 import * as should from 'should';
-import { Stx, Tstx } from '../../../../src/v2/coins/';
+import * as testData from '../fixtures';
+import { Stx, Tstx, StxLib } from '../../src';
+
+const { KeyPair } = StxLib;
 
 describe('STX:', function () {
-  let bitgo;
+  const coinName = 'stx';
+  const coinNameTest = 'tstx';
+  let bitgo: TestBitGoAPI;
   let basecoin;
 
   const badValidAddresses = [
@@ -27,9 +31,13 @@ describe('STX:', function () {
   ];
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, {
+      env: 'mock',
+    });
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tstx');
+    bitgo.safeRegister('stx', Stx.createInstance);
+    bitgo.safeRegister('tstx', Tstx.createInstance);
+    basecoin = bitgo.coin(coinNameTest);
   });
 
   /**
@@ -37,13 +45,8 @@ describe('STX:', function () {
    * @param destination The destination address of the transaction
    * @param amount The amount to send to the recipient
    */
-  const buildUnsignedTransaction = async function ({
-    destination,
-    amount = '100000',
-    publicKey,
-    memo = '',
-  }) {
-    const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+  const buildUnsignedTransaction = async function ({ destination, amount = '100000', publicKey, memo = '' }) {
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({
       fee: '180',
@@ -62,13 +65,8 @@ describe('STX:', function () {
    * @param destination The destination address of the transaction
    * @param amount The amount to send to the recipient
    */
-  const buildmultiSigUnsignedTransaction = async function ({
-    destination,
-    amount = '100000',
-    publicKeys,
-    memo = '',
-  }) {
-    const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+  const buildmultiSigUnsignedTransaction = async function ({ destination, amount = '100000', publicKeys, memo = '' }) {
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({
       fee: '180',
@@ -90,16 +88,25 @@ describe('STX:', function () {
     localBasecoin.should.be.an.instanceof(Stx);
   });
 
-
-  it('should check valid addresses', (function () {
-    badValidAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
-    goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
-  }));
+  it('should check valid addresses', function () {
+    badValidAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(false);
+    });
+    goodAddresses.map((addr) => {
+      basecoin.isValidAddress(addr).should.equal(true);
+    });
+  });
 
   it('should verify isWalletAddress', function () {
-    const userKey = { pub: 'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS' };
-    const backupKey = { pub: 'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj' };
-    const bitgoKey = { pub: 'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf' };
+    const userKey = {
+      pub: 'xpub661MyMwAqRbcGS2HMdvANN7o8ESWqwvr5U4ry5fZdD9VHhymWyfoDQF4vzfKotXgGtJTrwrFRz7XbGFov4FqdKKo6mRYNWvMp7P23DjuJnS',
+    };
+    const backupKey = {
+      pub: 'xpub661MyMwAqRbcFEzr5CcpFzPG45rmPf75DTvDobN5gJimCatbHtzR53SbHzDZ1J56byKSsdc8vSujGuQpyPjb7Lsua2NfADJewPxNzL3N6Tj',
+    };
+    const bitgoKey = {
+      pub: 'xpub661MyMwAqRbcGP1adk34VzRQJEMX25rCxjEyU9YFFWNhWNzwPoqgjLoKfnqotLwrz7kBevWbRZnqTSQrQDuJuYUQaDQ5DDPEzEXMwPS9PEf',
+    };
     const keychains = [userKey, backupKey, bitgoKey];
     const validAddress1 = 'SNAYQFZ6EF54D5XWJP3GAE1Y8DPYXKFC7TTMYXFV';
     const validAddress2 = 'SNAYQFZ6EF54D5XWJP3GAE1Y8DPYXKFC7TTMYXFV?memoId=2';
@@ -108,7 +115,10 @@ describe('STX:', function () {
     basecoin.isWalletAddress({ address: validAddress1, keychains }).should.true();
     basecoin.isWalletAddress({ address: validAddress2, keychains }).should.true();
     basecoin.isWalletAddress({ address: unrelatedValidAddress, keychains }).should.false();
-    should.throws(() => basecoin.isWalletAddress({ address: invalidAddress, keychains }), `invalid address: ${invalidAddress}`);
+    should.throws(
+      () => basecoin.isWalletAddress({ address: invalidAddress, keychains }),
+      `invalid address: ${invalidAddress}`
+    );
   });
 
   it('should explain a transfer transaction', async function () {
@@ -126,7 +136,7 @@ describe('STX:', function () {
   });
 
   it('should explain an unsigned transaction', async function () {
-    const key = new accountLib.Stx.KeyPair();
+    const key = new KeyPair();
     const destination = 'ST11NJTTKGVT6D1HY4NJRVQWMQM7TVAR091EJ8P2Y';
     const amount = '100000';
     const memo = 'i cannot be broadcast';
@@ -164,7 +174,6 @@ describe('STX:', function () {
     explain.changeAmount.should.equal('0');
   });
 
-
   it('should explain a contract call transaction', async function () {
     const explain = await basecoin.explainTransaction({
       txHex: testData.txForExplainContract,
@@ -179,7 +188,6 @@ describe('STX:', function () {
     explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
   });
 
-
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
@@ -188,17 +196,24 @@ describe('STX:', function () {
     });
 
     it('should generate a keypair from a seed', function () {
-      const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
+      const seedText =
+        '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
-      keyPair.pub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
-      keyPair.prv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+      keyPair.pub.should.equal(
+        'xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws'
+      );
+      keyPair.prv.should.equal(
+        'xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK'
+      );
     });
   });
 
   describe('Sign transaction:', () => {
     it('should sign transaction', async function () {
-      const key = new accountLib.Stx.KeyPair({ prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
+      const key = new KeyPair({
+        prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601',
+      });
       const destination = 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0';
       const amount = '100000';
 
@@ -214,7 +229,7 @@ describe('STX:', function () {
           txHex: unsignedTransaction.toBroadcastFormat(),
         },
       });
-      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+      const factory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
       const txBuilder = factory.from(tx.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
@@ -224,9 +239,15 @@ describe('STX:', function () {
     });
 
     it('should sign multisig transaction', async function () {
-      const key1 = new accountLib.Stx.KeyPair({ prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601' });
-      const key2 = new accountLib.Stx.KeyPair({ prv: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01' });
-      const key3 = new accountLib.Stx.KeyPair({ prv: 'e75dcb66f84287eaf347955e94fa04337298dbd95aa0dbb985771104ef1913db01' });
+      const key1 = new KeyPair({
+        prv: '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601',
+      });
+      const key2 = new KeyPair({
+        prv: 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01',
+      });
+      const key3 = new KeyPair({
+        prv: 'e75dcb66f84287eaf347955e94fa04337298dbd95aa0dbb985771104ef1913db01',
+      });
       const destination = 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0';
       const amount = '100000';
       const publicKeys = [key1.getKeys(true).pub, key2.getKeys(true).pub, key3.getKeys(true).pub];
@@ -236,19 +257,30 @@ describe('STX:', function () {
         publicKeys,
       });
       const tx = await basecoin.signTransaction({
-        prv: ['21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601', 'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01'],
+        prv: [
+          '21d43d2ae0da1d9d04cfcaac7d397a33733881081f0b2cd038062cf0ccbb752601',
+          'c71700b07d520a8c9731e4d0f095aa6efb91e16e25fb27ce2b72e7b698f8127a01',
+        ],
         pubKeys: [key1.getKeys().pub, key2.getKeys().pub, key3.getKeys().pub],
         numberSignature: 2,
         txPrebuild: {
           txHex: unsignedTransaction.toBroadcastFormat(),
         },
       });
-      const factory = accountLib.register('stx', accountLib.Stx.TransactionBuilderFactory);
+      const factory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
       const txBuilder = factory.from(tx.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
       txJson.payload.to.should.equal(destination);
       txJson.payload.amount.should.equal(amount);
+    });
+  });
+
+  describe('getSigningPayload', function () {
+    it('should return the tx as a buffer', async function () {
+      const nonTSSCoin = bitgo.coin('tstx');
+      const bufferTx = await nonTSSCoin.getSignablePayload(testData.unsignedTxForExplainTransfer);
+      bufferTx.should.be.deepEqual(Buffer.from(testData.unsignedTxForExplainTransfer));
     });
   });
 });

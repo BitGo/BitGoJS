@@ -1,9 +1,13 @@
+/**
+ * Testnet Stx
+ *
+ * @format
+ */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { Stx } from './stx';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Stx } from './stx';
 
 export class Tstx extends Stx {
-
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {

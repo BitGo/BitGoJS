@@ -9,7 +9,6 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { Erc20Token } from '@bitgo/sdk-coin-eth';
 import { StellarToken } from '../../../src/v2/coins/stellarToken';
-import { unsignedTxForExplainTransfer } from '../fixtures/coins/stx';
 
 nock.disableNetConnect();
 
@@ -223,14 +222,5 @@ describe('V2 Base Coin:', function () {
       missingOutputs[1].amount.should.equal('300000');
     });
 
-  });
-
-  describe('getSigningPayload', function () {
-    it('should return the tx as a buffer', async function () {
-      const nonTSSCoin = bitgo.coin('tstx');
-      const bufferTx = await nonTSSCoin.getSignablePayload(unsignedTxForExplainTransfer);
-      bufferTx.should.be.deepEqual(Buffer.from(unsignedTxForExplainTransfer));
-
-    });
   });
 });
