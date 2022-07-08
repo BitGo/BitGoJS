@@ -6,5 +6,10 @@
     "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*", "package.json"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../bitgo"
+    }
+  ]
 }

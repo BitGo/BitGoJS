@@ -89,7 +89,10 @@
     "check-versions": "node ./check-package-versions.js",
     "dev": "tsc -b ./tsconfig.packages.json -w",
     "prepare": "husky install",
-    "sdk-coin:new": "yo ./scripts/sdk-coin-generator"
+    "sdk-coin:new": "yo ./scripts/sdk-coin-generator && yarn update-dockerfile",
+    "build-docker-express": "yarn update-dockerfile && docker build -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < modules/express/package.json) .",
+    "push-docker-express": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < modules/express/package.json)",
+    "update-dockerfile": "ts-node scripts/update-dockerfile.ts"
   },
   "dependencies": {}
 }
