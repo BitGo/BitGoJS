@@ -1,16 +1,17 @@
 import assert from 'assert';
 import should from 'should';
-import { AvaxC, getBuilder } from '../../../../../src';
-import { TransactionBuilder } from '../../../../../src/coin/avaxc';
+
+import { TransactionBuilder } from '../../../src';
 import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
-import * as testData from '../../../../resources/avaxc/avaxc';
+import * as testData from '../../resources/avaxc';
 import { TransactionType } from '@bitgo/sdk-core';
+import { getBuilder } from '../getBuilder';
 
 describe('Avax C-Chain Transfer Transaction', function () {
-  let txBuilder: AvaxC.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const contractAddress = testData.TEST_ACCOUNT.ethAddress;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+    txBuilder = getBuilder('tavaxc') as TransactionBuilder;
     txBuilder.fee({
       fee: '280000000000',
       gasLimit: '7000000',
@@ -151,7 +152,7 @@ describe('Avax C-Chain Transfer Transaction', function () {
     builder.type(TransactionType.WalletInitialization);
     assert.throws(
       () => builder.transfer(),
-      (e) => e.message === 'Transfers can only be set for send transactions',
+      (e) => e.message === 'Transfers can only be set for send transactions'
     );
   });
 

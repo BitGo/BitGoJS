@@ -1,17 +1,12 @@
 import assert from 'assert';
 import should from 'should';
 import { NetworkType } from '@bitgo/statics';
-import { TEST_ACCOUNT, TEST_ACCOUNT_2 } from '../../../resources/avaxc/avaxc';
-import {
-  isValidEthAddress,
-  isValidEthPrivateKey,
-  isValidEthPublicKey,
-  sign,
-  getCommon,
-} from '../../../../src/coin/avaxc/utils';
-import { AvaxC, getBuilder } from '../../../../src/';
+import { TEST_ACCOUNT, TEST_ACCOUNT_2 } from '../resources/avaxc';
+import { isValidEthAddress, isValidEthPrivateKey, isValidEthPublicKey, sign, getCommon } from '../../src/lib/utils';
+
+import { getBuilder } from './getBuilder';
 import { TransactionType } from '@bitgo/sdk-core';
-import { KeyPair, TransactionBuilder } from '../../../../src/coin/avaxc';
+import { KeyPair, TransactionBuilder } from '../../src';
 import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
 
 describe('AVAX util library', () => {
@@ -68,10 +63,10 @@ describe('AVAX util library', () => {
   });
 
   describe('sign success cases', () => {
-    let txBuilder: AvaxC.TransactionBuilder;
+    let txBuilder: TransactionBuilder;
     const contractAddress = TEST_ACCOUNT.ethAddress;
     const initTxBuilder = (): void => {
-      txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+      txBuilder = getBuilder('tavaxc') as TransactionBuilder;
       txBuilder.fee({
         fee: '280000000000',
         gasLimit: '7000000',
@@ -262,7 +257,7 @@ describe('AVAX util library', () => {
     it('getCommon for invalid network', () => {
       assert.throws(
         () => getCommon('invalidNetwork' as NetworkType),
-        (e) => e.message === 'Missing network common configuration',
+        (e) => e.message === 'Missing network common configuration'
       );
     });
   });
