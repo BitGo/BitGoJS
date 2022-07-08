@@ -19,3 +19,5 @@ export const ERROR_WALLET_INITIALIZATION = 'Wallet initialization is not needed'
 export const ERROR_UTXOS_EMPTY = "Utxos can't be empty array";
 
 export const ERROR_UTXOS_AMOUNT = 'Utxos required amount';
+
+export const ERROR_KEY_CANNOT_SIGN = 'Private key cannot sign the transaction';
