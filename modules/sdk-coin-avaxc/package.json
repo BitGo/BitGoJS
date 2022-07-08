@@ -44,8 +44,11 @@
     "@bitgo/sdk-core": "^1.0.1",
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/statics": "^6.17.0",
+    "@ethereumjs/common": "^2.4.0",
     "bignumber.js": "^8.0.1",
     "bip32": "^2.0.6",
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-util": "6.2.1",
     "keccak": "^3.0.2",
     "lodash": "^4.17.14",
     "secp256k1": "^4.0.2"

@@ -6,8 +6,7 @@ import * as bip32 from 'bip32';
 import * as Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { getBuilder, Eth, AvaxC as AvaxCAccountLib } from '@bitgo/account-lib';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -32,8 +31,9 @@ import {
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-
-import { optionalDeps } from '@bitgo/sdk-coin-eth';
+import { optionalDeps, TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { isValidEthAddress } from './lib/utils';
+import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 
 // For precreateBitgo
 interface PrecreateBitGoOptions {
@@ -232,7 +232,7 @@ export class AvaxC extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return !!address && AvaxCAccountLib.Utils.isValidEthAddress(address);
+    return !!address && isValidEthAddress(address);
   }
 
   isToken(): boolean {
@@ -240,7 +240,7 @@ export class AvaxC extends BaseCoin {
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    const avaxKeyPair = seed ? new AvaxCAccountLib.KeyPair({ seed }) : new AvaxCAccountLib.KeyPair();
+    const avaxKeyPair = seed ? new AvaxcKeyPair({ seed }) : new AvaxcKeyPair();
     const extendedKeys = avaxKeyPair.getExtendedKeys();
     return {
       pub: extendedKeys.xpub,
@@ -352,7 +352,7 @@ export class AvaxC extends BaseCoin {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new AvaxCAccountLib.KeyPair({ pub });
+      new AvaxcKeyPair({ pub });
     } catch (e) {
       valid = false;
     }
@@ -375,8 +375,8 @@ export class AvaxC extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): Eth.TransactionBuilder {
-    return getBuilder(this.getBaseChain()) as Eth.TransactionBuilder;
+  protected getTransactionBuilder(): EthTransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
   /**
@@ -506,7 +506,7 @@ export class AvaxC extends BaseCoin {
   async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.transfer().key(new AvaxCAccountLib.KeyPair({ prv: params.prv }).getKeys().prv!);
+    txBuilder.transfer().key(new AvaxcKeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
