@@ -1,31 +1,17 @@
 /**
- * Testnet Avaxc
- *
- * @format
+ * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { Avaxc } from './avaxc';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
-export class Tavaxc extends Avaxc {
-  protected constructor(bitgo: BitGoBase) {
-    super(bitgo);
+import { AvaxC } from './avaxc';
+
+export class TavaxC extends AvaxC {
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo, staticsCoin);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Tavaxc(bitgo);
-  }
-
-  /**
-   * Identifier for the blockchain which supports this coin
-   */
-  public getChain(): string {
-    return 'tavaxc';
-  }
-
-  /**
-   * Complete human-readable name of this coin
-   */
-  public getFullName(): string {
-    return 'Testnet Avalanche c-chain';
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new TavaxC(bitgo, staticsCoin);
   }
 }

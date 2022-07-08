@@ -14,7 +14,13 @@
       "path": "../sdk-api"
     },
     {
+      "path": "../sdk-coin-eth"
+    },
+    {
       "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
     },
     {
       "path": "../sdk-test"
