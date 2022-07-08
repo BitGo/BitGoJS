@@ -158,6 +158,8 @@ export class RpcClient {
         return ['/Bitcoin Gold:0.17.3/'];
       case utxolib.networks.dash:
         return ['/Dash Core:0.16.1.1/'];
+      case utxolib.networks.dogecoin:
+        return ['/Shibetoshi:1.14.5/'];
       case utxolib.networks.litecoin:
         return ['/LitecoinCore:0.17.1/'];
       case utxolib.networks.zcash:

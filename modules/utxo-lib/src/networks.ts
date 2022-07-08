@@ -26,6 +26,7 @@ const coins = {
   LTC: 'ltc',
   ZEC: 'zec',
   DASH: 'dash',
+  DOGE: 'doge',
 } as const;
 
 export type NetworkName =
@@ -39,6 +40,8 @@ export type NetworkName =
   | 'bitcoinsvTestnet'
   | 'dash'
   | 'dashTest'
+  | 'dogecoin'
+  | 'dogecoinTest'
   | 'litecoin'
   | 'litecoinTest'
   | 'zcash'
@@ -201,6 +204,28 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.DASH,
   },
 
+  // https://github.com/dogecoin/dogecoin/blob/master/src/validation.cpp
+  // https://github.com/dogecoin/dogecoin/blob/master/src/chainparams.cpp
+  dogecoin: {
+    messagePrefix: '\x19Dogecoin Signed Message:\n',
+    bip32: {
+      public: 0x02facafd,
+      private: 0x02fac398,
+    },
+    pubKeyHash: 0x1e,
+    scriptHash: 0x16,
+    wif: 0x9e,
+    coin: coins.DOGE,
+  },
+  dogecoinTest: {
+    messagePrefix: '\x19Dogecoin Signed Message:\n',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x71,
+    scriptHash: 0xc4,
+    wif: 0xf1,
+    coin: coins.DOGE,
+  },
+
   // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
   // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
   litecoin: {
@@ -291,6 +316,10 @@ export function getMainnet(network: Network): Network {
     case networks.zcash:
     case networks.zcashTest:
       return networks.zcash;
+
+    case networks.dogecoin:
+    case networks.dogecoinTest:
+      return networks.dogecoin;
   }
   throw new TypeError(`invalid network`);
 }
@@ -390,6 +419,14 @@ export function isBitcoinSV(network: Network): boolean {
  */
 export function isDash(network: Network): boolean {
   return getMainnet(network) === networks.dash;
+}
+
+/**
+ * @param {Network} network
+ * @returns {boolean} true iff network is dogecoin or dogecoinTest
+ */
+export function isDogecoin(network: Network): boolean {
+  return getMainnet(network) === networks.dogecoin;
 }
 
 /**

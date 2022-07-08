@@ -30,6 +30,8 @@ describe('output script support', function () {
         ['bitcoinsvTestnet', ['p2sh']],
         ['dash', ['p2sh']],
         ['dashTest', ['p2sh']],
+        ['dogecoin', ['p2sh']],
+        ['dogecoinTest', ['p2sh']],
         ['litecoin', ['p2sh', 'p2shP2wsh', 'p2wsh']],
         ['litecoinTest', ['p2sh', 'p2shP2wsh', 'p2wsh']],
         ['zcash', ['p2sh']],
