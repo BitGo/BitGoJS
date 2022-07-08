@@ -244,8 +244,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   protected constructor(bitgo: BitGoBase, network: utxolib.Network) {
     super(bitgo);
-    if (!_.isObject(network)) {
-      throw new Error('network must be an object');
+    if (!utxolib.isValidNetwork(network)) {
+      throw new Error(
+        'invalid network: please make sure to use the same version of ' +
+          '@bitgo/utxo-lib as this library when initializing an instance of this class'
+      );
     }
     this._network = network;
   }
