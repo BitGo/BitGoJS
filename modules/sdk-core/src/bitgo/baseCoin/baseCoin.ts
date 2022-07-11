@@ -18,24 +18,24 @@ import { PendingApprovals } from '../pendingApproval';
 import { Wallets, IWallet, Wallet } from '../wallet';
 import { Webhooks } from '../webhook';
 import {
+  ExtraPrebuildParamsOptions,
+  FeeEstimateOptions,
   IBaseCoin,
+  ParsedTransaction,
   ITransactionExplanation,
-  VerifyTransactionOptions,
-  VerifyAddressOptions,
-  SupplementGenerateWalletOptions,
   KeychainsTriplet,
   KeyPair,
-  ExtraPrebuildParamsOptions,
-  TransactionPrebuild,
-  PresignTransactionOptions,
-  FeeEstimateOptions,
-  PrecreateBitGoOptions,
   ParseTransactionOptions,
-  ParsedTransaction,
-  SignTransactionOptions,
-  SignedTransaction,
-  RecoverWalletTokenOptions,
+  PrecreateBitGoOptions,
+  PresignTransactionOptions,
   RecoverTokenTransaction,
+  RecoverWalletTokenOptions,
+  SignedTransaction,
+  SignTransactionOptions,
+  SupplementGenerateWalletOptions,
+  TransactionPrebuild,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
 } from './iBaseCoin';
 
 export abstract class BaseCoin implements IBaseCoin {

@@ -16,7 +16,7 @@ import {
   Memo,
   KeyPair,
   MethodNotImplementedError,
-  ParsedTransaction as BaseParsedTransaction,
+  ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
   TransactionExplanation,
@@ -69,7 +69,7 @@ interface TransactionOutput {
 }
 type TransactionInput = TransactionOutput;
 
-export interface SolParsedTransaction extends BaseParsedTransaction {
+export interface SolParsedTransaction extends ParsedTransaction {
   // total assets being moved, including fees
   inputs: TransactionInput[];
 

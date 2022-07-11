@@ -88,7 +88,7 @@ export function createSpendTransactionFromPrevOutputs<T extends UtxoTransaction>
   });
 
   const inputSum = prevOutputs.reduce((sum, { value }) => sum + value, 0);
-  const fee = 1000;
+  const fee = network === utxolib.networks.dogecoinTest ? 1_000_000 : 1_000;
 
   txBuilder.addOutput(recipientScript, inputSum - fee);
 

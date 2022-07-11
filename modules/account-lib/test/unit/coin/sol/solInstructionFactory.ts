@@ -91,7 +91,13 @@ describe('Instruction Builder Tests: ', function () {
       const payerAddress = testData.associatedTokenAccounts.accounts[0].pub;
       const createATAParams: InstructionParams = {
         type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-        params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+        params: {
+          mintAddress,
+          ataAddress,
+          ownerAddress,
+          payerAddress,
+          tokenName: testData.associatedTokenAccounts.mint,
+        },
       };
 
       const result = solInstructionFactory(createATAParams);

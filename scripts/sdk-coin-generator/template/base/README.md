@@ -20,7 +20,7 @@ import { <%= constructor %> } from '@bitgo/sdk-coin-<%= symbol %>';
 
 const sdk = new BitGoAPI();
 
-sdk.register(<%= symbol %>, <%= constructor %>.createInstance);
+sdk.register('<%= symbol %>', <%= constructor %>.createInstance);
 ```
 
 ## Development

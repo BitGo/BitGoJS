@@ -130,20 +130,14 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
         break;
       case ValidInstructionTypesEnum.TokenTransfer:
         const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_PROGRAM_ID);
-        let token;
-        coins.forEach((value, key) => {
-          if (value instanceof SolCoin && value.tokenAddress === tokenTransferInstruction.keys.mint.pubkey.toString()) {
-            token = value;
-          }
-        });
-        assert(token);
+        const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString());
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
             fromAddress: tokenTransferInstruction.keys.owner.pubkey.toString(),
             toAddress: tokenTransferInstruction.keys.destination.pubkey.toString(),
             amount: tokenTransferInstruction.data.amount.toString(),
-            tokenName: token.name,
+            tokenName,
             sourceAddress: tokenTransferInstruction.keys.source.pubkey.toString(),
           },
         };
@@ -289,13 +283,17 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
   const instructionData: Array<AtaInit | Memo> = [];
   const ataInitInstruction = instructions[ataInitInstructionIndexes.InitializeAssociatedTokenAccount];
 
+  const mintAddress = ataInitInstruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+  const tokenName = findTokenName(mintAddress);
+
   const ataInit: AtaInit = {
     type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
     params: {
-      mintAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString(),
+      mintAddress,
       ataAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
       ownerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
       payerAddress: ataInitInstruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+      tokenName,
     },
   };
   instructionData.push(ataInit);
@@ -308,4 +306,18 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
     instructionData.push(memo);
   }
   return instructionData;
+}
+
+function findTokenName(mintAddress: string): string {
+  let token: string | undefined;
+
+  coins.forEach((value, key) => {
+    if (value instanceof SolCoin && value.tokenAddress === mintAddress) {
+      token = value.name;
+    }
+  });
+
+  assert(token);
+
+  return token;
 }

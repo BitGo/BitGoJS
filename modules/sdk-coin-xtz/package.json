@@ -1,0 +1,61 @@
+{
+  "name": "@bitgo/sdk-coin-xtz",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Tezos",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-xtz"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/blake2b": "^3.0.3-rc.0",
+    "@bitgo/sdk-core": "^1.1.0-rc.23",
+    "@bitgo/statics": "^6.18.0-rc.24",
+    "@taquito/local-forging": "6.3.5-beta.0",
+    "@taquito/signer": "6.3.5-beta.0",
+    "bignumber.js": "^9.0.0",
+    "bip32": "^2.0.6",
+    "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
+    "bs58check": "^2.1.2",
+    "elliptic": "^6.5.2",
+    "libsodium-wrappers": "^0.7.6",
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.0-rc.26",
+    "@bitgo/sdk-test": "^1.0.1-rc.12"
+  }
+}

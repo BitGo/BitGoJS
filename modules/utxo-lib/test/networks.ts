@@ -8,6 +8,7 @@ import {
   isBitcoinCash,
   isBitcoinGold,
   isBitcoinSV,
+  isDogecoin,
   isLitecoin,
   isMainnet,
   isSameCoin,
@@ -36,12 +37,17 @@ describe('networks', function () {
     isTestnet(network) &&
     (isBitcoin(network) ||
       isBitcoinCash(network) ||
-      isBitcoinSV(network) ||
       isBitcoinGold(network) ||
+      isBitcoinSV(network) ||
       isLitecoin(network));
 
   const bitcoinTestnetSharedScriptPrefix = (network) =>
-    bitcoinTestnetSharedPubkeyPrefix(network) && !isLitecoin(network);
+    isTestnet(network) &&
+    (isBitcoin(network) ||
+      isBitcoinCash(network) ||
+      isBitcoinGold(network) ||
+      isBitcoinSV(network) ||
+      isDogecoin(network));
 
   const bitcoinMainnetSharedWIFPrefix = (network) =>
     isMainnet(network) &&
@@ -50,6 +56,8 @@ describe('networks', function () {
       isBitcoinGold(network) ||
       isBitcoinSV(network) ||
       isZcash(network));
+
+  const bitcoinTestnetSharedWIFPrefix = (network) => isTestnet(network) && !isDogecoin(network);
 
   const bech32Coins = (network) => isBitcoin(network) || isBitcoinGold(network) || isLitecoin(network);
 
@@ -96,6 +104,8 @@ describe('networks', function () {
           ['bitcoinsvTestnet', false, false],
           ['dash', false, false],
           ['dashTest', false, false],
+          ['dogecoin', false, false],
+          ['dogecoinTest', false, false],
           ['litecoin', true, false],
           ['litecoinTest', true, false],
           ['zcash', false, false],
@@ -140,10 +150,10 @@ describe('networks', function () {
         assert.strictEqual(typeof network.wif, 'number');
         assert.strictEqual(typeof network.coin, 'string');
 
-        if (isMainnet(network)) {
+        if (isMainnet(network) && !isDogecoin(network)) {
           assert.strictEqual(network.bip32.public, networks.bitcoin.bip32.public);
           assert.strictEqual(network.bip32.private, networks.bitcoin.bip32.private);
-        } else {
+        } else if (!isDogecoin(network)) {
           assert.strictEqual(network.bip32.public, networks.testnet.bip32.public);
           assert.strictEqual(network.bip32.private, networks.testnet.bip32.private);
         }
@@ -186,7 +196,7 @@ describe('networks', function () {
           assert.strictEqual(
             network.wif === otherNetwork.wif,
             sameGroup(bitcoinMainnetSharedWIFPrefix, network, otherNetwork) ||
-              sameGroup(isTestnet, network, otherNetwork)
+              sameGroup(bitcoinTestnetSharedWIFPrefix, network, otherNetwork)
           );
         });
       }

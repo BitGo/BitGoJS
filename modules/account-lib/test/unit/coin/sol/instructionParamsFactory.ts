@@ -154,7 +154,7 @@ describe('Instruction Parser Tests: ', function () {
 
       const createATA: InstructionParams = {
         type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
-        params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+        params: { mintAddress, ataAddress, ownerAddress, payerAddress, tokenName: 'sol:orca' },
       };
 
       const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, [instruction]);

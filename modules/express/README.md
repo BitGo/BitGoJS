@@ -77,11 +77,19 @@ Base URI: https://0.0.0.0:4000
 
 ### Building the docker container
 
-If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest release branch **rel/latest**, then run `docker build` from the project root. Here's the commands:
+If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest **master** branch, then run `docker build` from the project root. Here's the commands:
 ```bash
-$ git clone -b rel/latest https://github.com/bitgo/bitgojs
+$ git clone https://github.com/bitgo/bitgojs
 $ cd bitgojs
 $ docker build -t bitgo-express:latest .
+$ docker run -it bitgo-express:latest
+```
+
+Another way to build the BitGo Express docker container if you have `yarn` installed:
+```bash
+$ git clone https://github.com/bitgo/bitgojs
+$ cd bitgojs
+$ yarn build-docker-express
 $ docker run -it bitgo-express:latest
 ```
 
@@ -93,24 +101,24 @@ For users who are unable to run BitGo Express as a docker container, we recommen
 
 Please make sure you are running at least Node version 16.
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
+BitGo Express has become a first class citizen of the monorepo so we recommend using `yarn` for local setup.
 
 ### Cloning the repository and installing dependencies
 
-First, clone the latest release branch **rel/latest**, then run `npm ci` in the `modules/express` directory.
-```bash
-$ git clone -b rel/latest https://github.com/bitgo/bitgojs
-$ cd bitgojs/modules/express
-$ npm ci
-```
+First, clone the latest **master** branch, then run `yarn install` in the project root directory.
 
-**Note:** We do not recommend installing BitGo Express as `root`, but if you need to do so, you must run `npm ci --unsafe-perm` for the last step instead of `npm ci`.
+```bash
+$ git clone https://github.com/bitgo/bitgojs
+$ cd bitgojs
+$ yarn install --frozen-lockfile && yarn install --production --frozen-lockfile --non-interactive --ignore-scripts
+```
 
 ### Running BitGo Express
 
 From the express module folder (`modules/express`), run this command:
 
 ```bash
-$ npm run start
+$ yarn run start
 ```
 
 You should see BitGo Express start up in the default test environment:
@@ -120,9 +128,9 @@ Environment: test
 Base URI: http://localhost:3080
 ```
 
-You can also pass startup arguments to BitGo Express, but you must remember to put an extra `--` to separate the arguments:
+You can also pass startup arguments to BitGo Express:
 ```
-$ npm run start -- --port 4000
+$ yarn run start --port 4000
 ```
 
 BitGo Express will start up on the custom port:

@@ -23,6 +23,12 @@
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-stx"
+    },
+    {
+      "path": "../sdk-coin-xtz"
+    },
+    {
       "path": "../sdk-core"
     },
     {

@@ -6,7 +6,7 @@ import * as should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import * as testData from '../resources/avaxp';
-import { TransactionType } from '@bitgo/sdk-core';
+import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 
 describe('Avaxp', function () {
   const coinName = 'avaxp';
@@ -75,6 +75,24 @@ describe('Avaxp', function () {
   describe('Sign Transaction', () => {
     const factory = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName));
 
+    it('should build transaction correctly', async () => {
+      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
+        .getValidatorBuilder()
+        .threshold(testData.ADDVALIDATOR_SAMPLES.threshold)
+        .locktime(testData.ADDVALIDATOR_SAMPLES.locktime)
+        .fromPubKey(testData.ADDVALIDATOR_SAMPLES.pAddresses)
+        .startTime(testData.ADDVALIDATOR_SAMPLES.startTime)
+        .endTime(testData.ADDVALIDATOR_SAMPLES.endTime)
+        .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
+        .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
+        .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
+        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
+        .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+      txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+    });
+
     it('should be performed', async () => {
       const builder = factory.from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
       const tx = await builder.build();
@@ -85,17 +103,19 @@ describe('Avaxp', function () {
         },
         prv: testData.ADDVALIDATOR_SAMPLES.privKey.prv1,
       };
+      params.txPrebuild.txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+      const halfSignedTransaction = await basecoin.signTransaction(params);
+      halfSignedTransaction.should.have.property('halfSigned');
+      (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex?.should.equal(
+        testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
+      );
+      params.txPrebuild.txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
 
-      let signedTransaction = await basecoin.signTransaction(params);
-      signedTransaction.should.have.property('halfSigned');
-
-      signedTransaction.halfSigned.txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.halfsigntxHex);
-
-      params.txPrebuild.txHex = signedTransaction.halfSigned.txHex;
       params.prv = testData.ADDVALIDATOR_SAMPLES.privKey.prv3;
-      signedTransaction = await basecoin.signTransaction(params);
+      const signedTransaction = await basecoin.signTransaction(params);
       signedTransaction.should.not.have.property('halfSigned');
       signedTransaction.should.have.property('txHex');
+
       signedTransaction.txHex.should.equal(testData.ADDVALIDATOR_SAMPLES.fullsigntxHex);
     });
 

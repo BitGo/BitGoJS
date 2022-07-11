@@ -17,6 +17,9 @@
       "path": "./modules/blockapis"
     },
     {
+      "path": "./modules/express"
+    },
+    {
       "path": "./modules/sdk-api"
     },
     {
@@ -56,7 +59,13 @@
       "path": "./modules/sdk-coin-ltc"
     },
     {
+      "path": "./modules/sdk-coin-stx"
+    },
+    {
       "path": "./modules/sdk-coin-xrp"
+    },
+    {
+      "path": "./modules/sdk-coin-xtz"
     },
     {
       "path": "./modules/sdk-coin-zec"

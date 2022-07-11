@@ -20,7 +20,7 @@
       "path": "../sdk-core"
     },
     {
-      "path": "../sdk-statics"
+      "path": "../statics"
     },
     {
       "path": "../sdk-test"

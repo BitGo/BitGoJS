@@ -15,6 +15,7 @@ import assert from 'assert';
 import { AtaInitializationTransaction } from './ataInitializationTransaction';
 
 export class AtaInitializationBuilder extends TransactionBuilder {
+  private _tokenName: string;
   private _mint: string;
   private _owner: string;
   private _rentExemptAmount: string;
@@ -37,7 +38,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
         const ataInitInstruction: AtaInit = instruction;
 
-        this._mint = ataInitInstruction.params.mintAddress;
+        this.mint(ataInitInstruction.params.tokenName);
         this.validateMintOrThrow();
         this.owner(ataInitInstruction.params.ownerAddress);
       }
@@ -47,14 +48,15 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   /**
    * Sets the mint address of the associated token account
    *
-   * @param mint mint name of associated token account
+   * @param tokenName name of the token
    */
-  mint(mint: string): this {
-    const token = getSolTokenFromTokenName(mint);
+  mint(tokenName: string): this {
+    const token = getSolTokenFromTokenName(tokenName);
     if (!token) {
-      throw new BuildTransactionError('Invalid transaction: invalid mint, got: ' + mint);
+      throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + tokenName);
     }
     this._mint = token.tokenAddress;
+    this._tokenName = token.name;
     return this;
   }
 
@@ -109,7 +111,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    assert(this._mint, 'Mint must be set before building the transaction');
+    assert(this._mint && this._tokenName, 'Mint must be set before building the transaction');
     this._owner = this._owner || this._sender;
     assert(this._owner, 'Owner must be set before building the transaction');
 
@@ -121,6 +123,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         ataAddress: ataPk,
         ownerAddress: this._owner,
         payerAddress: this._sender,
+        tokenName: this._tokenName,
       },
     };
     this._instructionsData = [ataInitData];
