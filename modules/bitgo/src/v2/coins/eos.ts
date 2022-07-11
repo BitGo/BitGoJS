@@ -7,7 +7,6 @@ import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
 import * as _ from 'lodash';
-import * as moment from 'moment';
 import * as querystring from 'querystring';
 import * as request from 'superagent';
 import * as url from 'url';
@@ -831,8 +830,8 @@ export class Eos extends BaseCoin {
     const chainInfo = await this.getChainInfoFromNode();
     const headBlockInfoResult = await this.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
     const expireSeconds = 28800; // maximum tx expire time of 8h
-    const chainDate = moment(chainInfo.head_block_time + 'Z', moment.ISO_8601);
-    const expirationDate = chainDate.add(moment.duration(expireSeconds * 1000), 'milliseconds');
+    const chainDate = new Date(chainInfo.head_block_time + 'Z').getTime();
+    const expirationDate = new Date(chainDate + expireSeconds * 1000);
 
     return {
       expiration: expirationDate.toISOString(),
@@ -947,10 +946,10 @@ export class Eos extends BaseCoin {
       throw new Error('Could not get transaction headers from node');
     }
     const headers: EosTransactionHeaders = transactionHeaders;
-
+    const nativeDate = new Date(headers.expiration as string);
     // drop milliseconds and trailing Z from expiration
-    const date = moment(headers.expiration as string);
-    const expiration = date.milliseconds(0).toISOString();
+    nativeDate.setMilliseconds(0);
+    const expiration = nativeDate.toISOString();
     if (expiration.endsWith('Z')) {
       headers.expiration = expiration.slice(0, -1);
     }
