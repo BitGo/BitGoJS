@@ -47,7 +47,7 @@ export { AvaxC };
 import * as Rbtc from './coin/rbtc';
 export { Rbtc };
 
-import * as Celo from './coin/celo';
+import * as Celo from '@bitgo/sdk-coin-celo';
 export { Celo };
 
 import * as Hbar from './coin/hbar';
