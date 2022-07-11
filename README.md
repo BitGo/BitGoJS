@@ -13,7 +13,7 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 
 | Package Name        | Module         | Description                                                                                                                       |                                                                           |
 |---------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| bitgo               | `bitgo`         | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo)         |
+| bitgo               | `bitgo`        | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations. | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/bitgo)        |
 | @bitgo/account-lib  | `account-lib`  | Build and sign transactions for account-based coins.                                                                              | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/account-lib)  |
 | @bitgo/blake2b      | `blake2b`      | Blake2b (64-bit version) in pure JavaScript.                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b)      |
 | @bitgo/blake2b-wasm | `blake2b-wasm` | Blake2b implemented in WASM.                                                                                                      | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/blake2b-wasm) |
@@ -30,6 +30,18 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 Each module provides release notes in `modules/*/RELEASE_NOTES.md`.
 
 The release notes for the `bitgo` module are [here](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/RELEASE_NOTES.md).
+
+## Release Cycle
+
+The BitGoJS SDK use a number of branches to control the development of various packages throughout the deployment lifecycle. Provided below is an overview to how branches relate to one another.
+
+| Branch       | Status   | NPM      | Description                                                                                                                                                |
+|--------------|----------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `master`     | Unstable | N/A      | Ongoing development of SDK packages                                                                                                                        |
+| `rel/rc`     | Unstable | `rc`     | Deployed packages from `master` to `npm` for internal and external testing                                                                                 |
+| `rel/latest` | Stable   | `latest` | Deployed packages from `rel/rc` to `rel/latest`. This includes Express and is recommended to use `rel/latest` when not using Docker images for Express. |
+
+Other tags may be released to npm (e.g. `hotfix`, `dev`, etc...), but are not considered critical to the common path for consumers usage of SDK packages unless otherwise stated.
 
 # Examples
 
