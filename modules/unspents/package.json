@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/unspents",
-  "version": "0.8.0-rc.14",
+  "version": "0.8.0-rc.15",
   "description": "Defines the chain codes used for different unspent types and methods to calculate bitcoin transaction sizes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,7 @@
     "mocha-junit-reporter": "~2.0.2"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "^2.3.0-rc.10",
+    "@bitgo/utxo-lib": "^2.3.0-rc.11",
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "lodash": "~4.17.21",
     "tcomb": "~3.2.29",

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.24...@bitgo/statics@7.0.0-rc.0) (2022-07-11)
+
+
+### Features
+
+* **bitgo:** create skeleton for hbar tokens ([d156a51](https://github.com/BitGo/BitGoJS/commit/d156a5188fa4923142964284276431fe8a0d4267))
+* **statics:** update terra a classic ([d28bf44](https://github.com/BitGo/BitGoJS/commit/d28bf4498a14be960330cc4fd531ba3acbfd1b3d))
+
+
+### BREAKING CHANGES
+
+* **statics:** We are replacing the symbol of ust to usdtc same contract
+
+BG-51357
+
+
+
+
+
 # [6.18.0-rc.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@6.18.0-rc.23...@bitgo/statics@6.18.0-rc.24) (2022-07-07)
 
 

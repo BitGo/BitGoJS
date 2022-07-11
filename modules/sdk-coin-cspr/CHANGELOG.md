@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.1-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.0.1-rc.10...@bitgo/sdk-coin-cspr@1.0.1-rc.11) (2022-07-11)
+
+
+### Bug Fixes
+
+* update invalid files for depcheck ([6aae9aa](https://github.com/BitGo/BitGoJS/commit/6aae9aaf1cb70d65a75fa6d208eaa26d371443a6))
+
+
+
+
+
 ## [1.0.1-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.0.1-rc.9...@bitgo/sdk-coin-cspr@1.0.1-rc.10) (2022-07-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cspr

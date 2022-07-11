@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0-rc.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.30...@bitgo/account-lib@2.20.0-rc.31) (2022-07-11)
+
+
+### Bug Fixes
+
+* sol ata init transactions ([c8ff4b9](https://github.com/BitGo/BitGoJS/commit/c8ff4b9174746ccbb664509e47a7bacce6a6b882))
+* update invalid files for depcheck ([6aae9aa](https://github.com/BitGo/BitGoJS/commit/6aae9aaf1cb70d65a75fa6d208eaa26d371443a6))
+
+
+### Features
+
+* **sdk-coin-stx:** refactor stx to its own module ([80866b4](https://github.com/BitGo/BitGoJS/commit/80866b4161349efa513f801c0830029e5d5f36a3))
+* **sdk-coin-xtz:** refactor xtz to its own module ([241f580](https://github.com/BitGo/BitGoJS/commit/241f580c6711a186e36b11ec4ac3452b874bcacb))
+
+
+
+
+
 # [2.20.0-rc.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@2.20.0-rc.29...@bitgo/account-lib@2.20.0-rc.30) (2022-07-07)
 
 

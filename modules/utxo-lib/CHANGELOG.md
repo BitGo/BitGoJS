@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0-rc.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.10...@bitgo/utxo-lib@2.3.0-rc.11) (2022-07-11)
+
+
+### Features
+
+* **utxo-lib:** add network configuration for DOGE ([442e7e9](https://github.com/BitGo/BitGoJS/commit/442e7e9df3acd00edde3a0512de363164a377bb5))
+
+
+
+
+
 # [2.3.0-rc.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@2.3.0-rc.9...@bitgo/utxo-lib@2.3.0-rc.10) (2022-06-23)
 
 **Note:** Version bump only for package @bitgo/utxo-lib

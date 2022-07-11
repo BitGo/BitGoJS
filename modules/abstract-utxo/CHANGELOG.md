@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.0.1-rc.15...@bitgo/abstract-utxo@1.1.0-rc.0) (2022-07-11)
+
+
+### Features
+
+* check network argument in AbstractUtxoCoin constructor ([4a36223](https://github.com/BitGo/BitGoJS/commit/4a3622341ed4011ba04acab0a5d799b79941d1c4))
+
+
+
+
+
 ## [1.0.1-rc.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@1.0.1-rc.14...@bitgo/abstract-utxo@1.0.1-rc.15) (2022-07-07)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
