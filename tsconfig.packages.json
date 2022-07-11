@@ -50,6 +50,9 @@
       "path": "./modules/sdk-coin-btg"
     },
     {
+      "path": "./modules/sdk-coin-celo"
+    },
+    {
       "path": "./modules/sdk-coin-cspr"
     },
     {

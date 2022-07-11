@@ -59,6 +59,7 @@
     "@bitgo/sdk-coin-bsv": "^1.0.0",
     "@bitgo/sdk-coin-btc": "^1.0.0",
     "@bitgo/sdk-coin-btg": "^1.0.0",
+    "@bitgo/sdk-coin-celo": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-dash": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
