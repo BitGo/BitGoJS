@@ -1,4 +1,5 @@
 import { KeyPair } from '.';
+import { HederaTransactionTypes } from './constants';
 
 export interface TxData {
   id: string;
@@ -10,8 +11,15 @@ export interface TxData {
   validDuration: string;
   node: string;
   memo?: string;
-  to?: string;
+  to?: string; // TODO: [BG-51282] Deprecate once wp work for multi recipients
   amount?: string;
+  tokenName?: string;
+  instructionsData?: InstructionParams;
+}
+
+export interface Recipient {
+  address: string;
+  amount: string;
   tokenName?: string;
 }
 
@@ -29,8 +37,20 @@ export interface AddressDetails {
   memoId?: string;
 }
 
-export interface Recipient {
-  address: string; // The address to transfer funds to
-  amount: string; // Amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
-  tokenName?: string; // token name if it's a token transfer
+export type InstructionParams = Transfer | AssociateAccount;
+
+export interface Transfer {
+  type: HederaTransactionTypes.Transfer;
+  params: {
+    tokenName?: string;
+    recipients: Recipient[];
+  };
+}
+
+export interface AssociateAccount {
+  type: HederaTransactionTypes.TokenAssociateToAccount;
+  params: {
+    accountId: string;
+    tokenNames: string[];
+  };
 }

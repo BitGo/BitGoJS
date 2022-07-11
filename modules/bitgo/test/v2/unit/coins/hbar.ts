@@ -1,7 +1,7 @@
 import * as accountLib from '@bitgo/account-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
-import { rawTransactionForExplain, UNSIGNED_TOKEN_TRANSFER } from '../../fixtures/coins/hbar';
+import * as TestData from '../../fixtures/coins/hbar';
 import { randomBytes } from 'crypto';
 import { Hbar } from '../../../../src/v2/coins/';
 import * as should from 'should';
@@ -35,7 +35,7 @@ describe('Hedera Hashgraph:', function () {
   });
 
   it('should explain a transaction', async function () {
-    const tx = JSON.parse(rawTransactionForExplain);
+    const tx = JSON.parse(TestData.rawTransactionForExplain);
     const explain = await basecoin.explainTransaction(tx);
 
     explain.id.should.equal('0.0.43285@1600529800.643093586');
@@ -51,7 +51,7 @@ describe('Hedera Hashgraph:', function () {
 
   it('should explain a token transfer transaction', async function () {
     const tokenTransferParam = {
-      txHex: UNSIGNED_TOKEN_TRANSFER,
+      txHex: TestData.UNSIGNED_TOKEN_TRANSFER,
       feeInfo: {
         size: 1000,
         fee: 1160407,
@@ -61,13 +61,62 @@ describe('Hedera Hashgraph:', function () {
     const explain = await basecoin.explainTransaction(tokenTransferParam);
 
     explain.id.should.equal('0.0.81320@1596110493.372646570');
-    explain.outputAmount.should.equal('10');
+    explain.outputAmount.should.equal('0');
     explain.timestamp.should.equal('1596110493.372646570');
     explain.expiration.should.equal('120');
     explain.outputs[0].amount.should.equal('10');
     explain.outputs[0].address.should.equal('0.0.75861');
     explain.outputs[0].memo.should.equal('');
     explain.outputs[0].tokenName.should.equal('thbar:usdc');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
+  it('should explain a multirecipients transfer transaction', async function () {
+    const multiTransferParam = {
+      txHex: TestData.UNSIGNED_MULTI_TRANSFER,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    };
+    const explain = await basecoin.explainTransaction(multiTransferParam);
+
+    explain.id.should.equal('0.0.81320@1596110493.372646570');
+    explain.outputAmount.should.equal('25');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('10');
+    explain.outputs[0].address.should.equal('0.0.75861');
+    explain.outputs[0].memo.should.equal('');
+    explain.outputs[1].amount.should.equal('15');
+    explain.outputs[1].address.should.equal('0.0.78963');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
+  it('should explain a multirecipients token transfer transaction', async function () {
+    const tokenMultiTransferParam = {
+      txHex: TestData.UNSIGNED_TOKEN_MULTI_TRANSFER,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    };
+    const explain = await basecoin.explainTransaction(tokenMultiTransferParam);
+
+    explain.id.should.equal('0.0.81320@1596110493.372646570');
+    explain.outputAmount.should.equal('0');
+    explain.timestamp.should.equal('1596110493.372646570');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('10');
+    explain.outputs[0].address.should.equal('0.0.75861');
+    explain.outputs[0].memo.should.equal('');
+    explain.outputs[0].tokenName.should.equal('thbar:usdc');
+    explain.outputs[1].amount.should.equal('15');
+    explain.outputs[1].address.should.equal('0.0.78963');
+    explain.outputs[1].tokenName.should.equal('thbar:usdc');
     explain.fee.fee.should.equal(1160407);
     explain.changeAmount.should.equal('0');
   });
