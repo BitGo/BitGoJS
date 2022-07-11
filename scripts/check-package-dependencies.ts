@@ -119,7 +119,7 @@ async function main() {
     }
 
     if (exitCode && pkgWarningModules.length) {
-      console.error(`\x1b[31m Error: packages used but missing in package.json - ${pkg.name} \x1b[0m`);
+      console.error(`\x1b[31m Error: packages used but missing in package.json of ${pkg.name} \x1b[0m:`);
       pkgWarningModules.forEach(x => console.log(x));
     }
 
