@@ -14,8 +14,6 @@ import GlobalCoinFactory from './v2/coinFactory';
 
 export * from './bitgo';
 
-export * as Errors from './errors';
-
 // Expose legacy "bitcoin" API (mostly HDNode)
 /** @deprecated */
 export * as bitcoin from './legacyBitcoin';

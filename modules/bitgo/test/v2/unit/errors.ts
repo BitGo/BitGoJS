@@ -1,6 +1,6 @@
 import 'should';
 const assert = require('assert');
-import { BitGoJsError, NodeEnvironmentError } from '../../../src/errors';
+import { BitGoJsError, NodeEnvironmentError } from '@bitgo/sdk-core';
 
 describe('Error handling', () => {
   it('should capture stack trace', function namedFunc() {
