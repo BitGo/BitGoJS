@@ -138,11 +138,14 @@ export class Transaction extends BaseTransaction {
       if (checkSign === undefined) {
         checkSign = generateSelectorSignature(cs.sigArray);
       }
+      let find = false;
       cs.sigArray.forEach((sig) => {
         if (checkSign && checkSign(sig, addressHex)) {
           sig.bytes = signature;
+          find = true;
         }
       });
+      if (!find) throw new SigningError('Private key cannot sign the transaction');
       c.deserialize(cs);
     });
   }
