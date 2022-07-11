@@ -754,7 +754,7 @@ export const coins = CoinMap.fromCoins([
   erc20('usdx', 'eToro United States Dollar', 18, '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0', UnderlyingAsset.USDX),
   erc20('usg', 'US Gold', 9, '0x4000369acfa25c8fe5d17fe3312e30c332bef633', UnderlyingAsset.USG),
   erc20('uspx', 'USPX Token', 0, '0x38d3d9abbdba8305ebb8b72996efe55bf785aed0', UnderlyingAsset.USPX),
-  erc20('ust', 'TerraUSD', 18, '0xa47c8bf37f92abed4a126bda807a7b7498661acd', UnderlyingAsset.UST),
+  erc20('ustc', 'TerraClassicUSD', 18, '0xa47c8bf37f92abed4a126bda807a7b7498661acd', UnderlyingAsset.USTC),
   erc20('usx', 'USD Stable Token', 18, '0xe72f4c4ff9d294fc34829947e4371da306f90465', UnderlyingAsset.USX),
   erc20('utk', 'UTrust', 18, '0x70a72833d6bf7f508c8224ce59ea1ef3d0ea3a38', UnderlyingAsset.UTK),
   erc20('utk1', 'UTrust Token', 18, '0xdc9ac3c20d1ed0b540df9b1fedc10039df13f99c', UnderlyingAsset.UTK1),
