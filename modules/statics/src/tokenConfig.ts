@@ -1,4 +1,4 @@
-import { Erc20Coin, StellarCoin, CeloCoin, EosCoin, AvaxERC20Token, AlgoCoin, SolCoin } from './account';
+import { Erc20Coin, StellarCoin, CeloCoin, EosCoin, AvaxERC20Token, AlgoCoin, SolCoin, HederaToken } from './account';
 import { CoinKind } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
@@ -38,6 +38,8 @@ export type OfcTokenConfig = BaseTokenConfig & {
   isFiat: boolean;
 };
 
+export type HbarTokenConfig = BaseNetworkConfig;
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -64,6 +66,9 @@ export interface Tokens {
     sol: {
       tokens: SolTokenConfig[];
     };
+    hbar: {
+      tokens: HbarTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -89,6 +94,9 @@ export interface Tokens {
     };
     sol: {
       tokens: SolTokenConfig[];
+    };
+    hbar: {
+      tokens: HbarTokenConfig[];
     };
   };
 }
@@ -231,6 +239,19 @@ export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) =
   return acc;
 }, []);
 
+const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
+  if (coin instanceof HederaToken) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -258,6 +279,9 @@ export const tokens: Tokens = {
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
     },
+    hbar: {
+      tokens: formattedHbarTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -284,6 +308,9 @@ export const tokens: Tokens = {
     },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),
+    },
+    hbar: {
+      tokens: formattedHbarTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
