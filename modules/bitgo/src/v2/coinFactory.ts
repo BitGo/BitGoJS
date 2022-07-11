@@ -77,6 +77,7 @@ import { Tdot } from './coins/tdot';
 import { TNear } from './coins/tnear';
 import { tokens } from '../config';
 import { SolToken } from './coins/solToken';
+import { HbarToken } from './coins/hbarToken';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
@@ -183,6 +184,11 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
 
   for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
     const tokenConstructor = SolToken.createTokenConstructor(token);
+    globalCoinFactory.register(token.type, tokenConstructor);
+  }
+
+  for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
+    const tokenConstructor = HbarToken.createTokenConstructor(token);
     globalCoinFactory.register(token.type, tokenConstructor);
   }
 }
