@@ -41,7 +41,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^1.0.1"
+    "@bitgo/abstract-eth": "^1.0.0",
+    "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.0.1",

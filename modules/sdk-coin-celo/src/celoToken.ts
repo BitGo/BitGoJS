@@ -2,8 +2,8 @@
  * @prettier
  */
 import { Celo } from './celo';
-import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { CeloTokenConfig, coins } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { CeloTokenConfig, coins, tokens } from '@bitgo/statics';
 
 export { CeloTokenConfig };
 
@@ -18,6 +18,16 @@ export class CeloToken extends Celo {
 
   static createTokenConstructor(config: CeloTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new CeloToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]) {
+      const tokenConstructor = CeloToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get type() {
