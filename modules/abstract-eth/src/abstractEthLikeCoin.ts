@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
@@ -215,7 +215,5 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): TransactionBuilder {
-    return new TransactionBuilder(coins.get(this.getBaseChain()));
-  }
+  protected abstract getTransactionBuilder(): TransactionBuilder;
 }
