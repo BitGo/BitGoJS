@@ -1,13 +1,13 @@
 import should from 'should';
-import { TransferBuilder as AvaxCTransferBuilder } from '../../../../src/coin/avaxc';
-import { AvaxC, Eth, getBuilder } from '../../../../src';
-import * as testData from '../../../resources/avaxc/avaxc';
+import { TransferBuilder as AvaxCTransferBuilder, TransactionBuilder, KeyPair } from '../../src';
+import { getBuilder } from './getBuilder';
+import * as testData from '../resources/avaxc';
 import { TransactionType } from '@bitgo/sdk-core';
+import { decodeTokenTransferData } from '@bitgo/sdk-coin-eth';
 
-// import * as testData from '../../../resources/avaxc/avaxc';
 const amount = '20000';
 const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
-const keyPair = new AvaxC.KeyPair();
+const keyPair = new KeyPair();
 const key = keyPair.getKeys().prv as string;
 const tokensNames = [
   'avaxc:png',
@@ -21,10 +21,10 @@ const tokensNames = [
   'tavaxc:link',
 ];
 
-let txBuilder: AvaxC.TransactionBuilder;
+let txBuilder: TransactionBuilder;
 const contractAddress = testData.TEST_ACCOUNT.ethAddress;
 const initTxBuilder = (): void => {
-  txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+  txBuilder = getBuilder('tavaxc') as TransactionBuilder;
   txBuilder.fee({
     fee: '280000000000',
     gasLimit: '7000000',
@@ -45,7 +45,7 @@ describe('AVAXERC20 Tokens', () => {
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      const decode = Eth.Utils.decodeTokenTransferData(result);
+      const decode = decodeTokenTransferData(result);
       should.equal(decode.amount, '20000');
       should.equal(decode.expireTime, 1590078260);
       should.equal(decode.sequenceId, 2);

@@ -41,7 +41,7 @@ export { Eth2 };
 import * as Etc from './coin/etc';
 export { Etc };
 
-import * as AvaxC from './coin/avaxc';
+import * as AvaxC from '@bitgo/sdk-coin-avaxc';
 export { AvaxC };
 
 import * as Rbtc from './coin/rbtc';

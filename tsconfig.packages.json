@@ -29,6 +29,9 @@
       "path": "./modules/sdk-coin-algo"
     },
     {
+      "path": "./modules/sdk-coin-avaxc"
+    },
+    {
       "path": "./modules/sdk-coin-avaxp"
     },
     {

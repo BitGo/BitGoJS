@@ -1,7 +1,8 @@
 import 'should';
 
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { AvaxCToken } from '../../src';
 
 describe('Avaxc Token:', function () {
   let bitgo;
@@ -11,7 +12,10 @@ describe('Avaxc Token:', function () {
     const tokenName = 'tavaxc:link';
 
     before(function () {
-      bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      AvaxCToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+        bitgo.safeRegister(name, coinConstructor);
+      });
       bitgo.initializeTestVars();
       avaxcTokenCoin = bitgo.coin(tokenName);
     });
@@ -28,7 +32,6 @@ describe('Avaxc Token:', function () {
       avaxcTokenCoin.decimalPlaces.should.equal(18);
     });
 
-
     it('should return same token by contract address', function () {
       const tokencoinBycontractAddress = bitgo.coin(avaxcTokenCoin.tokenContractAddress);
       avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
@@ -38,7 +41,7 @@ describe('Avaxc Token:', function () {
   describe('In env prod:', function () {
     const prodTokenName = 'avaxc:png';
     before(function () {
-      bitgo = TestBitGo.decorate(BitGo, { env: 'prod' });
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'prod' });
       bitgo.initializeTestVars();
       avaxcTokenCoin = bitgo.coin(prodTokenName);
     });
@@ -60,12 +63,12 @@ describe('Avaxc Token:', function () {
       avaxcTokenCoin.should.deepEqual(tokencoinBycontractAddress);
     });
 
-    it('should successfully verify coin', function() {
+    it('should successfully verify coin', function () {
       const txPrebuild = { coin: 'avaxc', token: 'avaxc:png' };
       avaxcTokenCoin.verifyCoin(txPrebuild).should.equal(true);
     });
 
-    it('should fail verify coin', function() {
+    it('should fail verify coin', function () {
       const txPrebuild = { coin: 'eth', token: 'eth:png' };
       avaxcTokenCoin.verifyCoin(txPrebuild).should.equal(false);
     });

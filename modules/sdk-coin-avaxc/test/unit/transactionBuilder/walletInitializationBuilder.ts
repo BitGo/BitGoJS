@@ -1,16 +1,17 @@
 import assert from 'assert';
 import should from 'should';
-import { AvaxC, getBuilder } from '../../../../../src';
+
 import { TransactionType } from '@bitgo/sdk-core';
-import * as testData from '../../../../resources/avaxc/avaxc';
+import * as testData from '../../resources/avaxc';
 import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
-import { TransactionBuilder } from '../../../../../src/coin/avaxc';
+import { getBuilder } from '../getBuilder';
+import { TransactionBuilder } from '../../../src';
 
 describe('AvaxC Wallet Initialization Builder', function () {
-  let txBuilder: AvaxC.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
 
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+    txBuilder = getBuilder('tavaxc') as TransactionBuilder;
     txBuilder.fee({
       fee: '280000000000',
       gasLimit: '7000000',
@@ -40,7 +41,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
     });
 
     it('Should build with counter 0 if not manually defined', async () => {
-      txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+      txBuilder = getBuilder('tavaxc') as TransactionBuilder;
       txBuilder.fee({
         fee: '280000000000',
         gasLimit: '7000000',
@@ -65,7 +66,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
     });
 
     it('Should throw if building walletInitialization without fee', async function () {
-      txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+      txBuilder = getBuilder('tavaxc') as TransactionBuilder;
       txBuilder.counter(1);
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.counter(1);
@@ -79,7 +80,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
     });
 
     it('Should throw if building walletInitialization without type', async function () {
-      txBuilder = getBuilder('tavaxc') as AvaxC.TransactionBuilder;
+      txBuilder = getBuilder('tavaxc') as TransactionBuilder;
       txBuilder.fee({
         fee: '280000000000',
         gasLimit: '7000000',
@@ -87,7 +88,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txBuilder.counter(1);
       assert.throws(
         () => txBuilder.owner(testData.OWNER_1.ethAddress),
-        (e) => e.message === 'Multisig wallet owner can only be set for initialization transactions',
+        (e) => e.message === 'Multisig wallet owner can only be set for initialization transactions'
       );
     });
 
@@ -101,7 +102,7 @@ describe('AvaxC Wallet Initialization Builder', function () {
       txBuilder.type(TransactionType.WalletInitialization);
       assert.throws(
         () => txBuilder.sign({ key: testData.OWNER_1.ethKey }),
-        (e) => e.message === 'Cannot sign an wallet initialization transaction without owners',
+        (e) => e.message === 'Cannot sign an wallet initialization transaction without owners'
       );
     });
 

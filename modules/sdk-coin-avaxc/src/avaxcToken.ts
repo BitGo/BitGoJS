@@ -2,8 +2,8 @@
  * @prettier
  */
 import { AvaxC, TransactionPrebuild } from './avaxc';
-import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { AvaxcTokenConfig, coins } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { AvaxcTokenConfig, coins, tokens } from '@bitgo/statics';
 
 export { AvaxcTokenConfig };
 
@@ -18,6 +18,16 @@ export class AvaxCToken extends AvaxC {
 
   static createTokenConstructor(config: AvaxcTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new AvaxCToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
+      const tokenConstructor = AvaxCToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get type(): string {

@@ -176,11 +176,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
-    const tokenConstructor = AvaxCToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-    globalCoinFactory.register(token.tokenContractAddress, tokenConstructor);
-  }
+  AvaxCToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
     const tokenConstructor = SolToken.createTokenConstructor(token);
