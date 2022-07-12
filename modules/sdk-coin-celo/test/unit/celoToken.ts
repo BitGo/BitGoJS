@@ -1,15 +1,19 @@
 import 'should';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { CeloToken } from '../../src';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('Celo Token:', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
   let celoTokenCoin;
   const tokenName = 'tcusd';
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    CeloToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     celoTokenCoin = bitgo.coin(tokenName);
   });

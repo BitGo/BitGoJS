@@ -14,7 +14,7 @@ export class Transaction extends EthTransaction {
   public static fromSerialized(
     coinConfig: Readonly<CoinConfig>,
     common: EthereumCommon,
-    serializedTx: string,
+    serializedTx: string
   ): Transaction {
     return new Transaction(coinConfig, common, Utils.deserialize(serializedTx));
   }

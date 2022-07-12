@@ -1,13 +1,14 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { Tcelo } from '../../../../src/v2/coins/tcelo';
-import { Celo } from '../../../../src/v2/coins/celo';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Celo, Tcelo } from '../../src';
 
 describe('Celo Gold', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('tcelo', Tcelo.createInstance);
+    bitgo.safeRegister('celo', Celo.createInstance);
     bitgo.initializeTestVars();
   });
 

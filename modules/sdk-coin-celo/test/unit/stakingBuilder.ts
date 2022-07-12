@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { StakingBuilder } from '../../../../src/coin/celo/stakingBuilder';
+import { StakingBuilder } from '../../src/lib/stakingBuilder';
 import { getOperationConfig, StakingOperationTypes } from '@bitgo/sdk-core';
-import * as testData from '../../../resources/celo/celo';
+import * as testData from '../resources/celo';
 
 describe('Celo staking operations builder', function () {
   const coin = coins.get('tcelo');
@@ -51,7 +51,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.index(-1);
       },
-      (e) => e.message === testData.INVALID_INDEX_ERROR,
+      (e) => e.message === testData.INVALID_INDEX_ERROR
     );
   });
 
@@ -101,7 +101,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.index(-1);
       },
-      (e) => e.message === testData.INVALID_INDEX_ERROR,
+      (e) => e.message === testData.INVALID_INDEX_ERROR
     );
   });
 
@@ -115,7 +115,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_INDEX_ERROR,
+      (e) => e.message === testData.MISSING_INDEX_ERROR
     );
   });
 
@@ -129,7 +129,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_GROUP_ERROR,
+      (e) => e.message === testData.MISSING_GROUP_ERROR
     );
   });
 
@@ -144,7 +144,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_AMOUNT_ERROR,
+      (e) => e.message === testData.MISSING_AMOUNT_ERROR
     );
   });
 
@@ -154,7 +154,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_GROUP_ERROR,
+      (e) => e.message === testData.MISSING_GROUP_ERROR
     );
   });
 
@@ -165,7 +165,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.GREATER_LESSER_ERROR,
+      (e) => e.message === testData.GREATER_LESSER_ERROR
     );
   });
 
@@ -175,7 +175,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.group('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_GROUP_ERROR,
+      (e) => e.message === testData.INVALID_GROUP_ERROR
     );
   });
 
@@ -185,7 +185,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.lesser('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_LESSER_ERROR,
+      (e) => e.message === testData.INVALID_LESSER_ERROR
     );
   });
 
@@ -195,7 +195,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.greater('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_GREATER_ERROR,
+      (e) => e.message === testData.INVALID_GREATER_ERROR
     );
   });
 
@@ -213,7 +213,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_GROUP_ERROR,
+      (e) => e.message === testData.MISSING_GROUP_ERROR
     );
   });
 
@@ -223,7 +223,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.MISSING_GROUP_ERROR,
+      (e) => e.message === testData.MISSING_GROUP_ERROR
     );
   });
 
@@ -234,7 +234,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.GREATER_LESSER_ERROR,
+      (e) => e.message === testData.GREATER_LESSER_ERROR
     );
   });
 
@@ -244,7 +244,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.group('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_GROUP_ERROR,
+      (e) => e.message === testData.INVALID_GROUP_ERROR
     );
   });
 
@@ -254,7 +254,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.lesser('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_LESSER_ERROR,
+      (e) => e.message === testData.INVALID_LESSER_ERROR
     );
   });
 
@@ -264,7 +264,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.greater('invalidaddress');
       },
-      (e) => e.message === testData.INVALID_GREATER_ERROR,
+      (e) => e.message === testData.INVALID_GREATER_ERROR
     );
   });
 
@@ -273,7 +273,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.amount('asd');
       },
-      (e) => e.message === testData.INVALID_VALUE_ERROR,
+      (e) => e.message === testData.INVALID_VALUE_ERROR
     );
   });
 
@@ -284,7 +284,7 @@ describe('Celo staking operations builder', function () {
       () => {
         builder.build();
       },
-      (e) => e.message === testData.INVALID_OPERATION_100,
+      (e) => e.message === testData.INVALID_OPERATION_100
     );
   });
 });

@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { Etc as EtcAccountLib } from '@bitgo/account-lib';
 
@@ -23,5 +23,9 @@ export class Etc extends AbstractEthLikeCoin {
       valid = false;
     }
     return valid;
+  }
+
+  protected getTransactionBuilder(): EtcAccountLib.TransactionBuilder {
+    return new EtcAccountLib.TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }

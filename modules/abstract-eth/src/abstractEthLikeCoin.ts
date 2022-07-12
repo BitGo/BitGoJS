@@ -2,7 +2,7 @@
  * @prettier
  */
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { getBuilder, Eth } from '@bitgo/account-lib';
+import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 
@@ -113,7 +113,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     if (!address) {
       return false;
     }
-    return Eth.Utils.isValidEthAddress(address);
+    return isValidEthAddress(address);
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
@@ -141,7 +141,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   async signTransaction(params: EthSignTransactionOptions): Promise<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
+    txBuilder.transfer().key(new EthKeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
@@ -158,7 +158,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new Eth.KeyPair({ pub });
+      new EthKeyPair({ pub });
     } catch (e) {
       valid = false;
     }
@@ -215,7 +215,5 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): Eth.TransactionBuilder {
-    return getBuilder(this.getBaseChain()) as Eth.TransactionBuilder;
-  }
+  protected abstract getTransactionBuilder(): TransactionBuilder;
 }

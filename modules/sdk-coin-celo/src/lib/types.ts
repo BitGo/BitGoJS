@@ -170,7 +170,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
         r: tx.r,
         v: tx.v || chainId,
       }),
-      tx.deployedAddress,
+      tx.deployedAddress
     );
   }
 

@@ -2,9 +2,9 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
-import { Celo as CeloAccountLib } from '@bitgo/account-lib';
+import { KeyPair, TransactionBuilder } from './lib';
 
 export class Celo extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -18,10 +18,14 @@ export class Celo extends AbstractEthLikeCoin {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new CeloAccountLib.KeyPair({ pub });
+      new KeyPair({ pub });
     } catch (e) {
       valid = false;
     }
     return valid;
+  }
+
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }
