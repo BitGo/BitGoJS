@@ -6,9 +6,7 @@ import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
-import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
-import { Sol as SolLib } from '@bitgo/account-lib';
 import {
   BaseCoin,
   BitGoBase,
@@ -27,6 +25,8 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   PresignTransactionOptions,
 } from '@bitgo/sdk-core';
+import { AtaInitializationBuilder, KeyPair as SolKeyPair, Transaction, TransactionBuilderFactory } from './lib';
+import { isValidAddress, isValidPrivateKey, isValidPublicKey } from './lib/utils';
 
 export interface TransactionFee {
   fee: string;
@@ -128,7 +128,7 @@ export class Sol extends BaseCoin {
     const totalAmount: Record<string, BigNumber> = {};
     const coinConfig = coins.get(this.getChain());
     const { txParams: txParams, txPrebuild: txPrebuild, memo: memo, durableNonce: durableNonce } = params;
-    const transaction = new accountLib.Sol.Transaction(coinConfig);
+    const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
     const consolidateId = txPrebuild.consolidateId;
 
@@ -203,11 +203,11 @@ export class Sol extends BaseCoin {
   /**
    * Generate Solana key pair
    *
-   * @param {Buffer} seed - Seed from which the new keypair should be generated, otherwise a random seed is used
+   * @param {Buffer} seed - Seed from which the new SolKeyPair should be generated, otherwise a random seed is used
    * @returns {Object} object with generated pub and prv
    */
   generateKeyPair(seed?: Buffer | undefined): KeyPair {
-    const result = seed ? new accountLib.Sol.KeyPair({ seed }).getKeys() : new accountLib.Sol.KeyPair().getKeys();
+    const result = seed ? new SolKeyPair({ seed }).getKeys() : new SolKeyPair().getKeys();
     return result as KeyPair;
   }
 
@@ -218,7 +218,7 @@ export class Sol extends BaseCoin {
    * @returns is it valid?
    */
   isValidPub(pub: string): boolean {
-    return accountLib.Sol.Utils.isValidPublicKey(pub);
+    return isValidPublicKey(pub);
   }
 
   /**
@@ -228,15 +228,15 @@ export class Sol extends BaseCoin {
    * @returns is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return accountLib.Sol.Utils.isValidPrivateKey(prv);
+    return isValidPrivateKey(prv);
   }
 
   isValidAddress(address: string): boolean {
-    return accountLib.Sol.Utils.isValidAddress(address);
+    return isValidAddress(address);
   }
 
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
-    const solKeypair = new accountLib.Sol.KeyPair({ prv: key.prv });
+    const solKeypair = new SolKeyPair({ prv: key.prv });
     if (Buffer.isBuffer(message)) {
       message = base58.encode(message);
     }
@@ -250,7 +250,7 @@ export class Sol extends BaseCoin {
    * @param callback
    */
   async signTransaction(params: SolSignTransactionOptions): Promise<SignedTransaction> {
-    const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     const rawTx = params.txPrebuild.txHex || params.txPrebuild.txBase64;
     const txBuilder = factory.from(rawTx);
     txBuilder.sign({ key: params.prv });
@@ -316,12 +316,12 @@ export class Sol extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<SolTransactionExplanation> {
-    const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     let rebuiltTransaction;
 
     try {
       const transactionBuilder = factory.from(params.txBase64).fee({ amount: params.feeInfo.fee });
-      if (transactionBuilder instanceof SolLib.AtaInitializationBuilder && params.tokenAccountRentExemptAmount) {
+      if (transactionBuilder instanceof AtaInitializationBuilder && params.tokenAccountRentExemptAmount) {
         transactionBuilder.rentExemptAmount(params.tokenAccountRentExemptAmount);
       }
       rebuiltTransaction = await transactionBuilder.build();
@@ -336,7 +336,7 @@ export class Sol extends BaseCoin {
 
   /** @inheritDoc */
   async getSignablePayload(serializedTx: string): Promise<Buffer> {
-    const factory = accountLib.register(this.getChain(), accountLib.Sol.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     const rebuiltTransaction = await factory.from(serializedTx).build();
     return rebuiltTransaction.signablePayload;
   }
@@ -364,5 +364,9 @@ export class Sol extends BaseCoin {
       txPrebuild: recreated,
       txHex: recreated.unsignedTxs[0].serializedTxHex,
     });
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 }

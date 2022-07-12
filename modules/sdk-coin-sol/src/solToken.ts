@@ -1,6 +1,6 @@
 import { Sol } from './sol';
-import { BitGoBase, CoinConstructor } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { coins, tokens } from '@bitgo/statics';
 
 export interface SolTokenConfig {
   name: string;
@@ -22,6 +22,15 @@ export class SolToken extends Sol {
 
   static createTokenConstructor(config: SolTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new SolToken(bitgo, config);
+  }
+
+  static createTokenConstructors(): NamedCoinConstructor[] {
+    const tokensCtors: NamedCoinConstructor[] = [];
+    for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
+      const tokenConstructor = SolToken.createTokenConstructor(token);
+      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+    }
+    return tokensCtors;
   }
 
   get name() {

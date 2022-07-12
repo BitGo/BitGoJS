@@ -3,7 +3,6 @@ import { Sol } from './sol';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class Tsol extends Sol {
-
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
