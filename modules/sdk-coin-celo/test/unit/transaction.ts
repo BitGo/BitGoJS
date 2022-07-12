@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/celo';
-import * as testData from '../../../resources/celo/celo';
-import { getCommon } from '../../../../src/coin/celo/utils';
+import { Transaction } from '../../src';
+import * as testData from '../resources/celo';
+import { getCommon } from '../../src/lib/utils';
 
 describe('Celo Transaction', function () {
   const coin = coins.get('celo');

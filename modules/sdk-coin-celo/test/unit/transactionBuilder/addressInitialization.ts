@@ -1,12 +1,13 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Celo } from '../../../../../src';
-import * as testData from '../../../../resources/celo/celo';
+import { getBuilder } from '../getBuilder';
+import { TransactionBuilder } from '../../../src';
+import * as testData from '../../resources/celo';
 
 describe('An address initialization', () => {
   describe('Should sign and build', () => {
     it('an address initialization transaction', async () => {
-      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
@@ -31,7 +32,7 @@ describe('An address initialization', () => {
 
   describe('Should build without sign', () => {
     it('an address initialization transaction without from', async () => {
-      const txBuilder = getBuilder('celo') as Celo.TransactionBuilder;
+      const txBuilder = getBuilder('celo') as TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
@@ -46,7 +47,7 @@ describe('An address initialization', () => {
     });
 
     it('an address initialization transaction without contract counter', async () => {
-      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.fee({
         fee: '10000000000',
@@ -62,7 +63,7 @@ describe('An address initialization', () => {
 
   describe('Should fail to build', () => {
     it('an address initialization transaction without fee', async () => {
-      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
