@@ -9,7 +9,6 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 
-import moment = require('moment');
 import { krsProviders } from '@bitgo/sdk-core';
 nock.disableNetConnect();
 
@@ -329,7 +328,8 @@ describe('Recovery:', function () {
       const deserializedTx = await baseCoin.deserializeTransaction(deserializeTransactionParams);
       const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
       const hoursUntilExpiration = 8;
-      moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
+      const hourDiff = (new Date(deserializedTx.expiration).getTime() - new Date(mockedHeadBlockTime).getTime()) / 36e5;
+      hourDiff.should.equal(hoursUntilExpiration);
     });
 
     it('should generate EOS recovery tx with unencrypted keys', async function () {

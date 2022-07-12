@@ -8,7 +8,6 @@
 
 import { strict as assert } from 'assert';
 import * as should from 'should';
-const moment = require('moment');
 import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');
@@ -151,8 +150,8 @@ describe('Access Token', function () {
 
             const created = res.created;
             const expires = res.expires;
-            const createdPlusDuration = moment(created).utc().add(DURATION, 'seconds').toDate().getTime();
-            const expiresTime = moment(expires).utc().toDate().getTime();
+            const createdPlusDuration = new Date(new Date(created).getTime() + (DURATION * 1000)).getTime();
+            const expiresTime = new Date(expires).getTime();
             const leeway = 10; // because of the miniscule time it takes to execute a function, we give a 10 ms leeway in the time differences
             createdPlusDuration.should.be.greaterThan(expiresTime - leeway);
             createdPlusDuration.should.be.lessThan(expiresTime + leeway);
