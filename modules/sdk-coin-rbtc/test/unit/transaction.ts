@@ -1,9 +1,9 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/rbtc';
-import * as testData from '../../../resources/rbtc/rbtc';
-import { getCommon } from '../../../../src/coin/rbtc/utils';
+import { Transaction } from '../../src';
+import * as testData from '../resources';
+import { getCommon } from '../../src/lib/utils';
 
 describe('Rbtc Transaction', () => {
   const coinConfig = coins.get('trbtc');

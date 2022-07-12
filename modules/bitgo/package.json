@@ -64,6 +64,7 @@
     "@bitgo/sdk-coin-dash": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/sdk-coin-ltc": "^1.0.0",
+    "@bitgo/sdk-coin-rbtc": "^1.0.0",
     "@bitgo/sdk-coin-stx": "^1.0.0",
     "@bitgo/sdk-coin-xrp": "^1.0.0",
     "@bitgo/sdk-coin-xtz": "^1.0.0",

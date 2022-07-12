@@ -44,7 +44,7 @@ export { Etc };
 import * as AvaxC from '@bitgo/sdk-coin-avaxc';
 export { AvaxC };
 
-import * as Rbtc from './coin/rbtc';
+import * as Rbtc from '@bitgo/sdk-coin-rbtc';
 export { Rbtc };
 
 import * as Celo from '@bitgo/sdk-coin-celo';
