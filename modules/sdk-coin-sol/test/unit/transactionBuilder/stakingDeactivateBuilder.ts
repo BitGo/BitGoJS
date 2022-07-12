@@ -1,11 +1,11 @@
 import should from 'should';
 
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair, Utils } from '../../../../../src/coin/sol';
-import * as testData from '../../../../resources/sol/sol';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair, Utils } from '../../../src';
+import * as testData from '../../resources/sol';
 
 describe('Sol Staking Deactivate Builder', () => {
-  const factory = register('tsol', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tsol');
 
   const wallet = new KeyPair(testData.authAccount).getKeys();
   const stakeAccount = new KeyPair(testData.stakeAccount).getKeys();
@@ -130,7 +130,7 @@ describe('Sol Staking Deactivate Builder', () => {
       const txBuilder = factory.getStakingDeactivateBuilder();
       txBuilder.sender(wallet.pub).nonce(recentBlockHash);
       should(() => txBuilder.stakingAddress(invalidPubKey)).throwError(
-        `Invalid or missing stakingAddress, got: ${invalidPubKey}`,
+        `Invalid or missing stakingAddress, got: ${invalidPubKey}`
       );
     });
 

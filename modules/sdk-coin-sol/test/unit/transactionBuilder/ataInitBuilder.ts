@@ -1,14 +1,14 @@
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair, Utils, AtaInitializationBuilder } from '../../../../../src/coin/sol';
+import { KeyPair, Utils, AtaInitializationBuilder } from '../../../src';
 import should from 'should';
-import * as testData from '../../../../resources/sol/sol';
+import * as testData from '../../resources/sol';
 import { BaseTransaction } from '@bitgo/sdk-core';
+import { getBuilderFactory } from '../getBuilderFactory';
 
 describe('Sol Associated Token Account Builder', () => {
   function verifyInputOutputAndRawTransaction(
     tx: BaseTransaction,
     rawTx: string,
-    owner: { pubkey: string; ataPubkey: string } = sender,
+    owner: { pubkey: string; ataPubkey: string } = sender
   ) {
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
@@ -36,7 +36,7 @@ describe('Sol Associated Token Account Builder', () => {
     should.equal(Utils.isValidRawTransaction(rawTx), true);
   }
 
-  const factory = register('sol', TransactionBuilderFactory);
+  const factory = getBuilderFactory('sol');
   const ataInitBuilder = () => {
     const txBuilder = factory.getAtaInitializationBuilder();
     txBuilder.nonce(recentBlockHash);
@@ -159,7 +159,7 @@ describe('Sol Associated Token Account Builder', () => {
       it('build an associated token account init tx when mint is invalid', () => {
         const txBuilder = ataInitBuilder();
         should(() => txBuilder.mint('invalidToken')).throwError(
-          'Invalid transaction: invalid token name, got: invalidToken',
+          'Invalid transaction: invalid token name, got: invalidToken'
         );
       });
 
@@ -197,21 +197,21 @@ describe('Sol Associated Token Account Builder', () => {
       it('build when mint is invalid', async () => {
         const txBuilder = factory.getAtaInitializationBuilder();
         should(() => txBuilder.mint('sol:invalid mint')).throwError(
-          'Invalid transaction: invalid token name, got: sol:invalid mint',
+          'Invalid transaction: invalid token name, got: sol:invalid mint'
         );
       });
 
       it('build when rentExemptAmount is invalid', async () => {
         const txBuilder = ataInitBuilder();
         should(() => txBuilder.rentExemptAmount('invalid amount')).throwError(
-          'Invalid transaction: invalid rentExemptAmount, got: invalid amount',
+          'Invalid transaction: invalid rentExemptAmount, got: invalid amount'
         );
       });
 
       it('build when owner is invalid', async () => {
         const txBuilder = ataInitBuilder();
         should(() => txBuilder.owner('invalid owner')).throwError(
-          'Invalid transaction: invalid owner, got: invalid owner',
+          'Invalid transaction: invalid owner, got: invalid owner'
         );
       });
 

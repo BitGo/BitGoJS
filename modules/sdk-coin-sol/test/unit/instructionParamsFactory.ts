@@ -1,9 +1,9 @@
 import should from 'should';
-import * as testData from '../../../resources/sol/sol';
-import { instructionParamsFactory } from '../../../../src/coin/sol/instructionParamsFactory';
+import * as testData from '../resources/sol';
+import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
 import { TransactionType } from '@bitgo/sdk-core';
-import { InstructionParams } from '../../../../src/coin/sol/iface';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
+import { InstructionParams } from '../../src/lib/iface';
+import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -116,7 +116,7 @@ describe('Instruction Parser Tests: ', function () {
         new PublicKey(ownerORCA),
         [],
         amount,
-        decimals,
+        decimals
       );
 
       // memo
@@ -149,7 +149,7 @@ describe('Instruction Parser Tests: ', function () {
         new PublicKey(mintAddress),
         new PublicKey(ataAddress),
         new PublicKey(ownerAddress),
-        new PublicKey(payerAddress),
+        new PublicKey(payerAddress)
       );
 
       const createATA: InstructionParams = {
@@ -164,7 +164,7 @@ describe('Instruction Parser Tests: ', function () {
   describe('Fail ', function () {
     it('Invalid type', () => {
       should(() => instructionParamsFactory(TransactionType.ContractCall, [])).throwError(
-        'Invalid transaction, transaction type not supported: ' + TransactionType.ContractCall,
+        'Invalid transaction, transaction type not supported: ' + TransactionType.ContractCall
       );
     });
     it('Invalid Instruction for Send Type', () => {
@@ -180,7 +180,7 @@ describe('Instruction Parser Tests: ', function () {
       }).instructions;
 
       should(() => instructionParamsFactory(TransactionType.Send, instructions)).throwError(
-        'Invalid transaction, instruction type not supported: Create',
+        'Invalid transaction, instruction type not supported: Create'
       );
     });
   });

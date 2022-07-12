@@ -1,8 +1,8 @@
 import should from 'should';
-import { Utils } from '../../../../src/coin/sol';
-import * as testData from '../../../resources/sol/sol';
+import { Utils } from '../../src/lib';
+import * as testData from '../resources/sol';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
-import { MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
+import { MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import BigNumber from 'bignumber.js';
 
 describe('SOL util library', function () {
@@ -139,7 +139,7 @@ describe('SOL util library', function () {
       Utils.verifySignature(
         testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.authAccount.pub,
+        testData.authAccount.pub
       ).should.equal(true);
     });
 
@@ -148,7 +148,7 @@ describe('SOL util library', function () {
       Utils.verifySignature(
         testData.TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.authAccount.pub,
+        testData.authAccount.pub
       ).should.equal(true);
     });
 
@@ -157,7 +157,7 @@ describe('SOL util library', function () {
       Utils.verifySignature(
         testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.authAccount.pub,
+        testData.authAccount.pub
       ).should.equal(false);
     });
 
@@ -166,14 +166,14 @@ describe('SOL util library', function () {
       Utils.verifySignature(
         testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
         signature,
-        testData.nonceAccount.pub,
+        testData.nonceAccount.pub
       ).should.equal(false);
     });
 
     it('should throw for invalid tx', function () {
       const signature = '3pD6ayWtvFkn8Fe5efYbSaCYMpnDwzDTmmeoMhcSMAcMrGvmwPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3k';
       should(() => Utils.verifySignature(testData.INVALID_RAW_TX, signature, testData.nonceAccount.pub)).throwError(
-        'Invalid serializedTx',
+        'Invalid serializedTx'
       );
     });
     it('should throw for invalid pubkey', function () {
@@ -182,8 +182,8 @@ describe('SOL util library', function () {
         Utils.verifySignature(
           testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
           signature,
-          testData.pubKeys.invalidPubKeys[0],
-        ),
+          testData.pubKeys.invalidPubKeys[0]
+        )
       ).throwError('Invalid publicKey');
     });
     it('should throw for invalid signature', function () {
@@ -192,8 +192,8 @@ describe('SOL util library', function () {
         Utils.verifySignature(
           testData.TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
           signature,
-          testData.nonceAccount.pub,
-        ),
+          testData.nonceAccount.pub
+        )
       ).throwError('Invalid signature');
     });
   });
@@ -204,7 +204,7 @@ describe('SOL util library', function () {
     });
     it('should return false for a long memo', function () {
       Utils.isValidMemo(
-        '3pD6ayWtvFkn8Fe5efYbSaCYMpnDwzDTmmeoMhcSMAcMrGvmwPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3kPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3k',
+        '3pD6ayWtvFkn8Fe5efYbSaCYMpnDwzDTmmeoMhcSMAcMrGvmwPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3kPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3k'
       ).should.equal(false);
     });
   });
@@ -237,7 +237,7 @@ describe('SOL util library', function () {
         data: Buffer.from('random memo'),
       });
       should(() => Utils.getInstructionType(invalidInstruction)).throwError(
-        'Invalid transaction, instruction program id not supported: ' + voteAddress,
+        'Invalid transaction, instruction program id not supported: ' + voteAddress
       );
     });
   });
@@ -263,7 +263,7 @@ describe('SOL util library', function () {
         programId: new PublicKey(programId),
       });
       should(() => Utils.validateIntructionTypes([assignInstruction])).throwError(
-        'Invalid transaction, instruction type not supported: ' + Utils.getInstructionType(assignInstruction),
+        'Invalid transaction, instruction type not supported: ' + Utils.getInstructionType(assignInstruction)
       );
     });
   });

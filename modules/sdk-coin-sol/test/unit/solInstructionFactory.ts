@@ -1,8 +1,8 @@
 import should from 'should';
-import * as testData from '../../../resources/sol/sol';
-import { solInstructionFactory } from '../../../../src/coin/sol/solInstructionFactory';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../../../src/coin/sol/constants';
-import { InstructionParams } from '../../../../src/coin/sol/iface';
+import * as testData from '../resources/sol';
+import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
+import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
+import { InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
@@ -80,7 +80,7 @@ describe('Instruction Builder Tests: ', function () {
           noncePubkey: new PublicKey(nonceAddress),
           authorizedPubkey: new PublicKey(authAddress),
           lamports: new BigNumber(amount).toNumber(),
-        }).instructions,
+        }).instructions
       );
     });
 
@@ -108,7 +108,7 @@ describe('Instruction Builder Tests: ', function () {
           new PublicKey(mintAddress),
           new PublicKey(ataAddress),
           new PublicKey(ownerAddress),
-          new PublicKey(payerAddress),
+          new PublicKey(payerAddress)
         ),
       ]);
     });
@@ -142,7 +142,7 @@ describe('Instruction Builder Tests: ', function () {
           new PublicKey(fromAddress),
           [],
           new BigNumber(amount).toNumber(),
-          9,
+          9
         ),
       ]);
     });
@@ -152,7 +152,7 @@ describe('Instruction Builder Tests: ', function () {
     it('Invalid type', () => {
       // @ts-expect-error Testing for an invalid type, should throw error
       should(() => solInstructionFactory({ type: 'random', params: {} })).throwError(
-        'Invalid instruction type or not supported',
+        'Invalid instruction type or not supported'
       );
     });
   });

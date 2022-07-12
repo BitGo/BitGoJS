@@ -3,6 +3,7 @@ import * as Interface from './iface';
 
 export { KeyPair } from './keyPair';
 export { Transaction } from './transaction';
+export { TransactionBuilder } from './transactionBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransferBuilder } from './transferBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';

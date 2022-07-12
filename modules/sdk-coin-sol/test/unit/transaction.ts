@@ -1,10 +1,10 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { KeyPair, Transaction, TransactionBuilderFactory } from '../../../../src/coin/sol';
-import * as testData from '../../../resources/sol/sol';
+import { KeyPair, Transaction } from '../../src/lib';
+import * as testData from '../resources/sol';
 import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
-import { register } from '../../../../src';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('Sol Transaction', () => {
   const coin = coins.get('tsol');
@@ -66,7 +66,7 @@ describe('Sol Transaction', () => {
       const txJson = tx.toJson();
       txJson.should.have.properties(['id', 'feePayer', 'nonce', 'numSignatures', 'instructionsData']);
       txJson.id?.should.equal(
-        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
+        '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy'
       );
       tx.signature.should.deepEqual([
         '23vsfSy9jzuuXDnqcawUPTbaQXD4kz3s62FiT8q1NxbedfC1vZ9VcNMau6nxnu1VghT1Tdh9voUB5FY1WmKozzZy',
@@ -215,7 +215,7 @@ describe('Sol Transaction', () => {
   });
 
   describe('explain transaction', function () {
-    const factory = register('tsol', TransactionBuilderFactory);
+    const factory = getBuilderFactory('tsol');
     const blockHash = testData.blockHashes.validBlockHashes[0];
     const sender = testData.authAccount.pub;
     const address = testData.addresses.validAddresses[0];

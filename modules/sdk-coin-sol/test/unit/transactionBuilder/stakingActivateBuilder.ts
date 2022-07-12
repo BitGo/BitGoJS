@@ -1,11 +1,11 @@
 import should from 'should';
 
-import * as testData from '../../../../resources/sol/sol';
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair, Utils } from '../../../../../src/coin/sol';
+import * as testData from '../../resources/sol';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair, Utils } from '../../../src';
 
 describe('Sol Staking Activate Builder', () => {
-  const factory = register('tsol', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tsol');
 
   const stakingBuilder = () => {
     const txBuilder = factory.getStakingActivateBuilder();
@@ -132,14 +132,14 @@ describe('Sol Staking Activate Builder', () => {
     it('for invalid staking address', () => {
       const txBuilder = stakingBuilder();
       should(() => txBuilder.stakingAddress(invalidPubKey)).throwError(
-        'Invalid or missing stakingAddress, got: ' + invalidPubKey,
+        'Invalid or missing stakingAddress, got: ' + invalidPubKey
       );
     });
 
     it('for invalid validator address', () => {
       const txBuilder = stakingBuilder();
       should(() => txBuilder.validator(invalidPubKey)).throwError(
-        'Invalid or missing validator, got: ' + invalidPubKey,
+        'Invalid or missing validator, got: ' + invalidPubKey
       );
     });
 

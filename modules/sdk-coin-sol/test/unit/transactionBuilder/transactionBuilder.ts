@@ -1,15 +1,15 @@
 import should from 'should';
 import * as bs58 from 'bs58';
 
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair } from '../../../../../src/coin/sol';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair } from '../../../src';
 import { Ed25519BIP32, Eddsa, TransactionType } from '@bitgo/sdk-core';
-import * as testData from '../../../../resources/sol/sol';
+import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 
 describe('Sol Transaction Builder', async () => {
   let builders;
-  const factory = register('tsol', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tsol');
   const authAccount = new KeyPair(testData.authAccount).getKeys();
   const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
   const validBlockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
@@ -56,7 +56,7 @@ describe('Sol Transaction Builder', async () => {
     should.equal(builtTx.type, TransactionType.WalletInitialization);
     should.equal(
       builtTx.id,
-      '2QdKALq4adaTahJH13AGzM5bAFuNshw43iQBdVS9D2Loq736zUgPXfHj32cNJKX6FyjUzYJhGfEyAAB5FgYUW6zR',
+      '2QdKALq4adaTahJH13AGzM5bAFuNshw43iQBdVS9D2Loq736zUgPXfHj32cNJKX6FyjUzYJhGfEyAAB5FgYUW6zR'
     );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
@@ -90,7 +90,7 @@ describe('Sol Transaction Builder', async () => {
     should.equal(builtTx.type, TransactionType.StakingActivate);
     should.equal(
       builtTx.id,
-      '2oA7BvodsSiDTfjjswMRmucj8WD86esqfvnSkqKiKtPZ8oXSGB72L87LMppw1Ag7PbEKsKLczqh2p6uzukuCTrhF',
+      '2oA7BvodsSiDTfjjswMRmucj8WD86esqfvnSkqKiKtPZ8oXSGB72L87LMppw1Ag7PbEKsKLczqh2p6uzukuCTrhF'
     );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
@@ -124,7 +124,7 @@ describe('Sol Transaction Builder', async () => {
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(
       builtTx.id,
-      '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT',
+      '5bzBmWctovza21BCUc9aywJjkKyvA1EKBEfL1RXHno4SGBSQ5Tcwq2geXMSEygoKM4ojAB47iTe4p9639yxFFndT'
     );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
@@ -224,21 +224,21 @@ describe('Sol Transaction Builder', async () => {
           txBuilder.nonce(validBlockhash, {
             walletNonceAddress: invalidPubKey,
             authWalletAddress: authAccount.pub,
-          }),
+          })
         ).throw('Invalid or missing walletNonceAddress, got: ' + invalidPubKey);
 
         should(() =>
           txBuilder.nonce(validBlockhash, {
             walletNonceAddress: nonceAccount.pub,
             authWalletAddress: invalidPubKey,
-          }),
+          })
         ).throw('Invalid or missing authWalletAddress, got: ' + invalidPubKey);
 
         should(() =>
           txBuilder.nonce(validBlockhash, {
             walletNonceAddress: nonceAccount.pub,
             authWalletAddress: nonceAccount.pub,
-          }),
+          })
         ).throw('Invalid params: walletNonceAddress cannot be equal to authWalletAddress');
       }
     });
@@ -252,7 +252,7 @@ describe('Sol Transaction Builder', async () => {
     it('should succeed for valid durable nonce', () => {
       for (const txBuilder of builders) {
         should.doesNotThrow(() =>
-          txBuilder.nonce(validBlockhash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub }),
+          txBuilder.nonce(validBlockhash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub })
         );
       }
     });
@@ -278,7 +278,7 @@ describe('Sol Transaction Builder', async () => {
     for (const builder of builders) {
       should.doesNotThrow(() => builder.validateAddress(validAddress));
       should(() => builder.validateAddress(invalidAddress)).throwError(
-        'Invalid address ' + testData.pubKeys.invalidPubKeys[0],
+        'Invalid address ' + testData.pubKeys.invalidPubKeys[0]
       );
     }
   });

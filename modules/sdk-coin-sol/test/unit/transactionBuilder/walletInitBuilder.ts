@@ -1,10 +1,10 @@
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory, KeyPair, Utils } from '../../../../../src/coin/sol';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair, Utils } from '../../../src';
 import should from 'should';
-import * as testData from '../../../../resources/sol/sol';
+import * as testData from '../../resources/sol';
 
 describe('Sol Wallet Initialization Builder', () => {
-  const factory = register('tsol', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tsol');
 
   const walletInitBuilder = () => {
     const txBuilder = factory.getWalletInitializationBuilder();
@@ -142,7 +142,7 @@ describe('Sol Wallet Initialization Builder', () => {
       it('for invalid nonceAddress', () => {
         const txBuilder = walletInitBuilder();
         should(() => txBuilder.address(invalidPubKey)).throwError(
-          'Invalid or missing nonceAddress, got: ' + invalidPubKey,
+          'Invalid or missing nonceAddress, got: ' + invalidPubKey
         );
       });
 
@@ -182,7 +182,7 @@ describe('Sol Wallet Initialization Builder', () => {
         const txBuilder = factory.from(testData.WALLET_INIT_UNSIGNED_TX);
         txBuilder.sign({ key: authAccount.prv });
         should(() => txBuilder.sign({ key: authAccount.prv })).throwError(
-          'Duplicated signer: ' + authAccount.prv?.toString(),
+          'Duplicated signer: ' + authAccount.prv?.toString()
         );
       });
     });

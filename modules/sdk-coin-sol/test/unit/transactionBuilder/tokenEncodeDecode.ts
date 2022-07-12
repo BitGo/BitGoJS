@@ -1,11 +1,11 @@
-import { KeyPair } from '../../../../../src/coin/sol';
-import * as testData from '../../../../resources/sol/sol';
+import { KeyPair } from '../../../src';
+import * as testData from '../../resources/sol';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
 import {
   DecodedTransferCheckedInstructionUnchecked,
   decodeTransferCheckedInstruction,
   TokenInstruction,
-} from '../../../../../src/coin/sol/tokenEncodeDecode';
+} from '../../../src/lib/tokenEncodeDecode';
 import { TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
 
 describe('Token Encode Decode Methods', () => {
@@ -42,7 +42,7 @@ describe('Token Encode Decode Methods', () => {
       owner,
       [],
       amount,
-      decimals,
+      decimals
     );
     const decoded = decodeTransferCheckedInstruction(instruction);
     decoded.should.deepEqual(expectedDecoded);
@@ -57,7 +57,7 @@ describe('Token Encode Decode Methods', () => {
         owner,
         [],
         amount,
-        decimals,
+        decimals
       );
       let failed = false;
       try {
