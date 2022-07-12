@@ -29,6 +29,9 @@
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-sol"
+    },
+    {
       "path": "../sdk-coin-stx"
     },
     {

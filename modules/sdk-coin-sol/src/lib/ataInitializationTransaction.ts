@@ -38,7 +38,7 @@ export class AtaInitializationTransaction extends Transaction {
         const token = getSolTokenFromAddress(instruction.params.mintAddress, this._coinConfig.network);
         if (!token) {
           throw new NotSupported(
-            'Invalid transaction, token mint address not supported: ' + instruction.params.mintAddress,
+            'Invalid transaction, token mint address not supported: ' + instruction.params.mintAddress
           );
         }
         inputs.push({

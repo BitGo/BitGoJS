@@ -86,7 +86,7 @@ export interface DecodedTransferCheckedInstruction {
  */
 export function decodeTransferCheckedInstruction(
   instruction: TransactionInstruction,
-  programId = TOKEN_PROGRAM_ID,
+  programId = TOKEN_PROGRAM_ID
 ): DecodedTransferCheckedInstruction {
   if (!instruction.programId.equals(programId)) throw new TokenInvalidInstructionProgramError();
 

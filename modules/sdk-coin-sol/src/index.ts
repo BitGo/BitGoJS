@@ -1,2 +1,1 @@
-export * from './sol';
-export * from './tsol';
+export * from './lib';

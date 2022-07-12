@@ -140,7 +140,7 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
     new PublicKey(fromAddress),
     [],
     new BigNumber(amount).toNumber(),
-    token.decimalPlaces,
+    token.decimalPlaces
   );
   return [transferInstruction];
 }
@@ -273,7 +273,7 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
     new PublicKey(mintAddress),
     new PublicKey(ataAddress),
     new PublicKey(ownerAddress),
-    new PublicKey(payerAddress),
+    new PublicKey(payerAddress)
   );
   return [associatedTokenAccountInstruction];
 }

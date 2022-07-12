@@ -37,7 +37,7 @@ import { coins, SolCoin } from '@bitgo/statics';
  */
 export function instructionParamsFactory(
   type: TransactionType,
-  instructions: TransactionInstruction[],
+  instructions: TransactionInstruction[]
 ): InstructionParams[] {
   switch (type) {
     case TransactionType.WalletInitialization:
@@ -67,7 +67,7 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
   const instructionData: Array<WalletInit | Memo> = [];
   const createInstruction = SystemInstruction.decodeCreateAccount(instructions[walletInitInstructionIndexes.Create]);
   const nonceInitInstruction = SystemInstruction.decodeNonceInitialize(
-    instructions[walletInitInstructionIndexes.InitializeNonceAccount],
+    instructions[walletInitInstructionIndexes.InitializeNonceAccount]
   );
 
   const walletInit: WalletInit = {
@@ -145,7 +145,7 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
         break;
       default:
         throw new NotSupported(
-          'Invalid transaction, instruction type not supported: ' + getInstructionType(instruction),
+          'Invalid transaction, instruction type not supported: ' + getInstructionType(instruction)
         );
     }
   }
@@ -162,13 +162,13 @@ function parseSendInstructions(instructions: TransactionInstruction[]): Array<No
 function parseStakingActivateInstructions(instructions: TransactionInstruction[]): Array<StakingActivate | Memo> {
   const instructionData: Array<StakingActivate | Memo> = [];
   const createInstruction = SystemInstruction.decodeCreateAccount(
-    instructions[stakingActivateInstructionsIndexes.Create],
+    instructions[stakingActivateInstructionsIndexes.Create]
   );
   const initializeInstruction = StakeInstruction.decodeInitialize(
-    instructions[stakingActivateInstructionsIndexes.Initialize],
+    instructions[stakingActivateInstructionsIndexes.Initialize]
   );
   const delegateInstruction = StakeInstruction.decodeDelegate(
-    instructions[stakingActivateInstructionsIndexes.Delegate],
+    instructions[stakingActivateInstructionsIndexes.Delegate]
   );
 
   const stakingActivate: StakingActivate = {
@@ -200,7 +200,7 @@ function parseStakingActivateInstructions(instructions: TransactionInstruction[]
 function parseStakingDeactivateInstructions(instructions: TransactionInstruction[]): Array<StakingDeactivate | Memo> {
   const instructionData: Array<StakingDeactivate | Memo> = [];
   const deactivateInstruction = StakeInstruction.decodeDeactivate(
-    instructions[stakingDeactivateInstructionsIndexes.Deactivate],
+    instructions[stakingDeactivateInstructionsIndexes.Deactivate]
   );
   const stakingDeactivate: StakingDeactivate = {
     type: InstructionBuilderTypes.StakingDeactivate,
@@ -228,7 +228,7 @@ function parseStakingDeactivateInstructions(instructions: TransactionInstruction
 function parseStakingWithdrawInstructions(instructions: TransactionInstruction[]): Array<StakingWithdraw | Memo> {
   const instructionData: Array<StakingWithdraw | Memo> = [];
   const withdrawInstruction = StakeInstruction.decodeWithdraw(
-    instructions[stakingWithdrawInstructionsIndexes.Withdraw],
+    instructions[stakingWithdrawInstructionsIndexes.Withdraw]
   );
 
   const stakingWithdraw: StakingWithdraw = {

@@ -376,7 +376,7 @@ export class Transaction extends BaseTransaction {
     outputAmount: BigNumber,
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
-    durableNonce: undefined | DurableNonceParams = undefined,
+    durableNonce: undefined | DurableNonceParams = undefined
   ): TransactionExplanation {
     const feeString = this.lamportsPerSignature
       ? new BigNumber(this.lamportsPerSignature).multipliedBy(this.numberOfRequiredSignatures).toFixed(0)

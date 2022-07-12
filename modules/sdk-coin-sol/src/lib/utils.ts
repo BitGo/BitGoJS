@@ -212,7 +212,7 @@ export function requiresAllSignatures(signatures: SignaturePubkeyPair[]): boolea
  */
 export function matchTransactionTypeByInstructionsOrder(
   instructions: TransactionInstruction[],
-  instructionIndexes: Record<string, number>,
+  instructionIndexes: Record<string, number>
 ): boolean {
   const instructionsKeys = Object.keys(instructionIndexes);
 
@@ -277,12 +277,12 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
         return 'InitializeAssociatedTokenAccount';
       } else {
         throw new NotSupported(
-          'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
+          'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
         );
       }
     default:
       throw new NotSupported(
-        'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString(),
+        'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
       );
   }
 }
@@ -380,7 +380,7 @@ export async function getAssociatedTokenAccountAddress(tokenAddress: string, own
     ASSOCIATED_TOKEN_PROGRAM_ID,
     TOKEN_PROGRAM_ID,
     new PublicKey(tokenAddress),
-    new PublicKey(ownerAddress),
+    new PublicKey(ownerAddress)
   );
   return ataAddress.toString();
 }
