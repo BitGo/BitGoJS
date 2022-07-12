@@ -1,18 +1,17 @@
 import * as sinon from 'sinon';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import * as testData from '../../fixtures/coins/sol';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import * as testData from '../fixtures/sol';
 import * as should from 'should';
-// eslint-disable-next-line import/no-internal-modules
-import * as resources from '@bitgo/account-lib/test/resources/sol/sol';
+import * as resources from '../resources/sol';
 import * as _ from 'lodash';
-import * as accountLib from '@bitgo/account-lib';
-import { Sol, Tsol } from '../../../../src/v2/coins/';
+import { KeyPair, Sol, Tsol } from '../../src';
 import { TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SOL:', function () {
-  let bitgo;
-  let basecoin;
+  let bitgo: TestBitGoAPI;
+  let basecoin: Sol;
   let keyPair;
   let newTxPrebuild;
   let newTxParams;
@@ -80,17 +79,19 @@ describe('SOL:', function () {
   };
   const errorMemo = { value: 'different memo' };
   const errorFeePayer = '5hr5fisPi6DXCuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe';
-  const factory = accountLib.register('tsol', accountLib.Sol.TransactionBuilderFactory);
-  const wallet = new accountLib.Sol.KeyPair(resources.authAccount).getKeys();
-  const stakeAccount = new accountLib.Sol.KeyPair(resources.stakeAccount).getKeys();
+  const factory = getBuilderFactory('tsol');
+  const wallet = new KeyPair(resources.authAccount).getKeys();
+  const stakeAccount = new KeyPair(resources.stakeAccount).getKeys();
   const blockHash = resources.blockHashes.validBlockHashes[0];
   const amount = '10000';
   const validator = resources.validator;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('sol', Tsol.createInstance);
+    bitgo.safeRegister('tsol', Tsol.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tsol');
+    basecoin = bitgo.coin('tsol') as Tsol;
     keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);
@@ -114,7 +115,7 @@ describe('SOL:', function () {
     localBasecoin.should.be.an.instanceof(Sol);
   });
 
-  it('should retun the right info', function() {
+  it('should retun the right info', function () {
     basecoin.getChain().should.equal('tsol');
     basecoin.getFamily().should.equal('sol');
     basecoin.getFullName().should.equal('Testnet Sol');
@@ -139,7 +140,13 @@ describe('SOL:', function () {
     it('should verify transactions', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -163,7 +170,13 @@ describe('SOL:', function () {
       };
       const walletWithDifferentAddress = new Wallet(bitgo, basecoin, walletData);
 
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletWithDifferentAddress });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletWithDifferentAddress,
+      } as any);
       validTransaction.should.be.true();
     });
 
@@ -172,7 +185,13 @@ describe('SOL:', function () {
       const txPrebuild = newTxPrebuild();
       txPrebuild.txHex = txPrebuild.txBase64;
       txPrebuild.txBase64 = undefined;
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -180,7 +199,13 @@ describe('SOL:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txBase64 = Buffer.from(txPrebuild.txBase64, 'base64').toString('hex');
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -188,20 +213,30 @@ describe('SOL:', function () {
       const txParams = newTxParams();
       txParams.recipients = undefined;
       const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
     it('should fail verify transactions when have different memo', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer, wallet: walletObj }).should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
 
     it('should fail verify transactions when have different durableNonce', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorDurableNonce, wallet: walletObj }).should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, errorDurableNonce, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx durableNonce does not match with param durableNonce');
     });
 
     it('should fail verify transactions when have different feePayer', async function () {
@@ -222,19 +257,29 @@ describe('SOL:', function () {
       };
       const walletWithDifferentAddress = new Wallet(bitgo, basecoin, walletData);
 
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletWithDifferentAddress }).should.be.rejectedWith('Tx fee payer is not the wallet root address');
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletWithDifferentAddress } as any)
+        .should.be.rejectedWith('Tx fee payer is not the wallet root address');
     });
 
     it('should fail verify transactions when have different recipients', async function () {
       const txParams = newTxParamsWithError();
       const txPrebuild = newTxPrebuild();
-      await basecoin.verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer, wallet: walletObj }).should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, memo, errorFeePayer, wallet: walletObj } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
     it('should succeed to verify transactions when recipients has extra data', async function () {
       const txParams = newTxParamsWithExtraData();
       const txPrebuild = newTxPrebuild();
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, durableNonce, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -260,7 +305,12 @@ describe('SOL:', function () {
           amount: amount,
         },
       ];
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -285,7 +335,12 @@ describe('SOL:', function () {
           amount: amount,
         },
       ];
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -304,7 +359,12 @@ describe('SOL:', function () {
       txPrebuild.txBase64 = txToBroadcastFormat;
       txPrebuild.txInfo.nonce = '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen';
       txParams.recipients = [];
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
 
@@ -323,43 +383,47 @@ describe('SOL:', function () {
       txPrebuild.txBase64 = txToBroadcastFormat;
       txPrebuild.txInfo.nonce = blockHash;
       txParams.recipients = [];
-      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj });
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
       validTransaction.should.equal(true);
     });
   });
 
-
-  it('should accept valid address', (function () {
-    goodAddresses.forEach(addr => {
+  it('should accept valid address', function () {
+    goodAddresses.forEach((addr) => {
       basecoin.isValidAddress(addr).should.equal(true);
     });
-  }));
+  });
 
-  it('should reject invalid address', (function () {
-    badAddresses.forEach(addr => {
+  it('should reject invalid address', function () {
+    badAddresses.forEach((addr) => {
       basecoin.isValidAddress(addr).should.equal(false);
     });
-  }));
+  });
 
-  it('should check valid pub keys', (function () {
+  it('should check valid pub keys', function () {
     keyPair.should.have.property('pub');
     basecoin.isValidPub(keyPair.pub).should.equal(true);
-  }));
+  });
 
-  it('should check an invalid pub keys', (function () {
+  it('should check an invalid pub keys', function () {
     const badPubKey = keyPair.pub.slice(0, keyPair.pub.length - 1) + '-';
     basecoin.isValidPub(badPubKey).should.equal(false);
-  }));
+  });
 
-  it('should check valid prv keys', (function () {
+  it('should check valid prv keys', function () {
     keyPair.should.have.property('prv');
     basecoin.isValidPrv(keyPair.prv).should.equal(true);
-  }));
+  });
 
-  it('should check an invalid prv keys', (function () {
+  it('should check an invalid prv keys', function () {
     const badPrvKey = keyPair.prv ? keyPair.prv.slice(0, keyPair.prv.length - 1) + '-' : undefined;
-    basecoin.isValidPrv(badPrvKey).should.equal(false);
-  }));
+    basecoin.isValidPrv(badPrvKey as string).should.equal(false);
+  });
 
   describe('Parse Transactions:', () => {
     it('should parse an unsigned transfer transaction', async function () {
@@ -371,10 +435,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-          amount: 305000,
-        }],
+        inputs: [
+          {
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: 305000,
+          },
+        ],
         outputs: [
           {
             address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
@@ -393,10 +459,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
-          amount: 305000,
-        }],
+        inputs: [
+          {
+            address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
+            amount: 305000,
+          },
+        ],
         outputs: [
           {
             address: 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S',
@@ -415,10 +483,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-          amount: 310000,
-        }],
+        inputs: [
+          {
+            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+            amount: 310000,
+          },
+        ],
         outputs: [
           {
             address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -437,10 +507,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
-          amount: 310000,
-        }],
+        inputs: [
+          {
+            address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
+            amount: 310000,
+          },
+        ],
         outputs: [
           {
             address: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
@@ -459,10 +531,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-          amount: 5000,
-        }],
+        inputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: 5000,
+          },
+        ],
         outputs: [
           {
             address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
@@ -482,10 +556,12 @@ describe('SOL:', function () {
       });
 
       parsedTransaction.should.deepEqual({
-        inputs: [{
-          address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
-          amount: 5000,
-        }],
+        inputs: [
+          {
+            address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
+            amount: 5000,
+          },
+        ],
         outputs: [
           {
             address: 'pawmCBB675AuisYnaKdhkGtTkBBEkUjk3R4UsAdKpPY',
@@ -664,7 +740,7 @@ describe('SOL:', function () {
       });
     });
 
-    it('should explain an unsigned token transfer transaction', async function() {
+    it('should explain an unsigned token transfer transaction', async function () {
       const explainedTransaction = await basecoin.explainTransaction({
         txBase64: testData.rawTransactions.transferToken.unsigned,
         feeInfo: {
@@ -953,68 +1029,71 @@ describe('SOL:', function () {
 
   describe('Keypair:', () => {
     it('should generate a keypair from random seed', function () {
-      should.throws(() => basecoin.generateKeyPair('placeholder'), 'generateKeyPair method not implemented');
+      should.throws(() => basecoin.generateKeyPair('placeholder' as any), 'generateKeyPair method not implemented');
     });
 
     it('should generate a keypair from a seed', function () {
-      should.throws(() => basecoin.generateKeyPair('placeholder'), 'generateKeyPair method not implemented');
+      should.throws(() => basecoin.generateKeyPair('placeholder' as any), 'generateKeyPair method not implemented');
     });
   });
 
   describe('Sign transaction:', () => {
     it('should sign transaction', async function () {
-      const signed = await basecoin.signTransaction({
+      const signed: any = await basecoin.signTransaction({
         txPrebuild: {
           txBase64: resources.RAW_TX_UNSIGNED,
           keys: [resources.accountWithSeed.publicKey.toString()],
         },
         prv: resources.accountWithSeed.privateKey.base58,
-      });
+      } as any);
       signed.txHex.should.equal(resources.RAW_TX_SIGNED);
     });
 
     it('should handle txHex and txBase64 interchangeably', async function () {
-      const signed = await basecoin.signTransaction({
+      const signed: any = await basecoin.signTransaction({
         txPrebuild: {
           txHex: resources.RAW_TX_UNSIGNED,
           keys: [resources.accountWithSeed.publicKey.toString()],
         },
         prv: resources.accountWithSeed.privateKey.base58,
-      });
+      } as any);
       signed.txHex.should.equal(resources.RAW_TX_SIGNED);
     });
 
     it('should throw invalid transaction when sign with public key', async function () {
-      await basecoin.signTransaction({
-        txPrebuild: {
-          txBase64: resources.RAW_TX_UNSIGNED,
-          keys: [resources.accountWithSeed.publicKey.toString()],
-        },
-        prv: resources.accountWithSeed.publicKey,
-      }).should.be.rejectedWith('Invalid key');
+      await basecoin
+        .signTransaction({
+          txPrebuild: {
+            txBase64: resources.RAW_TX_UNSIGNED,
+            keys: [resources.accountWithSeed.publicKey.toString()],
+          },
+          prv: resources.accountWithSeed.publicKey,
+        } as any)
+        .should.be.rejectedWith('Invalid key');
     });
   });
 
   describe('Sign message', () => {
     it('should sign message', async function () {
-      const signed = await basecoin.signMessage(
-        keypair,
-        'signed message',
-      );
-      signed.toString('base64').should.equal('s+7d/8aW/twfM/0wLSKOGxd9+LhDIiz/g0FfJ39ylJhQIkjK0RYPm/Y+gdeJ5DIy6K6h6gCXXESDomlv12DBBQ==');
+      const signed = await basecoin.signMessage(keypair, 'signed message');
+      signed
+        .toString('base64')
+        .should.equal('s+7d/8aW/twfM/0wLSKOGxd9+LhDIiz/g0FfJ39ylJhQIkjK0RYPm/Y+gdeJ5DIy6K6h6gCXXESDomlv12DBBQ==');
     });
     it('shouldnt sign message when message is undefined', async function () {
-      await basecoin.signMessage(
-        keypair,
-      ).should.be.rejectedWith('The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined');
+      await basecoin
+        .signMessage(keypair, undefined as any)
+        .should.be.rejectedWith(
+          'The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined'
+        );
     });
   });
 
   describe('Get Signing Payload', () => {
-
     it('should return a valid signing payload', async function () {
-      const factory = accountLib.register(basecoin.getChain(), accountLib.Sol.TransactionBuilderFactory);
-      const rebuiltSignablePayload = (await factory.from(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO).build()).signablePayload;
+      const factory = getBuilderFactory(basecoin.getChain());
+      const rebuiltSignablePayload = (await factory.from(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO).build())
+        .signablePayload;
       const signingPayload = await basecoin.getSignablePayload(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO);
       signingPayload.should.be.deepEqual(rebuiltSignablePayload);
     });
@@ -1035,11 +1114,13 @@ describe('SOL:', function () {
     it('should rebuild tx request for hot wallets', async () => {
       const rebuiltTx: TxRequest = {
         txRequestId,
-        unsignedTxs: [{
-          serializedTxHex: 'deadbeef',
-          signableHex: 'serializedTxHex',
-          derivationPath: 'm/0',
-        }],
+        unsignedTxs: [
+          {
+            serializedTxHex: 'deadbeef',
+            signableHex: 'serializedTxHex',
+            derivationPath: 'm/0',
+          },
+        ],
         transactions: [],
         date: new Date().toISOString(),
         intent: {
@@ -1061,13 +1142,13 @@ describe('SOL:', function () {
       const hotWallet = {
         type: 'hot',
       };
-      const presignedTransaction = await basecoin.presignTransaction({
+      const presignedTransaction: any = await basecoin.presignTransaction({
         walletData: hotWallet,
         tssUtils: stubTssUtils,
         txPrebuild: {
           txRequestId,
         },
-      });
+      } as any);
 
       presignedTransaction.walletData.should.deepEqual(hotWallet);
       presignedTransaction.txPrebuild.should.deepEqual(rebuiltTx);
@@ -1081,7 +1162,7 @@ describe('SOL:', function () {
 
       const presignedTransaction = await basecoin.presignTransaction({
         walletData: coldWallet,
-      });
+      } as any);
       presignedTransaction.should.deepEqual({
         walletData: coldWallet,
       });
@@ -1091,10 +1172,12 @@ describe('SOL:', function () {
       const hotWallet = {
         type: 'hot',
       };
-      await basecoin.presignTransaction({
-        walletData: hotWallet,
-        txPrebuild: {},
-      }).should.rejectedWith('Missing txRequestId');
+      await basecoin
+        .presignTransaction({
+          walletData: hotWallet,
+          txPrebuild: {},
+        } as any)
+        .should.rejectedWith('Missing txRequestId');
     });
   });
 });
