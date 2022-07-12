@@ -1,12 +1,13 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Rbtc } from '../../../../../src';
-import * as testData from '../../../../resources/rbtc/rbtc';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilder } from '../../../src';
+import * as testData from '../../resources';
 
 describe('Rbtc wallet initialization', function () {
-  let txBuilder: Rbtc.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+    txBuilder = new TransactionBuilder(coins.get('trbtc'));
     txBuilder.fee({
       fee: '100000000',
       gasLimit: '6800000',
@@ -34,7 +35,7 @@ describe('Rbtc wallet initialization', function () {
     });
 
     it('a signed init transaction from serialized', async () => {
-      const newTxBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('trbtc'));
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
@@ -71,7 +72,7 @@ describe('Rbtc wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('trbtc'));
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
@@ -85,7 +86,7 @@ describe('Rbtc wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+      const newTxBuilder = new TransactionBuilder(coins.get('trbtc'));
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);

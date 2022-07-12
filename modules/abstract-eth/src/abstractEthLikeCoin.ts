@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as bip32 from 'bip32';
 import { randomBytes } from 'crypto';
 

@@ -47,6 +47,8 @@ COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 RUN cd /var/modules/sjcl && yarn link
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 RUN cd /var/modules/unspents && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
+RUN cd /var/modules/sdk-coin-avaxc && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 RUN cd /var/modules/sdk-coin-avaxp && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
@@ -79,6 +81,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-dash /var/modules/sdk-coin-dash/
 RUN cd /var/modules/sdk-coin-dash && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 RUN cd /var/modules/sdk-coin-ltc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
+RUN cd /var/modules/sdk-coin-rbtc && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
 RUN cd /var/modules/sdk-coin-xrp && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
@@ -100,6 +104,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/sjcl && \
     yarn link @bitgo/unspents && \
+    yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-eth && \
@@ -116,6 +121,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-celo && \
     yarn link @bitgo/sdk-coin-dash && \
     yarn link @bitgo/sdk-coin-ltc && \
+    yarn link @bitgo/sdk-coin-rbtc && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END

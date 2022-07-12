@@ -4,12 +4,18 @@
     "outDir": "./dist",
     "rootDir": "./",
     "strictPropertyInitialization": false,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
+    {
+      "path": "../abstract-eth"
+    },
+    {
+      "path": "../sdk-api"
+    },
     {
       "path": "../sdk-coin-eth"
     },
@@ -18,6 +24,9 @@
     },
     {
       "path": "../statics"
+    },
+    {
+      "path": "../sdk-test"
     }
   ]
 }

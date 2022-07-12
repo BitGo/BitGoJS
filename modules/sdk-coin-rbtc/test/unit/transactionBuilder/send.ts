@@ -2,15 +2,16 @@ import should from 'should';
 import * as ethUtil from '@bitgo/ethereumjs-utils-old';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Rbtc } from '../../../../../src';
-import * as testData from '../../../../resources/rbtc/rbtc';
+import { KeyPair, TransactionBuilder } from '../../../src';
+import * as testData from '../../resources';
 import { decodeTransferData } from '@bitgo/sdk-coin-eth';
+import { coins } from '@bitgo/statics';
 
 describe('Rbtc send transaction', function () {
-  let txBuilder: Rbtc.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const contractAddress = '0xab52bc0aff1b4851a60c1e5e628b1da995445651';
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+    txBuilder = new TransactionBuilder(coins.get('trbtc'));
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -111,12 +112,12 @@ describe('Rbtc send transaction', function () {
     const { v, r, s } = ethUtil.fromRpcSig(signature);
     const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
     const senderAddress = ethUtil.pubToAddress(senderPubKey);
-    const senderKey = new Rbtc.KeyPair({ prv: testData.PRIVATE_KEY_1 });
+    const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
     ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
   });
 
   it('a send token transactions from serialized', async () => {
-    const txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+    const txBuilder = new TransactionBuilder(coins.get('trbtc'));
     txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
     const tx = await txBuilder.build();
     should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
@@ -127,21 +128,21 @@ describe('Rbtc send transaction', function () {
     const { v, r, s } = ethUtil.fromRpcSig(signature);
     const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
     const senderAddress = ethUtil.pubToAddress(senderPubKey);
-    const senderKey = new Rbtc.KeyPair({ prv: testData.PRIVATE_KEY_1 });
+    const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
     ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
   });
 });
 
 describe('should sign and build from serialized', () => {
   it('a send funds transaction from serialized', async () => {
-    const txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+    const txBuilder = new TransactionBuilder(coins.get('trbtc'));
     txBuilder.from(testData.SEND_TX_BROADCAST);
     const signedTx = await txBuilder.build();
     should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
   });
 
   it('a send funds transaction with amount 0 from serialized', async () => {
-    const txBuilder = getBuilder('trbtc') as Rbtc.TransactionBuilder;
+    const txBuilder = new TransactionBuilder(coins.get('trbtc'));
     txBuilder.from(testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
     const signedTx = await txBuilder.build();
     should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

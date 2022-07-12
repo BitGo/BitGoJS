@@ -65,6 +65,9 @@
       "path": "./modules/sdk-coin-ltc"
     },
     {
+      "path": "./modules/sdk-coin-rbtc"
+    },
+    {
       "path": "./modules/sdk-coin-stx"
     },
     {

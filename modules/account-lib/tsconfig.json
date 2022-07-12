@@ -32,6 +32,9 @@
       "path": "../sdk-coin-stx"
     },
     {
+      "path": "../sdk-coin-rbtc"
+    },
+    {
       "path": "../sdk-coin-xtz"
     },
     {
