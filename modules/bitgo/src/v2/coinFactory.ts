@@ -18,6 +18,7 @@ import {
   CeloToken,
   Cspr,
   Dash,
+  Doge,
   Eos,
   EosToken,
   Erc20Token,
@@ -47,6 +48,7 @@ import {
   Tcelo,
   Tcspr,
   Tdash,
+  Tdoge,
   Teos,
   Tetc,
   Teth,
@@ -92,6 +94,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('celo', Celo.createInstance);
   globalCoinFactory.register('cspr', Cspr.createInstance);
   globalCoinFactory.register('dash', Dash.createInstance);
+  globalCoinFactory.register('doge', Doge.createInstance);
   globalCoinFactory.register('dot', Dot.createInstance);
   globalCoinFactory.register('eos', Eos.createInstance);
   globalCoinFactory.register('etc', Etc.createInstance);
@@ -120,6 +123,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
   globalCoinFactory.register('tcspr', Tcspr.createInstance);
   globalCoinFactory.register('tdash', Tdash.createInstance);
+  globalCoinFactory.register('tdoge', Tdoge.createInstance);
   globalCoinFactory.register('tdot', Tdot.createInstance);
   globalCoinFactory.register('teos', Teos.createInstance);
   globalCoinFactory.register('tetc', Tetc.createInstance);

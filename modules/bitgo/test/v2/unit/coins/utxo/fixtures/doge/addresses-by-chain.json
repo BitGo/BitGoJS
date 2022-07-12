@@ -1,0 +1,98 @@
+[
+  [
+    {
+      "chain": "default"
+    },
+    {
+      "address": "9uChwvGYk4DRR7HBrWtAAwvg8925VtQqDn",
+      "chain": 0,
+      "index": 0,
+      "coin": "doge",
+      "coinSpecific": {
+        "outputScript": "a9141e57a925dd863a86af341037e700862bf66bf7b687",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 0
+    },
+    {
+      "address": "9uChwvGYk4DRR7HBrWtAAwvg8925VtQqDn",
+      "chain": 0,
+      "index": 0,
+      "coin": "doge",
+      "coinSpecific": {
+        "outputScript": "a9141e57a925dd863a86af341037e700862bf66bf7b687",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 1
+    },
+    {
+      "address": "9xae6AdiekWGuFXbSuCGUFdzPc8RyQ9USD",
+      "chain": 1,
+      "index": 0,
+      "coin": "doge",
+      "coinSpecific": {
+        "outputScript": "a9144365f80ae9830dab1d9124be68c74c2fa23bbc1287",
+        "redeemScript": "522102d06c08ccf0fddefff881e869b951d4b92e936118b3360182c5b8c55f4c40bc6121030795af84ecc10252d8a894f54845beeb5624a1c24c3747cc654bd430539dee3521029b30ebe8eb23f8cec82f25a80e3b423979ec3ba1fe07d9d4ed9f6361258bc31d53ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 10
+    },
+    {
+      "error": "p2shP2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 11
+    },
+    {
+      "error": "p2shP2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 20
+    },
+    {
+      "error": "p2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 21
+    },
+    {
+      "error": "p2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 30
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 31
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ]
+]

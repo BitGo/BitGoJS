@@ -18,6 +18,8 @@ import { Cspr, Tcspr } from '@bitgo/sdk-coin-cspr';
 export { Cspr, Tcspr };
 import { Dash, Tdash } from '@bitgo/sdk-coin-dash';
 export { Dash, Tdash };
+import { Doge, Tdoge } from '@bitgo/sdk-coin-doge';
+export { Doge, Tdoge };
 import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';
 export { Erc20Token, Eth, Gteth, Teth };
 import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';
