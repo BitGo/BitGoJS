@@ -11,10 +11,10 @@
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../account-lib"
+      "path": "../sdk-core"
     },
     {
-      "path": "../sdk-core"
+      "path": "../sdk-coin-eth"
     },
     {
       "path": "../statics"

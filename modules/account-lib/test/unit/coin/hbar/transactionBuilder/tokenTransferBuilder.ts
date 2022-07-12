@@ -31,9 +31,12 @@ describe('HBAR Token Transfer Builder', () => {
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(tx.signature.length, 1);
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TOKEN_TRANSFER_TRANSACTION);
@@ -57,9 +60,12 @@ describe('HBAR Token Transfer Builder', () => {
         const builder = initTxBuilder('0');
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '0');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '0',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
       });
@@ -69,9 +75,12 @@ describe('HBAR Token Transfer Builder', () => {
         builder.memo('This is an example');
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.memo, 'This is an example');
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
@@ -84,9 +93,12 @@ describe('HBAR Token Transfer Builder', () => {
         builder.node({ nodeId: '0.0.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TOKEN_TRANSFER_TRANSACTION);
@@ -104,10 +116,14 @@ describe('HBAR Token Transfer Builder', () => {
         builder.node({ nodeId: '5.2.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '3.4.567');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: '3.4.567',
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.node, '5.2.2345');
         should.deepEqual(txJson.from, '2.3.456');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
       });
 
       it('a token transaction between accounts without realm and shard', async () => {
@@ -122,10 +138,62 @@ describe('HBAR Token Transfer Builder', () => {
         builder.node({ nodeId: '2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '0.0.567');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: '0.0.567',
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
         should.deepEqual(txJson.node, '0.0.2345');
         should.deepEqual(txJson.from, '0.0.456');
-        should.deepEqual(txJson.tokenName, TOKEN_NAME);
+      });
+
+      it('a transfer transaction with multiple recipients', async () => {
+        const builder = initTxBuilder();
+        builder.validDuration(1000000);
+        builder.node({ nodeId: '0.0.2345' });
+        builder.startTime('1596110493.372646570');
+        builder.send({
+          address: testData.ACCOUNT_3.accountId,
+          amount: '15',
+          tokenName: TOKEN_NAME,
+        });
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        txJson.instructionsData.params.recipients.length.should.equal(2);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+          tokenName: TOKEN_NAME,
+        });
+        txJson.instructionsData.params.recipients[1].should.deepEqual({
+          address: testData.ACCOUNT_3.accountId,
+          amount: '15',
+          tokenName: TOKEN_NAME,
+        });
+        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
+        should.deepEqual(txJson.fee.toString(), testData.FEE);
+
+        tx.outputs.length.should.equal(2);
+        tx.outputs[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          value: '10',
+          coin: TOKEN_NAME,
+        });
+        tx.outputs[1].should.deepEqual({
+          address: testData.ACCOUNT_3.accountId,
+          value: '15',
+          coin: TOKEN_NAME,
+        });
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].should.deepEqual({
+          address: testData.ACCOUNT_1.accountId,
+          value: '25',
+          coin: TOKEN_NAME,
+        });
+
+        should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION);
       });
     });
 
@@ -135,6 +203,14 @@ describe('HBAR Token Transfer Builder', () => {
         builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx2 = await builder.build();
         should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TOKEN_TRANSFER_TRANSACTION);
+        tx2.type.should.equal(TransactionType.Send);
+      });
+
+      it('a non signed multirecipients token transfer transaction from serialized', async () => {
+        const builder = factory.from(testData.NON_SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION);
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
+        const tx2 = await builder.build();
+        should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION);
         tx2.type.should.equal(TransactionType.Send);
       });
 

@@ -3,9 +3,9 @@
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
+import { Rbtc } from './rbtc';
 
-export class Trbtc extends AbstractEthLikeCoin {
+export class Trbtc extends Rbtc {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }

@@ -1,0 +1,60 @@
+{
+  "name": "@bitgo/sdk-coin-avaxc",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Avalanche c-chain",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-avaxc"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^1.1.0-rc.24",
+    "@bitgo/sdk-coin-eth": "^1.0.1-rc.1",
+    "@bitgo/statics": "^7.0.0-rc.0",
+    "@ethereumjs/common": "^2.4.0",
+    "bignumber.js": "^8.0.1",
+    "bip32": "^2.0.6",
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-util": "6.2.1",
+    "keccak": "^3.0.2",
+    "lodash": "^4.17.14",
+    "secp256k1": "^4.0.2"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.0-rc.27",
+    "@bitgo/sdk-test": "^1.0.1-rc.13"
+  }
+}

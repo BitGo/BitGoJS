@@ -12,8 +12,10 @@ describe('HBAR Transfer Builder', () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ fee: testData.FEE });
     txBuilder.source({ address: testData.ACCOUNT_1.accountId });
-    txBuilder.to(testData.ACCOUNT_2.accountId);
-    txBuilder.amount('10');
+    txBuilder.send({
+      address: testData.ACCOUNT_2.accountId,
+      amount: '10',
+    });
     return txBuilder;
   };
 
@@ -30,6 +32,11 @@ describe('HBAR Transfer Builder', () => {
         should.deepEqual(tx.signature.length, 1);
         should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
         should.deepEqual(txJson.amount, '10');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
@@ -57,12 +64,23 @@ describe('HBAR Transfer Builder', () => {
       });
 
       it('a transfer transaction with amount 0', async () => {
-        const builder = initTxBuilder();
-        builder.amount('0');
+        const builder = factory.getTransferBuilder();
+        builder.fee({ fee: testData.FEE });
+        builder.source({ address: testData.ACCOUNT_1.accountId });
+        builder.send({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '0',
+        });
+
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
         should.deepEqual(txJson.amount, '0');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '0',
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
       });
@@ -74,6 +92,11 @@ describe('HBAR Transfer Builder', () => {
         const txJson = tx.toJson();
         should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
         should.deepEqual(txJson.amount, '10');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+        });
         should.deepEqual(txJson.memo, 'This is an example');
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
@@ -88,6 +111,11 @@ describe('HBAR Transfer Builder', () => {
         const txJson = tx.toJson();
         should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
         should.deepEqual(txJson.amount, '10');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+        });
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TRANSFER_TRANSACTION);
@@ -107,12 +135,19 @@ describe('HBAR Transfer Builder', () => {
         const builder = factory.getTransferBuilder();
         builder.fee({ fee: testData.FEE });
         builder.source({ address: '2.3.456' });
-        builder.to('3.4.567');
-        builder.amount('10');
+        builder.send({
+          address: '3.4.567',
+          amount: '10',
+        });
         builder.node({ nodeId: '5.2.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(txJson.to, '3.4.567');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: '3.4.567',
+          amount: '10',
+        });
         should.deepEqual(txJson.node, '5.2.2345');
         should.deepEqual(txJson.from, '2.3.456');
       });
@@ -121,14 +156,57 @@ describe('HBAR Transfer Builder', () => {
         const builder = factory.getTransferBuilder();
         builder.fee({ fee: testData.FEE });
         builder.source({ address: '456' });
-        builder.to('567');
-        builder.amount('10');
+        builder.send({
+          address: '567',
+          amount: '10',
+        });
         builder.node({ nodeId: '2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(txJson.to, '0.0.567');
+        txJson.instructionsData.params.recipients.length.should.equal(1);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: '0.0.567',
+          amount: '10',
+        });
         should.deepEqual(txJson.node, '0.0.2345');
         should.deepEqual(txJson.from, '0.0.456');
+      });
+
+      it('a transfer transaction with multiple recipients', async () => {
+        const builder = initTxBuilder();
+        builder.validDuration(1000000);
+        builder.node({ nodeId: '0.0.2345' });
+        builder.startTime('1596110493.372646570');
+        builder.send({
+          address: testData.ACCOUNT_3.accountId,
+          amount: '15',
+        });
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        txJson.instructionsData.params.recipients.length.should.equal(2);
+        txJson.instructionsData.params.recipients[0].should.deepEqual({
+          address: testData.ACCOUNT_2.accountId,
+          amount: '10',
+        });
+        txJson.instructionsData.params.recipients[1].should.deepEqual({
+          address: testData.ACCOUNT_3.accountId,
+          amount: '15',
+        });
+        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
+        should.deepEqual(txJson.fee.toString(), testData.FEE);
+
+        tx.outputs.length.should.equal(2);
+        tx.outputs[0].address.should.equal(testData.ACCOUNT_2.accountId);
+        tx.outputs[0].value.should.equal('10');
+        tx.outputs[1].address.should.equal(testData.ACCOUNT_3.accountId);
+        tx.outputs[1].value.should.equal('15');
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].address.should.equal(testData.ACCOUNT_1.accountId);
+        tx.inputs[0].value.should.equal('25');
+
+        should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_MULTI_TRANSFER_TRANSACTION);
       });
     });
 
@@ -141,7 +219,15 @@ describe('HBAR Transfer Builder', () => {
         tx2.type.should.equal(TransactionType.Send);
       });
 
-      it('a signed transfer transaction from serilaized', async () => {
+      it('a non signed multirecipients transfer transaction from serialized', async () => {
+        const builder = factory.from(testData.NON_SIGNED_MULTI_TRANSFER_TRANSACTION);
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
+        const tx2 = await builder.build();
+        should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_MULTI_TRANSFER_TRANSACTION);
+        tx2.type.should.equal(TransactionType.Send);
+      });
+
+      it('a signed transfer transaction from serialized', async () => {
         const txBuilder = factory.from(testData.SIGNED_MAINNET_TRANSFER_TRANSACTION);
         const tx = await txBuilder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_MAINNET_TRANSFER_TRANSACTION);

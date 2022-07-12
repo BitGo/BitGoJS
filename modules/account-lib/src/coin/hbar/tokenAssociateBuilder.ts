@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import * as proto from '@hashgraph/proto';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, SigningError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import {
   buildHederaAccountID,
@@ -12,11 +12,12 @@ import {
   stringifyTokenId,
 } from './utils';
 import { TransactionBuilder } from './transactionBuilder';
+import { DEFAULT_SIGNER_NUMBER } from './constants';
 
 export class TokenAssociateBuilder extends TransactionBuilder {
   private readonly _txBodyData: proto.TokenAssociateTransactionBody;
   private _account: string;
-  private _tokens: string[] = [];
+  private _tokenIds: string[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -37,13 +38,21 @@ export class TokenAssociateBuilder extends TransactionBuilder {
     tokenAssociateAccount.tokens!.forEach((tokenId: proto.ITokenID) => {
       const token = stringifyTokenId(tokenId);
       this.validateToken(token);
-      this._tokens.push(token);
+      this._tokenIds.push(token);
     });
 
     if (tokenAssociateAccount.account) {
       const accountId = stringifyAccountId(tokenAssociateAccount.account);
       this.account(accountId);
     }
+  }
+
+  /** @inheritdoc */
+  protected signImplementation(key: BaseKey): Transaction {
+    if (this._multiSignerKeyPairs.length >= DEFAULT_SIGNER_NUMBER) {
+      throw new SigningError('A maximum of ' + DEFAULT_SIGNER_NUMBER + ' can sign the transaction.');
+    }
+    return super.signImplementation(key);
   }
 
   /** @inheritdoc */
@@ -56,7 +65,7 @@ export class TokenAssociateBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateMandatoryFields(): void {
-    if (!this._tokens || this._tokens.length < 1) {
+    if (!this._tokenIds || this._tokenIds.length < 1) {
       throw new BuildTransactionError('Invalid transaction: missing tokens to associate');
     }
 
@@ -83,14 +92,16 @@ export class TokenAssociateBuilder extends TransactionBuilder {
    */
   tokens(tokenName: string): this {
     const tokenId = getHederaTokenIdFromName(tokenName);
-
+    if (!tokenId) {
+      throw new BuildTransactionError('Unsupported token: ' + tokenName);
+    }
     this.validateToken(tokenId);
-    this._tokens.push(tokenId!);
+    this._tokenIds.push(tokenId!);
     return this;
   }
 
   private buildTokenData(): proto.TokenID[] {
-    return this._tokens.map(buildHederaTokenID);
+    return this._tokenIds.map(buildHederaTokenID);
   }
 
   private buildAccountData(): proto.AccountID {
@@ -108,10 +119,8 @@ export class TokenAssociateBuilder extends TransactionBuilder {
     }
   }
 
-  private validateToken(tokenId: string | undefined): void {
-    if (tokenId === undefined) {
-      throw new BuildTransactionError('Unsupported token ID: ' + tokenId);
-    } else if (this._tokens.includes(tokenId)) {
+  private validateToken(tokenId: string): void {
+    if (this._tokenIds.includes(tokenId)) {
       throw new BuildTransactionError('Repeated token ID: ' + tokenId);
     } else if (!isValidHederaTokenID(tokenId)) {
       throw new BuildTransactionError('Invalid token ID: ' + tokenId);

@@ -294,4 +294,60 @@ describe('AvaxP Validate Tx Builder', () => {
       // look into credentials make sure that index 0 and 2 is signed
     });
   });
+  describe('Key cannot sign the transaction ', () => {
+    it('Should full sign a AddValidator tx from unsigned raw tx', () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
+        testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
+      );
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+      txBuilder
+        .build()
+        .then((ok) => assert.fail('it can sign'))
+        .catch((err) => {
+          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
+        });
+    });
+
+    it('Should 2 full sign a AddValidator tx from unsigned raw tx', () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
+        testData.ADDVALIDATOR_SAMPLES.recoveryUnsignedTxHex
+      );
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      txBuilder
+        .build()
+        .then((ok) => assert.fail('it can sign'))
+        .catch((err) => {
+          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
+        });
+    });
+
+    // HSM expected empty credential, we cannot verify if the next signature is the correct.
+    xit('Should full sign a AddValidator tx from unsigned raw tx', () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
+        testData.ADDVALIDATOR_SAMPLES.halfsigntxHex
+      );
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
+
+      txBuilder
+        .build()
+        .then((ok) => assert.fail('it can sign'))
+        .catch((err) => {
+          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
+        });
+    });
+
+    // HSM expected empty credential, we cannot verify if the next signature is the correct.
+    xit('Should full sign a AddValidator tx from unsigned raw tx', () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
+        testData.ADDVALIDATOR_SAMPLES.recoveryHalfsigntxHex
+      );
+      txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
+      txBuilder
+        .build()
+        .then((ok) => assert.fail('it can sign'))
+        .catch((err) => {
+          err.message.should.be.equal(errorMessage.ERROR_KEY_CANNOT_SIGN);
+        });
+    });
+  });
 });

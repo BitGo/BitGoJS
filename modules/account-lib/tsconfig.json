@@ -14,7 +14,13 @@
       "path": "../sdk-coin-algo"
     },
     {
+      "path": "../sdk-coin-avaxc"
+    },
+    {
       "path": "../sdk-coin-avaxp"
+    },
+    {
+      "path": "../sdk-coin-celo"
     },
     {
       "path": "../sdk-coin-cspr"

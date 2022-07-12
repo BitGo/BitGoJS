@@ -20,6 +20,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
+import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from '../internal/seedValidator';
 
@@ -221,9 +222,48 @@ export class Hbar extends BaseCoin {
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
-    if ((tx as any)._txBody.data !== 'cryptoTransfer') {
-      // don't explain this
-      throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
+    let outputAmount = new BigNumber(0);
+    const outputs: { address: string; amount: string; memo: string; tokenName?: string }[] = [];
+    // TODO(BG-24809): get the memo from the toJson
+    let memo = '';
+    if (params.memo) {
+      memo = params.memo.value;
+    }
+
+    switch (txJson.instructionsData.type) {
+      case 'cryptoTransfer':
+        const recipients = txJson.instructionsData.params.recipients || [];
+        recipients.forEach((recipient) => {
+          if (!recipient.tokenName) {
+            // token transfer doesn't change outputAmount
+            outputAmount = outputAmount.plus(recipient.amount);
+          }
+          outputs.push({
+            address: recipient.address,
+            amount: recipient.amount.toString(),
+            memo,
+            ...(recipient.tokenName && {
+              tokenName: recipient.tokenName,
+            }),
+          });
+        });
+        break;
+
+      case 'tokenAssociate':
+        const tokens = txJson.instructionsData.params.tokenNames || [];
+        const accountId = txJson.instructionsData.params.accountId;
+        tokens.forEach((token) => {
+          outputs.push({
+            address: accountId,
+            amount: '0',
+            memo,
+            tokenName: token,
+          });
+        });
+        break;
+
+      default:
+        throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
     }
 
     const displayOrder = [
@@ -238,26 +278,11 @@ export class Hbar extends BaseCoin {
       'memo',
     ];
 
-    // TODO(BG-24809): get the memo from the toJson
-    let memo = '';
-    if (params.memo) {
-      memo = params.memo.value;
-    }
-
-    const outputs = [
-      {
-        amount: txJson.amount.toString(),
-        address: txJson.to,
-        memo,
-        tokenName: txJson.tokenName,
-      },
-    ];
-
     return {
       displayOrder,
       id: txJson.id,
       outputs,
-      outputAmount: outputs[0].amount,
+      outputAmount: outputAmount.toString(),
       changeOutputs: [], // account based does not use change outputs
       changeAmount: '0', // account base does not make change
       fee: params.feeInfo,

@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/account-lib": "^2.20.0-rc.31",
+    "@bitgo/sdk-coin-eth": "^1.0.1-rc.1",
     "@bitgo/sdk-core": "^1.1.0-rc.24",
     "@bitgo/statics": "^7.0.0-rc.0",
     "bignumber.js": "^8.0.1",
