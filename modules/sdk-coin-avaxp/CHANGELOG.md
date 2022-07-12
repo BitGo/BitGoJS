@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@1.0.1-rc.2...@bitgo/sdk-coin-avaxp@1.1.0-rc.0) (2022-07-12)
+
+
+### Features
+
+* **sdk-coin-avaxp:** add cannot sign error ([b035547](https://github.com/BitGo/BitGoJS/commit/b0355478db671dfa1ade0f2ec41fa0ae3c2c8f79))
+
+
+
+
+
 ## [1.0.1-rc.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@1.0.1-rc.1...@bitgo/sdk-coin-avaxp@1.0.1-rc.2) (2022-07-11)
 
 

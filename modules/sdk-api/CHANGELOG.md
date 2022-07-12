@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-rc.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.0-rc.27...@bitgo/sdk-api@1.1.0-rc.28) (2022-07-12)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+
+
+
+
 # [1.1.0-rc.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.1.0-rc.26...@bitgo/sdk-api@1.1.0-rc.27) (2022-07-11)
 
 **Note:** Version bump only for package @bitgo/sdk-api
