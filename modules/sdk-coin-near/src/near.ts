@@ -3,7 +3,6 @@
  */
 
 import BigNumber from 'bignumber.js';
-import * as accountLib from '@bitgo/account-lib';
 import * as _ from 'lodash';
 import * as base58 from 'bs58';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -22,6 +21,8 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 
+import { KeyPair as NearKeyPair, Transaction, TransactionBuilderFactory } from './lib';
+import nearUtils from './lib/utils';
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -72,8 +73,6 @@ export interface NearParsedTransaction extends ParsedTransaction {
 }
 
 export type NearTransactionExplanation = TransactionExplanation;
-
-const nearUtils = accountLib.Near.Utils.default;
 
 export class Near extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -142,7 +141,7 @@ export class Near extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new accountLib.Near.KeyPair({ seed }) : new accountLib.Near.KeyPair();
+    const keyPair = seed ? new NearKeyPair({ seed }) : new NearKeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new Error('Missing prv in key generation.');
@@ -185,7 +184,7 @@ export class Near extends BaseCoin {
 
   /** @inheritDoc */
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
-    const nearKeypair = new accountLib.Near.KeyPair({ prv: key.prv });
+    const nearKeypair = new NearKeyPair({ prv: key.prv });
     if (Buffer.isBuffer(message)) {
       message = base58.encode(message);
     }
@@ -198,7 +197,7 @@ export class Near extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<NearTransactionExplanation> {
-    const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     let rebuiltTransaction: BaseTransaction;
     const txRaw = params.txPrebuild.txHex;
 
@@ -239,7 +238,7 @@ export class Near extends BaseCoin {
 
     // if we are receiving addresses do not try to convert them
     const signer = !nearUtils.isValidAddress(params.txPrebuild.key)
-      ? new accountLib.Near.KeyPair({ pub: params.txPrebuild.key }).getAddress()
+      ? new NearKeyPair({ pub: params.txPrebuild.key }).getAddress()
       : params.txPrebuild.key;
     return { txHex, prv, signer };
   }
@@ -254,7 +253,7 @@ export class Near extends BaseCoin {
    * @returns {Bluebird<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const factory = accountLib.register(this.getChain(), accountLib.Near.TransactionBuilderFactory);
+    const factory = this.getBuilder();
     const txBuilder = factory.from(params.txPrebuild.txHex);
     txBuilder.sign({ key: params.prv });
     const transaction: BaseTransaction = await txBuilder.build();
@@ -329,7 +328,7 @@ export class Near extends BaseCoin {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const transaction = new accountLib.Near.Transaction(coinConfig);
+    const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
@@ -354,5 +353,9 @@ export class Near extends BaseCoin {
       }
     }
     return true;
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
   }
 }
