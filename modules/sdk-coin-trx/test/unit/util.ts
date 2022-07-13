@@ -1,9 +1,8 @@
 import assert from 'assert';
 import should from 'should';
-import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
-import { Utils } from '../../../../src/coin/trx/index';
+import { Interface, Utils } from '../../src';
 
-import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
+import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../resources';
 
 describe('Util library should', function () {
   // arbitrary text
@@ -120,7 +119,9 @@ describe('Util library should', function () {
     const tx = UnsignedTransferContractTx.tx;
     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
     const value = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value;
-    const parsedContract = Utils.decodeTransferContract(rawTx.contracts[0].parameter.value) as TransferContract[];
+    const parsedContract = Utils.decodeTransferContract(
+      rawTx.contracts[0].parameter.value
+    ) as Interface.TransferContract[];
 
     const toAddress = Utils.getBase58AddressFromHex(value.to_address);
     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
@@ -136,8 +137,8 @@ describe('Util library should', function () {
     const value = tx.raw_data.contract[0].parameter.value;
     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
     const parsedTx = Utils.decodeAccountPermissionUpdateContract(
-      rawTx.contracts[0].parameter.value,
-    ) as AccountPermissionUpdateContract;
+      rawTx.contracts[0].parameter.value
+    ) as Interface.AccountPermissionUpdateContract;
     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
     should.equal(parsedTx.ownerAddress, ownerAddress);
     should.equal(parsedTx.owner.type, 0);
