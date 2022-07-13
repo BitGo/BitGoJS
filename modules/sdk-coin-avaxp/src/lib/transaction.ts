@@ -74,7 +74,7 @@ export class Transaction extends BaseTransaction {
     this._assetId = utils.cb58Decode(this._network.avaxAssetID);
     this._blockchainID = utils.cb58Decode(this._network.blockchainID);
     this._networkID = this._network.networkID;
-    this._txFee = new BN(this._network.txFee.toString());
+    this._txFee = new BN(this._network.txFee);
   }
 
   get avaxPTransaction(): BaseTx {
