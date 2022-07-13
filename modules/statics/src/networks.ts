@@ -185,7 +185,7 @@ class AvalancheP extends Mainnet implements AvalancheNetwork {
 }
 
 class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
-  name = 'AvalanchePTestnet';
+  name = 'AvalanchePChainTestnet';
   family = CoinFamily.AVAXP;
   explorerUrl = 'https://explorer-xp.avax-test.network/tx/';
   accountExplorerUrl = 'https://explorer-xp.avax-test.network/address/';
