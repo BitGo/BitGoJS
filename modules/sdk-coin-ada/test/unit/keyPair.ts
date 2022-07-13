@@ -1,7 +1,7 @@
 import should from 'should';
 import { KeyPair } from '../../src/keyPair';
 import { enterpriseAccounts } from '../resources/index';
-import CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { toHex } from '@bitgo/sdk-core';
 
 describe('Ada Keypair', () => {

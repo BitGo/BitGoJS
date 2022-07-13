@@ -1,5 +1,5 @@
 import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex } from '@bitgo/sdk-core';
-import CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 
 export class KeyPair extends Ed25519KeyPair {
   /**

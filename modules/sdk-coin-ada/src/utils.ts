@@ -1,5 +1,5 @@
 import { BaseUtils } from '@bitgo/sdk-core';
-import CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {

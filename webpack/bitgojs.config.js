@@ -42,6 +42,10 @@ module.exports = {
       Buffer: ['buffer', 'Buffer'],
       process: 'process/browser',
     }),
+    // swap the nodejs one for its WASM-free version
+    new webpack.NormalModuleReplacementPlugin(/\@emurgo\/cardano-serialization-lib-nodejs/, '@emurgo/cardano-serialization-lib-asmjs'),
+    // fix all the dynamic imports used in the asm module
+    new webpack.ContextReplacementPlugin(/cardano-serialization-lib-asmjs/),
   ],
   node: {
     global: true,

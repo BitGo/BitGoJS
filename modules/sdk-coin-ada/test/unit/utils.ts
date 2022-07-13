@@ -1,7 +1,7 @@
 import should from 'should';
 import { Utils } from '../../src/utils';
 import { toHex } from '@bitgo/sdk-core';
-import CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
+import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { address, blockHash, signatures, txIds, privateKeys, publicKeys } from '../resources';
 
 describe('utils', () => {
