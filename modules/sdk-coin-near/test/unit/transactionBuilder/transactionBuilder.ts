@@ -1,14 +1,13 @@
 import assert from 'assert';
 import should from 'should';
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory } from '../../../../../src/coin/near';
+import { getBuilderFactory } from '../getBuilderFactory';
 import { TransactionType } from '@bitgo/sdk-core';
-import * as testData from '../../../../resources/near';
+import * as testData from '../../resources/near';
 
 describe('NEAR Transaction Builder', async () => {
   let builders;
 
-  const factory = register('tnear', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tnear');
 
   beforeEach(function (done) {
     builders = [factory.getTransferBuilder()];
@@ -104,7 +103,7 @@ describe('NEAR Transaction Builder', async () => {
       txBuilder.receiverId(testData.accounts.account2.address);
       assert.throws(
         () => txBuilder.recentBlockHash(testData.errorBlockHash.block1),
-        new RegExp('Invalid blockHash CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9'),
+        new RegExp('Invalid blockHash CDEwwp7TjjahErrorriSvX3457qZ5uF3TtgEZHj7o5ssKFNs9')
       );
     }
   });
@@ -120,7 +119,7 @@ describe('NEAR Transaction Builder', async () => {
     for (const txBuilder of builders) {
       assert.throws(
         () => txBuilder.sender(testData.accounts.account1.publicKey),
-        new RegExp('Invalid or missing pubKey, got: undefined'),
+        new RegExp('Invalid or missing pubKey, got: undefined')
       );
     }
   });

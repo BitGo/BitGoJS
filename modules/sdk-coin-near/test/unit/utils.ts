@@ -1,6 +1,6 @@
 import should from 'should';
-import utils from '../../../../src/coin/near/utils';
-import { accounts, blockHash, signatures, txIds } from '../../../resources/near';
+import utils from '../../src/lib/utils';
+import { accounts, blockHash, signatures, txIds } from '../resources/near';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {

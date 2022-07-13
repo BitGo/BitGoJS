@@ -2,8 +2,8 @@ import { coins } from '@bitgo/statics';
 import assert from 'assert';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { Transaction } from '../../../../src/coin/near';
-import * as NearResources from '../../../resources/near';
+import { Transaction } from '../../src';
+import * as NearResources from '../resources/near';
 
 describe('Near Transaction', () => {
   let tx: Transaction;

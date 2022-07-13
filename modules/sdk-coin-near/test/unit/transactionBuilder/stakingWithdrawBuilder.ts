@@ -1,12 +1,11 @@
 import should from 'should';
-import * as testData from '../../../../resources/near';
-import { register } from '../../../../../src';
-import { TransactionBuilderFactory } from '../../../../../src/coin/near';
+import * as testData from '../../resources/near';
+import { getBuilderFactory } from '../getBuilderFactory';
 import { TransactionType } from '@bitgo/sdk-core';
-import { validatorContractAddress } from '../../../../resources/near';
+import { validatorContractAddress } from '../../resources/near';
 
 describe('Near Staking withdraw Builder', () => {
-  const factory = register('tnear', TransactionBuilderFactory);
+  const factory = getBuilderFactory('tnear');
   const gas = '125000000000000';
   const amount = '1000000'; // amount to withdraw in yoctos
 
