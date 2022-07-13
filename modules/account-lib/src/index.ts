@@ -68,7 +68,7 @@ export { Algo };
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
 
-import * as Sol from './coin/sol';
+import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
 import * as Dot from './coin/dot';

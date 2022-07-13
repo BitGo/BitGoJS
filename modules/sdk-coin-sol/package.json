@@ -1,0 +1,58 @@
+{
+  "name": "@bitgo/sdk-coin-sol",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Sol",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-sol"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^1.0.1",
+    "@bitgo/statics": "^6.17.0",
+    "@solana/spl-token": "0.1.8",
+    "@solana/web3.js": "1.31.0",
+    "bignumber.js": "^9.0.0",
+    "bs58": "^4.0.1",
+    "lodash": "^4.17.14",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.0.1",
+    "@bitgo/sdk-test": "^1.0.0",
+    "@types/lodash": "^4.14.121"
+  }
+}

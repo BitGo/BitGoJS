@@ -41,6 +41,7 @@
     "@bitgo/sdk-coin-cspr": "^1.0.0",
     "@bitgo/sdk-coin-eth": "^1.0.0",
     "@bitgo/sdk-coin-rbtc": "^1.0.0",
+    "@bitgo/sdk-coin-sol": "^1.0.0",
     "@bitgo/sdk-coin-stx": "^1.0.0",
     "@bitgo/sdk-coin-xtz": "^1.0.0",
     "@bitgo/sdk-core": "^1.0.1",
@@ -48,8 +49,6 @@
     "@ethereumjs/common": "^2.4.0",
     "@hashgraph/sdk": "~2.3.0",
     "@polkadot/api": "7.15.1",
-    "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.31.0",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@substrate/txwrapper-core": "1.5.9",
@@ -75,6 +74,7 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@solana/web3.js": "1.31.0",
     "@types/bs58": "^4.0.1"
   },
   "nyc": {
