@@ -2,9 +2,11 @@ import React from 'react';
 import ReactJson from 'react-json-view';
 
 import { BitGo } from 'bitgo';
+import { KeyPair } from '@bitgo/sdk-coin-ada';
 
 const sdk = new BitGo();
 
+console.log(new KeyPair().getAddress('testnet'));
 const BitGoJS = () => {
   return (
     <React.Fragment>
