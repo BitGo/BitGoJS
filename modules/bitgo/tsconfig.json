@@ -84,6 +84,9 @@
       "path": "../sdk-coin-ltc"
     },
     {
+      "path": "../sdk-coin-near"
+    },
+    {
       "path": "../sdk-coin-rbtc"
     },
     {
