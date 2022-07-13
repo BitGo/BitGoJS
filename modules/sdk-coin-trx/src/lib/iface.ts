@@ -23,7 +23,7 @@ export interface Contract {
 /**
  * This interface represents a form of:
  *
- * @external https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L239
+ * @external https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/protobuf/tron.proto#L239
  */
 export interface TransactionReceipt {
   /**

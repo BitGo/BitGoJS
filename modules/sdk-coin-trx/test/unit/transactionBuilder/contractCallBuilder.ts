@@ -1,11 +1,10 @@
 import assert from 'assert';
 import should from 'should';
-import { coins, TronNetwork } from '@bitgo/statics/';
-import BigNumber from 'bignumber.js';
-
-import { Transaction, WrappedBuilder } from '../../../../../src/coin/trx';
-import { getBuilder } from '../../../../../src/index';
 import { TransactionType } from '@bitgo/sdk-core';
+import { coins, TronNetwork } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import { Transaction, WrappedBuilder } from '../../../src';
+import { getBuilder } from '../../../src/lib/builder';
 import {
   PARTICIPANTS,
   CONTRACTS,
@@ -15,7 +14,7 @@ import {
   BLOCK_NUMBER,
   EXPIRATION,
   TX_CONTRACT,
-} from '../../../../resources/trx/trx';
+} from '../../resources';
 
 describe('Trx Contract call Builder', () => {
   const initTxBuilder = () => {
@@ -178,7 +177,7 @@ describe('Trx Contract call Builder', () => {
           () => {
             txBuilder.data('addMintRequest()');
           },
-          (e) => e.message === 'addMintRequest() is not a valid hex string.',
+          (e) => e.message === 'addMintRequest() is not a valid hex string.'
         );
       });
 
@@ -190,7 +189,7 @@ describe('Trx Contract call Builder', () => {
           () => {
             txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
           },
-          (e) => e.message === 'Duplicated key',
+          (e) => e.message === 'Duplicated key'
         );
         const tx = await txBuilder.build();
 
@@ -204,7 +203,7 @@ describe('Trx Contract call Builder', () => {
           () => {
             getBuilder('ttrx').from('an invalid raw transaction');
           },
-          (e) => e.message === 'There was error in parsing the JSON string',
+          (e) => e.message === 'There was error in parsing the JSON string'
         );
       });
     });
@@ -233,7 +232,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now + 31536000001);
         },
-        (e) => e.message === 'Expiration must not be greater than one year',
+        (e) => e.message === 'Expiration must not be greater than one year'
       );
     });
 
@@ -246,7 +245,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now - 1000);
         },
-        (e) => e.message === 'Expiration must be greater than current time',
+        (e) => e.message === 'Expiration must be greater than current time'
       );
     });
 
@@ -259,7 +258,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now + 1000);
         },
-        (e) => e.message === 'Expiration must be greater than timestamp',
+        (e) => e.message === 'Expiration must be greater than timestamp'
       );
     });
 
@@ -273,7 +272,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(expiration);
         },
-        (e) => e.message === 'Expiration is already set, it can only be extended',
+        (e) => e.message === 'Expiration is already set, it can only be extended'
       );
     });
 
@@ -288,7 +287,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder2.expiration(expiration);
         },
-        (e) => e.message === 'Expiration is already set, it can only be extended',
+        (e) => e.message === 'Expiration is already set, it can only be extended'
       );
     });
 
@@ -299,7 +298,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.extendValidTo(20000);
         },
-        (e) => e.message === 'There is not expiration to extend',
+        (e) => e.message === 'There is not expiration to extend'
       );
     });
 
@@ -315,7 +314,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder2.extendValidTo(0);
         },
-        (e) => e.message === 'Value cannot be below zero',
+        (e) => e.message === 'Value cannot be below zero'
       );
     });
 
@@ -331,7 +330,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder2.extendValidTo(31536000001);
         },
-        (e) => e.message === 'The expiration cannot be extended more than one year',
+        (e) => e.message === 'The expiration cannot be extended more than one year'
       );
     });
 
@@ -346,7 +345,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder2.extendValidTo(20000);
         },
-        (e) => e.message === 'Cannot extend a signed transaction',
+        (e) => e.message === 'Cannot extend a signed transaction'
       );
     });
 
@@ -357,14 +356,14 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.fee({ feeLimit: 'not a number' });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
 
       assert.throws(
         () => {
           txBuilder.fee({ feeLimit: '-15000' });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
 
       assert.throws(
@@ -372,7 +371,7 @@ describe('Trx Contract call Builder', () => {
           const tronNetwork = coins.get('ttrx').network as TronNetwork;
           txBuilder.fee({ feeLimit: new BigNumber(tronNetwork.maxFeeLimit).plus(1).toString() });
         },
-        (e) => e.message === 'Invalid fee limit value',
+        (e) => e.message === 'Invalid fee limit value'
       );
     });
 

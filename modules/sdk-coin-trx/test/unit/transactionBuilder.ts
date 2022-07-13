@@ -15,8 +15,8 @@ import {
   UnsignedInvalidContractBuildTransaction,
   UnsignedBuildEmptyIDTransaction,
   UnsignedInvalidTimeStampBuildTransaction,
-} from '../../../resources/trx';
-import { getBuilder } from '../../../../src';
+} from '../resources';
+import { getBuilder } from '../../src/lib/builder';
 
 describe('Tron TransactionBuilder', function () {
   let txBuilder;
@@ -65,10 +65,10 @@ describe('Tron TransactionBuilder', function () {
         const tx = await txBuilder.build();
 
         tx.toJson().signature[0].should.equal(
-          'bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401',
+          'bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401'
         );
         tx.toJson().signature[1].should.equal(
-          'f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600',
+          'f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600'
         );
 
         tx.id.should.equal('80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d');
@@ -104,11 +104,11 @@ describe('Tron TransactionBuilder', function () {
       signedTxJson.txID.should.equal(UnsignedAccountPermissionUpdateContractTx.txID);
       signedTxJson.raw_data_hex.should.equal(UnsignedAccountPermissionUpdateContractTx.raw_data_hex);
       JSON.stringify(signedTxJson.raw_data).should.equal(
-        JSON.stringify(UnsignedAccountPermissionUpdateContractTx.raw_data),
+        JSON.stringify(UnsignedAccountPermissionUpdateContractTx.raw_data)
       );
       signedTxJson.signature.length.should.equal(1);
       signedTxJson.signature[0].should.equal(
-        '2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00',
+        '2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00'
       );
     });
 
@@ -140,7 +140,7 @@ describe('Tron TransactionBuilder', function () {
       JSON.stringify(signedTxJson.raw_data).should.equal(JSON.stringify(UnsignedBuildTransaction.raw_data));
       signedTxJson.signature.length.should.equal(1);
       signedTxJson.signature[0].should.equal(
-        'bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401',
+        'bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401'
       );
     });
 
