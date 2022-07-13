@@ -38,7 +38,7 @@ export { Eth };
 import * as Eth2 from './coin/eth2';
 export { Eth2 };
 
-import * as Etc from './coin/etc';
+import * as Etc from '@bitgo/sdk-coin-etc';
 export { Etc };
 
 import * as AvaxC from '@bitgo/sdk-coin-avaxc';

@@ -1,12 +1,13 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Etc } from '../../../../../src';
-import * as testData from '../../../../resources/etc/etc';
+import { TransactionBuilder } from '../../../src';
+import { getBuilder } from '../../../src/lib/builder';
+import * as testData from '../../resources';
 
 describe('Etc wallet initialization', function () {
-  let txBuilder: Etc.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+    txBuilder = getBuilder('tetc') as TransactionBuilder;
     txBuilder.fee({
       fee: '10000000000',
       gasLimit: '6800000',
@@ -34,7 +35,7 @@ describe('Etc wallet initialization', function () {
     });
 
     it('a signed init transaction from serialized', async () => {
-      const newTxBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+      const newTxBuilder = getBuilder('tetc') as TransactionBuilder;
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
@@ -71,7 +72,7 @@ describe('Etc wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+      const newTxBuilder = getBuilder('tetc') as TransactionBuilder;
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
@@ -85,7 +86,7 @@ describe('Etc wallet initialization', function () {
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
-      const newTxBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+      const newTxBuilder = getBuilder('tetc') as TransactionBuilder;
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);

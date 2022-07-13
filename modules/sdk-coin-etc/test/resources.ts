@@ -1,4 +1,4 @@
-import { KeyPair } from '../../../src/coin/etc';
+import { KeyPair } from '../src';
 import { ETHTransactionType, LegacyTxData } from '@bitgo/sdk-coin-eth';
 
 export const ENCODED_TRANSACTION =

@@ -62,6 +62,9 @@
       "path": "./modules/sdk-coin-doge"
     },
     {
+      "path": "./modules/sdk-coin-etc"
+    },
+    {
       "path": "./modules/sdk-coin-eth"
     },
     {

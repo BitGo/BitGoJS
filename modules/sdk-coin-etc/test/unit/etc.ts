@@ -1,14 +1,15 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { Etc } from '../../../../src/v2/coins/etc';
-import { Tetc } from '../../../../src/v2/coins/tetc';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { Etc, Tetc } from '../../src';
 
 describe('Ethereum Classic', function () {
-  let bitgo;
+  let bitgo: TestBitGoAPI;
 
   before(function () {
-    bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.initializeTestVars();
+    bitgo.safeRegister('etc', Etc.createInstance);
+    bitgo.safeRegister('tetc', Tetc.createInstance);
   });
 
   it('should instantiate the coin', function () {
