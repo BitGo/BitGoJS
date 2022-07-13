@@ -1,14 +1,16 @@
-import TssUtils, { TssUtilsTypes } from './eddsa';
-export { TssUtils, TssUtilsTypes };
-
+import TssUtils, { TssUtilsTypes, EddsaUtilsTypes } from './eddsa';
 export * as ECDSAUtils from './ecdsa';
+export * as EDDSAUtils from './ecdsa';
+
+/** @deprecated use EDDSAUtils */
+export { TssUtils };
+/** @deprecated use EDDSAUtilsTypes */
+export { TssUtilsTypes };
+export { EddsaUtilsTypes };
 
 // exporting this types for backward compatibility.
-export {
-  ITssUtils,
-  PrebuildTransactionWithIntentOptions,
-  SignatureShareRecord,
-  SignatureShareType,
-  TxRequest,
-  EddsaUnsignedTransaction,
-} from './eddsa';
+/** @deprecated use EDDSAUtils.<type/method> */
+export { ITssUtils, IEddsaUtils, TxRequest, EddsaUnsignedTransaction } from './eddsa';
+
+export * as BaseTssUtils from './baseTSSUtils';
+export * from './baseTypes';
