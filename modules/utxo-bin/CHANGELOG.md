@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-rc.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@1.0.2-rc.27...@bitgo/utxo-bin@2.0.0-rc.0) (2022-07-14)
+
+
+### Bug Fixes
+
+* **statics:** update avaxp network to use string instead of bigint ([f6505b7](https://github.com/BitGo/BitGoJS/commit/f6505b711e81de7d4ab0c3ee74f33ec7ab07c671))
+
+
+### BREAKING CHANGES
+
+* **statics:** This change could break calling code as it changes the type.
+
+Ticket: STLX-17918
+
+
+
+
+
 ## [1.0.2-rc.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@1.0.2-rc.25...@bitgo/utxo-bin@1.0.2-rc.26) (2022-07-11)
 
 **Note:** Version bump only for package @bitgo/utxo-bin
