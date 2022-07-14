@@ -24,6 +24,8 @@ import { Dash, Tdash } from '@bitgo/sdk-coin-dash';
 export { Dash, Tdash };
 import { Doge, Tdoge } from '@bitgo/sdk-coin-doge';
 export { Doge, Tdoge };
+import { Dot, Tdot } from '@bitgo/sdk-coin-dot';
+export { Dot, Tdot };
 import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';
 export { Erc20Token, Eth, Gteth, Teth };
 import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
