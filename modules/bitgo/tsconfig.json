@@ -105,6 +105,9 @@
       "path": "../sdk-coin-trx"
     },
     {
+      "path": "../sdk-coin-xlm"
+    },
+    {
       "path": "../sdk-coin-xrp"
     },
     {

@@ -97,6 +97,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-eos /var/modules/sdk-coin-eos/
 RUN cd /var/modules/sdk-coin-eos && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 RUN cd /var/modules/sdk-coin-ltc && yarn link
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
+RUN cd /var/modules/sdk-coin-xlm && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
 RUN cd /var/modules/sdk-coin-xrp && yarn link
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
@@ -143,6 +145,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-doge && \
     yarn link @bitgo/sdk-coin-eos && \
     yarn link @bitgo/sdk-coin-ltc && \
+    yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END

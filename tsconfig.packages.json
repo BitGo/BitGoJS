@@ -92,6 +92,9 @@
       "path": "./modules/sdk-coin-trx"
     },
     {
+      "path": "./modules/sdk-coin-xlm"
+    },
+    {
       "path": "./modules/sdk-coin-xrp"
     },
     {
