@@ -292,13 +292,18 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
+    const unsignedTx =
+      txRequestResolved.apiVersion === 'full'
+        ? txRequestResolved.transactions[0].unsignedTx
+        : txRequestResolved.unsignedTxs[0];
+
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
-      txRequestResolved.unsignedTxs[0].derivationPath
+      unsignedTx.derivationPath
     );
 
-    const signablePayload = Buffer.from(txRequestResolved.unsignedTxs[0].signableHex, 'hex');
+    const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
 
     const userSignShare = await createUserSignShare(signablePayload, signingKey.pShare);
 

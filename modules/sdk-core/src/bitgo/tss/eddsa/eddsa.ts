@@ -188,11 +188,11 @@ export async function getBitgoToUserRShare(
   txRequestId: string
 ): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
-  const signatureShares = txRequest.signatureShares;
+  const signatureShares =
+    txRequest.apiVersion === 'full' ? txRequest.transactions[0].signatureShares : txRequest.signatureShares;
   if (_.isNil(signatureShares) || _.isEmpty(signatureShares)) {
     throw new Error(`No signatures shares found for id: ${txRequestId}`);
   }
-
   // at this point we expect the only share to be the RShare
   const bitgoToUserRShare = signatureShares.find(
     (sigShare) => sigShare.from === SignatureShareType.BITGO && sigShare.to === SignatureShareType.USER
