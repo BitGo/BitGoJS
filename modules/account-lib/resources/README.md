@@ -8,28 +8,6 @@ library only requires a small portion of.
 
 ---
 
-## TRX Resources
-
-Tron uses [protocol buffers (protobufs)](https://developers.google.com/protocol-buffers). Instead of
-pulling a bunch of non-relevant Tron full node code into this library as a dependency, we grab
-exactly what we need and add it in `resources/trx/`.
-
-### Generating protobufs for Tron
-
-Static code for Tron protobufs is already included. Generating at build time can be problematic, until
-[this issue](https://github.com/protobufjs/protobuf.js/issues/1477) is resolved. Should we ever need to
-update the static code, the following commands can be run:
-
-```bash
-npm run gen-protobuf
-```
-
-To generate the respective TypeScript definitions:
-
-```bash
-npm run gen-protobufts
-```
-
 ## XTZ Resources
 
 Tezos multisig wallets are supported through smart contracts.

@@ -9,6 +9,15 @@ function formatSat(v: number): string {
   return (v / 1e8).toFixed(8);
 }
 
+function formatConsensusBranchId(branchId: number): string {
+  const map: Record<string, number> = {
+    OVERWINTER_BRANCH_ID: 0x5ba81b19,
+    CANOPY_BRANCH_ID: 0xe9ff75a6,
+    NU5_BRANCH_ID: 0xc2d6d0b4,
+  };
+  return Object.keys(map).find((k) => map[k] === branchId) ?? 'unknown';
+}
+
 export type TxNode = {
   type: 'node';
   label: string;
@@ -133,7 +142,7 @@ export class Parser {
     const nodes = [];
     if (prevOutputs) {
       const signedBy = utxolib.bitgo.verifySignatureWithPublicKeys(tx, inputIndex, prevOutputs, parsed.publicKeys);
-      nodes.push(this.node('signed by', signedBy.flatMap((v, i) => (v ? [i] : [])).join(', ')));
+      nodes.push(this.node('signed by', `[${signedBy.flatMap((v, i) => (v ? [i] : [])).join(', ')}]`));
     }
     return this.node(
       'signatures',
@@ -290,6 +299,20 @@ export class Parser {
     ];
   }
 
+  parseVersion(tx: utxolib.bitgo.UtxoTransaction): TxNode {
+    return this.node(
+      'version',
+      tx.version,
+      tx instanceof utxolib.bitgo.ZcashTransaction
+        ? [
+            this.node('consensusBranchId (inferred)', tx.consensusBranchId.toString(16), [
+              this.node('name', formatConsensusBranchId(tx.consensusBranchId)),
+            ]),
+          ]
+        : []
+    );
+  }
+
   parse(tx: utxolib.bitgo.UtxoTransaction, chainInfo: ChainInfo = {}): TxNode {
     const weight = tx.weight();
     const vsize = tx.virtualSize();
@@ -303,7 +326,7 @@ export class Parser {
         `${utxolib.getNetworkName(utxolib.getMainnet(tx.network))} ` +
           `${utxolib.isMainnet(tx.network) ? 'mainnet' : 'testnet'}`
       ),
-      this.node('version', tx.version),
+      this.parseVersion(tx),
       this.node('locktime', tx.locktime),
       this.node('hasWitnesses', tx.hasWitnesses()),
       ...this.parseStatus(tx, chainInfo.status),

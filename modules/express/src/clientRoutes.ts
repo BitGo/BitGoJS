@@ -1,8 +1,9 @@
 /**
  * @prettier
  */
+import { UnsupportedCoinError } from '@bitgo/sdk-core';
 import { CoinFamily } from '@bitgo/statics';
-import { BitGo, BitGoOptions, Coin, CustomSigningFunction, Errors, SignedTransaction } from 'bitgo';
+import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
 import * as express from 'express';
@@ -688,7 +689,7 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
     const coinURL = coin.url(createAPIPath(req));
     return redirectRequest(bitgo, method, coinURL, req, next);
   } catch (e) {
-    if (e instanceof Errors.UnsupportedCoinError) {
+    if (e instanceof UnsupportedCoinError) {
       const queryParams = _.transform(
         req.query,
         (acc: string[], value, key) => {

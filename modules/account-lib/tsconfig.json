@@ -26,10 +26,25 @@
       "path": "../sdk-coin-cspr"
     },
     {
+      "path": "../sdk-coin-etc"
+    },
+    {
       "path": "../sdk-coin-eth"
     },
     {
+      "path": "../sdk-coin-near"
+    },
+    {
+      "path": "../sdk-coin-rbtc"
+    },
+    {
+      "path": "../sdk-coin-sol"
+    },
+    {
       "path": "../sdk-coin-stx"
+    },
+    {
+      "path": "../sdk-coin-trx"
     },
     {
       "path": "../sdk-coin-xtz"

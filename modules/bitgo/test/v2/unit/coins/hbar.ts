@@ -121,6 +121,29 @@ describe('Hedera Hashgraph:', function () {
     explain.changeAmount.should.equal('0');
   });
 
+  it('should explain a token associate transaction', async function () {
+    const tokenAssociateParam = {
+      txHex: TestData.UNSIGNED_TOKEN_ASSOCIATE,
+      feeInfo: {
+        size: 1000,
+        fee: 1160407,
+        feeRate: 1160407,
+      },
+    };
+    const explain = await basecoin.explainTransaction(tokenAssociateParam);
+
+    explain.id.should.equal('0.0.81320@1596110493.372646570');
+    explain.outputAmount.should.equal('0');
+    explain.timestamp.should.equal('1596110493.372646570');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('0');
+    explain.outputs[0].address.should.equal('0.0.81320');
+    explain.outputs[0].memo.should.equal('');
+    explain.outputs[0].tokenName.should.equal('thbar:usdc');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
   it('should verify isWalletAddress', function () {
     const baseAddress = '0.0.41098';
     const validAddress1 = '0.0.41098?memoId=1';

@@ -22,7 +22,8 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
     case 'tbtc':
     case 'tbsv':
     case 'tbch':
-      return ['tbtc', 'tbsv', 'tbch'].includes(b.getChain());
+    case 'tdoge':
+      return ['tbtc', 'tbsv', 'tbch', 'tdoge'].includes(b.getChain());
     default:
       return false;
   }
@@ -57,6 +58,8 @@ function run(coin: AbstractUtxoCoin) {
         case 'tbsv':
         case 'dash':
         case 'tdash':
+        case 'doge':
+        case 'tdoge':
         case 'zec':
         case 'tzec':
           supportedAddressTypes.should.eql(['p2sh']);

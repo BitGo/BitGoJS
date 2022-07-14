@@ -26,7 +26,7 @@ export { Ed25519KeyDeriver };
 export const BaseCoin = accountLibBaseCoin;
 
 // coins
-import * as Trx from './coin/trx';
+import * as Trx from '@bitgo/sdk-coin-trx';
 export { Trx };
 
 import { XtzLib as Xtz } from '@bitgo/sdk-coin-xtz';
@@ -38,13 +38,13 @@ export { Eth };
 import * as Eth2 from './coin/eth2';
 export { Eth2 };
 
-import * as Etc from './coin/etc';
+import * as Etc from '@bitgo/sdk-coin-etc';
 export { Etc };
 
 import * as AvaxC from '@bitgo/sdk-coin-avaxc';
 export { AvaxC };
 
-import * as Rbtc from './coin/rbtc';
+import * as Rbtc from '@bitgo/sdk-coin-rbtc';
 export { Rbtc };
 
 import * as Celo from '@bitgo/sdk-coin-celo';
@@ -68,13 +68,13 @@ export { Algo };
 import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
 export { AvaxP };
 
-import * as Sol from './coin/sol';
+import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
 import * as Dot from './coin/dot';
 export { Dot };
 
-import * as Near from './coin/near';
+import * as Near from '@bitgo/sdk-coin-near';
 export { Near };
 
 import * as Polygon from './coin/polygon';

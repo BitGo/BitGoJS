@@ -1,0 +1,66 @@
+{
+  "name": "@bitgo/sdk-coin-trx",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Tron",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "precommit": "yarn lint-staged",
+    "prepare": "npm run build-ts && cp -r ./resources ./dist",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha",
+    "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/protobuf/tron.js ./resources/protobuf/Discover.proto ./resources/protobuf/Contract.proto ./resources/protobuf/tron.proto",
+    "gen-protobufts": "pbts -o ./resources/protobuf/tron.d.ts ./resources/protobuf/tron.js"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14 <17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-trx"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/sdk-core": "^1.1.0-rc.24",
+    "@bitgo/statics": "^7.0.0-rc.0",
+    "@bitgo/utxo-lib": "^2.3.0-rc.11",
+    "@stablelib/hex": "^1.0.0",
+    "bignumber.js": "^9.0.0",
+    "bip32": "^2.0.6",
+    "lodash": "^4.17.14",
+    "protobufjs": "^6.8.9",
+    "secp256k1": "^4.0.2",
+    "superagent": "^3.8.3",
+    "tronweb": "^3.2.6"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.1.0-rc.28",
+    "@bitgo/sdk-test": "^1.0.1-rc.14"
+  }
+}

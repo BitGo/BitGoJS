@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import { VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { UnexpectedAddressError, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import {
@@ -10,7 +10,6 @@ import {
   TransactionExplanation,
   TransactionParams,
 } from '@bitgo/abstract-utxo';
-import * as errors from '../../../../src/errors';
 
 
 describe('Abstract UTXO Coin:', () => {
@@ -48,7 +47,7 @@ describe('Abstract UTXO Coin:', () => {
       } as TransactionExplanation);
 
       if (!txParams.changeAddress) {
-        sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
+        sinon.stub(coin, 'verifyAddress').throws(new UnexpectedAddressError('test error'));
       }
 
       const parsedTransaction = await coin.parseTransaction({

@@ -59,13 +59,31 @@
       "path": "./modules/sdk-coin-dash"
     },
     {
+      "path": "./modules/sdk-coin-doge"
+    },
+    {
+      "path": "./modules/sdk-coin-etc"
+    },
+    {
       "path": "./modules/sdk-coin-eth"
     },
     {
       "path": "./modules/sdk-coin-ltc"
     },
     {
+      "path": "./modules/sdk-coin-near"
+    },
+    {
+      "path": "./modules/sdk-coin-rbtc"
+    },
+    {
+      "path": "./modules/sdk-coin-sol"
+    },
+    {
       "path": "./modules/sdk-coin-stx"
+    },
+    {
+      "path": "./modules/sdk-coin-trx"
     },
     {
       "path": "./modules/sdk-coin-xrp"

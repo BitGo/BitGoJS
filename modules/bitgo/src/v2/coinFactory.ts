@@ -18,6 +18,7 @@ import {
   CeloToken,
   Cspr,
   Dash,
+  Doge,
   Eos,
   EosToken,
   Erc20Token,
@@ -47,6 +48,7 @@ import {
   Tcelo,
   Tcspr,
   Tdash,
+  Tdoge,
   Teos,
   Tetc,
   Teth,
@@ -72,11 +74,10 @@ import {
   Zec,
 } from './coins';
 import { Dot } from './coins/dot';
-import { Near } from './coins/near';
+import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { Tdot } from './coins/tdot';
-import { TNear } from './coins/tnear';
 import { tokens } from '../config';
-import { SolToken } from './coins/solToken';
+import { SolToken } from '@bitgo/sdk-coin-sol';
 import { HbarToken } from './coins/hbarToken';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
@@ -92,6 +93,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('celo', Celo.createInstance);
   globalCoinFactory.register('cspr', Cspr.createInstance);
   globalCoinFactory.register('dash', Dash.createInstance);
+  globalCoinFactory.register('doge', Doge.createInstance);
   globalCoinFactory.register('dot', Dot.createInstance);
   globalCoinFactory.register('eos', Eos.createInstance);
   globalCoinFactory.register('etc', Etc.createInstance);
@@ -120,6 +122,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
   globalCoinFactory.register('tcspr', Tcspr.createInstance);
   globalCoinFactory.register('tdash', Tdash.createInstance);
+  globalCoinFactory.register('tdoge', Tdoge.createInstance);
   globalCoinFactory.register('tdot', Tdot.createInstance);
   globalCoinFactory.register('teos', Teos.createInstance);
   globalCoinFactory.register('tetc', Tetc.createInstance);
@@ -178,10 +181,9 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
     globalCoinFactory.register(name, coinConstructor);
   });
 
-  for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
-    const tokenConstructor = SolToken.createTokenConstructor(token);
-    globalCoinFactory.register(token.type, tokenConstructor);
-  }
+  SolToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
 
   for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
     const tokenConstructor = HbarToken.createTokenConstructor(token);
