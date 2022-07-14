@@ -10,7 +10,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from '@bitgo/ethereumjs-utils-old';
-import { generateAddress2 } from 'ethereumjs-util';
+import { generateAddress2, importPublic, pubToAddress } from 'ethereumjs-util';
 import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
@@ -603,4 +603,15 @@ export function getToken(tokenContractAddress: string, network: BaseNetwork): Re
     return tokensArray[0];
   }
   return undefined;
+}
+
+/**
+ * Get Eth address from compressed secp256k1 public key
+ *
+ * @param {string} compressedPub the hex encoded compressed key
+ * @returns {string} Eth Address
+ */
+export function getEthAddressFromCompressedPub(compressedPub: string): string {
+  if (compressedPub.slice(0, 2) === '0x') compressedPub = compressedPub.slice(2);
+  return '0x' + pubToAddress(importPublic(Buffer.from(compressedPub, 'hex'))).toString('hex');
 }
