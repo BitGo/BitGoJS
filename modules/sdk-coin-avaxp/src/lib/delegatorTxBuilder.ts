@@ -34,7 +34,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     const network = coinConfig.network as AvalancheNetwork;
-    this._stakeAmount = new BN(network.minStake.toString());
+    this._stakeAmount = new BN(network.minStake);
   }
 
   /**
@@ -140,7 +140,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
    * @param amount
    */
   validateStakeAmount(amount: BN): void {
-    if (amount.lt(new BN(this.transaction._network.minStake.toString()))) {
+    if (amount.lt(new BN(this.transaction._network.minStake))) {
       throw new BuildTransactionError('Minimum staking amount is 2,000 AVAX');
     }
   }

@@ -142,7 +142,7 @@ export class AvaxP extends BaseCoin {
   }
 
   async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {
-    return { fee: (this._staticsCoin.network as AvalancheNetwork).txFee.toString() };
+    return { fee: (this._staticsCoin.network as AvalancheNetwork).txFee };
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParseTransactionOptions> {
