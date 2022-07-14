@@ -130,7 +130,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "6.2.1"
+    "ethereumjs-util": "7.1.5"
   },
   "nyc": {
     "extension": [

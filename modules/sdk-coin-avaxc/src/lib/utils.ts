@@ -50,7 +50,14 @@ export function isValidEthAddress(address: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidEthPrivateKey(privateKey: string): boolean {
+  if (privateKey.length !== 64) {
+    return false;
+  }
   const privateKeyBuffer = Buffer.from(privateKey, 'hex');
+
+  if (privateKeyBuffer.length !== 32) {
+    return false;
+  }
   return isValidPrivate(privateKeyBuffer);
 }
 

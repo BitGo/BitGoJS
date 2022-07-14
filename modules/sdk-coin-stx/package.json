@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^1.0.1",
-    "@bitgo/ethereumjs-utils-old": "npm:ethereumjs-util@5.2.0",
     "@bitgo/statics": "^6.17.0",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
@@ -51,6 +50,7 @@
     "bitcoinjs-lib": "npm:@bitgo/bitcoinjs-lib@6.1.0-rc.3",
     "bn.js": "^5.2.1",
     "elliptic": "^6.5.2",
+    "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
