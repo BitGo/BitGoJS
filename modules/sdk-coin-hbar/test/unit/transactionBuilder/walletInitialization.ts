@@ -1,13 +1,13 @@
 import assert from 'assert';
 import * as should from 'should';
-import { register } from '../../../../../src/index';
-import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
-import * as testData from '../../../../resources/hbar/hbar';
-import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
+import { getBuilderFactory } from '../getBuilderFactory';
+import { KeyPair } from '../../../src';
+import * as testData from '../../resources/hbar';
 import { TransactionType } from '@bitgo/sdk-core';
+import { WalletInitializationBuilder } from '../../../src/lib/walletInitializationBuilder';
 
 describe('HBAR Wallet initialization', () => {
-  const factory = register('thbar', TransactionBuilderFactory);
+  const factory = getBuilderFactory('thbar');
 
   const initTxBuilder = () => {
     const txBuilder = factory.getWalletInitializationBuilder();
@@ -53,12 +53,12 @@ describe('HBAR Wallet initialization', () => {
       txBuilder1.owner(testData.OWNER3);
       txBuilder1.source({ address: testData.OPERATOR.accountId });
       const tx1 = await txBuilder1.build();
-      const factory2 = register('thbar', TransactionBuilderFactory);
+      const factory2 = getBuilderFactory('thbar');
       const txBuilder2 = factory2.from(tx1.toBroadcastFormat());
       txBuilder2.sign({ key: testData.OPERATOR.privateKey });
       const tx2 = await txBuilder2.build();
 
-      const factory3 = register('thbar', TransactionBuilderFactory);
+      const factory3 = getBuilderFactory('thbar');
       const txBuilder3 = factory3.from(tx2.toBroadcastFormat());
       txBuilder3.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       const tx3 = await txBuilder3.build();
@@ -89,7 +89,7 @@ describe('HBAR Wallet initialization', () => {
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix })
       );
 
       const tx = await txBuilder.build();
@@ -107,12 +107,12 @@ describe('HBAR Wallet initialization', () => {
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix })
       );
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix })
       );
 
       const tx = await txBuilder.build();
@@ -152,7 +152,7 @@ describe('HBAR Wallet initialization', () => {
     });
 
     it('a transaction with invalid source', async () => {
-      const factory = register('thbar', TransactionBuilderFactory);
+      const factory = getBuilderFactory('thbar');
       const txBuilder = factory.getWalletInitializationBuilder();
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.owner(testData.OWNER1);
@@ -168,7 +168,7 @@ describe('HBAR Wallet initialization', () => {
       txBuilder.validateAddress(testData.VALID_ADDRESS);
       assert.throws(
         () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
-        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address),
+        new RegExp('Invalid address ' + testData.INVALID_ADDRESS.address)
       );
     });
 

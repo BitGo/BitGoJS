@@ -1,9 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/hbar/transaction';
-import * as testData from '../../../resources/hbar/hbar';
-import { KeyPair } from '../../../../src/coin/hbar/keyPair';
+import { KeyPair, Transaction } from '../../src';
+import * as testData from '../resources/hbar';
 
 describe('Hbar Transaction', () => {
   const coin = coins.get('thbar');
@@ -38,7 +37,7 @@ describe('Hbar Transaction', () => {
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
         Buffer.from(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24)
       );
     });
 
@@ -50,16 +49,16 @@ describe('Hbar Transaction', () => {
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
         Buffer.from(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24)
       );
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
         Buffer.from(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24)
       );
       should.equal(
         Buffer.from(tx.hederaTx.sigMap!.sigPair![1].pubKeyPrefix!).toString('hex'),
-        testData.OPERATOR.publicKey.slice(24),
+        testData.OPERATOR.publicKey.slice(24)
       );
     });
   });

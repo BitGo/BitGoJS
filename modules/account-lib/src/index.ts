@@ -50,7 +50,7 @@ export { Rbtc };
 import * as Celo from '@bitgo/sdk-coin-celo';
 export { Celo };
 
-import * as Hbar from './coin/hbar';
+import * as Hbar from '@bitgo/sdk-coin-hbar';
 export { Hbar };
 
 import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';

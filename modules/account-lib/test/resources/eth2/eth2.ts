@@ -1,4 +1,4 @@
-import { KeyPair } from '../../../src/coin/hbar/keyPair';
+import { KeyPair } from '@bitgo/sdk-coin-hbar';
 
 // ACCOUNT_1 has public and private keys with prefix
 export const ACCOUNT_1 = {

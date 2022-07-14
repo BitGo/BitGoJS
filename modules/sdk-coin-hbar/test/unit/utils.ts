@@ -1,8 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import * as stellar from 'stellar-sdk';
-import * as Utils from '../../../../src/coin/hbar/utils';
-import * as testData from '../../../resources/hbar/hbar';
+import * as Utils from '../../src/lib/utils';
+import * as testData from '../resources/hbar';
 import { isValidEd25519PublicKey } from '@bitgo/sdk-core';
 
 describe('HBAR util library', function () {
@@ -188,7 +188,7 @@ describe('HBAR util library', function () {
       const baseAddress5 = '0.0.41098';
       assert.throws(
         () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
-        new RegExp(`invalid address: ${address5}`),
+        new RegExp(`invalid address: ${address5}`)
       );
     });
   });

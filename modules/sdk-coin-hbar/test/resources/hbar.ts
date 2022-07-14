@@ -1,4 +1,4 @@
-import { KeyPair } from '../../../src/coin/hbar/keyPair';
+import { KeyPair } from '../../src';
 
 // ACCOUNT_1 has public and private keys with prefix
 export const ACCOUNT_1 = {
@@ -6,10 +6,10 @@ export const ACCOUNT_1 = {
   prvKeyWithPrefix: '302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
   pubKeyWithPrefix: '302a300506032b65700321005a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9',
   privateKeyBytes: Uint8Array.from(
-    Buffer.from('62b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01', 'hex'),
+    Buffer.from('62b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01', 'hex')
   ),
   publicKeyBytes: Uint8Array.from(
-    Buffer.from('5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9', 'hex'),
+    Buffer.from('5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9', 'hex')
   ),
 };
 
@@ -98,8 +98,8 @@ export const KEYPAIR_PRV = new KeyPair({
 export const WALLET_TXDATA = Uint8Array.from(
   Buffer.from(
     '22a3010a140a0c0883aa91f9051080feab9b01120418d5d00412021804188094ebdc03220208785a7d0a722a700802126c0a2212205a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf90a221220592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f88312610a221220fa344793601cef71348f994f30a168c2dd55f357426a180a5a724d7e03585e9110004a0508d0c8e103',
-    'hex',
-  ),
+    'hex'
+  )
 );
 
 export const WALLET_SIGNED_TRANSACTION =
