@@ -2,8 +2,8 @@ import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '@bitgo/sdk-coin-eth';
-import * as testData from '../../../resources/etc/etc';
-import { getCommon } from '../../../../src/coin/etc/utils';
+import * as testData from '../resources';
+import { getCommon } from '../../src/lib/utils';
 
 describe('Etc Transaction', () => {
   const coinConfig = coins.get('etc');

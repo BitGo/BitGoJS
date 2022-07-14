@@ -1,14 +1,15 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { getBuilder, Etc } from '../../../../../src';
-import * as testData from '../../../../resources/etc/etc';
+import { TransactionBuilder } from '../../../src';
+import { getBuilder } from '../../../src/lib/builder';
+import * as testData from '../../resources';
 import { decodeTransferData } from '@bitgo/sdk-coin-eth';
 
 describe('Etc send transaction', function () {
-  let txBuilder: Etc.TransactionBuilder;
+  let txBuilder: TransactionBuilder;
   const contractAddress = '0x7073b82be1d932c70afe505e1fe211916e978c34';
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+    txBuilder = getBuilder('tetc') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -75,14 +76,14 @@ describe('Etc send transaction', function () {
 
 describe('should sign and build from serialized', () => {
   it('a send funds transaction from serialized', async () => {
-    const txBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+    const txBuilder = getBuilder('tetc') as TransactionBuilder;
     txBuilder.from(testData.SEND_TX_BROADCAST);
     const signedTx = await txBuilder.build();
     should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
   });
 
   it('a send funds transaction with amount 0 from serialized', async () => {
-    const txBuilder = getBuilder('tetc') as Etc.TransactionBuilder;
+    const txBuilder = getBuilder('tetc') as TransactionBuilder;
     txBuilder.from(testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
     const signedTx = await txBuilder.build();
     should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

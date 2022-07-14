@@ -26,6 +26,9 @@
       "path": "../sdk-coin-cspr"
     },
     {
+      "path": "../sdk-coin-etc"
+    },
+    {
       "path": "../sdk-coin-eth"
     },
     {

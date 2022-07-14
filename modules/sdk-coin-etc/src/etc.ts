@@ -1,10 +1,10 @@
 /**
  * @prettier
  */
+import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
-import { Etc as EtcAccountLib } from '@bitgo/account-lib';
+import { KeyPair, TransactionBuilder } from './lib';
 
 export class Etc extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -18,14 +18,14 @@ export class Etc extends AbstractEthLikeCoin {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new EtcAccountLib.KeyPair({ pub });
+      new KeyPair({ pub });
     } catch (e) {
       valid = false;
     }
     return valid;
   }
 
-  protected getTransactionBuilder(): EtcAccountLib.TransactionBuilder {
-    return new EtcAccountLib.TransactionBuilder(coins.get(this.getBaseChain()));
+  protected getTransactionBuilder(): TransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 }

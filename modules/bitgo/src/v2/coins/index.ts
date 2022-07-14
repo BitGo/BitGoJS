@@ -26,6 +26,8 @@ import { Doge, Tdoge } from '@bitgo/sdk-coin-doge';
 export { Doge, Tdoge };
 import { Erc20Token, Eth, Gteth, Teth } from '@bitgo/sdk-coin-eth';
 export { Erc20Token, Eth, Gteth, Teth };
+import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
+export { Etc, Tetc };
 import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';
 export { Ltc, Tltc };
 import { Rbtc, Trbtc } from '@bitgo/sdk-coin-rbtc';
@@ -45,7 +47,6 @@ export { Zec, Tzec };
 
 export { Eos } from './eos';
 export { EosToken } from './eosToken';
-export { Etc } from './etc';
 export { Eth2 } from './eth2';
 export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
 export { OfcToken } from './ofcToken';
@@ -54,7 +55,6 @@ export { Susd } from './susd';
 export { FiatUsd } from './fiatusd';
 export { FiatEur } from './fiateur';
 export { Teos } from './teos';
-export { Tetc } from './tetc';
 export { Teth2 } from './teth2';
 export { Tsusd } from './tsusd';
 export { TfiatUsd } from './tfiatusd';
